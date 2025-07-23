@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Contém",
+    "NotContains": "Não contém",
     "MoveClass": "Mover {class}",
     "SelectToMove": "Selecione a {classLabel} que deseja mover para {class}.",
     "Delete": "Apagar",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personalizar vista",
     "Filter": "Filtrar",
     "ClearFilters": "Limpar filtros",
+    "FilterLessThan": "Menos que",
+    "FilterGreaterThan": "Mais que",
     "FilterIsNot": "não é",
     "FilterIsEither": "é",
     "FilterIsEitherPlural": "são",
@@ -130,9 +133,12 @@
     "Document": "Documento",
     "Loading": "Carregando...",
     "NoRelations": "Sem relações",
-    "ReadOnlyWarningTitle": "✨ Demonstração para Convidados",
-    "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — cadastre-se para acesso total!",
-    "ReadOnlySignUp": "Registar \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Demonstração anônima de convidado",
+    "ReadOnlyWarningMessage": "Você está no modo de visualização. Escolha seu caminho: Junte-se a este espaço para colaborar (como convidado) ou crie seu próprio espaço para gerenciar projetos completamente — tarefas, prazos, equipe!",
+    "ReadOnlyJoinWorkspace": "Entrar no espaço{icon}",
+    "ReadOnlySignUp": "Criar espaço{icon}",
+    "PermissionWarningTitle": "✨ Melhore seu acesso!",
+    "PermissionWarningMessage": "Seu cargo atual tem permissões limitadas. Para desbloquear este e outros recursos avançados, peça ao administrador do seu espaço de trabalho para atualizar seu nível de acesso!",
     "Icon": "Ícone",
     "Color": "Cor",
     "AutomationOnly": "Apenas automação"

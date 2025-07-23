@@ -23,6 +23,7 @@ interface Config {
   Credentials: string
   WATCH_URL: string
   InitLimit: number
+  WorkspaceInactivityInterval: number // Interval in days to stop workspace synchronization if not visited
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -34,7 +35,8 @@ const envMap: { [key in keyof Config]: string } = {
   Credentials: 'Credentials',
   WATCH_URL: 'WATCH_URL',
   InitLimit: 'INIT_LIMIT',
-  KvsUrl: 'KVS_URL'
+  KvsUrl: 'KVS_URL',
+  WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -48,7 +50,8 @@ const config: Config = (() => {
     Credentials: process.env[envMap.Credentials],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     WATCH_URL: process.env[envMap.WATCH_URL],
-    KvsUrl: process.env[envMap.KvsUrl]
+    KvsUrl: process.env[envMap.KvsUrl],
+    WorkspaceInactivityInterval: parseNumber(process.env[envMap.WorkspaceInactivityInterval] ?? '3') // In days
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)

@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { MeasureContext, MeasureMetricsContext, newMetrics, Ref, WorkspaceIds } from '@hcengineering/core'
-import { setMetadata } from '@hcengineering/platform'
-import serverClient from '@hcengineering/server-client'
-import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
-import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { decodeToken, Token } from '@hcengineering/server-token'
 import {
   getClient as getAccountClientRaw,
   isWorkspaceLoginInfo,
   type AccountClient
 } from '@hcengineering/account-client'
-import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureContext, newMetrics, Ref, WorkspaceIds } from '@hcengineering/core'
+import { MeetingMinutes, RoomMetadata, TranscriptionStatus } from '@hcengineering/love'
+import { setMetadata } from '@hcengineering/platform'
+import serverClient from '@hcengineering/server-client'
+import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
+import { storageConfigFromEnv } from '@hcengineering/server-storage'
+import serverToken, { decodeToken, Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Request } from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -36,12 +37,12 @@ import {
   S3Upload,
   WebhookReceiver
 } from 'livekit-server-sdk'
-import config from './config'
+import { join } from 'path'
 import { saveLiveKitEgressBilling, updateLiveKitSessions } from './billing'
+import config from './config'
+import { getRecordingPreset } from './preset'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -67,7 +68,7 @@ export const main = async (): Promise<void> => {
 
   const ctx = initStatisticsContext('love', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'love',
         {},
         {},
@@ -112,8 +113,9 @@ export const main = async (): Promise<void> => {
           if (data !== undefined && storageConfig !== undefined) {
             const storedBlob = await saveFile(ctx, data.wsIds, storageConfig, s3storageConfig, res.filename)
             if (storedBlob !== undefined) {
+              const preset = getRecordingPreset(config.RecordingPreset)
               const client = await WorkspaceClient.create(data.wsIds.uuid, ctx)
-              await client.saveFile(storedBlob._id, data.name, storedBlob, data.meetingMinutes)
+              await client.saveFile(storedBlob._id, data.name, storedBlob, preset, data.meetingMinutes)
               await client.close()
             }
             dataByUUID.delete(res.filename)
@@ -363,8 +365,9 @@ const startRecord = async (
       })
     }
   })
+  const { preset } = getRecordingPreset(config.RecordingPreset)
   await updateMetadata(roomClient, roomName, { recording: true })
-  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid' })
+  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid', encodingOptions: preset })
   return filepath
 }
 

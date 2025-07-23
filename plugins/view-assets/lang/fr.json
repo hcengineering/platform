@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "contient",
+    "NotContains": "ne contient pas",
     "MoveClass": "Déplacer {class}",
     "SelectToMove": "Sélectionnez le {classLabel} vers lequel vous souhaitez déplacer {class}.",
     "Delete": "Supprimer",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personnaliser la vue",
     "Filter": "Filtrer",
     "ClearFilters": "Effacer les filtres",
+    "FilterLessThan": "Moins que",
+    "FilterGreaterThan": "Plus que",
     "FilterIsNot": "n'est pas",
     "FilterIsEither": "est",
     "FilterIsEitherPlural": "sont",
@@ -130,9 +133,12 @@
     "Document": "Document",
     "Loading": "Chargement...",
     "NoRelations": "Aucune relation",
-    "ReadOnlyWarningTitle": "✨ Démo Invité",
-    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — inscrivez-vous pour un accès complet !",
-    "ReadOnlySignUp": "Inscription \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Démo invité anonyme",
+    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Choisissez votre voie : Rejoignez cet espace pour collaborer (en tant qu'invité) ou créez votre propre espace pour gérer pleinement les projets — tâches, délais, équipe !",
+    "ReadOnlyJoinWorkspace": "Rejoindre l'espace{icon}",
+    "ReadOnlySignUp": "Créer un espace{icon}",
+    "PermissionWarningTitle": "✨ Améliorez votre accès !",
+    "PermissionWarningMessage": "Votre rôle actuel a des autorisations limitées. Pour débloquer cette fonctionnalité et d'autres fonctionnalités avancées, demandez à l'administrateur de votre espace de travail de mettre à jour votre niveau d'accès !",
     "Icon": "Icône",
     "Color": "Couleur",
     "AutomationOnly": "Automatisation uniquement"

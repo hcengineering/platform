@@ -41,7 +41,7 @@
 {#if process}
   <div class="flex-row-center flex-gap-2">
     <ErrorPresenter value={value.error} on:click={() => continueExecution(value)} />
-    <div class="link" on:click={open}>
+    <div class="overflow-label link" on:click={open}>
       {process.name}
     </div>
   </div>

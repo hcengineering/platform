@@ -44,6 +44,7 @@ import core, {
 import { type RestClient, createRestClient } from '@hcengineering/api-client'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
+import { MessageEventType } from '@hcengineering/communication-sdk-types'
 
 import { BlobSourceType, type VideoTranscodeResult } from './types'
 
@@ -121,6 +122,32 @@ export class WorkspaceClient {
       }
     }
   }
+
+  async updateCommMetadata (ctx: MeasureContext, result: VideoTranscodeResult, metadata: BlobMetadata): Promise<void> {
+    if (result.source.source !== BlobSourceType.Message) {
+      return
+    }
+
+    const txOps = new TxOperations(this.client, core.account.System)
+    await txOps.domainRequest('communication' as OperationDomain, {
+      event: {
+        type: MessageEventType.BlobPatch,
+        cardId: result.source.cardId,
+        messageId: result.source.messageId,
+        operations: [
+          {
+            opcode: 'update',
+            blobs: [
+              {
+                blobId: result.blobId,
+                metadata
+              }
+            ]
+          }
+        ]
+      }
+    })
+  }
 }
 
 function toHttpUrl (url: string): string {
@@ -139,7 +166,7 @@ class RestClientAdapter implements Client {
     params: DomainParams,
     options?: DomainRequestOptions
   ): Promise<DomainResult<T>> {
-    throw new Error('Domain request operation not supported')
+    return await this.client.domainRequest(domain, params, options)
   }
 
   async findAll<T extends Doc>(

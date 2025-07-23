@@ -18,6 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import { getCommunicationClient } from '@hcengineering/presentation'
   import { CheckBox, Spinner } from '@hcengineering/ui'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
   import InboxNotification from './InboxNotification.svelte'
   import InboxCardIcon from './InboxCardIcon.svelte'
@@ -26,6 +27,7 @@
   export let card: Card
   export let selected: boolean = false
 
+  const account = getCurrentAccount()
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
 
@@ -53,13 +55,15 @@
         {card.title}
       </span>
     </div>
-    <div class="inbox-card__remove">
-      {#if isRemoving}
-        <Spinner size="small" />
-      {:else}
-        <CheckBox kind="todo" size="medium" on:value={handleToggle} />
-      {/if}
-    </div>
+    {#if account.role !== AccountRole.ReadOnlyGuest}
+      <div class="inbox-card__remove">
+        {#if isRemoving}
+          <Spinner size="small" />
+        {:else}
+          <CheckBox kind="todo" size="medium" on:value={handleToggle} />
+        {/if}
+      </div>
+    {/if}
   </div>
 
   <div class="inbox-card__content">
@@ -80,7 +84,7 @@
     flex-direction: column;
     position: relative;
     cursor: pointer;
-    padding: 1rem 0.5rem 0.5rem;
+    padding: 0.5rem;
     border-bottom: 1px solid var(--global-ui-BorderColor);
     min-height: 5.625rem;
 

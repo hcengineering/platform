@@ -13,26 +13,55 @@ import {
   removeRootBarComponent,
   showPopup
 } from '@hcengineering/ui'
-
+import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import { notificationId } from '@hcengineering/notification'
 import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
+import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { IPCMainExposed } from './types'
+import { StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from './types'
+import { ipcMainExposed } from './typesUtils'
+import { themeStore } from '@hcengineering/theme'
 
 defineScreenShare()
 defineGetDisplayMedia()
 
-void configurePlatform().then(() => {
-  createApp(document.body)
-})
-
 window.addEventListener('DOMContentLoaded', () => {
-  const ipcMain = (window as any).electron as IPCMainExposed
+  
+  const ipcMain = ipcMainExposed()
+  
+  if ((window as any).windowsPlatform === true) {
+    const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
+    if (titleBarRoot) {
+      const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
 
-  ipcMain.on('open-settings', () => {
+      themeStore.subscribe((themeOptions) => {
+        if (themeOptions != null) {
+          const isDarkTheme = themeOptions.dark
+          menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+        }
+      })
+
+      void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+        menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+      }).catch(() => {
+        menuBar.setTheme('light'); // fallback
+      })
+    }
+  }
+
+  void configurePlatform().then((parameters) => {
+    const windowTitle = document.getElementById('application-title-bar-caption')
+    if (windowTitle) {
+      windowTitle.textContent = parameters.getBranding().getTitle()
+    }
+
+    createApp(document.body)
+  })
+
+  ipcMain.on(StandardMenuCommandOpenSettings, () => {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -43,7 +72,7 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(loc)
   })
 
-  ipcMain.on('select-workspace', () => {
+  ipcMain.on(StandardMenuCommandSelectWorkspace, () => {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -55,7 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(loc)
   })
 
-  ipcMain.on('logout', () => {
+  ipcMain.on(StandardMenuCommandLogout, () => {
     void logOut().then(() => {
       navigate({ path: [loginId] })
     })
@@ -86,6 +115,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     navigate(authLoc)
+  })
+
+  ipcMain.handleDownloadItem((item) => {
+    void handleDownloadItem(item)
   })
 
   ipcMain.on('start-backup', () => {

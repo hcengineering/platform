@@ -51,6 +51,7 @@ export class SyncManager {
     }
     let pageToken: string | undefined
     let histories: GaxiosResponse<gmail_v1.Schema$ListHistoryResponse>
+    let maxHistoryId: string | undefined
     while (true) {
       try {
         await this.rateLimiter.take(2)
@@ -61,9 +62,13 @@ export class SyncManager {
           pageToken
         })
       } catch (err: any) {
-        this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
-        await this.stateManager.clearHistory(userId)
-        void this.sync(userId, options)
+        this.ctx.error('Part sync get history error', {
+          workspaceUuid: this.workspace,
+          userId,
+          error: err.message,
+          historyId
+        })
+        void this.syncNewMessages(userId, userEmail)
         return
       }
       const nextPageToken = histories.data.nextPageToken
@@ -89,10 +94,31 @@ export class SyncManager {
             }
           }
           if (history.id != null) {
-            await this.stateManager.setHistoryId(userId, history.id)
+            if (maxHistoryId == null || BigInt(maxHistoryId) < BigInt(history.id)) {
+              maxHistoryId = history.id
+            }
           }
         }
         if (nextPageToken == null) {
+          // Set the maximum historyId found during the sync, but only if it's greater than current
+          if (maxHistoryId != null) {
+            const currentHistory = await this.stateManager.getHistory(userId)
+            const currentHistoryId = currentHistory?.historyId
+            if (currentHistoryId == null || BigInt(maxHistoryId) > BigInt(currentHistoryId)) {
+              await this.stateManager.setHistoryId(userId, maxHistoryId)
+              this.ctx.info('Updated history ID', {
+                userId,
+                oldHistoryId: currentHistoryId,
+                newHistoryId: maxHistoryId
+              })
+            } else {
+              this.ctx.info('Skipping history ID update', {
+                userId,
+                currentHistoryId,
+                maxHistoryId
+              })
+            }
+          }
           return
         } else {
           pageToken = nextPageToken
@@ -148,7 +174,7 @@ export class SyncManager {
             await this.messageManager.saveMessage(message, userEmail)
 
             if (historyId != null && q === undefined) {
-              if (currentHistoryId == null || Number(currentHistoryId) < Number(historyId)) {
+              if (currentHistoryId == null || BigInt(currentHistoryId) < BigInt(historyId)) {
                 currentHistoryId = historyId
               }
             }
@@ -188,6 +214,140 @@ export class SyncManager {
       userId: 'me',
       format: 'FULL'
     })
+  }
+
+  async syncNewMessages (userId: PersonId, userEmail?: string): Promise<void> {
+    this.ctx.info('Start sync new messages', { workspaceUuid: this.workspace, userId, userEmail })
+    if (userEmail === undefined) {
+      throw new Error('Cannot sync without user email')
+    }
+
+    // Get stored history ID to compare against
+    const storedHistory = await this.stateManager.getHistory(userId)
+    const storedHistoryId = storedHistory?.historyId
+
+    if (storedHistoryId == null) {
+      this.ctx.info('No stored history ID found, performing full sync instead', { userId })
+      await this.fullSync(userId, userEmail)
+      return
+    }
+
+    this.ctx.info('Syncing new messages', {
+      workspaceUuid: this.workspace,
+      userId,
+      storedHistoryId
+    })
+
+    let pageToken: string | undefined
+    let totalProcessedMessages = 0
+    let maxHistoryId: string | undefined
+    let continueOuterLoop = true
+
+    const query: gmail_v1.Params$Resource$Users$Messages$List = {
+      userId: 'me'
+    }
+
+    try {
+      // Process messages until we find one with historyId > storedHistoryId
+      while (continueOuterLoop) {
+        query.pageToken = pageToken
+        await this.rateLimiter.take(5)
+        const messages = await this.gmail.messages.list(query)
+
+        const ids = messages.data.messages?.map((p) => p.id).filter((id) => id != null) ?? []
+        this.ctx.info('Processing new messages page', {
+          workspace: this.workspace,
+          userId,
+          messagesInPage: ids.length,
+          totalProcessed: totalProcessedMessages,
+          pageToken: query.pageToken
+        })
+
+        for (const id of ids) {
+          if (this.isClosing) return
+          if (id == null) continue
+
+          try {
+            const message = await this.getMessage(id)
+            const messageHistoryId = message.data.historyId
+
+            // If message has a history ID, check if it's newer than stored
+            if (messageHistoryId != null) {
+              if (BigInt(messageHistoryId) > BigInt(storedHistoryId)) {
+                await this.messageManager.saveMessage(message, userEmail)
+                totalProcessedMessages++
+
+                // Track the maximum history ID found
+                if (maxHistoryId == null || BigInt(messageHistoryId) > BigInt(maxHistoryId)) {
+                  maxHistoryId = messageHistoryId
+                }
+              } else {
+                // This message is older or equal to stored history, stop processing
+                this.ctx.info('Reached message with history ID <= stored history ID, stopping sync', {
+                  userId,
+                  messageHistoryId,
+                  storedHistoryId
+                })
+                continueOuterLoop = false
+                break
+              }
+            } else {
+              // Message without history ID, save it anyway
+              await this.messageManager.saveMessage(message, userEmail)
+              totalProcessedMessages++
+            }
+          } catch (err: any) {
+            if (this.isClosing) return
+            this.ctx.error('Sync new messages error', {
+              workspace: this.workspace,
+              userId,
+              messageId: id,
+              err
+            })
+          }
+        }
+
+        // If we should stop processing or no more pages, stop
+        if (!continueOuterLoop || messages.data.nextPageToken == null) {
+          this.ctx.info('Completed new messages sync', {
+            workspace: this.workspace,
+            userId,
+            totalMessages: totalProcessedMessages
+          })
+          break
+        }
+
+        pageToken = messages.data.nextPageToken
+      }
+
+      // Update stored history ID with the maximum found, only if we found newer messages
+      if (maxHistoryId != null && BigInt(maxHistoryId) > BigInt(storedHistoryId)) {
+        await this.stateManager.setHistoryId(userId, maxHistoryId)
+        this.ctx.info('Updated history ID after new messages sync', {
+          userId,
+          oldHistoryId: storedHistoryId,
+          newHistoryId: maxHistoryId,
+          messagesProcessed: totalProcessedMessages
+        })
+      } else {
+        this.ctx.info('No history ID update needed after new messages sync', {
+          userId,
+          storedHistoryId,
+          maxHistoryId,
+          messagesProcessed: totalProcessedMessages
+        })
+      }
+
+      this.ctx.info('New messages sync finished', {
+        workspaceUuid: this.workspace,
+        userId,
+        userEmail,
+        totalMessages: totalProcessedMessages
+      })
+    } catch (err) {
+      if (this.isClosing) return
+      this.ctx.error('New messages sync error', { workspace: this.workspace, userId, err })
+    }
   }
 
   async sync (userId: PersonId, options: SyncOptions, userEmail?: string): Promise<void> {

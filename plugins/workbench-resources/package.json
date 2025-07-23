@@ -61,6 +61,7 @@
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/inbox": "^0.6.0",
+    "@hcengineering/communication": "^0.6.0",
     "fast-equals": "^5.2.2"
   }
 }

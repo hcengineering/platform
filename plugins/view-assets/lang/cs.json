@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Obsahuje",
+    "NotContains": "Neobsahuje",
     "MoveClass": "Přesunout {class}",
     "SelectToMove": "Vyberte {classLabel}, kam chcete přesunout {class}.",
     "Delete": "Smazat",
@@ -49,6 +50,8 @@
     "CustomizeView": "Přizpůsobit zobrazení",
     "Filter": "Filtr",
     "ClearFilters": "Vymazat filtry",
+    "FilterLessThan": "Méně než",
+    "FilterGreaterThan": "Více než",
     "FilterIsNot": "není",
     "FilterIsEither": "je",
     "FilterIsEitherPlural": "jsou",
@@ -135,9 +138,12 @@
     "Document": "Dokument",
     "Loading": "Načítání...",
     "NoRelations": "Žádné vztahy",
-    "ReadOnlyWarningTitle": "✨ Ukázka pro hosty",
-    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — zaregistrujte se pro plný přístup!",
-    "ReadOnlySignUp": "Zaregistrovat se \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Anonymní hostovská ukázka",
+    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Vyberte si cestu: Připojte se k tomuto prostoru pro spolupráci (jako host) nebo si vytvořte vlastní prostor pro plnou správu projektů — úkoly, termíny, tým!",
+    "ReadOnlyJoinWorkspace": "Připojit se k prostoru{icon}",
+    "ReadOnlySignUp": "Vytvořit prostor{icon}",
+    "PermissionWarningTitle": "✨ Zvyšte svůj přístup!",
+    "PermissionWarningMessage": "Vaše současná role má omezená oprávnění. Chcete-li odemknout tuto a další pokročilé funkce, požádejte správce svého pracovního prostoru o zvýšení úrovně přístupu!",
     "Icon": "Ikona",
     "Color": "Barva",
     "AutomationOnly": "Pouze automatizace"

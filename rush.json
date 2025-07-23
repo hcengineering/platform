@@ -423,6 +423,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/measurements",
+      "projectFolder": "packages/measurements",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/measurements-otlp",
+      "projectFolder": "packages/measurements-otlp",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/core",
       "projectFolder": "packages/core",
       "shouldPublish": true
@@ -430,6 +440,11 @@
     {
       "packageName": "@hcengineering/analytics",
       "projectFolder": "packages/analytics",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/analytics-providers",
+      "projectFolder": "packages/analytics-providers",
       "shouldPublish": false
     },
     {
@@ -2136,6 +2151,26 @@
     {
       "packageName": "@hcengineering/model-desktop-preferences",
       "projectFolder": "models/desktop-preferences",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-downloads",
+      "projectFolder": "plugins/desktop-downloads",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-downloads-assets",
+      "projectFolder": "plugins/desktop-downloads-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-downloads-resources",
+      "projectFolder": "plugins/desktop-downloads-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-desktop-downloads",
+      "projectFolder": "models/desktop-downloads",
       "shouldPublish": false
     },
     {

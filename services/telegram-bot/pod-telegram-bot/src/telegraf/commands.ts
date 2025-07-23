@@ -91,8 +91,8 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
-    const username = ctx.from?.username
-    if (integration.username !== username && username !== undefined) {
+    const username = ctx.from?.username ?? ''
+    if (integration.username !== username) {
       await worker.updateTelegramUsername(integration.socialId, username)
     }
   } else {
@@ -164,7 +164,7 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const code = await worker.generateCode(id, ctx.from?.username)
+  const code = await worker.generateCode(id, ctx.from?.username ?? '')
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 

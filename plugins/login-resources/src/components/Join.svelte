@@ -20,15 +20,17 @@
   import Form from './Form.svelte'
 
   import { Analytics } from '@hcengineering/analytics'
+  import { signupStore } from '@hcengineering/analytics-providers'
   import { logIn, workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
-  import { BottomAction } from '..'
   import { loginAction, recoveryAction } from '../actions'
   import login from '../plugin'
 
   const location = getCurrentLocation()
-  Analytics.handleEvent('invite_link_activated')
+  Analytics.handleEvent('invite_link_activated', { invite_id: location.query?.inviteId })
   let page = 'signUp'
+
+  $: signupStore.setSignUpFlow(page === 'signUp')
 
   $: fields =
     page === 'login'
@@ -66,13 +68,19 @@
 
       const [loginStatus, result] =
         page === 'login'
-          ? await join(object.username, object.password, location.query?.inviteId ?? '')
+          ? await join(
+            object.username,
+            object.password,
+            location.query?.inviteId ?? '',
+            location.query?.workspace ?? ''
+          )
           : await signUpJoin(
             object.username,
             object.password,
             object.first,
             object.last,
-            location.query?.inviteId ?? ''
+            location.query?.inviteId ?? '',
+            location.query?.workspace ?? ''
           )
       status = loginStatus
 

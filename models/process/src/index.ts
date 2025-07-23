@@ -24,7 +24,17 @@ import core, {
   type Space,
   type Tx
 } from '@hcengineering/core'
-import { type Builder, Model, Prop, ReadOnly, TypeAny, TypeBoolean, TypeRef, TypeString } from '@hcengineering/model'
+import {
+  type Builder,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeAny,
+  TypeBoolean,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import { TToDo } from '@hcengineering/model-time'
@@ -41,6 +51,7 @@ import {
   type ExecutionLogAction,
   type ExecutionStatus,
   type Method,
+  type MethodParams,
   type Process,
   type ProcessContext,
   type ProcessFunction,
@@ -49,6 +60,7 @@ import {
   type Step,
   type Transition,
   type Trigger,
+  type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
 import time from '@hcengineering/time'
@@ -88,6 +100,8 @@ export class TTrigger extends TDoc implements Trigger {
 
   editor?: AnyComponent
 
+  presenter?: AnyComponent
+
   icon!: Asset
 
   requiredParams!: string[]
@@ -121,6 +135,12 @@ export class TTransition extends TDoc implements Transition {
 export class TExecutionLog extends TDoc implements ExecutionLog {
   @Prop(TypeRef(process.class.Execution), process.string.Execution)
     execution!: Ref<Execution>
+
+  @Prop(TypeRef(process.class.Process), process.string.Process)
+    process!: Ref<Process>
+
+  @Prop(TypeRef(card.class.Card), card.string.Card)
+    card!: Ref<Card>
 
   @Prop(TypeRef(process.class.Transition), process.string.Transition)
     transition?: Ref<Transition>
@@ -159,6 +179,7 @@ export class TExecution extends TDoc implements Execution {
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
+@UX(process.string.ToDo)
 export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 
@@ -183,6 +204,8 @@ export class TMethod extends TDoc implements Method<Doc> {
   presenter?: AnyComponent
 
   requiredParams!: string[]
+
+  defaultParams?: MethodParams<Doc>
 }
 
 @Model(process.class.State, core.class.Doc, DOMAIN_MODEL)
@@ -201,6 +224,15 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
   type!: 'transform' | 'reduce' | 'context'
 }
 
+@Model(process.class.UpdateCriteriaComponent, core.class.Doc, DOMAIN_MODEL)
+export class TUpdateCriteriaComponent extends TDoc implements UpdateCriteriaComponent {
+  category!: AttributeCategory
+
+  editor!: AnyComponent
+
+  of!: Ref<Class<Doc<Space>>>
+}
+
 export * from './migration'
 
 export function createModel (builder: Builder): void {
@@ -213,7 +245,8 @@ export function createModel (builder: Builder): void {
     TProcessFunction,
     TTransition,
     TTrigger,
-    TExecutionLog
+    TExecutionLog,
+    TUpdateCriteriaComponent
   )
 
   createAction(builder, {
@@ -450,6 +483,18 @@ export function createModel (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Each,
+      type: 'reduce'
+    },
+    process.function.All
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeNumber,
       type: 'transform',
       category: 'attribute',
@@ -668,23 +713,21 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           label: process.string.Process,
-          presenter: process.component.ExecutonPresenter,
-          displayProps: { key: 'process', fixed: 'left' }
+          presenter: process.component.ExecutonPresenter
         },
         {
           key: '',
           label: process.string.Step,
-          presenter: process.component.ExecutonProgressPresenter,
-          displayProps: { key: 'state', fixed: 'left' }
+          presenter: process.component.ExecutonProgressPresenter
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },
@@ -701,7 +744,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'status', 'card'],
+        groupBy: ['process', 'currentState', 'card'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -723,29 +766,26 @@ export function createModel (builder: Builder): void {
       },
       config: [
         {
-          key: 'card',
-          displayProps: { key: 'card', fixed: 'left' }
+          key: 'card'
         },
         {
-          key: '',
+          key: 'process',
           label: process.string.Process,
-          presenter: process.component.ExecutonPresenter,
-          displayProps: { key: 'process', fixed: 'left' }
+          presenter: process.component.ExecutonPresenter
         },
         {
-          key: '',
+          key: 'currentState',
           label: process.string.Step,
-          presenter: process.component.ExecutonProgressPresenter,
-          displayProps: { key: 'state', fixed: 'left' }
+          presenter: process.component.ExecutonProgressPresenter
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },
@@ -781,14 +821,12 @@ export function createModel (builder: Builder): void {
       config: [
         {
           key: 'action',
-          presenter: process.component.LogActionPresenter,
-          displayProps: { key: 'action', fixed: 'left' }
+          presenter: process.component.LogActionPresenter
         },
         {
           key: 'transition',
           label: process.string.Transition,
-          presenter: process.component.TransitionRefPresenter,
-          displayProps: { key: 'transition', fixed: 'left' }
+          presenter: process.component.TransitionRefPresenter
         },
         {
           key: '',
@@ -801,7 +839,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },
@@ -849,7 +887,10 @@ export function createModel (builder: Builder): void {
       objectClass: process.class.ProcessToDo,
       presenter: process.component.ToDoPresenter,
       contextClass: process.class.ProcessToDo,
-      requiredParams: ['state', 'title', 'user']
+      requiredParams: ['state', 'title', 'user'],
+      defaultParams: {
+        withRollback: true
+      }
     },
     process.method.CreateToDo
   )
@@ -881,15 +922,31 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    process.class.Trigger,
+    process.class.Method,
     core.space.Model,
     {
-      label: process.string.OnSubProcessesDone,
-      icon: process.icon.WaitSubprocesses,
-      requiredParams: [],
-      init: false
+      label: process.string.CreateCard,
+      objectClass: card.class.Card,
+      editor: process.component.CreateCardEditor,
+      presenter: process.component.CreateCardPresenter,
+      contextClass: card.class.Card,
+      requiredParams: ['title', '_class']
     },
-    process.trigger.OnSubProcessesDone
+    process.method.CreateCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: core.string.AddRelation,
+      objectClass: core.class.Relation,
+      editor: process.component.AddRelationEditor,
+      presenter: process.component.AddRelationPresenter,
+      contextClass: core.class.Relation,
+      requiredParams: ['association', 'direction', '_id']
+    },
+    process.method.AddRelation
   )
 
   builder.createDoc(
@@ -920,10 +977,90 @@ export function createModel (builder: Builder): void {
     process.trigger.OnToDoRemove
   )
 
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.OnCardUpdate,
+      icon: process.icon.OnCardUpdate,
+      editor: process.component.CardUpdateEditor,
+      presenter: process.component.CardUpdatePresenter,
+      requiredParams: [],
+      checkFunction: process.triggerCheck.UpdateCheck,
+      init: false
+    },
+    process.trigger.OnCardUpdate
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.OnSubProcessesDone,
+      icon: process.icon.WaitSubprocesses,
+      requiredParams: [],
+      init: false
+    },
+    process.trigger.OnSubProcessesDone
+  )
+
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
     id: 'processes',
     label: process.string.Processes,
     component: process.component.ProcessesSettingSection
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchExtensions,
+    component: process.component.NotifierExtension
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.StringCriteria,
+    of: core.class.TypeString
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.StringCriteria,
+    of: core.class.TypeHyperlink
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.NumberCriteria,
+    of: core.class.TypeNumber
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.DateCriteria,
+    of: core.class.TypeDate
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.BooleanCriteria,
+    of: core.class.TypeBoolean
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'array',
+    editor: process.criteriaEditor.ArrayCriteria,
+    of: core.class.ArrOf
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.EnumCriteria,
+    of: core.class.EnumOf
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'object',
+    editor: process.criteriaEditor.RefCriteria,
+    of: core.class.RefTo
   })
 }
 

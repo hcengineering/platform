@@ -129,8 +129,11 @@ export async function handleTranscodeResult (
     }
   }
 
+  const client = await WorkspaceClient.create(workspaceUuid)
+
   if (msg.source !== undefined && msg.source.source === BlobSourceType.Doc) {
-    const client = await WorkspaceClient.create(workspaceUuid)
     await client.updateBlobMetadata(ctx, msg, metadata)
+  } else if (msg.source !== undefined && msg.source.source === BlobSourceType.Message) {
+    await client.updateCommMetadata(ctx, msg, metadata)
   }
 }

@@ -58,6 +58,7 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   endpoint: string
   token: string
   role: AccountRole
+  allowGuestSignUp?: boolean
 }
 
 export interface WorkspaceInviteInfo {
@@ -124,5 +125,5 @@ export interface AccountAggregatedInfo extends AccountInfo, Person {
   uuid: AccountUuid
   integrations: Omit<Integration, 'data'>[]
   socialIds: SocialId[]
-  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest'>[]
+  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest' | 'allowGuestSignUp'>[]
 }

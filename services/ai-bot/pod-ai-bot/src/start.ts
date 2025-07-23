@@ -18,8 +18,8 @@ import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
-import { SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics, type SocialId } from '@hcengineering/core'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics, type SocialId } from '@hcengineering/core'
 import { join } from 'path'
 import config from './config'
 import { AIControl } from './controller'
@@ -38,7 +38,7 @@ export const start = async (): Promise<void> => {
 
   const ctx = initStatisticsContext('ai-bot-service', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'ai-bot-service',
         {},
         {},

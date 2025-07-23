@@ -34,5 +34,21 @@
   }
 </script>
 
-<Label label={plugin.string.ToDo} />
-<ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
+<div class="grid">
+  <Label label={plugin.string.ToDo} />
+  <ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
+</div>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    margin-top: 0.5rem;
+    height: min-content;
+  }
+</style>

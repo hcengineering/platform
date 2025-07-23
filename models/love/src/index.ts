@@ -290,7 +290,8 @@ export function createModel (builder: Builder): void {
       alias: loveId,
       hidden: false,
       position: 'top',
-      component: love.component.Main
+      component: love.component.Main,
+      order: 400
     },
     love.app.Love
   )
@@ -511,6 +512,14 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.MeetingMinutes,
     components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
+  })
+
+  builder.mixin(love.class.JoinRequest, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(love.class.ParticipantInfo, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
   })
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})

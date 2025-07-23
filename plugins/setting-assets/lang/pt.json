@@ -160,6 +160,7 @@
     "Customize": "Personalizar",
     "GuestAccess": "Convidados anônimos",
     "GuestAccessDescription": "Permite que usuários anônimos acessem seu espaço de trabalho em modo somente leitura",
+    "GuestSignUpDescription": "Permite que usuários anônimos entrem em seu espaço de trabalho como convidados com direitos de edição limitados",
     "ManageIdentities": "Gerenciar identidades",
     "Release": "Libertação",
     "ReleaseSocialId": "Liberar ID social",

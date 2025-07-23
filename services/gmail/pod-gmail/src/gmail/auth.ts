@@ -38,6 +38,7 @@ export class AuthProvider {
     }
     const authUrl = this.oAuth2Client.generateAuthUrl({
       access_type: 'offline',
+      prompt: 'consent',
       scope: ['https://www.googleapis.com/auth/gmail.modify'],
       state: Buffer.from(JSON.stringify({ workspace, userId, redirectURL })).toString('base64')
     })

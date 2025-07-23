@@ -37,6 +37,7 @@ import {
   TObjectChatPanel,
   TThreadMessage
 } from './types'
+import { AccountRole } from '@hcengineering/core'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -86,6 +87,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchTabExtensions,
     component: chunter.component.WorkbenchTabExtension
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
   })
 
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]

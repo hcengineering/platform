@@ -14,13 +14,12 @@
 -->
 <script lang="ts">
   import card from '@hcengineering/card'
-  import { Doc, RefTo } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Execution, parseContext, Process, Step } from '@hcengineering/process'
   import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { getContextAttribute } from '../../utils'
+  import { getContextMasterTag } from '../../utils'
   import ProcessAttributeEditor from './ProcessAttributeEditor.svelte'
 
   export let process: Process
@@ -31,8 +30,7 @@
 
   let _id = step.params._id
   $: context = parseContext(step.params.card)
-  $: attr = getContextAttribute(client, context, process.masterTag)
-  $: masterTag = (attr?.type as RefTo<Doc>)?.to ?? process.masterTag
+  $: masterTag = getContextMasterTag(client, context, process.masterTag) ?? process.masterTag
 
   const dispatch = createEventDispatcher()
 
@@ -59,11 +57,9 @@
 
   $: selected = _id !== undefined ? items.find((it) => it.id === _id)?.id : undefined
 
-  const query = createQuery()
-
-  $: query.query(plugin.class.Process, { masterTag: { $in: ancestors } }, (res) => {
-    processes = res.filter((it) => it._id !== process._id)
-  })
+  $: processes = client
+    .getModel()
+    .findAllSync(plugin.class.Process, { masterTag: { $in: ancestors }, _id: { $ne: process._id } })
 
   function changeThis (): void {
     _id = undefined
@@ -87,6 +83,7 @@
       key={'card'}
       object={step.params}
       allowRemove
+      allowArray
       forbidValue
       on:remove={() => {
         thisCard = true

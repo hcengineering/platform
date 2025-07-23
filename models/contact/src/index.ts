@@ -129,17 +129,14 @@ export class TContact extends TDoc implements Contact {
     name!: string
 
   @Prop(TypeString(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatarType!: AvatarType
 
   @Prop(TypeBlob(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatar!: Ref<Blob> | null | undefined
 
   @Prop(TypeRecord(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatarProps?: {
     color?: string
@@ -311,6 +308,18 @@ export function createModel (builder: Builder): void {
     TPersonSpace,
     TUserRole
   )
+
+  builder.mixin(contact.class.PersonSpace, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(contact.class.SocialIdentity, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})
 

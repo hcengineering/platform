@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "содержит",
+    "NotContains": "не содержит",
     "MoveClass": "Переместить {class}",
     "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
@@ -46,6 +47,8 @@
     "CustomizeView": "Настроить отображение",
     "Filter": "Фильтр",
     "ClearFilters": "Очистить",
+    "FilterLessThan": "Меньше чем",
+    "FilterGreaterThan": "Больше чем",
     "FilterIsNot": "не равен",
     "FilterIsEither": "равен",
     "FilterIsEitherPlural": "{value, plural, =1 {равен} other {один из}}",
@@ -132,9 +135,12 @@
     "Document": "Документ",
     "Loading": "Загрузка...",
     "NoRelations": "Нет связей",
-    "ReadOnlyWarningTitle": "✨ Гостевое демо",
-    "ReadOnlyWarningMessage": "Вы в режиме просмотра. Хотите управлять любыми проектами в Huly? Задачи, сроки, команда — регистрируйтесь для полного доступа!",
-    "ReadOnlySignUp": "Регистрация \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Анонимное гостевое демо",
+    "ReadOnlyWarningMessage": "Вы в режиме просмотра. Выберите путь: Присоединитесь к этому пространству для совместной работы (как гость) или создайте свое пространство для полного управления проектами — задачи, сроки, команда!",
+    "ReadOnlyJoinWorkspace": "Присоединиться к пространству{icon}",
+    "ReadOnlySignUp": "Создать пространство{icon}",
+    "PermissionWarningTitle": "✨ Повысьте свой уровень доступа!",
+    "PermissionWarningMessage": "Ваша текущая роль имеет ограниченные права. Чтобы разблокировать эту и другие продвинутые функции, попросите администратора вашего пространства повысить ваш уровень доступа!",
     "Icon": "Иконка",
     "Color": "Цвет",
     "AutomationOnly": "Только автоматизация"

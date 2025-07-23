@@ -87,7 +87,11 @@
     "Floor": "Округлить вниз",
     "Ceil": "Округлить вверх",
     "Absolute": "Абсолютное значение",
-    "LogAction": "Событие"
+    "LogAction": "Событие",
+    "Started": "Начат",
+    "Each": "Каждый",
+    "CreateCard": "Создать карточку",
+    "OnCardUpdate": "При обновлении карточки"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -101,6 +105,8 @@
     "AttributeNotExists": "Атрибут не существует: {key}",
     "ResultNotProvided": "Результат не предоставлен",
     "EmptyFunctionResult": "Отсутствуют результат функции {func}",
-    "ContextValueNotProvided": "Значение контекста не предоставлено: {name}"
+    "ContextValueNotProvided": "Значение контекста не предоставлено: {name}",
+    "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}",
+    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов"
   }
 }

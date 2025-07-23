@@ -1,14 +1,239 @@
 <!doctype html>
 <html>
+
 <script>
+
   window.desktopPlatform=true
+
+  <% if (typeof isWindows !== 'undefined' && isWindows) { %>
+    window.windowsPlatform = true;
+  <% } else { %>
+    window.windowsPlatform = false;
+  <% } %>
+
 </script>
 
 <head>
   <meta charset="utf8">
+  
+  <% if (typeof isWindows !== 'undefined' && isWindows) { %>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-secondary: #f3f3f3;
+            --bg-tertiary: #ffffff;
+            --bg-hover: #e8e8e8;
+            --bg-separator: #d4d4d4;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --border-color: #e5e5e5;
+            --accent-color: #0078d4;
+            --close-hover: #e81123;
+            --huly-top-indent: 32px;
+            --huly-history-box-left-indent: 0;
+        }
+
+        [data-theme="dark"] {
+            --bg-secondary: #323233;
+            --bg-tertiary: #252526;
+            --bg-hover: #2a2d2e;
+            --bg-separator: #454545;
+            --text-primary: #cccccc;
+            --text-secondary: #888888;
+            --border-color: #2d2d30;
+            --accent-color: #007acc;
+            --close-hover: #c42b1c;
+        }
+
+        .desktop-app-titlebar {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            display: flex;
+            height: 32px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            -webkit-app-region: drag; /* allows to drag window around */
+        }
+
+        .desktop-app-menu-container {
+            display: flex;
+            align-items: center;
+            -webkit-app-region: no-drag;
+        }
+
+        .desktop-app-menu-bar {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .desktop-app-menu-item {
+            position: relative;
+            align-items: normal; /* explicitly set this up to prevent values from above */
+        }
+
+        .desktop-app-top-menu-button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 13px;
+            position: relative;
+            user-select: none;
+            align-items: normal; /* explicitly set this up to prevent values from above */
+        }
+
+        .desktop-app-top-menu-button:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .desktop-app-top-menu-button:focus {
+            outline: 1px solid var(--accent-color);
+            outline-offset: -1px;
+        }
+
+        .desktop-app-top-menu-button.desktop-app-alt-mode {
+            background-color: var(--bg-hover);
+        }
+
+        .desktop-app-accelerator {
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            align-items: normal; /* explicitly set this up to prevent values from above */
+        }
+
+        .desktop-app-alt-active .desktop-app-accelerator {
+            border-bottom-color: var(--text-primary);
+        }
+
+        .desktop-app-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--bg-separator);
+            min-width: 180px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .desktop-app-dropdown-menu {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .desktop-app-dropdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            user-select: none;
+        }
+
+        .desktop-app-dropdown-item:hover,
+        .desktop-app-dropdown-item.desktop-app-keyboard-selected {
+            background-color: var(--bg-hover);
+        }
+
+        .desktop-app-dropdown-item .desktop-app-shortcut {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-left: 20px;
+        }
+
+        .desktop-app-dropdown-item .desktop-app-accelerator {
+            border-bottom: 1px solid transparent;
+        }
+
+        .desktop-app-alt-active .desktop-app-dropdown-item .desktop-app-accelerator {
+            border-bottom-color: var(--text-primary);
+        }
+
+        .desktop-app-dropdown-separator {
+            height: 1px;
+            background-color: var(--bg-separator);
+            margin: 4px 0;
+        }
+
+        .desktop-app-window-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            line-height: 32px;
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-app-region: drag;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .desktop-app-window-controls {
+            display: flex;
+            -webkit-app-region: no-drag;
+        }
+
+        .desktop-app-control-button {
+            width: 46px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .desktop-app-control-button:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .desktop-app-control-button.desktop-app-close:hover {
+            background-color: var(--close-hover);
+            color: white;
+        }
+
+    </style>
+  <% } %>
+
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+
+  <% if (typeof isWindows !== 'undefined' && isWindows) { %>
+    <div id="desktop-app-titlebar-root">
+        <div class="desktop-app-titlebar">
+            <div class="desktop-app-menu-container">
+            </div>
+
+            <div class="desktop-app-window-title" id="application-title-bar-caption">Huly</div>
+
+            <div class="desktop-app-window-controls">
+                <button class="desktop-app-control-button desktop-app-minimize" id="minimize-button">─</button>
+                <button class="desktop-app-control-button desktop-app-maximize" id="maximize-button">□</button>
+                <button class="desktop-app-control-button desktop-app-close" id="close-button">✕</button>
+            </div>
+        </div>
+    </div>
+  <% } %> 
+
 </body>
 
 </html>

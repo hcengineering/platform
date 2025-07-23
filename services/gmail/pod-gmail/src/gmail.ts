@@ -237,17 +237,40 @@ export class GmailClient {
 
       const integrations = await this.client.findAll(setting.class.Integration, {
         createdBy: this.socialId._id,
-        type: gmail.integrationType.Gmail
+        type: gmail.integrationType.Gmail,
+        value: this.email
       })
-      const updated = integrations.find((p) => p.disabled && p.value === this.email)
 
-      for (const integration of integrations.filter((p) => p._id !== updated?._id)) {
-        await this.client.remove(integration)
+      const sortedIntegrations = integrations.sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+      const activeIntegration = sortedIntegrations.find((p) => !p.disabled)
+      const existingIntegration =
+        activeIntegration ?? (sortedIntegrations.length > 0 ? sortedIntegrations[0] : undefined)
+
+      // Disable all other integrations for this social ID except the one we want to keep/update
+      for (const integration of sortedIntegrations.filter((p) => p._id !== existingIntegration?._id)) {
+        if (!integration.disabled) {
+          this.ctx.warn('Found several active integrations for the same email, disabling one', {
+            email: this.email,
+            integrationId: integration._id
+          })
+          await this.client.update(integration, {
+            disabled: true
+          })
+        }
       }
-      if (updated !== undefined) {
-        await this.client.update(updated, {
-          disabled: false
+
+      if (existingIntegration !== undefined) {
+        this.ctx.info('Found existing integration', {
+          integrationId: existingIntegration._id,
+          email: existingIntegration.value,
+          workspaceUuid: this.user.workspace,
+          userId: this.user.userId
         })
+        if (existingIntegration.disabled) {
+          await this.client.update(existingIntegration, {
+            disabled: false
+          })
+        }
       } else {
         await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
           type: gmail.integrationType.Gmail,
@@ -331,14 +354,24 @@ export class GmailClient {
     } catch {}
     await this.tokenStorage.deleteToken(this.socialId._id)
     await this.disableIntegration(byError)
-    const integration = await this.client.findOne(setting.class.Integration, {
+    let integrations = await this.client.findAll(setting.class.Integration, {
       createdBy: this.socialId._id,
-      type: gmail.integrationType.Gmail
+      type: gmail.integrationType.Gmail,
+      value: this.email
     })
-    if (integration !== undefined) {
+    if (integrations.length === 0) {
+      this.ctx.info('No integrations found for the given email', { socialId: this.socialId._id, email: this.email })
+      integrations = await this.client.findAll(setting.class.Integration, {
+        createdBy: this.socialId._id,
+        type: gmail.integrationType.Gmail
+      })
+    }
+    for (const integration of integrations) {
       if (byError) {
+        this.ctx.info('Disable integration', { integrationId: integration._id, email: integration.value })
         await this.client.update(integration, { disabled: true })
       } else {
+        this.ctx.info('Remove integration', { integrationId: integration._id, email: integration.value })
         await this.client.remove(integration)
       }
     }

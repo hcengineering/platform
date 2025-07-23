@@ -15,15 +15,15 @@
 // limitations under the License.
 //
 
-import { SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { closeQueue, initQueue } from '@hcengineering/mail-common'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
-import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { initQueue, closeQueue } from '@hcengineering/mail-common'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
 
@@ -44,7 +44,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   const ctx = initStatisticsContext('gmail', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'gmail',
         {},
         {},

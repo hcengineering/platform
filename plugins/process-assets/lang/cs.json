@@ -87,7 +87,11 @@
     "Floor": "Zaokrouhlit dolů",
     "Ceil": "Zaokrouhlit nahoru",
     "Absolute": "Absolutní hodnota",
-    "LogAction": "Událost"
+    "LogAction": "Událost",
+    "Started": "Spuštěno",
+    "Each": "Každý",
+    "CreateCard": "Vytvořit kartu",
+    "OnCardUpdate": "Při aktualizaci karty"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -101,6 +105,8 @@
     "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}",
     "ResultNotProvided": "Výsledek nebyl poskytnut",
     "EmptyFunctionResult": "Prázdný výsledek funkce {func}",
-    "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}"
+    "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}",
+    "RequiredParamsNotProvided": "Chybí požadované parametry: {params}",
+    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů"
   }
 }

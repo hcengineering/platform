@@ -87,7 +87,11 @@
     "Floor": "向下取整",
     "Ceil": "向上取整",
     "Absolute": "绝对值",
-    "LogAction": "事件"
+    "LogAction": "事件",
+    "Started": "已启动",
+    "Each": "每个",
+    "CreateCard": "创建卡片",
+    "OnCardUpdate": "在卡片更新时"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
@@ -101,6 +105,8 @@
     "InternalServerError": "内部服务器错误，请联系支持，错误 ID：{errorId}",
     "ResultNotProvided": "未提供结果",
     "EmptyFunctionResult": "空函数结果 {func}",
-    "ContextValueNotProvided": "未提供上下文值：{name}"
+    "ContextValueNotProvided": "未提供上下文值：{name}",
+    "RequiredParamsNotProvided": "未提供必需的参数：{params}",
+    "TooDeepTransitionRecursion": "转换递归过深"
   }
 }

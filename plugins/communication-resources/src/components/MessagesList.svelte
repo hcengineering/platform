@@ -15,21 +15,21 @@
   import { Card } from '@hcengineering/card'
   import {
     type Message,
+    Notification,
     NotificationContext,
-    Window,
     NotificationType,
-    Notification
+    Window
   } from '@hcengineering/communication-types'
   import {
     createMessagesQuery,
+    createNotificationsQuery,
     getCommunicationClient,
-    type MessageQueryParams,
-    createNotificationsQuery
+    type MessageQueryParams
   } from '@hcengineering/presentation'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
-  import { isAppFocusedStore } from '@hcengineering/ui'
+  import { isAppFocusedStore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
@@ -52,13 +52,16 @@
 
   const scrollToNewThreshold = 50
 
-  const initialLastView = context?.lastView
-  const initialLastUpdate = context?.lastUpdate
+  let initialLastView = context?.lastView
+  let initialLastUpdate = context?.lastUpdate
+
+  let shouldScrollToEnd = false
 
   let separatorDiv: HTMLDivElement | null | undefined = undefined
 
   let messages: Message[] = []
   let reactionNotifications: Notification[] = []
+  let notifications: Notification[] = []
   let groups: MessagesGroup[] = []
   let window: Window<Message> | undefined = undefined
   let isLoading = true
@@ -74,9 +77,27 @@
   let bottomOffset: number = 0
   let topOffset: number = 0
 
-  const limit = 50
-  const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
+  const limit = $deviceInfo.isMobile ? 25 : 50
   let queryDef = getBaseQuery()
+
+  export function scrollDown (): void {
+    shouldScrollToEnd = true
+    position = MessagesNavigationAnchors.LatestMessages
+
+    reinit(position, true)
+  }
+
+  export function canScrollDown (): boolean {
+    return window !== undefined && window.hasNextPage()
+  }
+  $: if (
+    (context?.lastView?.getTime() ?? 0) >= (context?.lastUpdate?.getTime() ?? 0) &&
+    (notifications?.length ?? 0) > 0 &&
+    atBottom &&
+    $isAppFocusedStore
+  ) {
+    readNotifications(new Date())
+  }
 
   $: reinit(position)
 
@@ -101,12 +122,15 @@
     void notificationsQuery.query(
       {
         context: context.id,
-        read: false,
-        type: NotificationType.Reaction
+        read: false
       },
       (res) => {
-        reactionNotifications = res.getResult()
-        readViewport($isAppFocusedStore)
+        const result = res.getResult()
+        reactionNotifications = result.filter((notification) => notification.type === NotificationType.Reaction)
+        notifications = result.filter((notification) => notification.type !== NotificationType.Reaction)
+        if (reactionNotifications.length > 0) {
+          readViewport($isAppFocusedStore)
+        }
       }
     )
   } else {
@@ -143,8 +167,8 @@
     }
   }
 
-  function reinit (position: MessagesNavigationAnchors): void {
-    if (prevPosition === position) {
+  function reinit (position: MessagesNavigationAnchors, force = false): void {
+    if (prevPosition === position && !force) {
       return
     }
     prevPosition = position
@@ -178,7 +202,10 @@
         limit
       }
     }
-    const order = unread ? SortingOrder.Ascending : SortingOrder.Descending
+    initialLastView = context?.lastView
+    initialLastUpdate = context?.lastUpdate
+    const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
+    const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
       card: card._id,
       replies: true,
@@ -187,7 +214,7 @@
       links: true,
       order,
       limit,
-      from: unread && initialLastView != null ? initialLastView : undefined
+      from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined
     }
   }
 
@@ -218,12 +245,12 @@
     return bottomOffset <= 200
   }
 
-  function loadMore (): void {
+  function loadMore (direction: 'up' | 'down'): void {
     if (window === undefined || !isScrollInitialized) return
 
-    if (shouldLoadPrevPage() && window.hasPrevPage()) {
+    if (shouldLoadPrevPage() && window.hasPrevPage() && direction === 'up') {
       void loadPrevPage()
-    } else if (shouldLoadNextPage() && window.hasNextPage()) {
+    } else if (shouldLoadNextPage() && window.hasNextPage() && direction === 'down') {
       void loadNextPage()
     }
   }
@@ -299,13 +326,19 @@
     }
   }
   let rafId: any | null = null
+  let lastScrollTop: number = 0
+
   function handleScroll (): void {
     if (rafId !== null) return
     rafId = requestAnimationFrame(() => {
+      const top = scrollDiv.scrollTop
+      const direction = top > lastScrollTop ? 'down' : 'up'
+
+      lastScrollTop = top
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
       updateShouldScrollToNew()
-      loadMore()
+      loadMore(direction)
       checkPositionOnScroll()
       void readAll()
       rafId = null
@@ -350,7 +383,7 @@
     const message = messages.find((it) => it.id === visible[0].id)
     if (message == null) return
 
-    readMessage(message.created)
+    readNotifications(message.created)
 
     for (const item of visible) {
       const reaction = reactionNotifications.find((it) => it.messageId === item.id)
@@ -403,13 +436,11 @@
       return
     }
     if (bottomOffset < 10) {
-      readMessage(new Date())
+      readNotifications(new Date())
     }
   }
 
   async function onUpdate (res: Message[]): Promise<void> {
-    // need for dubug now, will be removed later
-    console.log('last', res[res.length - 1])
     if (messagesCount === res.length) return
     const prevCount = messagesCount
     messagesCount = res.length
@@ -429,15 +460,15 @@
 
   let newLastView: Date | undefined = context?.lastView
   let separatorDate: Date | undefined = undefined
-  let readMessagesTimer: any | undefined = undefined
+  let readNotificationsTimer: any | undefined = undefined
   let unsubscribeObserver: (() => void) | undefined = undefined
 
-  function readMessage (date: Date): void {
-    if (readMessagesTimer != null) {
-      clearTimeout(readMessagesTimer)
-      readMessagesTimer = undefined
+  function readNotifications (date: Date): void {
+    if (readNotificationsTimer != null) {
+      clearTimeout(readNotificationsTimer)
+      readNotificationsTimer = undefined
     }
-    readMessagesTimer = setTimeout(() => {
+    readNotificationsTimer = setTimeout(() => {
       if (context == null || context.lastView >= date) return
       void communicationClient.updateNotificationContext(context.id, date)
     }, 500)
@@ -463,7 +494,7 @@
 
       if (shouldRead) {
         newLastView = message.created
-        readMessage(message.created)
+        readNotifications(message.created)
       }
 
       if (reactionsToRead.length > 0) {
@@ -520,11 +551,15 @@
 
     const separatorIndex =
       initialLastView !== undefined
-        ? messages.findIndex(({ created, creator }) => !me.socialIds.includes(creator) && created > initialLastView)
+        ? messages.findIndex(
+          ({ created, creator }) =>
+            initialLastView != null && !me.socialIds.includes(creator) && created > initialLastView
+        )
         : -1
 
-    if (separatorIndex === -1) {
+    if (separatorIndex === -1 || shouldScrollToEnd) {
       await tick() // Wait for the DOM to update
+      shouldScrollToEnd = false
       scrollToBottom(true)
       shouldScrollToNew = true
       atBottom = true
@@ -540,7 +575,9 @@
     if (separatorDiv != null) {
       await tick() // Wait for the DOM to update
       scrollToWithOffset(scrollDiv, separatorDiv, 80)
-      isScrollInitialized = true
+      setTimeout(() => {
+        isScrollInitialized = true
+      }, 10)
       updateShouldScrollToNew()
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()

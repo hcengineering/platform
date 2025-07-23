@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { initLiveQueries } from '@hcengineering/communication-client-query'
+import { initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
 import {
   type AddCollaboratorsEvent,
   type AttachBlobsOperation,
@@ -74,13 +74,18 @@ import core, {
   type Client as PlatformClient,
   SocialIdType,
   type Tx,
-  type TxDomainEvent
+  type TxDomainEvent,
+  AccountRole
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-
 import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+import { addNotification, NotificationSeverity, languageStore } from '@hcengineering/ui'
+import { translate } from '@hcengineering/platform'
+import view from '@hcengineering/view'
+
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
+import { get } from 'svelte/store'
 
 export {
   createCollaboratorsQuery,
@@ -101,6 +106,7 @@ export function getCommunicationClient (): CommunicationClient {
 }
 
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
+  console.log('setCommunicationClient')
   if (client !== undefined) {
     client.close()
   }
@@ -437,6 +443,19 @@ class Client {
   }
 
   private async sendEvent (event: Event): Promise<EventResult> {
+    const lang = get(languageStore)
+    if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
+      addNotification(
+        await translate(view.string.ReadOnlyWarningTitle, {}, lang),
+        await translate(view.string.ReadOnlyWarningMessage, {}, lang),
+        view.component.ReadOnlyNotification,
+        undefined,
+        NotificationSeverity.Info,
+        'readOnlyNotification'
+      )
+      return {}
+    }
+
     const ev: Event = { ...event, _id: generateId() }
 
     const eventPromise: Promise<EventResult> = this.connection
@@ -472,4 +491,9 @@ export function onCommunicationClient (fn: () => void): void {
       fn()
     })
   }
+}
+
+export async function refreshCommunicationClient (): Promise<void> {
+  console.log('refreshCommunicationClient')
+  await refreshLiveQueries()
 }

@@ -111,6 +111,7 @@ import MasterDetailView from './components/masterDetail/MasterDetailView.svelte'
 import AssociationPresenter from './components/AssociationPresenter.svelte'
 import TreeView from './components/TreeView.svelte'
 import MasterDetailBrowser from './components/masterDetail/MasterDetailBrowser.svelte'
+import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -148,6 +149,7 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
+import { openDocFromRef } from './utils'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
@@ -328,7 +330,8 @@ export default async (): Promise<Resources> => ({
     MasterDetailView,
     AssociationPresenter,
     TreeView,
-    MasterDetailBrowser
+    MasterDetailBrowser,
+    ReadOnlyNotification
   },
   popup: {
     PositionElementAlignment
@@ -370,6 +373,7 @@ export default async (): Promise<Resources> => ({
     CanLeaveSpace: canLeaveSpace,
     IsClipboardAvailable: isClipboardAvailable,
     BlobImageMetadata: blobImageMetadata,
-    BlobVideoMetadata: blobVideoMetadata
+    BlobVideoMetadata: blobVideoMetadata,
+    OpenDocument: openDocFromRef
   }
 })

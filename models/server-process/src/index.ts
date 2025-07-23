@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import cardPlugin from '@hcengineering/card'
 import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
@@ -28,7 +29,7 @@ import serverProcess, {
 export { serverProcessId } from '@hcengineering/server-process'
 
 @Mixin(serverProcess.mixin.MethodImpl, process.class.Method)
-export class TMethodImpl<T extends Doc> extends TMethod implements MethodImpl<T> {
+export class TMethodImpl extends TMethod implements MethodImpl<Doc> {
   func!: Resource<ExecuteFunc>
 }
 
@@ -53,6 +54,10 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.CheckToDo
   })
 
+  builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.OnCardUpdateCheck
+  })
+
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.RunSubProcess
   })
@@ -65,6 +70,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.UpdateCard
   })
 
+  builder.mixin(process.method.CreateCard, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.CreateCard
+  })
+
+  builder.mixin(process.method.AddRelation, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.AddRelation
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })
@@ -75,6 +88,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.Random, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Random
+  })
+
+  builder.mixin(process.function.All, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.All
   })
 
   builder.mixin(process.function.UpperCase, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
@@ -203,6 +220,24 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: cardPlugin.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnExecutionTransition,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: process.class.Execution,
+      'operations.currentState': { $exists: true }
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnProcessRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
@@ -214,14 +249,6 @@ export function createModel (builder: Builder): void {
     trigger: serverProcess.trigger.OnStateRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: process.class.State
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnStateActionsUpdate,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
       objectClass: process.class.State
     }
   })

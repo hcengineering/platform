@@ -14,8 +14,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
@@ -38,7 +38,7 @@ export const main = async (): Promise<void> => {
 
   const metricsContext = initStatisticsContext('datalake', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'datalake',
         {},
         {},

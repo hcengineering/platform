@@ -329,10 +329,12 @@ export class GithubWorker implements IntegrationManager {
       .reverse()
       .join(',') // TODO: Convert first, last name
 
-    const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: userInfo.login })
+    const normalizedLogin = userInfo.login.toLowerCase()
+    const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: normalizedLogin })
     if (infos === undefined) {
       await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, {
-        ...userInfo
+        ...userInfo,
+        login: normalizedLogin
       })
     }
 
@@ -368,8 +370,7 @@ export class GithubWorker implements IntegrationManager {
         key: buildSocialIdString({
           type: SocialIdType.GITHUB,
           value: userInfo.login.toLowerCase()
-        }),
-        verifiedOn: Date.now()
+        })
       },
       socialId as SocialIdentityRef
     )
@@ -542,15 +543,15 @@ export class GithubWorker implements IntegrationManager {
         }
       )
       const infoData = response.user
+      const normalizedInfoData: Data<GithubUserInfo> = {
+        ...infoData,
+        login: infoData.login?.toLowerCase()
+      }
       if (info == null) {
-        await this._client.createDoc(
-          github.class.GithubUserInfo,
-          contact.space.Contacts,
-          infoData as Data<GithubUserInfo>
-        )
+        await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, normalizedInfoData)
       } else {
         await this._client.diffUpdate(info, {
-          ...infoData
+          ...normalizedInfoData
         })
       }
     }
@@ -1328,18 +1329,24 @@ export class GithubWorker implements IntegrationManager {
   }
 
   async checkMapping (): Promise<void> {
-    for (const intgr of this.platform.integrations.filter((it) => it.workspace === this.workspace.uuid)) {
+    const installations = new Map<number, PersonId>()
+    for (const integeration of this.platform.integrations.filter((it) => it.workspace === this.workspace.uuid)) {
+      for (const installationId of integeration.installationId) {
+        installations.set(installationId, integeration.accountId)
+      }
+    }
+    for (const [installationId, accountId] of installations.entries()) {
       const integration = await this._client.findOne(github.class.GithubIntegration, {
-        installationId: intgr.installationId
+        installationId
       })
-      const installation = this.installations.get(intgr.installationId) as InstallationRecord
+      const installation = this.installations.get(installationId) as InstallationRecord
       if (integration === undefined && installation !== undefined) {
         await this._client.createDoc(
           github.class.GithubIntegration,
           core.space.Configuration,
           {
             alive: !installation.suspended,
-            installationId: intgr.installationId,
+            installationId,
             clientId: config.ClientID,
             name: installation.installationName,
             nodeId: installation.loginNodeId,
@@ -1347,7 +1354,7 @@ export class GithubWorker implements IntegrationManager {
           },
           generateId(),
           Date.now(),
-          intgr.accountId
+          accountId
         )
         this.triggerUpdate()
       } else if (integration !== undefined) {

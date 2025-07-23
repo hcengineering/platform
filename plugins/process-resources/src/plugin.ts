@@ -55,7 +55,23 @@ export default mergeIds(processId, process, {
     TransitionEditor: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
     TransitionRefPresenter: '' as AnyComponent,
-    LogActionPresenter: '' as AnyComponent
+    LogActionPresenter: '' as AnyComponent,
+    NotifierExtension: '' as AnyComponent,
+    CreateCardEditor: '' as AnyComponent,
+    CreateCardPresenter: '' as AnyComponent,
+    AddRelationEditor: '' as AnyComponent,
+    AddRelationPresenter: '' as AnyComponent,
+    CardUpdateEditor: '' as AnyComponent,
+    CardUpdatePresenter: '' as AnyComponent
+  },
+  criteriaEditor: {
+    StringCriteria: '' as AnyComponent,
+    NumberCriteria: '' as AnyComponent,
+    DateCriteria: '' as AnyComponent,
+    BooleanCriteria: '' as AnyComponent,
+    ArrayCriteria: '' as AnyComponent,
+    EnumCriteria: '' as AnyComponent,
+    RefCriteria: '' as AnyComponent
   },
   transformEditor: {
     DateOffsetEditor: '' as AnyComponent,
@@ -131,6 +147,7 @@ export default mergeIds(processId, process, {
     EnterValue: '' as IntlString,
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
+    OnCardUpdate: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,
     NoResultRequired: '' as IntlString,
@@ -148,6 +165,9 @@ export default mergeIds(processId, process, {
     Search: '' as IntlString,
     Separator: '' as IntlString,
     Start: '' as IntlString,
-    End: '' as IntlString
+    End: '' as IntlString,
+    Started: '' as IntlString,
+    Each: '' as IntlString,
+    CreateCard: '' as IntlString
   }
 })

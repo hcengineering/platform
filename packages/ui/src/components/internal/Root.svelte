@@ -104,6 +104,10 @@
       maintenanceTime = _status.params.time
       maintenanceMessage = _status.params.message
     } else {
+      if (_status.code === platform.status.RegularAccount) {
+        readonlyAccount = false
+        _status = OK
+      }
       if (readonlyAccount) return
       if (_status.code === platform.status.ReadOnlyAccount) {
         readonlyAccount = true
@@ -299,8 +303,8 @@
     display: flex;
     flex-direction: column;
     // height: 100vh;
-    height: 100%;
-    height: 100dvh;
+    height: calc(100% - var(--huly-top-indent, 0rem));
+    height: calc(100dvh - var(--huly-top-indent, 0rem));
     // height: var(--app-height);
 
     .antiStatusBar {
@@ -312,11 +316,11 @@
       font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
-      // border-bottom: 1px solid var(--theme-navpanel-divider);
+      z-index: 1;
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: 4.625rem;
+        margin-left: var(--huly-history-box-left-indent, 4.625rem);
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;
@@ -342,17 +346,6 @@
         display: none;
       }
 
-      @media (max-width: 480px) {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 2px 0;
-        width: 100%;
-
-        .second-row {
-          display: flex;
-        }
-      }
       @media print {
         display: none;
       }
@@ -375,5 +368,19 @@
 
   .left-items {
     overflow-x: auto;
+  }
+
+  @media (max-width: 480px) {
+    #ui-root:has(.workbench-container) .antiStatusBar {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 2px 0;
+      width: 100%;
+
+      .second-row {
+        display: flex;
+      }
+    }
   }
 </style>

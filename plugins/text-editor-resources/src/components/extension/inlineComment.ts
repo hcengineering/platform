@@ -35,7 +35,7 @@ import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
 import { SvelteRenderer } from '../node-view'
 
-interface InlineCommentExtensionOptions {
+export interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
   popupContainer?: HTMLElement
   commentWidth?: number

@@ -17,25 +17,38 @@
   import core from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ContextId, Process, ProcessContext } from '@hcengineering/process'
-  import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import { EditBox, Grid, Modal } from '@hcengineering/ui'
+  import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
+  import { EditBox, getCurrentLocation, Grid, Modal, navigate } from '@hcengineering/ui'
   import plugin from '../../plugin'
   import ProcessContextRawPresenter from '../contextEditors/ProcessContextRawPresenter.svelte'
+  import AsideStepEditor from './AsideStepEditor.svelte'
 
   export let process: Process
   export let readonly: boolean
 
   const client = getClient()
 
-  async function save () {
+  async function save (): Promise<void> {
     await client.update(process, { context: process.context })
     clearSettingsStore()
   }
 
-  function onNameChange (ev: Event, _id: string, ctx: ProcessContext) {
+  function onNameChange (ev: Event, _id: string, ctx: ProcessContext): void {
     const value = (ev.target as HTMLInputElement).value?.trim()
     ctx.name = value
     process.context[_id as ContextId] = ctx
+  }
+
+  async function open (val: ProcessContext): Promise<void> {
+    const transition = await client.findOne(plugin.class.Transition, { _id: val.producer })
+    if (transition === undefined) return
+    const step = transition.actions.find((it) => it._id === val.action)
+    if (step === undefined) return
+    const loc = getCurrentLocation()
+    loc.path[5] = plugin.component.TransitionEditor
+    loc.path[6] = val.producer
+    navigate(loc)
+    $settingsStore = { id: val.producer, component: AsideStepEditor, props: { process, step, _id: val.producer } }
   }
 </script>
 
@@ -51,7 +64,8 @@
   <div class="mt-2">
     <Grid rowGap={1}>
       {#each Object.entries(process.context) as val}
-        <div class="context flex-center">
+        <div class="context flex-center cursor-pointer" on:click={() => open(val[1])}>
+          {val[1].index} ->
           <ProcessContextRawPresenter context={val[1]} />
         </div>
         <EditBox

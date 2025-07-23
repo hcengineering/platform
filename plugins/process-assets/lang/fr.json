@@ -87,7 +87,11 @@
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
     "Absolute": "Valeur absolue",
-    "LogAction": "Événement"
+    "LogAction": "Événement",
+    "Started": "Démarré",
+    "Each": "Chaque",
+    "CreateCard": "Créer une carte",
+    "OnCardUpdate": "Lors de la mise à jour de la carte"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -101,6 +105,8 @@
     "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}",
     "ResultNotProvided": "Résultat non fourni",
     "EmptyFunctionResult": "Résultat de fonction vide {func}",
-    "ContextValueNotProvided": "Valeur de contexte non fournie : {name}"
+    "ContextValueNotProvided": "Valeur de contexte non fournie : {name}",
+    "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}",
+    "TooDeepTransitionRecursion": "Récursion de transition trop profonde"
   }
 }

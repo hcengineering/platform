@@ -164,6 +164,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     }
 
     let workspaceId: WorkspaceUuid | undefined
+    let isAdmin: boolean = false
 
     try {
       const decoded = decodeTokenVerbose(ctx, token)
@@ -172,6 +173,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         return
       }
       workspaceId = decoded.workspace
+      isAdmin = decoded.extra?.admin === 'true'
     } catch (err: any) {
       res.status(401).end('Unauthorized')
       return
@@ -183,17 +185,20 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       try {
         const info = await accountClient.getLoginWithWorkspaceInfo()
         const winfo = info.workspaces[workspaceId]
-        if (winfo === undefined) {
-          res.status(401).end('Invalid workspace')
-          return
-        }
-        if (winfo.role !== AccountRole.Owner) {
-          res.status(401).end('Not an owner of workspace')
-          return
+        if (!isAdmin) {
+          if (winfo === undefined) {
+            res.status(401).end('Invalid workspace')
+            return
+          } else {
+            if (winfo.role !== AccountRole.Owner) {
+              res.status(401).end('Not an owner of workspace')
+              return
+            }
+          }
         }
         const wssInfo = await accountClient.getWorkspaceInfo()
         wsInfo = {
-          url: winfo.url,
+          url: wssInfo.url,
           dataId: wssInfo.dataId,
           uuid: workspaceId
         }
@@ -250,11 +255,13 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       const jsonData: {
         files: { name: string, size?: number }[]
         extraBlobs: { name: string, size: number, contentType: string }[]
+        extraBlobsTotal: number
         error?: string
         info?: BackupInfo
       } = {
         files: [],
-        extraBlobs: []
+        extraBlobs: [],
+        extraBlobsTotal: 0
       }
 
       try {
@@ -267,7 +274,14 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           },
           (info) => {
             for (const [name, [contentType, size]] of Object.entries(info)) {
-              jsonData.extraBlobs.push({ name, size, contentType })
+              jsonData.extraBlobsTotal += 1
+              if (contentType !== undefined && !contentType.includes('video/mp2t')) {
+                jsonData.extraBlobs.push({ name, size, contentType })
+                if (jsonData.extraBlobs.length > 11000) {
+                  jsonData.extraBlobs.sort((a, b) => b.size - a.size)
+                  jsonData.extraBlobs = jsonData.extraBlobs.slice(0, 10000)
+                }
+              }
             }
           }
         )

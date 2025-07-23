@@ -2,7 +2,7 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, mergeKitOptions } from '@hcengineering/text'
   import textEditor, { RefAction } from '@hcengineering/text-editor'
   import {
     ActionIcon,
@@ -18,19 +18,14 @@
     registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
-  import type { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
 
   import StyledTextEditor from './StyledTextEditor.svelte'
 
+  import { EditorKitOptions } from '../kits/editor-kit'
   import { addTableHandler } from '../utils'
-  import { EmojiExtension } from './extension/emoji'
-  import { FocusExtension } from './extension/focus'
-  import { ImageUploadExtension } from './extension/imageUploadExt'
-  import { InlineCommandsExtension } from './extension/inlineCommands'
-  import { ReferenceExtension, referenceConfig } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
-  import { InlineCommandId, inlineCommandsConfig } from './extensions'
+  import { inlineCommandsConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -47,12 +42,11 @@
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
   export let autofocus = false
-  export let enableBackReferences: boolean = false
-  export let enableEmojiReplace: boolean = true
   export let enableInlineCommands: boolean = true
   export let isScrollable: boolean = true
   export let boundary: HTMLElement | undefined = undefined
   export let readonly: boolean = false
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
@@ -173,44 +167,6 @@
     editor.removeAttachment(id)
   }
 
-  function configureExtensions (): AnyExtension[] {
-    const imageUploadPlugin = ImageUploadExtension.configure({
-      attachFile,
-      getFileUrl
-    })
-
-    const completionPlugin = ReferenceExtension.configure({
-      ...referenceConfig,
-      showDoc (event: MouseEvent, _id: string, _class: string) {
-        dispatch('open-document', { event, _id, _class })
-      }
-    })
-
-    const extensions: AnyExtension[] = []
-    if (enableBackReferences) {
-      extensions.push(completionPlugin)
-    }
-    extensions.push(
-      imageUploadPlugin,
-      FocusExtension.configure({ onCanBlur: (value: boolean) => (canBlur = value), onFocus: handleFocus })
-    )
-    if (enableEmojiReplace) {
-      extensions.push(EmojiExtension.configure())
-    }
-
-    if (enableInlineCommands) {
-      const excludedInlineCommands: InlineCommandId[] = ['drawing-board', 'todo-list']
-
-      if (attachFile === undefined) excludedInlineCommands.push('image')
-
-      extensions.push(
-        InlineCommandsExtension.configure(inlineCommandsConfig(handleCommandSelected, excludedInlineCommands))
-      )
-    }
-
-    return extensions
-  }
-
   async function handleCommandSelected (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
     switch (id) {
       case 'image':
@@ -281,8 +237,6 @@
     }
     inputImage.value = ''
   }
-
-  const extensions = configureExtensions()
 </script>
 
 <input
@@ -324,9 +278,30 @@
       {focusable}
       {autofocus}
       {isScrollable}
-      {extensions}
       {extraActions}
       {boundary}
+      kitOptions={mergeKitOptions(
+        {
+          emoji: true,
+          hooks: {
+            focus: {
+              onCanBlur: (value) => (canBlur = value),
+              onFocus: handleFocus
+            }
+          },
+          shortcuts: {
+            imageUpload: {
+              attachFile,
+              getFileUrl
+            }
+          },
+          inlineCommands: inlineCommandsConfig(
+            handleCommandSelected,
+            attachFile == null ? ['drawing-board', 'todo-list', 'image'] : ['drawing-board', 'todo-list']
+          )
+        },
+        kitOptions
+      )}
       bind:content={rawValue}
       bind:this={editor}
       on:value={(evt) => {

@@ -390,7 +390,8 @@ export function createModel (builder: Builder): void {
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      order: 50
     },
     notification.app.Inbox
   )
@@ -553,6 +554,10 @@ export function createModel (builder: Builder): void {
   })
   builder.mixin(notification.class.MentionInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.MentionInboxNotificationPresenter
+  })
+
+  builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
   })
 
   builder.createDoc(

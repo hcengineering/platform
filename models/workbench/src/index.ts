@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { type Class, DOMAIN_MODEL, type Ref, type Space, type AccountRole, type AccountUuid } from '@hcengineering/core'
+import { AccountRole, type AccountUuid, type Class, DOMAIN_MODEL, type Ref, type Space } from '@hcengineering/core'
 import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
-import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import view, { type KeyBinding } from '@hcengineering/view'
 import type {
   Application,
@@ -51,6 +51,7 @@ export class TApplication extends TDoc implements Application {
   position?: 'top' | 'mid'
   hidden!: boolean
   accessLevel?: AccountRole
+  order?: number
 }
 
 @Model(workbench.class.ApplicationNavModel, core.class.Doc, DOMAIN_MODEL)
@@ -114,6 +115,12 @@ export function createModel (builder: Builder): void {
     TWidgetPreference,
     TWorkbenchTab
   )
+
+  builder.mixin(workbench.class.WorkbenchTab, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    removeAccessLevel: AccountRole.Guest,
+    updateAccessLevel: AccountRole.Guest
+  })
 
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter

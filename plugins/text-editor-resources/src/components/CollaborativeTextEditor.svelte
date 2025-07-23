@@ -51,10 +51,8 @@
     ThrottledCaller
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
-  import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
-  import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-  import Placeholder from '@tiptap/extension-placeholder'
+  import { Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
+  import { isChangeOrigin } from '@tiptap/extension-collaboration'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
@@ -75,14 +73,6 @@
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { SavedBoard } from './extension/drawingBoard'
-  import { EmojiExtension } from './extension/emoji'
-  import { FileUploadExtension } from './extension/fileUploadExt'
-  import { ImageUploadExtension } from './extension/imageUploadExt'
-  import { InlineCommandsExtension } from './extension/inlineCommands'
-  import { InlineCommentCollaborationExtension } from './extension/inlineComment'
-  import { LeftMenuExtension } from './extension/leftMenu'
-  import { mermaidOptions } from './extension/mermaid'
-  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
   import { inlineCommandsConfig } from './extensions'
 
@@ -99,7 +89,6 @@
   export let full: boolean = false
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
 
-  export let extensions: AnyExtension[] = []
   export let refActions: RefAction[] = []
 
   export let editorAttributes: Record<string, string> = {}
@@ -107,14 +96,13 @@
   export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
-  export let canShowPopups = true
-  export let canEmbedFiles = true
-  export let canEmbedImages = true
+
   export let withSideMenu = true
   export let withInlineCommands = true
+
   export let kitOptions: Partial<EditorKitOptions> = {}
+
   export let requestSideSpace: ((width: number) => void) | undefined = undefined
-  export let enableInlineComments: boolean = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -247,60 +235,6 @@
     editor.setEditable(editable, emitUpdate)
   }
 
-  const optionalExtensions: AnyExtension[] = []
-
-  if (attachFile !== undefined) {
-    if (canEmbedFiles) {
-      optionalExtensions.push(
-        FileUploadExtension.configure({
-          attachFile
-        })
-      )
-    }
-    if (canEmbedImages) {
-      optionalExtensions.push(
-        ImageUploadExtension.configure({
-          attachFile,
-          getFileUrl
-        })
-      )
-    }
-  }
-
-  if (withSideMenu) {
-    optionalExtensions.push(
-      LeftMenuExtension.configure({
-        width: 20,
-        height: 20,
-        marginX: 8,
-        className: 'tiptap-left-menu',
-        icon: view.icon.Add,
-        iconProps: {
-          className: 'svg-tiny',
-          fill: 'currentColor'
-        },
-        items: [
-          ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
-          { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-          { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-          { id: 'todo-list', label: textEditor.string.TodoItem, icon: view.icon.TodoList },
-          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
-          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
-        ],
-        handleSelect: handleLeftMenuClick
-      })
-    )
-  }
-
-  if (withInlineCommands) {
-    optionalExtensions.push(
-      InlineCommandsExtension.configure(
-        inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
-      )
-    )
-  }
-
   let inputImage: HTMLInputElement
 
   export function handleAttachImage (): void {
@@ -431,67 +365,82 @@
   onMount(async () => {
     await ph
 
-    if (enableInlineComments && !isGuest) {
-      optionalExtensions.push(
-        InlineCommentCollaborationExtension.configure({
-          ydoc,
-          boundary,
-          popupContainer: editorPopupContainer,
-          requestSideSpace
-        })
-      )
-    }
-
     // it is recommended to wait for the local provider to be loaded
     // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
     await localProvider.loaded
 
-    editor = new Editor({
-      enableContentCheck: true,
-      element,
-      editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
-      extensions: [
-        (await getEditorKit()).configure({
-          objectId,
-          objectClass,
-          objectSpace,
-          history: false,
+    const canAttachFiles = attachFile != null
+
+    const kit = await getEditorKit(
+      {
+        objectId,
+        objectClass,
+        objectSpace,
+
+        history: false,
+        shortcuts: {
           submit: false,
-          toolbar: {
-            boundary,
-            popupContainer: editorPopupContainer
+          imageUpload: canAttachFiles && { attachFile, getFileUrl },
+          fileUpload: canAttachFiles && { attachFile }
+        },
+        toolbar: {
+          boundary,
+          popupContainer: editorPopupContainer
+        },
+        codeSnippets: {
+          codeBlockMermaid: { ydoc, ydocContentField: field }
+        },
+        drawingBoard: { getSavedBoard },
+        leftMenu: withSideMenu && {
+          width: 20,
+          height: 20,
+          marginX: 8,
+          className: 'tiptap-left-menu',
+          icon: view.icon.Add,
+          iconProps: {
+            className: 'svg-tiny',
+            fill: 'currentColor'
           },
-          mermaid: {
-            ...mermaidOptions,
+          items: [
+            { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
+            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
+            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
+            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+            { id: 'todo-list', label: textEditor.string.TodoItem, icon: view.icon.TodoList },
+            { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+            { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
+          ],
+          handleSelect: handleLeftMenuClick
+        },
+        inlineCommands:
+          withInlineCommands && inlineCommandsConfig(handleLeftMenuClick, canAttachFiles ? [] : ['image']),
+        placeholder: { placeholder: placeHolderStr },
+        collaboration: {
+          collaboration: { document: ydoc, field },
+          collaborationCursor: {
+            provider: remoteProvider,
+            user,
+            render: renderCursor,
+            selectionRender: noSelectionRender
+          },
+          inlineComments: !isGuest && {
             ydoc,
-            ydocContentField: field
-          },
-          drawingBoard: {
-            getSavedBoard
-          },
-          ...kitOptions
-        }),
-        ...optionalExtensions,
-        Placeholder.configure({ placeholder: placeHolderStr }),
-        Collaboration.configure({
-          document: ydoc,
-          field
-        }),
-        CollaborationCursor.configure({
-          provider: remoteProvider,
-          user,
-          render: renderCursor,
-          selectionRender: noSelectionRender
-        }),
-        ReferenceExtension.configure({
-          ...referenceConfig,
-          showDoc (event: MouseEvent, _id: string, _class: string) {
-            dispatch('open-document', { event, _id, _class })
+            boundary,
+            popupContainer: editorPopupContainer,
+            requestSideSpace
           }
-        }),
-        EmojiExtension,
-        ...extensions
-      ],
+        }
+      },
+      kitOptions
+    )
+
+    editor = new Editor({
+      extensions: [kit],
+      element,
+      editorProps: {
+        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' })
+      },
+      enableContentCheck: true,
       parseOptions: {
         preserveWhitespace: 'full'
       },

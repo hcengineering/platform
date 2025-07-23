@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { getResource } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
 import type { ComponentType, SvelteComponent } from 'svelte'
 
-export type SvelteRendererComponent = typeof SvelteComponent | ComponentType
+export type SvelteRendererComponent = typeof SvelteComponent | ComponentType | AnyComponent
 
 export interface SvelteRendererOptions {
   element: HTMLElement
@@ -25,9 +27,10 @@ export interface SvelteRendererOptions {
 }
 
 export class SvelteRenderer {
-  private readonly component: SvelteComponent
+  private component: SvelteComponent | null
   element: HTMLElement
   props: Record<string, any>
+  destroyed = false
 
   constructor (component: SvelteRendererComponent, { element, props, context }: SvelteRendererOptions) {
     this.element = element
@@ -35,25 +38,39 @@ export class SvelteRenderer {
     this.props = props ?? {}
 
     const options = { target: element, props, context }
-    const Component = component
-    this.component = new Component(options)
+    this.component = null
+    if (typeof component !== 'string') {
+      const Component = component
+      this.component = new Component(options)
+    } else {
+      void getResource(component)
+        .then((resource) => {
+          if (resource == null || this.destroyed) return
+          const Component = resource
+          this.component = new Component({ ...options, props: this.props })
+        })
+        .catch((error) => {
+          console.error(`Failed to load Svelte component ${component}`, error)
+        })
+    }
   }
 
   updateProps (props: Record<string, any>): void {
-    this.component.$set(props)
+    this.component?.$set(props)
   }
 
   onKeyDown (props: Record<string, any>): boolean {
-    if (this.component.onKeyDown !== undefined) {
-      return this.component.onKeyDown(props.event)
+    if (this.component?.onKeyDown !== undefined) {
+      return this.component?.onKeyDown(props.event)
     }
     return false
   }
 
   destroy (): void {
-    if (this.component.done !== undefined) {
-      this.component.done()
+    this.destroyed = true
+    if (this.component?.done !== undefined) {
+      this.component?.done()
     }
-    this.component.$destroy()
+    this.component?.$destroy()
   }
 }

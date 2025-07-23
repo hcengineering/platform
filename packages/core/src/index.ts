@@ -17,9 +17,16 @@ import core from './component'
 export * from './classes'
 export * from './client'
 export * from './collaboration'
-export { coreId, systemAccountUuid, systemAccountEmail, systemAccount, configUserAccountUuid } from './component'
+export {
+  coreId,
+  systemAccountUuid,
+  readOnlyGuestAccountUuid,
+  systemAccountEmail,
+  systemAccount,
+  configUserAccountUuid
+} from './component'
 export * from './hierarchy'
-export * from './measurements'
+export * from '@hcengineering/measurements'
 export * from './memdb'
 export * from './objvalue'
 export * from './operations'

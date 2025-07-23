@@ -35,6 +35,7 @@ export default mergeIds(viewId, view, {
   },
   string: {
     Contains: '' as IntlString,
+    NotContains: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
@@ -59,6 +60,8 @@ export default mergeIds(viewId, view, {
     FilterStatesCount: '' as IntlString,
     FilterRemoved: '' as IntlString,
     FilterUpdated: '' as IntlString,
+    FilterLessThan: '' as IntlString,
+    FilterGreaterThan: '' as IntlString,
     Before: '' as IntlString,
     After: '' as IntlString,
     Apply: '' as IntlString,

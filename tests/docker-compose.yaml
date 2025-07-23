@@ -104,7 +104,7 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
     healthcheck:
-      interval: 20s
+      interval: 5s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
@@ -125,6 +125,7 @@ services:
       - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=${MONGO_URL}
+      - PROCEED_V7_MONGO=true
       - REGION_INFO=|America
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -256,6 +257,8 @@ services:
         condition: service_started
       cockroach:
         condition: service_started
+      elastic:
+        condition: service_healthy
     links:
       - elastic
       - mongodb

@@ -169,6 +169,7 @@
     "Customize": "Přizpůsobit",
     "GuestAccess": "Anonymní hosté",
     "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení",
+    "GuestSignUpDescription": "Umožňuje anonymním uživatelům připojit se k vašemu pracovnímu prostoru jako hosté s omezenými editačními právy",
     "ManageIdentities": "Spravovat identity",
     "Release": "Uvolnění",
     "ReleaseSocialId": "Uvolnit sociální ID",

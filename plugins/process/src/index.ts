@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
-import { Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
+import { Association, Class, Doc, DocumentUpdate, Hierarchy, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -39,6 +39,7 @@ export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
   action: StepId
+  index: number
   producer: Ref<Transition>
   isResult?: boolean
   type?: Type<any>
@@ -52,6 +53,7 @@ export interface Trigger extends Doc {
   label: IntlString
   requiredParams: string[]
   editor?: AnyComponent
+  presenter?: AnyComponent
   checkFunction?: Resource<CheckFunc>
   init: boolean
 }
@@ -67,6 +69,8 @@ export interface Transition extends Doc {
 
 export interface ExecutionLog extends Doc {
   execution: Ref<Execution>
+  card: Ref<Card>
+  process: Ref<Process>
   transition?: Ref<Transition>
   action: ExecutionLogAction
 }
@@ -77,7 +81,7 @@ export enum ExecutionLogAction {
   Rollback = 'rollback'
 }
 
-export type CheckFunc = (params: Record<string, any>, doc: Doc) => Promise<boolean>
+export type CheckFunc = (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy) => Promise<boolean>
 
 export enum ExecutionStatus {
   Active = 'active',
@@ -114,7 +118,8 @@ export interface ProcessToDo extends ToDo {
 
 export type MethodParams<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]> | string
-} & DocumentUpdate<T>
+} & DocumentUpdate<T> &
+Record<string, any>
 
 export interface State extends Doc {
   process: Ref<Process>
@@ -125,10 +130,15 @@ export type StepId = string & { __stepId: true }
 
 export interface Step<T extends Doc> {
   _id: StepId
-  contextId: ContextId | null
+  context: StepContext | null
   methodId: Ref<Method<T>>
   params: MethodParams<T>
   result?: StepResult
+}
+
+export interface StepContext {
+  _id: ContextId // context id
+  _class?: Ref<Class<Doc>> // class of the context
 }
 
 export interface StepResult {
@@ -145,6 +155,7 @@ export interface Method<T extends Doc> extends Doc {
   editor?: AnyComponent
   presenter?: AnyComponent
   contextClass: Ref<Class<Doc>> | null
+  defaultParams?: MethodParams<T>
 }
 
 export interface ProcessFunction extends Doc {
@@ -154,6 +165,12 @@ export interface ProcessFunction extends Doc {
   category: AttributeCategory | undefined
   allowMany?: boolean
   label: IntlString
+}
+
+export interface UpdateCriteriaComponent extends Doc {
+  category: AttributeCategory
+  editor: AnyComponent
+  of: Ref<Class<Doc>>
 }
 
 export * from './errors'
@@ -170,21 +187,26 @@ export default plugin(processId, {
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
     Transition: '' as Ref<Class<Transition>>,
     Trigger: '' as Ref<Class<Trigger>>,
-    ExecutionLog: '' as Ref<Class<ExecutionLog>>
+    ExecutionLog: '' as Ref<Class<ExecutionLog>>,
+    UpdateCriteriaComponent: '' as Ref<Class<UpdateCriteriaComponent>>
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
-    UpdateCard: '' as Ref<Method<Card>>
+    UpdateCard: '' as Ref<Method<Card>>,
+    CreateCard: '' as Ref<Method<Card>>,
+    AddRelation: '' as Ref<Method<Association>>
   },
   trigger: {
+    OnCardUpdate: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
     OnExecutionStart: '' as Ref<Trigger>
   },
   triggerCheck: {
-    ToDo: '' as Resource<CheckFunc>
+    ToDo: '' as Resource<CheckFunc>,
+    UpdateCheck: '' as Resource<CheckFunc>
   },
   string: {
     Method: '' as IntlString,
@@ -209,15 +231,19 @@ export default plugin(processId, {
     UserRequestedValueNotProvided: '' as IntlString,
     ResultNotProvided: '' as IntlString,
     EmptyFunctionResult: '' as IntlString,
-    ContextValueNotProvided: '' as IntlString
+    ContextValueNotProvided: '' as IntlString,
+    RequiredParamsNotProvided: '' as IntlString,
+    TooDeepTransitionRecursion: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
     Steps: '' as Asset,
     States: '' as Asset,
     ToDo: '' as Asset,
+    OnCardUpdate: '' as Asset,
     WaitSubprocesses: '' as Asset,
-    ToDoRemove: '' as Asset
+    ToDoRemove: '' as Asset,
+    Start: '' as Asset
   },
   function: {
     FirstValue: '' as Ref<ProcessFunction>,
@@ -244,6 +270,7 @@ export default plugin(processId, {
     Floor: '' as Ref<ProcessFunction>,
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
-    RoleContext: '' as Ref<ProcessFunction>
+    RoleContext: '' as Ref<ProcessFunction>,
+    All: '' as Ref<ProcessFunction>
   }
 })

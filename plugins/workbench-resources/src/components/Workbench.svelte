@@ -762,6 +762,16 @@
     $myEmployeeStore && client.getHierarchy().hasMixin($myEmployeeStore, contact.mixin.Employee)
       ? !client.getHierarchy().as($myEmployeeStore, contact.mixin.Employee).active
       : false
+
+  function isExcludedApp (alias: string): boolean {
+    const me = getCurrentAccount()
+
+    if (me.role === AccountRole.ReadOnlyGuest) {
+      return (getMetadata(workbench.metadata.ExcludedApplicationsForAnonymous) ?? []).includes(alias)
+    } else {
+      return false
+    }
+  }
 </script>
 
 {#if $myEmployeeStore && deactivated && !isAdminUser()}
@@ -822,33 +832,41 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink
-          app={notificationId}
-          shrink={0}
-          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
-        >
-          <AppItem
-            icon={notification.icon.Notifications}
-            label={notification.string.Inbox}
-            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
-            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
-              $deviceInfo.navigator.visible}
-            on:click={(e) => {
-              if (e.metaKey || e.ctrlKey) return
-              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
-                toggleNav()
-              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
-                e.preventDefault()
-                e.stopPropagation()
-                navigate(lastLoc)
-                lastLoc = undefined
-              } else {
-                lastLoc = $location
-              }
-            }}
-            notify={hasInboxNotifications}
-          />
-        </NavLink>
+        {#if !isExcludedApp(notificationId)}
+          <NavLink
+            app={notificationId}
+            shrink={0}
+            disabled={!$deviceInfo.navigator.visible &&
+              $deviceInfo.navigator.float &&
+              currentAppAlias === notificationId}
+          >
+            <AppItem
+              icon={notification.icon.Notifications}
+              label={notification.string.Inbox}
+              selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+              navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+                $deviceInfo.navigator.visible}
+              on:click={(e) => {
+                if (e.metaKey || e.ctrlKey) return
+                if (
+                  !$deviceInfo.navigator.visible &&
+                  $deviceInfo.navigator.float &&
+                  currentAppAlias === notificationId
+                ) {
+                  toggleNav()
+                } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate(lastLoc)
+                  lastLoc = undefined
+                } else {
+                  lastLoc = $location
+                }
+              }}
+              notify={hasInboxNotifications}
+            />
+          </NavLink>
+        {/if}
         <Applications
           {apps}
           active={currentApplication?._id}
@@ -1104,8 +1122,10 @@
   }
 
   .hamburger-container {
+    position: relative;
     display: flex;
     align-items: center;
+    z-index: 1;
 
     &.portrait {
       margin-left: 1rem;

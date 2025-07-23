@@ -34,7 +34,7 @@ export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
   docClass?: Ref<Class<Doc>>
   multipleMentions?: boolean
-  showDoc?: (event: MouseEvent, _id: string, _class: string) => void
+  openDocument?: (_class: Ref<Class<Doc>>, _id: Ref<Doc>, event?: MouseEvent) => void | Promise<void>
 }
 
 export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions>({
@@ -117,7 +117,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         const _class = objectclass
         const _id = id
         if (_id != null && _class != null) {
-          this.options.showDoc?.(event, _id, _class)
+          void this.options.openDocument?.(_class, _id, event)
         }
       })
 
@@ -300,6 +300,10 @@ export const referenceConfig: Partial<ReferenceExtensionOptions> = {
         }
       }
     }
+  },
+  openDocument: async (_class, _id, event) => {
+    const openDocument = await getResource(view.function.OpenDocument)
+    await openDocument?.(_class, _id)
   }
 }
 

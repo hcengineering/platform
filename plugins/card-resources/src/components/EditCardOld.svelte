@@ -85,7 +85,8 @@
       }
     })
 
-  $: canSave = title.trim().length > 0
+  $: _readonly = (readonly || doc?.readonly) ?? false
+  $: canSave = title.trim().length > 0 && !_readonly
 
   async function saveTitle (ev: Event): Promise<void> {
     ev.preventDefault()
@@ -150,9 +151,9 @@
 
       <TagsEditor {doc} />
 
-      <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
+      <CardAttributeEditor value={doc} {mixins} readonly={_readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-      <Content {doc} {readonly} bind:content />
+      <Content {doc} readonly={_readonly} bind:content />
     </div>
 
     <ComponentExtensions
@@ -162,13 +163,13 @@
       }}
     />
 
-    <Childs object={doc} {readonly} />
-    <RelationsEditor object={doc} {readonly} />
+    <Childs object={doc} readonly={_readonly} />
+    <RelationsEditor object={doc} readonly={_readonly} />
 
     <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
 
     <svelte:fragment slot="utils">
-      {#if !readonly}
+      {#if !_readonly}
         <Button
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}

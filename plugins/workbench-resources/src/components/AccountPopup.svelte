@@ -17,16 +17,16 @@
   import { myEmployeeStore } from '@hcengineering/contact-resources'
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
+  import { createQuery, getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
-    Component,
-    Menu,
     closePopup,
+    Component,
     deviceOptionsStore as deviceInfo,
     getCurrentResolvedLocation,
     locationToUrl,
+    Menu,
     navigate,
     showPopup
   } from '@hcengineering/ui'
@@ -34,6 +34,8 @@
   import workbench from '../plugin'
   import { logOut } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { allowGuestSignUpStore } from '@hcengineering/view-resources'
 
   let items: SettingsCategory[] = []
 
@@ -151,25 +153,49 @@
       })
     }
 
-    actions.push(
-      {
-        icon: setting.icon.Support,
-        label: workbench.string.HelpAndSupport,
-        action: async () => {
-          helpAndSupport()
-        },
-        group: 'end'
+    actions.push({
+      icon: setting.icon.Support,
+      label: workbench.string.HelpAndSupport,
+      action: async () => {
+        helpAndSupport()
       },
-      {
-        icon: setting.icon.Signout,
-        label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
+      group: 'end'
+    })
+
+    if (account.role === AccountRole.ReadOnlyGuest) {
+      if ($allowGuestSignUpStore) {
+        actions.push({
+          icon: setting.icon.InviteWorkspace,
+          label: view.string.ReadOnlyJoinWorkspace,
+          labelParams: { icon: '' },
+          action: async () => {
+            navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
+          },
+          group: 'end'
+        })
+      }
+      actions.push({
+        icon: setting.icon.InviteWorkspace,
+        label: view.string.ReadOnlySignUp,
+        labelParams: { icon: '' },
         action: async () => {
-          await logOut()
-          navigate({ path: [loginId] })
+          open('https://huly.io/signup')
         },
         group: 'end'
-      }
-    )
+      })
+    }
+
+    actions.push({
+      icon: setting.icon.Signout,
+      label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
+      action: async () => {
+        await logOut()
+        navigate({ path: [loginId] })
+        Analytics.handleEvent('workbench.SignOut')
+        Analytics.logout()
+      },
+      group: 'end'
+    })
   }
   let menu: Menu
   $: addClass = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'self-end' : undefined

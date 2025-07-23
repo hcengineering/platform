@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "enthält",
+    "NotContains": "enthält nicht",
     "MoveClass": "{class} verschieben",
     "SelectToMove": "Wählen Sie {classLabel} aus, wohin Sie {class} verschieben möchten.",
     "Delete": "Löschen",
@@ -49,6 +50,8 @@
     "CustomizeView": "Ansicht anpassen",
     "Filter": "Filter",
     "ClearFilters": "Filter löschen",
+    "FilterLessThan": "Weniger als",
+    "FilterGreaterThan": "Mehr als",
     "FilterIsNot": "ist nicht",
     "FilterIsEither": "ist",
     "FilterIsEitherPlural": "ist",
@@ -135,9 +138,12 @@
     "Document": "Dokument",
     "Loading": "Laden...",
     "NoRelations": "Keine Beziehungen",
-    "ReadOnlyWarningTitle": "✨ Gast-Demo",
-    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Möchten Sie beliebige Projekte in Huly verwalten? Aufgaben, Fristen, Team — registrieren Sie sich für vollen Zugriff!",
-    "ReadOnlySignUp": "Registrieren \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Anonymer Gast-Demo",
+    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Wählen Sie Ihren Weg: Treten Sie diesem Arbeitsbereich bei, um zusammenzuarbeiten (als Gast) oder erstellen Sie Ihren eigenen Bereich, um Projekte vollständig zu verwalten — Aufgaben, Fristen, Team!",
+    "ReadOnlyJoinWorkspace": "Arbeitsbereich beitreten{icon}",
+    "ReadOnlySignUp": "Arbeitsbereich erstellen{icon}",
+    "PermissionWarningTitle": "✨ Erweitern Sie Ihren Zugriff!",
+    "PermissionWarningMessage": "Ihre aktuelle Rolle hat eingeschränkte Berechtigungen. Um diese und andere erweiterte Funktionen freizuschalten, bitten Sie Ihren Arbeitsbereich-Administrator, Ihr Zugriffslevel zu erhöhen!",
     "Icon": "Symbol",
     "Color": "Farbe",
     "AutomationOnly": "Nur Automatisierung"

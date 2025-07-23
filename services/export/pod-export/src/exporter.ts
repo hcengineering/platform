@@ -13,15 +13,24 @@
 // limitations under the License.
 //
 
-import { Client, DocumentQuery, MeasureContext, WorkspaceIds } from '@hcengineering/core'
+import {
+  Client,
+  DocumentQuery,
+  MeasureContext,
+  platformNow,
+  RateLimiter,
+  toIdMap,
+  WorkspaceIds
+} from '@hcengineering/core'
 import { Class, Doc, Ref, Space } from '@hcengineering/core/types/classes'
+import { type TransformConfig } from '@hcengineering/export'
 import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
 import { UnifiedConverter } from './converter'
 import { UnifiedCsvSerializer } from './csv/csv-serializer'
 import { UnifiedJsonSerializer } from './json/json-serializer'
-import { type TransformConfig } from '@hcengineering/export'
+import type { UnifiedDoc } from './types'
 
 export enum ExportFormat {
   UNIFIED = 'unified',
@@ -67,9 +76,14 @@ export class WorkspaceExporter {
       docsBySpace.get(spaceId)?.push(doc)
     }
 
+    const allSpaces = toIdMap(
+      await this.client.findAll(core.class.Space, { _id: { $in: Array.from(docsBySpace.keys()) } })
+    )
+
+    const limiter = new RateLimiter(50)
     // Process each space
     for (const [spaceId, spaceDocs] of docsBySpace) {
-      const space = await this.client.findOne(core.class.Space, { _id: spaceId })
+      const space = allSpaces.get(spaceId)
       if (space === undefined) {
         console.error(`Space not found: ${spaceId}`)
         continue
@@ -79,7 +93,24 @@ export class WorkspaceExporter {
       const spaceDir = path.join(outputDir, spaceName)
 
       // Convert all docs to UnifiedDoc format
-      const unifiedDoc = await Promise.all(spaceDocs.map((doc) => this.converter.convert(doc, attributesOnly)))
+      const unifiedDoc: UnifiedDoc<any>[] = []
+      let t = platformNow()
+      for (const sd of spaceDocs) {
+        await limiter.add(async () => {
+          unifiedDoc.push(await this.converter.convert(sd, attributesOnly))
+        })
+        const elapsed = platformNow() - t
+        if (elapsed > 2500) {
+          const memUsage = process.memoryUsage()
+          const totalMemory = memUsage.heapTotal
+          console.log(
+            `Converted ${unifiedDoc.length} documents in ${Math.round(elapsed)} ms`,
+            `Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB used, ${Math.round(totalMemory / 1024 / 1024)}MB total`
+          )
+          t = platformNow()
+        }
+      }
+      await limiter.waitProcessing()
 
       if (format === ExportFormat.JSON) {
         await this.jsonSerializer.serializeSpace(unifiedDoc, outputDir, spaceName)

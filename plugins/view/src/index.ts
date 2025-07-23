@@ -63,7 +63,8 @@ import {
   ViewletDescriptor,
   ViewletPreference,
   LinkIdProvider,
-  CustomObjectLinkProvider
+  CustomObjectLinkProvider,
+  OpenDocumentFunction
 } from './types'
 
 export * from './types'
@@ -178,7 +179,8 @@ const view = plugin(viewId, {
     FoldersBrowser: '' as AnyComponent,
     PersonIdPresenter: '' as AnyComponent,
     PersonIdFilter: '' as AnyComponent,
-    RolePresenter: '' as AnyComponent
+    RolePresenter: '' as AnyComponent,
+    ReadOnlyNotification: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset
@@ -237,6 +239,9 @@ const view = plugin(viewId, {
     ReadOnlyWarningTitle: '' as IntlString,
     ReadOnlyWarningMessage: '' as IntlString,
     ReadOnlySignUp: '' as IntlString,
+    ReadOnlyJoinWorkspace: '' as IntlString,
+    PermissionWarningTitle: '' as IntlString,
+    PermissionWarningMessage: '' as IntlString,
     Icon: '' as IntlString,
     Color: '' as IntlString,
     AutomationOnly: '' as IntlString
@@ -324,6 +329,9 @@ const view = plugin(viewId, {
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
+  },
+  function: {
+    OpenDocument: '' as Resource<OpenDocumentFunction>
   },
   actionImpl: {
     CopyTextToClipboard: '' as ViewAction<{

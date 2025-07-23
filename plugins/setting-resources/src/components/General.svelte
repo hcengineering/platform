@@ -19,7 +19,8 @@
     AccountUuid,
     Configuration,
     getCurrentAccount,
-    pickPrimarySocialId
+    pickPrimarySocialId,
+    readOnlyGuestAccountUuid
   } from '@hcengineering/core'
   import {
     Breadcrumb,
@@ -49,7 +50,7 @@
   import { translateCB } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
-  import { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
+  import contact, { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
   import settingsRes from '../plugin'
 
   let loading = true
@@ -57,6 +58,7 @@
   let oldName: string
   let name: string = ''
   let allowReadOnlyGuests: boolean
+  let allowGuestSignUp: boolean
 
   const accountClient = getAccountClient()
   const disabledSet = ['\n', '<', '>', '/', '\\']
@@ -76,6 +78,7 @@
     oldName = res.name
     name = oldName
     allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
+    allowGuestSignUp = res.allowGuestSignUp ?? false
     loading = false
   }
 
@@ -154,6 +157,7 @@
   async function handleToggleReadonlyAccess (e: CustomEvent<boolean>): Promise<void> {
     const enabled = e.detail
     const guestUserInfo = await accountClient.updateAllowReadOnlyGuests(enabled)
+    allowReadOnlyGuests = enabled
     if (guestUserInfo !== undefined) {
       const guestAccount: Account = {
         uuid: guestUserInfo.guestPerson.uuid as AccountUuid,
@@ -172,7 +176,16 @@
         guestUserInfo.guestSocialIds,
         guestUserInfo.guestPerson
       )
+    } else {
+      const readonlyEmployee = await client.findOne(contact.mixin.Employee, { personUuid: readOnlyGuestAccountUuid })
+      if (readonlyEmployee !== undefined) {
+        await client.update(readonlyEmployee, { active: false })
+      }
     }
+  }
+
+  async function handleToggleGuestSignUp (e: CustomEvent<boolean>): Promise<void> {
+    await accountClient.updateAllowGuestSignUp(e.detail)
   }
 
   function handleTogglePermissions (): void {
@@ -217,6 +230,7 @@
       selected = items[savedFirstDayOfWeek === 'system' ? 0 : $deviceInfo.firstDayOfWeek + 1].id
     }
   )
+
   const onSelected = (e: CustomEvent<string>): void => {
     selected = e.detail
     localStorage.setItem('firstDayOfWeek', `${e.detail}`)
@@ -293,6 +307,16 @@
               on={allowReadOnlyGuests}
               on:change={(e) => {
                 void handleToggleReadonlyAccess(e)
+              }}
+            />
+          </div>
+          <div class="flex-row-center flex-gap-4">
+            <Label label={settingsRes.string.GuestSignUpDescription} />
+            <Toggle
+              disabled={!allowReadOnlyGuests}
+              on={allowGuestSignUp}
+              on:change={(e) => {
+                void handleToggleGuestSignUp(e)
               }}
             />
           </div>

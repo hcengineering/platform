@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import card, { Card, CardSection, CardViewDefaults } from '@hcengineering/card'
-  import { Component, Loading, Scroller } from '@hcengineering/ui'
+  import { Component, languageStore, Loading, ModernButton, Scroller } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { Ref } from '@hcengineering/core'
@@ -24,7 +24,7 @@
   import { Heading } from '@hcengineering/text-editor'
 
   import { CardSectionAction } from '../types'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
 
   export let doc: Card
   export let context: NotificationContext | undefined = undefined
@@ -58,9 +58,16 @@
   let timer: any
   let hideBar: boolean = false
 
+  let bottomOffset: number = 0
+
   function onNavigationClick (heading: Heading): void {
     selectedToc = heading
     navigate()
+  }
+
+  function getBottomOffset (): number {
+    if (scrollDiv == null) return 0
+    return Math.max(0, Math.floor(scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight))
   }
 
   function navigate (): void {
@@ -188,6 +195,8 @@
     if (selectedSectionId != null && selectedSectionId !== selectedToc?.group) {
       selectedToc = toc.find((it) => it.group === selectedSectionId)
     }
+
+    bottomOffset = getBottomOffset()
   }
 
   async function filterSections (s: CardSection[], doc: Card): Promise<void> {
@@ -210,6 +219,33 @@
   $: void filterSections(_sections, doc)
   $: updateToc(sections, subTocBySection)
   $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
+
+  function handleLasTocScroll (): void {
+    selectedToc = toc[toc.length - 1]
+    const sectionId = selectedToc.group as Ref<CardSection>
+
+    const ref = sectionRef[sectionId]
+    if (ref?.scrollDown) {
+      ref.scrollDown(selectedToc.id)
+    }
+  }
+
+  function canScrollDown (): boolean {
+    const lastSection = sections[sections.length - 1]
+    if (lastSection === undefined) return false
+    const ref = sectionRef[lastSection._id]
+    if (ref === undefined) return false
+
+    return ref.canScrollDown?.() ?? false
+  }
+
+  async function getDownButtonTitle (item: Heading, lang: string): Promise<string> {
+    if (item.titleIntl) {
+      const label = await translate(item.titleIntl, {}, lang)
+      return '↓ ' + label
+    }
+    return '↓ ' + (item.title ?? '')
+  }
 </script>
 
 <div class="hulyComponent-content__container columns relative">
@@ -274,6 +310,14 @@
         {/each}
       </div>
     </Scroller>
+    {#if toc.length > 0 && (bottomOffset > 400 || canScrollDown())}
+      {@const lastToc = toc[toc.length - 1]}
+      {#await getDownButtonTitle(lastToc, $languageStore) then title}
+        <div class="down-button">
+          <ModernButton {title} shape="round" size="small" kind="primary" on:click={handleLasTocScroll} />
+        </div>
+      {/await}
+    {/if}
   </div>
 </div>
 
@@ -315,5 +359,27 @@
     flex-direction: column;
     align-items: flex-start;
     align-self: stretch;
+  }
+
+  .down-button {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    bottom: 0.5rem;
+    animation: 0.5s fadeIn;
+    animation-fill-mode: forwards;
+    visibility: hidden;
+    left: 0;
+    right: 0;
+  }
+
+  @keyframes fadeIn {
+    99% {
+      visibility: hidden;
+    }
+    100% {
+      visibility: visible;
+    }
   }
 </style>

@@ -169,6 +169,7 @@
     "Customize": "自定义",
     "GuestAccess": "匿名访客",
     "GuestAccessDescription": "允许匿名用户以只读模式访问工作区",
+    "GuestSignUpDescription": "允许匿名用户以访客身份加入您的工作区，获得有限的编辑权限",
     "ManageIdentities": "管理身份",
     "Release": "释放",
     "ReleaseSocialId": "释放社交ID",

@@ -6,6 +6,7 @@ import type {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxDomainEvent,
   Version,
   WorkspaceInfoWithStatus,
   WorkspaceUuid
@@ -29,8 +30,9 @@ import {
   type QueueWorkspaceReindexMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { type FulltextDBConfiguration } from '@hcengineering/server-indexer'
+import { type QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
+import { type Event } from '@hcengineering/communication-sdk-types'
 
 import { WorkspaceIndexer } from './workspace'
 
@@ -90,7 +92,14 @@ export class WorkspaceManager {
     )
     this.fulltextAdapter = await this.opt.config.fulltextAdapter.factory(this.opt.config.fulltextAdapter.url)
 
-    await this.fulltextAdapter.initMapping(this.ctx)
+    let adapterInitialized = false
+    while (!adapterInitialized) {
+      adapterInitialized = await this.fulltextAdapter.initMapping(this.ctx)
+      if (!adapterInitialized) {
+        this.ctx.warn('Failed to initialize indexer mapping, retrying in 5 s')
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+      }
+    }
 
     this.shutdownInterval = setInterval(() => {
       for (const [k, v] of [...this.indexers.entries()]) {
@@ -123,7 +132,7 @@ export class WorkspaceManager {
     )
 
     let txMessages: number = 0
-    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc>>(
+    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>(
       this.ctx,
       QueueTopic.Tx,
       this.opt.queue.getClientId(),
@@ -136,12 +145,15 @@ export class WorkspaceManager {
 
         txMessages += msg.length
 
-        await this.processDocuments(msg, control)
+        await this.processTransactions(msg, control)
       }
     )
   }
 
-  private async processDocuments (msg: ConsumerMessage<TxCUD<Doc<Space>>>[], control: ConsumerControl): Promise<void> {
+  private async processTransactions (
+    msg: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<QueueSourced<Event>>>[],
+    control: ConsumerControl
+  ): Promise<void> {
     for (const m of msg) {
       const ws = m.workspace
 
@@ -154,7 +166,7 @@ export class WorkspaceManager {
       }
 
       await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-        await indexer.fulltext.processDocuments(this.ctx, m.value, control)
+        await indexer.fulltext.processTransactions(this.ctx, m.value, control)
       })
     }
   }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ExecutionLogAction } from '@hcengineering/process'
+  import process, { ExecutionLogAction } from '@hcengineering/process'
   import { Icon } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
@@ -21,7 +21,7 @@
 </script>
 
 {#if value === ExecutionLogAction.Started}
-  <Icon icon={view.icon.Circle} size={'small'} />
+  <Icon icon={process.icon.Start} size={'small'} />
 {:else if value === ExecutionLogAction.Transition}
   <Icon icon={view.icon.ArrowRight} size={'small'} />
 {:else}

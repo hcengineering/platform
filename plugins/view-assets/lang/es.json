@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Contiene",
+    "NotContains": "No contiene",
     "MoveClass": "Mover {class}",
     "SelectToMove": "Seleccione el {classLabel} que desea mover a {class}.",
     "Delete": "Eliminar",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personalizar vista",
     "Filter": "Filtrar",
     "ClearFilters": "Borrar filtros",
+    "FilterLessThan": "Menos que",
+    "FilterGreaterThan": "Más que",
     "FilterIsNot": "no es",
     "FilterIsEither": "es",
     "FilterIsEitherPlural": "son",
@@ -130,9 +133,12 @@
     "Document": "Documento",
     "Loading": "Cargando...",
     "NoRelations": "No hay relaciones",
-    "ReadOnlyWarningTitle": "✨ Demo de Invitado",
-    "ReadOnlyWarningMessage": "Estás en modo de solo lectura. ¿Quieres gestionar cualquier proyecto en Huly? Tareas, plazos, equipo — ¡regístrate para acceso completo!",
-    "ReadOnlySignUp": "Registrarse \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ Demo de invitado anónimo",
+    "ReadOnlyWarningMessage": "Estás en modo de solo lectura. ¡Elige tu camino: Únete a este espacio para colaborar (como invitado) o crea tu propio espacio para gestionar proyectos completamente — tareas, plazos, equipo!",
+    "ReadOnlyJoinWorkspace": "Unirse al espacio{icon}",
+    "ReadOnlySignUp": "Crear espacio{icon}",
+    "PermissionWarningTitle": "✨ ¡Mejora tu acceso!",
+    "PermissionWarningMessage": "Tu rol actual tiene permisos limitados. ¡Para desbloquear esta y otras funciones avanzadas, pídele al administrador de tu espacio de trabajo que actualice tu nivel de acceso!",
     "Icon": "Icono",
     "Color": "Color",
     "AutomationOnly": "Solo automatización"

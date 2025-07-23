@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, PropertyType, Ref, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { ContextId, Step } from '@hcengineering/process'
+  import { Step } from '@hcengineering/process'
   import setting from '@hcengineering/setting-resources/src/plugin'
   import {
     AnyComponent,
@@ -27,6 +27,7 @@
     Toggle
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { generateContextId } from '../../utils'
@@ -82,8 +83,19 @@
     selectType(e.detail)
   }
   const handleChange = (e: any): void => {
-    type = e.detail?.type
-    update()
+    if (e.detail?.type === undefined) return
+    if (!deepEqual(e.detail.type, type)) {
+      type = e.detail?.type
+      update()
+    }
+  }
+
+  function handleNameChange (e: any): void {
+    if (e.detail !== undefined && step.result != null && name !== e.detail) {
+      step.result.name = e.detail
+      name = e.detail
+      dispatch('change', step)
+    }
   }
 
   function changeRequired (e: boolean): void {
@@ -108,7 +120,7 @@
     <span class="label">
       <Label label={core.string.Description} />
     </span>
-    <EditBox bind:value={name} placeholder={core.string.Description} on:change={handleChange} kind={'default'} />
+    <EditBox bind:value={name} placeholder={core.string.Description} on:change={handleNameChange} kind={'default'} />
     <span class="label">
       <Label label={setting.string.Type} />
     </span>

@@ -15,12 +15,11 @@
 
 export interface Config {
   Port: number
-  MongoUrl: string
-  MongoDb: string
   Secret: string
   ServiceID: string
-  SupportWorkspace: string
   AccountsUrl: string
+  PostHogHost: string
+  PostHogAPI: string
   SentryDSN?: string
 }
 
@@ -29,11 +28,11 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4007,
-    MongoUrl: process.env.MONGO_URL,
-    MongoDb: process.env.MONGO_DB ?? '%analytics-collector',
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     AccountsUrl: process.env.ACCOUNTS_URL,
+    PostHogHost: process.env.POSTHOG_HOST,
+    PostHogAPI: process.env.POSTHOG_API_KEY,
     SentryDSN: process.env.SENTRY_DSN ?? ''
   }
 

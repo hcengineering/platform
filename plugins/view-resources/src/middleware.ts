@@ -20,12 +20,13 @@ import core, {
   TxProcessor,
   type TxResult
 } from '@hcengineering/core'
-import { getResource, translate } from '@hcengineering/platform'
+import platform, { getResource, PlatformError, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import view, { type IAggregationManager } from '@hcengineering/view'
 import notification from '@hcengineering/notification'
 import { addNotification, NotificationSeverity } from '@hcengineering/ui'
 import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
+import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 import { getCurrentLanguage } from '@hcengineering/theme'
 
 /**
@@ -357,10 +358,28 @@ export class ReadOnlyAccessMiddleware extends BasePresentationMiddleware impleme
         await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
         ReadOnlyNotification,
         undefined,
-        NotificationSeverity.Info
+        NotificationSeverity.Info,
+        'readOnlyNotification'
       )
       return {}
     }
-    return await this.provideTx(tx)
+    try {
+      return await this.provideTx(tx)
+    } catch (err: any) {
+      if (err instanceof PlatformError && err.status.code === platform.status.Forbidden) {
+        addNotification(
+          await translate(view.string.PermissionWarningTitle, {}, getCurrentLanguage()),
+          await translate(view.string.PermissionWarningMessage, {}, getCurrentLanguage()),
+          ForbiddenNotification,
+          {
+            onClose: () => {}
+          },
+          NotificationSeverity.Info
+        )
+        return {}
+      } else {
+        throw err
+      }
+    }
   }
 }

@@ -13,7 +13,11 @@
 // limitations under the License.
 //
 
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import express from 'express'
@@ -21,6 +25,7 @@ import formData from 'express-form-data'
 import { type IncomingHttpHeaders, type Server } from 'http'
 import morgan from 'morgan'
 import os from 'os'
+import { join } from 'path'
 import { type Readable } from 'stream'
 import config from './config'
 import { ApiError } from './error'
@@ -29,11 +34,6 @@ import { parseGenericResume } from './generic'
 import { decode } from './jwt'
 import { extractDocument } from './process'
 import { type ReconiDocument } from './types'
-import serverToken from '@hcengineering/server-token'
-import { setMetadata } from '@hcengineering/platform'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 
 const extractToken = (header: IncomingHttpHeaders): any => {
@@ -51,7 +51,7 @@ export const startServer = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Service, 'rekoni')
   const ctx = initStatisticsContext('rekoni', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'rekoni',
         {},
         {},

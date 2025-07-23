@@ -14,25 +14,39 @@
 //
 
 import {
+  readOnlyGuestAccountUuid,
   AccountRole,
   type PersonId,
   SocialIdType,
   type MeasureContext,
   type PersonUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
 import * as utils from '../utils'
-import { type AccountDB } from '../types'
+import { type AccountDB, type SocialId } from '../types'
 import {
   createInvite,
   createInviteLink,
   sendInvite,
   resendInvite,
   getLoginInfoByToken,
-  releaseSocialId
+  releaseSocialId,
+  loginAsGuest,
+  loginOtp,
+  login,
+  confirm,
+  signUp,
+  validateOtp,
+  signUpOtp,
+  restorePassword,
+  requestPasswordReset,
+  changePassword,
+  getPerson,
+  getSocialIds
 } from '../operations'
 import { accountPlugin } from '../plugin'
 
@@ -50,7 +64,12 @@ jest.mock('@hcengineering/platform', () => {
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
   decodeTokenVerbose: jest.fn(),
-  generateToken: jest.fn()
+  generateToken: jest
+    .fn()
+    .mockImplementation(
+      (account, workspace, extra) =>
+        `mocked-token-${account}${workspace != null ? `-${workspace}` : ''}${extra != null ? `-${JSON.stringify(extra)}` : ''}`
+    )
 }))
 
 describe('invite operations', () => {
@@ -744,6 +763,1259 @@ describe('invite operations', () => {
       }
 
       expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('authentication operations', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockBranding = null
+    const mockToken = 'test-token'
+
+    const mockDb = {
+      account: {
+        findOne: jest.fn()
+      },
+      person: {
+        findOne: jest.fn()
+      },
+      socialId: {
+        findOne: jest.fn(),
+        find: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    describe('login', () => {
+      const mockEmail = 'test@example.com'
+      const mockPassword = 'test-password'
+      const mockAccountId = 'account-uuid' as AccountUuid
+      const mockPersonId = 'person-uuid' as PersonUuid
+
+      test('should successfully login with correct credentials', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: Date.now()
+        }
+        const mockAccount = {
+          uuid: mockAccountId,
+          hash: 'hashed-password',
+          salt: 'salt'
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(true)
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await login(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          password: mockPassword
+        })
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          token: expect.any(String),
+          name: 'John Doe',
+          socialId: 'social-id'
+        })
+      })
+
+      test('should not return token if no social ids are confirmed', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: undefined // Social ID not confirmed
+        }
+        const mockAccount = {
+          uuid: mockAccountId,
+          hash: 'hashed-password',
+          salt: 'salt'
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(true)
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await login(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          password: mockPassword
+        })
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          token: undefined,
+          name: 'John Doe',
+          socialId: 'social-id'
+        })
+      })
+
+      test('should fail login with incorrect password', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: Date.now()
+        }
+        const mockAccount = {
+          uuid: mockAccountId,
+          hash: 'hashed-password',
+          salt: 'salt'
+        }
+
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(false)
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+
+        await expect(
+          login(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            password: mockPassword
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {})))
+      })
+
+      test('should fail login with non-existent email', async () => {
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+
+        await expect(
+          login(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            password: mockPassword
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {})))
+      })
+    })
+
+    describe('loginOtp', () => {
+      const mockEmail = 'test@example.com'
+      const mockAccountId = 'account-uuid' as AccountUuid
+
+      test('should successfully initiate OTP login for existing account', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const mockAccount = {
+          uuid: mockAccountId
+        }
+        const mockOtpInfo = {
+          email: mockEmail,
+          sent: true,
+          retryOn: Date.now()
+        }
+
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'sendOtp').mockResolvedValue(mockOtpInfo)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+
+        const result = await loginOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail
+        })
+
+        expect(result).toEqual(mockOtpInfo)
+        expect(utils.sendOtp).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockSocialId)
+      })
+
+      test('should fail for non-existent account', async () => {
+        jest.spyOn(utils, 'cleanEmail').mockReturnValue(mockEmail)
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+
+        await expect(
+          loginOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {})))
+      })
+    })
+
+    describe('loginAsGuest', () => {
+      test('should successfully login as readonly guest', async () => {
+        const mockGuestPerson = {
+          uuid: readOnlyGuestAccountUuid
+        }
+
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockGuestPerson)
+
+        const result = await loginAsGuest(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(result).toEqual({
+          account: readOnlyGuestAccountUuid,
+          token: expect.any(String)
+        })
+      })
+
+      test('should fail if guest account not found', async () => {
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(loginAsGuest(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+        )
+      })
+    })
+  })
+
+  describe('registration operations', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockBranding = null
+    const mockToken = 'test-token'
+    const mockEmail = 'test@example.com'
+    const mockPassword = 'test-password'
+    const mockFirstName = 'John'
+    const mockLastName = 'Doe'
+    const mockAccountId = 'account-uuid' as AccountUuid
+    const mockPersonId = 'person-uuid' as PersonUuid
+
+    const mockDb = {
+      account: {
+        findOne: jest.fn()
+      },
+      person: {
+        findOne: jest.fn(),
+        insertOne: jest.fn(),
+        update: jest.fn()
+      },
+      socialId: {
+        findOne: jest.fn(),
+        find: jest.fn(),
+        insertOne: jest.fn(),
+        update: jest.fn()
+      },
+      otp: {
+        deleteMany: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    describe('signUp', () => {
+      test('should create account when email service not configured', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'confirmEmail').mockResolvedValue(mockSocialId._id)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(getMetadata as jest.Mock).mockReturnValue('') // No mail service configured
+
+        const result = await signUp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          password: mockPassword,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(utils.signUpByEmail).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockEmail,
+          mockPassword,
+          mockFirstName,
+          mockLastName
+        )
+        expect(utils.confirmEmail).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId, mockEmail)
+        expect(utils.confirmHulyIds).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId)
+        expect(mockCtx.warn).toHaveBeenCalled()
+      })
+
+      test('should create account and send confirmation when email service configured', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'sendEmailConfirmation').mockResolvedValue()
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(getMetadata as jest.Mock).mockReturnValue('http://mail-service.com')
+
+        const result = await signUp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          password: mockPassword,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: undefined // No token until email confirmed
+        })
+
+        expect(utils.signUpByEmail).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockEmail,
+          mockPassword,
+          mockFirstName,
+          mockLastName
+        )
+        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(mockCtx, mockBranding, mockAccountId, mockEmail)
+        expect(mockCtx.warn).not.toHaveBeenCalled()
+      })
+
+      test('should fail with missing required fields', async () => {
+        const testCases = [
+          { email: '', password: mockPassword, firstName: mockFirstName },
+          { email: mockEmail, password: '', firstName: mockFirstName },
+          { email: mockEmail, password: mockPassword, firstName: '' }
+        ]
+
+        for (const testCase of testCases) {
+          await expect(signUp(mockCtx, mockDb, mockBranding, mockToken, testCase as any)).rejects.toThrow(
+            new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+          )
+        }
+      })
+    })
+
+    describe('confirm', () => {
+      test('should confirm email and return login info', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { confirmEmail: mockEmail }
+        })
+
+        jest.spyOn(utils, 'confirmEmail').mockResolvedValue(mockSocialId._id)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await confirm(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(utils.confirmEmail).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId, mockEmail)
+        expect(utils.confirmHulyIds).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId)
+      })
+
+      test('should fail if confirmation email not in token', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: {} // No confirmEmail in extra
+        })
+
+        await expect(confirm(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        )
+      })
+
+      test('should fail if person not found', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { confirmEmail: mockEmail }
+        })
+
+        jest.spyOn(utils, 'confirmEmail').mockResolvedValue('social-id' as PersonId)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(confirm(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: mockAccountId }))
+        )
+      })
+    })
+
+    describe('signUpOtp', () => {
+      test('should initiate signup with OTP for new user', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        // No existing social id
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+        jest.spyOn(utils, 'sendOtp').mockResolvedValue({ retryOn: Date.now() + 60000, sent: true })
+        ;(mockDb.person.insertOne as jest.Mock).mockResolvedValue(mockPersonId)
+        ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(mockSocialId._id)
+
+        const result = await signUpOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        expect(result).toEqual({ retryOn: expect.any(Number), sent: true })
+        expect(mockDb.person.insertOne).toHaveBeenCalledWith({
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+      })
+
+      test('should initiate signup with OTP for existing unverified email', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        // Existing unverified social id
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'sendOtp').mockResolvedValue({ retryOn: Date.now() + 60000, sent: true })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        const result = await signUpOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        expect(result).toEqual({ retryOn: expect.any(Number), sent: true })
+        expect(mockDb.person.update).toHaveBeenCalledWith(
+          { uuid: mockPersonId },
+          { firstName: mockFirstName, lastName: mockLastName }
+        )
+      })
+
+      test('should fail if email already exists with account', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: mockPersonId })
+
+        await expect(
+          signUpOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            firstName: mockFirstName,
+            lastName: mockLastName
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {})))
+      })
+
+      test('should fail with missing required fields', async () => {
+        const testCases = [
+          { email: '', firstName: mockFirstName },
+          { email: mockEmail, firstName: '' }
+        ]
+
+        for (const testCase of testCases) {
+          await expect(signUpOtp(mockCtx, mockDb, mockBranding, mockToken, testCase as any)).rejects.toThrow(
+            new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+          )
+        }
+      })
+    })
+
+    describe('validateOtp', () => {
+      beforeEach(() => {
+        jest.spyOn(utils, 'setPassword').mockResolvedValue()
+      })
+
+      test('should validate OTP and create account for signup', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        jest.spyOn(utils, 'createAccount').mockResolvedValue()
+
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        const result = await validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          code: '123456',
+          password: mockPassword
+        })
+
+        expect(result).toEqual({
+          account: mockPersonId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: mockSocialId._id },
+          { verifiedOn: expect.any(Number) }
+        )
+        expect(utils.setPassword).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockPersonId, mockPassword)
+      })
+
+      test('should validate OTP for login', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: Date.now()
+        }
+
+        const mockAccount = {
+          uuid: mockPersonId
+        }
+
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+
+        const result = await validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          code: '123456'
+        })
+
+        expect(result).toEqual({
+          account: mockPersonId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
+        expect(utils.setPassword).not.toHaveBeenCalled()
+      })
+
+      test('should validate OTP for unverified social id belonging to caller', async () => {
+        const callerAccountId = 'caller-account' as AccountUuid
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: callerAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: callerAccountId
+        })
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: callerAccountId })
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(mockSocialId)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        const result = await validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          code: '123456',
+          action: 'verify'
+        })
+
+        expect(result).toEqual({
+          account: callerAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: mockSocialId._id },
+          { verifiedOn: expect.any(Number) }
+        )
+        expect(utils.setPassword).not.toHaveBeenCalled()
+      })
+
+      test('should merge person to caller when verifying social id without account', async () => {
+        const callerAccountId = 'caller-account' as AccountUuid
+        const targetPersonId = 'target-person' as PersonUuid
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: targetPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: callerAccountId
+        })
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+        ;(mockDb.account.findOne as jest.Mock).mockImplementation(async ({ uuid }) => {
+          if (uuid === callerAccountId) {
+            return { uuid: callerAccountId }
+          }
+          if (uuid === targetPersonId) {
+            return null // The target person has no account
+          }
+          return null
+        })
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ ...mockSocialId, personUuid: callerAccountId })
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: callerAccountId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        const result = await validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          code: '123456',
+          action: 'verify'
+        })
+
+        expect(result).toEqual({
+          account: callerAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
+        expect(utils.doMergePersons).toHaveBeenCalledWith(mockDb, callerAccountId, targetPersonId)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: mockSocialId._id },
+          { verifiedOn: expect.any(Number) }
+        )
+      })
+
+      test('should move unverified social id to caller account', async () => {
+        const callerAccountId = 'caller-account' as AccountUuid
+        const targetAccountId = 'target-account' as AccountUuid
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: targetAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: callerAccountId
+        })
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        ;(mockDb.account.findOne as jest.Mock).mockImplementation(async ({ uuid }) =>
+          uuid === targetAccountId ? { uuid: targetAccountId } : { uuid: callerAccountId }
+        )
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: callerAccountId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        })
+
+        const result = await validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail,
+          code: '123456',
+          action: 'verify'
+        })
+
+        expect(result).toEqual({
+          account: callerAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: expect.any(String)
+        })
+
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: mockSocialId._id },
+          { personUuid: callerAccountId, verifiedOn: expect.any(Number) }
+        )
+      })
+
+      test('should fail if OTP is invalid', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(false)
+
+        await expect(
+          validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            code: '123456'
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {})))
+      })
+
+      test('should fail if email not found', async () => {
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+
+        await expect(
+          validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            code: '123456'
+          })
+        ).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: mockEmail }))
+        )
+      })
+
+      test('should fail if verifying for existing verified social id', async () => {
+        const mockSocialId: SocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockPersonId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: Date.now()
+        }
+
+        const callerAccountId = 'caller-account' as AccountUuid
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: callerAccountId
+        })
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: mockPersonId })
+
+        await expect(
+          validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            code: '123456',
+            action: 'verify'
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {})))
+      })
+    })
+  })
+
+  describe('password operations', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockBranding = null
+    const mockToken = 'test-token'
+    const mockAccountId = 'account-uuid' as AccountUuid
+    const mockEmail = 'test@example.com'
+    const mockOldPassword = 'old-password'
+    const mockNewPassword = 'new-password'
+
+    const mockDb = {
+      account: {
+        findOne: jest.fn()
+      },
+      person: {
+        findOne: jest.fn()
+      },
+      socialId: {
+        findOne: jest.fn(),
+        update: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      global.fetch = jest.fn().mockResolvedValue({ ok: true })
+    })
+
+    describe('changePassword', () => {
+      test('should change password when old password is correct', async () => {
+        const mockAccount = {
+          uuid: mockAccountId,
+          hash: 'old-hash',
+          salt: 'old-salt'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(true)
+        jest.spyOn(utils, 'setPassword').mockResolvedValue()
+
+        await changePassword(mockCtx, mockDb, mockBranding, mockToken, {
+          oldPassword: mockOldPassword,
+          newPassword: mockNewPassword
+        })
+
+        expect(utils.verifyPassword).toHaveBeenCalledWith(mockOldPassword, mockAccount.hash, mockAccount.salt)
+        expect(utils.setPassword).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockAccountId, mockNewPassword)
+      })
+
+      test('should fail if old password is incorrect', async () => {
+        const mockAccount = {
+          uuid: mockAccountId,
+          hash: 'old-hash',
+          salt: 'old-salt'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(false)
+
+        await expect(
+          changePassword(mockCtx, mockDb, mockBranding, mockToken, {
+            oldPassword: mockOldPassword,
+            newPassword: mockNewPassword
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+        expect(utils.setPassword).not.toHaveBeenCalled()
+      })
+
+      test('should fail if account not found', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(
+          changePassword(mockCtx, mockDb, mockBranding, mockToken, {
+            oldPassword: mockOldPassword,
+            newPassword: mockNewPassword
+          })
+        ).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: mockAccountId }))
+        )
+      })
+    })
+
+    describe('requestPasswordReset', () => {
+      const mailUrl = 'https://mail.example.com'
+      const mailAuth = 'mail-auth-token'
+      const frontUrl = 'https://front.example.com'
+
+      beforeEach(() => {
+        ;(getMetadata as jest.Mock).mockImplementation((key) => {
+          switch (key) {
+            case accountPlugin.metadata.MAIL_URL:
+              return mailUrl
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
+              return mailAuth
+            case accountPlugin.metadata.FrontURL:
+              return frontUrl
+            default:
+              return undefined
+          }
+        })
+      })
+
+      test('should send reset password email', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        const mockAccount = {
+          uuid: mockAccountId
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+
+        await requestPasswordReset(mockCtx, mockDb, mockBranding, mockToken, {
+          email: mockEmail
+        })
+
+        expect(global.fetch).toHaveBeenCalledWith(`${mailUrl}/send`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${mailAuth}`
+          },
+          body: expect.stringContaining(mockEmail)
+        })
+      })
+
+      test('should fail if email not found', async () => {
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+
+        await expect(
+          requestPasswordReset(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail
+          })
+        ).rejects.toThrow(
+          new PlatformError(
+            new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
+              value: mockEmail,
+              type: SocialIdType.EMAIL
+            })
+          )
+        )
+
+        expect(global.fetch).not.toHaveBeenCalled()
+      })
+
+      test('should fail if account not found', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(
+          requestPasswordReset(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail
+          })
+        ).rejects.toThrow(
+          new PlatformError(
+            new Status(Severity.ERROR, platform.status.AccountNotFound, {
+              account: mockAccountId
+            })
+          )
+        )
+
+        expect(global.fetch).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('restorePassword', () => {
+      test('should restore password and return login info', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`,
+          verifiedOn: undefined
+        }
+        const mockPerson = {
+          uuid: mockAccountId,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+        const mockAccount = { uuid: mockAccountId }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { restoreEmail: mockEmail }
+        })
+        jest
+          .spyOn(utils, 'getEmailSocialId')
+          .mockImplementationOnce(async () => mockSocialId)
+          .mockImplementationOnce(async () => ({ ...mockSocialId, verifiedOn: Date.now() }))
+        jest.spyOn(utils, 'setPassword').mockResolvedValue()
+        jest.spyOn(utils, 'verifyPassword').mockReturnValue(true)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        const result = await restorePassword(mockCtx, mockDb, mockBranding, mockToken, {
+          password: mockNewPassword
+        })
+
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          token: expect.any(String),
+          socialId: mockSocialId._id
+        })
+
+        expect(utils.setPassword).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockAccountId, mockNewPassword)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { key: mockSocialId.key },
+          { verifiedOn: expect.any(Number) }
+        )
+      })
+
+      test('should fail if restore email not in token', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: {} // No restoreEmail
+        })
+
+        await expect(
+          restorePassword(mockCtx, mockDb, mockBranding, mockToken, {
+            password: mockNewPassword
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+      })
+
+      test('should fail if email not found', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { restoreEmail: mockEmail }
+        })
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(null)
+
+        await expect(
+          restorePassword(mockCtx, mockDb, mockBranding, mockToken, {
+            password: mockNewPassword
+          })
+        ).rejects.toThrow(
+          new PlatformError(
+            new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
+              value: mockEmail,
+              type: SocialIdType.EMAIL
+            })
+          )
+        )
+      })
+    })
+  })
+
+  describe('info operations', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockBranding = null
+    const mockToken = 'test-token'
+    const mockAccountId = 'account-uuid' as AccountUuid
+
+    const mockDb = {
+      person: {
+        findOne: jest.fn()
+      },
+      socialId: {
+        find: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    describe('getSocialIds', () => {
+      test('should return confirmed social ids', async () => {
+        const mockSocialIds: SocialId[] = [
+          {
+            _id: 'social-id-1' as PersonId,
+            personUuid: mockAccountId,
+            type: SocialIdType.EMAIL,
+            value: 'test@example.com',
+            key: 'email:test@example.com',
+            verifiedOn: Date.now()
+          },
+          {
+            _id: 'social-id-2' as PersonId,
+            personUuid: mockAccountId,
+            type: SocialIdType.GITHUB,
+            value: 'testuser',
+            key: 'github:testuser',
+            verifiedOn: Date.now()
+          }
+        ]
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(mockSocialIds)
+
+        const result = await getSocialIds(mockCtx, mockDb, mockBranding, mockToken, {
+          confirmed: true,
+          includeDeleted: false
+        })
+
+        expect(result).toEqual(mockSocialIds)
+        expect(mockDb.socialId.find).toHaveBeenCalledWith({
+          personUuid: mockAccountId,
+          verifiedOn: { $gt: 0 }
+        })
+      })
+
+      test('should exclude deleted social ids when requested', async () => {
+        const mockSocialIds: SocialId[] = [
+          {
+            _id: 'social-id-1' as PersonId,
+            personUuid: mockAccountId,
+            type: SocialIdType.EMAIL,
+            value: 'test@example.com',
+            key: 'email:test@example.com',
+            verifiedOn: Date.now()
+          },
+          {
+            _id: 'social-id-2' as PersonId,
+            personUuid: mockAccountId,
+            type: SocialIdType.GITHUB,
+            value: 'testuser',
+            key: 'github:testuser',
+            verifiedOn: Date.now(),
+            isDeleted: true
+          }
+        ]
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(mockSocialIds)
+
+        const result = await getSocialIds(mockCtx, mockDb, mockBranding, mockToken, {
+          confirmed: true,
+          includeDeleted: false
+        })
+
+        expect(result).toEqual([mockSocialIds[0]])
+      })
+
+      test('should fail when requesting unconfirmed social ids', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+
+        await expect(
+          getSocialIds(mockCtx, mockDb, mockBranding, mockToken, {
+            confirmed: false,
+            includeDeleted: false
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+        expect(mockDb.socialId.find).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('getPerson', () => {
+      test('should return person info', async () => {
+        const mockPerson = {
+          uuid: mockAccountId,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await getPerson(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(result).toEqual(mockPerson)
+        expect(mockDb.person.findOne).toHaveBeenCalledWith({ uuid: mockAccountId })
+      })
+
+      test('should fail if person not found', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId
+        })
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(getPerson(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: mockAccountId }))
+        )
+      })
     })
   })
 })

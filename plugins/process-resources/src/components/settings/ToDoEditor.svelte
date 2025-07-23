@@ -18,6 +18,7 @@
   import plugin from '../../plugin'
   import ParamsEditor from './ParamsEditor.svelte'
   import ResultEditor from './ResultEditor.svelte'
+  import { Label, Toggle } from '@hcengineering/ui'
 
   export let process: Process
   export let step: Step<ProcessToDo>
@@ -34,7 +35,7 @@
     }
   }
 
-  const keys = ['title', 'user', 'dueDate', 'withRollback']
+  const keys = ['title', 'user', 'dueDate']
 
   function changeResult (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {
@@ -46,11 +47,40 @@
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
 <div class="divider" />
-<ResultEditor {step} on:chage={changeResult} />
+<div class="grid">
+  <div>
+    <Label label={plugin.string.Rollback} />
+  </div>
+  <Toggle
+    on={params.withRollback ?? true}
+    on:change={(e) => {
+      params.withRollback = e.detail
+      step.params = params
+      dispatch('change', step)
+    }}
+  />
+</div>
+<div class="divider" />
+{#key step._id}
+  <ResultEditor {step} on:chage={changeResult} />
+{/key}
 
 <style lang="scss">
   .divider {
     border-bottom: 1px solid var(--divider-color);
     margin: 1rem 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    margin: 0.25rem 2rem 0;
+    width: calc(100% - 4rem);
+    height: min-content;
   }
 </style>

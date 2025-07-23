@@ -87,7 +87,11 @@
     "Floor": "Arredondar para baixo",
     "Ceil": "Arredondar para cima",
     "Absolute": "Valor absoluto",
-    "LogAction": "Evento"
+    "LogAction": "Evento",
+    "Started": "Iniciado",
+    "Each": "Cada",
+    "CreateCard": "Criar Cartão",
+    "OnCardUpdate": "Ao atualizar o cartão"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",
@@ -101,6 +105,8 @@
     "InternalServerError": "Erro interno do servidor, contate o suporte, id de erro: {errorId}",
     "ResultNotProvided": "Resultado não fornecido",
     "EmptyFunctionResult": "Resultado da função vazio {func}",
-    "ContextValueNotProvided": "Valor de contexto não fornecido: {name}"
+    "ContextValueNotProvided": "Valor de contexto não fornecido: {name}",
+    "RequiredParamsNotProvided": "Parâmetros obrigatórios não fornecidos: {params}",
+    "TooDeepTransitionRecursion": "Recursão de transição muito profunda"
   }
 }

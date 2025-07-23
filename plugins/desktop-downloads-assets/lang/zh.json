@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "下载",
+    "Completed": "已完成",
+    "Cancelled": "已取消",
+    "Interrupted": "已中断",
+    "Paused": "已暂停",
+    "Progressing": "进行中"
+  }
+}

@@ -169,6 +169,7 @@
     "Customize": "Personalizzare",
     "GuestAccess": "Ospiti anonimi",
     "GuestAccessDescription": "Consente agli utenti anonimi di accedere all'area di lavoro in modalità sola lettura",
+    "GuestSignUpDescription": "Consente agli utenti anonimi di unirsi al tuo spazio di lavoro come ospiti con diritti di modifica limitati",
     "ManageIdentities": "Gestisci identità",
     "Release": "Rilascio",
     "ReleaseSocialId": "Rilascia ID social",

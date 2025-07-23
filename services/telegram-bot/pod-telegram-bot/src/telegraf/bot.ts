@@ -70,7 +70,7 @@ async function onReply (
   messageId: number,
   replyTo: number,
   worker: PlatformWorker,
-  username?: string
+  username: string
 ): Promise<boolean> {
   const integration = await getAnyIntegrationByTelegramId(fromTgUser)
 
@@ -78,7 +78,7 @@ async function onReply (
     return false
   }
 
-  if (integration.username !== username && username !== undefined) {
+  if (integration.username !== username) {
     void worker.updateTelegramUsername(integration.socialId, username)
   }
 
@@ -232,7 +232,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
       message.message_id,
       replyTo.message_id,
       worker,
-      ctx.from.username
+      ctx.from.username ?? ''
     )
 
     if (!isReplied) {

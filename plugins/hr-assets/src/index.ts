@@ -21,6 +21,7 @@ loadMetadata(hr.icon, {
   HR: `${icons}#hr`,
   Department: `${icons}#department`,
   Structure: `${icons}#structure`,
+  Members: `${icons}#members`,
   Vacation: `${icons}#vacation`,
   Sick: `${icons}#sick`,
   PTO: `${icons}#pto`,

@@ -83,6 +83,7 @@ export type IconComponent = Asset | AnySvelteComponent | ComponentType
 export interface Action {
   id?: string
   label: IntlString
+  labelParams?: Record<string, any>
   icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
   inline?: boolean

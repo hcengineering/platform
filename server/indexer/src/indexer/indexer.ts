@@ -30,8 +30,10 @@ import core, {
   type MeasureContext,
   type ModelDb,
   type Ref,
+  SortingOrder,
   type Space,
   type TxCUD,
+  type TxDomainEvent,
   TxProcessor,
   type WorkspaceIds,
   type WorkspaceUuid,
@@ -58,14 +60,52 @@ import type {
 } from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
 import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
+import card, { type Card } from '@hcengineering/card'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
-import { createIndexedDoc, getContent } from './utils'
+import { blobPseudoClass, createIndexedDoc, createIndexedDocFromMessage, getContent, messagePseudoClass } from './utils'
+import {
+  type ServerApi as CommunicationApi,
+  type SessionData as CommunicationSession,
+  type CreateMessageEvent,
+  type UpdatePatchEvent,
+  type RemovePatchEvent,
+  MessageEventType,
+  type Event,
+  CardEventType,
+  type UpdateCardTypeEvent,
+  type EventType,
+  type BlobPatchEvent,
+  type LinkPreviewPatchEvent,
+  type RemoveCardEvent
+} from '@hcengineering/communication-sdk-types'
+import { type AttachedBlob, type CardID, type Message, type MessageID } from '@hcengineering/communication-types'
+import { parseYaml } from '@hcengineering/communication-yaml'
+import { applyPatches } from '@hcengineering/communication-shared'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
 export * from './utils'
 
+const printThresholdMs = 2500
+
 const textLimit = 500 * 1024
+
+const messageGroupsLimit = 100
+const messagesLimit = 1000
+
+// Inner presentation in message queue differs from sdk-types,
+// also date is always filled at the output queue
+export type QueueSourced<T extends Event> = Omit<T, 'date'> & { date: string }
+
+type IndexableCommunicationEvent =
+  | QueueSourced<CreateMessageEvent>
+  | QueueSourced<UpdatePatchEvent>
+  | QueueSourced<BlobPatchEvent>
+  | QueueSourced<LinkPreviewPatchEvent>
+  | QueueSourced<RemovePatchEvent>
+  | QueueSourced<UpdateCardTypeEvent>
+  | QueueSourced<RemoveCardEvent>
 
 // Global Memory management configuration
 
@@ -167,6 +207,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
 
+  communicationSession: CommunicationSession
+
   constructor (
     readonly fulltextAdapter: FullTextAdapter,
     private readonly storage: DbAdapter,
@@ -177,9 +219,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
+    readonly communicationApi?: CommunicationApi,
     readonly listener?: FulltextListener
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
+    this.communicationSession = { account: systemAccount, asyncData: [] }
   }
 
   async getIndexClassess (): Promise<{ domain: Domain, classes: Ref<Class<Doc>>[] }[]> {
@@ -217,6 +261,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx.warn('verify document structure', { workspace: this.workspace.uuid })
 
     let processed = 0
+    let processedCommunication = 0
+    let hasCards = false
     await ctx.with('reindex-domain', { domain }, async (ctx) => {
       // Iterate over all domain documents and add appropriate entries
       const allDocs = this.storage.rawFind(ctx, domain)
@@ -238,6 +284,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               // Skip non indexable classes
               continue
             }
+            if (!hasCards && this.hierarchy.isDerived(v, card.class.Card)) {
+              hasCards = true
+            }
 
             await this.indexDocuments(ctx, v, values, pushQueue)
             await control?.heartbeat()
@@ -250,7 +299,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           // Find the next threshold to print
 
           const now = platformNow()
-          if (now - lastPrint > 2500) {
+          if (now - lastPrint > printThresholdMs) {
             ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
             lastPrint = now
           }
@@ -261,8 +310,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       } finally {
         await allDocs.close()
       }
+      if (hasCards) {
+        await ctx.with('reindex-communication', {}, async (ctx) => {
+          try {
+            const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+            processedCommunication = await this.indexCommunication(ctx, control, pushQueue)
+            await pushQueue.waitProcessing()
+          } catch (err: any) {
+            ctx.error('failed to restore index state', { err })
+          }
+        })
+      }
     })
-    ctx.warn('reinex done', { domain, processed })
+    ctx.info('reindex done', { domain, processed, processedCommunication })
   }
 
   async dropWorkspace (control?: ConsumerControl): Promise<void> {
@@ -466,14 +526,193 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await rateLimit.waitProcessing()
   }
 
-  public async processDocuments (ctx: MeasureContext, result: TxCUD<Doc>[], control: ConsumerControl): Promise<void> {
+  async indexCommunication (
+    ctx: MeasureContext,
+    control: ConsumerControl | undefined,
+    pushQueue: ElasticPushQueue
+  ): Promise<number> {
+    const communicationApi = this.communicationApi
+    if (communicationApi === undefined) {
+      return 0
+    }
+    let processed = 0
+    const cardsInfo = new Map<CardID, { space: Ref<Space>, _class: Ref<Class<Doc>> }>()
+    const rateLimit = new RateLimiter(10)
+    let lastPrint = 0
+    await ctx.with('process-message-groups', {}, async (ctx) => {
+      let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
+        limit: messageGroupsLimit,
+        order: SortingOrder.Ascending
+      })
+      while (groups.length > 0) {
+        if (this.cancelling) {
+          return processed
+        }
+        for (const group of groups) {
+          if (control !== undefined) {
+            await control.heartbeat()
+          }
+          try {
+            let cardInfo = cardsInfo.get(group.cardId)
+            if (cardInfo === undefined) {
+              const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: group.cardId }, { limit: 1 })
+              if (cardDoc.length !== 1) {
+                continue
+              }
+              cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+              cardsInfo.set(group.cardId, cardInfo)
+            }
+            const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+            const messagesFile = Buffer.concat(blob as any).toString()
+            const messagesParsedFile = parseYaml(messagesFile)
+            let patchedMessages
+            if (group.patches !== undefined && group.patches.length > 0) {
+              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
+              patchedMessages = messagesParsedFile.messages.map((message) => {
+                const patches = patchesByMessage.get(message.id) ?? []
+                if (patches.length === 0) {
+                  return message
+                } else {
+                  return applyPatches(message, patches)
+                }
+              })
+            } else {
+              patchedMessages = messagesParsedFile.messages
+            }
+            for (const message of patchedMessages) {
+              if (message.removed) {
+                continue
+              }
+              await rateLimit.exec(async () => {
+                await this.processCommunicationMessage(
+                  ctx,
+                  pushQueue,
+                  group.cardId,
+                  cardInfo.space,
+                  cardInfo._class,
+                  message
+                )
+              })
+              processed += 1
+              const now = platformNow()
+              if (now - lastPrint > printThresholdMs) {
+                ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+                lastPrint = now
+              }
+            }
+          } catch (err: any) {
+            ctx.error('Failed to process message group', {
+              cardId: group.cardId,
+              blobId: group.blobId,
+              error: err
+            })
+            Analytics.handleError(err)
+          }
+        }
+        if (this.cancelling) {
+          return processed
+        }
+        groups = await communicationApi.findMessagesGroups(this.communicationSession, {
+          limit: messageGroupsLimit,
+          order: SortingOrder.Ascending,
+          fromDate: {
+            greater: groups[groups.length - 1].toDate
+          }
+        })
+      }
+    })
+    await ctx.with('process-messages', {}, async (ctx) => {
+      let messages = await communicationApi.findMessages(this.communicationSession, {
+        links: true,
+        files: true,
+        limit: messagesLimit,
+        order: SortingOrder.Ascending
+      })
+      while (messages.length > 0) {
+        for (const message of messages) {
+          if (control !== undefined) {
+            await control.heartbeat()
+          }
+          try {
+            let cardInfo = cardsInfo.get(message.cardId)
+            if (cardInfo === undefined) {
+              const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: message.cardId }, { limit: 1 })
+              if (cardDoc.length !== 1) {
+                continue
+              }
+              cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+              cardsInfo.set(message.cardId, cardInfo)
+            }
+            if (this.cancelling) {
+              return processed
+            }
+            await rateLimit.exec(async () => {
+              await this.processCommunicationMessage(
+                ctx,
+                pushQueue,
+                message.cardId,
+                cardInfo.space,
+                cardInfo._class,
+                message
+              )
+            })
+          } catch (err: any) {
+            ctx.error('Failed to processed message', {
+              cardId: message.cardId,
+              id: message.id,
+              error: err
+            })
+          }
+          processed += 1
+          const now = platformNow()
+          if (now - lastPrint > printThresholdMs) {
+            ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+            lastPrint = now
+          }
+        }
+        messages = await communicationApi.findMessages(this.communicationSession, {
+          links: true,
+          files: true,
+          limit: messagesLimit,
+          order: SortingOrder.Ascending,
+          created: {
+            greater: messages[messages.length - 1].created
+          }
+        })
+      }
+    })
+    await rateLimit.waitProcessing()
+    return processed
+  }
+
+  public async processTransactions (
+    ctx: MeasureContext,
+    result: (TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>)[],
+    control: ConsumerControl
+  ): Promise<void> {
     const contextData = this.createContextData()
     ctx.contextData = contextData
-    // Find documents matching query
+
+    const indexableCommunicationEventTypes: Array<EventType> = [
+      MessageEventType.CreateMessage,
+      MessageEventType.UpdatePatch,
+      MessageEventType.BlobPatch,
+      MessageEventType.LinkPreviewPatch,
+      MessageEventType.RemovePatch,
+      CardEventType.UpdateCardType,
+      CardEventType.RemoveCard
+    ]
+
+    const docEvents = result.filter((tx) => tx._class !== core.class.TxDomainEvent) as TxCUD<Doc>[]
+    const messageEvents = result.filter(
+      (tx) =>
+        tx._class === core.class.TxDomainEvent &&
+        (tx as TxDomainEvent<any>).domain === 'communication' &&
+        indexableCommunicationEventTypes.includes((tx as TxDomainEvent<QueueSourced<Event>>).event.type)
+    ) as any as TxDomainEvent<IndexableCommunicationEvent>[]
 
     // We need to update hierarchy and local model if required.
-
-    for (const tx of result) {
+    for (const tx of docEvents) {
       try {
         this.hierarchy.tx(tx)
         const domain = this.hierarchy.findDomain(tx.objectClass)
@@ -486,7 +725,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
     }
 
-    const byClass = groupByArray<TxCUD<Doc>, Ref<Class<Doc>>>(result, (it) => it.objectClass)
+    const byClass = groupByArray<TxCUD<Doc>, Ref<Class<Doc>>>(docEvents, (it) => it.objectClass)
 
     const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
 
@@ -509,6 +748,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
     }
 
+    const messagesByCardId = groupByArray(messageEvents, (e) => e.event.cardId)
+    for (const [cardId, txes] of messagesByCardId) {
+      try {
+        await this.processCommunicationEvents(ctx, pushQueue, cardId, txes, toRemove)
+      } catch (err: any) {
+        ctx.error('failed to index communication', { err, cardId })
+        Analytics.handleError(err)
+      }
+    }
+
     try {
       if (toRemove.length !== 0) {
         // We need to add broadcast information
@@ -527,6 +776,140 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     await pushQueue.waitProcessing()
     this.scheduleBroadcast()
+  }
+
+  private async processCommunicationEvents (
+    ctx: MeasureContext,
+    pushQueue: ElasticPushQueue,
+    cardId: CardID,
+    txes: TxDomainEvent<IndexableCommunicationEvent>[],
+    toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[]
+  ): Promise<void> {
+    const communicationApi = this.communicationApi
+    if (communicationApi === undefined) {
+      return
+    }
+    const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
+      const messages = await communicationApi.findMessages(this.communicationSession, {
+        card: cardId,
+        id: msgId,
+        links: true,
+        files: true
+      })
+      if (messages.length === 1) {
+        return messages[0]
+      }
+      const messagesGroups = await communicationApi.findMessagesGroups(this.communicationSession, {
+        card: cardId,
+        messageId: msgId
+      })
+      if (messagesGroups.length !== 1) {
+        return undefined
+      }
+      const group = messagesGroups[0]
+      const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+      const messagesFile = Buffer.concat(blob as any).toString()
+      const messagesParsedFile = parseYaml(messagesFile)
+      const message = messagesParsedFile.messages.find((m) => m.id === msgId)
+      if (group.patches === undefined || message === undefined) {
+        return message
+      }
+      const relevantPatches = group.patches.filter((p) => p.messageId === msgId)
+      if (relevantPatches.length === 0) {
+        return message
+      } else {
+        return applyPatches(message, relevantPatches)
+      }
+    }
+    const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
+    // If message was already fully replaced, other transactions can skip the message
+    const messagesUpdated = new Set<MessageID>()
+    for (const tx of txes) {
+      if (
+        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch, MessageEventType.LinkPreviewPatch].includes(
+          tx.event.type as any
+        )
+      ) {
+        const event = tx.event as
+          | QueueSourced<CreateMessageEvent>
+          | QueueSourced<UpdatePatchEvent>
+          | QueueSourced<LinkPreviewPatchEvent>
+        if (event.messageId === undefined) {
+          continue
+        }
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        const message = await getMessage(cardId, event.messageId)
+        if (message === undefined) {
+          continue
+        }
+        await this.processCommunicationMessage(ctx, pushQueue, cardDoc._id, cardDoc.space, cardDoc._class, message)
+        messagesUpdated.add(event.messageId)
+      } else if (tx.event.type === MessageEventType.BlobPatch) {
+        const event = tx.event
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        for (const operation of event.operations) {
+          if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
+            for (const blobData of operation.blobs) {
+              const attachedBlob = Object.assign(blobData, {
+                creator: event.socialId,
+                created: new Date(Date.parse(event.date))
+              })
+              await this.processCommunicationBlob(
+                ctx,
+                pushQueue,
+                {
+                  id: `${event.messageId}@${cardDoc._id}` as any,
+                  _class: [messagePseudoClass],
+                  space: cardDoc.space,
+                  attachedTo: cardDoc._id
+                },
+                attachedBlob as AttachedBlob
+              )
+            }
+          } else if (operation.opcode === 'detach') {
+            for (const blobId of operation.blobIds) {
+              toRemove.push({
+                _id: `${blobId}@${cardDoc._id}` as Ref<Doc>,
+                _class: blobPseudoClass
+              })
+            }
+          }
+        }
+      } else if (tx.event.type === MessageEventType.RemovePatch) {
+        const event = tx.event
+        messagesUpdated.add(event.messageId)
+        await this.fulltextAdapter.removeByQuery(ctx, this.workspace.uuid, {
+          _class: blobPseudoClass,
+          attachedTo: `${event.messageId}@${event.cardId}` as Ref<Doc>
+        })
+        toRemove.push({
+          _id: `${event.messageId}@${event.cardId}` as any,
+          _class: messagePseudoClass
+        })
+      } else if (tx.event.type === CardEventType.UpdateCardType) {
+        const event = tx.event
+        await this.fulltextAdapter.updateByQuery(
+          ctx,
+          this.workspace.uuid,
+          { _class: messagePseudoClass, attachedTo: event.cardId },
+          { attachedToClass: event.cardType }
+        )
+      } else if (tx.event.type === CardEventType.RemoveCard) {
+        const event = tx.event
+        await this.fulltextAdapter.removeByQuery(ctx, this.workspace.uuid, {
+          _class: messagePseudoClass,
+          attachedTo: event.cardId
+        })
+        await this.fulltextAdapter.removeByQuery(ctx, this.workspace.uuid, {
+          _class: blobPseudoClass,
+          attachedToCard: event.cardId
+        })
+      }
+    }
   }
 
   private async loadDocsFromTx (
@@ -637,17 +1020,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           return
         }
       }
-      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspace, ref)
-      if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
-        // We have blob, we need to decode it to string.
-        const contentType = (docInfo.contentType ?? '').split(';')[0]
-
-        if (contentType.includes('text/') || contentType.includes('application/vnd.github.VERSION.diff')) {
-          await this.handleTextBlob(ctx, docInfo, indexedDoc)
-        } else if (isBlobAllowed(contentType)) {
-          await this.handleBlob(ctx, docInfo, indexedDoc)
-        }
-      }
+      await this.handleBlobRef(ctx, ref, indexedDoc)
     } catch (err: any) {
       ctx.warn('faild to process text content', {
         id: doc._id,
@@ -656,6 +1029,104 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         err: err.message,
         workspace: this.workspace.uuid
       })
+    }
+  }
+
+  @withContext('process-communication-message')
+  private async processCommunicationMessage (
+    ctx: MeasureContext<any>,
+    pushQueue: ElasticPushQueue,
+    cardId: CardID,
+    cardSpace: Ref<Space>,
+    cardClass: Ref<Class<Card>>,
+    message: Pick<
+    Message,
+    'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'blobs' | 'thread' | 'linkPreviews'
+    >
+  ): Promise<void> {
+    const indexedDoc = createIndexedDocFromMessage(cardId, cardSpace, cardClass, message)
+    const markup = markdownToMarkup(message.content)
+    let textContent = jsonToText(markup)
+    textContent = textContent
+      .split(/ +|\t+|\f+/)
+      .filter((it) => it)
+      .join(' ')
+      .split(/\n\n+/)
+      .join('\n')
+    indexedDoc.fulltextSummary = textContent
+    for (const linkPreview of message.linkPreviews) {
+      if (linkPreview.title !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.title
+      }
+      if (linkPreview.siteName !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.siteName
+      }
+      if (linkPreview.description !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.description
+      }
+    }
+    if (this.listener?.onIndexing !== undefined) {
+      await this.listener.onIndexing(indexedDoc)
+    }
+    await pushQueue.push(indexedDoc)
+    for (const blob of message.blobs) {
+      await this.processCommunicationBlob(ctx, pushQueue, indexedDoc, blob)
+    }
+  }
+
+  @withContext('process-communication-blob')
+  private async processCommunicationBlob (
+    ctx: MeasureContext<any>,
+    pushQueue: ElasticPushQueue,
+    parentDoc: { id: Ref<Doc>, _class: Ref<Class<Doc>>[], space: Ref<Space>, attachedTo?: Ref<Doc> },
+    blob: AttachedBlob
+  ): Promise<void> {
+    try {
+      const indexedDoc: IndexedDoc = {
+        id: `${blob.blobId}@${parentDoc.attachedTo}` as any,
+        _class: [`${card.class.Card}%blob` as Ref<Class<Doc>>],
+        space: parentDoc.space,
+        [docKey('createdOn', core.class.Doc)]: blob.created.getTime(),
+        [docKey('createdBy', core.class.Doc)]: blob.creator,
+        modifiedBy: blob.creator,
+        modifiedOn: blob.created.getTime(),
+        attachedTo: parentDoc.id,
+        attachedToClass: parentDoc._class[0],
+        searchTitle: blob.fileName,
+        searchShortTitle: blob.fileName,
+        attachedToCard: parentDoc.attachedTo
+      }
+      indexedDoc.fulltextSummary = ''
+      await this.handleBlobRef(ctx, blob.blobId, indexedDoc, blob.mimeType)
+      if (this.listener?.onIndexing !== undefined) {
+        await this.listener.onIndexing(indexedDoc)
+      }
+      await pushQueue.push(indexedDoc)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to handle blob', { err, _id: blob.blobId, workspace: this.workspace.uuid })
+    }
+  }
+
+  private async handleBlobRef (
+    ctx: MeasureContext<any>,
+    ref: Ref<Blob>,
+    indexedDoc: IndexedDoc,
+    defaultContentType: string = ''
+  ): Promise<void> {
+    const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspace, ref)
+    if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
+      // We have blob, we need to decode it to string.
+      const contentType = (docInfo.contentType ?? defaultContentType).split(';')[0]
+
+      if (
+        (contentType.includes('text/') && contentType !== 'text/rtf') ||
+        contentType.includes('application/vnd.github.VERSION.diff')
+      ) {
+        await this.handleTextBlob(ctx, docInfo, indexedDoc)
+      } else if (isBlobAllowed(contentType)) {
+        await this.handleBlob(ctx, docInfo, indexedDoc)
+      }
     }
   }
 
@@ -710,6 +1181,8 @@ function isBlobAllowed (contentType: string): boolean {
     !contentType.includes('image/') &&
     !contentType.includes('video/') &&
     !contentType.includes('binary/octet-stream') &&
-    !contentType.includes('application/octet-stream')
+    !contentType.includes('application/octet-stream') &&
+    !contentType.includes('application/zip') &&
+    !contentType.includes('application/x-zip-compressed')
   )
 }

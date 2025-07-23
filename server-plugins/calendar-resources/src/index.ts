@@ -23,6 +23,7 @@ import core, {
   DocumentQuery,
   FindOptions,
   FindResult,
+  getDiffUpdate,
   Hierarchy,
   PersonId,
   pickPrimarySocialId,
@@ -205,11 +206,11 @@ async function onEventMixin (ctx: TxMixin<Event, Event>, control: TriggerControl
 
 async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const ops = ctx.operations
-  const { visibility, ...otherOps } = ops
+  const { visibility, user, ...otherOps } = ops
   if (Object.keys(otherOps).length === 0) return []
   const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
   if (event === undefined) return []
-  if (ctx.modifiedBy !== core.account.System) {
+  if (ctx.modifiedBy !== core.account.System && event.access === 'owner') {
     void sendEventToService(event, 'update', control)
   }
   void putEventToQueue(control, 'update', event, ctx.modifiedBy, ops)
@@ -233,15 +234,18 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
       res.push(outerTx)
     } else {
       newParticipants.delete(person)
-      const innerTx = control.txFactory.createTxUpdateDoc(ev._class, ev.space, ev._id, { ...otherOps })
-      const outerTx = control.txFactory.createTxCollectionCUD(
-        ev.attachedToClass,
-        ev.attachedTo,
-        ev.space,
-        ev.collection,
-        innerTx
-      )
-      res.push(outerTx)
+      const update = getDiffUpdate(ev, otherOps)
+      if (Object.keys(update).length !== 0) {
+        const innerTx = control.txFactory.createTxUpdateDoc(ev._class, ev.space, ev._id, update)
+        const outerTx = control.txFactory.createTxCollectionCUD(
+          ev.attachedToClass,
+          ev.attachedTo,
+          ev.space,
+          ev.collection,
+          innerTx
+        )
+        res.push(outerTx)
+      }
     }
   }
   if (newParticipants.size === 0) return res
@@ -355,7 +359,7 @@ async function putEventToQueue (
 
 async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const event = TxProcessor.createDoc2Doc(ctx)
-  if (ctx.modifiedBy !== core.account.System) {
+  if (ctx.modifiedBy !== core.account.System && event.access === 'owner') {
     void sendEventToService(event, 'create', control)
   }
   void putEventToQueue(control, 'create', event, ctx.modifiedBy)
@@ -395,7 +399,7 @@ async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl):
   const removed = control.removedMap.get(ctx.objectId) as Event
   const res: Tx[] = []
   if (removed !== undefined) {
-    if (ctx.modifiedBy !== core.account.System) {
+    if (ctx.modifiedBy !== core.account.System && removed.access === 'owner') {
       void sendEventToService(removed, 'delete', control)
     }
     void putEventToQueue(control, 'delete', removed, ctx.modifiedBy)

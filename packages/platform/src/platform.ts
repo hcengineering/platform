@@ -172,6 +172,7 @@ export default plugin(platformId, {
     MailboxError: '' as StatusCode<{ reason: string }>,
     SocialIdAlreadyExists: '' as StatusCode,
     ReadOnlyAccount: '' as StatusCode,
+    RegularAccount: '' as StatusCode,
     SystemAccount: '' as StatusCode
   },
   metadata: {

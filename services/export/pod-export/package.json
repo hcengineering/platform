@@ -19,6 +19,8 @@
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js --keep-names=true",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/export",
+    "docker:tbuild": "docker build -t hardcoreeng/export . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/export",
+    "docker:abuild": "docker build -t hardcoreeng/export . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/export",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/export staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/export",
     "format": "format src",

@@ -7,6 +7,7 @@ import { SentryAnalyticProvider } from './sentry'
 
 export * from './logging'
 export * from './sentry'
+export * from '@hcengineering/measurements-otlp'
 
 export function configureAnalytics (sentryDSN: string | undefined, config?: Record<string, any>): void {
   const providers: AnalyticProvider[] = []

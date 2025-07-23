@@ -55,6 +55,7 @@ export interface Card extends Doc, IconProps {
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
+  readonly?: boolean
 }
 
 export interface CardSpace extends Space {

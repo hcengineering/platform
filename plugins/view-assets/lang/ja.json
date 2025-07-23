@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "含む",
+    "NotContains": "含まない",
     "MoveClass": "{class} を移動",
     "SelectToMove": "移動先の {classLabel} を選択してください。",
     "Delete": "削除",
@@ -46,6 +47,8 @@
     "CustomizeView": "ビューをカスタマイズ",
     "Filter": "フィルター",
     "ClearFilters": "フィルターをクリア",
+    "FilterLessThan": "未満",
+    "FilterGreaterThan": "より大きい",
     "FilterIsNot": "ではない",
     "FilterIsEither": "である",
     "FilterIsEitherPlural": "である",
@@ -130,9 +133,12 @@
     "Document": "ドキュメント",
     "Loading": "読み込み中...",
     "NoRelations": "関係なし",
-    "ReadOnlyWarningTitle": "✨ ゲストデモ",
-    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — 完全アクセスには登録してください！",
-    "ReadOnlySignUp": "サインアップ \uD83D\uDE80",
+    "ReadOnlyWarningTitle": "✨ 匿名ゲストデモ",
+    "ReadOnlyWarningMessage": "閲覧モードです。選択してください：このワークスペースに参加して共同作業（ゲストとして）するか、独自のスペースを作成してプロジェクトを完全に管理（タスク、期限、チーム）しましょう！",
+    "ReadOnlyJoinWorkspace": "ワークスペースに参加{icon}",
+    "ReadOnlySignUp": "ワークスペースを作成{icon}",
+    "PermissionWarningTitle": "✨ アクセスレベルを上げましょう！",
+    "PermissionWarningMessage": "現在のロールの権限は制限されています。この機能や他の高度な機能を利用するには、ワークスペース管理者にアクセスレベルのアップグレードを依頼してください！",
     "Icon": "アイコン",
     "Color": "色",
     "AutomationOnly": "自動化のみ"
