@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
@@ -7,7 +7,7 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import serverToken, { decodeToken, type Token } from '@hcengineering/server-token'
 import { IncomingHttpHeaders } from 'http'
 
-import { SplitLogger } from '@hcengineering/analytics-service'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { join } from 'path'
 import config from './config'
 import { PlatformWorker } from './platform'
@@ -28,7 +28,7 @@ const extractToken = (headers: IncomingHttpHeaders): Token | undefined => {
 export const main = async (): Promise<void> => {
   const ctx = initStatisticsContext('telegram', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'telegram',
         {},
         {},

@@ -14,8 +14,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
@@ -37,7 +37,7 @@ export const main = async (): Promise<void> => {
 
   const metricsContext = initStatisticsContext('backup-api', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'backup-api',
         {},
         {},

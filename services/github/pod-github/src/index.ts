@@ -3,14 +3,14 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { SplitLogger, configureAnalytics, createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
 import config from './config'
 import { start } from './server'
-import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 
 // Load and inc startID, to have easy logs.
 
@@ -19,7 +19,7 @@ setMetadata(serverToken.metadata.Service, 'github')
 
 const metricsContext = initStatisticsContext('github', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'github',
       {},
       {},

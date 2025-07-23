@@ -84,6 +84,8 @@ export interface MeasureContext<Q = any> {
     fullParams?: FullParamsType | (() => FullParamsType)
   ) => Promise<T>
 
+  withoutTracing: <T>(op: () => T) => T
+
   withSync: <T>(
     name: string,
     params: ParamsType,

@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { createServer, listen } from './server'
-import config from './config'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { join } from 'path'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
+import { join } from 'path'
+import config from './config'
+import { createServer, listen } from './server'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
@@ -38,7 +38,7 @@ export const main = async (): Promise<void> => {
 
   const metricsContext = initStatisticsContext('billing', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'billing',
         {},
         {},

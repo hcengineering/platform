@@ -26,7 +26,7 @@ import {
 } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { type MeasureContext, MeasureMetricsContext } from './measurements'
+import { type MeasureContext, MeasureMetricsContext } from '@hcengineering/measurements'
 import { ModelDb } from './memdb'
 import type {
   DocumentQuery,

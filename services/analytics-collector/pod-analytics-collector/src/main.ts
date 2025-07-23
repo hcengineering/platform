@@ -14,21 +14,21 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 import serverClient from '@hcengineering/server-client'
+import serverToken from '@hcengineering/server-token'
 
 import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { SplitLogger, configureAnalytics, createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { join } from 'path'
 
-import config from './config'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import config from './config'
 import { createServer, listen } from './server'
 
 const ctx = initStatisticsContext('analytics-collector', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'analytics-collector-service',
       {},
       {},

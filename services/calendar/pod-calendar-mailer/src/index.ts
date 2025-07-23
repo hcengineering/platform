@@ -13,22 +13,22 @@
 // limitations under the License.
 //
 
-import { join } from 'path'
 import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
-import { getPlatformQueue } from '@hcengineering/kafka'
+import { join } from 'path'
 import config from './config'
+import { eventCreated, eventDeleted, eventMixin, eventUpdated } from './handlers'
 import { EventCUDMessage } from './types'
-import { eventCreated, eventUpdated, eventDeleted, eventMixin } from './handlers'
 
 async function main (): Promise<void> {
   const ctx = initStatisticsContext('calendar-mailer', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'calendar-mailer',
         {},
         {},

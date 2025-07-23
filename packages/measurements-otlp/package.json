@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/analytics-service",
+  "name": "@hcengineering/measurements-otlp",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -38,13 +38,20 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/measurements-otlp": "^0.6.0",
-    "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^5.0.0",
-    "@sentry/node": "^9.22.0"
+    "@hcengineering/measurements": "^0.6.0",
+    "@sentry/node": "^9.22.0",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/sdk-logs": "^0.203.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-trace-node": "^2.0.1",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/core": "^2.0.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.203.0",
+    "@opentelemetry/otlp-exporter-base": "^0.203.0",
+    "@opentelemetry/id-generator-aws-xray": "^2.0.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.203.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

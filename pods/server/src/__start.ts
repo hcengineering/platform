@@ -4,9 +4,9 @@
 
 // Add this to the VERY top of the first file loaded in your app
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import contactPlugin from '@hcengineering/contact'
-import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
+import { newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { setDBExtraOptions } from '@hcengineering/postgres'
@@ -50,7 +50,7 @@ const metricsContext = initStatisticsContext('transactor', {
     return getStats()
   },
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'server',
       {},
       {},
