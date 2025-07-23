@@ -12,28 +12,30 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { Message, MessageType } from '@hcengineering/communication-types'
+  import { Message } from '@hcengineering/communication-types'
   import { Icon, Label, tooltip } from '@hcengineering/ui'
   import communication from '@hcengineering/communication'
+  import { isBlobAttachment } from '@hcengineering/communication-shared'
 
-  import FilesTooltip from './FilesTooltip.svelte'
+  import AttachmentsTooltip from './AttachmentsTooltip.svelte'
 
   export let message: Message
 
-  $: showFiles = message.blobs.length > 0
+  $: blobs = message.attachments.filter(isBlobAttachment) ?? []
+  $: showFiles = blobs.length > 0
 </script>
 
 {#if showFiles}
   {#if message.content.trim().length > 0}
-    <span class="attachments" use:tooltip={{ component: FilesTooltip, props: { blobs: message.blobs } }}>
-      {message.blobs.length}
+    <span class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments: blobs } }}>
+      {blobs.length}
       <Icon icon={communication.icon.File} size="small" />
     </span>
   {:else}
     <span class="attachments-text font-normal overflow-label">
       <Label label={communication.string.Files} />:
-      <span class="ml-1 overflow-label" use:tooltip={{ component: FilesTooltip, props: { blobs: message.blobs } }}>
-        {message.blobs.map(({ fileName }) => fileName).join(', ')}
+      <span class="ml-1 overflow-label" use:tooltip={{ component: AttachmentsTooltip, props: { attachments: blobs } }}>
+        {blobs.map((it) => it.params.fileName).join(', ')}
       </span>
     </span>
   {/if}

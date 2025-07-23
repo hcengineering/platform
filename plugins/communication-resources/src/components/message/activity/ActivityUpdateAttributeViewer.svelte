@@ -15,23 +15,39 @@
 <script lang="ts">
   import { AttributeModel } from '@hcengineering/view'
   import { ActivityAttributeUpdate } from '@hcengineering/communication-types'
+  import { getClient } from '@hcengineering/presentation'
+  import { Class, Ref } from '@hcengineering/core'
+  import { Card } from '@hcengineering/card'
+  import { Component } from '@hcengineering/ui'
 
   import ActivitySetAttributesViewer from './ActivitySetAttributeViewer.svelte'
   import ActivityAddAttributeViewer from './ActivityAddAttributeViewer.svelte'
   import ActivityRemoveAttributeViewer from './ActivityRemoveAttributeViewer.svelte'
+  import communication from '../../../plugin'
 
-  export let model: AttributeModel
+  export let model: AttributeModel | undefined
   export let update: ActivityAttributeUpdate
+  export let cardType: Ref<Class<Card>>
+
+  const client = getClient()
+  $: customPresenter = client.getModel().findAllSync(communication.class.CustomActivityPresenter, {
+    attribute: update.attrKey,
+    type: cardType
+  })[0]
 </script>
 
-{#if update?.set !== undefined}
-  <ActivitySetAttributesViewer {model} value={update.set} />
-{/if}
+{#if customPresenter}
+  <Component is={customPresenter.component} props={{ update }} />
+{:else}
+  {#if update?.set !== undefined && model}
+    <ActivitySetAttributesViewer {model} value={update.set} />
+  {/if}
 
-{#if (update.added?.length ?? 0) > 0}
-  <ActivityAddAttributeViewer {model} value={update.added ?? []} />
-{/if}
+  {#if model && (update.added?.length ?? 0) > 0}
+    <ActivityAddAttributeViewer {model} value={update.added ?? []} />
+  {/if}
 
-{#if (update.removed?.length ?? 0) > 0}
-  <ActivityRemoveAttributeViewer {model} value={update.removed ?? []} />
+  {#if model && (update.removed?.length ?? 0) > 0}
+    <ActivityRemoveAttributeViewer {model} value={update.removed ?? []} />
+  {/if}
 {/if}

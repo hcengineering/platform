@@ -16,7 +16,7 @@ import { type Card } from '@hcengineering/card'
 import { getCurrentAccount, type Markup } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
-import { type LinkPreviewData, type Message } from '@hcengineering/communication-types'
+import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
 import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
@@ -109,7 +109,7 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   }
 }
 
-export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData | undefined> {
+export async function loadLinkPreviewParams (url: string): Promise<LinkPreviewParams | undefined> {
   try {
     const meta = await fetchLinkPreviewDetails(url)
     if (canDisplayLinkPreview(meta) && meta.url !== undefined && meta.host !== undefined) {
