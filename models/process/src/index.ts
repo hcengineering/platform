@@ -220,6 +220,7 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
   category: AttributeCategory | undefined
   label!: IntlString
   editor?: AnyComponent
+  presenter?: AnyComponent
   allowMany?: boolean
   type!: 'transform' | 'reduce' | 'context'
 }

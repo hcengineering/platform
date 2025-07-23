@@ -162,6 +162,7 @@ export interface ProcessFunction extends Doc {
   type: 'transform' | 'reduce' | 'context'
   of: Ref<Class<Doc>>
   editor?: AnyComponent
+  presenter?: AnyComponent
   category: AttributeCategory | undefined
   allowMany?: boolean
   label: IntlString
