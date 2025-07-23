@@ -21,32 +21,32 @@ import core, {
   type AttachedDoc,
   type Blob,
   type Class,
-  DOMAIN_MODEL,
   type Doc,
-  type Domain,
-  type FullTextSearchContext,
-  type Hierarchy,
-  type IdMap,
-  type MeasureContext,
-  type ModelDb,
-  type Ref,
-  SortingOrder,
-  type Space,
-  type TxCUD,
-  type TxDomainEvent,
-  TxProcessor,
-  type WorkspaceIds,
-  type WorkspaceUuid,
   docKey,
+  type Domain,
+  DOMAIN_MODEL,
+  type FullTextSearchContext,
   getFullTextIndexableAttributes,
   groupByArray,
+  type Hierarchy,
+  type IdMap,
   isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
+  type MeasureContext,
+  type ModelDb,
   platformNow,
+  type Ref,
+  SortingOrder,
+  type Space,
   systemAccount,
   toIdMap,
-  withContext
+  type TxCUD,
+  type TxDomainEvent,
+  TxProcessor,
+  withContext,
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import drivePlugin, { type FileVersion } from '@hcengineering/drive'
 import type {
@@ -65,23 +65,30 @@ import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { blobPseudoClass, createIndexedDoc, createIndexedDocFromMessage, getContent, messagePseudoClass } from './utils'
 import {
+  type AttachmentPatchEvent,
+  type BlobPatchEvent,
+  CardEventType,
+  type CreateMessageEvent,
+  type Event,
+  type EventType,
+  MessageEventType,
+  type RemoveCardEvent,
+  type RemovePatchEvent,
   type ServerApi as CommunicationApi,
   type SessionData as CommunicationSession,
-  type CreateMessageEvent,
-  type UpdatePatchEvent,
-  type RemovePatchEvent,
-  MessageEventType,
-  type Event,
-  CardEventType,
   type UpdateCardTypeEvent,
-  type EventType,
-  type BlobPatchEvent,
-  type LinkPreviewPatchEvent,
-  type RemoveCardEvent
+  type UpdatePatchEvent
 } from '@hcengineering/communication-sdk-types'
-import { type AttachedBlob, type CardID, type Message, type MessageID } from '@hcengineering/communication-types'
+import {
+  type AttachmentID,
+  type BlobAttachment,
+  type BlobParams,
+  type CardID,
+  type Message,
+  type MessageID
+} from '@hcengineering/communication-types'
 import { parseYaml } from '@hcengineering/communication-yaml'
-import { applyPatches } from '@hcengineering/communication-shared'
+import { applyPatches, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
@@ -102,7 +109,7 @@ type IndexableCommunicationEvent =
   | QueueSourced<CreateMessageEvent>
   | QueueSourced<UpdatePatchEvent>
   | QueueSourced<BlobPatchEvent>
-  | QueueSourced<LinkPreviewPatchEvent>
+  | QueueSourced<AttachmentPatchEvent> // TODO: handle
   | QueueSourced<RemovePatchEvent>
   | QueueSourced<UpdateCardTypeEvent>
   | QueueSourced<RemoveCardEvent>
@@ -623,8 +630,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
     await ctx.with('process-messages', {}, async (ctx) => {
       let messages = await communicationApi.findMessages(this.communicationSession, {
-        links: true,
-        files: true,
+        attachments: true,
         limit: messagesLimit,
         order: SortingOrder.Ascending
       })
@@ -671,8 +677,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           }
         }
         messages = await communicationApi.findMessages(this.communicationSession, {
-          links: true,
-          files: true,
+          attachments: true,
           limit: messagesLimit,
           order: SortingOrder.Ascending,
           created: {
@@ -697,7 +702,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       MessageEventType.CreateMessage,
       MessageEventType.UpdatePatch,
       MessageEventType.BlobPatch,
-      MessageEventType.LinkPreviewPatch,
+      MessageEventType.AttachmentPatch,
       MessageEventType.RemovePatch,
       CardEventType.UpdateCardType,
       CardEventType.RemoveCard
@@ -793,8 +798,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const messages = await communicationApi.findMessages(this.communicationSession, {
         card: cardId,
         id: msgId,
-        links: true,
-        files: true
+        attachments: true
       })
       if (messages.length === 1) {
         return messages[0]
@@ -826,14 +830,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const messagesUpdated = new Set<MessageID>()
     for (const tx of txes) {
       if (
-        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch, MessageEventType.LinkPreviewPatch].includes(
+        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch].includes(
           tx.event.type as any
         )
       ) {
         const event = tx.event as
           | QueueSourced<CreateMessageEvent>
           | QueueSourced<UpdatePatchEvent>
-          | QueueSourced<LinkPreviewPatchEvent>
         if (event.messageId === undefined) {
           continue
         }
@@ -854,10 +857,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         for (const operation of event.operations) {
           if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
             for (const blobData of operation.blobs) {
-              const attachedBlob = Object.assign(blobData, {
+              const blobAttachment: Omit<BlobAttachment, 'type'> = {
+                id: blobData.blobId as any as AttachmentID,
+                params: blobData as BlobParams,
                 creator: event.socialId,
                 created: new Date(Date.parse(event.date))
-              })
+              }
+
               await this.processCommunicationBlob(
                 ctx,
                 pushQueue,
@@ -867,7 +873,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   space: cardDoc.space,
                   attachedTo: cardDoc._id
                 },
-                attachedBlob as AttachedBlob
+                blobAttachment
               )
             }
           } else if (operation.opcode === 'detach') {
@@ -879,6 +885,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
           }
         }
+      } else if (tx.event.type === MessageEventType.AttachmentPatch) {
+        // TODO: implement
       } else if (tx.event.type === MessageEventType.RemovePatch) {
         const event = tx.event
         messagesUpdated.add(event.messageId)
@@ -1041,7 +1049,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     cardClass: Ref<Class<Card>>,
     message: Pick<
     Message,
-    'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'blobs' | 'thread' | 'linkPreviews'
+    'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'thread' | 'attachments'
     >
   ): Promise<void> {
     const indexedDoc = createIndexedDocFromMessage(cardId, cardSpace, cardClass, message)
@@ -1054,7 +1062,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       .split(/\n\n+/)
       .join('\n')
     indexedDoc.fulltextSummary = textContent
-    for (const linkPreview of message.linkPreviews) {
+    const linkPreviews = message.attachments.filter(isLinkPreviewAttachment).map((it) => it.params)
+    for (const linkPreview of linkPreviews) {
       if (linkPreview.title !== undefined) {
         indexedDoc.fulltextSummary += '\n' + linkPreview.title
       }
@@ -1069,7 +1078,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.listener.onIndexing(indexedDoc)
     }
     await pushQueue.push(indexedDoc)
-    for (const blob of message.blobs) {
+
+    const blobs = message.attachments.filter(isBlobAttachment)
+    for (const blob of blobs) {
       await this.processCommunicationBlob(ctx, pushQueue, indexedDoc, blob)
     }
   }
@@ -1079,32 +1090,32 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx: MeasureContext<any>,
     pushQueue: ElasticPushQueue,
     parentDoc: { id: Ref<Doc>, _class: Ref<Class<Doc>>[], space: Ref<Space>, attachedTo?: Ref<Doc> },
-    blob: AttachedBlob
+    blobAttachment: Omit<BlobAttachment, 'type'>
   ): Promise<void> {
     try {
       const indexedDoc: IndexedDoc = {
-        id: `${blob.blobId}@${parentDoc.attachedTo}` as any,
+        id: `${blobAttachment.id}@${parentDoc.attachedTo}` as any,
         _class: [`${card.class.Card}%blob` as Ref<Class<Doc>>],
         space: parentDoc.space,
-        [docKey('createdOn', core.class.Doc)]: blob.created.getTime(),
-        [docKey('createdBy', core.class.Doc)]: blob.creator,
-        modifiedBy: blob.creator,
-        modifiedOn: blob.created.getTime(),
+        [docKey('createdOn', core.class.Doc)]: blobAttachment.created.getTime(),
+        [docKey('createdBy', core.class.Doc)]: blobAttachment.creator,
+        modifiedBy: blobAttachment.creator,
+        modifiedOn: blobAttachment.created.getTime(),
         attachedTo: parentDoc.id,
         attachedToClass: parentDoc._class[0],
-        searchTitle: blob.fileName,
-        searchShortTitle: blob.fileName,
+        searchTitle: blobAttachment.params.fileName,
+        searchShortTitle: blobAttachment.params.fileName,
         attachedToCard: parentDoc.attachedTo
       }
       indexedDoc.fulltextSummary = ''
-      await this.handleBlobRef(ctx, blob.blobId, indexedDoc, blob.mimeType)
+      await this.handleBlobRef(ctx, blobAttachment.params.blobId, indexedDoc, blobAttachment.params.mimeType)
       if (this.listener?.onIndexing !== undefined) {
         await this.listener.onIndexing(indexedDoc)
       }
       await pushQueue.push(indexedDoc)
     } catch (err: any) {
       Analytics.handleError(err)
-      ctx.error('failed to handle blob', { err, _id: blob.blobId, workspace: this.workspace.uuid })
+      ctx.error('failed to handle blob', { err, attachmentId: blobAttachment.id, blobId: blobAttachment.params.blobId, workspace: this.workspace.uuid })
     }
   }
 
