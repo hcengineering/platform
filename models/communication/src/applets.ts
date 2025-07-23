@@ -21,7 +21,7 @@ export function buildApplets (builder: Builder): void {
     communication.class.Applet,
     core.space.Model,
     {
-      type: 'application/applet.poll',
+      type: 'application/vnd.huly.applet.poll',
       label: communication.string.Poll,
       icon: communication.icon.Poll,
       component: communication.poll.PollPresenter,

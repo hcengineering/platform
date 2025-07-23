@@ -829,14 +829,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     // If message was already fully replaced, other transactions can skip the message
     const messagesUpdated = new Set<MessageID>()
     for (const tx of txes) {
-      if (
-        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch].includes(
-          tx.event.type as any
-        )
-      ) {
-        const event = tx.event as
-          | QueueSourced<CreateMessageEvent>
-          | QueueSourced<UpdatePatchEvent>
+      if ([MessageEventType.CreateMessage, MessageEventType.UpdatePatch].includes(tx.event.type as any)) {
+        const event = tx.event as QueueSourced<CreateMessageEvent> | QueueSourced<UpdatePatchEvent>
         if (event.messageId === undefined) {
           continue
         }
@@ -1047,10 +1041,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     cardId: CardID,
     cardSpace: Ref<Space>,
     cardClass: Ref<Class<Card>>,
-    message: Pick<
-    Message,
-    'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'thread' | 'attachments'
-    >
+    message: Pick<Message, 'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'thread' | 'attachments'>
   ): Promise<void> {
     const indexedDoc = createIndexedDocFromMessage(cardId, cardSpace, cardClass, message)
     const markup = markdownToMarkup(message.content)
@@ -1115,7 +1106,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await pushQueue.push(indexedDoc)
     } catch (err: any) {
       Analytics.handleError(err)
-      ctx.error('failed to handle blob', { err, attachmentId: blobAttachment.id, blobId: blobAttachment.params.blobId, workspace: this.workspace.uuid })
+      ctx.error('failed to handle blob', {
+        err,
+        attachmentId: blobAttachment.id,
+        blobId: blobAttachment.params.blobId,
+        workspace: this.workspace.uuid
+      })
     }
   }
 
