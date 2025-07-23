@@ -142,6 +142,7 @@ describe('GmailClient', () => {
   const mockContext: MeasureContext = {
     info: jest.fn(),
     error: jest.fn(),
+    warn: jest.fn(),
     measure: jest.fn().mockImplementation((name: string, fn: () => any) => fn()),
     with: jest.fn().mockImplementation((data: any, fn: () => any) => fn())
   } as any
@@ -214,6 +215,7 @@ describe('GmailClient', () => {
     jest.spyOn(TokenStorage.prototype, 'saveToken').mockResolvedValue({} as any)
     jest.spyOn(TokenStorage.prototype, 'deleteToken').mockResolvedValue()
     jest.spyOn(SyncManager.prototype, 'sync').mockResolvedValue()
+    jest.spyOn(SyncManager.prototype, 'fullSync').mockResolvedValue()
   })
 
   it('should create a GmailClient instance', async () => {
@@ -363,5 +365,202 @@ describe('GmailClient', () => {
     await client.initIntegration()
 
     expect(mockContext.info).toHaveBeenCalledWith('Init integration', expect.any(Object))
+  })
+
+  describe('initIntegration', () => {
+    let client: GmailClient
+    let mockTxOperations: any
+
+    beforeEach(async () => {
+      mockTxOperations = {
+        findAll: jest.fn(),
+        findOne: jest.fn(),
+        createDoc: jest.fn(),
+        update: jest.fn(),
+        remove: jest.fn(),
+        updateDoc: jest.fn(),
+        tx: jest.fn()
+      }
+
+      client = await GmailClient.create(
+        mockContext as any,
+        mockCredentials,
+        mockUser,
+        mockClient as any,
+        mockWorkspaceClient as any,
+        mockWorkspaceId,
+        mockStorageAdapter as any
+      )
+
+      // Replace the private TxOperations instance
+      Object.defineProperty(client, 'client', {
+        value: mockTxOperations,
+        writable: true
+      })
+
+      // Mock the methods that are called with void in initIntegration
+      jest.spyOn(client, 'startSync' as any).mockResolvedValue(undefined)
+      jest.spyOn(client, 'getNewMessagesAfterAuth').mockResolvedValue(undefined)
+    })
+
+    it('should use active integration if it exists', async () => {
+      const activeIntegration = {
+        _id: 'active-integration-1',
+        value: 'test@example.com',
+        disabled: false,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      mockTxOperations.findAll.mockResolvedValue([activeIntegration])
+
+      await client.initIntegration()
+
+      expect(mockTxOperations.findAll).toHaveBeenCalledWith('class.Integration', {
+        createdBy: mockSocialId._id,
+        type: 'gmail',
+        value: 'test@example.com'
+      })
+
+      // Should not update the active integration
+      expect(mockTxOperations.update).not.toHaveBeenCalled()
+      // Should not create new integration
+      expect(mockTxOperations.createDoc).not.toHaveBeenCalled()
+    })
+
+    it('should enable disabled integration if no active one exists', async () => {
+      const disabledIntegration = {
+        _id: 'disabled-integration-1',
+        value: 'test@example.com',
+        disabled: true,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      mockTxOperations.findAll.mockResolvedValue([disabledIntegration])
+
+      await client.initIntegration()
+
+      expect(mockTxOperations.update).toHaveBeenCalledWith(disabledIntegration, {
+        disabled: false
+      })
+
+      // Should not create new integration
+      expect(mockTxOperations.createDoc).not.toHaveBeenCalled()
+    })
+
+    it('should prefer active integration over disabled one', async () => {
+      const activeIntegration = {
+        _id: 'active-integration-1',
+        value: 'test@example.com',
+        disabled: false,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      const disabledIntegration = {
+        _id: 'disabled-integration-1',
+        value: 'test@example.com',
+        disabled: true,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      mockTxOperations.findAll.mockResolvedValue([disabledIntegration, activeIntegration])
+
+      await client.initIntegration()
+
+      // Should not update the active integration
+      expect(mockTxOperations.update).not.toHaveBeenCalledWith(activeIntegration, expect.any(Object))
+      // Should not create new integration
+      expect(mockTxOperations.createDoc).not.toHaveBeenCalled()
+    })
+
+    it('should disable multiple active integrations and keep one', async () => {
+      const activeIntegration1 = {
+        _id: 'active-integration-1',
+        value: 'test@example.com',
+        disabled: false,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      const activeIntegration2 = {
+        _id: 'active-integration-2',
+        value: 'test@example.com',
+        disabled: false,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      mockTxOperations.findAll.mockResolvedValue([activeIntegration1, activeIntegration2])
+
+      await client.initIntegration()
+
+      // Should disable one of the active integrations
+      expect(mockTxOperations.update).toHaveBeenCalledWith(activeIntegration2, {
+        disabled: true
+      })
+
+      // Should warn about multiple active integrations
+      expect(mockContext.warn).toHaveBeenCalledWith(
+        'Found several active integrations for the same email, disabling one',
+        {
+          email: 'test@example.com',
+          integrationId: 'active-integration-2'
+        }
+      )
+
+      // Should not create new integration
+      expect(mockTxOperations.createDoc).not.toHaveBeenCalled()
+    })
+
+    it('should handle mixed active and disabled integrations correctly', async () => {
+      const activeIntegration = {
+        _id: 'active-integration-1',
+        value: 'test@example.com',
+        disabled: false,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      const disabledIntegration1 = {
+        _id: 'disabled-integration-1',
+        value: 'test@example.com',
+        disabled: true,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      const disabledIntegration2 = {
+        _id: 'disabled-integration-2',
+        value: 'test@example.com',
+        disabled: true,
+        type: 'gmail',
+        createdBy: mockSocialId._id
+      }
+
+      mockTxOperations.findAll.mockResolvedValue([disabledIntegration1, activeIntegration, disabledIntegration2])
+
+      await client.initIntegration()
+
+      // Should not update any integration (disabled ones should remain disabled, active one should remain active)
+      expect(mockTxOperations.update).not.toHaveBeenCalled()
+
+      // Should not create new integration
+      expect(mockTxOperations.createDoc).not.toHaveBeenCalled()
+    })
+
+    it('should handle errors gracefully', async () => {
+      mockTxOperations.findAll.mockRejectedValue(new Error('Database error'))
+
+      await client.initIntegration()
+
+      expect(mockContext.info).toHaveBeenCalledWith('Failed to start message sync', {
+        workspaceUuid: mockUser.workspace,
+        userId: mockUser.userId,
+        error: 'Database error'
+      })
+    })
   })
 })
