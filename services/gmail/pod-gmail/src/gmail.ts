@@ -102,6 +102,7 @@ export class GmailClient {
   private readonly syncManager: SyncManager
   private readonly integrationToken: string
   private integration: Integration | undefined = undefined
+  private syncStarted: boolean = false
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -388,8 +389,27 @@ export class GmailClient {
   }
 
   async startSync (): Promise<void> {
+    if (this.syncStarted) {
+      this.ctx.info('Sync already started, skipping duplicate call', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        email: this.email
+      })
+      return
+    }
+
+    this.syncStarted = true
     this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
-    await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
+    try {
+      await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
+    } catch (err: any) {
+      this.ctx.error('Failed to start sync', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        email: this.email,
+        error: err.message
+      })
+    }
     await this.watch()
     // recall every 24 hours https://developers.google.com/gmail/api/guides/push
     this.watchTimer = setInterval(() => {
@@ -532,6 +552,11 @@ export class GmailClient {
         requestBody: {
           topicName: config.WATCH_TOPIC_NAME
         }
+      })
+      this.ctx.info('Gmail watch established successfully', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        topicName: config.WATCH_TOPIC_NAME
       })
     } catch (err) {
       this.ctx.error('Watch error', {

@@ -70,8 +70,12 @@ export class WorkspaceClient {
   async createGmailClient (user: User, authCode?: string): Promise<GmailClient> {
     const current = user.socialId?._id !== undefined ? this.getGmailClient(user.socialId?._id) : undefined
     if (current !== undefined) return current
-    this.ctx.info('Creating new gmail client', { workspaceUuid: this.workspace, userId: user.userId })
-    this.ctx.info('Creating new gmail user', { user })
+    this.ctx.info('Creating new gmail client', {
+      workspaceUuid: this.workspace,
+      userId: user.userId,
+      email: user.email,
+      socialId: user.socialId?._id
+    })
     const newClient = await GmailClient.create(
       this.ctx,
       this.credentials,
