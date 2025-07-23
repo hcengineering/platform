@@ -41,10 +41,13 @@
 
   let fromState: ListItem | undefined
 
-  $: from = fromState?._id as Ref<State>
+  $: from = (fromState?._id as Ref<State>) ?? null
 
   const client = getClient()
-  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: false })
+  const withoutFrom =
+    client.getModel().findAllSync(plugin.class.Transition, { from: null, process: process._id })[0] === undefined
+
+  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: withoutFrom })
   let trigger: Ref<Trigger> = triggers[0]._id
 
   $: triggerValue = triggers.find((t) => t._id === trigger)
@@ -82,14 +85,18 @@
 >
   <div class="grid">
     <Label label={plugin.string.From} />
-    <Dropdown
-      items={statesItems}
-      bind:selected={fromState}
-      placeholder={plugin.string.From}
-      justify={'left'}
-      width={'100%'}
-      kind={'no-border'}
-    />
+    {#if !withoutFrom}
+      <Dropdown
+        items={statesItems}
+        bind:selected={fromState}
+        placeholder={plugin.string.From}
+        justify={'left'}
+        width={'100%'}
+        kind={'no-border'}
+      />
+    {:else}
+      <div>⦳</div>
+    {/if}
     <Label label={plugin.string.To} />
     <Dropdown
       items={statesItems}
