@@ -170,6 +170,8 @@
     "GuestAccess": "Anonymní hosté",
     "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení",
     "GuestSignUpDescription": "Umožňuje anonymním uživatelům připojit se k vašemu pracovnímu prostoru jako hosté s omezenými editačními právy",
+    "GuestCardsDescription": "Karty, kde mohou hosté komunikovat po připojení k pracovnímu prostoru",
+    "GuestCardsArrayLabel": "Vybrat karty pro komunikaci",
     "ManageIdentities": "Spravovat identity",
     "Release": "Uvolnění",
     "ReleaseSocialId": "Uvolnit sociální ID",

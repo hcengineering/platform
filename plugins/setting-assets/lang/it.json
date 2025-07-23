@@ -170,6 +170,8 @@
     "GuestAccess": "Ospiti anonimi",
     "GuestAccessDescription": "Consente agli utenti anonimi di accedere all'area di lavoro in modalità sola lettura",
     "GuestSignUpDescription": "Consente agli utenti anonimi di unirsi al tuo spazio di lavoro come ospiti con diritti di modifica limitati",
+    "GuestCardsDescription": "Schede in cui gli ospiti possono comunicare dopo essersi uniti allo spazio di lavoro",
+    "GuestCardsArrayLabel": "Seleziona schede per la comunicazione",
     "ManageIdentities": "Gestisci identità",
     "Release": "Rilascio",
     "ReleaseSocialId": "Rilascia ID social",

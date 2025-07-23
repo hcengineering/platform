@@ -238,13 +238,6 @@
 
   $: query.query(communication.class.GuestCommunicationSettings, {}, (settings) => {
     existingGuestChatSettings = settings[0]
-    /* existingInviteSettings = set
-    if (existingInviteSettings !== undefined && existingInviteSettings.length > 0) {
-      expTime = existingInviteSettings[0].expirationTime
-      mask = existingInviteSettings[0].emailMask
-      limit = existingInviteSettings[0].limit
-    } */
-    console.log(settings)
   })
 
   async function onAllowedCardsChange (value: Ref<Card>[]): Promise<void> {
@@ -351,7 +344,8 @@
             />
           </div>
           <div class="flex-row-center flex-gap-4">
-            <Component is={card.component.CardArrayEditor} props={{ value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [], label: settingsRes.string.General, onChange: onAllowedCardsChange }}/>
+            <Label label={settingsRes.string.GuestCardsDescription} />
+            <Component is={card.component.CardArrayEditor} props={{ value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [], label: settingsRes.string.GuestCardsArrayLabel, onChange: onAllowedCardsChange }}/>
           </div>
           <div class="delete">
             <Button
