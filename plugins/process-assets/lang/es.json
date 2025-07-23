@@ -1,6 +1,10 @@
 {
   "string": {
     "Method": "Método",
+    "Insert": "Insertar",
+    "Remove": "Eliminar",
+    "RemoveFirst": "Quitar primero",
+    "RemoveLast": "Quitar último",
     "Execution": "Ejecución",
     "Process": "Proceso",
     "Step": "Paso",

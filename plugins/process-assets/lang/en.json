@@ -96,7 +96,11 @@
     "ArraySizeGt": "Size greater than",
     "ArraySizeGte": "Size greater than or equal",
     "ArraySizeLt": "Size less than",
-    "ArraySizeLte": "Size less than or equal"
+    "ArraySizeLte": "Size less than or equal",
+    "Insert": "Insert",
+    "Remove": "Remove",
+    "RemoveFirst": "Remove first",
+    "RemoveLast": "Remove last"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

@@ -74,6 +74,7 @@ export default mergeIds(processId, process, {
     RefCriteria: '' as AnyComponent
   },
   transformEditor: {
+    ArrayElementEditor: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     AppendEditor: '' as AnyComponent,
@@ -138,6 +139,10 @@ export default mergeIds(processId, process, {
     Offset: '' as IntlString,
     Value: '' as IntlString,
     FirstWorkingDayAfter: '' as IntlString,
+    Insert: '' as IntlString,
+    Remove: '' as IntlString,
+    RemoveFirst: '' as IntlString,
+    RemoveLast: '' as IntlString,
     FallbackValueError: '' as IntlString,
     Required: '' as IntlString,
     ParallelExecutionForbidden: '' as IntlString,

@@ -51,7 +51,7 @@
     }
     showPopup(
       ConfigurePopup,
-      { contextValue, attrClass, masterTag, category, attribute, context, onChange, allowArray, forbidValue },
+      { contextValue, attrClass, process, category, attribute, context, onChange, allowArray, forbidValue },
       eventToHTMLElement(e)
     )
   }
