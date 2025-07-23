@@ -82,7 +82,7 @@
 >
   <Label label={attribute.label} />
 </span>
-<div class="text-input" class:context={contextValue}>
+<div class="text-input">
   {#if contextValue}
     <ContextValue
       {process}
@@ -110,6 +110,7 @@
           width={'100%'}
           justify={'left'}
           type={attribute?.type}
+          showNavigate={false}
           {value}
           {onChange}
           {focus}
@@ -151,12 +152,6 @@
 
     .button {
       flex-shrink: 0;
-    }
-
-    &.context {
-      background: #3575de33;
-      padding-left: 0.75rem;
-      border-color: var(--primary-button-default);
     }
   }
 </style>

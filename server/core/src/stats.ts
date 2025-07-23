@@ -1,7 +1,6 @@
 import type { MeasureContext, Metrics } from '@hcengineering/core'
-import { concatLink, MeasureMetricsContext, metricsToString, newMetrics, systemAccountUuid } from '@hcengineering/core'
+import { concatLink, MeasureMetricsContext, newMetrics, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { writeFile } from 'fs/promises'
 import os from 'os'
 
 export interface MemoryStatistics {
@@ -79,14 +78,13 @@ export function initStatisticsContext (
   serviceName: string,
   ops?: {
     logFile?: string
-    logConsole?: boolean
-    factory?: () => MeasureMetricsContext
+    factory?: () => MeasureContext
     getStats?: () => WorkspaceStatistics[]
     statsUrl?: string
     serviceName?: () => string
   }
 ): MeasureContext {
-  let metricsContext: MeasureMetricsContext
+  let metricsContext: MeasureContext
   if (ops?.factory !== undefined) {
     metricsContext = ops.factory()
   } else {
@@ -95,16 +93,10 @@ export function initStatisticsContext (
 
   const statsUrl = ops?.statsUrl ?? process.env.STATS_URL
 
-  const metricsFile = ops?.logFile
-
   let errorToSend = 0
 
-  if (metricsFile !== undefined || ops?.logConsole === true || statsUrl !== undefined) {
+  if (statsUrl !== undefined) {
     metricsContext.info('using stats url', { statsUrl, service: serviceName ?? '' })
-    if (metricsFile !== undefined) {
-      console.info('storing measurements into local file', metricsFile)
-    }
-    let oldMetricsValue = ''
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
     let prev: Promise<void> | Promise<any> | undefined
@@ -120,20 +112,6 @@ export function initStatisticsContext (
 
     const intTimer = setInterval(() => {
       try {
-        if (metricsFile !== undefined || ops?.logConsole === true) {
-          const val = metricsToString(metricsContext.metrics, serviceName, 140)
-          if (val !== oldMetricsValue) {
-            oldMetricsValue = val
-            if (metricsFile !== undefined) {
-              void writeFile(metricsFile, val).catch((err) => {
-                console.error(err)
-              })
-            }
-            if (ops?.logConsole === true) {
-              console.info('METRICS:', val)
-            }
-          }
-        }
         if (prev !== undefined) {
           // In case of high load, skip
           return
@@ -150,14 +128,17 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              authorization: `Bearer ${token}`
-            },
-            body: statData
-          })
+          prev = metricsContext
+            .withoutTracing(() =>
+              fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  authorization: `Bearer ${token}`
+                },
+                body: statData
+              })
+            )
             .finally(() => {
               prev = undefined
             })

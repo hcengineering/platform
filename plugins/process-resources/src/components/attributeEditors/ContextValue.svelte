@@ -16,7 +16,7 @@
   import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { Context, Process, SelectedContext } from '@hcengineering/process'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import ConfigurePopup from './ConfigurePopup.svelte'
@@ -58,9 +58,22 @@
 </script>
 
 {#if configurable}
-  <button on:click={configure}>
-    <ContextValuePresenter {contextValue} {context} {process} />
-  </button>
+  <Button kind={'ghost'} on:click={configure} width={'100%'} shrink={1} justify={'left'} padding={'0.25rem'}>
+    <svelte:fragment slot="content">
+      <ContextValuePresenter {contextValue} {context} {process} />
+    </svelte:fragment>
+  </Button>
 {:else}
-  <ContextValuePresenter {contextValue} {context} {process} />
+  <div class="container">
+    <ContextValuePresenter {contextValue} {context} {process} />
+  </div>
 {/if}
+
+<style>
+  .container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.25rem;
+  }
+</style>

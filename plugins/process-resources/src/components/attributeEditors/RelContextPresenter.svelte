@@ -26,5 +26,16 @@
 {#if contextValue.key === '_id'}
   {relation.name}
 {:else if relation !== undefined && attr}
-  {relation.name} > <Label label={attr.label} />
+  {relation.name}
+  <span class="attr">
+    <Label label={attr.label} />
+  </span>
 {/if}
+
+<style lang="scss">
+  .attr {
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--theme-navpanel-color);
+  }
+</style>

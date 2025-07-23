@@ -13,19 +13,19 @@
 // limitations under the License.
 //
 
-import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
-import { join } from 'path'
+import { type SendMailOptions } from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
+import { join } from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureContext, newMetrics } from '@hcengineering/core'
 import { initStatisticsContext } from '@hcengineering/server-core'
-import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 
 import config from './config'
-import { createServer, listen } from './server'
 import { MailClient } from './mail'
+import { createServer, listen } from './server'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
@@ -33,7 +33,7 @@ export const main = async (): Promise<void> => {
   Analytics.setTag('application', 'mail')
   const measureCtx = initStatisticsContext('mail', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'mail',
         {},
         {},

@@ -26,7 +26,7 @@ export {
   configUserAccountUuid
 } from './component'
 export * from './hierarchy'
-export * from './measurements'
+export * from '@hcengineering/measurements'
 export * from './memdb'
 export * from './objvalue'
 export * from './operations'

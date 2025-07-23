@@ -423,6 +423,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/measurements",
+      "projectFolder": "packages/measurements",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/measurements-otlp",
+      "projectFolder": "packages/measurements-otlp",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/core",
       "projectFolder": "packages/core",
       "shouldPublish": true

@@ -13,26 +13,26 @@
 // limitations under the License.
 //
 
-import cors from 'cors'
-import express, { NextFunction, Request, Response } from 'express'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureContext, newMetrics } from '@hcengineering/core'
+import { closeQueue, initQueue } from '@hcengineering/mail-common'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
-import { initQueue, closeQueue } from '@hcengineering/mail-common'
+import cors from 'cors'
+import express, { NextFunction, Request, Response } from 'express'
+import { join } from 'path'
 
-import { handleMtaHook } from './handlerMta'
-import config from './config'
 import { baseConfig } from './client'
+import config from './config'
+import { handleMtaHook } from './handlerMta'
 
 type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
 async function main (): Promise<void> {
   const ctx = initStatisticsContext('inbound-mail', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'inbound-mail',
         {},
         {},

@@ -160,6 +160,7 @@ services:
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   stats:
     image: hardcoreeng/stats
@@ -170,6 +171,7 @@ services:
     environment:
       - PORT=4900
       - SERVER_SECRET=secret
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
@@ -198,6 +200,7 @@ services:
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
       - MAIL_URL=
       # - INIT_WORKSPACE=staging-dev
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
@@ -215,6 +218,7 @@ services:
       - ACCOUNTS_URL=http://huly.local:3000
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   front:
     image: hardcoreeng/front
@@ -246,7 +250,7 @@ services:
       - GITHUB_URL=http://huly.local:3500
       - PRINT_URL=http://huly.local:4005
       - SIGN_URL=http://huly.local:4006
-#      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
+      #      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://huly.local:8087/branding.json
@@ -255,6 +259,7 @@ services:
       - BACKUP_URL=http://huly.local:4039/api/backup,
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
@@ -296,6 +301,7 @@ services:
       - RATE_LIMIT_WINDOW=30000
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
       - COMMUNICATION_API_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -306,6 +312,7 @@ services:
       - 4004:4004
     environment:
       - STATS_URL=http://huly.local:4901
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   fulltext_cockroach:
     image: hardcoreeng/fulltext
     extra_hosts:
@@ -332,6 +339,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   print:
     image: hardcoreeng/print
     extra_hosts:
@@ -346,6 +354,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
       - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   sign:
     image: hardcoreeng/sign
     extra_hosts:
@@ -368,6 +377,7 @@ services:
       - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4900
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   # aiBot:
   #   image: hardcoreeng/ai-bot
   #   ports:
@@ -418,6 +428,7 @@ services:
       - SECRET=secret
       - SERVICE_ID=msg2file-service
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   export:
     image: hardcoreeng/export
     extra_hosts:
@@ -435,6 +446,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   datalake:
     image: hardcoreeng/datalake
     extra_hosts:
@@ -459,6 +471,7 @@ services:
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
       - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   hulykvs:
     image: hardcoreeng/hulykvs
@@ -511,6 +524,7 @@ services:
       - INTERVAL=60
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - WORKSPACE_STORAGE=${STORAGE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   backup-api:
     image: hardcoreeng/backup-api
@@ -532,6 +546,23 @@ services:
       - STATS_URL=http://huly.local:4900
       - BUCKET_NAME=backups
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 16686:16686 # Web UI
+      - 4317:4317
+      - 4318:4318
+    volumes:
+      - telemetry:/badger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
     restart: unless-stopped
 volumes:
   db:
@@ -540,3 +571,4 @@ volumes:
   elastic:
   cockroach_db:
   redpanda:
+  telemetry:

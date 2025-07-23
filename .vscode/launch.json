@@ -202,8 +202,9 @@
         // "WORKSPACE_LIMIT_PER_USER": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
+        "MINIO_ENDPOINT": "localhost",
         // "DISABLE_SIGNUP": "true",
+        "OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

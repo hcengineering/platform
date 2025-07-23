@@ -14,8 +14,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics, type Tx } from '@hcengineering/core'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { join } from 'path'
 
@@ -41,7 +41,7 @@ setMetadata(serverToken.metadata.Service, 'fulltext')
 
 const metricsContext = initStatisticsContext('fulltext', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'fulltext',
       {},
       {},

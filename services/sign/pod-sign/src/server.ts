@@ -14,21 +14,21 @@
 // limitations under the License.
 //
 
-import { generateId, MeasureMetricsContext, newMetrics, type WorkspaceIds } from '@hcengineering/core'
+import { AccountClient, getClient as getAccountClientRaw, isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { generateId, newMetrics, type WorkspaceIds } from '@hcengineering/core'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
 
-import { type Branding, type BrandingMap, extractBranding } from './branding'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { join } from 'path'
+import { extractBranding, type Branding, type BrandingMap } from './branding'
 import config from './config'
 import { ApiError } from './error'
 import { signPDF } from './sign'
 import { extractToken } from './token'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
 
 function getAccountClient (token: string): AccountClient {
   return getAccountClientRaw(config.AccountsUrl, token)
@@ -77,7 +77,7 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
   const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = initStatisticsContext('sign', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'sign',
         {},
         {},

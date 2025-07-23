@@ -14,9 +14,9 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { startBackup } from '@hcengineering/backup-service'
-import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { newMetrics, type Tx } from '@hcengineering/core'
 import { initStatisticsContext, type PipelineFactory } from '@hcengineering/server-core'
 import {
   createBackupPipeline,
@@ -56,7 +56,7 @@ process.on('exit', () => {
 
 const metricsContext = initStatisticsContext('backup', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'backup',
       {},
       {},

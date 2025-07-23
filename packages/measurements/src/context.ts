@@ -1,6 +1,6 @@
 // Basic performance metrics suite.
 
-import { generateId, platformNow, platformNowDiff } from '../utils'
+import { platformNow, platformNowDiff } from '.'
 import { childMetrics, newMetrics, updateMeasure } from './metrics'
 import {
   type FullParamsType,
@@ -21,7 +21,7 @@ function replacer (value: any): any {
   return value instanceof Error ? errorPrinter(value) : value
 }
 
-const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
+export const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
   info: (msg, args) => {
     console.info(
       msg,
@@ -45,9 +45,9 @@ const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
   logOperation: (operation, time, params) => {}
 })
 
-const noParamsLogger = consoleLogger({})
+export const noParamsLogger = consoleLogger({})
 
-const nullPromise = Promise.resolve()
+export const nullPromise = Promise.resolve()
 
 /**
  * @public
@@ -146,6 +146,10 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
+  withoutTracing<T>(op: () => T): T {
+    return op()
+  }
+
   withSync<T>(
     name: string,
     params: ParamsType,
@@ -231,6 +235,10 @@ export class NoMetricsContext implements MeasureContext {
     return r instanceof Promise ? r : Promise.resolve(r)
   }
 
+  withoutTracing<T>(op: () => T): T {
+    return op()
+  }
+
   withSync<T>(
     name: string,
     params: ParamsType,
@@ -290,6 +298,8 @@ export function setOperationLogProfiling (value: boolean): void {
   operationProfiling = value
 }
 
+let globalId: number = 0
+
 export function registerOperationLog (ctx: MeasureContext): { opLogMetrics?: Metrics, op?: OperationLog } {
   if (!operationProfiling) {
     return {}
@@ -298,7 +308,7 @@ export function registerOperationLog (ctx: MeasureContext): { opLogMetrics?: Met
   let opLogMetrics: Metrics | undefined
 
   if (ctx.id === undefined) {
-    ctx.id = 'op_' + generateId()
+    ctx.id = 'op_' + (++globalId).toString(16)
   }
   if (ctx.metrics !== undefined) {
     if (ctx.metrics.opLog === undefined) {

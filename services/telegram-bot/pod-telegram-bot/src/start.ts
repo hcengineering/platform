@@ -14,15 +14,15 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
+import { TelegramQueueMessage, TelegramQueueMessageType } from '@hcengineering/server-telegram'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
-import { getPlatformQueue } from '@hcengineering/kafka'
-import { TelegramQueueMessage, TelegramQueueMessageType } from '@hcengineering/server-telegram'
 
 import config from './config'
 import { registerLoaders } from './loaders'
@@ -32,7 +32,7 @@ import { PlatformWorker } from './worker'
 
 const ctx = initStatisticsContext('telegram-bot', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'telegram-bot-service',
       {},
       {},
