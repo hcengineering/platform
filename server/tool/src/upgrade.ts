@@ -127,6 +127,10 @@ export class MigrateClientImpl implements MigrationClient {
     await this.lowLevel.rawDeleteMany(domain, query)
   }
 
+  async fullReindex (): Promise<void> {
+    await this.queue.send(this.wsIds.uuid, [workspaceEvents.fullReindex()])
+  }
+
   async reindex (domain: Domain, classes: Ref<Class<Doc>>[]): Promise<void> {
     await this.queue.send(this.wsIds.uuid, [workspaceEvents.reindex(domain, classes)])
   }

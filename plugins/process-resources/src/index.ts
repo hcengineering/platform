@@ -50,13 +50,22 @@ import AddRelationPresenter from './components/presenters/AddRelationPresenter.s
 import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
 import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
 import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import CardUpdateEditor from './components/settings/CardUpdateEditor.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
+import DateCriteria from './components/criterias/DateCriteria.svelte'
+import BooleanCriteria from './components/criterias/BooleanCriteria.svelte'
+import NumberCriteria from './components/criterias/NumberCriteria.svelte'
+import StringCriteria from './components/criterias/StringCriteria.svelte'
+import RefCriteria from './components/criterias/RefCriteria.svelte'
+import EnumCriteria from './components/criterias/EnumCriteria.svelte'
+import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
+import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
 import { ProcessMiddleware } from './middleware'
-import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
+import { continueExecution, showDoneQuery, todoTranstionCheck, updateCardTranstionCheck } from './utils'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -90,6 +99,7 @@ export default async (): Promise<Resources> => ({
     TriggerPresenter,
     ToDoRemoveEditor: ToDoRemoveParamsEditor,
     ToDoCloseEditor: ToDoParamsEditor,
+    CardUpdateEditor,
     ProcessesCardSection,
     TransitionEditor,
     TransitionRefPresenter,
@@ -98,7 +108,17 @@ export default async (): Promise<Resources> => ({
     CreateCardEditor,
     CreateCardPresenter,
     AddRelationEditor,
-    AddRelationPresenter
+    AddRelationPresenter,
+    CardUpdatePresenter
+  },
+  criteriaEditor: {
+    DateCriteria,
+    StringCriteria,
+    BooleanCriteria,
+    NumberCriteria,
+    RefCriteria,
+    EnumCriteria,
+    ArrayCriteria
   },
   transformEditor: {
     DateOffsetEditor,
@@ -109,6 +129,7 @@ export default async (): Promise<Resources> => ({
     CutEditor
   },
   triggerCheck: {
+    UpdateCheck: updateCardTranstionCheck,
     ToDo: todoTranstionCheck
   },
   function: {

@@ -370,8 +370,7 @@ export class GithubWorker implements IntegrationManager {
         key: buildSocialIdString({
           type: SocialIdType.GITHUB,
           value: userInfo.login.toLowerCase()
-        }),
-        verifiedOn: Date.now()
+        })
       },
       socialId as SocialIdentityRef
     )

@@ -24,6 +24,10 @@ export const LoginEvents = {
   LoginGoogle: 'login.viaGoogle',
   LoginGithub: 'login.viaGitHub',
 
+  LoginGuestStarted: 'login.guest.started',
+  LoginGuestCompleted: 'login.guest.completed',
+  LoginGuestError: 'login.guest.error',
+
   CreateWorkspace: 'onboard.createWorkspace',
   SelectWorkspace: 'onboard.selectWorkspace'
 }

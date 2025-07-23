@@ -3,6 +3,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import { type ProviderInfo } from '@hcengineering/account-client'
   import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
+  import { Analytics } from '@hcengineering/analytics'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { getProviders } from '../utils'
@@ -60,13 +61,28 @@
 
     return concatLink(accountsUrl, path)
   }
+
+  function handleProviderClick (provider: Provider): void {
+    const currentPath = location.path[1]
+    const isSignUp = currentPath === 'signup'
+    const isJoin = currentPath === 'join'
+    const eventPrefix = isSignUp || isJoin ? 'signup' : 'login'
+    const eventName: string = `${eventPrefix}.${provider.name}.started`
+
+    Analytics.handleEvent(eventName)
+  }
 </script>
 
 {#if !$deviceOptionsStore.isMobile}
   <div class="container">
     <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
       {#each enabledProviders as provider}
-        <a href={getLink(provider)}>
+        <a
+          href={getLink(provider)}
+          on:click={() => {
+            handleProviderClick(provider)
+          }}
+        >
           <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
             <svelte:fragment slot="content">
               <svelte:component this={provider.component} displayName={provider.displayName} />

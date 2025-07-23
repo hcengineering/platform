@@ -90,7 +90,8 @@
     "LogAction": "Ereignis",
     "Started": "Gestartet",
     "Each": "Jeder",
-    "CreateCard": "Karte erstellen"
+    "CreateCard": "Karte erstellen",
+    "OnCardUpdate": "Beim Aktualisieren der Karte"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
@@ -105,6 +106,7 @@
     "ResultNotProvided": "Ergebnis nicht bereitgestellt",
     "EmptyFunctionResult": "Leerer Funktionsresultat {func}",
     "ContextValueNotProvided": "Kontextwert nicht bereitgestellt: {name}",
-    "RequiredParamsNotProvided": "Erforderliche Parameter nicht bereitgestellt: {params}"
+    "RequiredParamsNotProvided": "Erforderliche Parameter nicht bereitgestellt: {params}",
+    "TooDeepTransitionRecursion": "Zu tiefe Übergangsrekursion"
   }
 }

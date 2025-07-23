@@ -254,7 +254,7 @@ export interface SearchResultDoc {
   description?: string
   emojiIcon?: string
   score?: number
-  doc: Pick<Doc, '_id' | '_class'>
+  doc: Pick<Doc, '_id' | '_class' | 'createdOn'> & Partial<Pick<AttachedDoc, 'attachedTo' | 'attachedToClass'>>
 }
 
 /**

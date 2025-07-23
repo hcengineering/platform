@@ -22,7 +22,7 @@
     "InvalidOtp": "無効なコードです",
     "InviteNotFound": "メールアドレス {email} に対する招待が見つかりませんでした",
     "WorkspaceLimitReached": "作成可能なワークスペースの上限に達しました。お問い合わせください",
-    "ReadOnlyAccount": "ゲストデモ",
+    "ReadOnlyAccount": "匿名ゲストデモ",
     "SystemAccount": "システムアカウント",
     "SocialIdAlreadyExists": "ソーシャルIDは既に存在します"
   }

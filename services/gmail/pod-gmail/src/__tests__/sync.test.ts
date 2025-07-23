@@ -182,4 +182,317 @@ describe('SyncManager', () => {
       expect(result).toEqual(mockResponse)
     })
   })
+
+  /* eslint-disable @typescript-eslint/unbound-method */
+
+  describe('syncNewMessages', () => {
+    it('should perform full sync when no stored history ID exists', async () => {
+      // Arrange
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue(null)
+      const spyFullSync = jest.spyOn(syncManager, 'fullSync').mockResolvedValue(undefined)
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockCtx.info).toHaveBeenCalledWith('No stored history ID found, performing full sync instead', { userId })
+      expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail)
+    })
+
+    it('should throw error when userEmail is undefined', async () => {
+      // Act & Assert
+      await expect(syncManager.syncNewMessages(userId)).rejects.toThrow('Cannot sync without user email')
+    })
+
+    it('should sync new messages and update history ID when newer messages found', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+      const newHistoryId = '12350'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+      const spySetHistoryId = jest.spyOn((syncManager as any).stateManager, 'setHistoryId').mockResolvedValue(undefined)
+
+      const mockMessages = [{ id: 'msg1' }, { id: 'msg2' }]
+
+      mockGmail.messages.list.mockResolvedValue({
+        data: {
+          messages: mockMessages,
+          nextPageToken: null
+        }
+      })
+
+      mockGmail.messages.get
+        .mockResolvedValueOnce({
+          data: {
+            id: 'msg1',
+            historyId: newHistoryId
+          }
+        })
+        .mockResolvedValueOnce({
+          data: {
+            id: 'msg2',
+            historyId: '12348'
+          }
+        })
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockGmail.messages.list).toHaveBeenCalledWith({
+        userId: 'me',
+        pageToken: undefined
+      })
+      expect(mockGmail.messages.get).toHaveBeenCalledTimes(2)
+      expect(mockMessageManager.saveMessage).toHaveBeenCalledTimes(2)
+      expect(spySetHistoryId).toHaveBeenCalledWith(userId, newHistoryId)
+      expect(mockCtx.info).toHaveBeenCalledWith('Updated history ID after new messages sync', {
+        userId,
+        oldHistoryId: storedHistoryId,
+        newHistoryId,
+        messagesProcessed: 2
+      })
+    })
+
+    it('should stop syncing when encountering message with older history ID', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+      const olderHistoryId = '12340'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+
+      const mockMessages = [{ id: 'msg1' }, { id: 'msg2' }]
+
+      mockGmail.messages.list.mockResolvedValue({
+        data: {
+          messages: mockMessages,
+          nextPageToken: null
+        }
+      })
+
+      mockGmail.messages.get.mockResolvedValueOnce({
+        data: {
+          id: 'msg1',
+          historyId: olderHistoryId
+        }
+      })
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockGmail.messages.get).toHaveBeenCalledTimes(1)
+      expect(mockMessageManager.saveMessage).not.toHaveBeenCalled()
+      expect(mockCtx.info).toHaveBeenCalledWith('Reached message with history ID <= stored history ID, stopping sync', {
+        userId,
+        messageHistoryId: olderHistoryId,
+        storedHistoryId
+      })
+      expect(mockCtx.info).toHaveBeenCalledWith('No history ID update needed after new messages sync', {
+        userId,
+        storedHistoryId,
+        maxHistoryId: undefined,
+        messagesProcessed: 0
+      })
+    })
+
+    it('should save messages without history ID', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+
+      const mockMessages = [{ id: 'msg1' }]
+
+      mockGmail.messages.list.mockResolvedValue({
+        data: {
+          messages: mockMessages,
+          nextPageToken: null
+        }
+      })
+
+      mockGmail.messages.get.mockResolvedValue({
+        data: {
+          id: 'msg1',
+          historyId: null // No history ID
+        }
+      })
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockMessageManager.saveMessage).toHaveBeenCalledTimes(1)
+      expect(mockCtx.info).toHaveBeenCalledWith('No history ID update needed after new messages sync', {
+        userId,
+        storedHistoryId,
+        maxHistoryId: undefined,
+        messagesProcessed: 1
+      })
+    })
+
+    it('should handle pagination correctly', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+      const newHistoryId = '12350'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+      const spySetHistoryId = jest.spyOn((syncManager as any).stateManager, 'setHistoryId').mockResolvedValue(undefined)
+
+      // First page
+      mockGmail.messages.list
+        .mockResolvedValueOnce({
+          data: {
+            messages: [{ id: 'msg1' }],
+            nextPageToken: 'token123'
+          }
+        })
+        .mockResolvedValueOnce({
+          data: {
+            messages: [{ id: 'msg2' }],
+            nextPageToken: null
+          }
+        })
+
+      mockGmail.messages.get
+        .mockResolvedValueOnce({
+          data: {
+            id: 'msg1',
+            historyId: newHistoryId
+          }
+        })
+        .mockResolvedValueOnce({
+          data: {
+            id: 'msg2',
+            historyId: '12348'
+          }
+        })
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockGmail.messages.list).toHaveBeenCalledTimes(2)
+      // The first call gets the modified query object with pageToken from the second call
+      // This is due to query object being reused and modified
+      expect(mockGmail.messages.list).toHaveBeenCalledWith({
+        userId: 'me',
+        pageToken: 'token123' // This will be the final state of the query object
+      })
+      expect(mockMessageManager.saveMessage).toHaveBeenCalledTimes(2)
+      expect(spySetHistoryId).toHaveBeenCalledWith(userId, newHistoryId)
+    })
+
+    it('should handle errors during message processing', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+
+      const mockMessages = [{ id: 'msg1' }]
+
+      mockGmail.messages.list.mockResolvedValue({
+        data: {
+          messages: mockMessages,
+          nextPageToken: null
+        }
+      })
+
+      const error = new Error('Message fetch failed')
+      mockGmail.messages.get.mockRejectedValue(error)
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockCtx.error).toHaveBeenCalledWith('Sync new messages error', {
+        workspace,
+        userId,
+        messageId: 'msg1',
+        err: error
+      })
+    })
+
+    it('should return early when isClosing is true', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+
+      const mockMessages = [{ id: 'msg1' }]
+
+      mockGmail.messages.list.mockResolvedValue({
+        data: {
+          messages: mockMessages,
+          nextPageToken: null
+        }
+      })
+
+      // Set isClosing to true
+      syncManager.close()
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockGmail.messages.get).not.toHaveBeenCalled()
+      expect(mockMessageManager.saveMessage).not.toHaveBeenCalled()
+    })
+
+    it('should handle overall sync error', async () => {
+      // Arrange
+      const storedHistoryId = '12345'
+
+      const spyGetHistory = jest.spyOn((syncManager as any).stateManager, 'getHistory').mockResolvedValue({
+        historyId: storedHistoryId,
+        userId,
+        workspace
+      })
+
+      const error = new Error('Sync failed')
+      mockGmail.messages.list.mockRejectedValue(error)
+
+      // Act
+      await syncManager.syncNewMessages(userId, userEmail)
+
+      // Assert
+      expect(spyGetHistory).toHaveBeenCalledWith(userId)
+      expect(mockCtx.error).toHaveBeenCalledWith('New messages sync error', {
+        workspace,
+        userId,
+        err: error
+      })
+    })
+  })
 })

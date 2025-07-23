@@ -736,17 +736,17 @@ export function getAttrEditor (type: Type<any>, hierarchy: Hierarchy): AnyCompon
   return editorMixin?.inlineEditor
 }
 
-export async function getAttributeEditor (
+export function findAttributeEditor (
   client: Client,
   _class: Ref<Class<Obj>>,
   key: KeyedAttribute | string
-): Promise<AnySvelteComponent | undefined> {
+): AnyComponent | undefined {
   const hierarchy = client.getHierarchy()
   const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
 
   if (attribute.type._class === core.class.TypeAny) {
     const _type: TypeAny = attribute.type as TypeAny<AnyComponent>
-    return await getResource(_type.editor ?? _type.presenter)
+    return _type.editor ?? _type.presenter
   }
 
   const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute.type) : undefined
@@ -772,11 +772,7 @@ export async function getAttributeEditor (
   }
 
   if (attribute.editor != null) {
-    try {
-      return await getResource(attribute.editor)
-    } catch (ex) {
-      console.error(getAttributeEditorNotFoundError(_class, key, ex))
-    }
+    return attribute.editor
   }
   const editorMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
 
@@ -788,11 +784,21 @@ export async function getAttributeEditor (
     // }
     return
   }
+  return editorMixin.inlineEditor
+}
 
-  try {
-    return await getResource(editorMixin.inlineEditor)
-  } catch (ex) {
-    console.error(getAttributeEditorNotFoundError(_class, key, ex))
+export async function getAttributeEditor (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: KeyedAttribute | string
+): Promise<AnySvelteComponent | undefined> {
+  const value = findAttributeEditor(client, _class, key)
+  if (value !== undefined) {
+    try {
+      return await getResource(value)
+    } catch (ex) {
+      console.error(getAttributeEditorNotFoundError(_class, key, ex))
+    }
   }
 }
 

@@ -884,6 +884,7 @@ export class WorkspaceImporter {
       private: space.private,
       owners: space.owners ?? [],
       members: space.members ?? [],
+      autoJoin: space.autoJoin,
       archived: space.archived ?? false
     }
     await this.client.createDoc(documents.class.OrgSpace, core.space.Space, data, spaceId)

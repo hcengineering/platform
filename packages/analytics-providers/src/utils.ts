@@ -16,9 +16,20 @@
 import { UAParser } from 'ua-parser-js'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { desktopPlatform } from '@hcengineering/ui'
+import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
+import { Analytics } from '@hcengineering/analytics'
 
 const parser = UAParser()
+
+let _isSignUp: boolean = false
+export const signupStore = {
+  setSignUpFlow: (isSignUp: boolean) => {
+    _isSignUp = isSignUp
+  },
+  getSignUpFlow: () => {
+    return _isSignUp
+  }
+}
 
 function getUrlTrackingParams (): Record<string, string | null> {
   const params = new URLSearchParams(window.location.search)
@@ -101,4 +112,44 @@ export function collectEventMetadata (properties: Record<string, any> = {}): Rec
     $timezone_offset: timezoneOffset,
     ...trackingParams
   }
+}
+
+function getProviderFromUrl (): string | null {
+  const location = getCurrentLocation()
+  const referrer = document.referrer
+
+  if (referrer !== '') {
+    try {
+      const referrerUrl = new URL(referrer)
+      const hostname = referrerUrl.hostname
+
+      if (hostname === 'accounts.google.com') {
+        return 'google'
+      } else if (hostname === 'github.com') {
+        return 'github'
+      }
+    } catch (error) {
+      // Invalid URL, ignored
+    }
+  }
+
+  if (location.query?.provider != null && location.query.provider !== '') {
+    return location.query.provider
+  }
+
+  return null
+}
+
+export function trackOAuthCompletion (result: any): void {
+  const provider = getProviderFromUrl()
+  if (provider == null) return
+
+  const isSignUp = signupStore.getSignUpFlow()
+  const success = result != null
+
+  const eventPrefix = isSignUp ? 'signup' : 'login'
+  const eventSuffix = success ? 'completed' : 'error'
+  const eventName: string = `${eventPrefix}.${provider}.${eventSuffix}`
+
+  Analytics.handleEvent(eventName)
 }

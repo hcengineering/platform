@@ -270,6 +270,9 @@ class MenuBarManager {
     private readonly state: TitleBarMenuState
     private readonly view: HTMLElement
     
+    private altPressed: boolean = false 
+    private controlKeysActivated: boolean = false
+    
     private readonly TopMenuStyle = '.desktop-app-top-menu-button'
     private readonly DropdownMenuStyle = '.desktop-app-dropdown-menu'
     private readonly DropdownItemStyle = '.desktop-app-dropdown-item'
@@ -329,16 +332,7 @@ class MenuBarManager {
         document.addEventListener('click', (e) => this.handleDocumentClick(e))
 
         document.querySelectorAll<HTMLButtonElement>(this.DropdownItemStyle + '[data-action]').forEach(item => {
-            item.addEventListener('click', async () => {
-                const action = item.dataset.action
-                if (action) {
-                    if (isMenuBarAction(action)) {
-                        await this.executeMenuAction(ipcMain, action)
-                    }
-                    this.state.closeAll()
-                    this.renderState()
-                }
-            })
+            item.addEventListener('click', async () => this.handleMenuButtonClick(ipcMain, item))
         })
     }
 
@@ -406,6 +400,17 @@ class MenuBarManager {
     }
 
     private handleKeyDown(ipcMain: IPCMainExposed, e: KeyboardEvent): void {
+        if (e.altKey) {
+            this.altPressed = true
+        }
+
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            if (this.altPressed) {
+                this.controlKeysActivated = true
+                return
+            }
+        }
+        
         if (e.altKey) {
             if (this.state.isAltModeActive) {
                 if (this.state.FocusedTopLevelMenuIndex != null) {
@@ -503,14 +508,32 @@ class MenuBarManager {
 
     private handleKeyUp(e: KeyboardEvent): void {
         if (e.key === 'Alt') {
-            if (this.state.FocusedTopLevelMenuIndex == null) {
-                this.state.enterAltMode(0)
+            if (this.controlKeysActivated) {
+                this.state.exitAltMode()
                 this.renderState()
-            } 
+            } else {
+                if (this.state.FocusedTopLevelMenuIndex == null) {
+                    this.state.enterAltMode(0)
+                    this.renderState()
+                }
+            }
+            this.controlKeysActivated = false
+            this.altPressed = false
         }
     }
 
-    private handleTopLevelMenuButtonClick(e: Event, index: number): void {
+    private async handleMenuButtonClick(ipcMain: IPCMainExposed, item: HTMLButtonElement): Promise<void> {
+        const action = item.dataset.action
+        if (action) {
+            if (isMenuBarAction(action)) {
+                await this.executeMenuAction(ipcMain, action)
+            }
+            this.state.closeAll()
+            this.renderState()
+        }
+    }
+
+    private handleTopLevelMenuButtonClick(_e: Event, index: number): void {
         this.state.expandTopLevelMenu(index)
         this.renderState()
     }

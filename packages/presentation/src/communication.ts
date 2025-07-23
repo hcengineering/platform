@@ -101,6 +101,7 @@ export function getCommunicationClient (): CommunicationClient {
 }
 
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
+  console.log('setCommunicationClient')
   if (client !== undefined) {
     client.close()
   }
@@ -453,5 +454,6 @@ export function onCommunicationClient (fn: () => void): void {
 }
 
 export async function refreshCommunicationClient (): Promise<void> {
+  console.log('refreshCommunicationClient')
   await refreshLiveQueries()
 }

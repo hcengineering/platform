@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   type AnyAttribute,
   type Class,
   type Doc,
+  docKey,
   type FullTextSearchContext,
   getFullTextContext,
   type Hierarchy,
@@ -25,6 +26,8 @@ import {
 } from '@hcengineering/core'
 import { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
+import { type Message } from '@hcengineering/communication-types'
+import cardPlugin, { type Card } from '@hcengineering/card'
 
 export { docKey, isFullTextAttribute } from '@hcengineering/core'
 
@@ -100,6 +103,34 @@ export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefine
     modifiedBy: doc.modifiedBy,
     modifiedOn: doc.modifiedOn,
     space
+  }
+  return indexedDoc
+}
+
+export const messagePseudoClass = `${cardPlugin.class.Card}%message` as Ref<Class<Doc>>
+export const blobPseudoClass = `${cardPlugin.class.Card}%blob` as Ref<Class<Doc>>
+
+/**
+ * @public
+ */
+export function createIndexedDocFromMessage (
+  cardId: Ref<Card>,
+  cardSpace: Ref<Space>,
+  cardClass: Ref<Class<Card>>,
+  message: Pick<Message, 'id' | 'edited' | 'created' | 'creator'>
+): IndexedDoc {
+  const modifiedDate = message.edited ?? message.created
+  const modifiedOn = modifiedDate.getTime()
+  const indexedDoc = {
+    id: `${message.id}@${cardId}` as any,
+    _class: [messagePseudoClass],
+    space: cardSpace,
+    [docKey('createdOn', core.class.Doc)]: message.created.getTime(),
+    [docKey('createdBy', core.class.Doc)]: message.creator,
+    modifiedBy: message.creator,
+    modifiedOn,
+    attachedTo: cardId,
+    attachedToClass: cardClass
   }
   return indexedDoc
 }

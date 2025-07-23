@@ -18,6 +18,8 @@
   import CardTagColored from './CardTagColored.svelte'
 
   export let value: Card
+  export let showTags: boolean = true
+  export let showType: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -37,9 +39,13 @@
 </script>
 
 <div class="tags-container">
-  <CardTagColored labelIntl={type.label} color={type.background} />
-  {#if tags.length > 0}
-    <div class="divider" />
+  {#if showType}
+    <CardTagColored labelIntl={type.label} color={type.background} />
+  {/if}
+  {#if tags.length > 0 && showTags}
+    {#if showType}
+      <div class="divider" />
+    {/if}
     {#each tags as tag}
       <CardTagColored labelIntl={tag.label} color={tag.background} />
     {/each}

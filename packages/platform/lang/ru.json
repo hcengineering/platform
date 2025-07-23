@@ -23,7 +23,7 @@
     "InvalidOtp": "Неверный код",
     "InviteNotFound": "Приглашение с email:{email} не найдено.",
     "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами...",
-    "ReadOnlyAccount": "Гостевое демо",
+    "ReadOnlyAccount": "Анонимное гостевое демо",
     "SystemAccount": "Системный аккаунт",
     "SocialIdAlreadyExists": "Социальный ID уже существует"
   }

@@ -39,7 +39,67 @@ function getIndexName (): string {
 }
 
 function getIndexVersion (): string {
-  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v1'
+  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v2'
+}
+
+const mappings = {
+  properties: {
+    fulltextSummary: {
+      type: 'text',
+      analyzer: 'rebuilt_english'
+    },
+    workspaceId: {
+      type: 'keyword',
+      index: true
+    },
+    id: {
+      type: 'keyword',
+      index: true
+    },
+    _class: {
+      type: 'keyword',
+      index: true
+    },
+    attachedTo: {
+      type: 'keyword',
+      index: true
+    },
+    attachedToClass: {
+      type: 'keyword',
+      index: true
+    },
+    space: {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%createdBy': {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%createdOn': {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    },
+    modifiedBy: {
+      type: 'keyword',
+      index: true
+    },
+    modifiedOn: {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    },
+    'core:class:Doc%modifiedBy': {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%modifiedOn': {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    }
+  }
 }
 
 class ElasticAdapter implements FullTextAdapter {
@@ -67,15 +127,29 @@ class ElasticAdapter implements FullTextAdapter {
       )
       const allIndexes = Object.keys(existingVersions.body)
       const existingOldVersionIndices = allIndexes.filter((name) => name !== indexName)
-      if (existingOldVersionIndices.length > 0) {
+      const existsIndex = allIndexes.find((it) => it === indexName) !== undefined
+      let shouldDropExistingIndex = false
+      if (existsIndex) {
+        const mapping = await ctx.with('get-mapping', { indexName }, () =>
+          this.client.indices.getMapping({
+            index: indexName
+          })
+        )
+        for (const [propName, propType] of Object.entries(mappings.properties)) {
+          if (mapping.body[indexName]?.mappings.properties?.[propName]?.type !== propType.type) {
+            shouldDropExistingIndex = true
+            break
+          }
+        }
+      }
+      if (existingOldVersionIndices.length > 0 || shouldDropExistingIndex) {
         await ctx.with('delete-old-index', {}, () =>
           this.client.indices.delete({
-            index: existingOldVersionIndices
+            index: shouldDropExistingIndex ? allIndexes : existingOldVersionIndices
           })
         )
       }
-      const existsIndex = allIndexes.find((it) => it === indexName) !== undefined
-      if (!existsIndex) {
+      if (!existsIndex || shouldDropExistingIndex) {
         await ctx.with('create-index', { indexName }, () =>
           this.client.indices.create({
             index: indexName,
@@ -100,34 +174,25 @@ class ElasticAdapter implements FullTextAdapter {
                     }
                   }
                 }
-              }
+              },
+              mappings
             }
           })
         )
+      } else {
+        await ctx.with('put-mapping', {}, () =>
+          this.client.indices.putMapping({
+            index: indexName,
+            body: mappings
+          })
+        )
       }
-
-      await ctx.with('put-mapping', {}, () =>
-        this.client.indices.putMapping({
-          index: indexName,
-          body: {
-            properties: {
-              fulltextSummary: {
-                type: 'text',
-                analyzer: 'rebuilt_english'
-              },
-              workspaceId: {
-                type: 'keyword',
-                index: true
-              }
-            }
-          }
-        })
-      )
     } catch (err: any) {
-      if (err.name !== 'ConnectionError') {
-        Analytics.handleError(err)
-        ctx.error(err)
+      if (err.name === 'ConnectionError') {
+        ctx.warn('Elastic DB is not available')
       }
+      Analytics.handleError(err)
+      ctx.error(err)
       return false
     }
     return true
@@ -164,8 +229,8 @@ class ElasticAdapter implements FullTextAdapter {
                     }
                   },
                   {
-                    match: {
-                      workspaceId: { query: workspaceId, operator: 'and' }
+                    term: {
+                      workspaceId
                     }
                   }
                 ]
@@ -185,12 +250,12 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (query.spaces !== undefined) {
         filter.push({
-          terms: { 'space.keyword': query.spaces }
+          terms: this.getTerms(query.spaces, 'space')
         })
       }
       if (query.classes !== undefined) {
         filter.push({
-          terms: { '_class.keyword': query.classes }
+          terms: this.getTerms(query.classes, '_class')
         })
       }
 
@@ -200,9 +265,12 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (options.scoring !== undefined) {
         const scoringTerms: any[] = options.scoring.map((scoringOption): any => {
+          const field = Object.hasOwn(mappings.properties, scoringOption.attr)
+            ? scoringOption.attr
+            : `${scoringOption.attr}.keyword`
           return {
             term: {
-              [`${scoringOption.attr}.keyword`]: {
+              [field]: {
                 value: scoringOption.value,
                 boost: scoringOption.boost
               }
@@ -258,8 +326,8 @@ class ElasticAdapter implements FullTextAdapter {
             }
           },
           {
-            match: {
-              workspaceId: { query: workspaceId, operator: 'and' }
+            term: {
+              workspaceId
             }
           }
         ],
@@ -279,11 +347,12 @@ class ElasticAdapter implements FullTextAdapter {
 
     for (const [q, v] of Object.entries(query)) {
       if (!q.startsWith('$')) {
+        const field = Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`
         if (typeof v === 'object') {
           if (v.$in !== undefined) {
             request.bool.should.push({
               terms: {
-                [q]: v.$in,
+                [field]: v.$in,
                 boost: 100.0
               }
             })
@@ -291,7 +360,7 @@ class ElasticAdapter implements FullTextAdapter {
         } else {
           request.bool.should.push({
             term: {
-              [q]: {
+              [field]: {
                 value: v,
                 boost: 100.0,
                 case_insensitive: true
@@ -335,9 +404,9 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  private getTerms (_classes: Ref<Class<Doc>>[], field: string, extra: any = {}): any {
+  private getTerms (values: string[], field: string, extra: any = {}): any {
     return {
-      [field]: _classes.map((c) => c.toLowerCase()),
+      [Object.hasOwn(mappings.properties, field) ? field : `${field}.keyword`]: values,
       ...extra
     }
   }
@@ -415,6 +484,64 @@ class ElasticAdapter implements FullTextAdapter {
     return []
   }
 
+  async updateByQuery (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceUuid,
+    query: DocumentQuery<Doc>,
+    update: Record<string, any>
+  ): Promise<TxResult[]> {
+    const elasticQuery: any = {
+      bool: {
+        must: [
+          {
+            term: {
+              workspaceId
+            }
+          }
+        ]
+      }
+    }
+
+    for (const [q, v] of Object.entries(query)) {
+      if (!q.startsWith('$')) {
+        if (typeof v === 'object') {
+          if (v.$in !== undefined) {
+            elasticQuery.bool.must.push({
+              terms: {
+                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
+              }
+            })
+          }
+        } else {
+          elasticQuery.bool.must.push({
+            term: {
+              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
+                value: v
+              }
+            }
+          })
+        }
+      }
+    }
+
+    await this.client.updateByQuery({
+      type: '_doc',
+      index: this.indexName,
+      body: {
+        query: elasticQuery,
+        script: {
+          source:
+            'for(int i = 0; i < params.updateFields.size(); i++) { ctx._source[params.updateFields[i].key] = params.updateFields[i].value }',
+          params: {
+            updateFields: Object.entries(update).map(([key, value]) => ({ key, value }))
+          },
+          lang: 'painless'
+        }
+      }
+    })
+    return []
+  }
+
   async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<void> {
     try {
       while (docs.length > 0) {
@@ -434,8 +561,8 @@ class ElasticAdapter implements FullTextAdapter {
                       }
                     },
                     {
-                      match: {
-                        workspaceId: { query: workspaceId, operator: 'and' }
+                      term: {
+                        workspaceId
                       }
                     }
                   ]
@@ -455,6 +582,56 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
+  async removeByQuery (ctx: MeasureContext, workspaceId: WorkspaceUuid, query: DocumentQuery<Doc>): Promise<void> {
+    const elasticQuery: any = {
+      bool: {
+        must: [
+          {
+            term: {
+              workspaceId
+            }
+          }
+        ]
+      }
+    }
+
+    for (const [q, v] of Object.entries(query)) {
+      if (!q.startsWith('$')) {
+        if (typeof v === 'object') {
+          if (v.$in !== undefined) {
+            elasticQuery.bool.must.push({
+              terms: {
+                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
+              }
+            })
+          }
+        } else {
+          elasticQuery.bool.must.push({
+            term: {
+              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
+                value: v
+              }
+            }
+          })
+        }
+      }
+    }
+    try {
+      await this.client.deleteByQuery({
+        type: '_doc',
+        index: this.indexName,
+        body: {
+          query: elasticQuery
+        }
+      })
+    } catch (e: any) {
+      if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
+        return
+      }
+      throw e
+    }
+  }
+
   async clean (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await this.client.deleteByQuery(
@@ -466,8 +643,8 @@ class ElasticAdapter implements FullTextAdapter {
               bool: {
                 must: [
                   {
-                    match: {
-                      workspaceId: { query: workspaceId, operator: 'and' }
+                    term: {
+                      workspaceId
                     }
                   }
                 ]
@@ -500,8 +677,8 @@ class ElasticAdapter implements FullTextAdapter {
                 }
               },
               {
-                match: {
-                  workspaceId: { query: workspaceId, operator: 'and' }
+                term: {
+                  workspaceId
                 }
               }
             ]
