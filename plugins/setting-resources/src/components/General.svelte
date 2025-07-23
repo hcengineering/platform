@@ -256,7 +256,6 @@
         { allowedCards: value, enabled: true }
       )
     }
-    console.log(value)
   }
 
   const onSelected = (e: CustomEvent<string>): void => {
