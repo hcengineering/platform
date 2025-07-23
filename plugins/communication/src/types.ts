@@ -11,10 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Message } from '@hcengineering/communication-types'
-import { Configuration, Doc, Ref } from '@hcengineering/core'
+import { AccountID, AppletParams, AppletType, Message, MessageID } from '@hcengineering/communication-types'
+import { AttachedDoc, Configuration, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { Card } from '@hcengineering/card'
+import { Card, MasterTag } from '@hcengineering/card'
+import { AnyComponent } from '@hcengineering/ui'
+import { PersonSpace } from '@hcengineering/contact'
 
 export enum MessagesNavigationAnchors {
   ConversationStart = 'conversationStart',
@@ -41,6 +43,43 @@ export interface MessageAction extends Doc {
 
   order: number
   menu?: boolean
+}
+
+export interface CustomActivityPresenter extends Doc {
+  attribute: string
+  component: AnyComponent
+  type: Ref<MasterTag>
+}
+
+export interface Applet extends Doc {
+  type: AppletType
+  icon: Asset
+  label: IntlString
+  component: AnyComponent
+  createLabel: IntlString
+  createComponent: AnyComponent
+  previewComponent: AnyComponent
+  createFn?: AppletCreateFnResource
+}
+
+export type AppletCreateFn = (parent: Card, message: MessageID, params: AppletParams) => Promise<void>
+export type AppletCreateFnResource = Resource<AppletCreateFn>
+
+export interface PollAnswer extends AttachedDoc<Poll> {
+  options: string[]
+  space: Ref<PersonSpace>
+}
+
+export interface UserVote {
+  account: AccountID
+  options: { id: string, label: string, votedAt: Date }[]
+}
+
+export interface Poll extends Card {
+  messageId: MessageID
+  totalVotes: number
+
+  userVotes?: UserVote[]
 }
 
 export interface GuestCommunicationSettings extends Configuration {

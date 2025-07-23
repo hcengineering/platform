@@ -16,7 +16,8 @@ import communication, {
   communicationId,
   type MessageAction,
   type MessageActionFunctionResource,
-  type MessageActionVisibilityTesterResource
+  type MessageActionVisibilityTesterResource,
+  type AppletCreateFnResource
 } from '@hcengineering/communication'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type Ref } from '@hcengineering/core'
@@ -24,6 +25,14 @@ import { type Ref } from '@hcengineering/core'
 export default mergeIds(communicationId, communication, {
   component: {
     CardMessagesSection: '' as AnyComponent
+  },
+  poll: {
+    PollPresenter: '' as AnyComponent,
+    CreatePoll: '' as AnyComponent,
+    PollPreview: '' as AnyComponent,
+    CreatePollFn: '' as AppletCreateFnResource,
+    UserVoteActivityPresenter: '' as AnyComponent,
+    UserVotesPresenter: '' as AnyComponent
   },
   string: {
     Added: '' as IntlString,

@@ -44,7 +44,7 @@
 
 {#if notification.message}
   <div class="reaction-notification">
-    <PreviewTemplate socialId={content.creator} date={notification.created} color="secondary">
+    <PreviewTemplate socialId={content.creator} date={notification.created} color="secondary" showSeparator={false}>
       <Label label={inbox.string.ReactedToYourMessage} />
     </PreviewTemplate>
 

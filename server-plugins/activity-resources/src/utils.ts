@@ -445,12 +445,6 @@ export async function getNewActivityUpdates (
       continue
     }
 
-    if (Array.isArray(attrValue)) {
-      const diff = await getAttributeDiff(control, card, undefined, key, mixin)
-      added.push(...diff.added)
-      removed.push(...diff.removed)
-    }
-
     result.push({
       type: ActivityUpdateType.Attribute,
       attrKey: key,

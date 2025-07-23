@@ -23,6 +23,7 @@
     getPersonByPersonId
   } from '@hcengineering/contact-resources'
   import { SocialID } from '@hcengineering/communication-types'
+  import { isViewSettingEnabled, hideUserNamesSettingId, viewSettingsStore } from '../../settings'
 
   export let tooltipLabel: IntlString | undefined = undefined
   export let person: Person | undefined = undefined
@@ -32,10 +33,11 @@
   export let kind: 'default' | 'column' = 'default'
   export let padding: string | undefined = undefined
   export let fixHeight: boolean = false
+  export let showSeparator: boolean = true
 
   let clientWidth: number
 
-  $: showPersonName = clientWidth > 300
+  $: showPersonName = clientWidth > 300 && !isViewSettingEnabled($viewSettingsStore, hideUserNamesSettingId)
 
   let _person: Person | undefined
   $: void updatePerson(socialId, person)
@@ -95,9 +97,11 @@
             {/if}
           </span>
           {#if showPersonName && _person}
-            <span class="message-preview-template__name overflow-label">{formatName(_person?.name ?? '')}</span>
+            <span class="message-preview-template__name overflow-label {color}">{formatName(_person?.name ?? '')}</span>
           {/if}
-          <span class="message-preview-template__separator"> • </span>
+          {#if showSeparator}
+            <span class="message-preview-template__separator"> • </span>
+          {/if}
         </span>
       </PersonPreviewProvider>
 
@@ -188,6 +192,10 @@
     &__name {
       font-weight: 500;
       flex: 0 0 auto;
+
+      &.secondary {
+        color: var(--global-secondary-TextColor);
+      }
     }
 
     &__time {

@@ -154,7 +154,8 @@ describe('postgres operations', () => {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
         description: `${i * i}`,
-        rate: 20 + i
+        rate: 20 + i,
+        arr: new Array(i).fill(i)
       })
     }
 
@@ -169,6 +170,21 @@ describe('postgres operations', () => {
 
     const third = await client.findAll<Task>(taskPlugin.class.Task, { rate: { $in: [25, 26, 27, 28] } })
     expect(third.length).toEqual(4)
+
+    const size = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: 5 } })
+    expect(size.length).toEqual(1)
+
+    const sizeGt = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $gt: 45 } } })
+    expect(sizeGt.length).toEqual(4)
+
+    const sizeGte = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $gte: 45 } } })
+    expect(sizeGte.length).toEqual(5)
+
+    const sizeLt = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $lt: 45 } } })
+    expect(sizeLt.length).toEqual(45)
+
+    const sizeLte = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $lte: 45 } } })
+    expect(sizeLte.length).toEqual(46)
   })
 
   it('check update', async () => {

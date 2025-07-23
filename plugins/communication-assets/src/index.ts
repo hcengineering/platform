@@ -21,6 +21,7 @@ loadMetadata(communication.icon, {
   Bell: `${icons}#bell`,
   BellCrossed: `${icons}#bell-crossed`,
   File: `${icons}#file`,
-  MessageMultiple: `${icons}#message-multiple`
+  MessageMultiple: `${icons}#message-multiple`,
+  Poll: `${icons}#poll`
 })
 addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

@@ -90,7 +90,13 @@
     "LogAction": "Événement",
     "Started": "Démarré",
     "Each": "Chaque",
-    "CreateCard": "Créer une carte"
+    "CreateCard": "Créer une carte",
+    "OnCardUpdate": "À la modification de la carte",
+    "ArraySizeEquals": "Taille égale à",
+    "ArraySizeGt": "Taille supérieure à",
+    "ArraySizeGte": "Taille supérieure ou égale à",
+    "ArraySizeLt": "Taille inférieure à",
+    "ArraySizeLte": "Taille inférieure ou égale à"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -105,6 +111,7 @@
     "ResultNotProvided": "Résultat non fourni",
     "EmptyFunctionResult": "Résultat de fonction vide {func}",
     "ContextValueNotProvided": "Valeur de contexte non fournie : {name}",
-    "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}"
+    "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}",
+    "TooDeepTransitionRecursion": "Récursion de transition trop profonde"
   }
 }

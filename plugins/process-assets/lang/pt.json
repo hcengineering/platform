@@ -90,7 +90,13 @@
     "LogAction": "Evento",
     "Started": "Iniciado",
     "Each": "Cada",
-    "CreateCard": "Criar Cartão"
+    "CreateCard": "Criar Cartão",
+    "OnCardUpdate": "Ao atualizar o cartão",
+    "ArraySizeEquals": "Tamanho igual a",
+    "ArraySizeGt": "Tamanho maior que",
+    "ArraySizeGte": "Tamanho maior ou igual a",
+    "ArraySizeLt": "Tamanho menor que",
+    "ArraySizeLte": "Tamanho menor ou igual a"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",
@@ -105,6 +111,7 @@
     "ResultNotProvided": "Resultado não fornecido",
     "EmptyFunctionResult": "Resultado da função vazio {func}",
     "ContextValueNotProvided": "Valor de contexto não fornecido: {name}",
-    "RequiredParamsNotProvided": "Parâmetros obrigatórios não fornecidos: {params}"
+    "RequiredParamsNotProvided": "Parâmetros obrigatórios não fornecidos: {params}",
+    "TooDeepTransitionRecursion": "Recursão de transição muito profunda"
   }
 }

@@ -1263,6 +1263,31 @@ abstract class PostgresAdapterBase implements DbAdapter {
               res.push(`${tkey} @> ${vars.addArray(val, valType)}`)
             }
             break
+          case '$size': {
+            let v = val
+            let op = '='
+            if (typeof val === 'object') {
+              if (val.$gt !== undefined) {
+                v = val.$gt
+                op = '>'
+              } else if (val.$gte !== undefined) {
+                v = val.$gte
+                op = '>='
+              } else if (val.$lt !== undefined) {
+                v = val.$lt
+                op = '<'
+              } else if (val.$lte !== undefined) {
+                v = val.$lte
+                op = '<='
+              }
+            }
+            if (type === 'dataArray') {
+              res.push(`coalesce(jsonb_array_length(${tkey}), 0) ${op} ${vars.add(v, '::integer')}`)
+            } else {
+              res.push(`array_length(${tkey}, 1) ${op} ${vars.add(v, '::integer')}`)
+            }
+            break
+          }
           default:
             nonOperator[operator] = value[operator]
             break

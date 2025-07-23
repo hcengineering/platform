@@ -90,7 +90,13 @@
     "LogAction": "Event",
     "Started": "Started",
     "Each": "Each",
-    "CreateCard": "Create card"
+    "CreateCard": "Create card",
+    "OnCardUpdate": "On card update",
+    "ArraySizeEquals": "Size equals",
+    "ArraySizeGt": "Size greater than",
+    "ArraySizeGte": "Size greater than or equal",
+    "ArraySizeLt": "Size less than",
+    "ArraySizeLte": "Size less than or equal"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -105,6 +111,7 @@
     "ResultNotProvided": "Result not provided",
     "EmptyFunctionResult": "Empty function result {func}",
     "ContextValueNotProvided": "Context value not provided: {name}",
-    "RequiredParamsNotProvided": "Required parameters not provided: {params}"
+    "RequiredParamsNotProvided": "Required parameters not provided: {params}",
+    "TooDeepTransitionRecursion": "Too deep transition recursion"
   }
 }

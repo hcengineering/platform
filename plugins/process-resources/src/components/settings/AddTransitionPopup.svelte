@@ -16,7 +16,7 @@
   import core, { Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Process, State, Trigger } from '@hcengineering/process'
-  import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Grid, Label, ListItem } from '@hcengineering/ui'
+  import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
@@ -41,10 +41,13 @@
 
   let fromState: ListItem | undefined
 
-  $: from = fromState?._id as Ref<State>
+  $: from = (fromState?._id as Ref<State>) ?? null
 
   const client = getClient()
-  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: false })
+  const withoutFrom =
+    client.getModel().findAllSync(plugin.class.Transition, { from: null, process: process._id })[0] === undefined
+
+  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: withoutFrom })
   let trigger: Ref<Trigger> = triggers[0]._id
 
   $: triggerValue = triggers.find((t) => t._id === trigger)
@@ -80,28 +83,20 @@
   width={'medium'}
   on:close
 >
-  <Grid rowGap={1} columnGap={0.5}>
-    <Label label={plugin.string.Trigger} />
-    <DropdownLabelsIntl
-      items={triggersItems}
-      bind:selected={trigger}
-      label={plugin.string.Trigger}
-      justify={'left'}
-      width={'100%'}
-      kind={'no-border'}
-    />
-    {#if triggerValue?.editor}
-      <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
-    {/if}
+  <div class="grid">
     <Label label={plugin.string.From} />
-    <Dropdown
-      items={statesItems}
-      bind:selected={fromState}
-      placeholder={plugin.string.From}
-      justify={'left'}
-      width={'100%'}
-      kind={'no-border'}
-    />
+    {#if !withoutFrom}
+      <Dropdown
+        items={statesItems}
+        bind:selected={fromState}
+        placeholder={plugin.string.From}
+        justify={'left'}
+        width={'100%'}
+        kind={'no-border'}
+      />
+    {:else}
+      <div>⦳</div>
+    {/if}
     <Label label={plugin.string.To} />
     <Dropdown
       items={statesItems}
@@ -111,5 +106,30 @@
       width={'100%'}
       kind={'no-border'}
     />
-  </Grid>
+    <Label label={plugin.string.Trigger} />
+    <DropdownLabelsIntl
+      items={triggersItems}
+      bind:selected={trigger}
+      label={plugin.string.Trigger}
+      justify={'left'}
+      width={'100%'}
+      kind={'no-border'}
+    />
+  </div>
+  {#if triggerValue?.editor}
+    <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
+  {/if}
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

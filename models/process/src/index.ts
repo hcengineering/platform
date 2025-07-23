@@ -51,6 +51,7 @@ import {
   type ExecutionLogAction,
   type ExecutionStatus,
   type Method,
+  type MethodParams,
   type Process,
   type ProcessContext,
   type ProcessFunction,
@@ -59,6 +60,7 @@ import {
   type Step,
   type Transition,
   type Trigger,
+  type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
 import time from '@hcengineering/time'
@@ -97,6 +99,8 @@ export class TTrigger extends TDoc implements Trigger {
   label!: IntlString
 
   editor?: AnyComponent
+
+  presenter?: AnyComponent
 
   icon!: Asset
 
@@ -200,6 +204,8 @@ export class TMethod extends TDoc implements Method<Doc> {
   presenter?: AnyComponent
 
   requiredParams!: string[]
+
+  defaultParams?: MethodParams<Doc>
 }
 
 @Model(process.class.State, core.class.Doc, DOMAIN_MODEL)
@@ -214,8 +220,18 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
   category: AttributeCategory | undefined
   label!: IntlString
   editor?: AnyComponent
+  presenter?: AnyComponent
   allowMany?: boolean
   type!: 'transform' | 'reduce' | 'context'
+}
+
+@Model(process.class.UpdateCriteriaComponent, core.class.Doc, DOMAIN_MODEL)
+export class TUpdateCriteriaComponent extends TDoc implements UpdateCriteriaComponent {
+  category!: AttributeCategory
+
+  editor!: AnyComponent
+
+  of!: Ref<Class<Doc<Space>>>
 }
 
 export * from './migration'
@@ -230,7 +246,8 @@ export function createModel (builder: Builder): void {
     TProcessFunction,
     TTransition,
     TTrigger,
-    TExecutionLog
+    TExecutionLog,
+    TUpdateCriteriaComponent
   )
 
   createAction(builder, {
@@ -871,7 +888,10 @@ export function createModel (builder: Builder): void {
       objectClass: process.class.ProcessToDo,
       presenter: process.component.ToDoPresenter,
       contextClass: process.class.ProcessToDo,
-      requiredParams: ['state', 'title', 'user']
+      requiredParams: ['state', 'title', 'user'],
+      defaultParams: {
+        withRollback: true
+      }
     },
     process.method.CreateToDo
   )
@@ -934,18 +954,6 @@ export function createModel (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
-      label: process.string.OnSubProcessesDone,
-      icon: process.icon.WaitSubprocesses,
-      requiredParams: [],
-      init: false
-    },
-    process.trigger.OnSubProcessesDone
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
       label: process.string.OnToDoDone,
       icon: process.icon.ToDo,
       editor: process.component.ToDoCloseEditor,
@@ -970,6 +978,33 @@ export function createModel (builder: Builder): void {
     process.trigger.OnToDoRemove
   )
 
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.OnCardUpdate,
+      icon: process.icon.OnCardUpdate,
+      editor: process.component.CardUpdateEditor,
+      presenter: process.component.CardUpdatePresenter,
+      requiredParams: [],
+      checkFunction: process.triggerCheck.UpdateCheck,
+      init: false
+    },
+    process.trigger.OnCardUpdate
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.OnSubProcessesDone,
+      icon: process.icon.WaitSubprocesses,
+      requiredParams: [],
+      init: false
+    },
+    process.trigger.OnSubProcessesDone
+  )
+
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
     id: 'processes',
     label: process.string.Processes,
@@ -979,6 +1014,54 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchExtensions,
     component: process.component.NotifierExtension
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.StringCriteria,
+    of: core.class.TypeString
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.StringCriteria,
+    of: core.class.TypeHyperlink
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.NumberCriteria,
+    of: core.class.TypeNumber
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.DateCriteria,
+    of: core.class.TypeDate
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.BooleanCriteria,
+    of: core.class.TypeBoolean
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'array',
+    editor: process.criteriaEditor.ArrayCriteria,
+    of: core.class.ArrOf
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.EnumCriteria,
+    of: core.class.EnumOf
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'object',
+    editor: process.criteriaEditor.RefCriteria,
+    of: core.class.RefTo
   })
 }
 

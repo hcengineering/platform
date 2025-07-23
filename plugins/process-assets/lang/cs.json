@@ -90,7 +90,8 @@
     "LogAction": "Událost",
     "Started": "Spuštěno",
     "Each": "Každý",
-    "CreateCard": "Vytvořit kartu"
+    "CreateCard": "Vytvořit kartu",
+    "OnCardUpdate": "Při aktualizaci karty"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -105,6 +106,7 @@
     "ResultNotProvided": "Výsledek nebyl poskytnut",
     "EmptyFunctionResult": "Prázdný výsledek funkce {func}",
     "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}",
-    "RequiredParamsNotProvided": "Chybí požadované parametry: {params}"
+    "RequiredParamsNotProvided": "Chybí požadované parametry: {params}",
+    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů"
   }
 }

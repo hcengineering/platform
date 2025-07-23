@@ -15,6 +15,7 @@
 
 import core, {
   type AccountUuid,
+  type AnyAttribute,
   type Arr,
   type AttachedDoc,
   type Class,
@@ -41,6 +42,10 @@ export const txFactory = new TxFactory(core.account.System)
 
 export function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)
+}
+
+export function createAttribute (attribute: Data<AnyAttribute>): TxCreateDoc<Doc> {
+  return txFactory.createTxCreateDoc(core.class.Attribute, core.space.Model, attribute)
 }
 
 /**
@@ -114,6 +119,13 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(core.class.Obj, { label: 'Obj' as IntlString, kind: ClassifierKind.CLASS }))
   txes.push(
     createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
+  )
+  txes.push(
+    createClass(core.class.Attribute, {
+      label: 'Attribute' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS
+    })
   )
   txes.push(
     createClass(core.class.Relation, {

@@ -19,6 +19,20 @@ import type { KeysByType } from 'simplytyped'
 import type { Association, AttachedDoc, Class, Doc, Domain, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
+export type ArraySizeSelector =
+  | {
+    $gt: number
+  }
+  | {
+    $lt: number
+  }
+  | {
+    $gte: number
+  }
+  | {
+    $lte: number
+  }
+
 /**
  * @public
  */
@@ -36,6 +50,7 @@ export type QuerySelector<T> = {
   $like?: string
   $regex?: string
   $options?: string
+  $size?: T extends Array<any> ? number | ArraySizeSelector : never
 }
 
 /**

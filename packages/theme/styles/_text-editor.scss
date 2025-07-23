@@ -73,6 +73,12 @@
     margin-bottom: 0;
   }
 
+  hr {
+    margin: 1rem 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--text-edtior-hr-border-color);
+  }
+
   ul li {
     list-style: none;
     position: relative;

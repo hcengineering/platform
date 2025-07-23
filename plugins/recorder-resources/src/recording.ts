@@ -13,8 +13,14 @@
 // limitations under the License.
 //
 
-import { type Blob as PlatformBlob, type Ref } from '@hcengineering/core'
-import { showPopup } from '@hcengineering/ui'
+import {
+  AccountRole,
+  type Blob as PlatformBlob,
+  getCurrentAccount,
+  hasAccountRole,
+  type Ref
+} from '@hcengineering/core'
+import { addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
 import { type FileUploadOptions } from '@hcengineering/uploader'
 import { get } from 'svelte/store'
 
@@ -22,6 +28,9 @@ import RecordingPopup from './components/RecordingPopup.svelte'
 import { recorder, recording } from './stores'
 import { createScreenRecorder } from './screen-recorder'
 import { type RecordingOptions, type RecordingResult } from './types'
+import { translate } from '@hcengineering/platform'
+import view from '@hcengineering/view'
+import { getCurrentLanguage } from '@hcengineering/theme'
 
 export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
   const onSuccess = async (result: RecordingResult): Promise<void> => {
@@ -40,6 +49,18 @@ export async function record ({ onFileUploaded }: FileUploadOptions): Promise<vo
 }
 
 export async function startRecording (options: RecordingOptions): Promise<void> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
+    addNotification(
+      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
+      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
+      view.component.ReadOnlyNotification,
+      undefined,
+      NotificationSeverity.Info,
+      'readOnlyNotification'
+    )
+    return
+  }
+
   const current = get(recording)
   if (current !== null) {
     throw new Error('Recording already started')

@@ -18,7 +18,7 @@
   import core, { AnyAttribute, Class, Ref } from '@hcengineering/core'
   import { translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { MethodParams, Process, Step } from '@hcengineering/process'
+  import { Process, Step } from '@hcengineering/process'
   import { Button, eventToHTMLElement, Label, SelectPopup, showPopup, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import ParamsEditor from './ParamsEditor.svelte'

@@ -65,7 +65,7 @@
     <Grid rowGap={1}>
       {#each Object.entries(process.context) as val}
         <div class="context flex-center cursor-pointer" on:click={() => open(val[1])}>
-          {val[1].index} ->
+          {val[1].index}:
           <ProcessContextRawPresenter context={val[1]} />
         </div>
         <EditBox
