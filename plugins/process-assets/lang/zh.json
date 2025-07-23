@@ -91,7 +91,12 @@
     "Started": "已启动",
     "Each": "每个",
     "CreateCard": "创建卡片",
-    "OnCardUpdate": "在卡片更新时"
+    "OnCardUpdate": "在卡片更新时",
+    "ArraySizeEquals": "大小等于",
+    "ArraySizeGt": "大小大于",
+    "ArraySizeGte": "大小大于等于",
+    "ArraySizeLt": "大小小于",
+    "ArraySizeLte": "大小小于等于"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

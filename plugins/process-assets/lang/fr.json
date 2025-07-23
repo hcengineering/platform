@@ -91,7 +91,12 @@
     "Started": "Démarré",
     "Each": "Chaque",
     "CreateCard": "Créer une carte",
-    "OnCardUpdate": "Lors de la mise à jour de la carte"
+    "OnCardUpdate": "À la modification de la carte",
+    "ArraySizeEquals": "Taille égale à",
+    "ArraySizeGt": "Taille supérieure à",
+    "ArraySizeGte": "Taille supérieure ou égale à",
+    "ArraySizeLt": "Taille inférieure à",
+    "ArraySizeLte": "Taille inférieure ou égale à"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

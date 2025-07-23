@@ -91,7 +91,12 @@
     "Started": "Начат",
     "Each": "Каждый",
     "CreateCard": "Создать карточку",
-    "OnCardUpdate": "При обновлении карточки"
+    "OnCardUpdate": "При обновлении карточки",
+    "ArraySizeEquals": "Размер равен",
+    "ArraySizeGt": "Размер больше чем",
+    "ArraySizeGte": "Размер больше или равен",
+    "ArraySizeLt": "Размер меньше чем",
+    "ArraySizeLte": "Размер меньше или равен"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

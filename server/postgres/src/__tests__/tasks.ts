@@ -1,4 +1,4 @@
-import {
+import core, {
   type AttachedDoc,
   type Class,
   ClassifierKind,
@@ -11,7 +11,7 @@ import {
   type Tx
 } from '@hcengineering/core'
 import { type IntlString, plugin, type Plugin } from '@hcengineering/platform'
-import { createClass } from './minmodel'
+import { createAttribute, createClass } from './minmodel'
 
 export interface TaskComment extends AttachedDoc {
   message: string
@@ -107,6 +107,15 @@ export function createTaskModel (txes: Tx[]): void {
       kind: ClassifierKind.CLASS,
       label: 'Comment' as IntlString,
       domain: 'test-task' as Domain
+    }),
+    createAttribute({
+      attributeOf: taskPlugin.class.Task,
+      name: 'arr',
+      type: {
+        _class: core.class.ArrOf,
+        label: 'arr' as IntlString,
+        type: core.class.TypeNumber
+      }
     })
   )
 }

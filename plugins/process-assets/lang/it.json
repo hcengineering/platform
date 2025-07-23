@@ -91,7 +91,12 @@
     "Started": "Avviato",
     "Each": "Ogni",
     "CreateCard": "Crea scheda",
-    "OnCardUpdate": "Alla modifica della scheda"
+    "OnCardUpdate": "Alla modifica della scheda",
+    "ArraySizeEquals": "Dimensione uguale a",
+    "ArraySizeGt": "Dimensione maggiore di",
+    "ArraySizeGte": "Dimensione maggiore o uguale a",
+    "ArraySizeLt": "Dimensione minore di",
+    "ArraySizeLte": "Dimensione minore o uguale a"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
