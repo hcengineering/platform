@@ -44,7 +44,12 @@ import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.
 import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
 import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
 
-export const addReaction: MessageActionFunction = async (message, _: Card, evt, onOpen, onClose) => {
+export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
+  if (!(await isCardAllowedForCommunications(card))) {
+    await showForbidden()
+    return
+  }
+
   if (onOpen !== undefined) onOpen()
 
   showPopup(
@@ -63,7 +68,7 @@ export const addReaction: MessageActionFunction = async (message, _: Card, evt, 
 }
 
 export const replyInThread: MessageActionFunction = async (message: Message, parentCard: Card): Promise<void> => {
-  if (!await isCardAllowedForCommunications(parentCard)) {
+  if (!(await isCardAllowedForCommunications(parentCard))) {
     await showForbidden()
     return
   }

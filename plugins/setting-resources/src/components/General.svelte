@@ -20,11 +20,13 @@
     Configuration,
     getCurrentAccount,
     pickPrimarySocialId,
-    readOnlyGuestAccountUuid, Ref
+    readOnlyGuestAccountUuid,
+    Ref
   } from '@hcengineering/core'
   import {
     Breadcrumb,
-    Button, Component,
+    Button,
+    Component,
     deviceOptionsStore as deviceInfo,
     DropdownLabels,
     type DropdownTextItem,
@@ -242,7 +244,10 @@
 
   async function onAllowedCardsChange (value: Ref<Card>[]): Promise<void> {
     if (existingGuestChatSettings === undefined) {
-      await client.createDoc(communication.class.GuestCommunicationSettings, core.space.Workspace, { allowedCards: value, enabled: true })
+      await client.createDoc(communication.class.GuestCommunicationSettings, core.space.Workspace, {
+        allowedCards: value,
+        enabled: true
+      })
     } else {
       await client.updateDoc(
         communication.class.GuestCommunicationSettings,
@@ -345,7 +350,14 @@
           </div>
           <div class="flex-row-center flex-gap-4">
             <Label label={settingsRes.string.GuestCardsDescription} />
-            <Component is={card.component.CardArrayEditor} props={{ value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [], label: settingsRes.string.GuestCardsArrayLabel, onChange: onAllowedCardsChange }}/>
+            <Component
+              is={card.component.CardArrayEditor}
+              props={{
+                value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
+                label: settingsRes.string.GuestCardsArrayLabel,
+                onChange: onAllowedCardsChange
+              }}
+            />
           </div>
           <div class="delete">
             <Button

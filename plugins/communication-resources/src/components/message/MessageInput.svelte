@@ -40,7 +40,8 @@
     toMarkdown,
     toMarkup,
     loadLinkPreviewData,
-    isCardAllowedForCommunications, showForbidden
+    isCardAllowedForCommunications,
+    showForbidden
   } from '../../utils'
   import communication from '../../plugin'
   import { type TextInputAction, type PresenceTyping, MessageDraft } from '../../types'
@@ -99,7 +100,7 @@
   }
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
-    if (!await isCardAllowedForCommunications(card)) {
+    if (!(await isCardAllowedForCommunications(card))) {
       await showForbidden()
       return
     }
