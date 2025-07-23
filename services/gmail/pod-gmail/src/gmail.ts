@@ -398,10 +398,16 @@ export class GmailClient {
       return
     }
 
-    this.syncStarted = true
-    this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
     try {
+      this.syncStarted = true
+      this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
       await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
+      await this.watch()
+      // recall every 24 hours https://developers.google.com/gmail/api/guides/push
+      if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
+      this.watchTimer = setInterval(() => {
+        void this.watch()
+      }, 86400000)
     } catch (err: any) {
       this.ctx.error('Failed to start sync', {
         workspaceUuid: this.user.workspace,
@@ -409,12 +415,8 @@ export class GmailClient {
         email: this.email,
         error: err.message
       })
+      this.syncStarted = false
     }
-    await this.watch()
-    // recall every 24 hours https://developers.google.com/gmail/api/guides/push
-    this.watchTimer = setInterval(() => {
-      void this.watch()
-    }, 86400000)
   }
 
   async sync (options: SyncOptions): Promise<void> {
