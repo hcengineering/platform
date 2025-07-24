@@ -17,6 +17,7 @@ import { start } from './server'
 setMetadata(serverToken.metadata.Secret, config.ServerSecret)
 setMetadata(serverToken.metadata.Service, 'github')
 
+configureAnalytics('github', process.env.VERSION ?? '0.7.0')
 const metricsContext = initStatisticsContext('github', {
   factory: () =>
     createOpenTelemetryMetricsContext(
@@ -31,7 +32,6 @@ const metricsContext = initStatisticsContext('github', {
     )
 })
 
-configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'github-service')
 
 let doOnClose: () => Promise<void> = async () => {}

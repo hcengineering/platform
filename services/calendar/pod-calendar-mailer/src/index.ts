@@ -26,6 +26,7 @@ import { eventCreated, eventDeleted, eventMixin, eventUpdated } from './handlers
 import { EventCUDMessage } from './types'
 
 async function main (): Promise<void> {
+  configureAnalytics('calendar-mailer', process.env.VERSION ?? '0.7.0')
   const ctx = initStatisticsContext('calendar-mailer', {
     factory: () =>
       createOpenTelemetryMetricsContext(
@@ -40,7 +41,6 @@ async function main (): Promise<void> {
       )
   })
 
-  configureAnalytics(config.sentryDSN, config)
   Analytics.setTag('application', 'calendar-mailer')
   setMetadata(serverToken.metadata.Secret, config.secret)
   setMetadata(serverToken.metadata.Service, 'calendar-mailer')

@@ -30,16 +30,23 @@
   export let applet: Applet
   export let attachment: AppletAttachment<PollConfig>
 
-  let result: Poll | undefined = undefined
   const query = createQuery()
   const privateAnswersQuery = createQuery()
+
+  let result: Poll | undefined = undefined
   let privateAnswers: PollAnswer[] = []
+
+  let isLoadingPoll = true
+  let isLoadingPrivateAnswers = true
+
+  $: isLoading = isLoadingPoll || isLoadingPrivateAnswers
 
   $: query.query(
     communication.type.Poll,
     { _id: attachment.params.id },
     (res) => {
       result = res[0] as Poll
+      isLoadingPoll = false
     },
     { limit: 1 }
   )
@@ -52,8 +59,11 @@
       },
       (res) => {
         privateAnswers = res
+        isLoadingPrivateAnswers = false
       }
     )
+  } else {
+    isLoadingPrivateAnswers = false
   }
 
   $: params = attachment.params
@@ -257,7 +267,9 @@
     {params.question}
   </div>
   <div class="poll-type">
-    {#if params.anonymous}
+    {#if params.anonymous && params.quiz}
+      <Label label={communication.string.AnonymousQuiz} />
+    {:else if params.anonymous}
       <Label label={communication.string.AnonymousVoting} />
     {:else if params.quiz}
       <Label label={communication.string.Quiz} />
@@ -279,6 +291,7 @@
       <PollOptionPresenter
         {option}
         bind:result
+        {isLoading}
         isVoted={voted}
         answer={params.quizAnswer}
         {started}

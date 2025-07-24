@@ -84,6 +84,7 @@
     "TotalVotes": "Voti totali",
     "Voted": "Votato",
     "VotedFor": "Votato per",
-    "RevokedVote": "Revoca il voto"
+    "RevokedVote": "Revoca il voto",
+    "AnonymousQuiz": "Quiz anonimo"
   }
 }

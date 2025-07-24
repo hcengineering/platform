@@ -247,8 +247,12 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
       this.otlpLogger.emit({
         severityNumber: SeverityNumber.ERROR,
         severityText: 'error',
+        context: this.context,
         body: message,
-        attributes: args ?? {}
+        attributes: {
+          'service.name': sdkServiceName,
+          ...(args ?? {})
+        }
       })
     }
     this.logger.error(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
@@ -257,10 +261,14 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
   info (message: string, args?: Record<string, any>): void {
     if (this.otlpLogger !== undefined) {
       this.otlpLogger.emit({
+        context: this.context,
         severityNumber: SeverityNumber.INFO,
         severityText: 'info',
         body: message,
-        attributes: args ?? {}
+        attributes: {
+          'service.name': sdkServiceName,
+          ...(args ?? {})
+        }
       })
     }
     this.logger.info(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
@@ -271,8 +279,12 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
       this.otlpLogger.emit({
         severityNumber: SeverityNumber.WARN,
         severityText: 'warn',
+        context: this.context,
         body: message,
-        attributes: args ?? {}
+        attributes: {
+          'service.name': sdkServiceName,
+          ...(args ?? {})
+        }
       })
     }
     this.logger.warn(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
@@ -336,20 +348,24 @@ function parseBaggage (baggageHeader?: string): Record<string, string> {
   return result
 }
 
-export function createOpenTelemetryMetricsContext (
-  name: string,
-  params: ParamsType,
-  fullParams: FullParamsType | (() => FullParamsType) = {},
-  metrics: Metrics = newMetrics(),
-  logger?: MeasureLogger,
-  version?: string
-): MeasureContext {
-  // Traces
+let sdk: NodeSDK | undefined
+let sdkServiceName: string | undefined
+let sdkServiceVersion: string | undefined
+let loggerProvider: LoggerProvider | undefined
+
+export function initOpenTelemetrySDK (serviceName: string, version: string): boolean {
+  if (sdk !== undefined) {
+    return true
+  }
+  process.env.OTEL_SERVICE_NAME = serviceName
+  process.env.OTEL_SERVICE_VERSION = version
+
+  sdkServiceName = serviceName
+  sdkServiceVersion = version
   const tracesUrl = getTracesUrl()
 
   if (tracesUrl === undefined) {
-    console.warn('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is not set, OpenTelemetry metrics will not be sent')
-    return new MeasureMetricsContext(name, params, fullParams, metrics, logger)
+    return false
   }
 
   const traceHeaders = parseTraceExporterHeaders()
@@ -402,12 +418,12 @@ export function createOpenTelemetryMetricsContext (
 
   // SDK
 
-  const sdk = new NodeSDK({
+  sdk = new NodeSDK({
     spanProcessors: [batchSpanProcessor],
-    serviceName: name,
+    serviceName,
     traceExporter: exporter,
     resource: resourceFromAttributes({
-      'service-name': name,
+      'service-name': serviceName,
       'service-version': version ?? '0.7',
       'deployment-environment': process.env.OTEL_ENVIRONMENT
     }),
@@ -419,10 +435,14 @@ export function createOpenTelemetryMetricsContext (
 
   sdk.start()
 
+  loggerProvider = new LoggerProvider({
+    processors: [batchLogProcessor]
+  })
+
   // Graceful shutdown
   process.on('SIGTERM', () => {
     sdk
-      .shutdown()
+      ?.shutdown()
       .then(() => {
         console.log('Tracing terminated')
       })
@@ -431,14 +451,50 @@ export function createOpenTelemetryMetricsContext (
       })
       .finally(() => process.exit(0))
   })
+  console.log('Using open telemetry metrics context', {
+    traceEndpoint: tracesUrl,
+    tracerHeadersSet: Array.from(Object.keys(traceHeaders)),
+    logsEndpoint,
+    logHeadersSet: Array.from(Object.keys(logHeaders))
+  })
+  return true
+}
+
+export function reportOTELError (error: Error): void {
+  if (sdkServiceName !== undefined && sdkServiceVersion !== undefined && loggerProvider !== undefined) {
+    const otlpLogger = loggerProvider?.getLogger(sdkServiceName, sdkServiceVersion)
+    otlpLogger?.emit({
+      severityNumber: SeverityNumber.ERROR,
+      severityText: 'error',
+      body: error.message,
+      context: context.active(),
+      attributes: {
+        'service.name': sdkServiceName,
+        'service.version': sdkServiceVersion,
+        'error.stack': error.stack
+      }
+    })
+  }
+}
+
+export function createOpenTelemetryMetricsContext (
+  name: string,
+  params: ParamsType,
+  fullParams: FullParamsType | (() => FullParamsType) = {},
+  metrics: Metrics = newMetrics(),
+  logger?: MeasureLogger,
+  version?: string
+): MeasureContext {
+  if (!initOpenTelemetrySDK(name, version ?? '')) {
+    console.warn('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is not set, OpenTelemetry metrics will not be sent')
+    return new MeasureMetricsContext(name, params, fullParams, metrics, logger)
+  }
+
+  // Traces
 
   const tracer = trace.getTracer(name)
 
-  const loggerProvider = new LoggerProvider({
-    processors: [batchLogProcessor]
-  })
-
-  const otlpLogger: Logger = loggerProvider.getLogger(name)
+  const otlpLogger = loggerProvider?.getLogger(sdkServiceName ?? name, version)
 
   const meter = otelMetrics.getMeter(name, version)
 
@@ -457,12 +513,6 @@ export function createOpenTelemetryMetricsContext (
     otlpLogger,
     new MetricsContext(meter)
   )
-  ctx.info('Using open telemetry metrics context', {
-    traceEndpoint: tracesUrl,
-    tracerHeadersSet: Array.from(Object.keys(traceHeaders)),
-    logsEndpoint,
-    logHeadersSet: Array.from(Object.keys(logHeaders))
-  })
   return ctx
 }
 function parseTraceExporterHeaders (): Record<string, string> {

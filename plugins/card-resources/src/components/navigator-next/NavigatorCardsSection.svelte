@@ -108,7 +108,8 @@
           type: NotificationType.Message,
           order: SortingOrder.Descending,
           read: false,
-          limit: 10
+          limit: 1,
+          total: true
         }
       },
       (res) => {

@@ -29,7 +29,7 @@ import { createServer, listen } from './server'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
-  configureAnalytics(process.env.SENTRY_DSN, {})
+  configureAnalytics('mail', process.env.VERSION ?? '0.7.0')
   Analytics.setTag('application', 'mail')
   const measureCtx = initStatisticsContext('mail', {
     factory: () =>

@@ -23,19 +23,23 @@
   $: voteLabel = addedVote?.options?.map((it) => it.label).join(', ') ?? ''
 </script>
 
-<span class="icon mr-1"> <Icon icon={communication.icon.Poll} size="small" /> </span>
-{#if addedVote}
-  <span class="overflow-label ml-1">
+<span class="container overflow-label">
+  <span class="icon mr-1"> <Icon icon={communication.icon.Poll} size="small" /> </span>
+  {#if addedVote}
     <Label label={communication.string.VotedFor} />
-    <span class="strong" title={voteLabel}>{voteLabel}</span>
-  </span>
-{:else}
-  <span class="overflow-label ml-1">
+    <span class="strong overflow-label flex-shrink" title={voteLabel}>{voteLabel}</span>
+  {:else}
     <Label label={communication.string.RevokedVote} />
-  </span>
-{/if}
+  {/if}
+</span>
 
 <style lang="scss">
+  .container {
+    display: inline-flex;
+    gap: 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 1;
+  }
   .strong {
     font-weight: 500;
   }

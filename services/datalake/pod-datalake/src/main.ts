@@ -33,7 +33,7 @@ const setupMetadata = (): void => {
 export const main = async (): Promise<void> => {
   setupMetadata()
 
-  configureAnalytics(process.env.SENTRY_DSN, {})
+  configureAnalytics('datalake', process.env.VERSION ?? '0.7.0')
   Analytics.setTag('application', 'datalake')
 
   const metricsContext = initStatisticsContext('datalake', {

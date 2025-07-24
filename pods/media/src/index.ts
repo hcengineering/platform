@@ -41,7 +41,7 @@ const setupMetadata = (): void => {
 async function main (): Promise<void> {
   setupMetadata()
 
-  configureAnalytics(process.env.SENTRY_DSN, {})
+  configureAnalytics(application, process.env.VERSION ?? '0.7.0')
   Analytics.setTag('application', application)
 
   const ctx = initStatisticsContext(application, {

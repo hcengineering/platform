@@ -12,7 +12,7 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { CheckBox } from '@hcengineering/ui'
+  import { CheckBox, Loading } from '@hcengineering/ui'
   import { getCurrentAccount, WithLookup } from '@hcengineering/core'
   import { Poll, PollAnswer } from '@hcengineering/communication'
   import { createEventDispatcher } from 'svelte'
@@ -21,6 +21,7 @@
 
   export let option: PollOption
   export let result: WithLookup<Poll> | undefined
+  export let isLoading: boolean
   export let privateAnswers: PollAnswer[]
   export let answer: string | undefined
   export let anonymous: boolean
@@ -96,15 +97,19 @@
   <div class="poll-option">
     <div class="poll-option__answer">
       <span class="option_checkbox">
-        <CheckBox
-          checked={false}
-          kind="todo"
-          size="small"
-          disabled={!started || ended}
-          on:value={() => {
-            dispatch('toggle')
-          }}
-        />
+        {#if !isLoading}
+          <CheckBox
+            checked={false}
+            kind="todo"
+            size="small"
+            disabled={!started || ended}
+            on:value={() => {
+              dispatch('toggle')
+            }}
+          />
+        {:else}
+          <Loading size="small" />
+        {/if}
       </span>
       <span class="option_label">
         {option.label}

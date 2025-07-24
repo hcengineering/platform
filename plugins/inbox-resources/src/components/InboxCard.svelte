@@ -13,10 +13,10 @@
 -->
 
 <script lang="ts">
-  import { NotificationContext, Notification } from '@hcengineering/communication-types'
+  import { NotificationContext } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
-  import { getCommunicationClient } from '@hcengineering/presentation'
+  import { createNotificationsQuery, getCommunicationClient } from '@hcengineering/presentation'
   import { CheckBox, Spinner } from '@hcengineering/ui'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
@@ -31,8 +31,13 @@
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
 
-  let displayNotifications: Notification[] = []
-  $: displayNotifications = (context.notifications ?? []).filter((it) => it.message != null).slice(0, 3)
+  const notificationsQuery = createNotificationsQuery()
+
+  let total = 0
+
+  notificationsQuery.query({ limit: 1, total: true, read: false, strict: true, context: context.id }, (res) => {
+    total = res.getTotal()
+  })
 
   let isRemoving = false
   async function handleToggle (): Promise<void> {
@@ -49,7 +54,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="inbox-card" class:selected on:click={() => dispatch('select', { context, card })}>
   <div class="inbox-card__header">
-    <InboxCardIcon {card} count={context.notifications?.filter((x) => !x.read)?.length ?? 0} />
+    <InboxCardIcon {card} count={total ?? 0} />
     <div class="inbox-card__labels">
       <span class="inbox-card__title overflow-label clear-mins" title={card.title}>
         {card.title}
@@ -68,7 +73,7 @@
 
   <div class="inbox-card__content">
     <div class="inbox-card__notifications">
-      {#each displayNotifications as notification}
+      {#each context.notifications ?? [] as notification}
         <div class="inbox-card__notification">
           <div class="inbox-card__marker" />
           <InboxNotification {notification} {card} />
