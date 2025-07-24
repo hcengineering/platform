@@ -12,7 +12,7 @@ import { join } from 'path'
 
 const txes = JSON.parse(JSON.stringify(builder().getTxes())) as Tx[]
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('workspace', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'workspace')
 
 // Force create server metrics context with proper logging

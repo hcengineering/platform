@@ -26,6 +26,7 @@ import { initStatisticsContext } from '@hcengineering/server-core'
 import config from './config'
 import { createServer, listen } from './server'
 
+configureAnalytics('analytics-collector', process.env.VERSION ?? '0.7.0')
 const ctx = initStatisticsContext('analytics-collector', {
   factory: () =>
     createOpenTelemetryMetricsContext(
@@ -40,7 +41,6 @@ const ctx = initStatisticsContext('analytics-collector', {
     )
 })
 
-configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {

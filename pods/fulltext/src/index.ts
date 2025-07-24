@@ -39,6 +39,7 @@ if (serverSecret === undefined) {
 setMetadata(serverToken.metadata.Secret, serverSecret)
 setMetadata(serverToken.metadata.Service, 'fulltext')
 
+configureAnalytics('fulltext', process.env.VERSION ?? '0.7.0')
 const metricsContext = initStatisticsContext('fulltext', {
   factory: () =>
     createOpenTelemetryMetricsContext(
@@ -53,9 +54,6 @@ const metricsContext = initStatisticsContext('fulltext', {
     )
 })
 
-const sentryDSN = process.env.SENTRY_DSN
-
-configureAnalytics(sentryDSN, {})
 Analytics.setTag('application', 'fulltext')
 
 const dbURL = process.env.DB_URL
