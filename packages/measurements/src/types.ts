@@ -73,7 +73,13 @@ export interface MeasureContext<Q = any> {
   // Context data will be copied referenced for all child contexts.
   contextData: Q
   // Create a child metrics context
-  newChild: (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger) => MeasureContext
+  newChild: (
+    name: string,
+    params: ParamsType,
+    fullParams?: FullParamsType,
+    logger?: MeasureLogger,
+    useContextParent?: boolean
+  ) => MeasureContext
 
   metrics?: Metrics
 
@@ -83,8 +89,6 @@ export interface MeasureContext<Q = any> {
     op: (ctx: MeasureContext<Q>) => T | Promise<T>,
     fullParams?: FullParamsType | (() => FullParamsType)
   ) => Promise<T>
-
-  withoutTracing: <T>(op: () => T) => T
 
   withSync: <T>(
     name: string,

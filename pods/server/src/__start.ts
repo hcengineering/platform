@@ -58,7 +58,8 @@ const metricsContext = initStatisticsContext('transactor', {
       new SplitLogger('server', {
         root: join(process.cwd(), 'logs'),
         enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
-      })
+      }),
+      process.env.VERSION
     )
 })
 

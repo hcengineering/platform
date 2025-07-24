@@ -146,10 +146,6 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
-  withoutTracing<T>(op: () => T): T {
-    return op()
-  }
-
   withSync<T>(
     name: string,
     params: ParamsType,
@@ -233,10 +229,6 @@ export class NoMetricsContext implements MeasureContext {
   ): Promise<T> {
     const r = op(this.newChild(name, params, fullParams, this.logger))
     return r instanceof Promise ? r : Promise.resolve(r)
-  }
-
-  withoutTracing<T>(op: () => T): T {
-    return op()
   }
 
   withSync<T>(

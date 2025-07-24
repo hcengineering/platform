@@ -64,6 +64,9 @@ importers:
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
+      '@opentelemetry/api-logs':
+        specifier: ^0.203.0
+        version: 0.203.0
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.62.0
         version: 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
@@ -91,6 +94,9 @@ importers:
       '@opentelemetry/sdk-logs':
         specifier: ^0.203.0
         version: 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-metrics':
+        specifier: ^2.0.1
+        version: 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-node':
         specifier: ^0.203.0
         version: 0.203.0(@opentelemetry/api@1.9.0)
@@ -4995,7 +5001,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/measurements-otlp@file:projects/measurements-otlp.tgz':
-    resolution: {integrity: sha512-YsOjH0rSNKsou09p3RkbV6g8gZb9V1Nk3Z5UFJ96VpzGwXJlnsY/BMQvso8JXoKkkP7rU58jwJhilOwfX0aViw==, tarball: file:projects/measurements-otlp.tgz}
+    resolution: {integrity: sha512-6fNyDKq1tDcefPNc+R4nrvNS9ZnML9RQ1W6DiJLU3IOo/kgpelMp8kLi/V5DN01KILQP3We2vanxjC5KJgllnA==, tarball: file:projects/measurements-otlp.tgz}
     version: 0.0.0
 
   '@rush-temp/measurements@file:projects/measurements.tgz':
@@ -21704,6 +21710,7 @@ snapshots:
   '@rush-temp/measurements-otlp@file:projects/measurements-otlp.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@opentelemetry/api': 1.9.0
+      '@opentelemetry/api-logs': 0.203.0
       '@opentelemetry/auto-instrumentations-node': 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
       '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-logs-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
@@ -21713,6 +21720,7 @@ snapshots:
       '@opentelemetry/otlp-exporter-base': 0.203.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-logs': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-metrics': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-node': 0.203.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-node': 2.0.1(@opentelemetry/api@1.9.0)
       '@sentry/node': 9.22.0

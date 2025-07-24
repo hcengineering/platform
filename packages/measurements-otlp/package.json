@@ -51,7 +51,9 @@
     "@opentelemetry/exporter-logs-otlp-http": "^0.203.0",
     "@opentelemetry/otlp-exporter-base": "^0.203.0",
     "@opentelemetry/id-generator-aws-xray": "^2.0.0",
-    "@opentelemetry/exporter-metrics-otlp-http": "^0.203.0"
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.203.0",
+    "@opentelemetry/api-logs": "^0.203.0",
+    "@opentelemetry/sdk-metrics": "^2.0.1"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
