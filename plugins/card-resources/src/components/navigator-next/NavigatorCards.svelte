@@ -75,7 +75,8 @@
           read: false,
           type: NotificationType.Message,
           order: SortingOrder.Descending,
-          limit: 10
+          limit: 1,
+          total: true
         }
       },
       (res) => {

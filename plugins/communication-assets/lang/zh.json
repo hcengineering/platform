@@ -84,6 +84,7 @@
     "TotalVotes": "总投票数",
     "Voted": "已投票",
     "VotedFor": "投票于",
-    "RevokedVote": "撤销投票"
+    "RevokedVote": "撤销投票",
+    "AnonymousQuiz": "匿名测验"
   }
 }

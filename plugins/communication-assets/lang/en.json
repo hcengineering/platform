@@ -84,6 +84,7 @@
     "TotalVotes": "Total votes",
     "Voted": "Voted",
     "VotedFor": "Voted for",
-    "RevokedVote": "Revoked vote"
+    "RevokedVote": "Revoked vote",
+    "AnonymousQuiz": "Anonymous quiz"
   }
 }

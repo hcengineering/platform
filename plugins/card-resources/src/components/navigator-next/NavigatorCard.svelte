@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Card, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import core, { Class, Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { IconMoreV, NavItem, Action, ButtonIcon } from '@hcengineering/ui'
@@ -38,7 +38,6 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let activeAction: string | undefined = undefined
 
@@ -80,8 +79,6 @@
       }
     }
   ]
-
-  $: clazz = hierarchy.getClass(card._class) as Class<Card> & { color?: number }
 
   function getCardTitle (card: Card): string {
     if ((card?.parentInfo?.length ?? 0) === 0) return card.title
@@ -133,15 +130,11 @@
   </svelte:fragment>
 
   <svelte:fragment slot="notify">
-    {#if context && (context?.notifications?.length ?? 0) > 0}
+    {#if context && (context.totalNotifications ?? 0) > 0}
       <div class="antiHSpacer" />
       <div class="notify">
         <div class="notifyMarker">
-          {#if (context.notifications?.length ?? 0) > 9}
-            {9}+
-          {:else}
-            {context.notifications?.length ?? 0}
-          {/if}
+          {context.totalNotifications}
         </div>
       </div>
       <div class="antiHSpacer" />
@@ -155,7 +148,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 1rem;
+    min-width: 1rem;
     height: 1rem;
   }
   .notifyMarker {
@@ -163,12 +156,13 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border-radius: 50%;
+    border-radius: 0.5rem;
     font-weight: 700;
     background-color: var(--global-higlight-Color);
     color: var(--global-on-accent-TextColor);
-    width: 1rem;
+    min-width: 1rem;
     height: 1rem;
     font-size: 0.5rem;
+    padding: 0 0.25rem;
   }
 </style>

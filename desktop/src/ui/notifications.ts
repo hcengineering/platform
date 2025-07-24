@@ -134,8 +134,8 @@ export function configureNotifications (): void {
     const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
 
     if (isCommunicationEnabled) {
-      notificationsCountQuery.query({ read: false, limit: 1000 }, res => {
-        newUnreadNotifications = res.getResult().length
+      notificationsCountQuery.query({ read: false, limit: 1, strict: true, total: true }, res => {
+        newUnreadNotifications = res.getTotal()
 
         if (preferences.showUnreadCounter) {
           electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)

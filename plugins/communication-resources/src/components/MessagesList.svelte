@@ -355,6 +355,18 @@
     separatorDate = messages[separatorIndex].created
   }
 
+  function readAllReactions (): void {
+    if (reactionNotifications.length === 0) return
+    for (const notification of reactionNotifications) {
+      void communicationClient.updateNotifications(
+        notification.contextId,
+        {
+          id: notification.id
+        },
+        true
+      )
+    }
+  }
   function readViewport (isAppFocused: boolean): void {
     if (!isAppFocused || context == null || window == null) return
 
@@ -566,6 +578,9 @@
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
       dispatch('loaded')
+      if (shouldScrollToEnd) {
+        readAllReactions()
+      }
       return
     }
 
