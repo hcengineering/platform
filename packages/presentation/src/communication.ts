@@ -60,7 +60,8 @@ import {
   type AttachmentID,
   type AttachmentData,
   type AttachmentParams,
-  type AttachmentUpdateData
+  type AttachmentUpdateData,
+  type WithTotal
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -368,9 +369,9 @@ class Client {
     ).value
   }
 
-  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
+  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<WithTotal<Notification>> {
     return (
-      await this.connection.domainRequest<Notification[]>(COMMUNICATION, {
+      await this.connection.domainRequest<WithTotal<Notification>>(COMMUNICATION, {
         findNotifications: { params, queryId }
       })
     ).value

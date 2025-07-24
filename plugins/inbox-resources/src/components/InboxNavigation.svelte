@@ -50,7 +50,7 @@
       notifications: {
         message: true,
         order: SortingOrder.Descending,
-        limit: 10
+        limit: 3
       },
       order: SortingOrder.Descending,
       limit

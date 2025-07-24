@@ -51,8 +51,9 @@
 
     &__marker {
       position: absolute;
-      top: -0.25rem;
-      right: -0.25rem;
+      top: -0.375rem;
+      right: 0;
+      transform: translateX(calc(100% - 0.875rem));
       display: flex;
       align-items: center;
       justify-content: center;
