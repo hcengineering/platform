@@ -144,7 +144,7 @@ export class TSessionManager implements SessionManager {
     this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
     this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Users)
 
-    this.ticksContext = ctx.newChild('ticks', {})
+    this.ticksContext = ctx.newChild('ticks', {}, undefined, undefined, false)
   }
 
   scheduleMaintenance (timeMinutes: number, message?: string): void {
@@ -209,6 +209,9 @@ export class TSessionManager implements SessionManager {
   }
 
   private handleWorkspaceTick (): void {
+    this.ctx.measure('workspaces', this.workspaces.size)
+    this.ctx.measure('sessions', this.sessions.size)
+
     if (this.ticks % (60 * ticksPerSecond) === 0) {
       const workspacesToUpdate: WorkspaceUuid[] = []
 
@@ -667,17 +670,22 @@ export class TSessionManager implements SessionManager {
       return (target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)
     })
     function send (): void {
+      const promises: Promise<void>[] = []
       for (const session of sessions) {
         try {
-          void sendResponse(ctx, session.session, session.socket, { result: tx }).catch((err) => {
-            ctx.error('failed to send', err)
-          })
+          promises.push(
+            sendResponse(ctx, session.session, session.socket, { result: tx }).catch((err) => {
+              ctx.error('failed to send', err)
+            })
+          )
         } catch (err: any) {
           Analytics.handleError(err)
           ctx.error('error during send', { error: err })
         }
       }
-      ctx.end()
+      void Promise.all(promises).finally(() => {
+        ctx.end()
+      })
     }
     if (sessions.length > 0) {
       // We need to send broadcast after our client response so put it after all IO
@@ -909,7 +917,7 @@ export class TSessionManager implements SessionManager {
                     // await communicationApi.closeSession(sessionRef.session.sessionId)
                     if (user !== guestAccount && user !== systemAccountUuid) {
                       await this.trySetStatus(
-                        sessionRef.session.userCtx ?? workspace.context,
+                        workspace.context,
                         pipeline,
                         sessionRef.session,
                         false,
@@ -1162,15 +1170,10 @@ export class TSessionManager implements SessionManager {
   }
 
   getUserCtx (requestCtx: MeasureContext, service: Session, mode: string): MeasureContext {
-    const userCtx =
-      service.userCtx ??
-      requestCtx.newChild('📞 client', {
-        source: service.token.extra?.service ?? '🤦‍♂️user',
-        mode
-      })
-    if (service.userCtx === undefined) {
-      service.userCtx = userCtx
-    }
+    const userCtx = requestCtx.newChild('📞 client', {
+      source: service.token.extra?.service ?? '🤦‍♂️user',
+      mode
+    })
     return userCtx
   }
 

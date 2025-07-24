@@ -661,8 +661,6 @@ export interface Session {
     broadcastPromise: Promise<void>
     asyncsPromise: Promise<void> | undefined
   }>
-
-  userCtx?: MeasureContext
 }
 
 /**
