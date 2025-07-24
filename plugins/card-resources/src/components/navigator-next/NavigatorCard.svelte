@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Card, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import core, { Class, Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { IconMoreV, NavItem, Action, ButtonIcon } from '@hcengineering/ui'
@@ -38,7 +38,6 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let activeAction: string | undefined = undefined
 
@@ -80,8 +79,6 @@
       }
     }
   ]
-
-  $: clazz = hierarchy.getClass(card._class) as Class<Card> & { color?: number }
 
   function getCardTitle (card: Card): string {
     if ((card?.parentInfo?.length ?? 0) === 0) return card.title

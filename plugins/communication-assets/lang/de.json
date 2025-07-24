@@ -84,6 +84,7 @@
     "TotalVotes": "Gesamtstimmen",
     "Voted": "Abgestimmt",
     "VotedFor": "Für abgestimmt",
-    "RevokedVote": "Stimme widerrufen"
+    "RevokedVote": "Stimme widerrufen",
+    "AnonymousQuiz": "Anonyme quiz"
   }
 }

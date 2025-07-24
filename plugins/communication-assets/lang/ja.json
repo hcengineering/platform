@@ -84,6 +84,7 @@
     "TotalVotes": "合計投票数",
     "Voted": "投票済み",
     "VotedFor": "投票したユーザ",
-    "RevokedVote": "投票を取り消し"
+    "RevokedVote": "投票を取り消し",
+    "AnonymousQuiz": "匿名クイズ"
   }
 }

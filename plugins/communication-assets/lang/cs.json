@@ -84,6 +84,7 @@
     "TotalVotes": "Celkem hlasů",
     "Voted": "Hlasováno",
     "VotedFor": "Hlasováno pro",
-    "RevokedVote": "Zrušeno hlasování"
+    "RevokedVote": "Zrušeno hlasování",
+    "AnonymousQuiz": "Anonymní test"
   }
 }

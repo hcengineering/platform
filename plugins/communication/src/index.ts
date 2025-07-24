@@ -84,7 +84,8 @@ export default plugin(communicationId, {
     TotalVotes: '' as IntlString,
     Voted: '' as IntlString,
     VotedFor: '' as IntlString,
-    RevokedVote: '' as IntlString
+    RevokedVote: '' as IntlString,
+    AnonymousQuiz: '' as IntlString
   },
   ids: {
     CardMessagesSection: '' as Ref<CardSection>,
