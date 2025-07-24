@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@hcengineering/measurements": "^0.6.0",
-    "@sentry/node": "^9.22.0",
     "@opentelemetry/sdk-node": "^0.203.0",
     "@opentelemetry/sdk-logs": "^0.203.0",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",

@@ -26,7 +26,7 @@ import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('server', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'transactor')
 
 let getStats: () => WorkspaceStatistics[] = () => {

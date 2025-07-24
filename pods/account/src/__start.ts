@@ -8,7 +8,7 @@ import { newMetrics } from '@hcengineering/core'
 import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-core'
 import { join } from 'path'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('account', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'account')
 
 const metricsContext = initStatisticsContext('account', {

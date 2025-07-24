@@ -68,9 +68,7 @@ const metricsContext = initStatisticsContext('backup', {
     )
 })
 
-const sentryDSN = process.env.SENTRY_DSN
-
-configureAnalytics(sentryDSN, {})
+configureAnalytics('backup', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'backup-service')
 
 const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
