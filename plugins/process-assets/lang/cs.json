@@ -91,7 +91,11 @@
     "Started": "Spuštěno",
     "Each": "Každý",
     "CreateCard": "Vytvořit kartu",
-    "OnCardUpdate": "Při aktualizaci karty"
+    "OnCardUpdate": "Při aktualizaci karty",
+    "Insert": "Vložit",
+    "Remove": "Odstranit",
+    "RemoveFirst": "Odstranit první",
+    "RemoveLast": "Odstranit poslední"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

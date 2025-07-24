@@ -272,6 +272,10 @@ export default plugin(processId, {
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
     RoleContext: '' as Ref<ProcessFunction>,
-    All: '' as Ref<ProcessFunction>
+    All: '' as Ref<ProcessFunction>,
+    Insert: '' as Ref<ProcessFunction>,
+    Remove: '' as Ref<ProcessFunction>,
+    RemoveFirst: '' as Ref<ProcessFunction>,
+    RemoveLast: '' as Ref<ProcessFunction>
   }
 })

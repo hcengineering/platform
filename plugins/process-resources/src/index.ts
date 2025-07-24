@@ -43,6 +43,7 @@ import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
+import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
 
 import LogActionPresenter from './components/LogActionPresenter.svelte'
 import NotifierExtension from './components/NotifierExtension.svelte'
@@ -121,6 +122,7 @@ export default async (): Promise<Resources> => ({
     ArrayCriteria
   },
   transformEditor: {
+    ArrayElementEditor,
     DateOffsetEditor,
     NumberEditor,
     AppendEditor,

@@ -657,6 +657,68 @@ export function createModel (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Insert,
+      editor: process.transformEditor.ArrayElementEditor,
+      type: 'transform'
+    },
+    process.function.Insert
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Remove,
+      editor: process.transformEditor.ArrayElementEditor,
+      type: 'transform'
+    },
+    process.function.Remove
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveFirst,
+      type: 'transform'
+    },
+    process.function.RemoveFirst
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveLast,
+      type: 'transform'
+    },
+    process.function.RemoveLast
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveLast,
+      type: 'transform'
+    },
+    process.function.RemoveLast
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: contact.mixin.Employee,
       editor: process.component.RoleEditor,
       category: 'array',

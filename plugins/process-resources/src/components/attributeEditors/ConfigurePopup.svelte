@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MasterTag, Tag } from '@hcengineering/card'
-  import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import {
@@ -36,7 +36,6 @@
   import FallbackEditor from '../contextEditors/FallbackEditor.svelte'
 
   export let process: Process
-  export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context
   export let attribute: AnyAttribute
@@ -72,20 +71,24 @@
     .filter((p) => p.category === undefined || (allowArray && p.category === 'array'))
     .map((it) => it._id)
 
-  $: availableFunctions = getAvailableFunctions(context, contextValue.functions, attrClass, category)
+  $: availableFunctions = getAvailableFunctions(contextValue.functions, attrClass, category)
 
   $: functionsLength = contextValue.functions?.length ?? 0
 
   function getAvailableFunctions (
-    context: Context,
     functions: Func[] | undefined,
     attrClass: Ref<Class<Doc>>,
     category: AttributeCategory
   ): Ref<ProcessFunction>[] {
     const result: Ref<ProcessFunction>[] = []
-    const allFunctions = client
-      .getModel()
-      .findAllSync(plugin.class.ProcessFunction, { of: attrClass, category, type: 'transform' })
+    const query: DocumentQuery<ProcessFunction> = {
+      type: 'transform',
+      category
+    }
+    if (category !== 'array') {
+      query.of = attrClass
+    }
+    const allFunctions = client.getModel().findAllSync(plugin.class.ProcessFunction, query)
     for (const f of allFunctions) {
       if (functions === undefined || f.allowMany === true || functions.findIndex((p) => p.func === f._id) === -1) {
         result.push(f._id)
@@ -134,7 +137,7 @@
         {
           func,
           process,
-          masterTag,
+          masterTag: process.masterTag,
           context,
           attribute
         },
@@ -192,7 +195,7 @@
       func.editor,
       {
         func,
-        masterTag,
+        masterTag: process.masterTag,
         process,
         context,
         attribute,
