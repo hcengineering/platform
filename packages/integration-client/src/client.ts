@@ -20,7 +20,7 @@ import {
   IntegrationKey,
   type AccountClient
 } from '@hcengineering/account-client'
-import { AccountUuid, IntegrationKind, PersonId, SocialId, WorkspaceUuid } from '@hcengineering/core'
+import { Account, AccountUuid, IntegrationKind, PersonId, SocialId, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { v4 as uuid } from 'uuid'
 
@@ -124,6 +124,17 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
+  async getOrCreateSocialId (account: AccountUuid, type: SocialIdType, value: string): Promise<PersonId> {
+    const accountClient = getAccountClientRaw(generateToken(account, undefined, { service: this.serviceName }))
+    const socialIds = await accountClient.getSocialIds(false)
+    const socialId = socialIds.find(id => id.type === type && id.value === value)
+    if (socialId != null) {
+      return socialId._id
+    }
+
+    return await accountClient.addSocialIdToPerson(account, type, value, true)
+  }
+
   async integrate (connection: Integration, workspace: WorkspaceUuid, data?: Record<string, any>): Promise<Integration> {
     try {
       const existingData = data ?? connection.data ?? {}
@@ -140,6 +151,11 @@ export class IntegrationClientImpl implements IntegrationClient {
 
       const existingIntegration = await this.client.getIntegration(integration)
       if (existingIntegration != null) {
+        const eventData: IntegrationEventData = {
+          integration,
+          timestamp: Date.now()
+        }
+        this.emit('integration:updated', eventData)
         return existingIntegration
       }
 
@@ -164,12 +180,13 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async connect (socialId: PersonId): Promise<Integration> {
+  async connect (socialId: PersonId, data?: Record<string, any>): Promise<Integration> {
     try {
       const connection = {
         socialId,
         kind: this.integrationKind,
-        workspaceUuid: null
+        workspaceUuid: null,
+        data
       }
       const existingConnection = await this.client.getIntegration(connection)
       if (existingConnection != null) {
@@ -237,7 +254,7 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid): Promise<void> {
+  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined): Promise<void> {
     if (socialId == null) return
 
     try {

@@ -82,7 +82,8 @@ export default plugin(telegramId, {
     Telegram: '' as Ref<IntegrationType>
   },
   handler: {
-    DisconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler,
+    DisconnectAllHandler: '' as Handler
   },
   ids: {
     NewMessageNotification: '' as Ref<NotificationType>

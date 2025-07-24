@@ -57,6 +57,7 @@ export interface IntegrationType extends Doc {
 
   createComponent?: AnyComponent
   onDisconnect?: Handler
+  onDisconnectAll?: Handler // Disconnect for all workspaces
   reconnectComponent?: AnyComponent
   configureComponent?: AnyComponent
 
@@ -212,6 +213,7 @@ export default plugin(settingId, {
     Categories: '' as IntlString,
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
+    DisconnectAll: '' as IntlString,
     Add: '' as IntlString,
     Proceed: '' as IntlString,
     SendConfirmation: '' as IntlString,

@@ -12,16 +12,17 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
+import { concatLink, getCurrentAccount, SocialIdType } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
-import presentation from '@hcengineering/presentation'
+import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { telegramIntegrationKind } from '@hcengineering/telegram'
 import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration-client'
 import { withRetry } from '@hcengineering/retry'
+import type { Integration } from '@hcengineering/account-client'
 
-export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
+export type IntegrationState = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
 
 export interface TelegramChannel {
   id: string
@@ -62,11 +63,11 @@ async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?:
   return await withRetry(async () => await _request(method, path, body))
 }
 
-export async function getState (phone: string): Promise<Integration> {
+export async function getState (phone: string): Promise<IntegrationState> {
   return await request('GET', phone)
 }
 
-export async function restart (phone: string): Promise<Integration> {
+export async function restart (phone: string): Promise<IntegrationState> {
   return await request('POST', `${phone}/restart`)
 }
 
@@ -97,5 +98,23 @@ export async function getIntegrationClient (): Promise<IntegrationClient> {
     token,
     telegramIntegrationKind,
     'hulygram'
+  )
+}
+
+export async function connect (
+  phone: string
+): Promise<Integration> {
+  const client = await getIntegrationClient()
+  const socialId = await client.getOrCreateSocialId(
+    getCurrentAccount().uuid,
+    SocialIdType.TELEGRAM,
+    phone
+  )
+  const connection = await client.connect(socialId, {
+    phone
+  })
+  return await client.integrate(
+    connection,
+    getCurrentWorkspaceUuid()
   )
 }

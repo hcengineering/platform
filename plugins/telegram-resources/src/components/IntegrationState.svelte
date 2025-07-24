@@ -109,7 +109,7 @@
         </div>
         <div class="stat-row">
           <span class="text-normal content-color"><Label label={telegram.string.SyncedChannels} /></span>
-          <div class="flex justify-between">
+          <div class="flex justify-between flex-gap-2">
             {#if isRefreshing}
               <Loading size="small" />
             {/if}

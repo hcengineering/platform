@@ -14,7 +14,7 @@
 //
 
 import { Integration, IntegrationKey } from '@hcengineering/account-client'
-import { AccountUuid, IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, IntegrationKind, PersonId, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
 
 export type IntegrationStatus = 'active' | 'inactive' | 'connecting' | 'disconnecting' | 'error' | 'unknown'
 
@@ -22,9 +22,18 @@ export type ActionKind = 'connect' | 'disconnect' | 'reconnect' | 'update' | 'de
 
 export interface IntegrationClient {
   /**
+   * Get integrations
+   */
+  getIntegrations: () => Promise<Integration[]>
+  /**
    * Get integrations for a specific account and optional workspace
    */
   getIntegrationsByAccount: (account: AccountUuid, workspaceUuid?: WorkspaceUuid) => Promise<Integration | null>
+
+  /**
+   * Get or create a social ID for account
+   */
+  getOrCreateSocialId: (account: AccountUuid, type: SocialIdType, value: string) => Promise<PersonId>
 
   /**
    * Get the connection details for a specific integration
@@ -39,7 +48,7 @@ export interface IntegrationClient {
   /**
    * Create a connection for a social ID (without workspace integration)
    */
-  connect: (socialId: PersonId) => Promise<Integration>
+  connect: (socialId: PersonId, data?: Record<string, any>) => Promise<Integration>
 
   /**
    * Update configuration for an existing integration
@@ -49,7 +58,7 @@ export interface IntegrationClient {
   /**
    * Remove integration for a social ID and workspace
    */
-  removeIntegration: (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid) => Promise<void>
+  removeIntegration: (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined) => Promise<void>
 
   /**
    * Remove connection and all associated integrations
@@ -72,7 +81,7 @@ export interface IntegrationErrorData {
   error: string
   integrationKey?: IntegrationKey
   socialId?: PersonId
-  workspaceUuid?: WorkspaceUuid
+  workspaceUuid?: WorkspaceUuid | null
   timestamp: number
 }
 

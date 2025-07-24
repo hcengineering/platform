@@ -13,6 +13,7 @@
     "CurrentPassword": "当前密码",
     "NewPassword": "新密码",
     "Disconnect": "断开连接",
+    "DisconnectAll": "断开所有连接",
     "Saving": "保存中...",
     "Saved": "已保存",
     "Add": "添加",

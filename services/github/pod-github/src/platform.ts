@@ -159,7 +159,7 @@ export class PlatformWorker {
           })
         } else {
           await accountsClient.deleteIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: integr.workspace,
             socialId: integr.accountId
           })

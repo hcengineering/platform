@@ -13,6 +13,7 @@
     "CurrentPassword": "現在のパスワード",
     "NewPassword": "新しいパスワード",
     "Disconnect": "切断",
+    "DisconnectAll": "すべてのワークスペースを切断",
     "Saving": "保存中...",
     "Saved": "保存済み",
     "Add": "追加",

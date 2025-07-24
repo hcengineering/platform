@@ -78,7 +78,14 @@ export default mergeIds(telegramId, telegram, {
     EnableSynchronization: '' as IntlString,
     DisableSynchronization: '' as IntlString,
     SetPublicAccess: '' as IntlString,
-    SetPrivateAccess: '' as IntlString
+    SetPrivateAccess: '' as IntlString,
+
+    // Search and empty state messages
+    NoChannelsFound: '' as IntlString,
+    TryAdjustingSearch: '' as IntlString,
+    ClearSearch: '' as IntlString,
+    NoChannelsAvailable: '' as IntlString,
+    EnableSyncToConfigure: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

@@ -16,10 +16,9 @@
   import { IntlString } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getIntegrationEventBus } from '@hcengineering/integration-client'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { command, getState, type Integration, getIntegrationClient } from '../api'
+  import { command, getState, type IntegrationState, connect } from '../api'
 
   export let integration: any
 
@@ -36,11 +35,11 @@
   }
 
   // Wrapper for command API with loading state management
-  async function commandWithLoading (phone: string, action: string, data?: string): Promise<Integration> {
+  async function commandWithLoading (phone: string, action: string, data?: string): Promise<IntegrationState> {
     if (isLoading) {
       throw new Error('Already processing request')
     }
-    
+
     try {
       isLoading = true
       return await command(phone, action, data)
@@ -59,10 +58,10 @@
     }
   }
 
-  let integrationState: Integration = 'Loading'
+  let integrationState: IntegrationState = 'Loading'
   let state: UIState = { mode: 'Loading' }
 
-  function h (handler: () => Promise<Integration>) {
+  function h (handler: () => Promise<IntegrationState>) {
     return () => {
       handler()
         .then((i) => {
@@ -107,9 +106,7 @@
             }
           }
 
-          getIntegrationEventBus().emit('integration:created', {
-            integration: integrationState
-          })
+          void connect(integrationState.number)
           break
         }
 

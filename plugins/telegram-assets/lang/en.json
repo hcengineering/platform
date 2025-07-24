@@ -86,6 +86,12 @@
     "EnableSynchronization": "Enable synchronization",
     "DisableSynchronization": "Disable synchronization",
     "SetPublicAccess": "Set public access",
-    "SetPrivateAccess": "Set private access"
+    "SetPrivateAccess": "Set private access",
+    "NoChannelsFound": "No channels found",
+    "TryAdjustingSearch": "Try adjusting your search query or",
+    "ClearSearch": "clear search",
+    "NoChannelsAvailable": "No channels available",
+    "EnableSyncToConfigure": "Enable synchronization to configure channel access",
+    "AccessCannotBeChanged": "Access cannot be changed for existing channel"
   }
 }

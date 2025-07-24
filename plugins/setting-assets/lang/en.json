@@ -13,6 +13,7 @@
     "CurrentPassword": "Current password",
     "NewPassword": "New password",
     "Disconnect": "Disconnect",
+    "DisconnectAll": "Disconnect in all workspaces",
     "Saving": "Saving...",
     "Saved": "Saved",
     "Add": "Add",

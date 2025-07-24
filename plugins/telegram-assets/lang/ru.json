@@ -87,6 +87,12 @@
     "EnableSynchronization": "Включить синхронизацию",
     "DisableSynchronization": "Отключить синхронизацию",
     "SetPublicAccess": "Установить публичный доступ",
-    "SetPrivateAccess": "Установить приватный доступ"
+    "SetPrivateAccess": "Установить приватный доступ",
+    "NoChannelsFound": "Каналы не найдены",
+    "TryAdjustingSearch": "Попробуйте скорректировать поиск или",
+    "ClearSearch": "очистить поиск",
+    "NoChannelsAvailable": "Каналы недоступны",
+    "EnableSyncToConfigure": "Включите синхронизацию, чтобы настроить доступ к каналу",
+    "AccessCannotBeChanged": "Доступ не может быть изменен для существующего канала"
   }
 }

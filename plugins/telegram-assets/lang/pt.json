@@ -87,6 +87,12 @@
     "EnableSynchronization": "Ativar sincronização",
     "DisableSynchronization": "Desativar sincronização",
     "SetPublicAccess": "Definir acesso público",
-    "SetPrivateAccess": "Definir acesso privado"
+    "SetPrivateAccess": "Definir acesso privado",
+    "NoChannelsFound": "Nenhum canal encontrado",
+    "TryAdjustingSearch": "Tente ajustar sua pesquisa ou",
+    "ClearSearch": "limpar pesquisa",
+    "NoChannelsAvailable": "Nenhum canal disponível",
+    "EnableSyncToConfigure": "Ativar sincronização para configurar o acesso ao canal",
+    "AccessCannotBeChanged": "O acesso não pode ser alterado para o canal existente"
   }
 }

@@ -90,17 +90,9 @@ export async function deleteIntegration (integration: Integration): Promise<void
 }
 
 export async function createIntegrationIfNotEsixts (socialId: PersonId, workspace: WorkspaceUuid): Promise<Integration> {
-  const accountClient = getAccountClient(serviceToken())
-  const integration = {
-    socialId,
-    kind: gmailIntegrationKind,
-    workspaceUuid: workspace
-  }
-  const existingIntegration = await accountClient.getIntegration(integration)
-  if (existingIntegration != null) return existingIntegration
-
-  await accountClient.createIntegration(integration)
-  return integration
+  const client = getIntegrationClient()
+  const connection = await client.connect(socialId)
+  return await client.integrate(connection, workspace)
 }
 
 export async function disableIntegration (integration: Integration): Promise<void> {

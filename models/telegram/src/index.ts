@@ -165,6 +165,7 @@ export function createModel (builder: Builder): void {
       configureComponent: telegram.component.Configure,
       stateComponent: telegram.component.StateComponent,
       onDisconnect: telegram.handler.DisconnectHandler,
+      onDisconnectAll: telegram.handler.DisconnectAllHandler,
       kind: telegramIntegrationKind
     },
     telegram.integrationType.Telegram

@@ -165,23 +165,6 @@
     updateSelectAllForFiltered(filteredChannels, selectedChannels)
   }
 
-  // Handle select all (only for filtered channels)
-  function toggleSelectAll(): void {
-    selectAll = !selectAll
-    if (selectAll) {
-      // Add all filtered channel IDs to selection
-      filteredChannels.forEach(channel => {
-        selectedChannels.add(channel.id)
-      })
-    } else {
-      // Remove all filtered channel IDs from selection
-      filteredChannels.forEach(channel => {
-        selectedChannels.delete(channel.id)
-      })
-    }
-    selectedChannels = selectedChannels
-  }
-
   // Update sync status for individual channel
   function updateChannelSync (channelId: string, enabled: boolean): void {
     const channel = channels.find(c => c.id === channelId)
@@ -193,28 +176,13 @@
   }
 
   // Update access for individual channel
-  function updateChannelAccess(channelId: string, access: 'public' | 'private'): void {
+  function updateChannelAccess (channelId: string, access: 'public' | 'private'): void {
     const channel = channels.find(c => c.id === channelId)
-    if (channel) {
+    if (channel !== undefined && channel?.syncEnabled) {
       channel.access = access
       channels = channels
       dispatch('channelUpdated', { channelId, field: 'access', value: access })
     }
-  }
-
-  // Bulk actions for selected channels
-  function bulkUpdateSync(enabled: boolean): void {
-    selectedChannels.forEach(channelId => {
-      updateChannelSync(channelId, enabled)
-    })
-    dispatch('bulkUpdate', { action: 'syncEnabled', value: enabled, channels: Array.from(selectedChannels) })
-  }
-
-  function bulkUpdateAccess(access: 'public' | 'private'): void {
-    selectedChannels.forEach(channelId => {
-      updateChannelAccess(channelId, access)
-    })
-    dispatch('bulkUpdate', { action: 'access', value: access, channels: Array.from(selectedChannels) })
   }
 
   // Action button functions
@@ -259,6 +227,9 @@
   }
 
   function showActionsPopup (event: MouseEvent): void {
+    const selectedSyncedChannels = channels
+      .filter(c => c.syncEnabled && selectedChannels.has(c.id))
+
     const actionItems = [
       {
         id: 'select-all',
@@ -288,13 +259,13 @@
         id: 'set-public',
         label: telegram.string.SetPublicAccess,
         action: setSelectedPublic,
-        disabled: selectedChannels.size === 0 || readonly
+        disabled: selectedSyncedChannels.length === 0 || readonly
       },
       {
         id: 'set-private',
         label: telegram.string.SetPrivateAccess,
         action: setSelectedPrivate,
-        disabled: selectedChannels.size === 0 || readonly
+        disabled: selectedSyncedChannels.length === 0 || readonly
       }
     ]
     const enabledActions = actionItems.filter(item => !item.disabled)
@@ -357,10 +328,6 @@
     closePopup()
   }
 
-  $: hasSelection = selectedChannels.size > 0
-  $: filteredSelectedCount = Array.from(selectedChannels).filter(id =>
-    filteredChannels.some(c => c.id === id)
-  ).length
   $: syncedChannelsCount = channels.filter(channel => channel.syncEnabled).length
 </script>
 
@@ -387,7 +354,6 @@
     <div class="actions-container">
       <Button
         icon={IconMoreV}
-        title={telegram.string.Actions}
         kind={'regular'}
         disabled={filteredChannels.length === 0 || isLoading}
         on:click={showActionsPopup}
@@ -407,7 +373,7 @@
       <div class="hulyHeader-divider" />
     </div>
   </svelte:fragment>
-  <div class="channels-config" on:contextmenu={handleRightClick} role="region">
+  <div class="channels-config">
     <!-- Channels list -->
     <div class="channels-list">
       {#if isLoading}
@@ -427,14 +393,20 @@
         <div class="no-results" transition:fade>
           {#if searchQuery}
             <div class="no-results-content">
-              <span class="no-results-title">No channels found</span>
+              <span class="no-results-title">
+                <Label label={telegram.string.NoChannelsFound} />
+              </span>
               <span class="no-results-subtitle">
-                Try adjusting your search query or
-                <button class="link-button" on:click={clearSearch}>clear search</button>
+                <Label label={telegram.string.TryAdjustingSearch} />
+                <button class="link-button" on:click={clearSearch}>
+                  <Label label={telegram.string.ClearSearch} />
+                </button>
               </span>
             </div>
           {:else}
-            <span>No channels available</span>
+            <span>
+              <Label label={telegram.string.NoChannelsAvailable} />
+            </span>
           {/if}
         </div>
       {:else}
@@ -444,7 +416,8 @@
               {@const item = filteredChannels[itemId]}
               {@const icon = getChannelIcon(item)}
               <div class="channel-item" class:selected={selectedChannels.has(item.id)}>
-                <div class="channel-select">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <div class="channel-select" on:contextmenu={handleRightClick}>
                   <CheckBox
                     size="medium"
                     checked={selectedChannels.has(item.id)}
@@ -452,7 +425,8 @@
                     {readonly}
                   />
                 </div>
-                <div class="channel-info content-color">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <div class="channel-info content-color" on:contextmenu={handleRightClick}>
                   <div class="channel-name">
                     {#if icon !== undefined}
                       <Icon icon={icon} size={'small'} />
@@ -470,7 +444,7 @@
                 </div>
                 <div class="channel-access">
                   <DropdownLabelsIntl
-                    label={telegram.string.SelectAccess}
+                    label={item.syncEnabled ? telegram.string.SelectAccess : telegram.string.EnableSyncToConfigure }
                     items={accessOptions}
                     selected={item.access}
                     disabled={readonly || !item.syncEnabled}

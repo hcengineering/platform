@@ -24,7 +24,7 @@
   import { onIntegrationEvent } from '@hcengineering/integration-client'
 
   import IntegrationCard from './IntegrationCard.svelte'
-  import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
+  import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
   import { getAccountClient } from '../../utils'
 
   const typeQuery = createQuery()

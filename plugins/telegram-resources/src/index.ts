@@ -54,9 +54,21 @@ export default async (): Promise<Resources> => ({
     IsTelegramNotificationsAvailable: isTelegramNotificationsAvailable
   },
   handler: {
-    DisconnectHandler: async (integration: Integration) => {
+    DisconnectHandler: async (integration: Integration): Promise<void> => {
+      const integrationClient = await getIntegrationClient()
+      if (integration == null) {
+        console.warn('DisconnectHandler: No integration provided')
+        return
+      }
+      await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
+    },
+    DisconnectAllHandler: async (integration: Integration): Promise<void> => {
       const integrationClient = await getIntegrationClient()
       const connection = await integrationClient.getConnection(integration)
+      if (connection == null) {
+        console.warn('DisconnectAllHandler: No connection found for integration', integration)
+        return
+      }
       const phone = integration.data?.phone ?? connection?.data?.phone
       await disconnect(phone)
       return integrationClient.removeConnection(connection)
