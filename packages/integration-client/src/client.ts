@@ -20,8 +20,7 @@ import {
   IntegrationKey,
   type AccountClient
 } from '@hcengineering/account-client'
-import { Account, AccountUuid, IntegrationKind, PersonId, SocialId, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
+import { AccountUuid, IntegrationKind, PersonId, SocialId, WorkspaceUuid } from '@hcengineering/core'
 import { v4 as uuid } from 'uuid'
 
 import { IntegrationClient, IntegrationEventData, IntegrationUpdatedData, IntegrationErrorData } from './types'
@@ -122,17 +121,6 @@ export class IntegrationClientImpl implements IntegrationClient {
       this.emit('integration:error', errorData)
       throw error
     }
-  }
-
-  async getOrCreateSocialId (account: AccountUuid, type: SocialIdType, value: string): Promise<PersonId> {
-    const accountClient = getAccountClientRaw(generateToken(account, undefined, { service: this.serviceName }))
-    const socialIds = await accountClient.getSocialIds(false)
-    const socialId = socialIds.find(id => id.type === type && id.value === value)
-    if (socialId != null) {
-      return socialId._id
-    }
-
-    return await accountClient.addSocialIdToPerson(account, type, value, true)
   }
 
   async integrate (connection: Integration, workspace: WorkspaceUuid, data?: Record<string, any>): Promise<Integration> {
@@ -276,6 +264,15 @@ export class IntegrationClientImpl implements IntegrationClient {
           timestamp: Date.now()
         }
         this.emit('integration:deleted', eventData)
+      }
+
+      // Remove connection if it was the last integration for this socialId
+      const remainedIntegrations = await this.client.listIntegrations({
+        kind: this.integrationKind,
+        socialId
+      })
+      if (remainedIntegrations.length === 1 && isConnection(remainedIntegrations[0])) {
+        await this.removeConnection(remainedIntegrations[0])
       }
     } catch (error) {
       const errorData: IntegrationErrorData = {

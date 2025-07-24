@@ -106,7 +106,18 @@
             }
           }
 
-          void connect(integrationState.number)
+          if (integrationState.socialId == null) {
+            console.error('Social ID is not defined for integration state', integrationState)
+            state = {
+              mode: 'Error',
+              hint: 'Social ID is not defined',
+              buttons: {
+                primary: { label: ui.string.Ok, handler: close }
+              }
+            }
+            break
+          }
+          void connect(integrationState.number, integrationState.socialId)
           break
         }
 

@@ -12,7 +12,7 @@
 // limitations under the License.
 //
 
-import { concatLink, getCurrentAccount, SocialIdType } from '@hcengineering/core'
+import { concatLink, getCurrentAccount, type PersonId, SocialIdType } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
@@ -22,7 +22,7 @@ import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient
 import { withRetry } from '@hcengineering/retry'
 import type { Integration } from '@hcengineering/account-client'
 
-export type IntegrationState = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
+export type IntegrationState = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string, socialId?: PersonId } | 'Loading' | 'Missing'
 
 export interface TelegramChannel {
   id: string
@@ -102,14 +102,10 @@ export async function getIntegrationClient (): Promise<IntegrationClient> {
 }
 
 export async function connect (
-  phone: string
+  phone: string,
+  socialId: PersonId
 ): Promise<Integration> {
   const client = await getIntegrationClient()
-  const socialId = await client.getOrCreateSocialId(
-    getCurrentAccount().uuid,
-    SocialIdType.TELEGRAM,
-    phone
-  )
   const connection = await client.connect(socialId, {
     phone
   })
