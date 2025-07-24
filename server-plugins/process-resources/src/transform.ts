@@ -41,6 +41,60 @@ export function All (value: Doc[]): Doc[] {
 
 // #endregion
 
+// #region Array
+
+export async function Insert (
+  value: Doc[],
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<Doc[]> {
+  if (!Array.isArray(value)) return value
+  if (props.value == null) return value
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const addition = await getAttributeValue(control, execution, context)
+      value.push(addition)
+    }
+  } else {
+    value.push(props.value)
+  }
+  return value
+}
+
+export async function Remove (
+  value: Doc[],
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<Doc[]> {
+  if (!Array.isArray(value)) return value
+  if (props.value == null) return value
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const addition = await getAttributeValue(control, execution, context)
+      return value.filter((item) => item !== addition)
+    }
+  } else {
+    return value.filter((item) => item !== props.value)
+  }
+  return value
+}
+
+export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
+  if (!Array.isArray(value)) return value
+  return value.slice(1)
+}
+
+export function RemoveLast (value: Doc[], props: Record<string, any>): Doc[] {
+  if (!Array.isArray(value)) return value
+  return value.slice(0, -1)
+}
+
+// #endregion
+
 // #region String
 
 export function UpperCase (value: string): string {

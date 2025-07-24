@@ -44,7 +44,6 @@ export default mergeIds(cardId, card, {
     CardRefPresenter: '' as AnyComponent,
     ChangeType: '' as AnyComponent,
     CreateCardButton: '' as AnyComponent,
-    CardArrayEditor: '' as AnyComponent,
     NewCardHeader: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     RolesSection: '' as AnyComponent,

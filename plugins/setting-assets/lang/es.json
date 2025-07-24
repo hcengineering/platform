@@ -161,6 +161,8 @@
     "GuestAccess": "Invitados anónimos",
     "GuestAccessDescription": "Permite a usuarios anónimos visitar el espacio de trabajo en modo de solo lectura",
     "GuestSignUpDescription": "Permite a usuarios anónimos unirse a su espacio de trabajo como invitados con derechos de edición limitados",
+    "GuestCardsDescription": "Tarjetas donde los invitados pueden comunicarse después de unirse al espacio de trabajo",
+    "GuestCardsArrayLabel": "Seleccionar tarjetas para comunicación",
     "ManageIdentities": "Gestionar identidades",
     "Release": "Liberar",
     "ReleaseSocialId": "Liberar ID social",

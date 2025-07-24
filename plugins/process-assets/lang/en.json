@@ -91,7 +91,16 @@
     "Started": "Started",
     "Each": "Each",
     "CreateCard": "Create card",
-    "OnCardUpdate": "On card update"
+    "OnCardUpdate": "On card update",
+    "ArraySizeEquals": "Size equals",
+    "ArraySizeGt": "Size greater than",
+    "ArraySizeGte": "Size greater than or equal",
+    "ArraySizeLt": "Size less than",
+    "ArraySizeLte": "Size less than or equal",
+    "Insert": "Insert",
+    "Remove": "Remove",
+    "RemoveFirst": "Remove first",
+    "RemoveLast": "Remove last"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

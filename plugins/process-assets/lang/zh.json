@@ -41,6 +41,10 @@
     "Subtract": "减去",
     "Offset": "偏移",
     "FirstWorkingDayAfter": "在之后的第一个工作日",
+    "Insert": "插入",
+    "Remove": "移除",
+    "RemoveFirst": "移除第一个",
+    "RemoveLast": "移除最后一个",
     "FallbackValueError": "显示错误，如果为空",
     "Required": "必需",
     "ParallelExecutionForbidden": "禁止并行执行",
@@ -91,7 +95,12 @@
     "Started": "已启动",
     "Each": "每个",
     "CreateCard": "创建卡片",
-    "OnCardUpdate": "在卡片更新时"
+    "OnCardUpdate": "在卡片更新时",
+    "ArraySizeEquals": "大小等于",
+    "ArraySizeGt": "大小大于",
+    "ArraySizeGte": "大小大于等于",
+    "ArraySizeLt": "大小小于",
+    "ArraySizeLte": "大小小于等于"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

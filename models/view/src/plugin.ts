@@ -61,8 +61,6 @@ export default mergeIds(viewId, view, {
     HyperlinkEditorPopup: '' as AnyComponent,
     IntlStringPresenter: '' as AnyComponent,
     FileSizePresenter: '' as AnyComponent,
-    NumberEditor: '' as AnyComponent,
-    NumberPresenter: '' as AnyComponent,
     MarkupDiffPresenter: '' as AnyComponent,
     MarkupPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,

@@ -45,7 +45,14 @@
 
   import TextInput from '../TextInput.svelte'
   import IconAttach from '../icons/Attach.svelte'
-  import { defaultMessageInputActions, toMarkdown, toMarkup, loadLinkPreviewParams } from '../../utils'
+  import {
+    defaultMessageInputActions,
+    toMarkdown,
+    toMarkup,
+    loadLinkPreviewParams,
+    isCardAllowedForCommunications,
+    showForbidden
+  } from '../../utils'
   import communication from '../../plugin'
   import { type TextInputAction, type PresenceTyping, MessageDraft, AppletDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
@@ -103,6 +110,11 @@
   }
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
+    if (!(await isCardAllowedForCommunications(card))) {
+      await showForbidden()
+      return
+    }
+
     event.preventDefault()
     event.stopPropagation()
 

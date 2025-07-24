@@ -15,7 +15,7 @@ import { Asset, IntlString, Metadata, plugin, Plugin } from '@hcengineering/plat
 import { CardSection, MasterTag } from '@hcengineering/card'
 import { Class, Ref } from '@hcengineering/core'
 
-import { Applet, CustomActivityPresenter, MessageAction, PollAnswer } from './types'
+import { GuestCommunicationSettings, Applet, CustomActivityPresenter, MessageAction, PollAnswer } from './types'
 
 export * from './types'
 
@@ -29,7 +29,8 @@ export default plugin(communicationId, {
     MessageAction: '' as Ref<Class<MessageAction>>,
     Applet: '' as Ref<Class<Applet>>,
     PollAnswer: '' as Ref<Class<PollAnswer>>,
-    CustomActivityPresenter: '' as Ref<Class<CustomActivityPresenter>>
+    CustomActivityPresenter: '' as Ref<Class<CustomActivityPresenter>>,
+    GuestCommunicationSettings: '' as Ref<Class<GuestCommunicationSettings>>
   },
   type: {
     Poll: '' as Ref<MasterTag>

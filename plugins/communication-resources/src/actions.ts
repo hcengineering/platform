@@ -21,7 +21,15 @@ import emojiPlugin from '@hcengineering/emoji'
 import { type Message, MessageType, SortingOrder } from '@hcengineering/communication-types'
 import cardPlugin, { type Card, type MasterTag } from '@hcengineering/card'
 import { addRefreshListener, getClient, getCommunicationClient } from '@hcengineering/presentation'
-import { fillDefaults, generateId, getCurrentAccount, type MarkupBlobRef, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  fillDefaults,
+  generateId,
+  getCurrentAccount,
+  hasAccountRole,
+  type MarkupBlobRef,
+  type Ref
+} from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import { getEmployeeBySocialId } from '@hcengineering/contact'
@@ -33,10 +41,15 @@ import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import aiBot from '@hcengineering/ai-bot'
 import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.svelte'
 
-import { toggleReaction, toMarkup } from './utils'
+import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
 import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
 
-export const addReaction: MessageActionFunction = async (message, _: Card, evt, onOpen, onClose) => {
+export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
+  if (!(await isCardAllowedForCommunications(card))) {
+    await showForbidden()
+    return
+  }
+
   if (onOpen !== undefined) onOpen()
 
   showPopup(
@@ -55,6 +68,10 @@ export const addReaction: MessageActionFunction = async (message, _: Card, evt, 
 }
 
 export const replyInThread: MessageActionFunction = async (message: Message, parentCard: Card): Promise<void> => {
+  if (!(await isCardAllowedForCommunications(parentCard))) {
+    await showForbidden()
+    return
+  }
   await attachCardToMessage(message, parentCard, createThreadTitle(message, parentCard), chat.masterTag.Thread)
 }
 
@@ -208,6 +225,10 @@ export const canRemoveMessage: MessageActionVisibilityTester = (message: Message
 }
 
 export const createCard: MessageActionFunction = async (message: Message, card: Card): Promise<void> => {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    await showForbidden()
+    return
+  }
   threadCreateMessageStore.set(message)
   showPopup(CreateCardFromMessagePopup, { message, card }, undefined, () => {
     threadCreateMessageStore.set(undefined)

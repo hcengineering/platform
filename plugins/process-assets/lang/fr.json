@@ -41,6 +41,10 @@
     "Subtract": "Soustraire",
     "Offset": "Décalage",
     "FirstWorkingDayAfter": "Premier jour de travail après",
+    "Insert": "Insérer",
+    "Remove": "Supprimer",
+    "RemoveFirst": "Supprimer le premier",
+    "RemoveLast": "Supprimer le dernier",
     "FallbackValueError": "Afficher l'erreur si vide",
     "Required": "Requis",
     "ParallelExecutionForbidden": "Exécution parallèle interdite",
@@ -91,7 +95,12 @@
     "Started": "Démarré",
     "Each": "Chaque",
     "CreateCard": "Créer une carte",
-    "OnCardUpdate": "Lors de la mise à jour de la carte"
+    "OnCardUpdate": "À la modification de la carte",
+    "ArraySizeEquals": "Taille égale à",
+    "ArraySizeGt": "Taille supérieure à",
+    "ArraySizeGte": "Taille supérieure ou égale à",
+    "ArraySizeLt": "Taille inférieure à",
+    "ArraySizeLte": "Taille inférieure ou égale à"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

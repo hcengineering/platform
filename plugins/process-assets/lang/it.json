@@ -41,6 +41,10 @@
     "Subtract": "Sottrai",
     "Offset": "Offset",
     "FirstWorkingDayAfter": "Primo giorno lavorativo dopo",
+    "Insert": "Inserisci",
+    "Remove": "Rimuovi",
+    "RemoveFirst": "Rimuovi il primo",
+    "RemoveLast": "Rimuovi l'ultimo",
     "FallbackValueError": "Mostra errore se vuoto",
     "Required": "Obbligatorio",
     "ParallelExecutionForbidden": "Esecuzione parallela vietata",
@@ -91,7 +95,12 @@
     "Started": "Avviato",
     "Each": "Ogni",
     "CreateCard": "Crea scheda",
-    "OnCardUpdate": "Alla modifica della scheda"
+    "OnCardUpdate": "Alla modifica della scheda",
+    "ArraySizeEquals": "Dimensione uguale a",
+    "ArraySizeGt": "Dimensione maggiore di",
+    "ArraySizeGte": "Dimensione maggiore o uguale a",
+    "ArraySizeLt": "Dimensione minore di",
+    "ArraySizeLte": "Dimensione minore o uguale a"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

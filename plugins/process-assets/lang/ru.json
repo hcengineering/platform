@@ -41,6 +41,10 @@
     "Subtract": "Вычесть",
     "Offset": "Смещение",
     "FirstWorkingDayAfter": "Первый рабочий день после",
+    "Insert": "Вставить",
+    "Remove": "Удалить",
+    "RemoveFirst": "Удалить первый",
+    "RemoveLast": "Удалить последний",
     "FallbackValueError": "Показывать ошибку, если недоступно",
     "Required": "Обязательно",
     "ParallelExecutionForbidden": "Одновременное выполнение запрещено",
@@ -91,7 +95,12 @@
     "Started": "Начат",
     "Each": "Каждый",
     "CreateCard": "Создать карточку",
-    "OnCardUpdate": "При обновлении карточки"
+    "OnCardUpdate": "При обновлении карточки",
+    "ArraySizeEquals": "Размер равен",
+    "ArraySizeGt": "Размер больше чем",
+    "ArraySizeGte": "Размер больше или равен",
+    "ArraySizeLt": "Размер меньше чем",
+    "ArraySizeLte": "Размер меньше или равен"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

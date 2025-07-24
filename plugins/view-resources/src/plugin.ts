@@ -31,7 +31,9 @@ export default mergeIds(viewId, view, {
     ProxyPresenter: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,
     SpaceTypeSelector: '' as AnyComponent,
-    MasterDetailBrowser: '' as AnyComponent
+    MasterDetailBrowser: '' as AnyComponent,
+    NumberEditor: '' as AnyComponent,
+    NumberPresenter: '' as AnyComponent
   },
   string: {
     Contains: '' as IntlString,
@@ -62,6 +64,11 @@ export default mergeIds(viewId, view, {
     FilterUpdated: '' as IntlString,
     FilterLessThan: '' as IntlString,
     FilterGreaterThan: '' as IntlString,
+    ArraySizeEquals: '' as IntlString,
+    ArraySizeGt: '' as IntlString,
+    ArraySizeGte: '' as IntlString,
+    ArraySizeLt: '' as IntlString,
+    ArraySizeLte: '' as IntlString,
     Before: '' as IntlString,
     After: '' as IntlString,
     Apply: '' as IntlString,

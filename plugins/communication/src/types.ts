@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { AccountID, AppletParams, AppletType, Message, MessageID } from '@hcengineering/communication-types'
-import { AttachedDoc, Doc, Ref } from '@hcengineering/core'
+import { AttachedDoc, Configuration, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card, MasterTag } from '@hcengineering/card'
 import { AnyComponent } from '@hcengineering/ui'
@@ -80,4 +80,8 @@ export interface Poll extends Card {
   totalVotes: number
 
   userVotes?: UserVote[]
+}
+
+export interface GuestCommunicationSettings extends Configuration {
+  allowedCards: Ref<Card>[]
 }

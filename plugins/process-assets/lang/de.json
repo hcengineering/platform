@@ -91,7 +91,11 @@
     "Started": "Gestartet",
     "Each": "Jeder",
     "CreateCard": "Karte erstellen",
-    "OnCardUpdate": "Beim Aktualisieren der Karte"
+    "OnCardUpdate": "Beim Aktualisieren der Karte",
+    "Insert": "Einfügen",
+    "Remove": "Entfernen",
+    "RemoveFirst": "Erstes entfernen",
+    "RemoveLast": "Letztes entfernen"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

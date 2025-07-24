@@ -128,17 +128,14 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          prev = metricsContext
-            .withoutTracing(() =>
-              fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  authorization: `Bearer ${token}`
-                },
-                body: statData
-              })
-            )
+          prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              authorization: `Bearer ${token}`
+            },
+            body: statData
+          })
             .finally(() => {
               prev = undefined
             })
