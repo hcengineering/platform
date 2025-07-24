@@ -167,7 +167,8 @@ const cardPlugin = plugin(cardId, {
     LabelsPresenter: '' as AnyComponent,
     CardTagColored: '' as AnyComponent,
     CardTagsColored: '' as AnyComponent,
-    CardIcon: '' as AnyComponent
+    CardIcon: '' as AnyComponent,
+    CardArrayEditor: '' as AnyComponent
   },
   function: {
     OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>

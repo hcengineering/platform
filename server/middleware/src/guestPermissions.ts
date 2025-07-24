@@ -68,7 +68,6 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   private isForbiddenTx (tx: TxCUD<Doc>): boolean {
-    if (tx._class === core.class.TxCreateDoc) return false
     if (tx._class === core.class.TxMixin) return false
     return !this.hasMixinAccessLevel(tx)
   }

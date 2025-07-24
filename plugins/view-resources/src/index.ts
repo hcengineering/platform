@@ -150,6 +150,7 @@ import {
   isClipboardAvailable
 } from './visibilityTester'
 import { openDocFromRef } from './utils'
+import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
@@ -331,7 +332,8 @@ export default async (): Promise<Resources> => ({
     AssociationPresenter,
     TreeView,
     MasterDetailBrowser,
-    ReadOnlyNotification
+    ReadOnlyNotification,
+    ForbiddenNotification
   },
   popup: {
     PositionElementAlignment

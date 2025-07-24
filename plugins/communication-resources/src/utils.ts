@@ -13,9 +13,9 @@
 
 import { canDisplayLinkPreview, fetchLinkPreviewDetails, getCommunicationClient } from '@hcengineering/presentation'
 import { type Card } from '@hcengineering/card'
-import { getCurrentAccount, type Markup } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import { showPopup } from '@hcengineering/ui'
+import { AccountRole, getCurrentAccount, hasAccountRole, type Markup } from '@hcengineering/core'
+import { getMetadata, translate } from '@hcengineering/platform'
+import { addNotification, languageStore, NotificationSeverity, showPopup } from '@hcengineering/ui'
 import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
 import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
@@ -25,6 +25,9 @@ import IconAt from './components/icons/At.svelte'
 
 import communication from './plugin'
 import { type TextInputAction } from './types'
+import { guestCommunicationAllowedCards } from './stores'
+import { get } from 'svelte/store'
+import view from '@hcengineering/view'
 
 export async function unsubscribe (card: Card): Promise<void> {
   const client = getCommunicationClient()
@@ -133,4 +136,27 @@ export async function loadLinkPreviewParams (url: string): Promise<LinkPreviewPa
   } catch (err: any) {
     console.error(err)
   }
+}
+
+export async function isCardAllowedForCommunications (card: Card): Promise<boolean> {
+  if (hasAccountRole(getCurrentAccount(), AccountRole.User)) return true
+  const allowedCards = get(guestCommunicationAllowedCards)
+  if (allowedCards.includes(card._id)) return true
+  for (const parentInfoElement of card.parentInfo) {
+    if (allowedCards.includes(parentInfoElement._id)) return true
+  }
+  return false
+}
+
+export async function showForbidden (): Promise<void> {
+  const lang = get(languageStore)
+  addNotification(
+    await translate(view.string.PermissionWarningTitle, {}, lang),
+    await translate(view.string.PermissionWarningMessage, {}, lang),
+    view.component.ForbiddenNotification,
+    {
+      onClose: () => {}
+    },
+    NotificationSeverity.Info
+  )
 }

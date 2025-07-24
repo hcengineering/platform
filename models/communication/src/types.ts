@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { type Builder, Model, TypeAny, TypeNumber } from '@hcengineering/model'
-import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TConfiguration, TDoc } from '@hcengineering/model-core'
 import { type Class, type Domain, DOMAIN_MODEL, type Ref } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import {
@@ -23,7 +23,8 @@ import {
   type AppletCreateFnResource,
   type PollAnswer,
   type Poll,
-  type CustomActivityPresenter
+  type CustomActivityPresenter,
+  type GuestCommunicationSettings
 } from '@hcengineering/communication'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AppletType } from '@hcengineering/communication-types'
@@ -32,7 +33,8 @@ import type { AnyComponent } from '@hcengineering/ui'
 import { type PersonSpace } from '@hcengineering/contact'
 
 import communication from './plugin'
-import { type MasterTag } from '@hcengineering/card'
+import { type Card, type MasterTag } from '@hcengineering/card'
+import { DOMAIN_SETTING } from '@hcengineering/setting'
 
 export const DOMAIN_POLL = 'poll' as Domain
 
@@ -74,8 +76,13 @@ class TCustomActivityPresenter extends TDoc implements CustomActivityPresenter {
   type!: Ref<MasterTag>
 }
 
+@Model(communication.class.GuestCommunicationSettings, core.class.Configuration, DOMAIN_SETTING)
+export class TGuestCommunicationSettings extends TConfiguration implements GuestCommunicationSettings {
+  allowedCards!: Ref<Card>[]
+}
+
 export function buildTypes (builder: Builder): void {
-  builder.createModel(TMessageAction, TApplet, TPollAnswer, TCustomActivityPresenter)
+  builder.createModel(TMessageAction, TApplet, TPollAnswer, TCustomActivityPresenter, TGuestCommunicationSettings)
 
   createSystemType(
     builder,
