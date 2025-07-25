@@ -15,7 +15,7 @@
 
 import { TriggerControl } from '@hcengineering/server-core'
 import contact, { Employee, type Person, PersonSpace, SocialIdentityRef } from '@hcengineering/contact'
-import { AccountUuid, parseSocialIdString, PersonId, type Ref, SocialId, toIdMap } from '@hcengineering/core'
+import core, { AccountUuid, parseSocialIdString, PersonId, type Ref, SocialId, toIdMap } from '@hcengineering/core'
 
 export async function getCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
   const { type, value } = parseSocialIdString(control.txFactory.account)
@@ -81,6 +81,8 @@ export async function getAllSocialStringsByPersonId (
 }
 
 export async function getPerson (control: TriggerControl, personId: PersonId): Promise<Person | undefined> {
+  if (personId === core.account.System) return undefined
+
   const { contextData } = control.ctx
   const account: AccountUuid | undefined = contextData.account.socialIds.includes(personId)
     ? contextData.account.uuid
@@ -103,6 +105,8 @@ export async function getPerson (control: TriggerControl, personId: PersonId): P
 }
 
 export async function getEmployee (control: TriggerControl, personId: PersonId): Promise<Employee | undefined> {
+  if (personId === core.account.System) return undefined
+
   const socialId = (
     await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: personId as SocialIdentityRef })
   )[0]
