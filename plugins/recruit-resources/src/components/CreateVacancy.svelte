@@ -416,6 +416,7 @@
       onChange={() => {
         membersChanged = true
       }}
+      allowGuests
       kind={'regular'}
       size={'large'}
     />
