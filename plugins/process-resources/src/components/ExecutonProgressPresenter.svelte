@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Execution } from '@hcengineering/process'
+  import { State } from '@hcengineering/process'
 
-  export let value: WithLookup<Execution>
+  export let value: Ref<State>
 
   const client = getClient()
 
-  $: currentState = client.getModel().findObject(value.currentState)
+  $: currentState = client.getModel().findObject(value)
 </script>
 
 {#if currentState}

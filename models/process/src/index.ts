@@ -779,7 +779,7 @@ export function createModel (builder: Builder): void {
           presenter: process.component.ExecutonPresenter
         },
         {
-          key: '',
+          key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
         },
@@ -832,7 +832,7 @@ export function createModel (builder: Builder): void {
           key: 'card'
         },
         {
-          key: 'process',
+          key: '',
           label: process.string.Process,
           presenter: process.component.ExecutonPresenter
         },
