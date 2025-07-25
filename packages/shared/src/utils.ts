@@ -19,7 +19,8 @@ import {
   Attachment,
   BlobAttachment,
   LinkPreviewAttachment,
-  linkPreviewType
+  linkPreviewType,
+  WithTotal
 } from '@hcengineering/communication-types'
 
 const COUNTER_BITS = 10n
@@ -71,4 +72,10 @@ export function isLinkPreviewAttachment (attachment: Attachment): attachment is 
 
 export function isBlobAttachment (attachment: Attachment): attachment is BlobAttachment {
   return !isLinkPreviewAttachment(attachment) && !isAppletAttachment(attachment) && 'blobId' in attachment.params
+}
+
+export function withTotal<T> (objects: T[], total?: number): WithTotal<T> {
+  const length = total ?? objects.length
+
+  return Object.assign(objects, { total: length })
 }

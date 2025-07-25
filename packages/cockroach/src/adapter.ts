@@ -45,7 +45,7 @@ import {
   type BlobID,
   type AttachmentData,
   type AttachmentID,
-  type AttachmentUpdateData
+  type AttachmentUpdateData, WithTotal
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
@@ -242,8 +242,8 @@ export class CockroachAdapter implements DbAdapter {
     )
   }
 
-  async updateNotification (contextId: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
-    await this.notification.updateNotification(contextId, account, query, updates)
+  async updateNotification (contextId: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<number> {
+    return await this.notification.updateNotification(contextId, account, query, updates)
   }
 
   async removeNotifications (
@@ -284,7 +284,7 @@ export class CockroachAdapter implements DbAdapter {
     return await this.notification.findContexts(params)
   }
 
-  async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
+  async findNotifications (params: FindNotificationsParams): Promise<WithTotal<Notification>> {
     return await this.notification.findNotifications(params)
   }
 

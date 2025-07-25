@@ -713,7 +713,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
     const result = this.result.getResult()
-    this.callback(new WindowImpl(result, this.result.isTail(), this.result.isHead(), this))
+    this.callback(new WindowImpl(result, this.result.getTotal(), this.result.isTail(), this.result.isHead(), this))
   }
 
   private match (message: Message): boolean {

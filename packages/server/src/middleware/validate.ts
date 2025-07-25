@@ -257,7 +257,8 @@ const FindNotificationContextParamsSchema = FindParamsSchema.extend({
       message: z.boolean().optional(),
       limit: z.number(),
       order: SortingOrderSchema,
-      read: z.boolean().optional()
+      read: z.boolean().optional(),
+      total: z.boolean().optional()
     })
     .optional()
 }).strict()
@@ -269,7 +270,8 @@ const FindNotificationsParamsSchema = FindParamsSchema.extend({
   created: DateOrRecordSchema.optional(),
   account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional(),
   message: z.boolean().optional(),
-  card: CardIDSchema.optional()
+  card: CardIDSchema.optional(),
+  total: z.boolean().optional()
 }).strict()
 
 const FindLabelsParamsSchema = FindParamsSchema.extend({

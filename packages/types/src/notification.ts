@@ -68,4 +68,5 @@ export interface NotificationContext {
   lastNotify?: Date
 
   notifications?: Notification[]
+  totalNotifications?: number
 }

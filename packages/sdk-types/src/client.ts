@@ -24,7 +24,7 @@ import type {
   Message,
   MessagesGroup,
   Notification,
-  NotificationContext
+  NotificationContext, WithTotal
 } from '@hcengineering/communication-types'
 
 import type { EventResult, Event } from './events/event'
@@ -39,7 +39,7 @@ export interface FindClient {
 
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
 
-  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
+  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<WithTotal<Notification>>
 
   findLabels: (params: FindLabelsParams, queryId?: number) => Promise<Label[]>
 

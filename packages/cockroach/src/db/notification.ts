@@ -28,18 +28,20 @@ import {
   type NotificationID,
   type CardType,
   type NotificationType,
-  type NotificationContent
+  type NotificationContent,
+  WithTotal
 } from '@hcengineering/communication-types'
-
-import { BaseDb } from './base'
-import { getCondition } from './utils'
-import { toCollaborator, toNotification, toNotificationContext } from './mapping'
+import { withTotal } from '@hcengineering/communication-shared'
 import {
   Domain,
   type NotificationContextUpdates,
   type NotificationUpdates,
   type UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
+
+import { BaseDb } from './base'
+import { getCondition } from './utils'
+import { toCollaborator, toNotification, toNotificationContext } from './mapping'
 import { DbModel, DbModelFilter, DbModelUpdate } from '../schema'
 
 export class NotificationsDb extends BaseDb {
@@ -126,7 +128,7 @@ export class NotificationsDb extends BaseDb {
     account: AccountID,
     query: UpdateNotificationQuery,
     updates: NotificationUpdates
-  ): Promise<void> {
+  ): Promise<number> {
     const where: string[] = [
       'nc.workspace_id = $1::uuid',
       'nc.id = $2::int8',
@@ -155,14 +157,17 @@ export class NotificationsDb extends BaseDb {
       }
     }
 
-    const whereClause = `WHERE ${where.join(' AND ')}`
+    const whereClause = `WHERE ${where.join(' AND ')} AND read <>${index}::boolean`
 
     const sql = `
         UPDATE ${Domain.Notification} n
-        SET read = $${index++}::boolean
-        FROM ${Domain.NotificationContext} nc ${whereClause}`
+        SET read = $${index}::boolean
+        FROM ${Domain.NotificationContext} nc 
+        ${whereClause}
+        `
 
-    await this.execute(sql, [...values, updates.read], 'update notification')
+    const result = await this.execute(sql, [...values, updates.read], 'update notification')
+    return result?.count ?? 0
   }
 
   async removeNotifications (
@@ -279,140 +284,214 @@ export class NotificationsDb extends BaseDb {
   }
 
   async findContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
-    const withNotifications = params.notifications != null
-    const withMessages = params.notifications?.message === true
+    const withNotification = params.notifications != null
+    const withMessage = params.notifications?.message === true
+    const withTotal = params.notifications?.total === true
+    const notificationsLimit = params.notifications?.limit
+    const notificationOrder = params.notifications?.order === SortingOrder.Ascending ? 'ASC' : 'DESC'
 
     const { where, values } = this.buildContextWhere(params)
-    const limit = params.limit != null ? `LIMIT ${Number(params.limit)}` : ''
     const orderBy =
       params.order != null ? `ORDER BY nc.last_notify ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+    const limit = params.limit != null ? `LIMIT ${Number(params.limit)}` : ''
 
-    let notificationsJoin = ''
-    let notificationsSelect = ''
-    let groupBy = ''
+    if (!withNotification) {
+      const sql = `
+      SELECT nc.id::text,
+             nc.card_id,
+             nc.account,
+             nc.last_view,
+             nc.last_update,
+             nc.last_notify
+      FROM ${Domain.NotificationContext} nc
+      ${where}
+      ${orderBy}
+      ${limit};
+    `
+      const rows = await this.execute(sql, values, 'find contexts (no notifications)')
+      return rows.map((it: any) => toNotificationContext(it))
+    }
 
-    if (withNotifications) {
-      const { where: whereNotifications, values: valuesNotifications } = this.buildNotificationWhere(
-        { read: params.notifications?.read, type: params.notifications?.type },
-        values.length,
-        true
-      )
-      values.push(...valuesNotifications)
+    const { where: notificationWhere, values: notificationValues } = this.buildNotificationWhere(
+      { read: params.notifications?.read, type: params.notifications?.type },
+      values.length,
+      true
+    )
+    values.push(...notificationValues)
 
-      const notificationLimit = params.notifications?.limit ?? 10
-      const notificationOrder = params.notifications?.order === SortingOrder.Ascending ? 'ASC' : 'DESC'
+    const contextsCte = `
+    WITH ctx AS (
+      SELECT id, card_id, account, last_view, last_update, last_notify, workspace_id
+      FROM ${Domain.NotificationContext} nc
+      ${where}
+      ${orderBy}
+      ${limit}
+    )
+  `
 
-      notificationsJoin = `
-      LEFT JOIN LATERAL (
-        SELECT *
+    const notificationsCte = `
+  , last_notifs AS (
+      SELECT *
+      FROM (
+        SELECT n.*,
+               ROW_NUMBER() OVER (PARTITION BY n.context_id ORDER BY n.created ${notificationOrder}) AS rn
         FROM ${Domain.Notification} n
-        ${whereNotifications} ${whereNotifications.length > 1 ? 'AND' : 'WHERE'} n.context_id = nc.id
-        ORDER BY n.created ${notificationOrder}
-        LIMIT ${notificationLimit}
-      ) n ON TRUE
+        WHERE n.context_id IN (SELECT id FROM ctx)
+          ${notificationWhere.length > 0 ? `AND (${notificationWhere.replace(/^WHERE/i, '')})` : ''}
+      ) t
+      WHERE rn <= ${notificationsLimit}
+    )
+  `
 
-      ${
-        withMessages
-          ? `
-      LEFT JOIN ${Domain.Message} m 
-        ON m.workspace_id = nc.workspace_id 
-        AND m.card_id = nc.card_id
-        AND m.id = n.message_id
-        AND n.message_id IS NOT NULL
-        AND n.blob_id IS NULL`
-          : ''
-      }
+    const msgKeysCte = `
+  , message_keys AS (
+      SELECT DISTINCT
+             c.workspace_id,
+             c.card_id,
+             n.message_id
+      FROM last_notifs n
+      JOIN ctx c ON c.id = n.context_id
+      WHERE n.message_id IS NOT NULL
+    )
+  `
 
-      LEFT JOIN LATERAL (
-        SELECT COALESCE(
+    const statsCte = withTotal
+      ? `
+  , stats AS (
+      SELECT context_id, COUNT(*) AS total
+      FROM ${Domain.Notification} n
+      WHERE n.context_id IN (SELECT id FROM ctx)
+        ${notificationWhere.length > 0 ? `AND (${notificationWhere.replace(/^WHERE/i, '')})` : ''}
+      GROUP BY context_id
+    )`
+      : ''
+
+    const patchesCte = `
+  , patches_json AS (
+      SELECT
+        p.workspace_id,
+        p.card_id,
+        p.message_id,
+        COALESCE(
           JSON_AGG(
             JSONB_BUILD_OBJECT(
-              'type', p.type,
-              'data', p.data,
+              'type',    p.type,
+              'data',    p.data,
               'creator', p.creator,
               'created', p.created
-            ) ORDER BY p.created DESC
-          ), '[]'::JSONB
+            )
+          ), '[]'::jsonb
         ) AS patches
-        FROM ${Domain.Patch} p
-        WHERE p.workspace_id = nc.workspace_id AND p.card_id = nc.card_id AND p.message_id = n.message_id
-      ) p ON TRUE
+      FROM ${Domain.Patch} p
+      JOIN message_keys mk
+        ON mk.workspace_id = p.workspace_id
+       AND mk.card_id      = p.card_id
+       AND mk.message_id   = p.message_id
+      GROUP BY p.workspace_id, p.card_id, p.message_id
+    )
+  `
 
-      LEFT JOIN LATERAL (
-        SELECT
-          COALESCE(
-            JSON_AGG(
-              JSONB_BUILD_OBJECT(
-                'id',      a.id,
+    const attachCte = `
+  , attachments_json AS (
+      SELECT
+        a.workspace_id,
+        a.card_id,
+        a.message_id,
+        COALESCE(
+          JSON_AGG(
+            JSONB_BUILD_OBJECT(
+               'id',      a.id,
                 'type',    a.type,
                 'params',  a.params,
                 'creator', a.creator,
                 'created', a.created,
                 'modified',a.modified
-              )
-            ),
-            '[]'::JSONB
-          ) AS attachments
-        FROM communication.attachment AS a
-        WHERE  a.workspace_id = nc.workspace_id
-          AND a.card_id      = nc.card_id
-          AND a.message_id   = n.message_id
-      ) AS a ON TRUE
-    `
+            )
+          ), '[]'::jsonb
+        ) AS attachments
+      FROM ${Domain.Attachment} a
+      JOIN message_keys mk
+        ON mk.workspace_id = a.workspace_id
+       AND mk.card_id      = a.card_id
+       AND mk.message_id   = a.message_id
+      GROUP BY a.workspace_id, a.card_id, a.message_id
+    )
+  `
 
-      notificationsSelect = `,
+    const msgJoin = withMessage
+      ? `
+    LEFT JOIN ${Domain.Message} m
+           ON  m.workspace_id = nc.workspace_id
+           AND m.card_id      = nc.card_id
+           AND m.id           = n.message_id
+           AND n.message_id IS NOT NULL
+           AND n.blob_id   IS NULL`
+      : ''
+
+    const sql = `
+    ${contextsCte}
+    ${notificationsCte}
+    ${msgKeysCte}
+    ${statsCte}
+    ${patchesCte}
+    ${attachCte}
+    SELECT
+      nc.id::text,
+      nc.card_id,
+      nc.account,
+      nc.last_view,
+      nc.last_update,
+      ${withTotal ? ' MAX(s.total) AS total,' : ''}
+      nc.last_notify,
       COALESCE(
         JSON_AGG(
           JSONB_BUILD_OBJECT(
-            'id', n.id::text,
-            'read', n.read,
-            'type', n.type,
-            'content', n.content,
-            'created', n.created,
-            'message_created', n.message_created,
-            'message_id', n.message_id::text,
+            'id',               n.id::text,
+            'read',             n.read,
+            'type',             n.type,
+            'content',          n.content,
+            'created',          n.created,
+            'blob_id',          n.blob_id,
+            'message_created',  n.message_created,
+            'message_id',       n.message_id::text,
             ${
-              withMessages
+              withMessage
                 ? `
-            'message_type', m.type,
-            'message_content', m.content,
-            'message_data', m.data,
-            'message_creator', m.creator,`
+            'message_type',     m.type,
+            'message_content',  m.content,
+            'message_data',     m.data,
+            'message_creator',  m.creator,`
                 : ''
             }
-            'blob_id', n.blob_id,
-            'patches', p.patches,
-            'attachments', a.attachments
+            'patches',          pj.patches,
+            'attachments',      aj.attachments
           )
           ORDER BY n.created ${notificationOrder}
-        ), '[]'::JSONB
-      ) AS notifications`
+        ), '[]'::jsonb
+      ) AS notifications
+    FROM ctx nc
+    ${withTotal ? 'LEFT JOIN stats s ON s.context_id = nc.id' : ''}
+    LEFT JOIN last_notifs n
+           ON n.context_id = nc.id
+    ${msgJoin}
+    LEFT JOIN patches_json    pj
+           ON pj.workspace_id = nc.workspace_id
+          AND pj.card_id      = nc.card_id
+          AND pj.message_id   = n.message_id
+    LEFT JOIN attachments_json aj
+           ON aj.workspace_id = nc.workspace_id
+          AND aj.card_id      = nc.card_id
+          AND aj.message_id   = n.message_id
+    GROUP BY
+      nc.id, nc.card_id, nc.account, nc.last_view, nc.last_update, nc.last_notify
+    ${orderBy}
+  `.trim()
 
-      groupBy = `
-      GROUP BY nc.id, nc.card_id, nc.account, nc.last_view, nc.last_update, nc.last_notify
-    `
-    }
-
-    const sql = `
-        SELECT nc.id::text,
-               nc.card_id,
-               nc.account,
-               nc.last_view,
-               nc.last_update,
-               nc.last_notify
-                   ${notificationsSelect}
-        FROM ${Domain.NotificationContext} nc
-            ${notificationsJoin} ${where}
-            ${groupBy}
-            ${orderBy}
-            ${limit};
-    `
-
-    const result = await this.execute(sql, values, 'find contexts')
-    return result.map((it: any) => toNotificationContext(it))
+    const rows = await this.execute(sql, values, 'find contexts (cte)')
+    return rows.map((it: any) => toNotificationContext(it))
   }
 
-  async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
+  async findNotifications (params: FindNotificationsParams): Promise<WithTotal<Notification>> {
     const withMessage = params.message === true
 
     let select =
@@ -468,7 +547,31 @@ export class NotificationsDb extends BaseDb {
 
     const result = await this.execute(sql, values, 'find notifications')
 
-    return result.map((it: any) => toNotification(it))
+    let total: number | undefined
+
+    if (params.total === true) {
+      const totalSql = this.buildNotificationsTotalSql(params)
+      const result = await this.execute(totalSql.sql, totalSql.values, 'find notifications total')
+      total = result[0]?.total ?? undefined
+    }
+
+    return withTotal(
+      result.map((it: any) => toNotification(it)),
+      total
+    )
+  }
+
+  private buildNotificationsTotalSql (params: FindNotificationsParams): { sql: string, values: any[] } {
+    const select = `
+        SELECT COUNT(*) AS total
+        FROM ${Domain.Notification} n
+                 JOIN ${Domain.NotificationContext} nc ON n.context_id = nc.id`
+
+    const { where, values } = this.buildNotificationWhere(params)
+
+    const sql = [select, where].join(' ')
+
+    return { sql, values }
   }
 
   async updateCollaborators (params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {

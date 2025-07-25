@@ -18,6 +18,7 @@ import type { ID } from '@hcengineering/communication-types'
 export class QueryResult<T> {
   private objectById: Map<ID, T>
 
+  private total: number = -1
   private tail: boolean = false
   private head: boolean = false
 
@@ -30,6 +31,14 @@ export class QueryResult<T> {
     private readonly getId: (it: T) => ID
   ) {
     this.objectById = new Map(messages.map((it) => [getId(it), it]))
+  }
+
+  setTotal (total: number): void {
+    this.total = total
+  }
+
+  getTotal (): number {
+    return Math.max(this.total, -1)
   }
 
   isTail (): boolean {

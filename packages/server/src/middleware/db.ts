@@ -382,8 +382,9 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async updateNotification (event: Enriched<UpdateNotificationEvent>): Promise<Result> {
-    await this.db.updateNotification(event.contextId, event.account, event.query, event.updates)
-
+    const updated = await this.db.updateNotification(event.contextId, event.account, event.query, event.updates)
+    if (updated === 0) return { skipPropagate: true }
+    event.updated = updated
     return {}
   }
 

@@ -22,7 +22,6 @@ import {
   type MessageID,
   type Notification,
   type NotificationContext,
-  NotificationType,
   ParsedFile,
   PatchType,
   SortingOrder,
@@ -125,6 +124,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
   async onEvent (event: Event): Promise<void> {
     switch (event.type) {
       case MessageEventType.BlobPatch:
+      case MessageEventType.AttachmentPatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.UpdatePatch: {
         await this.onCreatePatchEvent(event)
@@ -356,6 +356,20 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.result instanceof Promise) this.result = await this.result
 
     const context = this.result.get(event.contextId)
+    if (context === undefined) return
+
+    if (this.params.notifications.total === true) {
+      const c = (await this.find({ id: context.id, limit: 1, notifications: this.params.notifications }))[0]
+      if (c != null) {
+        this.result.update(c)
+        void this.notify()
+      } else {
+        this.result.delete(context.id)
+        void this.notify()
+      }
+      return
+    }
+
     if (context?.notifications === undefined) return
 
     const filtered = context.notifications.filter((it) => !event.ids.includes(it.id))
@@ -387,19 +401,31 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.result instanceof Promise) this.result = await this.result
 
     const context = this.result.get(event.contextId)
-    if (context?.notifications === undefined) return
+    if (context === undefined) return
+
+    const totalNotifications = this.getNotificationsTotal(context, event)
 
     let matchQuery: FindNotificationsParams = { ...event.query, context: event.contextId, account: event.account }
     if (event.query.untilDate != null) {
       matchQuery = { ...matchQuery, created: { lessOrEqual: event.query.untilDate } }
     }
-    const toUpdate = context.notifications.filter(
+    const toUpdate = (context.notifications ?? []).filter(
       (it) => matchNotification(it, matchQuery) && it.read !== event.updates.read
     )
-    if (toUpdate === undefined || (toUpdate?.length ?? 0) === 0) return
+    if (toUpdate === undefined || (toUpdate?.length ?? 0) === 0) {
+      if (totalNotifications !== context.totalNotifications) {
+        this.result.update({
+          ...context,
+          totalNotifications
+        })
+
+        void this.notify()
+      }
+      return
+    }
     const toUpdateMap = new Map(toUpdate.map((it) => [it.id, it]))
-    const currentLength = context.notifications.length ?? 0
-    const newNotifications = context.notifications.map((it) =>
+    const currentLength = context.notifications?.length ?? 0
+    const newNotifications = (context.notifications ?? []).map((it) =>
       toUpdateMap.has(it.id) ? { ...it, ...event.updates } : it
     )
     const newLength = newNotifications.length
@@ -416,10 +442,25 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     } else {
       this.result.update({
         ...context,
-        notifications: newNotifications
+        notifications: newNotifications,
+        totalNotifications
       })
     }
+
     void this.notify()
+  }
+
+  private getNotificationsTotal (context: NotificationContext, event: UpdateNotificationEvent): number {
+    const updatedCount = event.updated ?? 0
+    if (this.params.notifications?.total === true && updatedCount > 0) {
+      if (this.params.notifications?.read != null && this.params.notifications.read === event.updates.read) {
+        return (context.totalNotifications ?? 0) + updatedCount
+      } else if (this.params.notifications?.read != null && this.params.notifications.read !== event.updates.read) {
+        return Math.max(0, (context.totalNotifications ?? 0) - updatedCount)
+      }
+    }
+
+    return context.totalNotifications ?? 0
   }
 
   private async onCreateNotificationEvent (event: CreateNotificationEvent): Promise<void> {
@@ -465,6 +506,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       }
       this.result.update({
         ...context,
+        ...(this.params.notifications.total === true
+          ? { totalNotifications: (context.totalNotifications ?? 0) + 1 }
+          : {}),
         notifications
       })
       void this.notify()
@@ -528,44 +572,13 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     const contextToUpdate = this.result.get(event.contextId)
     if (contextToUpdate === undefined) return
 
-    const currentNotifications = contextToUpdate.notifications ?? []
-    const newNotifications =
-      event.updates.lastView != null
-        ? this.filterNotifications(
-          currentNotifications.map((it) => ({
-            ...it,
-            read:
-                it.type === NotificationType.Message
-                  ? event.updates.lastView != null && event.updates.lastView >= it.created
-                  : it.read
-          }))
-        )
-        : currentNotifications
-
-    if (
-      this.params.notifications != null &&
-      newNotifications.length < currentNotifications.length &&
-      newNotifications.length < this.params.notifications.limit &&
-      this.params.notifications.order !== SortingOrder.Descending
-    ) {
-      const updated: NotificationContext = (
-        await this.find({ id: event.contextId, limit: 1, notifications: this.params.notifications })
-      )[0]
-      if (updated !== undefined) {
-        this.result.update(updated)
-      } else {
-        this.result.delete(contextToUpdate.id)
-      }
-    } else {
-      const updated: NotificationContext = {
-        ...contextToUpdate,
-        lastUpdate: event.updates.lastUpdate ?? contextToUpdate.lastUpdate,
-        lastView: event.updates.lastView ?? contextToUpdate.lastView,
-        lastNotify: event.updates.lastNotify ?? contextToUpdate.lastNotify,
-        notifications: newNotifications
-      }
-      this.result.update(updated)
+    const updated: NotificationContext = {
+      ...contextToUpdate,
+      lastUpdate: event.updates.lastUpdate ?? contextToUpdate.lastUpdate,
+      lastView: event.updates.lastView ?? contextToUpdate.lastView,
+      lastNotify: event.updates.lastNotify ?? contextToUpdate.lastNotify
     }
+    this.result.update(updated)
 
     if (event.updates.lastNotify != null) {
       this.sort(this.result)
@@ -698,7 +711,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     const isTail = this.result.isTail()
     const isHead = this.result.isHead()
 
-    const window = new WindowImpl(result, isTail, isHead, this)
+    const window = new WindowImpl(result, this.result.getTotal(), isTail, isHead, this)
     this.callback(window)
   }
 

@@ -44,7 +44,7 @@ import {
   NotificationType,
   AttachmentData,
   AttachmentID,
-  AttachmentUpdateData
+  AttachmentUpdateData, WithTotal
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -102,7 +102,7 @@ export interface DbAdapter {
     content: NotificationContent,
     created: Date
   ) => Promise<NotificationID>
-  updateNotification: (context: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
+  updateNotification: (context: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<number>
   removeNotifications: (contextId: ContextID, account: AccountID, ids: NotificationID[]) => Promise<NotificationID[]>
   removeNotificationsBlobId: (cardId: CardID, blobId: string) => Promise<void>
   updateNotificationsBlobId: (cardId: CardID, blobId: string, from: Date, to: Date) => Promise<void>
@@ -118,7 +118,7 @@ export interface DbAdapter {
   removeContext: (id: ContextID, account: AccountID) => Promise<ContextID | undefined>
 
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
-  findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
+  findNotifications: (params: FindNotificationsParams) => Promise<WithTotal<Notification>>
 
   createLabel: (labelId: LabelID, cardId: CardID, cardType: CardType, account: AccountID, created: Date) => Promise<void>
   removeLabels: (query: RemoveLabelQuery) => Promise<void>

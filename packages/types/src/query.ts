@@ -26,6 +26,7 @@ export type ComparisonOperator = 'less' | 'lessOrEqual' | 'greater' | 'greaterOr
 
 export interface Window<T> {
   getResult: () => T[]
+  getTotal: () => number
 
   loadNextPage: () => Promise<void>
 
@@ -71,6 +72,7 @@ export interface FindNotificationContextParams extends FindParams {
     limit: number
     order: SortingOrder
     read?: boolean
+    total?: boolean
   }
 }
 
@@ -84,6 +86,7 @@ export interface FindNotificationsParams extends FindParams {
   account?: AccountID | AccountID[]
   card?: CardID
   message?: boolean
+  total?: boolean
 }
 
 export interface FindCollaboratorsParams extends FindParams {
@@ -97,3 +100,5 @@ export interface FindLabelsParams extends FindParams {
   cardType?: CardType | CardType[]
   account?: AccountID
 }
+
+export type WithTotal<T> = T[] & { total: number }

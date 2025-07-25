@@ -25,6 +25,7 @@ import {
   SocialID,
   BlobID
 } from '@hcengineering/communication-types'
+
 import type { BaseEvent } from './common'
 
 export enum NotificationEventType {
@@ -79,6 +80,7 @@ export interface UpdateNotificationEvent extends BaseEvent {
     read: boolean
   }
 
+  updated?: number
   date?: Date
 }
 

@@ -20,6 +20,7 @@ import type { PagedQuery } from './types'
 export class WindowImpl<T> implements Window<T> {
   constructor (
     private readonly result: T[],
+    private readonly total: number,
     private readonly isTail: boolean,
     private readonly isHead: boolean,
     private readonly query: PagedQuery<T>
@@ -27,6 +28,10 @@ export class WindowImpl<T> implements Window<T> {
 
   getResult (): T[] {
     return this.result
+  }
+
+  getTotal (): number {
+    return this.total
   }
 
   async loadNextPage (): Promise<void> {

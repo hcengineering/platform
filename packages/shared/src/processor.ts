@@ -49,6 +49,7 @@ import {
 } from '@hcengineering/communication-sdk-types'
 
 import { applyPatches } from './patch'
+import { withTotal } from './utils'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MessageProcessor {
@@ -169,7 +170,7 @@ export class NotificationContextProcessor {
       lastView: event.lastView,
       lastUpdate: event.lastUpdate,
       lastNotify: event.lastNotify,
-      notifications: []
+      notifications: withTotal([] as Notification[])
     }
   }
 

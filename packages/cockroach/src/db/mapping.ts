@@ -39,6 +39,7 @@ import {
 } from '@hcengineering/communication-types'
 import { Domain } from '@hcengineering/communication-sdk-types'
 import { applyPatches } from '@hcengineering/communication-shared'
+
 import { DbModel } from '../schema'
 
 interface RawMessage extends DbModel<Domain.Message> {
@@ -78,7 +79,7 @@ interface RawNotification extends DbModel<Domain.Notification> {
   }[]
 }
 
-type RawContext = DbModel<Domain.NotificationContext> & { id: ContextID } & {
+type RawContext = DbModel<Domain.NotificationContext> & { id: ContextID, total?: number } & {
   notifications?: RawNotification[]
 }
 
@@ -185,7 +186,8 @@ export function toNotificationContext (raw: RawContext): NotificationContext {
     lastNotify: raw.last_notify != null ? new Date(raw.last_notify) : undefined,
     notifications: (raw.notifications ?? [])
       .filter((it) => it.id != null)
-      .map((it) => toNotificationRaw(raw.id, raw.card_id, { ...it, account: raw.account }))
+      .map((it) => toNotificationRaw(raw.id, raw.card_id, { ...it, account: raw.account })),
+    totalNotifications: Number(raw.total ?? 0)
   }
 }
 
