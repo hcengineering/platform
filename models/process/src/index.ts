@@ -834,7 +834,7 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           label: process.string.Process,
-          presenter: process.component.ExecutonPresenter,
+          presenter: process.component.ExecutonPresenter
         },
         {
           key: 'currentState',
