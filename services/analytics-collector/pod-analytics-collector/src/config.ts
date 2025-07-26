@@ -21,6 +21,7 @@ export interface Config {
   PostHogHost: string
   PostHogAPI: string
   SentryDSN?: string
+  MaxPayloadSize?: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -33,7 +34,8 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL,
     PostHogHost: process.env.POSTHOG_HOST,
     PostHogAPI: process.env.POSTHOG_API_KEY,
-    SentryDSN: process.env.SENTRY_DSN ?? ''
+    SentryDSN: process.env.SENTRY_DSN ?? '',
+    MaxPayloadSize: process.env.MAX_PAYLOAD_SIZE ?? '10mb'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
