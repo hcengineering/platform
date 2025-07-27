@@ -246,16 +246,35 @@ export class WorkspaceManager {
           await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
             await indexer.dropWorkspace()
             const toIndex = await indexer.getIndexClassess()
-            for (const { domain, classes } of toIndex) {
-              await control.heartbeat()
-              await indexer.reindex(this.ctx, domain, classes, control)
-            }
+            this.ctx.info('reindex starting full', { workspace: ws })
+            await this.ctx.with(
+              'reindex-workspace',
+              {},
+              async (ctx) => {
+                for (const { domain, classes } of toIndex) {
+                  try {
+                    await control.heartbeat()
+                    await indexer.reindex(ctx, domain, classes, control)
+                  } catch (err: any) {
+                    ctx.error('failed to reindex domain', { workspace: ws })
+                    throw err
+                  }
+                }
+              },
+              { workspace: ws }
+            )
+            this.ctx.info('reindex full done', { workspace: ws })
           })
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
           const mmd = mm as QueueWorkspaceReindexMessage
           if (!this.restoring.has(ws)) {
             await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-              await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
+              try {
+                await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
+              } catch (err: any) {
+                this.ctx.error('failed to reindex domain', { workspace: ws })
+                throw err
+              }
             })
           }
         }

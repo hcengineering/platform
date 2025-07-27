@@ -18,6 +18,7 @@ import {
   context,
   metrics as otelMetrics,
   Span,
+  SpanStatusCode,
   trace,
   type Context,
   type Gauge,
@@ -178,6 +179,10 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
         if (span !== undefined) {
           void value.catch((err) => {
             span?.recordException(err)
+            span?.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: err.message
+            })
           })
         }
         return value.finally(() => {
@@ -219,6 +224,10 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     } catch (err: any) {
       if (span !== undefined) {
         span.recordException(err)
+        span?.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: err.message
+        })
       }
       throw err
     } finally {

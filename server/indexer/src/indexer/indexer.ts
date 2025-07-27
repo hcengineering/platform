@@ -24,6 +24,7 @@ import core, {
   type Doc,
   docKey,
   type Domain,
+  DOMAIN_COLLABORATOR,
   DOMAIN_MODEL,
   type FullTextSearchContext,
   getFullTextIndexableAttributes,
@@ -247,6 +248,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
 
     const byDomain = groupByArray(allIndexed, (it) => this.hierarchy.getDomain(it))
+
+    // Delete few domains
+    byDomain.delete(DOMAIN_COLLABORATOR)
+
     return Array.from(byDomain.entries())
       .sort((a, b) => {
         const ap = domainPriorities[a[0]] ?? 0
@@ -265,21 +270,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     classes: Ref<Class<Doc>>[],
     control?: ConsumerControl
   ): Promise<void> {
-    ctx.warn('verify document structure', { workspace: this.workspace.uuid })
+    ctx.warn('reindex verify document structure', { domain, workspace: this.workspace.uuid })
 
     let processed = 0
     let processedCommunication = 0
     let hasCards = false
-    await ctx.with('reindex-domain', { domain }, async (ctx) => {
+    await ctx.with('reindex domain', { domain }, async (ctx) => {
       // Iterate over all domain documents and add appropriate entries
       const allDocs = this.storage.rawFind(ctx, domain)
       try {
-        let lastPrint = 0
+        let lastPrint = platformNow()
         const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
         while (true) {
-          if (control !== undefined) {
-            await control?.heartbeat()
-          }
+          await control?.heartbeat()
           const docs = await allDocs.find(ctx)
           if (docs.length === 0) {
             break
@@ -307,7 +310,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           const now = platformNow()
           if (now - lastPrint > printThresholdMs) {
-            ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
+            ctx.info('processed', {
+              processed,
+              elapsed: Math.round(now - lastPrint),
+              domain,
+              workspace: this.workspace.uuid
+            })
             lastPrint = now
           }
         }
@@ -441,7 +449,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
       const indexedDoc = createIndexedDoc(doc, this.hierarchy.findAllMixins(doc), doc.space)
 
-      await rateLimit.exec(async () => {
+      await rateLimit.add(async () => {
         await ctx.with('process-document', { _class: doc._class }, async (ctx) => {
           try {
             // Collect all indexable values
@@ -452,7 +460,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
             for (const [, v] of Object.entries(content)) {
               if (v.attr.type._class === core.class.TypeBlob) {
-                await this.processBlob(ctx, v, doc, indexedDoc)
+                await ctx.with('process-blob', {}, (ctx) => this.processBlob(ctx, v, doc, indexedDoc), {
+                  attr: v.attr.name,
+                  value: v.value
+                })
                 continue
               }
 
@@ -545,7 +556,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     let processed = 0
     const cardsInfo = new Map<CardID, { space: Ref<Space>, _class: Ref<Class<Doc>> }>()
     const rateLimit = new RateLimiter(10)
-    let lastPrint = 0
+    let lastPrint = platformNow()
     await ctx.with('process-message-groups', {}, async (ctx) => {
       let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
         limit: messageGroupsLimit,
@@ -590,7 +601,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               if (message.removed) {
                 continue
               }
-              await rateLimit.exec(async () => {
+              await rateLimit.add(async () => {
                 await this.processCommunicationMessage(
                   ctx,
                   pushQueue,
@@ -603,7 +614,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               processed += 1
               const now = platformNow()
               if (now - lastPrint > printThresholdMs) {
-                ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+                ctx.info('processed', {
+                  processedCommunication: processed,
+                  elapsed: Math.round(now - lastPrint),
+                  workspace: this.workspace.uuid
+                })
                 lastPrint = now
               }
             }
@@ -652,7 +667,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (this.cancelling) {
               return processed
             }
-            await rateLimit.exec(async () => {
+            await rateLimit.add(async () => {
               await this.processCommunicationMessage(
                 ctx,
                 pushQueue,
@@ -672,7 +687,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           processed += 1
           const now = platformNow()
           if (now - lastPrint > printThresholdMs) {
-            ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+            ctx.info('processed', {
+              processedCommunication: processed,
+              elapsed: Math.round(now - lastPrint),
+              workspace: this.workspace.uuid
+            })
             lastPrint = now
           }
         }
@@ -992,7 +1011,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  @withContext('process-blob')
   private async processBlob (
     ctx: MeasureContext<any>,
     v: { value: any, attr: AnyAttribute },
@@ -1003,6 +1021,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       const ref = v.value as Ref<Blob>
       if (ref === '' || ref.startsWith('http://') || ref.startsWith('https://')) {
+        return
+      }
+      if (ref.startsWith('{')) {
         return
       }
       if (v.attr.name === 'avatar' || v.attr.attributeOf === contactPlugin.class.Contact) {
@@ -1126,10 +1147,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // We have blob, we need to decode it to string.
       const contentType = (docInfo.contentType ?? defaultContentType).split(';')[0]
 
-      if (
-        (contentType.includes('text/') && contentType !== 'text/rtf') ||
-        contentType.includes('application/vnd.github.VERSION.diff')
-      ) {
+      const ct = contentType.toLocaleLowerCase()
+      if ((ct.includes('text/') && contentType !== 'text/rtf') || ct.includes('application/vnd.github.version.diff')) {
         await this.handleTextBlob(ctx, docInfo, indexedDoc)
       } else if (isBlobAllowed(contentType)) {
         await this.handleBlob(ctx, docInfo, indexedDoc)
@@ -1140,25 +1159,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
     if (docInfo !== undefined) {
       const contentType = (docInfo.contentType ?? '').split(';')[0]
-      const readable = await this.storageAdapter?.get(ctx, this.workspace, docInfo._id)
 
-      if (readable !== undefined) {
-        try {
-          let textContent = await ctx.with('fetch', {}, () =>
-            this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, readable)
-          )
-          textContent = textContent
-            .split(/ +|\t+|\f+/)
-            .filter((it) => it)
-            .join(' ')
-            .split(/\n\n+/)
-            .join('\n')
-
-          indexedDoc.fulltextSummary += '\n' + textContent
-        } finally {
-          readable?.destroy()
-        }
+      if (docInfo.size > 30 * 1024 * 1024) {
+        throw new Error('Blob size exceeds limit of 30MB')
       }
+      const buffer = Buffer.concat(
+        await ctx.with('fetch', {}, (ctx) => this.storageAdapter?.read(ctx, this.workspace, docInfo._id))
+      )
+      let textContent = await ctx.with(
+        'to-text',
+        {},
+        (ctx) => this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, buffer),
+        {
+          workspace: this.workspace.uuid,
+          blobId: docInfo._id,
+          contentType
+        }
+      )
+      textContent = textContent
+        .split(/ +|\t+|\f+/)
+        .filter((it) => it)
+        .join(' ')
+        .split(/\n\n+/)
+        .join('\n')
+
+      indexedDoc.fulltextSummary += '\n' + textContent
     }
   }
 
@@ -1190,6 +1215,7 @@ function isBlobAllowed (contentType: string): boolean {
     !contentType.includes('binary/octet-stream') &&
     !contentType.includes('application/octet-stream') &&
     !contentType.includes('application/zip') &&
-    !contentType.includes('application/x-zip-compressed')
+    !contentType.includes('application/x-zip-compressed') &&
+    !contentType.includes('application/link-preview')
   )
 }

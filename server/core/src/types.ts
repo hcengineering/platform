@@ -15,8 +15,8 @@
 
 import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import {
-  type AccountRole,
   type Account,
+  type AccountRole,
   type AccountUuid,
   type Branding,
   type Class,
@@ -54,7 +54,6 @@ import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
 import type { RateLimitInfo, ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
-import { type Readable } from 'stream'
 
 import type { DbAdapter, DomainHelper } from './adapter'
 import { type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './queue'
@@ -422,7 +421,7 @@ export type FullTextAdapterFactory = (url: string) => Promise<FullTextAdapter>
  * @public
  */
 export interface ContentTextAdapter {
-  content: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Readable) => Promise<string>
+  content: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Buffer) => Promise<string>
 }
 
 /**
