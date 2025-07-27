@@ -414,6 +414,7 @@ services:
   #     - STATS_URL=http://huly.local:4900
   #     - POSTHOG_HOST=${POSTHOG_HOST}
   #     - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+  #     - MAX_PAYLOAD_SIZE=10mb
   msg2file:
     image: hardcoreeng/msg2file
     ports:

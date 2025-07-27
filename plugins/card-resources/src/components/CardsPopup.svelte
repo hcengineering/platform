@@ -43,6 +43,7 @@
   {allowDeselect}
   {titleDeselect}
   {ignoreObjects}
+  searchField={'title'}
   type={'object'}
   groupBy={'_class'}
   on:update
