@@ -213,28 +213,33 @@ export const startServer = async (): Promise<void> => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/toText', async (req, res) => {
-    const token = extractToken(req.headers)
-    decode(token)
-    const name = req.query.name as string
-    const contentType = req.query.type as string
-
     try {
+      const token = extractToken(req.headers)
+      decode(token)
+      const name = req.query.name as string
+      const contentType = req.query.type as string
       const body = typeof req.body === 'string' ? Buffer.from(req.body, 'base64') : (req.body as Buffer)
 
       res.set('Cache-Control', 'no-cache')
-      await extractQueue.add(async () => {
-        const { matched, content, error } = await extract(name, contentType, body)
-        if (error !== undefined) {
-          res.status(400)
-        } else {
-          res.status(200)
-        }
-        res.json({
-          matched,
-          content,
-          error
-        })
-      })
+      await ctx.with(
+        'extract-text',
+        {},
+        () =>
+          extractQueue.add(async () => {
+            const { matched, content, error } = await extract(name, contentType, body)
+            if (error !== undefined) {
+              res.status(400)
+            } else {
+              res.status(200)
+            }
+            res.json({
+              matched,
+              content,
+              error
+            })
+          }),
+        { name, contentType }
+      )
     } catch (err: any) {
       res.status(400)
       res.json({ error: JSON.stringify(err) })
@@ -242,6 +247,7 @@ export const startServer = async (): Promise<void> => {
   })
 
   app.use((_req, res, _next) => {
+    ctx.info('request', { url: _req.url })
     res.status(404).send({ message: 'Not found' })
   })
 
