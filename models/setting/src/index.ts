@@ -160,10 +160,6 @@ export function createModel (builder: Builder): void {
     fields: ['modifiedBy']
   })
 
-  builder.mixin(setting.class.Integration, core.class.Class, view.mixin.ObjectPanel, {
-    component: setting.component.IntegrationPanel
-  })
-
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,
@@ -223,20 +219,6 @@ export function createModel (builder: Builder): void {
       order: 1500
     },
     setting.ids.Integrations
-  )
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'new-integrations',
-      label: setting.string.Integrations,
-      icon: setting.icon.Integrations,
-      component: setting.component.NewIntegrations,
-      group: 'settings-account',
-      role: AccountRole.User,
-      order: 1600
-    },
-    setting.ids.NewIntegrations
   )
   builder.createDoc(
     setting.class.SettingsCategory,

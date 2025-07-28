@@ -12,7 +12,7 @@
 // limitations under the License.
 //
 
-import { concatLink, getCurrentAccount, type PersonId, SocialIdType } from '@hcengineering/core'
+import { concatLink, type PersonId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'

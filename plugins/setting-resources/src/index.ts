@@ -22,7 +22,7 @@ import ClassSetting from './components/ClassSetting.svelte'
 import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
-import Integrations from './components/Integrations.svelte'
+import Integrations from './components/integrations/Integrations.svelte'
 import General from './components/General.svelte'
 import Backup from './components/Backup.svelte'
 import Owners from './components/Owners.svelte'
@@ -35,7 +35,6 @@ import { Analytics } from '@hcengineering/analytics'
 import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
 import Configure from './components/Configure.svelte'
-import IntegrationPanel from './components/IntegrationPanel.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
@@ -68,7 +67,6 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
-import NewIntegrations from './components/integrations/NewIntegrations.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -112,7 +110,6 @@ export default async (): Promise<Resources> => ({
     Password,
     WorkspaceSettings,
     Integrations,
-    NewIntegrations,
     Support,
     Privacy,
     Terms,
@@ -133,7 +130,6 @@ export default async (): Promise<Resources> => ({
     Owners,
     CreateMixin,
     InviteSetting,
-    IntegrationPanel,
     Configure,
     ManageSpaceTypes,
     ManageSpaceTypesTools,

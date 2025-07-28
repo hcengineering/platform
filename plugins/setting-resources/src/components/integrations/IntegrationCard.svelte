@@ -21,7 +21,7 @@
   import { AnyComponent, Button, Component, Label, Icon, addNotification, eventToHTMLElement, showPopup, NotificationSeverity, themeStore } from '@hcengineering/ui'
   import { Analytics } from '@hcengineering/analytics'
   import { type Integration } from '@hcengineering/account-client'
-  import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
+  import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
 
   import IntegrationLabel from './IntegrationLabel.svelte'
   import setting from '../../plugin'

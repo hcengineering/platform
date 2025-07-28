@@ -20,7 +20,7 @@ import {
   IntegrationKey,
   type AccountClient
 } from '@hcengineering/account-client'
-import { AccountUuid, IntegrationKind, PersonId, SocialId, WorkspaceUuid } from '@hcengineering/core'
+import { IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { v4 as uuid } from 'uuid'
 
 import { IntegrationClient, IntegrationEventData, IntegrationUpdatedData, IntegrationErrorData } from './types'
@@ -62,42 +62,6 @@ export class IntegrationClientImpl implements IntegrationClient {
 
   async getIntegrations (): Promise<Integration[]> {
     return (await this.client.listIntegrations({ kind: this.integrationKind })) ?? []
-  }
-
-  async getIntegrationsByAccount (account: AccountUuid, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {
-    try {
-      const integrations = await this.client.listIntegrations({
-        kind: this.integrationKind,
-        workspaceUuid: workspaceUuid ?? null
-      })
-
-      if (integrations.length === 0) return null
-
-      const socialIds = await this.getAccountSocialIds(account)
-
-      for (const integration of integrations) {
-        if (integration.workspaceUuid == null) continue
-        const socialId = socialIds.find((it) => it._id === integration.socialId)
-        if (socialId !== undefined) {
-          const eventData: IntegrationEventData = {
-            integration,
-            timestamp: Date.now()
-          }
-          this.emit('integration:found', eventData)
-          return integration
-        }
-      }
-
-      return null
-    } catch (error) {
-      const errorData: IntegrationErrorData = {
-        operation: 'getIntegrationsByAccount',
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: Date.now()
-      }
-      this.emit('integration:error', errorData)
-      throw error
-    }
   }
 
   async getConnection (integration: Integration): Promise<Integration | null> {
@@ -316,15 +280,5 @@ export class IntegrationClientImpl implements IntegrationClient {
       this.emit('integration:error', errorData)
       throw error
     }
-  }
-
-  private async getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
-    try {
-      const accountClient = getAccountClientRaw(generateToken(account, undefined, { service: this.serviceName }))
-      return await accountClient.getSocialIds(false)
-    } catch (e) {
-      console.error(e)
-    }
-    return []
   }
 }

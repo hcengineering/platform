@@ -14,7 +14,7 @@
 //
 
 import { Integration, IntegrationKey } from '@hcengineering/account-client'
-import { AccountUuid, IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
 
 export type IntegrationStatus = 'active' | 'inactive' | 'connecting' | 'disconnecting' | 'error' | 'unknown'
 
@@ -25,10 +25,6 @@ export interface IntegrationClient {
    * Get integrations
    */
   getIntegrations: () => Promise<Integration[]>
-  /**
-   * Get integrations for a specific account and optional workspace
-   */
-  getIntegrationsByAccount: (account: AccountUuid, workspaceUuid?: WorkspaceUuid) => Promise<Integration | null>
 
   /**
    * Get the connection details for a specific integration
