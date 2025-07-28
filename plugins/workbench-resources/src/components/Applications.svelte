@@ -57,7 +57,7 @@
   function updateExcludedApps (): void {
     const me = getCurrentAccount()
 
-    if (me.role === AccountRole.ReadOnlyGuest) {
+    if (me.role === AccountRole.ReadOnlyGuest || me.role === AccountRole.Guest) {
       excludedApps = getMetadata(workbench.metadata.ExcludedApplicationsForAnonymous) ?? []
     } else {
       excludedApps = []
