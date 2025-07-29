@@ -19,7 +19,16 @@
   import { type IntegrationType, IntegrationError } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
   import { type Integration } from '@hcengineering/account-client'
-  import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher, Loading } from '@hcengineering/ui'
+  import {
+    Header,
+    Breadcrumb,
+    NotificationSeverity,
+    addNotification,
+    themeStore,
+    TabItem,
+    Switcher,
+    Loading
+  } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import { onIntegrationEvent } from '@hcengineering/integration-client'
 
@@ -71,7 +80,9 @@
         urlParams.delete('integrationError')
         const newParams = urlParams.toString()
         const newUrl =
-          window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
+          window.location.pathname +
+          (newParams != null && newParams !== '' ? `?${newParams}` : '') +
+          window.location.hash
         window.history.replaceState({}, document.title, newUrl)
       }
       subscribe()
@@ -86,7 +97,9 @@
   })
 
   onDestroy(() => {
-    unsubscribers.forEach(unsubscribe => { unsubscribe() })
+    unsubscribers.forEach((unsubscribe) => {
+      unsubscribe()
+    })
   })
 
   function subscribe (): void {
@@ -152,15 +165,19 @@
     integration?: Integration
   }
 
-  function getFilteredIntegrationTypes (mode: string, integrationTypes: IntegrationType[], integrations: Integration[]): IntegrationInfo[] {
+  function getFilteredIntegrationTypes (
+    mode: string,
+    integrationTypes: IntegrationType[],
+    integrations: Integration[]
+  ): IntegrationInfo[] {
     if (mode === 'available') {
-      return integrationTypes.map(integrationType => ({ integrationType }))
+      return integrationTypes.map((integrationType) => ({ integrationType }))
     }
 
     if (mode === 'connected') {
       // Show integration types that have at least one connected integration
-      return integrations.map(integration => {
-        const type = integrationTypes.find(type => type.kind === integration.kind)
+      return integrations.map((integration) => {
+        const type = integrationTypes.find((type) => type.kind === integration.kind)
         return {
           integrationType: type,
           integration
@@ -168,17 +185,20 @@
       })
     }
     // all integration and types
-    const filteredIntegrations = integrationTypes.flatMap(integrationType => {
+    const filteredIntegrations = integrationTypes.flatMap((integrationType) => {
       let allIntegrations = getIntegrations(integrationType, integrations)
       const availableConnections = connections.filter((connection) => {
-        return connection.kind === integrationType.kind && allIntegrations
-          .filter((integration) => integration.kind === connection.kind)
-          .every((integration) => integration.socialId !== connection.socialId)
+        return (
+          connection.kind === integrationType.kind &&
+          allIntegrations
+            .filter((integration) => integration.kind === connection.kind)
+            .every((integration) => integration.socialId !== connection.socialId)
+        )
       })
       if (availableConnections.length > 0) {
         allIntegrations = [...allIntegrations, ...availableConnections]
       }
-      const integrationInfo = allIntegrations.map(integration => ({
+      const integrationInfo = allIntegrations.map((integration) => ({
         integrationType,
         integration
       }))
@@ -206,39 +226,40 @@
 </script>
 
 <div class="hulyComponent">
-    <Header adaptive={'disabled'}>
-      <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
-      <svelte:fragment slot="extra">
-        <Switcher
-          name={'integrations-mode-view'}
-          items={viewslist}
-          kind={'subtle'}
-          selected={mode}
-          on:select={(result) => {
-            if (result.detail !== undefined) mode = result.detail.id
-          }}
-        />
-      </svelte:fragment>
-    </Header>
-    {#if isLoading}
-      <div class="loading-container">
-        <Loading/>
-      </div>
-    {:else}
-      <div class="cards_grid" transition:fade={{ duration: 300 }}>
-        {#each filteredIntegrationTypes as integrationInfo (getIntegrationKey(integrationInfo))}
-          {#if integrationInfo.integrationType !== undefined}
-            <IntegrationCard
-              integration={integrationInfo.integration}
-              integrationType={integrationInfo.integrationType}
-            />
-          {/if}
-        {/each}
-        {#if filteredIntegrationTypes.length === 1}
-          <div class="flex"/> <!-- Spacer to fill the grid -->
+  <Header adaptive={'disabled'}>
+    <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
+    <svelte:fragment slot="extra">
+      <Switcher
+        name={'integrations-mode-view'}
+        items={viewslist}
+        kind={'subtle'}
+        selected={mode}
+        on:select={(result) => {
+          if (result.detail !== undefined) mode = result.detail.id
+        }}
+      />
+    </svelte:fragment>
+  </Header>
+  {#if isLoading}
+    <div class="loading-container">
+      <Loading />
+    </div>
+  {:else}
+    <div class="cards_grid" transition:fade={{ duration: 300 }}>
+      {#each filteredIntegrationTypes as integrationInfo (getIntegrationKey(integrationInfo))}
+        {#if integrationInfo.integrationType !== undefined}
+          <IntegrationCard
+            integration={integrationInfo.integration}
+            integrationType={integrationInfo.integrationType}
+          />
         {/if}
-      </div>
-    {/if}
+      {/each}
+      {#if filteredIntegrationTypes.length === 1}
+        <div class="flex" />
+        <!-- Spacer to fill the grid -->
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

@@ -23,5 +23,5 @@ loadMetadata(telegram.icon, {
   Locked: `${icons}#locked`,
   User: `${icons}#user`,
   Channel: `${icons}#channel`,
-  Group: `${icons}#group`,
+  Group: `${icons}#group`
 })

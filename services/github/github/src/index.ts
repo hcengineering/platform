@@ -4,7 +4,19 @@
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import { Attachment } from '@hcengineering/attachment'
 import { Person } from '@hcengineering/contact'
-import { AttachedDoc, Class, Data, Doc, Hyperlink, IntegrationKind, Markup, Mixin, PersonId, Ref, Timestamp } from '@hcengineering/core'
+import {
+  AttachedDoc,
+  Class,
+  Data,
+  Doc,
+  Hyperlink,
+  IntegrationKind,
+  Markup,
+  Mixin,
+  PersonId,
+  Ref,
+  Timestamp
+} from '@hcengineering/core'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import task, { ProjectTypeDescriptor, TaskStatusFactory, TaskTypeDescriptor } from '@hcengineering/task'

@@ -166,7 +166,11 @@ export async function removeIntegrationsByTg (telegramId: number): Promise<void>
   if (socialId == null) return
   const integrations = await accountClient.listIntegrations({ kind: telegramIntegrationKind, socialId })
   for (const integration of integrations) {
-    await accountClient.deleteIntegration({ socialId, kind: telegramIntegrationKind, workspaceUuid: integration.workspaceUuid })
+    await accountClient.deleteIntegration({
+      socialId,
+      kind: telegramIntegrationKind,
+      workspaceUuid: integration.workspaceUuid
+    })
   }
 }
 

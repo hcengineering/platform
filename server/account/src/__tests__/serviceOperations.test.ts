@@ -14,7 +14,7 @@
 //
 
 import {
-  IntegrationKind,
+  type IntegrationKind,
   type MeasureContext,
   type PersonId,
   type PersonUuid,

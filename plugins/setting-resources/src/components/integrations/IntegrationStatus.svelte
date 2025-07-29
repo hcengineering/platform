@@ -17,10 +17,7 @@
   }
 </script>
 
-<span
-  class="status-indicator"
-  style="background-color: {statusMap[status].color};"
-  title={statusMap[status].label}
+<span class="status-indicator" style="background-color: {statusMap[status].color};" title={statusMap[status].label}
 ></span>
 <span class="status-label">{statusMap[status].label}</span>
 

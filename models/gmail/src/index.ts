@@ -16,7 +16,13 @@
 import activity from '@hcengineering/activity'
 import { type Channel } from '@hcengineering/contact'
 import { type Class, type Domain, IndexKind, type Ref, type Timestamp, type Type } from '@hcengineering/core'
-import { type Message, type NewMessage, type SharedMessage, type SharedMessages, gmailIntegrationKind } from '@hcengineering/gmail'
+import {
+  type Message,
+  type NewMessage,
+  type SharedMessage,
+  type SharedMessages,
+  gmailIntegrationKind
+} from '@hcengineering/gmail'
 import {
   ArrOf,
   type Builder,

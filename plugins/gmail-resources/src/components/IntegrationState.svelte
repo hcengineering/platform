@@ -33,17 +33,20 @@
   })
 
   onDestroy(() => {
-    unsubscribers.forEach(unsubscribe => { unsubscribe() })
+    unsubscribers.forEach((unsubscribe) => {
+      unsubscribe()
+    })
   })
 
   function subscribe (): void {
-    unsubscribers.push(
-      onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration)
-    )
+    unsubscribers.push(onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration))
   }
 
   function onUpdateIntegration (data: IntegrationEventData): void {
-    if (data.integration?.socialId === integration.socialId && data.integration?.workspaceUuid === integration.workspaceUuid) {
+    if (
+      data.integration?.socialId === integration.socialId &&
+      data.integration?.workspaceUuid === integration.workspaceUuid
+    ) {
       void refresh()
     }
   }
@@ -64,7 +67,7 @@
   <div class="state-content">
     {#if isLoading}
       <div class="loading-container">
-        <Loading/>
+        <Loading />
       </div>
     {:else if integration.workspaceUuid == null}
       <div class="flex-center" transition:fade={{ duration: 300 }}>

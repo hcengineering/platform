@@ -16,7 +16,10 @@ import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { type GmailSyncState, gmailIntegrationKind } from '@hcengineering/gmail'
-import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration-client'
+import {
+  getIntegrationClient as getIntegrationClientRaw,
+  type IntegrationClient
+} from '@hcengineering/integration-client'
 
 import gmail from './plugin'
 import { concatLink } from '@hcengineering/core'
@@ -27,12 +30,7 @@ export async function getIntegrationClient (): Promise<IntegrationClient> {
   if (accountsUrl === undefined || token === undefined) {
     throw new Error('Accounts URL or token is not defined')
   }
-  return getIntegrationClientRaw(
-    accountsUrl,
-    token,
-    gmailIntegrationKind,
-    'gmail'
-  )
+  return getIntegrationClientRaw(accountsUrl, token, gmailIntegrationKind, 'gmail')
 }
 
 const url = getMetadata(gmail.metadata.GmailURL) ?? ''
@@ -61,5 +59,5 @@ export async function getState (socialId: string): Promise<GmailSyncState | null
 }
 
 export async function signout (): Promise<void> {
-  await request('GET', '/signout') 
+  await request('GET', '/signout')
 }

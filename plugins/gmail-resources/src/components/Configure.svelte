@@ -43,12 +43,11 @@
     })
   }
 
-  async function apply() {
+  async function apply () {
     const integrationClient = await getIntegrationClient()
     integration = isWorkspaceIntegration(integration)
       ? integration
       : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
-    
   }
 
   async function disable () {

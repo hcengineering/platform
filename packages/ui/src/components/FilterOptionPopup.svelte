@@ -36,10 +36,10 @@
   }
 
   function isSelected (optionId: string): boolean {
-    return activeFilters.some(f => f.categoryId === category.id && f.optionId === optionId)
+    return activeFilters.some((f) => f.categoryId === category.id && f.optionId === optionId)
   }
 
-  $: activeFilter = activeFilters.find(f => f.categoryId === category.id)
+  $: activeFilter = activeFilters.find((f) => f.categoryId === category.id)
 </script>
 
 <div class="filter-option-popup">
@@ -51,7 +51,9 @@
       <button
         class="option-item"
         class:selected={isSelected(option.id)}
-        on:click={() => { selectOption(option) }}
+        on:click={() => {
+          selectOption(option)
+        }}
       >
         <span class="option-label">{option.label}</span>
         {#if isSelected(option.id)}

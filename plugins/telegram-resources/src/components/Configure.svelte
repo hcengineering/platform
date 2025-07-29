@@ -1,7 +1,26 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, DropdownLabelsPopupIntl, SearchInput, Label, ListView, Modal, Loading, closePopup, Icon, IconMoreV, IconError, FilterButton, Button, showPopup, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
+  import {
+    CheckBox,
+    Toggle,
+    DropdownLabelsIntl,
+    DropdownLabelsPopupIntl,
+    SearchInput,
+    Label,
+    ListView,
+    Modal,
+    Loading,
+    closePopup,
+    Icon,
+    IconMoreV,
+    IconError,
+    FilterButton,
+    Button,
+    showPopup,
+    type FilterCategory,
+    type ActiveFilter
+  } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
 
@@ -101,14 +120,11 @@
   }
 
   // Filter channels based on search query and active filters
-  $: filteredChannels = channels.filter(channel => {
+  $: filteredChannels = channels.filter((channel) => {
     // Search filter
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim()
-      if (!(
-        channel.name.toLowerCase().includes(query) ||
-        channel.id.toLowerCase().includes(query)
-      )) {
+      if (!(channel.name.toLowerCase().includes(query) || channel.id.toLowerCase().includes(query))) {
         return false
       }
     }
@@ -120,8 +136,7 @@
       }
       if (filter.categoryId === 'mode') {
         const isSyncEnabled = channel.syncEnabled
-        if ((filter.optionId === 'enabled' && !isSyncEnabled) ||
-            (filter.optionId === 'disabled' && isSyncEnabled)) {
+        if ((filter.optionId === 'enabled' && !isSyncEnabled) || (filter.optionId === 'disabled' && isSyncEnabled)) {
           return false
         }
       }
@@ -149,13 +164,13 @@
       return
     }
 
-    const filteredChannelIds = new Set(filtered.map(c => c.id))
-    const selectedInFiltered = Array.from(selected).filter(id => filteredChannelIds.has(id))
+    const filteredChannelIds = new Set(filtered.map((c) => c.id))
+    const selectedInFiltered = Array.from(selected).filter((id) => filteredChannelIds.has(id))
     selectAll = selectedInFiltered.length === filtered.length
   }
 
   // Handle individual channel selection
-  function toggleChannelSelection(channelId: string): void {
+  function toggleChannelSelection (channelId: string): void {
     if (selectedChannels.has(channelId)) {
       selectedChannels.delete(channelId)
     } else {
@@ -167,7 +182,7 @@
 
   // Update sync status for individual channel
   function updateChannelSync (channelId: string, enabled: boolean): void {
-    const channel = channels.find(c => c.id === channelId)
+    const channel = channels.find((c) => c.id === channelId)
     if (channel) {
       channel.syncEnabled = enabled
       channels = channels
@@ -177,7 +192,7 @@
 
   // Update access for individual channel
   function updateChannelAccess (channelId: string, access: 'public' | 'private'): void {
-    const channel = channels.find(c => c.id === channelId)
+    const channel = channels.find((c) => c.id === channelId)
     if (channel !== undefined && channel?.syncEnabled) {
       channel.access = access
       channels = channels
@@ -187,7 +202,7 @@
 
   // Action button functions
   function selectAllFiltered (): void {
-    filteredChannels.forEach(channel => {
+    filteredChannels.forEach((channel) => {
       selectedChannels.add(channel.id)
     })
     selectedChannels = selectedChannels
@@ -195,7 +210,7 @@
   }
 
   function unselectAllFiltered (): void {
-    filteredChannels.forEach(channel => {
+    filteredChannels.forEach((channel) => {
       selectedChannels.delete(channel.id)
     })
     selectedChannels = selectedChannels
@@ -203,45 +218,44 @@
   }
 
   function enableSelectedChannels (): void {
-    selectedChannels.forEach(channelId => {
+    selectedChannels.forEach((channelId) => {
       updateChannelSync(channelId, true)
     })
   }
 
   function disableSelectedChannels (): void {
-    selectedChannels.forEach(channelId => {
+    selectedChannels.forEach((channelId) => {
       updateChannelSync(channelId, false)
     })
   }
 
   function setSelectedPublic (): void {
-    selectedChannels.forEach(channelId => {
+    selectedChannels.forEach((channelId) => {
       updateChannelAccess(channelId, 'public')
     })
   }
 
   function setSelectedPrivate (): void {
-    selectedChannels.forEach(channelId => {
+    selectedChannels.forEach((channelId) => {
       updateChannelAccess(channelId, 'private')
     })
   }
 
   function showActionsPopup (event: MouseEvent): void {
-    const selectedSyncedChannels = channels
-      .filter(c => c.syncEnabled && selectedChannels.has(c.id))
+    const selectedSyncedChannels = channels.filter((c) => c.syncEnabled && selectedChannels.has(c.id))
 
     const actionItems = [
       {
         id: 'select-all',
         label: telegram.string.SelectAllAction,
         action: selectAllFiltered,
-        disabled: filteredChannels.length === 0 || filteredChannels.every(c => selectedChannels.has(c.id))
+        disabled: filteredChannels.length === 0 || filteredChannels.every((c) => selectedChannels.has(c.id))
       },
       {
         id: 'unselect-all',
         label: telegram.string.UnselectAllAction,
         action: unselectAllFiltered,
-        disabled: filteredChannels.length === 0 || !filteredChannels.some(c => selectedChannels.has(c.id))
+        disabled: filteredChannels.length === 0 || !filteredChannels.some((c) => selectedChannels.has(c.id))
       },
       {
         id: 'enable-selected',
@@ -268,21 +282,28 @@
         disabled: selectedSyncedChannels.length === 0 || readonly
       }
     ]
-    const enabledActions = actionItems.filter(item => !item.disabled)
+    const enabledActions = actionItems.filter((item) => !item.disabled)
 
-    showPopup(DropdownLabelsPopupIntl, {
-      items: enabledActions,
-      onSelected: (item: any) => { item.action() }
-    }, event.target as HTMLElement, (result) => {
-      if (result != null) {
-        const actionItem = actionItems.find(i => i.id === result)
-        if (actionItem !== undefined) {
-          actionItem.action()
-        } else {
-          console.warn('Action not found:', result)
+    showPopup(
+      DropdownLabelsPopupIntl,
+      {
+        items: enabledActions,
+        onSelected: (item: any) => {
+          item.action()
+        }
+      },
+      event.target as HTMLElement,
+      (result) => {
+        if (result != null) {
+          const actionItem = actionItems.find((i) => i.id === result)
+          if (actionItem !== undefined) {
+            actionItem.action()
+          } else {
+            console.warn('Action not found:', result)
+          }
         }
       }
-    })
+    )
   }
 
   function handleRightClick (event: MouseEvent): void {
@@ -297,8 +318,8 @@
       ? integration
       : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
     const channelsConfig = channels
-      .filter(channel => channel.syncEnabled)
-      .map(channel => {
+      .filter((channel) => channel.syncEnabled)
+      .map((channel) => {
         return {
           telegramId: parseInt(channel.id),
           enabled: channel.syncEnabled,
@@ -328,7 +349,7 @@
     closePopup()
   }
 
-  $: syncedChannelsCount = channels.filter(channel => channel.syncEnabled).length
+  $: syncedChannelsCount = channels.filter((channel) => channel.syncEnabled).length
 </script>
 
 <Modal
@@ -341,13 +362,11 @@
   on:close={close}
 >
   <svelte:fragment slot="beforeTitle">
-    <TelegramIcon size='medium'/>
+    <TelegramIcon size="medium" />
   </svelte:fragment>
   <svelte:fragment slot="title">
     <span class="text-normal">
-      <Label
-        label={telegram.string.ConfigureIntegration}
-      />
+      <Label label={telegram.string.ConfigureIntegration} />
     </span>
   </svelte:fragment>
   <svelte:fragment slot="actions">
@@ -379,7 +398,7 @@
       {#if isLoading}
         <div class="flex-center">
           <div class="p-5">
-            <Loading/>
+            <Loading />
           </div>
         </div>
       {:else if error}
@@ -411,7 +430,12 @@
         </div>
       {:else}
         <div transition:fade>
-          <ListView bind:this={list} count={filteredChannels.length} bind:selection on:changeContent={() => dispatch('changeContent')}>
+          <ListView
+            bind:this={list}
+            count={filteredChannels.length}
+            bind:selection
+            on:changeContent={() => dispatch('changeContent')}
+          >
             <svelte:fragment slot="item" let:item={itemId}>
               {@const item = filteredChannels[itemId]}
               {@const icon = getChannelIcon(item)}
@@ -421,7 +445,9 @@
                   <CheckBox
                     size="medium"
                     checked={selectedChannels.has(item.id)}
-                    on:value={() => { toggleChannelSelection(item.id) }}
+                    on:value={() => {
+                      toggleChannelSelection(item.id)
+                    }}
                     {readonly}
                   />
                 </div>
@@ -429,7 +455,7 @@
                 <div class="channel-info content-color" on:contextmenu={handleRightClick}>
                   <div class="channel-name">
                     {#if icon !== undefined}
-                      <Icon icon={icon} size={'small'} />
+                      <Icon {icon} size={'small'} />
                     {/if}
                     <span class="text-normal font-medium">{item.name}</span>
                   </div>
@@ -438,19 +464,23 @@
                 <div class="channel-sync">
                   <Toggle
                     on={item.syncEnabled}
-                    on:change={(e) => { updateChannelSync(item.id, e.detail) }}
+                    on:change={(e) => {
+                      updateChannelSync(item.id, e.detail)
+                    }}
                     disabled={readonly}
                   />
                 </div>
                 <div class="channel-access">
                   <DropdownLabelsIntl
-                    label={item.syncEnabled ? telegram.string.SelectAccess : telegram.string.EnableSyncToConfigure }
+                    label={item.syncEnabled ? telegram.string.SelectAccess : telegram.string.EnableSyncToConfigure}
                     items={accessOptions}
                     selected={item.access}
                     disabled={readonly || !item.syncEnabled}
                     shouldUpdateUndefined={false}
                     minWidth={'6rem'}
-                    on:selected={(e) => { updateChannelAccess(item.id, e.detail) }}
+                    on:selected={(e) => {
+                      updateChannelAccess(item.id, e.detail)
+                    }}
                   />
                 </div>
               </div>

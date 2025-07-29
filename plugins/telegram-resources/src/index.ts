@@ -74,7 +74,7 @@ export default async (): Promise<Resources> => ({
       }
       const phone = integration.data?.phone ?? connection?.data?.phone
       await disconnect(phone)
-      return integrationClient.removeConnection(connection)
+      await integrationClient.removeConnection(connection)
     }
   }
 })

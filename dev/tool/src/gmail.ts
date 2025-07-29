@@ -2,7 +2,7 @@ import core, {
   type AccountUuid,
   DOMAIN_MODEL_TX,
   type Doc,
-  IntegrationKind,
+  type IntegrationKind,
   MeasureMetricsContext,
   type PersonId,
   type Ref,

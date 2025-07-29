@@ -26,11 +26,7 @@ import { IntegrationClient, IntegrationClientImpl } from '@hcengineering/integra
 let integrationClient: IntegrationClient | undefined
 export function getIntegrationClient (): IntegrationClient {
   if (integrationClient === undefined) {
-    integrationClient = new IntegrationClientImpl(
-      getAccountClient(serviceToken()),
-      gmailIntegrationKind,
-      'gmail'
-    )
+    integrationClient = new IntegrationClientImpl(getAccountClient(serviceToken()), gmailIntegrationKind, 'gmail')
   }
   return integrationClient
 }
@@ -89,7 +85,11 @@ export async function deleteIntegration (integration: Integration): Promise<void
   await accountClient.deleteIntegration(integration)
 }
 
-export async function createIntegrationIfNotEsixts (socialId: PersonId, workspace: WorkspaceUuid, email: string): Promise<Integration> {
+export async function createIntegrationIfNotEsixts (
+  socialId: PersonId,
+  workspace: WorkspaceUuid,
+  email: string
+): Promise<Integration> {
   const client = getIntegrationClient()
   const connection = await client.connect(socialId, {
     email

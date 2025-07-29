@@ -26,7 +26,13 @@ import core, {
   type PersonUuid,
   type Ref
 } from '@hcengineering/core'
-import github, { GithubAuthentication, githubId, makeQuery, type GithubIntegration, githubIntegrationKind } from '@hcengineering/github'
+import github, {
+  GithubAuthentication,
+  githubId,
+  makeQuery,
+  type GithubIntegration,
+  githubIntegrationKind
+} from '@hcengineering/github'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'

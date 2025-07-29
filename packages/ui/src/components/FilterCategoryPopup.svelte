@@ -60,22 +60,22 @@
   }
 
   function isActive (categoryId: string): boolean {
-    return activeFilters.some(f => f.categoryId === categoryId)
+    return activeFilters.some((f) => f.categoryId === categoryId)
   }
 
   function isOptionSelected (optionId: string): boolean {
     if (selectedCategory === null) return false
-    return activeFilters.some(f => f.categoryId === selectedCategory.id && f.optionId === optionId)
+    return activeFilters.some((f) => f.categoryId === selectedCategory.id && f.optionId === optionId)
   }
 
   function getActiveOption (categoryId: string): string {
-    const filter = activeFilters.find(f => f.categoryId === categoryId)
+    const filter = activeFilters.find((f) => f.categoryId === categoryId)
     return filter !== undefined ? filter.optionLabel : ''
   }
 
   $: currentActiveFilter = (() => {
     if (selectedCategory === null) return null
-    return activeFilters.find(f => f.categoryId === selectedCategory.id) ?? null
+    return activeFilters.find((f) => f.categoryId === selectedCategory.id) ?? null
   })()
 </script>
 
@@ -90,7 +90,9 @@
         <button
           class="category-item"
           class:active={isActive(category.id)}
-          on:click={() => { selectCategory(category) }}
+          on:click={() => {
+            selectCategory(category)
+          }}
         >
           <span class="category-label"><Label label={category.label} /></span>
           {#if isActive(category.id)}
@@ -112,7 +114,9 @@
         <button
           class="option-item"
           class:selected={isOptionSelected(option.id)}
-          on:click={() => { selectOption(option) }}
+          on:click={() => {
+            selectOption(option)
+          }}
         >
           <span class="option-label"><Label label={option.label} /></span>
           {#if isOptionSelected(option.id)}
@@ -175,13 +179,15 @@
     color: var(--theme-content-color);
   }
 
-  .category-list, .option-list {
+  .category-list,
+  .option-list {
     display: flex;
     flex-direction: column;
     padding: 0.25rem 0;
   }
 
-  .category-item, .option-item {
+  .category-item,
+  .option-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -212,7 +218,8 @@
     }
   }
 
-  .category-label, .option-label {
+  .category-label,
+  .option-label {
     font-size: 0.875rem;
     font-weight: 400;
   }

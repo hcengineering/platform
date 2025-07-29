@@ -64,7 +64,10 @@ export class UserManager {
         // Ignore failed refs
         return
       }
-      const secrets = await this.accountClient.listIntegrationsSecrets({ kind: githubUserIntegrationKind, socialId: ref })
+      const secrets = await this.accountClient.listIntegrationsSecrets({
+        kind: githubUserIntegrationKind,
+        socialId: ref
+      })
       if (secrets.length === 0) {
         return
       }

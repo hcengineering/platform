@@ -18,7 +18,18 @@
   import { getResource, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { IntegrationType } from '@hcengineering/setting'
-  import { AnyComponent, Button, Component, Label, Icon, addNotification, eventToHTMLElement, showPopup, NotificationSeverity, themeStore } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    Label,
+    Icon,
+    addNotification,
+    eventToHTMLElement,
+    showPopup,
+    NotificationSeverity,
+    themeStore
+  } from '@hcengineering/ui'
   import { Analytics } from '@hcengineering/analytics'
   import { type Integration } from '@hcengineering/account-client'
   import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
@@ -69,7 +80,9 @@
     } catch (err: any) {
       console.error('Error disconnecting integration:', err)
       const errorMessage: string = err.message ?? 'Unknown error'
-      const integrationError = errorMessage.includes('Failed to fetch') ? setting.string.ServiceIsUnavailable : setting.string.IntegrationError
+      const integrationError = errorMessage.includes('Failed to fetch')
+        ? setting.string.ServiceIsUnavailable
+        : setting.string.IntegrationError
       addNotification(
         await translate(setting.string.FailedToDisconnect, {}, $themeStore.language),
         await translate(integrationError, {}, $themeStore.language),
@@ -93,7 +106,9 @@
     } catch (err: any) {
       console.error('Error disconnecting integration:', err)
       const errorMessage: string = err.message ?? 'Unknown error'
-      const integrationError = errorMessage.includes('Failed to fetch') ? setting.string.ServiceIsUnavailable : setting.string.IntegrationError
+      const integrationError = errorMessage.includes('Failed to fetch')
+        ? setting.string.ServiceIsUnavailable
+        : setting.string.IntegrationError
       addNotification(
         await translate(setting.string.FailedToDisconnect, {}, $themeStore.language),
         await translate(integrationError, {}, $themeStore.language),
@@ -127,7 +142,7 @@
       <div class="fs-title overflow-label"><Label label={integrationType.label} /></div>
     </div>
     <div class="integration-label">
-      <IntegrationLabel integration={integration} />
+      <IntegrationLabel {integration} />
     </div>
   </div>
   <div class="content scroll-divider-color">
@@ -140,13 +155,13 @@
         <Label label={integrationType.description} />
       </span>
     {/if}
-    {#if integration?.disabled === true }
+    {#if integration?.disabled === true}
       <div class="error">
         <Label label={setting.string.IntegrationDisabledSetting} />
       </div>
     {/if}
   </div>
-  <div class="divider"/>
+  <div class="divider" />
   <div class="footer">
     {#if integration !== undefined && integration.workspaceUuid == null && integrationType.configureComponent !== undefined}
       <Button
@@ -180,19 +195,14 @@
         </Button>
       {/if}
       {#if integrationType.onDisconnect && integration.workspaceUuid != null}
-        <Button
-          label={setting.string.Disconnect}
-          minWidth={'5rem'}
-          loading={isDisconnecting}
-          on:click={disconnect}
-          />
+        <Button label={setting.string.Disconnect} minWidth={'5rem'} loading={isDisconnecting} on:click={disconnect} />
       {:else if integrationType.onDisconnectAll !== undefined && integration.workspaceUuid == null}
         <Button
           label={setting.string.DisconnectAll}
           minWidth={'5rem'}
           loading={isDisconnecting}
           on:click={disconnect}
-          />
+        />
       {/if}
     {/if}
   </div>

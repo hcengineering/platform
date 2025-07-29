@@ -44,17 +44,20 @@
   })
 
   onDestroy(() => {
-    unsubscribers.forEach(unsubscribe => { unsubscribe() })
+    unsubscribers.forEach((unsubscribe) => {
+      unsubscribe()
+    })
   })
 
   function subscribe (): void {
-    unsubscribers.push(
-      onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration)
-    )
+    unsubscribers.push(onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration))
   }
 
   function onUpdateIntegration (data: IntegrationEventData): void {
-    if (data.integration?.socialId === integration.socialId && data.integration?.workspaceUuid === integration.workspaceUuid) {
+    if (
+      data.integration?.socialId === integration.socialId &&
+      data.integration?.workspaceUuid === integration.workspaceUuid
+    ) {
       void refresh()
     }
   }
@@ -81,14 +84,14 @@
   }
 
   $: totalChannels = channels.length
-  $: syncEnabledChannels = channels.filter(channel => channel.syncEnabled).length
+  $: syncEnabledChannels = channels.filter((channel) => channel.syncEnabled).length
 </script>
 
 <div class="integration-state">
   <div class="state-content">
     {#if isLoading}
       <div class="loading-container">
-        <Loading/>
+        <Loading />
       </div>
     {:else if error}
       <div class="error-container" transition:fade={{ duration: 300 }}>

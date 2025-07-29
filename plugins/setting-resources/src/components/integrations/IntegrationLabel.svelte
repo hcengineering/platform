@@ -28,10 +28,12 @@
   }
 </script>
 
-<span class="integration-label"
+<span
+  class="integration-label"
   class:new-connection={integration === undefined}
   class:connected={integration !== undefined && integration.workspaceUuid == null}
-  class:integrated={integration !== undefined && integration.workspaceUuid != null}>
+  class:integrated={integration?.workspaceUuid != null}
+>
   {getIntegrationLabel()}
 </span>
 

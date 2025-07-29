@@ -42,12 +42,15 @@
 
   function addFilter (filter: ActiveFilter): void {
     // Remove any existing filter for the same category and add the new one
-    const filtered = activeFilters.filter(f => f.categoryId !== filter.categoryId)
+    const filtered = activeFilters.filter((f) => f.categoryId !== filter.categoryId)
     dispatch('change', [...filtered, filter])
   }
 
   function removeFilter (categoryId: string): void {
-    dispatch('change', activeFilters.filter(f => f.categoryId !== categoryId))
+    dispatch(
+      'change',
+      activeFilters.filter((f) => f.categoryId !== categoryId)
+    )
   }
 
   function showFilterPopup (e: MouseEvent): void {
