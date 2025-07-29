@@ -172,7 +172,7 @@ export default plugin(chunterId, {
     AllChannels: '' as IntlString,
     AllContacts: '' as IntlString,
     NewChannel: '' as IntlString,
-    DescriptionOptional: '' as IntlString,
+    TopicOptional: '' as IntlString,
     Visibility: '' as IntlString,
     Public: '' as IntlString,
     Private: '' as IntlString,
