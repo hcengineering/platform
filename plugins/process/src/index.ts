@@ -56,6 +56,7 @@ export interface Trigger extends Doc {
   presenter?: AnyComponent
   checkFunction?: Resource<CheckFunc>
   init: boolean
+  auto?: boolean
 }
 
 export interface Transition extends Doc {
@@ -81,7 +82,11 @@ export enum ExecutionLogAction {
   Rollback = 'rollback'
 }
 
-export type CheckFunc = (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy) => Promise<boolean>
+export type CheckFunc = (
+  params: Record<string, any>,
+  context: Record<string, any>,
+  hierarchy: Hierarchy
+) => Promise<boolean>
 
 export enum ExecutionStatus {
   Active = 'active',
@@ -203,7 +208,8 @@ export default plugin(processId, {
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
-    OnExecutionStart: '' as Ref<Trigger>
+    OnExecutionStart: '' as Ref<Trigger>,
+    OnExecutionContinue: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,

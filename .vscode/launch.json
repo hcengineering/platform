@@ -656,6 +656,22 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug process",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "QUEUE_CONFIG": "localhost:19092",
+        "QUEUE_REGION": "cockroach",
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/process"
+    },
+    {
       "name": "Debug print",
       "type": "node",
       "request": "launch",

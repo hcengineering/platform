@@ -17,7 +17,7 @@
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
   import { AnyAttribute, fillDefaults, Ref } from '@hcengineering/core'
   import { Card as CardModal, getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+  import ui, { Label } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
@@ -79,6 +79,7 @@
 
 <CardModal
   label={card.string.ChangeType}
+  okLabel={ui.string.Ok}
   okAction={changeType}
   canSave={selected !== undefined && selected !== value._class}
   gap={'gapV-4'}

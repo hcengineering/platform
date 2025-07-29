@@ -2652,6 +2652,11 @@
       "packageName": "@hcengineering/model-billing",
       "projectFolder": "models/billing",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-process",
+      "projectFolder": "services/process",
+      "shouldPublish": false
     }
   ]
 }

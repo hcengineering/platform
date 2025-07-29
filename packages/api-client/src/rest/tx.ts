@@ -42,12 +42,13 @@ import { RestClientImpl } from './rest'
 export async function createRestTxOperations (
   endpoint: string,
   workspaceId: string,
-  token: string
+  token: string,
+  fullModel: boolean = false
 ): Promise<TxOperations> {
   const restClient = new RestClientImpl(endpoint, workspaceId, token)
 
   const account = await restClient.getAccount()
-  const { hierarchy, model } = await restClient.getModel()
+  const { hierarchy, model } = await restClient.getModel(fullModel)
 
   return new TxOperations(new RestTxClient(restClient, hierarchy, model, account), account.socialIds[0])
 }
