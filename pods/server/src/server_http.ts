@@ -131,7 +131,7 @@ export function startHttpServer (
   const childLogger = ctx.logger.childLogger?.('requests', {
     enableConsole: 'true'
   })
-  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
 
   class MyStream {
     write (text: string): void {
@@ -430,9 +430,9 @@ export function startHttpServer (
       void retrieveJson(req)
         .then((data) => {
           if (Array.isArray(data)) {
-            sessions.broadcastAll(ws, data as Tx[])
+            sessions.broadcastAll(ctx, ws, data as Tx[])
           } else {
-            sessions.broadcastAll(ws, [data as unknown as Tx])
+            sessions.broadcastAll(ctx, ws, [data as unknown as Tx])
           }
           res.end()
         })

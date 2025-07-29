@@ -54,7 +54,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   app.use(express.json({ limit: '10mb' }))
   app.use(bp.json({ limit: '10mb' }))
 
-  const extensionsCtx = ctx.newChild('extensions', {})
+  const extensionsCtx = ctx.newChild('extensions', {}, { span: false })
   const transformer = new MarkupTransformer()
 
   const hocuspocus = new Hocuspocus({
@@ -94,17 +94,17 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
     extensions: [
       new AuthenticationExtension({
-        ctx: extensionsCtx.newChild('authenticate', {})
+        ctx: extensionsCtx.newChild('authenticate', {}, { span: false })
       }),
       new StorageExtension({
-        ctx: extensionsCtx.newChild('storage', {}),
+        ctx: extensionsCtx.newChild('storage', {}, { span: false }),
         adapter: new PlatformStorageAdapter(storageAdapter, { retryCount, retryInterval }),
         transformer
       })
     ]
   })
 
-  const rpcCtx = ctx.newChild('rpc', {})
+  const rpcCtx = ctx.newChild('rpc', {}, { span: false })
 
   const getContext = async (rawToken: string, token: Token): Promise<Context> => {
     const wsIds = await getWorkspaceIds(rawToken)

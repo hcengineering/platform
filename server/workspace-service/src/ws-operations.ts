@@ -50,7 +50,7 @@ export async function createWorkspace (
   ) => Promise<void>,
   external: boolean = false
 ): Promise<void> {
-  const childLogger = ctx.newChild('createWorkspace', ctx.getParams(), {})
+  const childLogger = ctx.newChild('createWorkspace', ctx.getParams())
   const ctxModellogger: ModelLogger = {
     log: (msg, data) => {
       childLogger.info(msg, data)
@@ -92,8 +92,12 @@ export async function createWorkspace (
         usePassedCtx: true
       })
       const txAdapter = await txFactory(ctx, hierarchy, dbUrl, wsIds, modelDb, storageAdapter)
-      await childLogger.withLog('init-workspace', {}, (ctx) =>
-        initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {})
+      await childLogger.with(
+        'init-workspace',
+        {},
+        (ctx) => initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {}),
+        { workspace: wsId },
+        { log: true }
       )
 
       const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), core.account.ConfigUser)

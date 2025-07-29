@@ -64,6 +64,13 @@ export interface MeasureLogger {
 
   close: () => Promise<void>
 }
+
+export interface WithOptions {
+  span?: true | false | 'disable' | 'skip' // 'none' means no span will be created, 'disable' means context will be tracing disabled
+  log?: boolean
+  inheritParams?: boolean
+}
+
 /**
  * @public
  */
@@ -76,9 +83,11 @@ export interface MeasureContext<Q = any> {
   newChild: (
     name: string,
     params: ParamsType,
-    fullParams?: FullParamsType,
-    logger?: MeasureLogger,
-    useContextParent?: boolean
+    opt?: {
+      fullParams?: FullParamsType
+      logger?: MeasureLogger
+      span?: WithOptions['span'] // By default true
+    }
   ) => MeasureContext
 
   metrics?: Metrics
@@ -87,22 +96,17 @@ export interface MeasureContext<Q = any> {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext<Q>) => T | Promise<T>,
-    fullParams?: FullParamsType | (() => FullParamsType)
+    fullParams?: FullParamsType | (() => FullParamsType),
+    opt?: WithOptions
   ) => Promise<T>
 
   withSync: <T>(
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext<Q>) => T,
-    fullParams?: FullParamsType | (() => FullParamsType)
+    fullParams?: FullParamsType | (() => FullParamsType),
+    opt?: WithOptions
   ) => T
-
-  withLog: <T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: MeasureContext<Q>) => T | Promise<T>,
-    fullParams?: FullParamsType
-  ) => Promise<T>
 
   logger: MeasureLogger
 

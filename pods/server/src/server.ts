@@ -129,7 +129,7 @@ export function start (
     }
 
     return await CommunicationApi.create(
-      ctx.newChild('💬 communication api', {}),
+      ctx.newChild('💬 communication api', {}, { span: false }),
       workspace.uuid,
       dbUrl,
       broadcastSessions

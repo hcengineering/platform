@@ -339,24 +339,31 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         return { needSync: githubSyncVersion }
       }
 
-      const description = await this.ctx.withLog('query collaborative description', {}, async () => {
-        const collabId = makeDocCollabId(existing, 'description')
-        return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
-      })
+      const description = await this.ctx.with(
+        'query collaborative description',
+        {},
+        async () => {
+          const collabId = makeDocCollabId(existing, 'description')
+          return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
+        },
+        {},
+        { log: true }
+      )
 
       this.ctx.info('create github issue', {
         title: (existing as Issue).title,
         number: (existing as Issue).number,
         workspace: this.provider.getWorkspaceId()
       })
-      const createdIssueData = await this.ctx.withLog(
+      const createdIssueData = await this.ctx.with(
         'create github issue',
         {},
         async () => {
           this.createPromise = this.createGithubIssue(container, { ...(existing as Issue), description }, repository)
           return await this.createPromise
         },
-        { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId() }
+        { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId() },
+        { log: true }
       )
       if (createdIssueData === undefined) {
         this.ctx.error('Error create issue', { url: info.url })
@@ -476,7 +483,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           // No repository, it probable deleted
           return { needSync: githubSyncVersion }
         }
-        await this.ctx.withLog(
+        await this.ctx.with(
           'create platform issue',
           {},
           async () => {
@@ -499,7 +506,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               !markdownCompatible
             )
           },
-          { url: issueExternal.url }
+          { url: issueExternal.url },
+          { log: true }
         )
         // We need reiterate to update all sync data.
         return {
@@ -518,17 +526,18 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
     } else {
       try {
-        const description = await this.ctx.withLog(
+        const description = await this.ctx.with(
           'query collaborative description',
           {},
           async () => {
             const collabId = makeDocCollabId(existing, 'description')
             return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
           },
-          { url: issueExternal.url }
+          { url: issueExternal.url },
+          { log: true }
         )
 
-        const updateResult = await this.ctx.withLog(
+        const updateResult = await this.ctx.with(
           'diff update',
           {},
           async () =>
@@ -541,7 +550,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               account,
               accountGH
             ),
-          { url: issueExternal.url }
+          { url: issueExternal.url },
+          { log: true }
         )
         return {
           ...updateResult,
@@ -620,7 +630,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     if (hasFieldStateChanges || body !== undefined) {
       if (body !== undefined && !isLocked) {
-        await this.ctx.withLog(
+        await this.ctx.with(
           '==> updateIssue',
           {},
           async () => {
@@ -656,11 +666,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               }
             }
           },
-          { url: issueExternal.url, id: existing._id }
+          { url: issueExternal.url, id: existing._id },
+          { log: true }
         )
         issueData.description = await this.provider.getMarkupSafe(container.container, body, this.stripGuestLink)
       } else if (hasFieldStateChanges) {
-        await this.ctx.withLog(
+        await this.ctx.with(
           '==> updateIssue',
           {},
           async () => {
@@ -693,7 +704,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               }
             }
           },
-          { url: issueExternal.url }
+          { url: issueExternal.url },
+          { log: true }
         )
       }
       return true

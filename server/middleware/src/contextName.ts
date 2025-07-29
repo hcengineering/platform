@@ -68,8 +68,10 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
     let opLogMetrics: Metrics | undefined
 
     const result = await ctx.with(
-      measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
-      { source: ctx.contextData.service },
+      'client-tx',
+      measureName !== undefined
+        ? { measureName, source: ctx.contextData.service }
+        : { source: ctx.contextData.service },
       (ctx) => {
         ;({ opLogMetrics, op } = registerOperationLog(ctx))
         return this.provideTx(ctx, txes)

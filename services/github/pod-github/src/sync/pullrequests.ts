@@ -415,7 +415,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     if (existing === undefined) {
       try {
-        await this.ctx.withLog(
+        await this.ctx.with(
           'retrieve pull request patch',
           {},
           () =>
@@ -431,7 +431,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               lastModified,
               accountGH
             ),
-          { url: pullRequestExternal.url }
+          { url: pullRequestExternal.url },
+          { log: true }
         )
         const { markdownCompatible, markdown } = await this.provider.checkMarkdownConversion(
           container.container,
@@ -441,7 +442,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         let op = this.client.apply()
         let createdPullRequest: GithubPullRequest | undefined
 
-        await this.ctx.withLog(
+        await this.ctx.with(
           'create pull request in platform',
           {},
           async () => {
@@ -461,7 +462,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               !markdownCompatible
             )
           },
-          { url: pullRequestExternal.url }
+          { url: pullRequestExternal.url },
+          { log: true }
         )
 
         await op.commit()
@@ -499,7 +501,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     } else {
       try {
         if (info.updatePatch === true) {
-          await this.ctx.withLog(
+          await this.ctx.with(
             'update pull request patch',
             {},
             () =>
@@ -515,21 +517,23 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
                 lastModified,
                 accountGH
               ),
-            { url: pullRequestExternal.url }
+            { url: pullRequestExternal.url },
+            { log: true }
           )
         }
 
-        const description = await this.ctx.withLog(
+        const description = await this.ctx.with(
           'query collaborative pull request description',
           {},
           async () => {
             const collabId = makeDocCollabId(existing, 'description')
             return await this.collaborator.getMarkup(collabId, (existing as GithubPullRequest).description)
           },
-          { url: pullRequestExternal.url }
+          { url: pullRequestExternal.url },
+          { log: true }
         )
 
-        const update = await this.ctx.withLog(
+        const update = await this.ctx.with(
           'perform pull request diff update',
           {},
           () =>
@@ -542,7 +546,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               account,
               accountGH
             ),
-          { url: pullRequestExternal.url }
+          { url: pullRequestExternal.url },
+          { log: true }
         )
         return {
           ...update,
@@ -950,7 +955,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     if (hasFieldsUpdate || body !== undefined) {
       if (body !== undefined && !isLocked) {
-        await this.ctx.withLog(
+        await this.ctx.with(
           '==> updatePullRequest',
           {},
           async () => {
@@ -980,19 +985,23 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               )
             }
           },
-          { url: issueExternal.url }
+          { url: issueExternal.url },
+          { log: true }
         )
         issueData.description = await this.provider.getMarkupSafe(container.container, body, this.stripGuestLink)
       } else if (hasFieldsUpdate) {
-        await this.ctx.withLog('==> updatePullRequest:', {}, async () => {
-          this.ctx.info('update-fields', {
-            url: issueExternal.url,
-            ...issueUpdate,
-            workspace: this.provider.getWorkspaceId()
-          })
-          if (isGHWriteAllowed()) {
-            await okit?.graphql(
-              `
+        await this.ctx.with(
+          '==> updatePullRequest:',
+          {},
+          async () => {
+            this.ctx.info('update-fields', {
+              url: issueExternal.url,
+              ...issueUpdate,
+              workspace: this.provider.getWorkspaceId()
+            })
+            if (isGHWriteAllowed()) {
+              await okit?.graphql(
+                `
           mutation updatePullRequest($issue: ID!) {
             updatePullRequest(input: {
               pullRequestId: $issue,
@@ -1005,10 +1014,13 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               }
             }
           }`,
-              { issue: issueExternal.id }
-            )
-          }
-        })
+                { issue: issueExternal.id }
+              )
+            }
+          },
+          { issue: issueExternal.id },
+          { log: true }
+        )
       }
       return true
     }
@@ -1266,7 +1278,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
         const idsp = idsPart.map((it) => `"${it}"`).join(', ')
         try {
-          const response: any = await this.ctx.withLog(
+          const response: any = await this.ctx.with(
             'fetch pull request updates',
             {},
             async () =>
@@ -1283,7 +1295,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               prj: prj.name,
               repo: repo.name,
               ids: idsp
-            }
+            },
+            { log: true }
           )
           const issues: PullRequestExternalData[] = response.nodes
 

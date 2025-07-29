@@ -9,7 +9,8 @@ import {
   type Metrics,
   type ParamsType,
   type OperationLog,
-  type OperationLogEntry
+  type OperationLogEntry,
+  type WithOptions
 } from './types'
 
 const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
@@ -101,15 +102,18 @@ export class MeasureMetricsContext implements MeasureContext {
   newChild (
     name: string,
     params: ParamsType,
-    fullParams?: FullParamsType | (() => FullParamsType),
-    logger?: MeasureLogger
+    opt?: {
+      fullParams?: FullParamsType
+      logger?: MeasureLogger
+      span?: WithOptions['span'] // By default true
+    }
   ): MeasureContext {
     const result = new MeasureMetricsContext(
       name,
       params,
-      fullParams ?? {},
+      opt?.fullParams ?? {},
       childMetrics(this.metrics, [name]),
-      logger ?? this.logger,
+      opt?.logger ?? this.logger,
       this,
       this.logParams
     )
@@ -122,9 +126,10 @@ export class MeasureMetricsContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType | (() => FullParamsType)
+    fullParams?: ParamsType | (() => FullParamsType),
+    opt?: WithOptions
   ): Promise<T> {
-    const c = this.newChild(name, params, fullParams, this.logger)
+    const c = this.newChild(name, params, { fullParams, logger: this.logger })
     let needFinally = true
     try {
       const value = op(c)
@@ -132,6 +137,12 @@ export class MeasureMetricsContext implements MeasureContext {
         needFinally = false
         return value.finally(() => {
           c.end()
+          if (opt?.log === true) {
+            this.logger.logOperation(name, platformNowDiff((c as MeasureMetricsContext).st), {
+              ...params,
+              ...fullParams
+            })
+          }
         })
       } else {
         if (value == null) {
@@ -152,28 +163,12 @@ export class MeasureMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T,
     fullParams?: ParamsType | (() => FullParamsType)
   ): T {
-    const c = this.newChild(name, params, fullParams, this.logger)
+    const c = this.newChild(name, params, { fullParams, logger: this.logger })
     try {
       return op(c)
     } finally {
       c.end()
     }
-  }
-
-  withLog<T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
-  ): Promise<T> {
-    const st = platformNow()
-    const r = this.with(name, params, op, fullParams)
-    r.catch(() => {
-      // Ignore logging errors to prevent unhandled rejections
-    }).finally(() => {
-      this.logger.logOperation(name, platformNowDiff(st), { ...params, ...fullParams })
-    })
-    return r
   }
 
   error (message: string, args?: Record<string, any>): void {

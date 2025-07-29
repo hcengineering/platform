@@ -128,7 +128,7 @@ export class ClientSession implements Session {
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
     try {
       this.includeSessionContext(ctx)
-      const result = await ctx.ctx.with('load-model', {}, () => ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash))
+      const result = await ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash)
       await ctx.sendResponse(ctx.requestId, result)
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to loadModel', unknownError(err))
@@ -244,7 +244,7 @@ export class ClientSession implements Session {
       const handleAyncs = async (): Promise<void> => {
         try {
           for (const r of asyncs) {
-            await r(ctx.ctx)
+            await r(ctx.ctx, cid)
           }
         } finally {
           onEnd?.()

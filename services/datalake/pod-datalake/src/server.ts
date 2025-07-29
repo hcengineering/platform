@@ -132,7 +132,7 @@ export async function createServer (
     }
   }
 
-  const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}), QueueTopic.Tx)
+  const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}, { span: false }), QueueTopic.Tx)
 
   const db = await createDb(ctx, config.DbUrl)
   const datalake = new DatalakeImpl(db, buckets, producer, { cacheControl })
@@ -145,7 +145,7 @@ export async function createServer (
   app.use(keepAlive({ timeout: KEEP_ALIVE_TIMEOUT, max: KEEP_ALIVE_MAX }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
-  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
   class LogStream {
     write (text: string): void {
       requests.info(text)

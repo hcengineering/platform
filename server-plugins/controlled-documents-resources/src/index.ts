@@ -42,14 +42,13 @@ import slugify from 'slugify'
 
 async function getDocs (
   control: TriggerControl,
+  template: Ref<DocumentTemplate> | undefined | null,
   seqNumber: number,
   predicate: (doc: Document) => boolean,
-  template?: Ref<DocumentTemplate>,
   states?: DocumentState[],
   controlledStates?: ControlledDocumentState[]
 ): Promise<ControlledDocument[]> {
-  let query: DocumentQuery<ControlledDocument> = { template, seqNumber }
-  if (template != null) query = { ...query, template }
+  let query: DocumentQuery<ControlledDocument> = { template: (template ?? null) as Ref<DocumentTemplate>, seqNumber }
   if (states != null) query = { ...query, state: { $in: states } }
   if (controlledStates != null) query = { ...query, controlledState: { $in: controlledStates } }
 
@@ -231,9 +230,9 @@ async function getDocsOlderThanDoc (
 ): Promise<ControlledDocument[]> {
   return await getDocs(
     control,
+    doc.template,
     doc.seqNumber,
     (another: Document) => doc.major > another.major || (doc.major === another.major && doc.minor > another.minor),
-    doc.template,
     states,
     controlledStates
   )
