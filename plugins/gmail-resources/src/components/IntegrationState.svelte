@@ -22,7 +22,7 @@
 
   onMount(async () => {
     try {
-      state = await getState()
+      state = await getState(integration.socialId)
       isLoading = false
       subscribe()
     } catch (err) {
@@ -66,16 +66,16 @@
       <div class="loading-container">
         <Loading/>
       </div>
-    {:else if error}
-      <div class="error-container" transition:fade={{ duration: 300 }}>
-        <IconError size={'medium'} />
-        <Label label={gmail.string.FailedToLoadState} />
-      </div>
     {:else if integration.workspaceUuid == null}
       <div class="flex-center" transition:fade={{ duration: 300 }}>
         <span class="text-normal content-color">
           <Label label={gmail.string.NotConnectedIntegration} params={{ email: state?.email ?? '' }} />
         </span>
+      </div>
+    {:else if error}
+      <div class="error-container" transition:fade={{ duration: 300 }}>
+        <IconError size={'medium'} />
+        <Label label={gmail.string.FailedToLoadState} />
       </div>
     {:else if state != null}
       <div class="stats-list" transition:fade={{ duration: 300 }}>

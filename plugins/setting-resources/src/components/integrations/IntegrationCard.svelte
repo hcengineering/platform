@@ -81,6 +81,31 @@
       isDisconnecting = false
     }
   }
+
+  async function disconnectAll (): Promise<void> {
+    try {
+      isDisconnecting = true
+      if (integration !== undefined && integrationType.onDisconnectAll !== undefined) {
+        Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
+        const disconnect = await getResource(integrationType.onDisconnectAll)
+        await disconnect(integration)
+      }
+    } catch (err: any) {
+      console.error('Error disconnecting integration:', err)
+      const errorMessage: string = err.message ?? 'Unknown error'
+      const integrationError = errorMessage.includes('Failed to fetch') ? setting.string.ServiceIsUnavailable : setting.string.IntegrationError
+      addNotification(
+        await translate(setting.string.FailedToDisconnect, {}, $themeStore.language),
+        await translate(integrationError, {}, $themeStore.language),
+        IntegrationErrorNotification,
+        undefined,
+        NotificationSeverity.Error
+      )
+    } finally {
+      isDisconnecting = false
+    }
+  }
+
   const handleConfigure = async (component?: AnyComponent): Promise<void> => {
     if (component === undefined) {
       return
@@ -154,9 +179,16 @@
           </svelte:fragment>
         </Button>
       {/if}
-      {#if integrationType.onDisconnect}
+      {#if integrationType.onDisconnect && integration.workspaceUuid != null}
         <Button
           label={setting.string.Disconnect}
+          minWidth={'5rem'}
+          loading={isDisconnecting}
+          on:click={disconnect}
+          />
+      {:else if integrationType.onDisconnectAll !== undefined && integration.workspaceUuid == null}
+        <Button
+          label={setting.string.DisconnectAll}
           minWidth={'5rem'}
           loading={isDisconnecting}
           on:click={disconnect}

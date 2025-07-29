@@ -30,7 +30,7 @@ import StateComponent from './components/IntegrationState.svelte'
 
 import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAvailable } from './utils'
 import SharedMessages from './components/SharedMessages.svelte'
-import { getIntegrationClient, disconnect } from './api'
+import { getIntegrationClient, disconnect, restart } from './api'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -60,7 +60,10 @@ export default async (): Promise<Resources> => ({
         console.warn('DisconnectHandler: No integration provided')
         return
       }
+      const connection = await integrationClient.getConnection(integration)
+      const phone = integration.data?.phone ?? connection?.data?.phone
       await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
+      await restart(phone)
     },
     DisconnectAllHandler: async (integration: Integration): Promise<void> => {
       const integrationClient = await getIntegrationClient()

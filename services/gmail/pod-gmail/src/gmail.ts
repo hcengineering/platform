@@ -290,7 +290,7 @@ export class GmailClient {
 
   async createIntregration (): Promise<void> {
     try {
-      this.integration = await createIntegrationIfNotEsixts(this.socialId._id, this.user.workspace)
+      this.integration = await createIntegrationIfNotEsixts(this.socialId._id, this.user.workspace, this.email)
     } catch (err: any) {
       this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
     }
@@ -584,10 +584,12 @@ export class GmailClient {
   async getStateSummary (): Promise<SyncState> {
     let totalMessages: number | null | undefined
     try {
-      const result = await this.gmail.messages.list({
+      const query: gmail_v1.Params$Resource$Users$Messages$List = {
+        userId: 'me',
         maxResults: 1
-      })
-      totalMessages = result.data.resultSizeEstimate
+      }
+      const result = await this.gmail.getProfile(query)
+      totalMessages = result.data.messagesTotal
     } catch (err: any) {
       this.ctx.error('Failed to get messages count', err.message)
     }

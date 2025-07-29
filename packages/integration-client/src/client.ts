@@ -206,7 +206,9 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined): Promise<void> {
+  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined): Promise<{
+    connectionRemoved: boolean
+  } | undefined> {
     if (socialId == null) return
 
     try {
@@ -237,6 +239,12 @@ export class IntegrationClientImpl implements IntegrationClient {
       })
       if (remainedIntegrations.length === 1 && isConnection(remainedIntegrations[0])) {
         await this.removeConnection(remainedIntegrations[0])
+        return {
+          connectionRemoved: true
+        }
+      }
+      return {
+        connectionRemoved: false
       }
     } catch (error) {
       const errorData: IntegrationErrorData = {

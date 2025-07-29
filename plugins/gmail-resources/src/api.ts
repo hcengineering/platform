@@ -56,6 +56,10 @@ async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?:
   }
 }
 
-export async function getState (): Promise<GmailSyncState | null> {
-  return await request('GET', '/state')
+export async function getState (socialId: string): Promise<GmailSyncState | null> {
+  return await request('GET', `/state?socialId=${encodeURIComponent(socialId)}`)
+}
+
+export async function signout (): Promise<void> {
+  await request('GET', '/signout') 
 }

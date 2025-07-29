@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
 import { getMetadata, type Resources } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import GmailWriteMessage from './components/activity/GmailWriteMessage.svelte'
@@ -27,6 +26,8 @@ import NewMessages from './components/NewMessages.svelte'
 import IntegrationState from './components/IntegrationState.svelte'
 import gmail from '@hcengineering/gmail'
 import { checkHasEmail, MessageTitleProvider } from './utils'
+import { getIntegrationClient, signout } from './api'
+import type { Integration } from '@hcengineering/account-client'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -46,17 +47,35 @@ export default async (): Promise<Resources> => ({
     MessageTitleProvider
   },
   handler: {
-    DisconnectHandler: async () => {
+    DisconnectHandler: async (integration: Integration): Promise<void> => {
       const url = getMetadata(gmail.metadata.GmailURL)
       const token = getMetadata(presentation.metadata.Token)
-      if (url === undefined || token === undefined) return
-      await fetch(concatLink(url, '/signout'), {
-        method: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        }
-      })
+      if (url === undefined || token === undefined) {
+        console.error('Url or token is not defined in DisconnectHandler')
+      }
+      if (integration == null) {
+        console.error('Missing required argument integration in DisconnectHandler')
+        return
+      }
+      const integrationClient = await getIntegrationClient()
+      const result = await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
+      if (result !== undefined && result.connectionRemoved) {
+        await signout()
+      }
+    },
+    DisconnectAllHandler: async (integration: Integration): Promise<void> => {
+      const url = getMetadata(gmail.metadata.GmailURL)
+      const token = getMetadata(presentation.metadata.Token)
+      if (url === undefined || token === undefined) {
+        console.error('Url or token is not defined in DisconnectHandler')
+      }
+      if (integration == null) {
+        console.error('Missing required argument integration in DisconnectHandler')
+        return
+      }
+      const integrationClient = await getIntegrationClient()
+      await integrationClient.removeConnection(integration)
+      await signout()
     }
   }
 })
