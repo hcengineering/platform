@@ -1781,6 +1781,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
       }
       return undefined
     })
+
     for (const [domain, txs] of byDomain) {
       if (domain === undefined) {
         continue
@@ -1958,7 +1959,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
             WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id`
 
             await this.mgr.retry(ctx.id, this.mgrId, (client) =>
-              ctx.with('bulk-update', {}, () => client.execute(op, data))
+              _ctx.with('bulk-update', {}, () => client.execute(op, data))
             )
           }
         }

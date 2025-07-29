@@ -128,18 +128,26 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              authorization: `Bearer ${token}`
+          void metricsContext.with(
+            'sendStatistics',
+            {},
+            async (ctx) => {
+              prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  authorization: `Bearer ${token}`
+                },
+                body: statData
+              })
+                .finally(() => {
+                  prev = undefined
+                })
+                .catch(handleError)
             },
-            body: statData
-          })
-            .finally(() => {
-              prev = undefined
-            })
-            .catch(handleError)
+            undefined,
+            { span: 'disable' }
+          )
         }
       } catch (err: any) {
         handleError(err)

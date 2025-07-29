@@ -127,7 +127,7 @@ export class WorkspaceClient {
     if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
       this.love = new LoveController(
         this.wsIds.uuid,
-        this.ctx.newChild('love', {}),
+        this.ctx.newChild('love', {}, { span: false }),
         this.token,
         opClient,
         this.aiPerson

@@ -66,7 +66,7 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
     let txPromise: Promise<TxResult[]> | undefined
     if (txToStore.length > 0) {
       txPromise = ctx.with(
-        'domain-tx',
+        'tx-push',
         {},
         (ctx) => this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
         {

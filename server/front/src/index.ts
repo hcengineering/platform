@@ -317,7 +317,7 @@ export function start (
   const childLogger = ctx.logger.childLogger?.('requests', {
     enableConsole: 'true'
   })
-  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
 
   class MyStream {
     write (text: string): void {

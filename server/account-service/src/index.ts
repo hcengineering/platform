@@ -128,7 +128,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
-  setMetadata(serverToken.metadata.Service, 'account')
+  // Force undefied, for user tokens do not include service
+  setMetadata(serverToken.metadata.Service, undefined)
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)
@@ -385,27 +386,28 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       // Ignore
     }
 
-    const userCtx = measureCtx.newChild(request.method, { source })
+    await measureCtx.with(
+      request.method,
+      { source },
+      async (_ctx) => {
+        if (method === undefined || typeof method !== 'function') {
+          const response = {
+            id: request.id,
+            error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+          }
 
-    try {
-      if (method === undefined || typeof method !== 'function') {
-        const response = {
-          id: request.id,
-          error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+          ctx.body = JSON.stringify(response)
+          return
         }
 
-        ctx.body = JSON.stringify(response)
-        return
-      }
+        const result = await method(_ctx, db, branding, request, token, meta)
 
-      const result = await method(userCtx, db, branding, request, token, meta)
-
-      const body = JSON.stringify(result)
-      ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
-      ctx.res.end(body)
-    } finally {
-      userCtx.end()
-    }
+        const body = JSON.stringify(result)
+        ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+        ctx.res.end(body)
+      },
+      { ...request }
+    )
   })
 
   app.use(router.routes()).use(router.allowedMethods())

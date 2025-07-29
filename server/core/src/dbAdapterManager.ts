@@ -73,39 +73,51 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     const adapterDomains = new Map<DbAdapter, Set<Domain>>()
     for (const d of this.context.hierarchy.domains()) {
       // We need to init domain info
-      await ctx.with('update-info', { domain: d }, async (ctx) => {
-        const info = this.getDomainInfo(d)
-        await this.updateInfo(d, adapterDomains, info)
-      })
+      await ctx.with(
+        'update-info',
+        { domain: d },
+        async (ctx) => {
+          const info = this.getDomainInfo(d)
+          await this.updateInfo(d, adapterDomains, info)
+        },
+        undefined,
+        { span: false }
+      )
     }
     for (const [name, adapter] of this.adapters.entries()) {
-      await ctx.with('domain-helper', { name }, async (ctx) => {
-        adapter.on?.((domain, event, count, helper) => {
-          const info = this.getDomainInfo(domain)
-          const oldDocuments = info.documents
-          switch (event) {
-            case 'add':
-              info.documents += count
-              break
-            case 'update':
-              break
-            case 'delete':
-              info.documents -= count
-              break
-            case 'read':
-              break
-          }
+      await ctx.with(
+        'domain-helper',
+        { name },
+        async (ctx) => {
+          adapter.on?.((domain, event, count, helper) => {
+            const info = this.getDomainInfo(domain)
+            const oldDocuments = info.documents
+            switch (event) {
+              case 'add':
+                info.documents += count
+                break
+              case 'update':
+                break
+              case 'delete':
+                info.documents -= count
+                break
+              case 'read':
+                break
+            }
 
-          if (oldDocuments < 50 && info.documents > 50) {
-            // We have more 50 documents, we need to check for indexes
-            void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
-          }
-          if (oldDocuments > 50 && info.documents < 50) {
-            // We have more 50 documents, we need to check for indexes
-            void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
-          }
-        })
-      })
+            if (oldDocuments < 50 && info.documents > 50) {
+              // We have more 50 documents, we need to check for indexes
+              void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
+            }
+            if (oldDocuments > 50 && info.documents < 50) {
+              // We have more 50 documents, we need to check for indexes
+              void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
+            }
+          })
+        },
+        undefined,
+        { span: false }
+      )
     }
   }
 
