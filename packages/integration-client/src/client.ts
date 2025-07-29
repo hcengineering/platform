@@ -44,8 +44,7 @@ export class IntegrationClientImpl implements IntegrationClient {
     private readonly client: AccountClient,
     private readonly integrationKind: IntegrationKind,
     private readonly serviceName: string
-  ) {
-  }
+  ) {}
 
   // Event methods
   on<T = any>(event: string, callback: EventCallback<T>): () => void {
@@ -166,7 +165,11 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async updateConfig (integrationKey: IntegrationKey, config: Record<string, any>, refresh?: () => Promise<void>): Promise<void> {
+  async updateConfig (
+    integrationKey: IntegrationKey,
+    config: Record<string, any>,
+    refresh?: () => Promise<void>
+  ): Promise<void> {
     try {
       const integration = await this.client.getIntegration(integrationKey)
       if (integration == null) {
@@ -206,9 +209,15 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined): Promise<{
-    connectionRemoved: boolean
-  } | undefined> {
+  async removeIntegration (
+    socialId: PersonId | undefined | null,
+    workspaceUuid: WorkspaceUuid | null | undefined
+  ): Promise<
+    | {
+      connectionRemoved: boolean
+    }
+    | undefined
+    > {
     if (socialId == null) return
 
     try {

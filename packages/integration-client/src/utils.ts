@@ -25,5 +25,8 @@ export function isConnection (integration: Integration): boolean {
 }
 
 export function isSameIntegrationEvent (event: IntegrationEventData, integration: Integration): boolean {
-  return event.integration?.socialId === integration.socialId && event.integration?.workspaceUuid === integration.workspaceUuid
+  return (
+    event.integration?.socialId === integration.socialId &&
+    event.integration?.workspaceUuid === integration.workspaceUuid
+  )
 }

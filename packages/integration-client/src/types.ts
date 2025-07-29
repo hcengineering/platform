@@ -44,14 +44,24 @@ export interface IntegrationClient {
   /**
    * Update configuration for an existing integration
    */
-  updateConfig: (integrationKey: IntegrationKey, config: Record<string, any>, refresh?: () => Promise<void>) => Promise<void>
+  updateConfig: (
+    integrationKey: IntegrationKey,
+    config: Record<string, any>,
+    refresh?: () => Promise<void>
+  ) => Promise<void>
 
   /**
    * Remove integration for a social ID and workspace
    */
-  removeIntegration: (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid | null | undefined) => Promise<{
+  removeIntegration: (
+    socialId: PersonId | undefined | null,
+    workspaceUuid: WorkspaceUuid | null | undefined
+  ) => Promise<
+  | {
     connectionRemoved: boolean
-  } | undefined>
+  }
+  | undefined
+  >
 
   /**
    * Remove connection and all associated integrations
