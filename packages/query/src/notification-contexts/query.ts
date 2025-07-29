@@ -404,6 +404,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (context === undefined) return
 
     const totalNotifications = this.getNotificationsTotal(context, event)
+    const shouldRefreshTotal = this.params.notifications.total === true && this.params.notifications.type != null
 
     let matchQuery: FindNotificationsParams = { ...event.query, context: event.contextId, account: event.account }
     if (event.query.untilDate != null) {
@@ -413,7 +414,20 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       (it) => matchNotification(it, matchQuery) && it.read !== event.updates.read
     )
     if (toUpdate === undefined || (toUpdate?.length ?? 0) === 0) {
-      if (totalNotifications !== context.totalNotifications) {
+      if (shouldRefreshTotal) {
+        const nRes = await this.client.findNotifications({
+          ...this.params.notifications,
+          limit: 1,
+          total: true
+        })
+
+        this.result.update({
+          ...context,
+          totalNotifications: nRes.total
+        })
+
+        void this.notify()
+      } else if (totalNotifications !== context.totalNotifications) {
         this.result.update({
           ...context,
           totalNotifications
@@ -430,7 +444,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     )
     const newLength = newNotifications.length
 
-    if (newLength < currentLength && newLength < this.params.notifications.limit) {
+    const shouldRefreshLimit = newLength < currentLength && newLength < this.params.notifications.limit
+
+    if (shouldRefreshLimit) {
       const updated: NotificationContext = (
         await this.find({ id: context.id, limit: 1, notifications: this.params.notifications })
       )[0]
@@ -439,6 +455,18 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       } else {
         this.result.delete(context.id)
       }
+    } else if (shouldRefreshTotal) {
+      const nRes = await this.client.findNotifications({
+        ...this.params.notifications,
+        limit: 1,
+        total: true
+      })
+
+      this.result.update({
+        ...context,
+        notifications: newNotifications,
+        totalNotifications: nRes.total
+      })
     } else {
       this.result.update({
         ...context,

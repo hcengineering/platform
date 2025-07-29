@@ -53,13 +53,19 @@ export class LiveQueries {
   private readonly unsubscribed = new Set<QueryId>()
   private counter: number = 0
 
+  private eventQueue: Promise<void> = Promise.resolve()
+
   constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string
   ) {
     this.client.onEvent = (event) => {
-      void this.onEvent(event)
+      this.eventQueue = this.eventQueue
+        .then(() => this.onEvent(event))
+        .catch(err => {
+          console.error('Error handling event:', err)
+        })
     }
     this.client.onRequest = (event, promise) => {
       void this.onRequest(event, promise)
@@ -67,9 +73,7 @@ export class LiveQueries {
   }
 
   async onEvent (event: Event): Promise<void> {
-    for (const q of this.queries.values()) {
-      void q.onEvent(event)
-    }
+    await Promise.all(Array.from(this.queries.values()).map(q => q.onEvent(event)))
   }
 
   async onRequest (event: Event, promise: Promise<EventResult>): Promise<void> {

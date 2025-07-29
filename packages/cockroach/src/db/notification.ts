@@ -552,7 +552,7 @@ export class NotificationsDb extends BaseDb {
     if (params.total === true) {
       const totalSql = this.buildNotificationsTotalSql(params)
       const result = await this.execute(totalSql.sql, totalSql.values, 'find notifications total')
-      total = result[0]?.total ?? undefined
+      total = result[0]?.total != null ? Number(result[0]?.total ?? 0) : undefined
     }
 
     return withTotal(

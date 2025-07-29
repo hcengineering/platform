@@ -38,7 +38,7 @@ export class QueryResult<T> {
   }
 
   getTotal (): number {
-    return Math.max(this.total, -1)
+    return Math.max(this.total, 0)
   }
 
   isTail (): boolean {
