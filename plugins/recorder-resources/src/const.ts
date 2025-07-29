@@ -13,15 +13,8 @@
 // limitations under the License.
 //
 
-import { type RecordingOptions } from './types'
-
-export const DefaultOptions: Required<
-Pick<RecordingOptions, 'fps' | 'audioBps' | 'videoBps' | 'videoRes' | 'chunkIntervalMs' | 'cameraSize'>
-> = {
-  fps: 30,
-  audioBps: 128000,
-  videoBps: 4000000,
-  videoRes: 1080,
-  chunkIntervalMs: 1000,
-  cameraSize: 'medium'
-}
+export const DefaultAudioBps = 128000
+export const DefaultVideoBps = 4000000
+export const DefaultVideoRes = 1080
+export const DefaultFps = 30
+export const DefaultChunkIntervalMs = 1000

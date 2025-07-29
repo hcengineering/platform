@@ -1,17 +1,15 @@
 <script lang="ts">
   import { Label, Toggle } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { recorder } from '../stores/recorder'
-
-  $: useScreenShareSound = $recorder.useScreenShareSound
+  import { setUseScreenShareSound, useScreenShareSound } from '../recording'
 </script>
 
 <div class="antiPopup p-4 grid">
   <Label label={plugin.string.ShareWithAudio} />
   <Toggle
-    on={useScreenShareSound}
+    on={$useScreenShareSound}
     on:change={(e) => {
-      recorder.setUseScreenShareSound(e.detail)
+      setUseScreenShareSound(e.detail)
     }}
   />
 </div>

@@ -13,405 +13,246 @@
 // limitations under the License.
 //
 
-import { getDisplayMedia, getSelectedCamId, getSelectedMicId, releaseStream } from '@hcengineering/media'
-import { type Readable, derived, get, readable, writable } from 'svelte/store'
+import { type Readable, get, writable } from 'svelte/store'
 
-import { type CameraPosition, type CameraSize } from '../types'
-import {
-  getRecordingCameraPosition,
-  getRecordingCameraSize,
-  getRecordingResolution,
-  getUseScreenShareSound,
-  setRecordingCameraPosition,
-  setRecordingCameraSize,
-  setRecordingResolution,
-  setUseScreenShareSound,
-  whenStreamEnded
-} from '../utils'
-import { DefaultOptions } from '../const'
+import { type ScreenRecorder, createScreenRecorder } from '../screen-recorder'
+import { composer } from '../stores/composer'
+import { camStream, manager, screenStream } from '../stores/manager'
+import type { CameraPosition, CameraSize, RecordingResult } from '../types'
+
+export type RecorderState = 'idle' | 'ready' | 'recording' | 'paused' | 'stopping' | 'stopped'
+
+export interface RecorderStore {
+  state: RecorderState
+  elapsedTime: number
+  result: RecordingResult | null
+}
 
 export interface RecorderConfig {
-  useScreenShareSound: boolean
-  recordingResolution: number
-  recordingCameraSize: CameraSize
-  recordingCameraPosition: CameraPosition
+  fps: number
+  cameraSize: CameraSize
+  cameraPos: CameraPosition
+  onSuccess?: (result: RecordingResult) => Promise<void>
 }
 
-export interface RecorderState {
-  camEnabled: boolean
-  micEnabled: boolean
-  camDeviceId: string | undefined
-  micDeviceId: string | undefined
+export interface Recorder {
+  initialize: () => Promise<void>
+  cleanup: () => Promise<void>
 
-  loading: boolean
-  camStream: MediaStream | null
-  micStream: MediaStream | null
-  screenStream: MediaStream | null
-}
+  start: () => Promise<void>
+  stop: () => Promise<void>
 
-export type RecorderStore = RecorderConfig & RecorderState
+  pause: () => Promise<void>
+  resume: () => Promise<void>
 
-export interface RecorderMethods {
-  initialize: () => void
   toggleCam: () => void
   toggleMic: () => void
-  setCamEnabled: (enabled: boolean) => void
-  setMicEnabled: (enabled: boolean) => void
-  setCamDeviceId: (camDeviceId: string | undefined) => void
-  setMicDeviceId: (micDeviceId: string | undefined) => void
+  setCamDeviceId: (deviceId: string | undefined) => void
+  setMicDeviceId: (deviceId: string | undefined) => void
 
-  setUseScreenShareSound: (useScreenShareSound: boolean) => void
-  setRecordingResolution: (resolution: number) => void
-  setRecordingCameraSize: (size: CameraSize) => void
-  setRecordingCameraPosition: (pos: CameraPosition) => void
-
-  shareScreen: () => Promise<void>
+  startScreenShare: () => Promise<void>
   stopScreenShare: () => Promise<void>
-
-  cleanup: () => void
 }
 
-function createRecorderStore (): Readable<RecorderStore> & RecorderMethods {
-  const $config = writable<RecorderConfig>({
-    useScreenShareSound: getUseScreenShareSound(),
-    recordingResolution: getRecordingResolution(),
-    recordingCameraSize: getRecordingCameraSize(),
-    recordingCameraPosition: getRecordingCameraPosition()
+function createRecorder (): Readable<RecorderStore> & Recorder {
+  const store = writable<RecorderStore>({
+    state: 'idle',
+    elapsedTime: 0,
+    result: null
   })
 
-  const $state = writable<RecorderState>({
-    camEnabled: true,
-    micEnabled: true,
-    camDeviceId: undefined,
-    micDeviceId: undefined,
+  let elapsedTimeInterval: number | undefined
+  let screenRecorder: ScreenRecorder | null = null
 
-    loading: false,
-    camStream: null,
-    micStream: null,
-    screenStream: null
-  })
+  function updateStore (updates: Partial<RecorderStore>): void {
+    store.update((current) => ({ ...current, ...updates }))
+  }
 
-  const $combined = derived([$config, $state], ([$config, $state]) => ({ ...$config, ...$state }))
+  function startElapsedTimer (): void {
+    if (elapsedTimeInterval !== undefined) return
 
-  const store = {
-    subscribe: $combined.subscribe,
+    elapsedTimeInterval = window.setInterval(() => {
+      const elapsedTime = screenRecorder?.elapsedTime ?? 0
+      updateStore({ elapsedTime })
+    }, 100)
+  }
 
-    initialize (): void {
-      const camDeviceId = getSelectedCamId()
-      const micDeviceId = getSelectedMicId()
-      const useScreenShareSound = getUseScreenShareSound()
-      const recordingResolution = getRecordingResolution()
-      const recordingCameraSize = getRecordingCameraSize()
-      const recordingCameraPosition = getRecordingCameraPosition()
+  function stopElapsedTimer (): void {
+    clearInterval(elapsedTimeInterval)
+    elapsedTimeInterval = undefined
+  }
 
-      $config.update((config) => ({
-        ...config,
-        useScreenShareSound,
-        recordingResolution,
-        recordingCameraSize,
-        recordingCameraPosition
-      }))
+  camStream.subscribe(composer.updateCameraStream)
+  screenStream.subscribe(composer.updateScreenStream)
 
-      $state.update((state) => ({
-        ...state,
-        camEnabled: true,
-        micEnabled: true,
-        camDeviceId,
-        micDeviceId,
+  function onStreamEnded (): void {
+    const { state } = get(store)
 
-        loading: false,
-        camStream: null,
-        micStream: null,
-        screenStream: null
-      }))
-
-      void updateMediaStreams()
-    },
-
-    toggleCam (): void {
-      $state.update((state) => ({
-        ...state,
-        camEnabled: !state.camEnabled
-      }))
-
-      void updateMediaStreams()
-    },
-
-    toggleMic (): void {
-      $state.update((state) => ({
-        ...state,
-        micEnabled: !state.micEnabled
-      }))
-
-      void updateMediaStreams()
-    },
-
-    setCamEnabled (enabled: boolean): void {
-      $state.update((state) => ({
-        ...state,
-        camEnabled: enabled
-      }))
-
-      void updateMediaStreams()
-    },
-
-    setMicEnabled (enabled: boolean): void {
-      $state.update((state) => ({
-        ...state,
-        micEnabled: enabled
-      }))
-
-      void updateMediaStreams()
-    },
-
-    setCamDeviceId (camDeviceId: string | undefined): void {
-      $state.update((state) => ({
-        ...state,
-        camDeviceId
-      }))
-
-      void updateMediaStreams()
-    },
-
-    setMicDeviceId (micDeviceId: string | undefined): void {
-      $state.update((state) => ({
-        ...state,
-        micDeviceId
-      }))
-
-      void updateMediaStreams()
-    },
-
-    setUseScreenShareSound (useScreenShareSound: boolean): void {
-      setUseScreenShareSound(useScreenShareSound)
-      $config.update((config) => ({
-        ...config,
-        useScreenShareSound
-      }))
-    },
-
-    setRecordingResolution (resolution: number): void {
-      setRecordingResolution(resolution)
-      $config.update((config) => ({
-        ...config,
-        recordingResolution: resolution
-      }))
-    },
-
-    setRecordingCameraSize (size: CameraSize): void {
-      setRecordingCameraSize(size)
-      $config.update((config) => ({
-        ...config,
-        recordingCameraSize: size
-      }))
-    },
-
-    setRecordingCameraPosition (pos: CameraPosition): void {
-      setRecordingCameraPosition(pos)
-      $config.update((config) => ({
-        ...config,
-        recordingCameraPosition: pos
-      }))
-    },
-
-    async shareScreen (): Promise<void> {
-      const state = get($state)
-      const config = get($config)
-      const oldScreenStream = state.screenStream
-
-      try {
-        const stream = await getDisplayMedia({
-          video: {
-            frameRate: { ideal: DefaultOptions.fps }
-          },
-          audio: config.useScreenShareSound
-        })
-
-        $state.update((state) => ({
-          ...state,
-          screenStream: stream
-        }))
-
-        whenStreamEnded(stream, () => {
-          $state.update((state) => ({
-            ...state,
-            screenStream: null
-          }))
-        })
-
-        releaseStream(oldScreenStream)
-      } catch (err: any) {
-        if (err.name === 'NotAllowedError') {
-          console.debug('User denied screen capture permission', err)
-        } else {
-          console.error('Failed to get display media', err)
-        }
-      }
-    },
-
-    async stopScreenShare (): Promise<void> {
-      const state = get($state)
-
-      releaseStream(state.screenStream)
-
-      $state.update((state) => ({
-        ...state,
-        screenStream: null
-      }))
-    },
-
-    cleanup (): void {
-      // Cancel any pending media stream updates
-      requestVersion++
-
-      $state.update((state) => {
-        releaseStream(state.camStream)
-        releaseStream(state.micStream)
-        releaseStream(state.screenStream)
-
-        return {
-          ...state,
-          camEnabled: false,
-          micEnabled: false,
-          camDeviceId: undefined,
-          micDeviceId: undefined,
-          camStream: null,
-          micStream: null,
-          screenStream: null
-        }
-      })
+    if (state === 'recording') {
+      void recorder.stop()
     }
   }
 
-  let requestVersion = 0
-  let currentRequest: Promise<void> = Promise.resolve()
+  manager.setCallbacks({
+    onCamStreamEnded: onStreamEnded,
+    onMicStreamEnded: onStreamEnded,
+    onScreenStreamEnded: onStreamEnded
+  })
 
-  const updateMediaStreams = async (): Promise<void> => {
-    const currentVersion = ++requestVersion
+  return {
+    subscribe: store.subscribe,
 
-    // Wait for the previous request to complete
-    await currentRequest.catch(() => {
-      console.warn('previous media stream update failed')
-    })
+    async initialize (): Promise<void> {
+      const { state } = get(store)
 
-    const state = get($state)
-    const config = get($config)
-    const oldCamStream = state.camStream
-    const oldMicStream = state.micStream
-
-    $state.update((state) => ({
-      ...state,
-      loading: true
-    }))
-
-    const doUpdate = async (): Promise<void> => {
-      if (requestVersion !== currentVersion) {
+      if (state !== 'idle') {
+        console.warn('Recorder is already initialized')
         return
       }
 
-      try {
-        const { camStream, micStream } = await getCombinedStream(
-          state.camEnabled,
-          state.micEnabled,
-          state.camDeviceId,
-          state.micDeviceId,
-          state.screenStream == null ? undefined : config.recordingResolution
-        )
+      manager.initialize()
+      composer.initialize()
+      updateStore({ state: 'ready' })
+    },
 
-        // Check if the request is still valid
-        if (requestVersion !== currentVersion) {
-          releaseStream(camStream)
-          releaseStream(micStream)
-          return
-        }
+    async start (): Promise<void> {
+      const { state } = get(store)
 
-        $state.update((state) => ({
-          ...state,
-          camStream,
-          micStream,
-          loading: false
-        }))
-
-        releaseStream(oldCamStream)
-        releaseStream(oldMicStream)
-      } catch (error) {
-        console.error('Failed to get user media:', error)
+      if (state !== 'ready' && state !== 'stopped') {
+        throw new Error(`Cannot start recording from state: ${state}`)
       }
+
+      const { screenStream, micStream } = get(manager)
+      const canvasStream = composer.getStream()
+      const stream = combineStreams(canvasStream, micStream, screenStream)
+
+      // Create and start screen recorder
+      screenRecorder = await createScreenRecorder(stream)
+
+      await screenRecorder.start()
+
+      startElapsedTimer()
+      updateStore({ state: 'recording' })
+    },
+
+    async stop (): Promise<void> {
+      const { state } = get(store)
+
+      if (state !== 'recording' && state !== 'paused') {
+        throw new Error(`Cannot stop from state: ${state}`)
+      }
+
+      if (screenRecorder === null) {
+        throw new Error('No active recording')
+      }
+
+      updateStore({ state: 'stopping' })
+      stopElapsedTimer()
+
+      const result = await screenRecorder.stop()
+      updateStore({ state: 'stopped', result })
+
+      manager.cleanup()
+      composer.cleanup()
+
+      screenRecorder = null
+    },
+
+    async pause (): Promise<void> {
+      const { state } = get(store)
+      if (state !== 'recording') {
+        throw new Error(`Cannot pause from state: ${state}`)
+      }
+
+      if (screenRecorder === null) {
+        throw new Error('No active recording')
+      }
+
+      await screenRecorder.pause()
+      stopElapsedTimer()
+      updateStore({ state: 'paused' })
+    },
+
+    async resume (): Promise<void> {
+      const { state } = get(store)
+
+      if (state !== 'paused') {
+        throw new Error(`Cannot resume from state: ${state}`)
+      }
+
+      if (screenRecorder === null) {
+        throw new Error('No active recording')
+      }
+
+      await screenRecorder.resume()
+      startElapsedTimer()
+      updateStore({ state: 'recording' })
+    },
+
+    async cleanup (): Promise<void> {
+      if (screenRecorder !== null) {
+        await screenRecorder?.cancel()
+        screenRecorder = null
+      }
+
+      stopElapsedTimer()
+
+      manager.cleanup()
+      composer.cleanup()
+
+      updateStore({
+        state: 'idle',
+        elapsedTime: 0,
+        result: null
+      })
+    },
+
+    toggleCam (): void {
+      manager.toggleCam()
+    },
+
+    toggleMic (): void {
+      manager.toggleMic()
+    },
+
+    setCamDeviceId (deviceId: string | undefined): void {
+      manager.setCamDeviceId(deviceId)
+    },
+
+    setMicDeviceId (deviceId: string | undefined): void {
+      manager.setMicDeviceId(deviceId)
+    },
+
+    async startScreenShare (): Promise<void> {
+      await manager.shareScreen()
+    },
+
+    async stopScreenShare (): Promise<void> {
+      await manager.stopScreenShare()
     }
-
-    currentRequest = doUpdate()
-
-    await currentRequest
   }
-
-  window.addEventListener('beforeunload', () => {
-    const { camStream, micStream, screenStream } = get($state)
-    releaseStream(camStream)
-    releaseStream(micStream)
-    releaseStream(screenStream)
-  })
-
-  return store
 }
 
-export const recorder = createRecorderStore()
+export const recorder = createRecorder()
 
-export const camEnabled = derived(recorder, ($recorder) => $recorder.camEnabled)
-export const micEnabled = derived(recorder, ($recorder) => $recorder.micEnabled)
-export const camDeviceId = derived(recorder, ($recorder) => $recorder.camDeviceId)
-export const micDeviceId = derived(recorder, ($recorder) => $recorder.micDeviceId)
+function combineStreams (
+  canvasStream: MediaStream | null,
+  micStream: MediaStream | null,
+  screenStream: MediaStream | null
+): MediaStream {
+  const tracks: MediaStreamTrack[] = []
 
-export const loading = derived(recorder, ($recorder) => $recorder.loading)
-export const camStream = derived(recorder, ($recorder) => $recorder.camStream)
-export const micStream = derived(recorder, ($recorder) => $recorder.micStream)
-export const screenStream = derived(recorder, ($recorder) => $recorder.screenStream)
-
-export const canShareScreen = readable(false, (set) => {
-  set(navigator?.mediaDevices?.getDisplayMedia != null)
-})
-
-async function getCombinedStream (
-  camEnabled: boolean,
-  micEnabled: boolean,
-  camDeviceId: string | undefined,
-  micDeviceId: string | undefined,
-  videoRes: number | undefined
-): Promise<{ camStream: MediaStream | null, micStream: MediaStream | null }> {
-  if (navigator?.mediaDevices === undefined) {
-    console.warn('mediaDevices API not available')
-    return { camStream: null, micStream: null }
+  if (canvasStream !== null) {
+    tracks.push(...canvasStream.getVideoTracks())
   }
 
-  if (!camEnabled && !micEnabled) {
-    return { camStream: null, micStream: null }
+  if (screenStream !== null) {
+    tracks.push(...screenStream.getAudioTracks())
   }
 
-  const constraints = {
-    video: camEnabled
-      ? {
-          deviceId: camDeviceId != null ? { exact: camDeviceId } : undefined,
-          facingMode: 'user',
-          aspectRatio: { ideal: 16 / 9 },
-          height: videoRes !== undefined ? { ideal: videoRes } : undefined
-        }
-      : false,
-    audio: micEnabled
-      ? {
-          deviceId: micDeviceId != null ? { exact: micDeviceId } : undefined
-        }
-      : false
+  if (micStream !== null && micStream.getAudioTracks().length > 0) {
+    tracks.push(...micStream.getAudioTracks())
   }
 
-  try {
-    const combinedStream = await navigator.mediaDevices.getUserMedia(constraints)
-
-    // Split the combined stream into separate video and audio streams
-    const camStream = camEnabled ? new MediaStream(combinedStream.getVideoTracks()) : null
-    const micStream = micEnabled ? new MediaStream(combinedStream.getAudioTracks()) : null
-
-    return { camStream, micStream }
-  } catch (err) {
-    console.error('Error getting media stream:', err)
-    throw err
-  }
+  return new MediaStream(tracks)
 }

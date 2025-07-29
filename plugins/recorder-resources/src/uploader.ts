@@ -24,7 +24,6 @@ export interface Uploader {
 }
 
 export interface TusUploaderOptions {
-  name: string
   endpoint: string
   workspace: string
   token: string
@@ -69,9 +68,8 @@ export class TusUploader implements Uploader {
           return
         }
 
-        const name = options.name + '.mp4'
         const type = contentType.split(';')[0]
-        this.waiterResolve({ name, uuid, type, width, height })
+        this.waiterResolve({ uuid, type, width, height })
       },
       onError: (error) => {
         console.error('TusUploader: upload failed:', error)

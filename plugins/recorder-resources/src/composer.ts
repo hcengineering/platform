@@ -15,29 +15,22 @@
 
 import { releaseStream } from '@hcengineering/media'
 import type { CameraPosition, CameraSize } from './types'
-import { derived, writable } from 'svelte/store'
-
-const canvasSize = writable({ width: 1280, height: 720 })
-export const canvasWidth = derived(canvasSize, ($canvasSize) => $canvasSize.width)
-export const canvasHeight = derived(canvasSize, ($canvasSize) => $canvasSize.height)
 
 export interface StreamComposerConfig {
   fps: number
-
-  canvasWidth: number
-  canvasHeight: number
-
   cameraSize: CameraSize
   cameraPos: CameraPosition
+  onCanvasSizeChange?: (size: { width: number, height: number }) => void
 }
 
 export interface StreamComposer {
-  start: () => Promise<void>
-  stop: () => Promise<void>
+  destroy: () => void
+
   getStream: () => MediaStream
+
   updateConfig: (config: Partial<StreamComposerConfig>) => void
-  updateCameraStream: (stream: MediaStream | null) => Promise<void>
-  updateScreenStream: (stream: MediaStream | null) => Promise<void>
+  updateCameraStream: (stream: MediaStream | null) => void
+  updateScreenStream: (stream: MediaStream | null) => void
 }
 
 function createWorker (): Worker {
@@ -49,97 +42,76 @@ function createWorker (): Worker {
   }
 }
 
-export class CanvasStreamComposer implements StreamComposer {
-  private recording = false
+export function createCanvasStreamComposer (config: StreamComposerConfig): StreamComposer {
+  return new CanvasStreamComposer(config)
+}
+
+class CanvasStreamComposer implements StreamComposer {
+  private readonly boundHandleWorkerMessage = this.handleWorkerMessage.bind(this)
+  private readonly boundHandleWorkerError = this.handleWorkerError.bind(this)
+
   private readonly ctx: CanvasRenderingContext2D
   private readonly canvas: HTMLCanvasElement
   private readonly cameraVideo: HTMLVideoElement
   private readonly screenVideo: HTMLVideoElement
   private readonly worker: Worker
+
   private readonly canvasStream: MediaStream
+  private cameraStream: MediaStream | null = null
+  private screenStream: MediaStream | null = null
 
-  private readonly boundHandleWorkerMessage = this.handleWorkerMessage.bind(this)
-  private readonly boundHandleWorkerError = this.handleWorkerError.bind(this)
-
+  private running = false
   private cameraX: number = 0
   private cameraY: number = 0
   private cameraR: number = 0
 
-  constructor (
-    private screenStream: MediaStream | null,
-    private cameraStream: MediaStream | null,
-    private config: StreamComposerConfig
-  ) {
-    this.worker = createWorker()
-
-    this.canvas = document.createElement('canvas')
-    this.updateCanvasSize(config.canvasWidth, config.canvasHeight)
-
-    const ctx = this.canvas.getContext('2d', {
-      alpha: false,
-      desynchronized: true
-    })
-
-    if (ctx === null) {
-      throw new Error('CanvasStreamComposer: unable to get canvas context')
-    }
-
-    ctx.imageSmoothingEnabled = true
-    ctx.imageSmoothingQuality = 'high'
+  constructor (private config: StreamComposerConfig) {
+    const { canvas, ctx } = createCanvasElement()
+    this.canvas = canvas
     this.ctx = ctx
 
-    this.cameraVideo = document.createElement('video')
-    this.cameraVideo.srcObject = this.cameraStream
-    this.cameraVideo.autoplay = true
-    this.cameraVideo.playsInline = true
+    this.cameraVideo = createVideoElement()
     this.cameraVideo.onerror = (err) => {
       console.error('CanvasStreamComposer: failed to play camera video', err)
     }
 
-    this.screenVideo = document.createElement('video')
-    this.screenVideo.srcObject = this.screenStream
-    this.screenVideo.autoplay = true
-    this.screenVideo.playsInline = true
+    this.screenVideo = createVideoElement()
     this.screenVideo.onerror = (err) => {
       console.error('CanvasStreamComposer: failed to play screen video', err)
     }
 
+    this.worker = createWorker()
+
     this.canvasStream = this.canvas.captureStream(config.fps)
 
-    this.updateCameraPos()
+    this.start()
   }
 
-  public getCanvas (): HTMLCanvasElement {
-    return this.canvas
+  public destroy (): void {
+    this.stop()
   }
 
   public getStream (): MediaStream {
     return this.canvasStream
   }
 
-  public async start (): Promise<void> {
-    if (this.recording) return
-    if (this.canvas == null) return
-
-    this.recording = false
+  private start (): void {
+    if (this.running) return
 
     try {
-      this.startDrawing()
-      this.recording = true
+      this.startWorker()
+      this.running = true
     } catch (error) {
       console.error('CanvasStreamComposer: error starting', error)
       throw error
     }
   }
 
-  public async stop (): Promise<void> {
-    if (!this.recording) return
-    this.recording = false
+  private stop (): void {
+    if (!this.running) return
+    this.running = false
 
-    this.worker.postMessage({ type: 'stop' })
-    this.worker.removeEventListener('message', this.boundHandleWorkerMessage)
-    this.worker.removeEventListener('error', this.boundHandleWorkerError)
-    this.worker.terminate()
+    this.stopWorker()
 
     if (this.cameraVideo !== null) {
       this.cameraVideo.pause()
@@ -169,44 +141,36 @@ export class CanvasStreamComposer implements StreamComposer {
     this.updateCameraPos()
   }
 
-  public async updateCameraStream (stream: MediaStream | null): Promise<void> {
+  public updateCameraStream (stream: MediaStream | null): void {
     this.cameraStream = stream
-    await this.updateVideoSources()
+    this.updateVideoSources()
   }
 
-  public async updateScreenStream (stream: MediaStream | null): Promise<void> {
+  public updateScreenStream (stream: MediaStream | null): void {
     this.screenStream = stream
-    await this.updateVideoSources()
+    this.updateVideoSources()
   }
 
-  private async updateVideoSources (): Promise<void> {
+  private updateVideoSources (): void {
     this.screenVideo.srcObject = this.screenStream ?? this.cameraStream
     this.cameraVideo.srcObject = this.screenStream !== null ? this.cameraStream : null
-
-    const promises: Array<Promise<void>> = []
-
-    if (this.screenStream !== null) {
-      // promises.push(this.screenVideo.play().catch((err) => {
-      //   console.error('CanvasStreamComposer: failed to play screen video', err)
-      // }))
-    }
-    if (this.cameraStream !== null) {
-      // promises.push(this.cameraVideo.play().catch((err) => {
-      //   console.error('CanvasStreamComposer: failed to play camera video', err)
-      // }))
-    }
-
-    await Promise.all(promises)
   }
 
-  private startDrawing (): void {
+  private startWorker (): void {
     this.worker.addEventListener('message', this.boundHandleWorkerMessage)
     this.worker.addEventListener('error', this.boundHandleWorkerError)
     this.worker.postMessage({ type: 'start', fps: this.config.fps })
   }
 
+  private stopWorker (): void {
+    this.worker.postMessage({ type: 'stop' })
+    this.worker.removeEventListener('message', this.boundHandleWorkerMessage)
+    this.worker.removeEventListener('error', this.boundHandleWorkerError)
+    this.worker.terminate()
+  }
+
   private handleWorkerMessage (e: MessageEvent): void {
-    if (e.data.type === 'frame' && this.recording) {
+    if (e.data.type === 'frame' && this.running) {
       this.drawFrame()
     } else if (e.data.type === 'error') {
       console.error('Worker error:', e.data.error)
@@ -267,7 +231,7 @@ export class CanvasStreamComposer implements StreamComposer {
   private updateCanvasSize (width: number, height: number): void {
     this.canvas.width = width
     this.canvas.height = height
-    canvasSize.set({ width, height })
+    this.config.onCanvasSizeChange?.({ width, height })
   }
 
   private updateCameraPos (): void {
@@ -295,6 +259,31 @@ function getCameraSize (size: CameraSize): number {
     default:
       return 0.15
   }
+}
+
+function createCanvasElement (): { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D } {
+  const canvas = document.createElement('canvas')
+
+  const ctx = canvas.getContext('2d', {
+    alpha: false,
+    desynchronized: true
+  })
+
+  if (ctx === null) {
+    throw new Error('CanvasStreamComposer: unable to get canvas context')
+  }
+
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+
+  return { canvas, ctx }
+}
+
+function createVideoElement (): HTMLVideoElement {
+  const element = document.createElement('video')
+  element.autoplay = true
+  element.playsInline = true
+  return element
 }
 
 function updateCameraPos (

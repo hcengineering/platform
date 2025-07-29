@@ -16,20 +16,28 @@
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 
-import { DefaultOptions } from './const'
+import { DefaultAudioBps, DefaultChunkIntervalMs, DefaultVideoBps } from './const'
 import { Recorder } from './recorder'
-import { type RecordingOptions, type RecordingResult } from './types'
+import { type RecordingResult } from './types'
 import { type Uploader, TusUploader } from './uploader'
 import { getVideoDimensions } from './utils'
 
 import plugin from './plugin'
 
-export async function createScreenRecorder (options: RecordingOptions): Promise<ScreenRecorder> {
-  const name = options.name
-  const stream = options.stream
-  const videoBps = options.videoBps ?? DefaultOptions.videoBps
-  const audioBps = options.audioBps ?? DefaultOptions.audioBps
-  const chunkIntervalMs = options.chunkIntervalMs ?? DefaultOptions.chunkIntervalMs
+export interface ScreenRecorderOptions {
+  audioBps?: number
+  videoBps?: number
+  videoRes?: 720 | 1080 | 1440 | 2160 | number
+  chunkIntervalMs?: number
+}
+
+export async function createScreenRecorder (
+  stream: MediaStream,
+  options: ScreenRecorderOptions = {}
+): Promise<ScreenRecorder> {
+  const audioBps = options.audioBps ?? DefaultAudioBps
+  const videoBps = options.videoBps ?? DefaultVideoBps
+  const chunkIntervalMs = options.chunkIntervalMs ?? DefaultChunkIntervalMs
 
   const { width, height } = await getVideoDimensions(stream)
 
@@ -43,7 +51,6 @@ export async function createScreenRecorder (options: RecordingOptions): Promise<
     token,
     workspace,
     endpoint,
-    name,
     width,
     height,
     contentType

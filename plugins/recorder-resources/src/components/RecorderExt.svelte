@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Icon } from '@hcengineering/ui'
-
-  import IconRec from './icons/Rec.svelte'
+  import { tooltip } from '@hcengineering/ui'
 
   import plugin from '../plugin'
-  import { stopRecording } from '../recording'
-  import { recording } from '../stores/recording'
+  import { stopRecording, recorderState } from '../recording'
+  import { formatElapsedTime } from '../utils'
 
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
+
+  $: state = $recorderState.state
+  $: elapsedTime = $recorderState.elapsedTime
 
   function handleClick (): void {
     void stopRecording()
@@ -30,14 +31,17 @@
 </script>
 
 {#if endpoint !== ''}
-  {#if $recording !== null && $recording.state === 'recording'}
+  {#if state !== 'stopped' && state !== 'idle' && state !== 'ready'}
     <button
       class="antiButton ghost jf-center bs-none no-focus statusButton negative"
       style="padding-left: 0.25rem"
+      use:tooltip={{ label: plugin.string.Stop }}
       on:click={handleClick}
     >
       <div class="dot pulse" />
-      <Icon icon={IconRec} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
+      <div class="timer">
+        {formatElapsedTime(elapsedTime)}
+      </div>
     </button>
   {/if}
 {/if}
@@ -55,15 +59,13 @@
     animation: pulse 2s infinite;
   }
 
+  .timer {
+    margin-left: 0.125rem;
+  }
+
   @keyframes pulse {
-    0% {
-      opacity: 1;
-    }
     50% {
       opacity: 0;
-    }
-    100% {
-      opacity: 1;
     }
   }
 </style>

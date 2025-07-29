@@ -1,10 +1,10 @@
 <script lang="ts">
   import { DropdownLabelsIntl, DropdownIntlItem, Label } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { recorder } from '../stores/recorder'
+  import { setCameraPosition, setCameraSize, recordingCameraPosition, recordingCameraSize } from '../recording'
 
-  $: recordingCameraPosition = $recorder.recordingCameraPosition
-  $: recordingCameraSize = $recorder.recordingCameraSize
+  $: cameraSize = $recordingCameraSize
+  $: cameraPos = $recordingCameraPosition
 
   const sizes: DropdownIntlItem[] = [
     { label: plugin.string.Small, id: 'small' },
@@ -26,9 +26,9 @@
     items={sizes}
     justify={'left'}
     width={'100%'}
-    selected={recordingCameraSize}
+    selected={cameraSize}
     on:selected={async (item) => {
-      recorder.setRecordingCameraSize(item.detail)
+      setCameraSize(item.detail)
     }}
   />
 
@@ -37,9 +37,9 @@
     items={poses}
     justify={'left'}
     width={'100%'}
-    selected={recordingCameraPosition}
+    selected={cameraPos}
     on:selected={async (item) => {
-      recorder.setRecordingCameraPosition(item.detail)
+      setCameraPosition(item.detail)
     }}
   />
 </div>

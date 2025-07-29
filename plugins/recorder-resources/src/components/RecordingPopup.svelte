@@ -13,55 +13,51 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import core, { type Blob, type Ref } from '@hcengineering/core'
   import { enumerateDevices } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { FilePreview, MessageBox } from '@hcengineering/presentation'
+  import { FileUploadCallback } from '@hcengineering/uploader'
   import {
+    EditBox,
     IconUpOutline,
     Label,
     Modal,
     ModernButton,
+    PopupResult,
     SelectPopup,
     SplitButton,
     eventToHTMLElement,
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
-  import { DefaultOptions } from '../const'
   import plugin from '../plugin'
-  import { CanvasStreamComposer, canvasWidth as canvasWidthStore, canvasHeight as canvasHeightStore } from '../composer'
+  import { canvasWidth, canvasHeight, canvasStream } from '../stores/composer'
   import {
     cancelRecording,
     pauseRecording,
-    recordingPopupClosed,
-    recordingPopupOpened,
     resumeRecording,
     setCam,
     setMic,
-    shareScreen,
     startRecording,
     stopRecording,
+    startScreenShare,
     stopScreenShare,
     toggleCam,
-    toggleMic
-  } from '../recording'
-  import {
+    toggleMic,
+    recorderState,
     canShareScreen,
-    camEnabled as camEnabledStore,
-    micEnabled as micEnabledStore,
-    camDeviceId as camDeviceIdStore,
-    micDeviceId as micDeviceIdStore,
-    camStream as camStreamStore,
-    micStream as micStreamStore,
-    screenStream as screenStreamStore,
-    loading as loadingStore,
-    recorder
-  } from '../stores/recorder'
-  import { recording } from '../stores/recording'
-  import { type RecordingResult } from '../types'
+    camEnabled,
+    micEnabled,
+    camDeviceId,
+    micDeviceId,
+    camStream,
+    screenStream,
+    loading as loadingStore
+  } from '../recording'
   import { formatElapsedTime, formatRecordingName } from '../utils'
 
   import IconCamOn from './icons/CamOn.svelte'
@@ -76,141 +72,72 @@
   import ShareSettingsPopup from './ShareSettingsPopup.svelte'
   import SettingsPopup from './SettingsPopup.svelte'
 
-  export let onSuccess: (result: RecordingResult) => Promise<void> = async () => {}
+  export let onFileUploaded: FileUploadCallback | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
+  let name = ''
+
   $: loading = $loadingStore
-  $: camEnabled = $camEnabledStore
-  $: micEnabled = $micEnabledStore
-  $: camDeviceId = $camDeviceIdStore
-  $: micDeviceId = $micDeviceIdStore
-  $: cameraStream = $camStreamStore
-  $: micStream = $micStreamStore
-  $: screenStream = $screenStreamStore
-
-  $: cameraSize = $recorder.recordingCameraSize
-  $: cameraPos = $recorder.recordingCameraPosition
-  $: state = $recording
-
-  $: mainStream = screenStream ?? cameraStream
-  $: mirrored = screenStream === null
+  $: state = $recorderState
+  $: mainStream = $screenStream ?? $camStream
+  $: mirrored = $screenStream === null
+  $: screenShareEnabled = $screenStream !== null
 
   $: hasCamAccess = $camAccess.state !== 'denied'
   $: hasMicAccess = $micAccess.state !== 'denied'
 
-  $: canvasWidth = $canvasWidthStore
-  $: canvasHeight = $canvasHeightStore
-
-  $: canMinimize = screenStream != null
-
-  $: if (state !== null && state.state === 'stopped') {
-    recording.clear()
-  }
+  $: void updateName(screenShareEnabled)
 
   let video: HTMLVideoElement | null = null
-
-  const composer = new CanvasStreamComposer(null, null, {
-    fps: DefaultOptions.fps,
-    canvasWidth,
-    canvasHeight,
-    cameraSize,
-    cameraPos
-  })
-
-  $: if (video != null) {
-    const stream = composer.getStream()
-    if (video.srcObject !== stream) {
-      video.srcObject = stream
-    }
+  $: if (video != null && $canvasStream !== null) {
+    video.srcObject = $canvasStream
   }
 
-  onMount(() => {
-    const stream = composer.getStream()
-    void composer.start()
-
-    stream.addEventListener('resize', (e) => {
-      console.log('resize', e)
-    })
-
-    recordingPopupOpened()
-  })
-
-  onDestroy(() => {
-    void composer.stop()
-    recordingPopupClosed()
-  })
-
-  $: composer.updateConfig({ cameraSize })
-  $: composer.updateConfig({ cameraPos })
-
-  $: void composer.updateCameraStream(cameraStream)
-  $: void composer.updateScreenStream(screenStream)
-
-  async function handleShareScreen (): Promise<void> {
-    await shareScreen()
+  async function updateName (screenShareEnabled: boolean): Promise<void> {
+    name =
+      (await formatRecordingName(
+        screenShareEnabled ? plugin.string.ScreenRecordingName : plugin.string.CameraRecordingName,
+        new Date()
+      )) + '.mp4'
   }
 
-  async function handleStopSharing (): Promise<void> {
-    await stopScreenShare()
-  }
+  async function handleCompleteRecording (): Promise<void> {
+    if (name.length === 0) return
 
-  async function handleStartRecording (): Promise<void> {
-    if (state != null) {
-      console.warn('Recording already in progress', state)
-      return
+    const result = $recorderState.result
+    if (result != null) {
+      const file = new Blob([], { type: result.type })
+      await onFileUploaded?.({
+        uuid: result.uuid as Ref<Blob>,
+        name,
+        file,
+        metadata: {
+          width: result.width,
+          height: result.height
+        }
+      })
     }
 
-    const name = await formatRecordingName(
-      screenStream !== null ? plugin.string.ScreenRecordingName : plugin.string.CameraRecordingName,
-      new Date()
-    )
-
-    const canvasStream = composer.getStream()
-
-    const tracks: MediaStreamTrack[] = []
-    tracks.push(...canvasStream.getVideoTracks())
-    if (screenStream !== null) {
-      tracks.push(...screenStream.getAudioTracks())
-    }
-    if (micStream !== null) {
-      tracks.push(...micStream.getAudioTracks())
-    }
-
-    const stream = new MediaStream(tracks)
-    await startRecording({ name, stream, fps: DefaultOptions.fps, onSuccess })
-
-    if (canMinimize) {
-      dispatch('close')
-    }
+    dispatch('close')
   }
 
-  async function handleResumeRecording (): Promise<void> {
-    await resumeRecording()
-  }
-
-  async function handlePauseRecording (): Promise<void> {
-    await pauseRecording()
-  }
-
-  async function handleStopRecording (): Promise<void> {
-    await stopRecording()
-    recorder.setCamEnabled(false)
-    recorder.setMicEnabled(false)
-  }
+  let messageBox: PopupResult | null = null
 
   async function handleCancelRecording (): Promise<void> {
-    if (state === null || state.state === 'stopped') {
+    if (canClosePopup()) {
+      await cancelRecording()
+
       dispatch('close')
       return
     }
 
-    const wasPaused = state.state === 'paused'
-    if (!wasPaused) {
+    const shouldPause = state.state === 'recording'
+    if (shouldPause) {
       await pauseRecording()
     }
 
-    showPopup(
+    messageBox = showPopup(
       MessageBox,
       {
         label: plugin.string.CancelRecording,
@@ -218,11 +145,12 @@
       },
       undefined,
       async (cancel: boolean) => {
+        messageBox = null
         if (cancel) {
           await cancelRecording()
           dispatch('close')
         } else {
-          if (wasPaused) {
+          if (shouldPause) {
             await resumeRecording()
           }
         }
@@ -231,21 +159,11 @@
   }
 
   export function canClose (): boolean {
-    return state === null || state.state === 'stopped'
+    return false
   }
 
-  function handleClose (): void {
-    if (canClose()) {
-      dispatch('close')
-    }
-  }
-
-  function handleToggleCam (): void {
-    toggleCam()
-  }
-
-  function handleToggleMic (): void {
-    toggleMic()
+  function canClosePopup (): boolean {
+    return state.state === 'idle' || state.state === 'ready'
   }
 
   async function handleCamSetting (e: MouseEvent): Promise<void> {
@@ -258,11 +176,11 @@
     const items = devices.map((device) => ({
       id: device.deviceId,
       label: getEmbeddedLabel(device.label),
-      isSelected: device.deviceId === camDeviceId
+      isSelected: device.deviceId === $camDeviceId
     }))
 
     showPopup(SelectPopup, { value: items }, eventToHTMLElement(e), (deviceId: string) => {
-      if (deviceId != null && deviceId !== camDeviceId) {
+      if (deviceId != null && deviceId !== $camDeviceId) {
         setCam(deviceId)
       }
     })
@@ -278,11 +196,11 @@
     const items = devices.map((device) => ({
       id: device.deviceId,
       label: getEmbeddedLabel(device.label),
-      isSelected: device.deviceId === micDeviceId
+      isSelected: device.deviceId === $micDeviceId
     }))
 
     showPopup(SelectPopup, { value: items }, eventToHTMLElement(e), (deviceId: string) => {
-      if (deviceId != null && deviceId !== micDeviceId) {
+      if (deviceId != null && deviceId !== $micDeviceId) {
         setMic(deviceId)
       }
     })
@@ -304,7 +222,7 @@
   let containerHeight = 480
   let containerScaleFactor = 1
 
-  $: updateContainerSize(rootWidth, rootHeight, canvasWidth, canvasHeight)
+  $: updateContainerSize(rootWidth, rootHeight, $canvasWidth, $canvasHeight)
 
   function updateContainerSize (rootWidth: number, rootHeight: number, canvasWidth: number, canvasHeight: number): void {
     const scaleFactorX = rootWidth / canvasWidth
@@ -321,41 +239,33 @@
     rootHeight = height
   }
 
-  function onKeyDown (e: KeyboardEvent): void {
+  function handleKeyDown (e: KeyboardEvent): void {
     if (state?.state === 'stopping') return
+    if (messageBox !== null) return
 
-    if (e.key === 'Enter') {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
+      void handleCancelRecording()
+    } else if (e.key === 'Enter') {
       e.preventDefault()
       e.stopPropagation()
       if (state === null) {
-        void handleStartRecording()
+        void startRecording()
       }
     } else if (e.key === 'Space') {
       e.preventDefault()
       e.stopPropagation()
       if (state?.state === 'recording') {
-        void handlePauseRecording()
+        void pauseRecording()
       } else if (state?.state === 'paused') {
-        void handleResumeRecording()
+        void resumeRecording()
       }
     }
   }
-
-  let elapsedTime = 0
-
-  onMount(() => {
-    const timer = setInterval(() => {
-      if ($recording !== null) {
-        elapsedTime = $recording.recorder.elapsedTime
-      }
-    }, 1000)
-    return () => {
-      clearInterval(timer)
-    }
-  })
 </script>
 
-<svelte:window on:keydown={onKeyDown} />
+<svelte:window on:keydown={handleKeyDown} />
 
 <Modal
   type="type-popup"
@@ -366,15 +276,15 @@
   hideFooter
 >
   <div class="container p-3 flex-col-center justify-center">
-    {#if state == null && cameraStream === null && screenStream === null && !loading}
+    {#if state.state === 'ready' && mainStream === null && !loading}
       <div class="placeholder flex-col-center justify-center">
         <Label label={plugin.string.SelectVideoToRecord} />
       </div>
-    {:else if state !== null && state.state === 'stopped' && state.result != null}
+    {:else if state.state === 'stopped' && state.result != null}
       <div class="preview-container w-full h-full flex-col-center justify-center">
         <FilePreview
           file={state.result.uuid}
-          name={state.result.name}
+          name={state.result.uuid}
           contentType={state.result.type}
           metadata={{
             originalWidth: state.result.width,
@@ -391,7 +301,7 @@
       >
         <div class="canvas-container" style:width={containerWidth + 'px'} style:height={containerHeight + 'px'}>
           <!-- svelte-ignore a11y-media-has-caption -->
-          <video bind:this={video} autoplay playsinline muted />
+          <video bind:this={video} autoplay playsinline disablepictureinpicture muted />
         </div>
       </div>
     {/if}
@@ -399,7 +309,7 @@
 
   <svelte:fragment slot="afterContent">
     <div class="hulyModal-footer px-2">
-      {#if state === null}
+      {#if state.state === 'ready'}
         <!-- Recording not started -->
         <ModernButton
           size={'small'}
@@ -409,7 +319,7 @@
           label={plugin.string.Record}
           disabled={mainStream === null}
           noFocus
-          on:click={handleStartRecording}
+          on:click={startRecording}
         />
 
         <div class="flex-grow" />
@@ -429,11 +339,11 @@
           iconProps={{
             size: 'small'
           }}
-          label={screenStream === null ? plugin.string.ShareScreen : plugin.string.StopSharing}
+          label={screenShareEnabled ? plugin.string.StopSharing : plugin.string.ShareScreen}
           secondIcon={IconUpOutline}
           secondIconProps={{ size: 'small' }}
           secondAction={handleShareSettings}
-          action={screenStream === null ? handleShareScreen : handleStopSharing}
+          action={screenShareEnabled ? stopScreenShare : startScreenShare}
           disabled={!$canShareScreen}
           accent={false}
           separate
@@ -442,11 +352,11 @@
 
         <SplitButton
           size={'small'}
-          icon={micEnabled ? IconMicOn : IconMicOff}
+          icon={$micEnabled ? IconMicOn : IconMicOff}
           iconProps={{
             size: 'small',
             fill: hasMicAccess
-              ? micEnabled
+              ? $micEnabled
                 ? 'var(--theme-state-positive-color)'
                 : 'var(--theme-state-negative-color)'
               : 'currentColor'
@@ -454,7 +364,7 @@
           secondIcon={IconUpOutline}
           secondIconProps={{ size: 'small' }}
           secondAction={handleMicSetting}
-          action={handleToggleMic}
+          action={toggleMic}
           disabled={!hasMicAccess}
           separate
           noFocus
@@ -462,11 +372,11 @@
 
         <SplitButton
           size={'small'}
-          icon={camEnabled ? IconCamOn : IconCamOff}
+          icon={$camEnabled ? IconCamOn : IconCamOff}
           iconProps={{
             size: 'small',
             fill: hasCamAccess
-              ? camEnabled
+              ? $camEnabled
                 ? 'var(--theme-state-positive-color)'
                 : 'var(--theme-state-negative-color)'
               : 'currentColor'
@@ -474,16 +384,40 @@
           secondIcon={IconUpOutline}
           secondIconProps={{ size: 'small' }}
           secondAction={handleCamSetting}
-          action={handleToggleCam}
+          action={toggleCam}
           disabled={!hasCamAccess}
           separate
           noFocus
         />
+      {:else if state.state === 'stopped'}
+        <ModernButton
+          size={'small'}
+          kind={'primary'}
+          label={plugin.string.Done}
+          noFocus
+          on:click={handleCompleteRecording}
+          disabled={name.length === 0}
+        />
+
+        <div class="flex-grow" />
+
+        <EditBox bind:value={name} placeholder={core.string.Name} />
       {:else}
-        {#if state.state === 'stopped'}
-          <!-- Recording completed -->
-          <ModernButton size={'small'} kind={'primary'} label={plugin.string.Done} noFocus on:click={handleClose} />
-        {:else}
+        <!-- Stop Button -->
+        {#if state.state === 'stopping'}
+          <!-- Recording is stopping -->
+          <ModernButton
+            size={'small'}
+            kind={'negative'}
+            icon={IconStop}
+            iconProps={{ size: 'small' }}
+            label={plugin.string.Stop}
+            disabled
+            loading
+            noFocus
+            on:click={stopRecording}
+          />
+        {:else if state.state === 'recording'}
           <!-- Recording in progress -->
           <ModernButton
             size={'small'}
@@ -491,13 +425,12 @@
             icon={IconStop}
             iconProps={{ size: 'small' }}
             label={plugin.string.Stop}
-            disabled={state.state === 'stopping'}
-            loading={state.state === 'stopping'}
             noFocus
-            on:click={handleStopRecording}
+            on:click={stopRecording}
           />
         {/if}
 
+        <!-- Pause Button -->
         {#if state.state === 'recording'}
           <ModernButton
             size={'small'}
@@ -506,7 +439,7 @@
             iconProps={{ size: 'small' }}
             label={plugin.string.Pause}
             noFocus
-            on:click={handlePauseRecording}
+            on:click={pauseRecording}
           />
         {:else if state.state === 'paused'}
           <ModernButton
@@ -516,18 +449,24 @@
             iconProps={{ size: 'small' }}
             label={plugin.string.Resume}
             noFocus
-            on:click={handleResumeRecording}
+            on:click={resumeRecording}
           />
         {/if}
 
         <div class="flex-grow" />
 
-        <div
-          class="timer font-medium"
-          class:content-color={state.state === 'recording'}
-          class:content-dark-color={state.state !== 'recording'}
-        >
-          {formatElapsedTime(elapsedTime)}
+        <div class="flex-row-center">
+          {#if state.state === 'recording' || state.state === 'paused'}
+            <div class="dot pulse" />
+          {/if}
+
+          <div
+            class="timer font-medium"
+            class:content-color={state.state === 'recording'}
+            class:content-dark-color={state.state !== 'recording'}
+          >
+            {formatElapsedTime(state.elapsedTime)}
+          </div>
         </div>
       {/if}
     </div>
@@ -554,7 +493,9 @@
   .canvas-container,
   .preview-container {
     border-radius: 0.75rem;
+  }
 
+  .canvas-container {
     video {
       border-radius: inherit;
       width: 100%;
@@ -568,5 +509,23 @@
     padding: 0 0.375rem;
     min-width: 3.5rem;
     text-align: center;
+  }
+
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: 0.25rem;
+    border-radius: 50%;
+    background: var(--theme-state-negative-color);
+  }
+
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0;
+    }
   }
 </style>
