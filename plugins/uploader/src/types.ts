@@ -73,6 +73,7 @@ export interface FileUploadCallbackParams {
   name: string
   file: File | Blob
   path?: string
+  size?: number
   metadata?: Record<string, any>
   navigateOnUpload?: boolean
 }

@@ -14,10 +14,11 @@
 -->
 <script lang="ts">
   import core, { type Blob, type Ref } from '@hcengineering/core'
+  import drive, { createFile, getFileLink } from '@hcengineering/drive'
   import { enumerateDevices } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { FilePreview, MessageBox } from '@hcengineering/presentation'
+  import { FilePreview, getClient, MessageBox, SpaceSelector } from '@hcengineering/presentation'
   import { FileUploadCallback } from '@hcengineering/uploader'
   import {
     EditBox,
@@ -29,9 +30,12 @@
     SelectPopup,
     SplitButton,
     eventToHTMLElement,
+    getCurrentResolvedLocation,
+    navigate,
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   import plugin from '../plugin'
@@ -77,6 +81,7 @@
   const dispatch = createEventDispatcher()
 
   let name = ''
+  let space = plugin.space.Drive
 
   $: loading = $loadingStore
   $: state = $recorderState
@@ -107,16 +112,32 @@
 
     const result = $recorderState.result
     if (result != null) {
-      const file = new Blob([], { type: result.type })
-      await onFileUploaded?.({
-        uuid: result.uuid as Ref<Blob>,
-        name,
-        file,
+      // const file = new Blob([], { type: result.type })
+      // await onFileUploaded?.({
+      //   uuid: result.uuid as Ref<Blob>,
+      //   name,
+      //   file,
+      //   metadata: {
+      //     width: result.width,
+      //     height: result.height
+      //   }
+      // })
+
+      const client = getClient()
+      const fileId = await createFile(client, space, drive.ids.Root, {
+        title: name,
+        file: result.uuid as Ref<Blob>,
+        size: result.size,
+        type: result.type,
+        lastModified: Date.now(),
         metadata: {
           width: result.width,
           height: result.height
         }
       })
+
+      const loc = getCurrentResolvedLocation()
+      navigate(getFileLink(loc, fileId))
     }
 
     dispatch('close')
@@ -393,15 +414,26 @@
         <ModernButton
           size={'small'}
           kind={'primary'}
-          label={plugin.string.Done}
+          label={view.string.Save}
           noFocus
           on:click={handleCompleteRecording}
-          disabled={name.length === 0}
+          disabled={name.length === 0 || space == null}
         />
 
         <div class="flex-grow" />
 
         <EditBox bind:value={name} placeholder={core.string.Name} />
+
+        <SpaceSelector
+          bind:space
+          _class={drive.class.Drive}
+          label={drive.string.Drive}
+          kind={'regular'}
+          size={'small'}
+          iconWithEmoji={view.ids.IconWithEmoji}
+          defaultIcon={drive.icon.Drive}
+          focus={false}
+        />
       {:else}
         <!-- Stop Button -->
         {#if state.state === 'stopping'}

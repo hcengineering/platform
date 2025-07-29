@@ -27,6 +27,7 @@ export interface RecordingOptions {
 export interface RecordingResult {
   uuid: string
   type: string
+  size: number
   width: number
   height: number
 }
