@@ -5,9 +5,15 @@ describe('context tests', () => {
     const ctx = new MeasureMetricsContext('test', {})
 
     try {
-      await ctx.withLog('failed op', {}, async () => {
-        throw new Error('failed')
-      })
+      await ctx.with(
+        'failed op',
+        {},
+        async () => {
+          throw new Error('failed')
+        },
+        undefined,
+        { log: true }
+      )
       expect(true).toBe(false)
     } catch (err: any) {
       expect(err.message).toBe('failed')

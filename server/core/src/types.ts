@@ -721,6 +721,7 @@ export interface SessionManager {
   ) => Promise<AddSessionResponse>
 
   broadcastAll: (
+    ctx: MeasureContext,
     workspace: WorkspaceUuid,
     tx: Tx[],
     targets?: AccountUuid | AccountUuid[],

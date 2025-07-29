@@ -398,22 +398,35 @@ export class GithubWorker implements IntegrationManager {
     this._client = new TxOperations(this.client, core.account.System)
     this.liveQuery = new LiveQuery(client)
 
-    this.repositoryManager = new RepositorySyncMapper(this.ctx.newChild('repository', {}), this._client, this.app)
+    this.repositoryManager = new RepositorySyncMapper(
+      this.ctx.newChild('repository', {}, { span: false }),
+      this._client,
+      this.app
+    )
 
     this.collaborator = createCollaboratorClient(this.workspace.uuid)
 
-    this.personMapper = new UsersSyncManager(this.ctx.newChild('users', {}), this._client, this.liveQuery)
+    this.personMapper = new UsersSyncManager(
+      this.ctx.newChild('users', {}, { span: false }),
+      this._client,
+      this.liveQuery
+    )
 
     this.mappers = [
       { _class: [github.mixin.GithubProject], mapper: this.repositoryManager },
       {
         _class: [tracker.class.Issue],
-        mapper: new IssueSyncManager(this.ctx.newChild('issue', {}), this._client, this.liveQuery, this.collaborator)
+        mapper: new IssueSyncManager(
+          this.ctx.newChild('issue', {}, { span: false }),
+          this._client,
+          this.liveQuery,
+          this.collaborator
+        )
       },
       {
         _class: [github.class.GithubPullRequest],
         mapper: new PullRequestSyncManager(
-          this.ctx.newChild('pullRequest', {}),
+          this.ctx.newChild('pullRequest', {}, { span: false }),
           this._client,
           this.liveQuery,
           this.collaborator
@@ -421,7 +434,7 @@ export class GithubWorker implements IntegrationManager {
       },
       {
         _class: [chunter.class.ChatMessage],
-        mapper: new CommentSyncManager(this.ctx.newChild('comment', {}), this._client, this.liveQuery)
+        mapper: new CommentSyncManager(this.ctx.newChild('comment', {}, { span: false }), this._client, this.liveQuery)
       },
       // {
       //   _class: [contact.class.PersonAccount],
@@ -429,15 +442,23 @@ export class GithubWorker implements IntegrationManager {
       // },
       {
         _class: [github.class.GithubReview],
-        mapper: new ReviewSyncManager(this.ctx.newChild('review', {}), this._client, this.liveQuery)
+        mapper: new ReviewSyncManager(this.ctx.newChild('review', {}, { span: false }), this._client, this.liveQuery)
       },
       {
         _class: [github.class.GithubReviewThread],
-        mapper: new ReviewThreadSyncManager(this.ctx.newChild('review-thread', {}), this._client, this.liveQuery)
+        mapper: new ReviewThreadSyncManager(
+          this.ctx.newChild('review-thread', {}, { span: false }),
+          this._client,
+          this.liveQuery
+        )
       },
       {
         _class: [github.class.GithubReviewComment],
-        mapper: new ReviewCommentSyncManager(this.ctx.newChild('review-comment', {}), this._client, this.liveQuery)
+        mapper: new ReviewCommentSyncManager(
+          this.ctx.newChild('review-comment', {}, { span: false }),
+          this._client,
+          this.liveQuery
+        )
       }
     ]
 
@@ -1479,7 +1500,7 @@ export class GithubWorker implements IntegrationManager {
             return
           }
 
-          const docUpdate = await this.ctx.withLog(
+          const docUpdate = await this.ctx.with(
             'sync doc',
             {},
             (ctx) => mapper.sync(existing, info, parent, derivedClient),
@@ -1488,7 +1509,8 @@ export class GithubWorker implements IntegrationManager {
               workspace: this.workspace.uuid,
               existing: existing !== undefined,
               objectClass: info.objectClass
-            }
+            },
+            { log: true }
           )
           if (docUpdate !== undefined) {
             await derivedClient.update(info, docUpdate)
@@ -1571,7 +1593,7 @@ export class GithubWorker implements IntegrationManager {
       if (this.closing) {
         break
       }
-      await this.ctx.withLog(
+      await this.ctx.with(
         'external sync',
         {},
         async () => {
@@ -1666,17 +1688,19 @@ export class GithubWorker implements IntegrationManager {
             if (this.closing) {
               break
             }
-            await this.ctx.withLog(
+            await this.ctx.with(
               'external sync',
               { _class: _class.join(', ') },
               async () => {
                 await mapper.externalFullSync(integration, derivedClient, _projects, _repositories)
               },
-              { installation: integration.installationName, workspace: this.workspace.uuid }
+              { installation: integration.installationName, workspace: this.workspace.uuid },
+              { log: true }
             )
           }
         },
-        { installation: integration.installationName, workspace: this.workspace.uuid }
+        { installation: integration.installationName, workspace: this.workspace.uuid },
+        { log: true }
       )
     }
   }

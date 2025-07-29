@@ -346,7 +346,7 @@ async function putEventToQueue (
 ): Promise<void> {
   if (control.queue === undefined) return
   const producer = control.queue.getProducer<EventCUDMessage>(
-    control.ctx.newChild('queue', {}),
+    control.ctx.newChild('queue', {}, { span: false }),
     QueueTopic.CalendarEventCUD
   )
 

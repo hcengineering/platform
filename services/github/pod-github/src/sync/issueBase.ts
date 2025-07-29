@@ -271,7 +271,7 @@ export abstract class IssueSyncManagerBase {
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     let needUpdate = false
     if (!this.client.getHierarchy().hasMixin(existing, github.mixin.GithubIssue)) {
-      await this.ctx.withLog(
+      await this.ctx.with(
         'create mixin issue: GithubIssue',
         {},
         async () => {
@@ -288,7 +288,8 @@ export abstract class IssueSyncManagerBase {
           )
           await this.notifyConnected(container, info, existing, issueExternal)
         },
-        { identifier: existing.identifier, url: issueExternal.url }
+        { identifier: existing.identifier, url: issueExternal.url },
+        { log: true }
       )
       // Re iterate to have existing value with mixin inside.
       needUpdate = true

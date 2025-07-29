@@ -12,7 +12,8 @@ import {
   type FullParamsType,
   type MeasureLogger,
   type Metrics,
-  type ParamsType
+  type ParamsType,
+  type WithOptions
 } from '@hcengineering/measurements'
 import {
   context,
@@ -27,6 +28,7 @@ import {
 } from '@opentelemetry/api'
 import { Logger, SeverityNumber } from '@opentelemetry/api-logs'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
+import { suppressTracing } from '@opentelemetry/core'
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
@@ -71,6 +73,7 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
   contextData: object = {}
   isDone = false
   doneTrace: string = ''
+
   private done (value?: number, override?: boolean): void {
     if (!this.isDone) {
       this.doneTrace = new Error().stack ?? ''
@@ -83,7 +86,7 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
   constructor (
     name: string,
     readonly tracer: Tracer,
-    readonly context: Context,
+    readonly context: Context | undefined,
     readonly span: Span | undefined,
     params: ParamsType,
     fullParams: FullParamsType | (() => FullParamsType) = {},
@@ -124,21 +127,28 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
   newChild (
     name: string,
     params: ParamsType,
-    fullParams?: FullParamsType | (() => FullParamsType),
-    logger?: MeasureLogger,
-    useContextParent?: boolean
+    opt?: {
+      fullParams?: FullParamsType
+      logger?: MeasureLogger
+      span?: WithOptions['span'] // By default true
+    }
   ): MeasureContext {
-    const childContext =
-      useContextParent === true || useContextParent == null
-        ? context.active()
-        : this.span !== undefined
-          ? trace.setSpan(this.context, this.span)
-          : this.context
-    const span = this.tracer.startSpan(name, undefined, childContext)
+    let span: Span | undefined
+    let childContext: Context = context.active()
+    if (opt?.span === true) {
+      childContext =
+        this.span !== undefined
+          ? trace.setSpan(this.context ?? context.active(), this.span)
+          : this.context ?? context.active()
+      span = this.tracer.startSpan(name, undefined, childContext)
 
-    const spanParams = [...Object.entries(params)]
-    for (const [k, v] of spanParams) {
-      span?.setAttribute(k, v as any)
+      const spanParams = [...Object.entries(params)]
+      for (const [k, v] of spanParams) {
+        span?.setAttribute(k, v as any)
+      }
+    }
+    if (opt?.span === 'disable') {
+      childContext = suppressTracing(childContext)
     }
 
     const result = new OpenTelemetryMetricsContext(
@@ -147,9 +157,9 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
       childContext,
       span,
       params,
-      fullParams ?? {},
+      opt?.fullParams ?? {},
       childMetrics(this.metrics, [name]),
-      logger ?? this.logger,
+      opt?.logger ?? this.logger,
       this,
       this.logParams,
       this.otlpLogger,
@@ -164,16 +174,21 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType | (() => FullParamsType)
+    fullParams?: ParamsType | (() => FullParamsType),
+    opt?: WithOptions
   ): Promise<T> {
-    const c = this.newChild(name, params, fullParams, this.logger, false)
+    const c = this.newChild(name, opt?.inheritParams === true ? { ...this.params, ...params } : params, {
+      fullParams,
+      logger: this.logger,
+      span: opt?.span ?? true
+    })
     let needFinally = true
     try {
-      const _context = (c as OpenTelemetryMetricsContext).context ?? context.active()
+      const _context = (c as OpenTelemetryMetricsContext).context
 
       const span = (c as OpenTelemetryMetricsContext).span
 
-      const value = context.with(_context, () => op(c))
+      const value = _context !== undefined ? context.with(_context, () => op(c)) : op(c)
       if (value instanceof Promise) {
         needFinally = false
         if (span !== undefined) {
@@ -188,12 +203,18 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
         return value.finally(() => {
           if (span !== undefined) {
             const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
-            const spanParams = [...Object.entries(fParams ?? {})]
+            const spanParams = [...Object.entries(params), ...Object.entries(fParams ?? {})]
             for (const [k, v] of spanParams) {
-              span?.setAttribute(k, v)
+              span?.setAttribute(k, typeof v === 'object' ? JSON.stringify(v) : v)
             }
           }
           c.end()
+          if (opt?.log === true) {
+            this.logger.logOperation(name, platformNowDiff((c as OpenTelemetryMetricsContext).st), {
+              ...params,
+              ...fullParams
+            })
+          }
         })
       } else {
         if (value == null) {
@@ -212,43 +233,16 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T,
-    fullParams?: ParamsType | (() => FullParamsType)
+    fullParams?: ParamsType | (() => FullParamsType),
+    opt?: WithOptions
   ): T {
-    const c = this.newChild(name, params, fullParams, this.logger, false)
-    const _context = (c as OpenTelemetryMetricsContext).context ?? context.active()
-
-    const span = (c as OpenTelemetryMetricsContext).span
-
+    const c = this.newChild(name, params, { fullParams, logger: this.logger, span: opt?.span ?? true })
+    const _context = (c as OpenTelemetryMetricsContext).context
     try {
-      return context.with(_context, () => op(c))
-    } catch (err: any) {
-      if (span !== undefined) {
-        span.recordException(err)
-        span?.setStatus({
-          code: SpanStatusCode.ERROR,
-          message: err.message
-        })
-      }
-      throw err
+      return _context !== undefined ? context.with(_context, () => op(c)) : op(c)
     } finally {
       c.end()
     }
-  }
-
-  withLog<T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
-  ): Promise<T> {
-    const st = platformNow()
-    const r = this.with(name, params, op, fullParams)
-    r.catch(() => {
-      // Ignore logging errors to prevent unhandled rejections
-    }).finally(() => {
-      this.logger.logOperation(name, platformNowDiff(st), { ...params, ...fullParams })
-    })
-    return r
   }
 
   error (message: string, args?: Record<string, any>): void {
@@ -503,15 +497,15 @@ export function createOpenTelemetryMetricsContext (
 
   const tracer = trace.getTracer(name)
 
-  const otlpLogger = loggerProvider?.getLogger(sdkServiceName ?? name, version)
+  const otlpLogger =
+    process.env.OTEL_LOGGER_ENABLED === 'true' ? loggerProvider?.getLogger(sdkServiceName ?? name, version) : undefined
 
   const meter = otelMetrics.getMeter(name, version)
 
-  const currentConext = context.active()
   const ctx = new OpenTelemetryMetricsContext(
     name,
     tracer,
-    currentConext,
+    undefined,
     undefined,
     params,
     fullParams,

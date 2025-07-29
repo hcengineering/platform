@@ -141,10 +141,10 @@ export class TSessionManager implements SessionManager {
         this.handleTick()
       }, 1000 / ticksPerSecond)
     }
-    this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
-    this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Users)
+    this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}, { span: false }), QueueTopic.Workspace)
+    this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}, { span: false }), QueueTopic.Users)
 
-    this.ticksContext = ctx.newChild('ticks', {}, undefined, undefined, false)
+    this.ticksContext = ctx.newChild('ticks', {}, { span: false })
   }
 
   scheduleMaintenance (timeMinutes: number, message?: string): void {
@@ -177,7 +177,7 @@ export class TSessionManager implements SessionManager {
     }
     const event: TxWorkspaceEvent = this.createMaintenanceWarning()
     for (const ws of this.workspaces.values()) {
-      this.doBroadcast(ws, [event])
+      this.doBroadcast(this.ctx, ws, [event])
     }
   }
 
@@ -642,6 +642,7 @@ export class TSessionManager implements SessionManager {
   }
 
   broadcastAll (
+    ctx: MeasureContext,
     workspace: WorkspaceUuid,
     tx: Tx[],
     target?: AccountUuid | AccountUuid[],
@@ -651,17 +652,23 @@ export class TSessionManager implements SessionManager {
     if (ws === undefined) {
       return
     }
-    this.doBroadcast(ws, tx, target, exclude)
+    this.doBroadcast(ctx, ws, tx, target, exclude)
   }
 
-  doBroadcast (ws: Workspace, tx: Tx[], target?: AccountUuid | AccountUuid[], exclude?: AccountUuid[]): void {
+  doBroadcast (
+    ctx: MeasureContext,
+    ws: Workspace,
+    tx: Tx[],
+    target?: AccountUuid | AccountUuid[],
+    exclude?: AccountUuid[]
+  ): void {
     if (ws.maintenance) {
       return
     }
     if (target !== undefined && !Array.isArray(target)) {
       target = [target]
     }
-    const ctx = this.ctx.newChild('📬 broadcast-all', {})
+    ctx = ctx.newChild('📬 broadcast-all', {})
     const sessions = [...ws.sessions.values()].filter((it) => {
       if (it === undefined) {
         return false
@@ -726,6 +733,7 @@ export class TSessionManager implements SessionManager {
   }
 
   broadcast (
+    ctx: MeasureContext,
     from: Session | null,
     workspaceId: WorkspaceUuid,
     resp: Tx[],
@@ -746,7 +754,7 @@ export class TSessionManager implements SessionManager {
     }
 
     const sessions = [...workspace.sessions.values()]
-    const ctx = this.ctx.newChild('📭 broadcast', {})
+    ctx = ctx.newChild('📭 broadcast', {})
     const send = (): void => {
       for (const sessionRef of sessions) {
         const tt = sessionRef.session.getUser()
@@ -773,7 +781,7 @@ export class TSessionManager implements SessionManager {
     branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
-    const context = ctx.newChild('🧲 session', {})
+    const context = ctx.newChild('🧲 session', {}, { span: false })
     const workspaceIds: WorkspaceIds = {
       uuid: token.workspace,
       dataId: workspaceDataId,
@@ -786,7 +794,7 @@ export class TSessionManager implements SessionManager {
         workspaceIds,
         {
           broadcast: (ctx, tx, targets, exclude) => {
-            this.broadcastAll(workspaceIds.uuid, tx, targets, exclude)
+            this.broadcastAll(ctx, workspaceIds.uuid, tx, targets, exclude)
           },
           broadcastSessions: (ctx, sessions) => {
             this.broadcastSessions(ctx, sessions)
@@ -1169,14 +1177,6 @@ export class TSessionManager implements SessionManager {
     return this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
   }
 
-  getUserCtx (requestCtx: MeasureContext, service: Session, mode: string): MeasureContext {
-    const userCtx = requestCtx.newChild('📞 client', {
-      source: service.token.extra?.service ?? '🤦‍♂️user',
-      mode
-    })
-    return userCtx
-  }
-
   async handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -1184,10 +1184,10 @@ export class TSessionManager implements SessionManager {
     request: Request<any>,
     workspaceId: WorkspaceUuid
   ): Promise<void> {
-    const userCtx = this.getUserCtx(requestCtx, service, '🧭 handleRequest')
-
     // Calculate total number of clients
     const reqId = generateId()
+    const mode = 'request'
+    const source = service.token.extra?.service ?? '🤦‍♂️user'
 
     const st = Date.now()
     try {
@@ -1198,7 +1198,7 @@ export class TSessionManager implements SessionManager {
       const workspace = this.workspaces.get(workspaceId)
       if (workspace === undefined || workspace.closing !== undefined) {
         await ws.send(
-          userCtx,
+          requestCtx,
           {
             id: request.id,
             error: unknownError('Workspace is closing')
@@ -1209,7 +1209,9 @@ export class TSessionManager implements SessionManager {
         return
       }
       if (request.id === -1 && request.method === 'hello') {
-        await this.handleHello<S>(request, service, userCtx, workspace, ws, requestCtx)
+        await requestCtx.with('handleHello', { mode, source }, (ctx) =>
+          this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
+        )
         return
       }
       if (request.id === -2 && request.method === 'forceClose') {
@@ -1226,7 +1228,7 @@ export class TSessionManager implements SessionManager {
           id: request.id,
           result: done
         }
-        await ws.send(userCtx, forceCloseResponse, service.binaryMode, service.useCompression)
+        await ws.send(requestCtx, forceCloseResponse, service.binaryMode, service.useCompression)
         return
       }
       let rateLimit: RateLimitInfo | undefined
@@ -1236,7 +1238,7 @@ export class TSessionManager implements SessionManager {
         if (rateLimit?.remaining === 0) {
           service.updateLast()
           void ws.send(
-            userCtx,
+            requestCtx,
             {
               id: request.id,
               rateLimit,
@@ -1264,15 +1266,19 @@ export class TSessionManager implements SessionManager {
         const params = [...request.params]
 
         if (ws.isBackpressure()) {
-          await ws.backpressure(userCtx)
+          await ws.backpressure(requestCtx)
         }
 
         await workspace.with(async (pipeline) => {
-          await userCtx.with('🧨 process', {}, (callTx) =>
-            f.apply(service, [
-              this.createOpContext(callTx, userCtx, pipeline, request.id, service, ws, rateLimit),
-              ...params
-            ])
+          await requestCtx.with(
+            '🧨' + request.method,
+            { mode, source },
+            (callTx) =>
+              f.apply(service, [
+                this.createOpContext(callTx, requestCtx, pipeline, request.id, service, ws, rateLimit),
+                ...params
+              ]),
+            { ...request, user: service.getUser, socialId: service.getRawAccount().primarySocialId }
           )
         })
       } catch (err: any) {
@@ -1281,7 +1287,7 @@ export class TSessionManager implements SessionManager {
           this.ctx.error('error handle request', { error: err, request })
         }
         await ws.send(
-          userCtx,
+          requestCtx,
           {
             id: request.id,
             error: unknownError(err),
@@ -1292,7 +1298,6 @@ export class TSessionManager implements SessionManager {
         )
       }
     } finally {
-      userCtx.end()
       service.requests.delete(reqId)
     }
   }
@@ -1309,7 +1314,8 @@ export class TSessionManager implements SessionManager {
       return await Promise.resolve(rateLimitStatus)
     }
 
-    const userCtx = this.getUserCtx(requestCtx, service, '🧭 handleRPC')
+    const mode = 'rpc'
+    const source = service.token.extra?.service ?? '🤦‍♂️user'
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -1329,9 +1335,9 @@ export class TSessionManager implements SessionManager {
 
       try {
         await workspace.with(async (pipeline) => {
-          await userCtx.with('🧨 process', {}, (callTx) =>
+          await requestCtx.with('🧨 handleRequest', { mode, source }, (callTx) =>
             operation(
-              this.createOpContext(callTx, userCtx, pipeline, reqId, service, ws, rateLimitStatus),
+              this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
               rateLimitStatus
             )
           )
@@ -1342,7 +1348,7 @@ export class TSessionManager implements SessionManager {
           this.ctx.error('error handle request', { error: err })
         }
         await ws.send(
-          userCtx,
+          requestCtx,
           {
             id: reqId,
             error: unknownError(err),
@@ -1355,7 +1361,6 @@ export class TSessionManager implements SessionManager {
       }
       return undefined
     } finally {
-      userCtx.end()
       service.requests.delete(reqId)
     }
   }

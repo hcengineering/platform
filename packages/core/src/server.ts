@@ -73,7 +73,7 @@ export interface SessionData {
   }
   >
 
-  asyncRequests?: ((ctx: MeasureContext) => Promise<void>)[]
+  asyncRequests?: ((ctx: MeasureContext, id?: string) => Promise<void>)[]
 }
 
 /**
