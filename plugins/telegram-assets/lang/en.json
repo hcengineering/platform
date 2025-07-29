@@ -92,6 +92,7 @@
     "ClearSearch": "clear search",
     "NoChannelsAvailable": "No channels available",
     "EnableSyncToConfigure": "Enable synchronization to configure channel access",
-    "AccessCannotBeChanged": "Access cannot be changed for existing channel"
+    "AccessCannotBeChanged": "Access cannot be changed for existing channel",
+    "ServiceIsUnavailable": "Telegram service is not available"
   }
 }

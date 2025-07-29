@@ -39,6 +39,9 @@
     "ConfigDescription": "Расширение по работе с Gmail электронной почтой",
     "GooglePrivacy": "Использование и передача информации, полученной Huly от Google API, будет соответствовать <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Политике использования данных пользователей Google API</a>, включая требования ограниченного использования.",
     "EmailNotificationsDescription": "Получайте персональные уведомления на электронную почту.",
-    "FailedToConnect": "Не удалось подключиться к Gmail"
+    "FailedToConnect": "Не удалось подключиться к Gmail",
+    "TotalMessages": "Всего сообщений",
+    "FailedToLoadState": "Не удалось загрузить состояние Gmail",
+    "NotConnectedIntegration": "Учетная запись {email} не интегрирована с рабочим пространством"
   }
 }

@@ -32,7 +32,7 @@ import { decode64 } from './base64'
 import config from './config'
 import { type GmailClient } from './gmail'
 import { getWorkspaceTokens } from './tokens'
-import { type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
+import { SyncState, type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
 import { serviceToken } from './utils'
 import { WorkspaceClient } from './workspaceClient'
 import { getIntegrationClient } from './integrations'
@@ -310,5 +310,17 @@ export class GmailController {
       }
     }
     return res
+  }
+
+  async getState (workspace: WorkspaceUuid, socialdId: PersonId): Promise<SyncState | undefined> {
+    const workspaceClient = this.workspaces.get(workspace)
+    if (workspaceClient === undefined) {
+      return undefined
+    }
+    const mailClient = workspaceClient.getGmailClient(socialdId)
+    if (mailClient === undefined) {
+      return undefined
+    }
+    return await mailClient.getStateSummary()
   }
 }

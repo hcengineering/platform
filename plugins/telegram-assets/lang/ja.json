@@ -93,6 +93,7 @@
     "ClearSearch": "検索をクリア",
     "NoChannelsAvailable": "利用可能なチャンネルがありません",
     "EnableSyncToConfigure": "チャンネルアクセスを構成するには同期を有効にしてください",
-    "AccessCannotBeChanged": "既存のチャンネルのアクセスは変更できません"
+    "AccessCannotBeChanged": "既存のチャンネルのアクセスは変更できません",
+    "ServiceIsUnavailable": "Telegramサービスは利用できません"
   }
 }

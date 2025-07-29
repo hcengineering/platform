@@ -93,6 +93,7 @@
     "ClearSearch": "очистить поиск",
     "NoChannelsAvailable": "Каналы недоступны",
     "EnableSyncToConfigure": "Включите синхронизацию, чтобы настроить доступ к каналу",
-    "AccessCannotBeChanged": "Доступ не может быть изменен для существующего канала"
+    "AccessCannotBeChanged": "Доступ не может быть изменен для существующего канала",
+    "ServiceIsUnavailable": "Telegram сервис недоступен"
   }
 }

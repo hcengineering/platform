@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
+  import ui, { Button, EditBox, IconClose, Label, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
@@ -51,6 +51,7 @@
   interface UIState {
     mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Configured' | 'Unauthorized' | 'Error'
     hint?: string
+    errorLabel?: IntlString
 
     buttons?: {
       primary?: { label: IntlString, handler?: () => any, disabled?: boolean }
@@ -71,11 +72,18 @@
           state = {
             mode: 'Error',
             hint: error.message,
+            errorLabel: getErrorLabel(error.message),
             buttons: {
               primary: { label: ui.string.Ok, handler: close }
             }
           }
         })
+    }
+  }
+
+  function getErrorLabel (errorMessage: string): IntlString | undefined {
+    if (errorMessage.toLowerCase().includes('failed to fetch')) {
+      return telegram.string.ServiceIsUnavailable
     }
   }
 
@@ -216,7 +224,14 @@
     {:else if state.mode === 'Authorized'}
       <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
     {:else if state.mode === 'Error'}
-      <p>Error: {state.hint}</p>
+      <div class="flex-row-center gap-3 pt-2">
+        <IconError size={'medium'} />
+        {#if state.errorLabel !== undefined}
+          <Label label={state.errorLabel} />
+        {:else}
+          <span>{state.hint}</span>
+        {/if}
+      </div>
     {/if}
 
     <div class="footer">

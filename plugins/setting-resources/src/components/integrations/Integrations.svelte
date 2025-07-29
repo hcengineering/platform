@@ -35,7 +35,7 @@
   let integrations: Integration[] = []
   let integrationTypes: IntegrationType[] = []
   let isLoading = true
-  let unsubscribers: (() => void)[] = []
+  const unsubscribers: (() => void)[] = []
 
   let loadIntegrationsPromise: Promise<void> | null = null
 

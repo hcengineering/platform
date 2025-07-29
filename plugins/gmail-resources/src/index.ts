@@ -24,6 +24,7 @@ import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
 import Main from './components/Main.svelte'
 import NewMessages from './components/NewMessages.svelte'
+import IntegrationState from './components/IntegrationState.svelte'
 import gmail from '@hcengineering/gmail'
 import { checkHasEmail, MessageTitleProvider } from './utils'
 
@@ -33,7 +34,8 @@ export default async (): Promise<Resources> => ({
     Connect,
     IconGmail,
     NewMessages,
-    Configure
+    Configure,
+    IntegrationState
   },
   activity: {
     GmailWriteMessage,

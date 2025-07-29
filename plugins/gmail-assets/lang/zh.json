@@ -39,6 +39,9 @@
     "ConfigDescription": "Gmail 邮件集成扩展",
     "GooglePrivacy": "Huly 从 Google API 接收的信息的使用和传输将遵守 <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API 服务用户数据政策</a>，包括有限使用要求。",
     "EmailNotificationsDescription": "透過電子郵件接收個人通知。",
-    "FailedToConnect": "無法連接 Gmail 帳戶。請檢查您的憑證並重試。"
+    "FailedToConnect": "無法連接 Gmail 帳戶。請檢查您的憑證並重試。",
+    "TotalMessages": "总消息数",
+    "FailedToLoadState": "无法加载 Gmail 状态",
+    "NotConnectedIntegration": "帐户 {email} 未与工作区集成"
   }
 }

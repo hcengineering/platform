@@ -85,7 +85,8 @@ export default mergeIds(telegramId, telegram, {
     TryAdjustingSearch: '' as IntlString,
     ClearSearch: '' as IntlString,
     NoChannelsAvailable: '' as IntlString,
-    EnableSyncToConfigure: '' as IntlString
+    EnableSyncToConfigure: '' as IntlString,
+    ServiceIsUnavailable: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

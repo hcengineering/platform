@@ -125,7 +125,7 @@ export class WorkspaceClient {
     return this.clients.size
   }
 
-  private getGmailClient (userId: PersonId): GmailClient | undefined {
+  getGmailClient (userId: PersonId): GmailClient | undefined {
     return this.clients.get(userId)
   }
 

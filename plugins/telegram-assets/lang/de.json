@@ -93,6 +93,7 @@
     "ClearSearch": "Suche löschen",
     "NoChannelsAvailable": "Keine Kanäle verfügbar",
     "EnableSyncToConfigure": "Aktivieren Sie die Synchronisierung, um den Kanalzugriff zu konfigurieren",
-    "AccessCannotBeChanged": "Der Zugriff kann für vorhandene Kanäle nicht geändert werden"
+    "AccessCannotBeChanged": "Der Zugriff kann für vorhandene Kanäle nicht geändert werden",
+    "ServiceIsUnavailable": "Telegram-Dienst ist nicht verfügbar"
   }
 }

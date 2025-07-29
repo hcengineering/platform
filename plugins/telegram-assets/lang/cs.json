@@ -92,6 +92,7 @@
     "ClearSearch": "vymazat vyhledávání",
     "NoChannelsAvailable": "Nejsou dostupné žádné kanály",
     "EnableSyncToConfigure": "Povolit synchronizaci pro konfiguraci přístupu kanálu",
-    "AccessCannotBeChanged": "Přístup nelze změnit pro existující kanál"
+    "AccessCannotBeChanged": "Přístup nelze změnit pro existující kanál",
+    "ServiceIsUnavailable": "Služba Telegram není k dispozici"
   }
 }

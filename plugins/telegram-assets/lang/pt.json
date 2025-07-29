@@ -93,6 +93,7 @@
     "ClearSearch": "limpar pesquisa",
     "NoChannelsAvailable": "Nenhum canal disponível",
     "EnableSyncToConfigure": "Ativar sincronização para configurar o acesso ao canal",
-    "AccessCannotBeChanged": "O acesso não pode ser alterado para o canal existente"
+    "AccessCannotBeChanged": "O acesso não pode ser alterado para o canal existente",
+    "ServiceIsUnavailable": "O serviço Telegram não está disponível"
   }
 }

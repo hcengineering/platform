@@ -84,6 +84,17 @@ export const gmailIntegrationKind = 'gmail' as IntegrationKind
 /**
  * @public
  */
+export interface GmailSyncState {
+  status: string
+  email: string
+  totalMessages: number | null | undefined
+  lastSynchronization?: Date | null
+  error?: string
+}
+
+/**
+ * @public
+ */
 export const gmailId = 'gmail' as Plugin
 
 export default plugin(gmailId, {
@@ -92,7 +103,8 @@ export default plugin(gmailId, {
     Connect: '' as AnyComponent,
     IconGmail: '' as AnyComponent,
     NewMessages: '' as AnyComponent,
-    Configure: '' as AnyComponent
+    Configure: '' as AnyComponent,
+    IntegrationState: '' as AnyComponent
   },
   string: {
     From: '' as IntlString,

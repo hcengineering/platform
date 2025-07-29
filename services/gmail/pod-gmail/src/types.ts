@@ -79,9 +79,10 @@ export interface WorkspaceStateInfo {
   inactive?: boolean
 }
 
-export interface GmailState {
+export interface SyncState {
   status: string
-  processedMessages: number
-  lastSynchronization: Date | null
-  error: string
+  email: string
+  totalMessages: number | null | undefined
+  lastSynchronization?: Date | null
+  error?: string
 }

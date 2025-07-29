@@ -13,14 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import { AccountUuid } from '@hcengineering/core'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, getClient, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import { Grid, Label, Toggle } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { createEventDispatcher } from 'svelte'
+  import { isWorkspaceIntegration } from '@hcengineering/integration-client'
 
+  import { getIntegrationClient } from '../api'
   import gmail from '../plugin'
 
   export let integration: Integration
@@ -30,10 +33,22 @@
   const client = getClient()
 
   async function change (shared: AccountUuid[]) {
+    const integrationClient = await getIntegrationClient()
+    integration = isWorkspaceIntegration(integration)
+      ? integration
+      : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
     integration.shared = shared
     await client.update(integration, {
       shared
     })
+  }
+
+  async function apply() {
+    const integrationClient = await getIntegrationClient()
+    integration = isWorkspaceIntegration(integration)
+      ? integration
+      : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
+    
   }
 
   async function disable () {
@@ -47,7 +62,8 @@
 
 <Card
   label={gmail.string.Shared}
-  okAction={() => {
+  okAction={async () => {
+    await apply()
     dispatch('close')
   }}
   canSave={true}

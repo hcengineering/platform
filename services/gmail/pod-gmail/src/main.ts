@@ -17,7 +17,7 @@
 
 import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
-import { newMetrics } from '@hcengineering/core'
+import { newMetrics, PersonId } from '@hcengineering/core'
 import { closeQueue, initQueue } from '@hcengineering/mail-common'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
@@ -167,6 +167,36 @@ export const main = async (): Promise<void> => {
         } catch (err: any) {
           ctx.error('Push request failed', { message: err.message })
           res.status(500).send()
+        }
+      }
+    },
+    {
+      endpoint: '/state',
+      type: 'get',
+      handler: async (req, res) => {
+        try {
+          const token = extractToken(req.headers)
+
+          if (token === undefined) {
+            res.status(401).send()
+            return
+          }
+
+          const { workspace } = decodeToken(token)
+          const socialId = req.query.socialId as PersonId | undefined
+          if (socialId == null || socialId === '') {
+            res.status(400).send({ error: 'Missing socialId param' })
+            return
+          }
+          const state = await gmailController.getState(workspace, socialId)
+          if (state === undefined) {
+            res.status(404).send({ error: 'No gmail clients found for social id' })
+            return
+          }
+          res.send(state)
+        } catch (err: any) {
+          ctx.error('Failed to get integration state', { message: err.message })
+          res.status(500).send({ error: err.message })
         }
       }
     }
