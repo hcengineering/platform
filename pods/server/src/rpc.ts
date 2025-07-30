@@ -294,25 +294,30 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const lastHash = req.query.lastHash as string
       const result = await session.loadModelRaw(ctx, lastModelTx, lastHash)
       const txes = Array.isArray(result) ? result : result.transactions
-      // we need to filter only hierarchy related txes.
-      const allowedClasess: Ref<Class<Doc>>[] = [
-        core.class.Class,
-        core.class.Attribute,
-        core.class.Mixin,
-        core.class.Type,
-        core.class.Status,
-        core.class.Permission,
-        core.class.Space,
-        core.class.Tx
-      ]
-      const h = ctx.pipeline.context.hierarchy
-      const filtered = txes.filter(
-        (it) =>
-          TxProcessor.isExtendsCUD(it._class) &&
-          allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
-      )
+      const shouldFilter = req.query.full !== 'true'
+      if (shouldFilter) {
+        // we need to filter only hierarchy related txes.
+        const allowedClasess: Ref<Class<Doc>>[] = [
+          core.class.Class,
+          core.class.Attribute,
+          core.class.Mixin,
+          core.class.Type,
+          core.class.Status,
+          core.class.Permission,
+          core.class.Space,
+          core.class.Tx
+        ]
+        const h = ctx.pipeline.context.hierarchy
+        const filtered = txes.filter(
+          (it) =>
+            TxProcessor.isExtendsCUD(it._class) &&
+            allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
+        )
 
-      await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
+        await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
+      } else {
+        await sendJson(req, res, txes, rateLimitToHeaders(rateLimit))
+      }
     })
   })
 
