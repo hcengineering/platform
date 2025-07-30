@@ -204,7 +204,7 @@ export async function createServer (
 
   // Blob meta
 
-  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', handleMetaGet))
+  app.get('/meta/:workspace/:name', withBlob, wrapRequest(ctx, 'getMeta', handleMetaGet))
 
   app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', handleMetaPut))
 
