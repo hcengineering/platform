@@ -63,6 +63,7 @@
   :global(.plyr) {
     flex: 1;
     min-width: 10rem;
+    border-radius: 0.75rem;
     --plyr-control-spacing: 0.5rem;
     --plyr-control-icon-size: 1rem;
     --plyr-video-background: transparent;
