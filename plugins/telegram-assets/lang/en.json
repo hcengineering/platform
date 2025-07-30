@@ -26,6 +26,7 @@
     "NewIncomingMessage": "Sent you a new message",
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Sync Telegram channels and messages",
+    "TelegramIntegrationDesc2": "This feature is independent of regular Telegram notifications",
     "ToSetupNotification": "To set up regular Telegram notifications:",
     "TelegramNotificationPath": "Notifications > General > Telegram > Configure",
     "Status": "Status",

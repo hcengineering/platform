@@ -549,7 +549,7 @@ export class GmailClient {
   private async watch (): Promise<void> {
     try {
       await this.rateLimiter.take(100)
-      const result = await this.gmail.watch({
+      await this.gmail.watch({
         userId: 'me',
         requestBody: {
           topicName: config.WATCH_TOPIC_NAME

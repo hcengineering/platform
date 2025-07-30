@@ -114,6 +114,18 @@ describe('GmailController', () => {
     // Mock WorkspaceClient.create
     jest.spyOn(WorkspaceClient, 'create').mockResolvedValue(mockWorkspaceClient)
 
+    // Mock getIntegrationClient
+    const mockIntegrationClient = {
+      getIntegrations: jest.fn().mockResolvedValue([
+        { workspaceUuid: workspaceAId, socialId: 'user1' } as any,
+        { workspaceUuid: workspaceAId, socialId: 'user2' } as any,
+        { workspaceUuid: workspaceBId, socialId: 'user3' } as any,
+        { workspaceUuid: workspaceBId, socialId: 'user4' } as any,
+        { workspaceUuid: workspaceBId, socialId: 'user5' } as any
+      ])
+    }
+    jest.spyOn(integrations, 'getIntegrationClient').mockReturnValue(mockIntegrationClient as any)
+
     // Mock getIntegrations
     jest
       .spyOn(integrations, 'getIntegrations')
