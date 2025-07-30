@@ -19,6 +19,7 @@ import type { Resource } from '@hcengineering/platform'
 import process, { ExecutionStatus, type CheckFunc } from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
+  type RollbackFunc,
   type ExecuteFunc,
   type FuncImpl,
   type MethodImpl,
@@ -41,21 +42,29 @@ export class TFuncImpl extends TProcessFunction implements FuncImpl {
 @Mixin(serverProcess.mixin.TriggerImpl, process.class.Trigger)
 export class TTriggerImpl extends TTrigger implements TriggerImpl {
   serverCheckFunc?: Resource<CheckFunc>
+  rollbackFunc?: Resource<RollbackFunc>
+  preventRollback?: boolean
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMethodImpl, TFuncImpl, TTriggerImpl)
 
   builder.mixin(process.trigger.OnToDoClose, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo
+    serverCheckFunc: serverProcess.func.CheckToDo,
+    rollbackFunc: serverProcess.rollbacks.ToDoCloseRollback
   })
 
   builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo
+    serverCheckFunc: serverProcess.func.CheckToDo,
+    rollbackFunc: serverProcess.rollbacks.ToDoCancellRollback
   })
 
   builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
     serverCheckFunc: serverProcess.func.OnCardUpdateCheck
+  })
+
+  builder.mixin(process.trigger.OnSubProcessesDone, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true
   })
 
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
@@ -241,16 +250,6 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxUpdateDoc,
       objectClass: cardPlugin.class.Card
     }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnExecutionTransition,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: process.class.Execution,
-      'operations.currentState': { $exists: true }
-    },
-    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

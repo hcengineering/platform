@@ -215,8 +215,11 @@ export class RestClientImpl implements RestClient {
     return result
   }
 
-  async getModel (): Promise<{ hierarchy: Hierarchy, model: ModelDb }> {
-    const requestUrl = concatLink(this.endpoint, `/api/v1/load-model/${this.workspace}`)
+  async getModel (full: boolean = false): Promise<{ hierarchy: Hierarchy, model: ModelDb }> {
+    const requestUrl = new URL(concatLink(this.endpoint, `/api/v1/load-model/${this.workspace}`))
+    if (full) {
+      requestUrl.searchParams.append('full', 'true')
+    }
     await this.checkRate()
     const result = await withRetry<{ hierarchy: Hierarchy, model: ModelDb, error?: Status }>(async () => {
       const response = await fetch(requestUrl, this.requestInit())
@@ -232,7 +235,7 @@ export class RestClientImpl implements RestClient {
       const model = new ModelDb(hierarchy)
 
       const ctx = new MeasureMetricsContext('loadModel', {})
-      buildModel(ctx, modelResponse, (txes: Tx[]) => txes, hierarchy, model)
+      buildModel(ctx, modelResponse, undefined, hierarchy, model)
 
       return { hierarchy, model }
     }, isRLE)

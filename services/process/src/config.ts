@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,23 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import process, { ExecutionLogAction } from '@hcengineering/process'
-  import { Icon } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+//
+import { config as dotenvConfig } from 'dotenv'
 
-  export let value: ExecutionLogAction
-</script>
+dotenvConfig()
 
-{#if value === ExecutionLogAction.Started}
-  <Icon icon={process.icon.Start} size={'small'} />
-{:else if value === ExecutionLogAction.Rollback}
-  <Icon icon={view.icon.Undo} size={'small'} />
-{/if}
+export interface Config {
+  Secret: string
+  QueueConfig: string
+  QueueRegion: string
+  AccountsUrl: string
+}
+
+const config: Config = {
+  Secret: process.env.SECRET ?? 'secret',
+  QueueConfig: process.env.QUEUE_CONFIG ?? '',
+  QueueRegion: process.env.QUEUE_REGION ?? '',
+  AccountsUrl: process.env.ACCOUNTS_URL ?? ''
+}
+
+export default config

@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,11 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import process, { ExecutionLogAction } from '@hcengineering/process'
-  import { Icon } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+//
 
-  export let value: ExecutionLogAction
-</script>
+import { addLocation } from '@hcengineering/platform'
+import { serverProcessId } from '@hcengineering/server-process'
 
-{#if value === ExecutionLogAction.Started}
-  <Icon icon={process.icon.Start} size={'small'} />
-{:else if value === ExecutionLogAction.Rollback}
-  <Icon icon={view.icon.Undo} size={'small'} />
-{/if}
+export function prepare (): void {
+  addLocation(serverProcessId, () => import('@hcengineering/server-process-resources'))
+}
