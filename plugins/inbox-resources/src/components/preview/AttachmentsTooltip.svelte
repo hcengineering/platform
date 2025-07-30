@@ -12,15 +12,18 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { AttachedBlob } from '@hcengineering/communication-types'
+  import { Attachment } from '@hcengineering/communication-types'
+  import { isBlobAttachment } from '@hcengineering/communication-shared'
 
-  export let blobs: AttachedBlob[] = []
+  export let attachments: Attachment[] = []
+
+  $: blobs = attachments.filter(isBlobAttachment)
 </script>
 
 <div class="tooltip">
   {#each blobs as blob}
     <div>
-      {blob.fileName}
+      {blob.params.fileName}
     </div>
   {/each}
 </div>

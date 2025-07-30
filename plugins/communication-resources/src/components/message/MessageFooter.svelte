@@ -18,17 +18,21 @@
   import cardPlugin from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
-  import { LinkPreviewID, Message, MessageType } from '@hcengineering/communication-types'
+  import { AttachmentID, Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
+  import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+  import { Component } from '@hcengineering/ui'
 
   import ReactionsList from '../ReactionsList.svelte'
   import MessageThread from '../thread/Thread.svelte'
   import { toggleReaction } from '../../utils'
+  import communication from '../../plugin'
 
   export let message: Message
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
+  const client = getClient()
 
   function canReply (): boolean {
     return message.type !== MessageType.Activity && message.extra?.threadRoot !== true
@@ -53,49 +57,69 @@
     await r(_id, c)
   }
 
-  async function removeLinkPreview (id: LinkPreviewID): Promise<void> {
-    await communicationClient.linkPreviewPatch(message.cardId, message.id, {
-      detach: [id]
+  async function removeLinkPreview (id: AttachmentID): Promise<void> {
+    await communicationClient.attachmentPatch(message.cardId, message.id, {
+      remove: [id]
     })
   }
+
+  const appletsModels = client.getModel().findAllSync(communication.class.Applet, {})
+  $: blobs = message.attachments.filter(isBlobAttachment) ?? []
+  $: links = message.attachments.filter(isLinkPreviewAttachment) ?? []
+  $: applets = message.attachments.filter(isAppletAttachment) ?? []
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-{#if message.blobs.length > 0 && !message.removed}
+{#if applets.length > 0 && !message.removed}
+  <div class="message__applets">
+    {#each applets as applet (applet.id)}
+      {@const appletModel = appletsModels.find((it) => it.type === applet.type)}
+      {#if appletModel}
+        <Component
+          is={appletModel.component}
+          props={{
+            applet: appletModel,
+            attachment: applet
+          }}
+        />
+      {/if}
+    {/each}
+  </div>
+{/if}
+
+{#if blobs.length > 0 && !message.removed}
   <div class="message__files">
-    {#each message.blobs as blob (blob.blobId)}
+    {#each blobs as blob (blob.id)}
       <AttachmentPreview
         value={{
-          file: blob.blobId,
-          type: blob.mimeType,
-          name: blob.fileName,
-          size: blob.size,
-          metadata: blob.metadata
+          file: blob.params.blobId,
+          type: blob.params.mimeType,
+          name: blob.params.fileName,
+          size: blob.params.size,
+          metadata: blob.params.metadata
         }}
         imageSize="x-large"
       />
     {/each}
   </div>
 {/if}
-{#if (message.linkPreviews ?? []).length > 0 && !message.removed}
+{#if links.length > 0 && !message.removed}
   <div class="message__links">
-    {#each message.linkPreviews as link (link.id)}
+    {#each links as link (link.id)}
       <LinkPreview
         isOwn={me.socialIds.includes(message.creator)}
         on:delete={() => {
           void removeLinkPreview(link.id)
         }}
         linkPreview={{
-          url: link.url,
-          host: link.host,
-          title: link.title,
-          description: link.description,
-          hostname: link.siteName,
-          image: link.previewImage?.url,
-          imageWidth: link.previewImage?.width,
-          imageHeight: link.previewImage?.height,
-          icon: link.iconUrl
+          url: link.params.url,
+          host: link.params.host,
+          title: link.params.title,
+          description: link.params.description,
+          hostname: link.params.siteName,
+          image: link.params.previewImage?.url,
+          imageWidth: link.params.previewImage?.width,
+          imageHeight: link.params.previewImage?.height,
+          icon: link.params.iconUrl
         }}
       />
     {/each}

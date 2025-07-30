@@ -50,7 +50,16 @@ function isContentValid (body: any[]): boolean {
     if (it == null) return true
     if (!('event' in it)) return true
     if (!('properties' in it)) return true
-    return !('timestamp' in it)
+    if (!('timestamp' in it)) return true
+
+    const eventSize = JSON.stringify(it).length
+    if (eventSize > 1024 * 1024) {
+      // maximum 1MB per event
+      console.warn(`Event too large: ${eventSize} bytes, event: ${it.event}`)
+      return true
+    }
+
+    return false
   })
 }
 
@@ -212,7 +221,7 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
 export function createServer (): Express {
   const app = express()
   app.use(cors())
-  app.use(express.json())
+  app.use(express.json({ limit: config.MaxPayloadSize }))
 
   app.post(
     '/collect',
@@ -226,6 +235,9 @@ export function createServer (): Express {
       }
 
       const events: AnalyticEvent[] = req.body
+      const payloadSize = JSON.stringify(req.body).length
+
+      console.log(`Received batch: ${events.length} events, ${payloadSize} bytes`)
 
       const posthogEvents = events.map((event) => {
         return preparePostHogEvent(event, req)
@@ -235,6 +247,9 @@ export function createServer (): Express {
         api_key: config.PostHogAPI,
         batch: posthogEvents.reverse()
       }
+
+      const posthogPayloadSize = JSON.stringify(payload).length
+      console.log(`Sending to PostHog: ${posthogEvents.length} events, ${posthogPayloadSize} bytes`)
 
       try {
         const response = await fetch(`${config.PostHogHost}/batch/`, {
@@ -249,6 +264,8 @@ export function createServer (): Express {
         if (!response.ok) {
           const errorText = await response.text()
           console.error(`PostHog API error: ${response.status} ${response.statusText}`, errorText)
+        } else {
+          console.log(`Successfully sent ${posthogEvents.length} events to PostHog`)
         }
       } catch (error) {
         console.error('Failed to send events to PostHog:', error)
@@ -258,6 +275,7 @@ export function createServer (): Express {
       res.json({
         received: events.length,
         processed: posthogEvents.length,
+        payloadSize,
         timestamp: new Date().toISOString()
       })
     })

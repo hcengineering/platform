@@ -182,6 +182,22 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.RoleContext
   })
 
+  builder.mixin(process.function.Insert, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Insert
+  })
+
+  builder.mixin(process.function.Remove, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Remove
+  })
+
+  builder.mixin(process.function.RemoveFirst, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.RemoveFirst
+  })
+
+  builder.mixin(process.function.RemoveLast, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.RemoveLast
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnExecutionContinue,
     txMatch: {

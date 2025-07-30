@@ -9,7 +9,7 @@ import { startFront } from '@hcengineering/front/src/starter'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { join } from 'path'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('front', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'front')
 
 const metricsContext = initStatisticsContext('front', {

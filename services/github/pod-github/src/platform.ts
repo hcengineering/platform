@@ -1013,7 +1013,7 @@ export class PlatformWorker {
           }
           try {
             const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
-            const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, {})
+            const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, { span: false })
 
             connecting.set(workspaceInfo.uuid, {
               time: Date.now(),
@@ -1163,8 +1163,10 @@ export class PlatformWorker {
     const webhook = this.ctx.newChild(
       'webhook',
       {},
-      {},
-      new SplitLogger('webhook', { root: join(process.cwd(), 'logs'), pretty: true, enableConsole: false })
+      {
+        logger: new SplitLogger('webhook', { root: join(process.cwd(), 'logs'), pretty: true, enableConsole: false }),
+        span: false
+      }
     )
     webhook.info('Register webhook')
 

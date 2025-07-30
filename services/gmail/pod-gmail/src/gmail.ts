@@ -558,9 +558,7 @@ export class GmailClient {
       this.ctx.info('Gmail watch established successfully', {
         workspaceUuid: this.user.workspace,
         userId: this.user.userId,
-        topicName: config.WATCH_TOPIC_NAME,
-        email: this.email,
-        result
+        topicName: config.WATCH_TOPIC_NAME
       })
     } catch (err) {
       this.ctx.error('Watch error', {

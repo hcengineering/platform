@@ -21,32 +21,33 @@ import core, {
   type AttachedDoc,
   type Blob,
   type Class,
-  DOMAIN_MODEL,
   type Doc,
-  type Domain,
-  type FullTextSearchContext,
-  type Hierarchy,
-  type IdMap,
-  type MeasureContext,
-  type ModelDb,
-  type Ref,
-  SortingOrder,
-  type Space,
-  type TxCUD,
-  type TxDomainEvent,
-  TxProcessor,
-  type WorkspaceIds,
-  type WorkspaceUuid,
   docKey,
+  type Domain,
+  DOMAIN_COLLABORATOR,
+  DOMAIN_MODEL,
+  type FullTextSearchContext,
   getFullTextIndexableAttributes,
   groupByArray,
+  type Hierarchy,
+  type IdMap,
   isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
+  type MeasureContext,
+  type ModelDb,
   platformNow,
+  type Ref,
+  SortingOrder,
+  type Space,
   systemAccount,
   toIdMap,
-  withContext
+  type TxCUD,
+  type TxDomainEvent,
+  TxProcessor,
+  withContext,
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import drivePlugin, { type FileVersion } from '@hcengineering/drive'
 import type {
@@ -65,23 +66,30 @@ import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { blobPseudoClass, createIndexedDoc, createIndexedDocFromMessage, getContent, messagePseudoClass } from './utils'
 import {
+  type AttachmentPatchEvent,
+  type BlobPatchEvent,
+  CardEventType,
+  type CreateMessageEvent,
+  type Event,
+  type EventType,
+  MessageEventType,
+  type RemoveCardEvent,
+  type RemovePatchEvent,
   type ServerApi as CommunicationApi,
   type SessionData as CommunicationSession,
-  type CreateMessageEvent,
-  type UpdatePatchEvent,
-  type RemovePatchEvent,
-  MessageEventType,
-  type Event,
-  CardEventType,
   type UpdateCardTypeEvent,
-  type EventType,
-  type BlobPatchEvent,
-  type LinkPreviewPatchEvent,
-  type RemoveCardEvent
+  type UpdatePatchEvent
 } from '@hcengineering/communication-sdk-types'
-import { type AttachedBlob, type CardID, type Message, type MessageID } from '@hcengineering/communication-types'
+import {
+  type AttachmentID,
+  type BlobAttachment,
+  type BlobParams,
+  type CardID,
+  type Message,
+  type MessageID
+} from '@hcengineering/communication-types'
 import { parseYaml } from '@hcengineering/communication-yaml'
-import { applyPatches } from '@hcengineering/communication-shared'
+import { applyPatches, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
@@ -102,7 +110,7 @@ type IndexableCommunicationEvent =
   | QueueSourced<CreateMessageEvent>
   | QueueSourced<UpdatePatchEvent>
   | QueueSourced<BlobPatchEvent>
-  | QueueSourced<LinkPreviewPatchEvent>
+  | QueueSourced<AttachmentPatchEvent> // TODO: handle
   | QueueSourced<RemovePatchEvent>
   | QueueSourced<UpdateCardTypeEvent>
   | QueueSourced<RemoveCardEvent>
@@ -240,6 +248,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
 
     const byDomain = groupByArray(allIndexed, (it) => this.hierarchy.getDomain(it))
+
+    // Delete few domains
+    byDomain.delete(DOMAIN_COLLABORATOR)
+
     return Array.from(byDomain.entries())
       .sort((a, b) => {
         const ap = domainPriorities[a[0]] ?? 0
@@ -258,21 +270,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     classes: Ref<Class<Doc>>[],
     control?: ConsumerControl
   ): Promise<void> {
-    ctx.warn('verify document structure', { workspace: this.workspace.uuid })
+    ctx.warn('reindex verify document structure', { domain, workspace: this.workspace.uuid })
 
     let processed = 0
     let processedCommunication = 0
     let hasCards = false
-    await ctx.with('reindex-domain', { domain }, async (ctx) => {
+    await ctx.with('reindex domain', { domain }, async (ctx) => {
       // Iterate over all domain documents and add appropriate entries
       const allDocs = this.storage.rawFind(ctx, domain)
       try {
-        let lastPrint = 0
+        let lastPrint = platformNow()
         const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
         while (true) {
-          if (control !== undefined) {
-            await control?.heartbeat()
-          }
+          await control?.heartbeat()
           const docs = await allDocs.find(ctx)
           if (docs.length === 0) {
             break
@@ -300,7 +310,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           const now = platformNow()
           if (now - lastPrint > printThresholdMs) {
-            ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
+            ctx.info('processed', {
+              processed,
+              elapsed: Math.round(now - lastPrint),
+              domain,
+              workspace: this.workspace.uuid
+            })
             lastPrint = now
           }
         }
@@ -434,7 +449,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
       const indexedDoc = createIndexedDoc(doc, this.hierarchy.findAllMixins(doc), doc.space)
 
-      await rateLimit.exec(async () => {
+      await rateLimit.add(async () => {
         await ctx.with('process-document', { _class: doc._class }, async (ctx) => {
           try {
             // Collect all indexable values
@@ -445,7 +460,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
             for (const [, v] of Object.entries(content)) {
               if (v.attr.type._class === core.class.TypeBlob) {
-                await this.processBlob(ctx, v, doc, indexedDoc)
+                await ctx.with('process-blob', {}, (ctx) => this.processBlob(ctx, v, doc, indexedDoc), {
+                  attr: v.attr.name,
+                  value: v.value
+                })
                 continue
               }
 
@@ -538,7 +556,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     let processed = 0
     const cardsInfo = new Map<CardID, { space: Ref<Space>, _class: Ref<Class<Doc>> }>()
     const rateLimit = new RateLimiter(10)
-    let lastPrint = 0
+    let lastPrint = platformNow()
     await ctx.with('process-message-groups', {}, async (ctx) => {
       let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
         limit: messageGroupsLimit,
@@ -583,7 +601,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               if (message.removed) {
                 continue
               }
-              await rateLimit.exec(async () => {
+              await rateLimit.add(async () => {
                 await this.processCommunicationMessage(
                   ctx,
                   pushQueue,
@@ -596,7 +614,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               processed += 1
               const now = platformNow()
               if (now - lastPrint > printThresholdMs) {
-                ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+                ctx.info('processed', {
+                  processedCommunication: processed,
+                  elapsed: Math.round(now - lastPrint),
+                  workspace: this.workspace.uuid
+                })
                 lastPrint = now
               }
             }
@@ -623,8 +645,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
     await ctx.with('process-messages', {}, async (ctx) => {
       let messages = await communicationApi.findMessages(this.communicationSession, {
-        links: true,
-        files: true,
+        attachments: true,
         limit: messagesLimit,
         order: SortingOrder.Ascending
       })
@@ -646,7 +667,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (this.cancelling) {
               return processed
             }
-            await rateLimit.exec(async () => {
+            await rateLimit.add(async () => {
               await this.processCommunicationMessage(
                 ctx,
                 pushQueue,
@@ -666,13 +687,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           processed += 1
           const now = platformNow()
           if (now - lastPrint > printThresholdMs) {
-            ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+            ctx.info('processed', {
+              processedCommunication: processed,
+              elapsed: Math.round(now - lastPrint),
+              workspace: this.workspace.uuid
+            })
             lastPrint = now
           }
         }
         messages = await communicationApi.findMessages(this.communicationSession, {
-          links: true,
-          files: true,
+          attachments: true,
           limit: messagesLimit,
           order: SortingOrder.Ascending,
           created: {
@@ -697,7 +721,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       MessageEventType.CreateMessage,
       MessageEventType.UpdatePatch,
       MessageEventType.BlobPatch,
-      MessageEventType.LinkPreviewPatch,
+      MessageEventType.AttachmentPatch,
       MessageEventType.RemovePatch,
       CardEventType.UpdateCardType,
       CardEventType.RemoveCard
@@ -793,8 +817,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const messages = await communicationApi.findMessages(this.communicationSession, {
         card: cardId,
         id: msgId,
-        links: true,
-        files: true
+        attachments: true
       })
       if (messages.length === 1) {
         return messages[0]
@@ -825,15 +848,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     // If message was already fully replaced, other transactions can skip the message
     const messagesUpdated = new Set<MessageID>()
     for (const tx of txes) {
-      if (
-        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch, MessageEventType.LinkPreviewPatch].includes(
-          tx.event.type as any
-        )
-      ) {
-        const event = tx.event as
-          | QueueSourced<CreateMessageEvent>
-          | QueueSourced<UpdatePatchEvent>
-          | QueueSourced<LinkPreviewPatchEvent>
+      if ([MessageEventType.CreateMessage, MessageEventType.UpdatePatch].includes(tx.event.type as any)) {
+        const event = tx.event as QueueSourced<CreateMessageEvent> | QueueSourced<UpdatePatchEvent>
         if (event.messageId === undefined) {
           continue
         }
@@ -854,10 +870,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         for (const operation of event.operations) {
           if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
             for (const blobData of operation.blobs) {
-              const attachedBlob = Object.assign(blobData, {
+              const blobAttachment: Omit<BlobAttachment, 'type'> = {
+                id: blobData.blobId as any as AttachmentID,
+                params: blobData as BlobParams,
                 creator: event.socialId,
                 created: new Date(Date.parse(event.date))
-              })
+              }
+
               await this.processCommunicationBlob(
                 ctx,
                 pushQueue,
@@ -867,7 +886,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   space: cardDoc.space,
                   attachedTo: cardDoc._id
                 },
-                attachedBlob as AttachedBlob
+                blobAttachment
               )
             }
           } else if (operation.opcode === 'detach') {
@@ -879,6 +898,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
           }
         }
+      } else if (tx.event.type === MessageEventType.AttachmentPatch) {
+        // TODO: implement
       } else if (tx.event.type === MessageEventType.RemovePatch) {
         const event = tx.event
         messagesUpdated.add(event.messageId)
@@ -990,7 +1011,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  @withContext('process-blob')
   private async processBlob (
     ctx: MeasureContext<any>,
     v: { value: any, attr: AnyAttribute },
@@ -1001,6 +1021,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       const ref = v.value as Ref<Blob>
       if (ref === '' || ref.startsWith('http://') || ref.startsWith('https://')) {
+        return
+      }
+      if (ref.startsWith('{')) {
         return
       }
       if (v.attr.name === 'avatar' || v.attr.attributeOf === contactPlugin.class.Contact) {
@@ -1039,10 +1062,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     cardId: CardID,
     cardSpace: Ref<Space>,
     cardClass: Ref<Class<Card>>,
-    message: Pick<
-    Message,
-    'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'blobs' | 'thread' | 'linkPreviews'
-    >
+    message: Pick<Message, 'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'thread' | 'attachments'>
   ): Promise<void> {
     const indexedDoc = createIndexedDocFromMessage(cardId, cardSpace, cardClass, message)
     const markup = markdownToMarkup(message.content)
@@ -1054,7 +1074,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       .split(/\n\n+/)
       .join('\n')
     indexedDoc.fulltextSummary = textContent
-    for (const linkPreview of message.linkPreviews) {
+    const linkPreviews = message.attachments.filter(isLinkPreviewAttachment).map((it) => it.params)
+    for (const linkPreview of linkPreviews) {
       if (linkPreview.title !== undefined) {
         indexedDoc.fulltextSummary += '\n' + linkPreview.title
       }
@@ -1069,7 +1090,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.listener.onIndexing(indexedDoc)
     }
     await pushQueue.push(indexedDoc)
-    for (const blob of message.blobs) {
+
+    const blobs = message.attachments.filter(isBlobAttachment)
+    for (const blob of blobs) {
       await this.processCommunicationBlob(ctx, pushQueue, indexedDoc, blob)
     }
   }
@@ -1079,32 +1102,37 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx: MeasureContext<any>,
     pushQueue: ElasticPushQueue,
     parentDoc: { id: Ref<Doc>, _class: Ref<Class<Doc>>[], space: Ref<Space>, attachedTo?: Ref<Doc> },
-    blob: AttachedBlob
+    blobAttachment: Omit<BlobAttachment, 'type'>
   ): Promise<void> {
     try {
       const indexedDoc: IndexedDoc = {
-        id: `${blob.blobId}@${parentDoc.attachedTo}` as any,
+        id: `${blobAttachment.id}@${parentDoc.attachedTo}` as any,
         _class: [`${card.class.Card}%blob` as Ref<Class<Doc>>],
         space: parentDoc.space,
-        [docKey('createdOn', core.class.Doc)]: blob.created.getTime(),
-        [docKey('createdBy', core.class.Doc)]: blob.creator,
-        modifiedBy: blob.creator,
-        modifiedOn: blob.created.getTime(),
+        [docKey('createdOn', core.class.Doc)]: blobAttachment.created.getTime(),
+        [docKey('createdBy', core.class.Doc)]: blobAttachment.creator,
+        modifiedBy: blobAttachment.creator,
+        modifiedOn: blobAttachment.created.getTime(),
         attachedTo: parentDoc.id,
         attachedToClass: parentDoc._class[0],
-        searchTitle: blob.fileName,
-        searchShortTitle: blob.fileName,
+        searchTitle: blobAttachment.params.fileName,
+        searchShortTitle: blobAttachment.params.fileName,
         attachedToCard: parentDoc.attachedTo
       }
       indexedDoc.fulltextSummary = ''
-      await this.handleBlobRef(ctx, blob.blobId, indexedDoc, blob.mimeType)
+      await this.handleBlobRef(ctx, blobAttachment.params.blobId, indexedDoc, blobAttachment.params.mimeType)
       if (this.listener?.onIndexing !== undefined) {
         await this.listener.onIndexing(indexedDoc)
       }
       await pushQueue.push(indexedDoc)
     } catch (err: any) {
       Analytics.handleError(err)
-      ctx.error('failed to handle blob', { err, _id: blob.blobId, workspace: this.workspace.uuid })
+      ctx.error('failed to handle blob', {
+        err,
+        attachmentId: blobAttachment.id,
+        blobId: blobAttachment.params.blobId,
+        workspace: this.workspace.uuid
+      })
     }
   }
 
@@ -1119,10 +1147,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // We have blob, we need to decode it to string.
       const contentType = (docInfo.contentType ?? defaultContentType).split(';')[0]
 
-      if (
-        (contentType.includes('text/') && contentType !== 'text/rtf') ||
-        contentType.includes('application/vnd.github.VERSION.diff')
-      ) {
+      const ct = contentType.toLocaleLowerCase()
+      if ((ct.includes('text/') && contentType !== 'text/rtf') || ct.includes('application/vnd.github.version.diff')) {
         await this.handleTextBlob(ctx, docInfo, indexedDoc)
       } else if (isBlobAllowed(contentType)) {
         await this.handleBlob(ctx, docInfo, indexedDoc)
@@ -1133,25 +1159,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
     if (docInfo !== undefined) {
       const contentType = (docInfo.contentType ?? '').split(';')[0]
-      const readable = await this.storageAdapter?.get(ctx, this.workspace, docInfo._id)
 
-      if (readable !== undefined) {
-        try {
-          let textContent = await ctx.with('fetch', {}, () =>
-            this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, readable)
-          )
-          textContent = textContent
-            .split(/ +|\t+|\f+/)
-            .filter((it) => it)
-            .join(' ')
-            .split(/\n\n+/)
-            .join('\n')
-
-          indexedDoc.fulltextSummary += '\n' + textContent
-        } finally {
-          readable?.destroy()
-        }
+      if (docInfo.size > 30 * 1024 * 1024) {
+        throw new Error('Blob size exceeds limit of 30MB')
       }
+      const buffer = Buffer.concat(
+        await ctx.with('fetch', {}, (ctx) => this.storageAdapter?.read(ctx, this.workspace, docInfo._id))
+      )
+      let textContent = await ctx.with(
+        'to-text',
+        {},
+        (ctx) => this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, buffer),
+        {
+          workspace: this.workspace.uuid,
+          blobId: docInfo._id,
+          contentType
+        }
+      )
+      textContent = textContent
+        .split(/ +|\t+|\f+/)
+        .filter((it) => it)
+        .join(' ')
+        .split(/\n\n+/)
+        .join('\n')
+
+      indexedDoc.fulltextSummary += '\n' + textContent
     }
   }
 
@@ -1183,6 +1215,7 @@ function isBlobAllowed (contentType: string): boolean {
     !contentType.includes('binary/octet-stream') &&
     !contentType.includes('application/octet-stream') &&
     !contentType.includes('application/zip') &&
-    !contentType.includes('application/x-zip-compressed')
+    !contentType.includes('application/x-zip-compressed') &&
+    !contentType.includes('application/link-preview')
   )
 }

@@ -75,6 +75,7 @@ import {
   FirstValue,
   FirstWorkingDayAfter,
   Floor,
+  Insert,
   LastValue,
   LowerCase,
   Modulo,
@@ -83,11 +84,14 @@ import {
   Power,
   Prepend,
   Random,
+  Remove,
   Replace,
   ReplaceAll,
   Round,
   Split,
   Subtract,
+  RemoveFirst,
+  RemoveLast,
   Trim,
   UpperCase
 } from './transform'
@@ -1046,7 +1050,11 @@ export default async () => ({
     Floor,
     Offset,
     FirstWorkingDayAfter,
-    RoleContext
+    RoleContext,
+    Insert,
+    Remove,
+    RemoveFirst,
+    RemoveLast
   },
   trigger: {
     OnProcessRemove,

@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
   import { tick, createEventDispatcher } from 'svelte'
   import {
     uploadFile,
@@ -24,20 +24,37 @@
     getFileMetadata,
     isLinkPreviewEnabled
   } from '@hcengineering/presentation'
-  import { Message, MessageID, BlobData, LinkPreviewData } from '@hcengineering/communication-types'
+  import {
+    Message,
+    MessageID,
+    LinkPreviewParams,
+    BlobParams,
+    AttachmentID,
+    linkPreviewType,
+    BlobAttachment,
+    AppletParams
+  } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
-  import { ThrottledCaller } from '@hcengineering/ui'
+  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 
   import TextInput from '../TextInput.svelte'
   import IconAttach from '../icons/Attach.svelte'
-  import { defaultMessageInputActions, toMarkdown, toMarkup, loadLinkPreviewData } from '../../utils'
+  import {
+    defaultMessageInputActions,
+    toMarkdown,
+    toMarkup,
+    loadLinkPreviewParams,
+    isCardAllowedForCommunications,
+    showForbidden
+  } from '../../utils'
   import communication from '../../plugin'
-  import { type TextInputAction, type PresenceTyping, MessageDraft } from '../../types'
+  import { type TextInputAction, type PresenceTyping, MessageDraft, AppletDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
   import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
 
@@ -45,7 +62,7 @@
   export let message: Message | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
-  export let onSubmit: ((markdown: string, blobs: BlobData[]) => Promise<void>) | undefined = undefined
+  export let onSubmit: ((markdown: string, blobs: BlobParams[]) => Promise<void>) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
@@ -55,7 +72,7 @@
 
   const maxLinkPreviewCount = 4
   const previewUrls = new Map<string, boolean>()
-  const linksData = new Map<string, LinkPreviewData | null>()
+  const linksData = new Map<string, LinkPreviewParams | null>()
 
   let prevCard: Ref<Card> | undefined = card._id
   let prevMessage: MessageID | undefined = message?.id
@@ -93,12 +110,18 @@
   }
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
+    if (!(await isCardAllowedForCommunications(card))) {
+      await showForbidden()
+      return
+    }
+
     event.preventDefault()
     event.stopPropagation()
 
     const markup = event.detail
     const blobsToLoad = draft.blobs
     const linksToLoad = draft.links
+    const appletsToLoad = draft.applets
     const urlsToLoad = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
 
     draft = getEmptyDraft()
@@ -115,31 +138,69 @@
     }
 
     if (message === undefined) {
-      await createMessage(markdown, blobsToLoad, linksToLoad, urlsToLoad)
+      await createMessage(markdown, blobsToLoad, linksToLoad, urlsToLoad, appletsToLoad)
       dispatch('sent')
     } else {
-      await editMessage(message, markdown, blobsToLoad, linksToLoad)
+      await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
+    }
+  }
+
+  async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
+    if (appletDrafts.length === 0) return
+    const toAttach: AppletDraft[] = []
+    for (const appletDraft of appletDrafts) {
+      try {
+        const ap = applets.find((it) => it._id === appletDraft.appletId)
+        if (ap?.createFn == null) {
+          toAttach.push(appletDraft)
+          continue
+        }
+        const r = await getResource(ap.createFn)
+        await r(card, messageId, appletDraft.params)
+        toAttach.push(appletDraft)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    if (toAttach.length > 0) {
+      void communicationClient.attachmentPatch<AppletParams>(card._id, messageId, {
+        add: toAttach.map((it) => ({
+          type: it.type,
+          params: it.params
+        }))
+      })
     }
   }
 
   async function createMessage (
     markdown: string,
-    blobs: BlobData[],
-    links: LinkPreviewData[],
-    urlsToLoad: string[]
+    blobs: BlobParams[],
+    links: LinkPreviewParams[],
+    urlsToLoad: string[],
+    appletDrafts: AppletDraft[]
   ): Promise<void> {
     const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
     void client.update(card, {}, false, Date.now())
 
+    void attachApplets(messageId, appletDrafts)
+
     if (blobs.length > 0) {
-      void communicationClient.blobPatch(card._id, messageId, {
-        attach: blobs
+      void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
+        add: blobs.map((it) => ({
+          id: it.blobId as any as AttachmentID,
+          type: it.mimeType,
+          params: it
+        }))
       })
     }
 
     if (links.length > 0) {
-      void communicationClient.linkPreviewPatch(card._id, messageId, {
-        attach: links
+      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+        add: links.map((it) => ({
+          type: linkPreviewType,
+          params: it
+        }))
       })
     }
 
@@ -147,10 +208,15 @@
       if (links.some((it) => it.url === url)) continue
       const fetchedData = linksData.get(url)
       if (fetchedData === null) continue
-      const data = fetchedData ?? (await loadLinkPreviewData(url))
-      if (data === undefined) continue
-      void communicationClient.linkPreviewPatch(card._id, messageId, {
-        attach: [data]
+      const params = fetchedData ?? (await loadLinkPreviewParams(url))
+      if (params === undefined) continue
+      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+        add: [
+          {
+            type: linkPreviewType,
+            params
+          }
+        ]
       })
     }
   }
@@ -158,31 +224,62 @@
   async function editMessage (
     message: Message,
     markdown: string,
-    blobs: BlobData[],
-    links: LinkPreviewData[]
+    blobs: BlobParams[],
+    links: LinkPreviewParams[],
+    appletDrafts: AppletDraft[]
   ): Promise<void> {
     await communicationClient.updateMessage(card._id, message.id, markdown)
 
-    const attachBlobs = blobs.filter((it) => !message.blobs.some((b) => b.blobId === it.blobId))
+    const attachBlobs = blobs.filter(
+      (b) => !message.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === b.blobId)
+    )
+
+    void attachApplets(
+      message.id,
+      appletDrafts.filter((a) => !message.attachments.some((it) => it.id === a.id))
+    )
 
     if (attachBlobs.length > 0) {
-      void communicationClient.blobPatch(card._id, message.id, {
-        attach: attachBlobs
+      void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
+        add: attachBlobs.map((it) => ({
+          id: it.blobId as any as AttachmentID,
+          type: it.mimeType,
+          params: it
+        }))
       })
     }
-    const detachBlobs = message.blobs.filter((it) => !blobs.some((b) => b.blobId === it.blobId))
+
+    const detachBlobs = message.attachments.filter(
+      (it) => isBlobAttachment(it) && !blobs.some((b) => b.blobId === it.params.blobId)
+    ) as BlobAttachment[]
     if (detachBlobs.length > 0) {
       detachBlobs.forEach((it) => {
-        void deleteFile(it.blobId)
+        void deleteFile(it.params.blobId)
       })
-      void communicationClient.blobPatch(card._id, message.id, {
-        detach: detachBlobs.map((it) => it.blobId)
+      void communicationClient.attachmentPatch(card._id, message.id, {
+        remove: detachBlobs.map((it) => it.id)
       })
     }
-    const attachLinks = links.filter((it) => !message.linkPreviews.some((b) => b.url === it.url))
 
-    void communicationClient.linkPreviewPatch(card._id, message.id, {
-      attach: attachLinks
+    const detachApplets = message.attachments.filter(
+      (it) => isAppletAttachment(it) && !appletDrafts.some((a) => a.id === it.id)
+    )
+
+    if (detachApplets.length > 0) {
+      void communicationClient.attachmentPatch(card._id, message.id, {
+        remove: detachApplets.map((it) => it.id)
+      })
+    }
+
+    const attachLinks = links.filter(
+      (l) => !message.attachments.some((it) => isLinkPreviewAttachment(it) && it.params.url === l.url)
+    )
+
+    void communicationClient.attachmentPatch(card._id, message.id, {
+      add: attachLinks.map((it) => ({
+        type: linkPreviewType,
+        params: it
+      }))
     })
 
     dispatch('edited')
@@ -237,7 +334,8 @@
   async function handleCancel (): Promise<void> {
     onCancel?.()
     for (const blob of draft.blobs) {
-      const fromMessage = message?.blobs.some((it) => it.blobId === blob.blobId)
+      const fromMessage =
+        message?.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === blob.blobId) ?? false
       if (!fromMessage) {
         void deleteFile(blob.blobId)
       }
@@ -342,7 +440,7 @@
 
     for (const url of urls) {
       try {
-        const data = linksData.get(url) ?? (await loadLinkPreviewData(url))
+        const data = linksData.get(url) ?? (await loadLinkPreviewParams(url))
         linksData.set(url, data ?? null)
         if (data === undefined || !previewUrls.has(url)) continue
         if (draftId !== draft._id) return
@@ -376,17 +474,41 @@
   }
 
   function isEmptyDraft (): boolean {
-    return isEmptyMarkup(draft.content) && draft.blobs.length === 0
+    return isEmptyMarkup(draft.content) && draft.blobs.length === 0 && draft.applets.length === 0
   }
 
-  function hasChanges (blobs: BlobData[], message: Message | undefined): boolean {
+  function hasChanges (blobs: BlobParams[], message: Message | undefined, appletDrafts: any[]): boolean {
     if (isEmptyDraft()) return false
-    if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(draft.content)
-    if (message.blobs.length !== blobs.length) return true
-    if (message.blobs.some((it) => !blobs.some((f) => f.blobId === it.blobId))) return true
+    if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(draft.content) || appletDrafts.length > 0
+    const messageBlobs = message?.attachments.filter(isBlobAttachment) ?? []
+    const messageApplets = message?.attachments.filter(isAppletAttachment) ?? []
+
+    if (messageBlobs.length !== blobs.length) return true
+    if (messageBlobs.some((it) => !blobs.some((b) => b.blobId === it.params.blobId))) return true
+    if (messageApplets.length !== appletDrafts.length) return true
+    if (messageApplets.some((it) => !appletDrafts.some((a) => a.id === it.id))) return true
 
     return !areEqualMarkups(draft.content, toMarkup(message.content))
   }
+
+  const applets = client.getModel().findAllSync(communication.class.Applet, {})
+  const appletActions: TextInputAction[] = applets.map((applet) => {
+    return {
+      label: applet.label,
+      icon: applet.icon,
+      action: () => {
+        showPopup(applet.createComponent, { applet }, 'center', (result) => {
+          if (result != null) {
+            draft = {
+              ...draft,
+              applets: [...draft.applets, { id: generateId(), type: applet.type, appletId: applet._id, params: result }]
+            }
+          }
+        })
+      },
+      order: 99999
+    }
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -413,16 +535,50 @@
     placeholder={title !== '' ? communication.string.MessageIn : undefined}
     placeholderParams={title !== '' ? { title } : undefined}
     loading={progress}
-    hasChanges={hasChanges(draft.blobs, message)}
-    actions={[...defaultMessageInputActions, attachAction]}
+    hasChanges={hasChanges(draft.blobs, message, draft.applets)}
+    actions={[...defaultMessageInputActions, attachAction, ...appletActions]}
     on:submit={handleSubmit}
     on:update={onUpdate}
     onCancel={onCancel ? handleCancel : undefined}
     onPaste={pasteAction}
   >
     <div slot="header" class="header">
-      {#if draft.blobs.length > 0 || draft.links.length > 0}
+      {#if draft.blobs.length > 0 || draft.links.length > 0 || draft.applets.length > 0}
         <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
+          {#each draft.applets as appletDraft}
+            {@const applet = applets.find((it) => it._id === appletDraft.appletId)}
+            {#if applet}
+              <Component
+                is={applet.previewComponent}
+                props={{
+                  applet,
+                  params: appletDraft.params,
+                  editing: message !== undefined && message.attachments.some((it) => it.id === appletDraft.id)
+                }}
+                on:change={() => {
+                  showPopup(applet.createComponent, { applet, params: appletDraft.params }, 'center', (result) => {
+                    if (result != null) {
+                      draft = {
+                        ...draft,
+                        applets: draft.applets.map((it) => {
+                          if (it.id === appletDraft.id) {
+                            return { ...it, params: result }
+                          }
+                          return it
+                        })
+                      }
+                    }
+                  })
+                }}
+                on:delete={() => {
+                  draft = {
+                    ...draft,
+                    applets: draft.applets.filter((it) => it.id !== appletDraft.id)
+                  }
+                }}
+              />
+            {/if}
+          {/each}
           {#each draft.blobs as attachedBlob (attachedBlob.blobId)}
             <div class="item flex">
               <AttachmentPresenter
@@ -442,7 +598,11 @@
                       blobs: draft.blobs.filter((it) => it.blobId !== attachedBlob.blobId)
                     }
 
-                    if (!message?.blobs?.some((it) => it.blobId === attachedBlob.blobId)) {
+                    if (
+                      !message?.attachments?.some(
+                        (it) => isBlobAttachment(it) && it.params.blobId === attachedBlob.blobId
+                      )
+                    ) {
                       void deleteFile(attachedBlob.blobId)
                     }
                   }

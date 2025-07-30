@@ -23,6 +23,8 @@ import { type QueuedEvent } from './types'
 export class AnalyticsCollectorProvider implements AnalyticProvider {
   private readonly collectIntervalMs = 5000
   private readonly maxRetries = 3
+  private readonly maxBatchSize = 100
+  private readonly maxBatchSizeBytes = 5 * 1024 * 1024 // 5MB
   private readonly events: QueuedEvent[] = []
   private collectTimer: any = null
   private url: string = ''
@@ -70,24 +72,55 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
     const token = getMetadata(presentation.metadata.Token) ?? ''
     if (token === '') return
 
-    const eventsToSend = this.events.splice(0, this.events.length)
+    const batches = this.createBatches(this.events)
+    this.events.length = 0
 
-    try {
-      const response = await fetch(`${this.url}/collect`, {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(eventsToSend)
-      })
+    for (const batch of batches) {
+      try {
+        const response = await fetch(`${this.url}/collect`, {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(batch)
+        })
 
-      if (!response.ok) {
-        this.handleFailedEvents(eventsToSend)
+        if (!response.ok) {
+          this.handleFailedEvents(batch)
+        }
+      } catch (err) {
+        this.handleFailedEvents(batch)
       }
-    } catch (err) {
-      this.handleFailedEvents(eventsToSend)
     }
+  }
+
+  private createBatches (events: QueuedEvent[]): QueuedEvent[][] {
+    const batches: QueuedEvent[][] = []
+    let currentBatch: QueuedEvent[] = []
+    let currentBatchSize = 0
+
+    for (const event of events) {
+      const eventSize = JSON.stringify(event).length
+
+      if (
+        currentBatch.length >= this.maxBatchSize ||
+        (currentBatchSize + eventSize > this.maxBatchSizeBytes && currentBatch.length > 0)
+      ) {
+        batches.push(currentBatch)
+        currentBatch = []
+        currentBatchSize = 0
+      }
+
+      currentBatch.push(event)
+      currentBatchSize += eventSize
+    }
+
+    if (currentBatch.length > 0) {
+      batches.push(currentBatch)
+    }
+
+    return batches
   }
 
   private handleFailedEvents (failedEvents: QueuedEvent[]): void {

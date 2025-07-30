@@ -45,6 +45,7 @@ import contact, {
   Contact,
   Employee,
   Person,
+  PersonSpace,
   SocialIdentity,
   SocialIdentityRef
 } from '.'
@@ -53,6 +54,7 @@ import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 import ContactCache from './cache'
 
 let currentEmployee: Ref<Employee>
+let currentEmployeeSpace: Ref<PersonSpace>
 
 const employeeListeners: ((ref: Ref<Employee>) => void)[] = []
 /**
@@ -61,6 +63,10 @@ const employeeListeners: ((ref: Ref<Employee>) => void)[] = []
  */
 export function getCurrentEmployee (): Ref<Employee> {
   return currentEmployee
+}
+
+export function getCurrentEmployeeSpace (): Ref<PersonSpace> {
+  return currentEmployeeSpace
 }
 
 export function addEmployeeListenrer (l: (ref: Ref<Employee>) => void): void {
@@ -76,6 +82,10 @@ export function setCurrentEmployee (employee: Ref<Employee>): void {
   for (const l of employeeListeners) {
     l(employee)
   }
+}
+
+export function setCurrentEmployeeSpace (space: Ref<PersonSpace>): void {
+  currentEmployeeSpace = space
 }
 
 /**

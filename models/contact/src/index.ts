@@ -435,7 +435,9 @@ export function createModel (builder: Builder): void {
               label: contact.string.Guest,
               baseQuery: {
                 role: 'GUEST'
-              }
+              },
+              createLabel: contact.string.Guest,
+              createComponent: contact.component.CreateGuest
             }
           },
           {

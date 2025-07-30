@@ -16,8 +16,12 @@ import { derived, get } from 'svelte/store'
 import { type Location, location } from '@hcengineering/ui'
 import { type Card } from '@hcengineering/card'
 import { EmptyMarkup } from '@hcengineering/text'
+import { getClient } from '@hcengineering/presentation'
+import { type Applet } from '@hcengineering/communication'
 import { type Message } from '@hcengineering/communication-types'
+import { isBlobAttachment, isLinkPreviewAttachment, isAppletAttachment } from '@hcengineering/communication-shared'
 
+import communication from './plugin'
 import { type MessageDraft } from './types'
 import { toMarkup } from './utils'
 
@@ -35,7 +39,8 @@ export function getEmptyDraft (): MessageDraft {
     _id: generateId(),
     content: EmptyMarkup,
     blobs: [],
-    links: []
+    links: [],
+    applets: []
   }
 }
 
@@ -57,7 +62,8 @@ export function getDraft (card: Ref<Card>): MessageDraft {
       _id: data._id ?? generateId(),
       content: data.content ?? EmptyMarkup,
       blobs: data.blobs ?? [],
-      links: data.links ?? []
+      links: data.links ?? [],
+      applets: data.applets ?? []
     }
   } catch (e) {
     console.error(e)
@@ -84,16 +90,20 @@ export function saveDraft (card: Ref<Card>, draft: MessageDraft): void {
 }
 
 export function messageToDraft (message: Message): MessageDraft {
+  const applets: Applet[] = getClient().getModel().findAllSync(communication.class.Applet, {})
   return {
     _id: message.id,
     content: toMarkup(message.content),
-    links: [...message.linkPreviews],
-    blobs: message.blobs.map((it) => ({
-      blobId: it.blobId,
-      mimeType: it.mimeType,
-      fileName: it.fileName,
-      size: it.size,
-      metadata: it.metadata
-    }))
+    blobs: message.attachments.filter(isBlobAttachment).map((it) => it.params),
+    links: message.attachments.filter(isLinkPreviewAttachment).map((it) => it.params),
+    applets: message.attachments
+      .filter(isAppletAttachment)
+      .map((it) => ({
+        id: it.id,
+        type: it.type,
+        appletId: applets.find((a) => a.type === it.type)?._id as any,
+        params: it.params
+      }))
+      .filter((it) => it.appletId !== undefined)
   }
 }

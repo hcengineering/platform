@@ -8,7 +8,7 @@ import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import { serveStats } from './stats'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('stats', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'stats')
 
 const metricsContext = new MeasureMetricsContext(

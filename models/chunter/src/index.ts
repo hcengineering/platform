@@ -93,6 +93,14 @@ export function createModel (builder: Builder): void {
     createAccessLevel: AccountRole.Guest
   })
 
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
   spaceClasses.forEach((spaceClass) => {
@@ -187,7 +195,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
-    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description', 'members', 'owners']
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'description', 'members', 'owners']
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {

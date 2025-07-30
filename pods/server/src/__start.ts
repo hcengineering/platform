@@ -26,7 +26,7 @@ import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('server', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'transactor')
 
 let getStats: () => WorkspaceStatistics[] = () => {
@@ -58,7 +58,8 @@ const metricsContext = initStatisticsContext('transactor', {
       new SplitLogger('server', {
         root: join(process.cwd(), 'logs'),
         enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
-      })
+      }),
+      process.env.VERSION
     )
 })
 

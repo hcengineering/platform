@@ -1263,6 +1263,31 @@ abstract class PostgresAdapterBase implements DbAdapter {
               res.push(`${tkey} @> ${vars.addArray(val, valType)}`)
             }
             break
+          case '$size': {
+            let v = val
+            let op = '='
+            if (typeof val === 'object') {
+              if (val.$gt !== undefined) {
+                v = val.$gt
+                op = '>'
+              } else if (val.$gte !== undefined) {
+                v = val.$gte
+                op = '>='
+              } else if (val.$lt !== undefined) {
+                v = val.$lt
+                op = '<'
+              } else if (val.$lte !== undefined) {
+                v = val.$lte
+                op = '<='
+              }
+            }
+            if (type === 'dataArray') {
+              res.push(`coalesce(jsonb_array_length(${tkey}), 0) ${op} ${vars.add(v, '::integer')}`)
+            } else {
+              res.push(`array_length(${tkey}, 1) ${op} ${vars.add(v, '::integer')}`)
+            }
+            break
+          }
           default:
             nonOperator[operator] = value[operator]
             break
@@ -1756,6 +1781,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
       }
       return undefined
     })
+
     for (const [domain, txs] of byDomain) {
       if (domain === undefined) {
         continue
@@ -1933,7 +1959,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
             WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id`
 
             await this.mgr.retry(ctx.id, this.mgrId, (client) =>
-              ctx.with('bulk-update', {}, () => client.execute(op, data))
+              _ctx.with('bulk-update', {}, () => client.execute(op, data))
             )
           }
         }

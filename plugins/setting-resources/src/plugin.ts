@@ -129,6 +129,8 @@ export default mergeIds(settingId, setting, {
     GuestAccess: '' as IntlString,
     GuestAccessDescription: '' as IntlString,
     GuestSignUpDescription: '' as IntlString,
+    GuestCardsDescription: '' as IntlString,
+    GuestCardsArrayLabel: '' as IntlString,
     ManageIdentities: '' as IntlString,
     AddNew: '' as IntlString,
     Release: '' as IntlString,

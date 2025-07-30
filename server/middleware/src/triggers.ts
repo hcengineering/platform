@@ -184,7 +184,9 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     } else {
       ctx.contextData.asyncRequests = [
         ...(ctx.contextData.asyncRequests ?? []),
-        async (ctx) => {
+        async (_ctx, id?: string) => {
+          // Just replace id of previous context
+          ctx.id = id
           // In case of async context, we execute both async and sync triggers as sync
           await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
         }

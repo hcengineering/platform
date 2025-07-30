@@ -26,9 +26,6 @@
   $: _class = hierarchy.findClass(context._class)
 </script>
 
-{#if context.isResult}
-  <Label label={process.string.Result} />:
-{/if}
 {#if _class?.label !== undefined}
   <Label label={_class.label} />
 {/if}

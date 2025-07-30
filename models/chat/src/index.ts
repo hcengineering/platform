@@ -22,6 +22,7 @@ import communication, { MessagesNavigationAnchors } from '@hcengineering/communi
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 import chat from './plugin'
+import { AccountRole } from '@hcengineering/core'
 
 export { chatId } from '@hcengineering/chat'
 export { chatOperation } from './migration'
@@ -71,4 +72,12 @@ export function createModel (builder: Builder): void {
     },
     PaletteColorIndexes.Blueberry
   )
+
+  builder.mixin(chat.masterTag.Channel, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(chat.masterTag.Thread, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
+  })
 }

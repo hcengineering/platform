@@ -90,7 +90,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   app.use(express.json({ limit: '50mb' }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
-  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
   class LogStream {
     write (text: string): void {
       requests.info(text)

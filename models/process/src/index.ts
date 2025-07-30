@@ -220,6 +220,7 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
   category: AttributeCategory | undefined
   label!: IntlString
   editor?: AnyComponent
+  presenter?: AnyComponent
   allowMany?: boolean
   type!: 'transform' | 'reduce' | 'context'
 }
@@ -656,6 +657,68 @@ export function createModel (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Insert,
+      editor: process.transformEditor.ArrayElementEditor,
+      type: 'transform'
+    },
+    process.function.Insert
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Remove,
+      editor: process.transformEditor.ArrayElementEditor,
+      type: 'transform'
+    },
+    process.function.Remove
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveFirst,
+      type: 'transform'
+    },
+    process.function.RemoveFirst
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveLast,
+      type: 'transform'
+    },
+    process.function.RemoveLast
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.RemoveLast,
+      type: 'transform'
+    },
+    process.function.RemoveLast
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: contact.mixin.Employee,
       editor: process.component.RoleEditor,
       category: 'array',
@@ -716,7 +779,7 @@ export function createModel (builder: Builder): void {
           presenter: process.component.ExecutonPresenter
         },
         {
-          key: '',
+          key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
         },
@@ -769,7 +832,7 @@ export function createModel (builder: Builder): void {
           key: 'card'
         },
         {
-          key: 'process',
+          key: '',
           label: process.string.Process,
           presenter: process.component.ExecutonPresenter
         },

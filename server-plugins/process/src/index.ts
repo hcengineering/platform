@@ -69,7 +69,11 @@ export default plugin(serverProcessId, {
     Floor: '' as Resource<TransformFunc>,
     Offset: '' as Resource<TransformFunc>,
     FirstWorkingDayAfter: '' as Resource<TransformFunc>,
-    RoleContext: '' as Resource<TransformFunc>
+    RoleContext: '' as Resource<TransformFunc>,
+    Insert: '' as Resource<TransformFunc>,
+    Remove: '' as Resource<TransformFunc>,
+    RemoveFirst: '' as Resource<TransformFunc>,
+    RemoveLast: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

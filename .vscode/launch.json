@@ -105,7 +105,8 @@
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
         "QUEUE_CONFIG": "localhost:19092",
-        "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename"
+        "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

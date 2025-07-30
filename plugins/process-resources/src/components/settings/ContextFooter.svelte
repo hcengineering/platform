@@ -17,6 +17,8 @@
   import { Doc } from '@hcengineering/core'
   import { Process, Step } from '@hcengineering/process'
   import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
+  import { Label } from '@hcengineering/ui'
+  import processPlugin from '../../plugin'
 
   export let process: Process
   export let step: Step<Doc>
@@ -26,6 +28,9 @@
   $: currentResultContext = step.result ? process.context[step.result._id] : undefined
 </script>
 
+{#if currentContext || currentResultContext}
+  <Label label={processPlugin.string.Result} />
+{/if}
 {#if currentContext}
   <div class="container">
     <ProcessContextPresenter context={currentContext} />
@@ -40,11 +45,10 @@
 
 <style lang="scss">
   .container {
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 0.5rem;
     background: #3575de33;
-    padding-left: 0.75rem;
     border: 1px solid var(--primary-button-default);
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     display: flex;
     align-items: center;
     color: var(--theme-caption-color);

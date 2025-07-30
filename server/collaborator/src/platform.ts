@@ -14,8 +14,10 @@
 //
 
 import core, {
+  AccountUuid,
   Client,
   PersonId,
+  SocialId,
   pickPrimarySocialId,
   systemAccountUuid,
   TxOperations,
@@ -32,15 +34,19 @@ async function connect (token: string): Promise<Client> {
   return await createClient(endpoint, token)
 }
 
+async function getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
+  const token = generateToken(account, undefined, { service: 'collaborator' })
+  const accountClient = getAccountClient(config.AccountsUrl, token)
+  return await accountClient.getSocialIds()
+}
+
 async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
   let primarySocialString: PersonId
 
   if (token.account === systemAccountUuid) {
     primarySocialString = core.account.System
   } else {
-    const rawToken = generateToken(token.account, token.workspace, { service: 'collaborator' })
-    const accountClient = getAccountClient(config.AccountsUrl, rawToken)
-    const socialIds = await accountClient.getSocialIds()
+    const socialIds = await getAccountSocialIds(token.account)
     primarySocialString = pickPrimarySocialId(socialIds)._id
   }
 
@@ -65,7 +71,7 @@ export type ClientFactory = (params?: ClientFactoryParams) => Promise<TxOperatio
 export function simpleClientFactory (token: Token): ClientFactory {
   return async (params?: ClientFactoryParams) => {
     const derived = params?.derived ?? false
-    const client = await connect(generateToken(token.account, token.workspace, { service: 'collaborator' }))
+    const client = await connect(generateToken(systemAccountUuid, token.workspace, { service: 'collaborator' }))
     return await getTxOperations(client, token, derived)
   }
 }

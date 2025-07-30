@@ -30,8 +30,8 @@
   export let author: Person | undefined
 </script>
 
-{#if update.type === ActivityUpdateType.Attribute && model}
-  <ActivityUpdateAttributeViewer {model} {update} />
+{#if update.type === ActivityUpdateType.Attribute}
+  <ActivityUpdateAttributeViewer {model} {update} cardType={card._class} />
 {:else if update.type === ActivityUpdateType.Tag}
   <ActivityUpdateTagViewer {update} {content} />
 {:else if update.type === ActivityUpdateType.Collaborators}

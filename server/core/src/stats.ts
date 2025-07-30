@@ -128,9 +128,11 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          prev = metricsContext
-            .withoutTracing(() =>
-              fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+          void metricsContext.with(
+            'sendStatistics',
+            {},
+            async (ctx) => {
+              prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
@@ -138,11 +140,14 @@ export function initStatisticsContext (
                 },
                 body: statData
               })
-            )
-            .finally(() => {
-              prev = undefined
-            })
-            .catch(handleError)
+                .finally(() => {
+                  prev = undefined
+                })
+                .catch(handleError)
+            },
+            undefined,
+            { span: 'disable' }
+          )
         }
       } catch (err: any) {
         handleError(err)

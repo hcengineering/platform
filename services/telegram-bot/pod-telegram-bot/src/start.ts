@@ -44,7 +44,7 @@ const ctx = initStatisticsContext('telegram-bot', {
     )
 })
 
-configureAnalytics(config.SentryDSN, config)
+configureAnalytics('telegram-bot-service', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'telegram-bot-service')
 
 export const start = async (): Promise<void> => {

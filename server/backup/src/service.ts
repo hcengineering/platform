@@ -293,7 +293,7 @@ class BackupWorker {
       url: ws.url,
       dataId: ws.dataId
     })
-    const ctx = rootCtx.newChild('doBackup', {})
+    const ctx = rootCtx.newChild('doBackup', {}, { span: false })
     const dataId = ws.dataId ?? (ws.uuid as unknown as WorkspaceDataId)
     let pipeline: Pipeline | undefined
     const backupIds = {
@@ -446,7 +446,7 @@ export async function doRestoreWorkspace (
     workspace: wsIds.uuid,
     dataId: wsIds.dataId
   })
-  const ctx = rootCtx.newChild('doRestore', {})
+  const ctx = rootCtx.newChild('doRestore', {}, { span: false })
   let pipeline: Pipeline | undefined
   try {
     pipeline = await pipelineFactory(

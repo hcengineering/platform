@@ -53,13 +53,33 @@ export interface HelloResponse extends Response<any> {
   useCompression?: boolean
 }
 
+function isTotalArray (value: any): value is { total?: number, lookupMap?: Record<string, any> } & any[] {
+  return Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)
+}
 export function rpcJSONReplacer (key: string, value: any): any {
-  if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
+  if (isTotalArray(value)) {
     return {
       dataType: 'TotalArray',
-      total: (value as any).total,
-      lookupMap: (value as any).lookupMap,
+      total: value.total,
+      lookupMap: value.lookupMap,
       value: [...value]
+    }
+  } else if (
+    typeof value === 'object' &&
+    value !== null &&
+    'domain' in value &&
+    typeof value.domain === 'string' &&
+    'value' in value &&
+    isTotalArray(value.value)
+  ) {
+    return {
+      ...value,
+      value: {
+        dataType: 'TotalArray',
+        total: value.value.total,
+        lookupMap: value.value.lookupMap,
+        value: [...value.value]
+      }
     }
   } else {
     return value ?? null
@@ -70,6 +90,17 @@ export function rpcJSONReceiver (key: string, value: any): any {
   if (typeof value === 'object' && value !== null) {
     if (value.dataType === 'TotalArray') {
       return Object.assign(value.value, { total: value.total, lookupMap: value.lookupMap })
+    } else if (
+      'domain' in value &&
+      typeof value.domain === 'string' &&
+      'value' in value &&
+      value.value != null &&
+      value.value.dataType === 'TotalArray'
+    ) {
+      return {
+        ...value,
+        value: Object.assign(value.value.value, { total: value.value.total, lookupMap: value.value.lookupMap })
+      }
     }
   }
   return value

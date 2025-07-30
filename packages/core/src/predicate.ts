@@ -110,6 +110,30 @@ const predicates: Record<string, PredicateFactory> = {
   $ne: (o, propertyKey) => {
     // eslint-disable-next-line eqeqeq
     return (docs) => execPredicate(docs, propertyKey, (value) => (o != null ? !deepEqual(o, value) : value != null))
+  },
+  $size: (o, propertyKey) => {
+    return (docs) =>
+      execPredicate(docs, propertyKey, (value) => {
+        if (!Array.isArray(value)) {
+          throw new Error('$size predicate requires array')
+        }
+        if (typeof o === 'number') {
+          return value.length === o
+        }
+        if (typeof o === 'object' && o.$gt !== undefined) {
+          return value.length > o.$gt
+        }
+        if (typeof o === 'object' && o.$gte !== undefined) {
+          return value.length >= o.$gte
+        }
+        if (typeof o === 'object' && o.$lt !== undefined) {
+          return value.length < o.$lt
+        }
+        if (typeof o === 'object' && o.$lte !== undefined) {
+          return value.length <= o.$lte
+        }
+        return false
+      })
   }
 }
 

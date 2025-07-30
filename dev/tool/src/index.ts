@@ -49,7 +49,7 @@ import {
   registerTxAdapterFactory,
   setAdapterSecurity
 } from '@hcengineering/server-pipeline'
-import serverToken, { generateToken } from '@hcengineering/server-token'
+import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 
 import { faker } from '@faker-js/faker'
@@ -1766,12 +1766,12 @@ export function devTool (
       }
     })
 
-  // program
-  // .command('decode-token <token>')
-  // .description('decode token')
-  // .action(async (token) => {
-  //   console.log(decodeToken(token))
-  // })
+  program
+    .command('decode-token <token>')
+    .description('decode token')
+    .action(async (token) => {
+      console.log(decodeToken(token))
+    })
 
   // program
   // .command('clean-workspace <workspace>')

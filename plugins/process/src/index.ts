@@ -162,6 +162,7 @@ export interface ProcessFunction extends Doc {
   type: 'transform' | 'reduce' | 'context'
   of: Ref<Class<Doc>>
   editor?: AnyComponent
+  presenter?: AnyComponent
   category: AttributeCategory | undefined
   allowMany?: boolean
   label: IntlString
@@ -271,6 +272,10 @@ export default plugin(processId, {
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
     RoleContext: '' as Ref<ProcessFunction>,
-    All: '' as Ref<ProcessFunction>
+    All: '' as Ref<ProcessFunction>,
+    Insert: '' as Ref<ProcessFunction>,
+    Remove: '' as Ref<ProcessFunction>,
+    RemoveFirst: '' as Ref<ProcessFunction>,
+    RemoveLast: '' as Ref<ProcessFunction>
   }
 })

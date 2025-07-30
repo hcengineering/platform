@@ -113,7 +113,7 @@ export function createServerPipeline (
 ): PipelineFactory {
   return (ctx, workspace, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
-    const wsMetrics = metricsCtx.newChild('🧲 session', {})
+    const wsMetrics = metricsCtx.newChild('🧲 session', {}, { span: false })
     const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
 
     const middlewares: MiddlewareCreator[] = [
@@ -189,7 +189,7 @@ export function createBackupPipeline (
 ): PipelineFactory {
   return (ctx, workspace, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
-    const wsMetrics = metricsCtx.newChild('🧲 backup', {})
+    const wsMetrics = metricsCtx.newChild('🧲 backup', {}, { span: false })
     const conf = getConfig(metrics, dbUrl, wsMetrics, {
       ...opt,
       disableTriggers: true
@@ -336,7 +336,7 @@ export function getConfig (
   extensions?: Partial<DbConfiguration>
 ): DbConfiguration {
   const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
-  const wsMetrics = metricsCtx.newChild('🧲 session', {})
+  const wsMetrics = metricsCtx.newChild('🧲 session', {}, { span: false })
   const conf: DbConfiguration = {
     domains: {
       [DOMAIN_TX]: 'Tx',

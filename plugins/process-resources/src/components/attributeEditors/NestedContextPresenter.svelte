@@ -24,5 +24,16 @@
 </script>
 
 {#if relation !== undefined && attr}
-  <Label label={relation.attribute.label} /> > <Label label={attr.label} />
+  <Label label={relation.attribute.label} />
+  <span class="attr">
+    <Label label={attr.label} />
+  </span>
 {/if}
+
+<style lang="scss">
+  .attr {
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--theme-toggle-bg-color);
+  }
+</style>
