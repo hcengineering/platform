@@ -9,13 +9,14 @@
 
   import gmail from '../plugin'
   import { getState } from '../api'
+  import { IntlString } from '@hcengineering/platform'
 
   export let integration: Integration
 
-  let connection: Integration
   let isLoading = true
   let isRefreshing = false
   let error: string | null = null
+  let errorLabel: IntlString | undefined
   let state: GmailSyncState | null | undefined
 
   const unsubscribers: (() => void)[] = []
@@ -27,6 +28,9 @@
       subscribe()
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load gmail state'
+      if (error.includes('Failed to fetch')) {
+        errorLabel = gmail.string.FailedToConnect
+      }
       isLoading = false
       console.error('Error loading gmail state:', err)
     }
@@ -54,7 +58,7 @@
   async function refresh (): Promise<void> {
     try {
       isRefreshing = true
-      state = await getState()
+      state = await getState(integration.socialId)
     } catch (err: any) {
       console.error('Error refresh gmail state:', err.message)
     } finally {
@@ -75,7 +79,12 @@
           <Label label={gmail.string.NotConnectedIntegration} params={{ email: state?.email ?? '' }} />
         </span>
       </div>
-    {:else if error}
+    {:else if errorLabel !== undefined}
+      <div class="error-container" transition:fade={{ duration: 300 }}>
+        <IconError size={'medium'} />
+        <Label label={errorLabel} />
+      </div>
+    {:else if error != null}
       <div class="error-container" transition:fade={{ duration: 300 }}>
         <IconError size={'medium'} />
         <Label label={gmail.string.FailedToLoadState} />

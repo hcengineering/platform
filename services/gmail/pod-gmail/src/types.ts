@@ -85,4 +85,10 @@ export interface SyncState {
   totalMessages: number | null | undefined
   lastSynchronization?: Date | null
   error?: string
+  syncInfo?: {
+    type: 'full' | 'partial' | null
+    processedMessages: number
+    startTime: Date | null
+    isActive: boolean
+  }
 }

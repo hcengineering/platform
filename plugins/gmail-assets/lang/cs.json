@@ -39,7 +39,7 @@
     "ConfigDescription": "Rozšíření pro integraci e-mailů Gmail",
     "GooglePrivacy": "Použití a přenos informací získaných z Google API do jakékoli jiné aplikace bude v souladu s <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">zásadami Google API Services User Data Policy</a>, včetně požadavků na omezené použití.",
     "EmailNotificationsDescription": "Dostávejte osobní oznámení na e-mail.",
-    "FailedToConnect": "Nepodařilo se připojit k Gmail",
+    "FailedToConnect": "Služba Gmail není k dispozici",
     "TotalMessages": "Celkový počet zpráv",
     "FailedToLoadState": "Nepodařilo se načíst stav Gmailu",
     "NotConnectedIntegration": "Účet {email} není integrován s pracovním prostorem"

@@ -593,10 +593,14 @@ export class GmailClient {
     } catch (err: any) {
       this.ctx.error('Failed to get messages count', err.message)
     }
+
+    const syncStatus = this.syncManager.getSyncStatus()
+
     return {
       status: this.syncStarted ? 'active' : 'inactive',
       email: this.email,
-      totalMessages
+      totalMessages,
+      syncInfo: syncStatus
     }
   }
 
