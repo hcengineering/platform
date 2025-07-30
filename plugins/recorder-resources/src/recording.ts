@@ -13,8 +13,12 @@
 // limitations under the License.
 //
 
-import { type PopupResult, showPopup } from '@hcengineering/ui'
+import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+import { translate } from '@hcengineering/platform'
+import { getCurrentLanguage } from '@hcengineering/theme'
+import { addNotification, NotificationSeverity, type PopupResult, showPopup } from '@hcengineering/ui'
 import { type FileUploadCallback, type FileUploadOptions } from '@hcengineering/uploader'
+import view from '@hcengineering/view'
 import { derived, get, writable } from 'svelte/store'
 
 import RecordingPopup from './components/RecordingPopup.svelte'
@@ -43,6 +47,18 @@ export {
 export { recorder } from './stores/recorder'
 
 export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
+    addNotification(
+      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
+      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
+      view.component.ReadOnlyNotification,
+      undefined,
+      NotificationSeverity.Info,
+      'readOnlyNotification'
+    )
+    return
+  }
+
   await recorder.initialize()
   showRecordingPopup(onFileUploaded)
 }

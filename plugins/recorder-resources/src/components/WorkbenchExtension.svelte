@@ -4,15 +4,16 @@
   import { onMount } from 'svelte'
 
   import recorder from '../plugin'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
 
-  let parentElement: HTMLDivElement
+  const readonly = !hasAccountRole(getCurrentAccount(), AccountRole.Guest)
 
   onMount(() => {
     const endpoint = getMetadata(recorder.metadata.StreamUrl) ?? ''
-    if (endpoint !== '') {
+    if (endpoint !== '' && !readonly) {
       pushRootBarComponent('right', recorder.component.RecorderExt, 1300)
     }
   })
 </script>
 
-<div bind:this={parentElement} class="hidden"></div>
+<div id="recorder-workbench-ext" class="hidden" />
