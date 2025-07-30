@@ -84,7 +84,7 @@ export async function UpdateCard (
   const update: Record<string, any> = {}
   const prevValue: Record<string, any> = {}
   for (const key in params) {
-    prevValue[key] = (target)[key]
+    prevValue[key] = target[key]
     update[key] = (params as any)[key]
   }
   const res: Tx[] = [control.client.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update)]
