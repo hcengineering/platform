@@ -2053,12 +2053,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
     })
 
     const model = res.map((p) => parseDoc<Tx>(p, getSchema(DOMAIN_MODEL_TX)))
-    // We need to put all core.account.System transactions first
-    const systemTx: Tx[] = []
-    const userTx: Tx[] = []
-
-    model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
-    return this.stripHash(systemTx.concat(userTx)) as Tx[]
+    return this.stripHash(model) as Tx[]
   }
 }
 function prepareJsonValue (tkey: string, valType: string): { tlkey: string, arrowCount: number } {
@@ -2119,15 +2114,5 @@ export async function createPostgresTxAdapter (
     hierarchy,
     modelDb,
     'tx' + wsIds.url
-  )
-}
-
-function isPersonAccount (tx: Tx): boolean {
-  return (
-    (tx._class === core.class.TxCreateDoc ||
-      tx._class === core.class.TxUpdateDoc ||
-      tx._class === core.class.TxRemoveDoc) &&
-    ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-      (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
   )
 }
