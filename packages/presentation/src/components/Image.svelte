@@ -14,7 +14,9 @@
 -->
 <script lang="ts">
   import type { Blob, Ref } from '@hcengineering/core'
-  import { Image } from '@hcengineering/ui'
+  import { Image, lazyObserverContinuous } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
   import { getBlobRef } from '../preview'
 
   export let blob: Ref<Blob>
@@ -25,22 +27,58 @@
   export let responsive: boolean = false
   export let loading: 'lazy' | 'eager' = 'eager'
 
+  const dispatch = createEventDispatcher()
+
   let blobSrc: { src: string, srcset: string } | undefined
 
   $: void getBlobRef(blob, alt, width, height).then((val) => {
     blobSrc = val
   })
+
+  let visible = true
+  let loaded = false
+
+  function trackVisible (node: Element): any {
+    return lazyObserverContinuous(
+      node,
+      (val) => {
+        visible = val
+      },
+      '10%'
+    )
+  }
+
+  $: src = visible || loaded ? blobSrc?.src : undefined
+  $: srcset = visible || loaded ? blobSrc?.srcset : undefined
+
+  function handleLoad (): void {
+    loaded = true
+    dispatch('load')
+  }
+
+  function handleLoadStart (): void {
+    loaded = false
+    dispatch('loadstart')
+  }
+
+  function handleError (): void {
+    loaded = false
+    dispatch('error')
+  }
 </script>
 
-<Image
-  src={blobSrc?.src}
-  srcset={blobSrc?.srcset}
-  {alt}
-  width={responsive ? '100%' : width}
-  height={responsive ? '100%' : height}
-  {loading}
-  {fit}
-  on:load
-  on:error
-  on:loadstart
-/>
+<div use:trackVisible>
+  <Image
+    {src}
+    {srcset}
+    {alt}
+    width={responsive ? '100%' : width}
+    height={responsive ? '100%' : height}
+    {loading}
+    {fit}
+    on:load={handleLoad}
+    on:loadstart={handleLoadStart}
+    on:error={handleError}
+    on:loadstart
+  />
+</div>
