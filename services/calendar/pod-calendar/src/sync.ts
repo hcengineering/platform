@@ -55,7 +55,6 @@ import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
 import {
   getGoogleClient,
-  getWorkspaceToken,
   parseEventDate,
   parseRecurrenceStrings,
   removeIntegrationSecret,
@@ -98,7 +97,7 @@ export class IncomingSyncManager {
   }
 
   static async sync (ctx: MeasureContext, accountClient: AccountClient, user: Token, email: GoogleEmail): Promise<void> {
-    const client = await getClient(getWorkspaceToken(user.workspace))
+    const client = await getClient(user.workspace)
     const txOp = new TxOperations(client, user.userId)
     const google = getGoogleClient()
     const mutex = await lock(`${user.workspace}:${user.userId}:${email}`)

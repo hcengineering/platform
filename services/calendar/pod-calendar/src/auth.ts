@@ -32,11 +32,11 @@ import { calendar_v3, google } from 'googleapis'
 import { encode64 } from './base64'
 import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail, setSyncHistory } from './kvsUtils'
+import { lock } from './mutex'
 import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
+import { getGoogleClient, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
-import { lock } from './mutex'
 
 interface AuthResult {
   success: boolean
@@ -71,7 +71,7 @@ export class AuthController {
       async () => {
         const mutex = await lock(`${state.workspace}:${state.userId}`)
         try {
-          const client = await getClient(getWorkspaceToken(state.workspace))
+          const client = await getClient(state.workspace)
           const txOp = new TxOperations(client, state.userId)
           const controller = new AuthController(ctx, accountClient, txOp, state)
           await controller.process(code)
@@ -96,7 +96,7 @@ export class AuthController {
       async () => {
         const mutex = await lock(`${workspace}:${userId}`)
         try {
-          const client = await getClient(getWorkspaceToken(workspace))
+          const client = await getClient(workspace)
           const txOp = new TxOperations(client, core.account.System)
           const controller = new AuthController(ctx, accountClient, txOp, {
             userId,
@@ -321,8 +321,8 @@ export class AuthController {
     return authUrl
   }
 
-  static async getUserId (account: AccountUuid, token: string): Promise<PersonId> {
-    const client = await getClient(token)
+  static async getUserId (account: AccountUuid, workspace: WorkspaceUuid, token: string): Promise<PersonId> {
+    const client = await getClient(workspace, token)
     const person = await client.findOne(contact.class.Person, { personUuid: account })
     if (person === undefined) {
       throw new Error('Person not found')
