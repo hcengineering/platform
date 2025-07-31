@@ -80,13 +80,18 @@ export function removeDraft (card: Ref<Card>): void {
   localStorage.removeItem(key)
 }
 
-export function saveDraft (card: Ref<Card>, draft: MessageDraft): void {
+export function saveDraft (card: Ref<Card>, draft: MessageDraft, force = false): void {
   if (timer !== undefined) clearTimeout(timer)
   const key = geLocalStorageKey(card)
   if (key === undefined) return
-  timer = setTimeout(() => {
+
+  if (force) {
     localStorage.setItem(key, JSON.stringify(draft))
-  }, 1000)
+  } else {
+    timer = setTimeout(() => {
+      localStorage.setItem(key, JSON.stringify(draft))
+    }, 1000)
+  }
 }
 
 export function messageToDraft (message: Message): MessageDraft {

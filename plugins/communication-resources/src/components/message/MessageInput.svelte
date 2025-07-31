@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { Markup, RateLimiter, Ref, generateId } from '@hcengineering/core'
   import { tick, createEventDispatcher } from 'svelte'
   import {
     uploadFile,
@@ -37,6 +37,7 @@
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
+  import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
   import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
@@ -306,18 +307,17 @@
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
+    const blob = {
+      blobId: uuid,
+      mimeType: file.type,
+      fileName: file.name,
+      size: file.size,
+      metadata
+    }
+
     draft = {
       ...draft,
-      blobs: [
-        ...draft.blobs,
-        {
-          blobId: uuid,
-          mimeType: file.type,
-          fileName: file.name,
-          size: file.size,
-          metadata
-        }
-      ]
+      blobs: [...draft.blobs, blob]
     }
   }
 
@@ -509,6 +509,51 @@
       order: 99999
     }
   })
+
+  async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
+    const cardId = card._id
+
+    const onFileUploaded = async ({ uuid, name, file, size, metadata }: FileUploadCallbackParams): Promise<void> => {
+      const blob = {
+        blobId: uuid,
+        mimeType: file.type,
+        fileName: name,
+        size: size ?? file.size,
+        metadata
+      }
+
+      // We are probably in different card, update the draft in storage
+      let newDraft = getDraft(cardId)
+      newDraft = {
+        ...newDraft,
+        blobs: [...newDraft.blobs, blob]
+      }
+      saveDraft(cardId, newDraft, true)
+
+      // In case we are in the same card, update the draft in memory
+      if (cardId === card._id) {
+        draft = {
+          ...draft,
+          blobs: [...draft.blobs, blob]
+        }
+      }
+    }
+
+    const upload = await getResource(uploader.handler)
+    const target = { objectId: card._id, objectClass: card._class }
+    await upload({ onFileUploaded, target })
+  }
+
+  let uploadActionIndex = 1000
+  const uploadHandlers = getUploadHandlers(client, { category: 'media' })
+  const uploadActions = uploadHandlers.map((handler) => ({
+    order: handler.order ?? uploadActionIndex++,
+    label: handler.label,
+    icon: handler.icon,
+    action: () => {
+      void uploadWith(handler)
+    }
+  }))
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -536,7 +581,7 @@
     placeholderParams={title !== '' ? { title } : undefined}
     loading={progress}
     hasChanges={hasChanges(draft.blobs, message, draft.applets)}
-    actions={[...defaultMessageInputActions, attachAction, ...appletActions]}
+    actions={[...defaultMessageInputActions, attachAction, ...uploadActions, ...appletActions]}
     on:submit={handleSubmit}
     on:update={onUpdate}
     onCancel={onCancel ? handleCancel : undefined}

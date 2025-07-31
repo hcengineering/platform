@@ -18,7 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import FileUploadExt from './components/FileUploadExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
-import { uploadFiles, uploadXHRFiles, getUploadHandlers, showFilesUploadPopup, uploadXHRFolders } from './utils'
+import { uploadFiles, uploadXHRFiles, showFilesUploadPopup, uploadXHRFolders } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -29,7 +29,6 @@ export default async (): Promise<Resources> => ({
     ShowFilesUploadPopup: showFilesUploadPopup,
     UploadFiles: uploadFiles,
     UploadFilesHandler: uploadXHRFiles,
-    UploadFoldersHandler: uploadXHRFolders,
-    GetUploadHandlers: getUploadHandlers
+    UploadFoldersHandler: uploadXHRFolders
   }
 })

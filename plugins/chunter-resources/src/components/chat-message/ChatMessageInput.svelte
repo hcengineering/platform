@@ -230,6 +230,7 @@
   {focusIndex}
   bind:this={inputRef}
   bind:content={inputContent}
+  docId={object._id}
   docClass={object._class}
   {_class}
   space={getChannelSpace(object._class, object._id, object.space)}

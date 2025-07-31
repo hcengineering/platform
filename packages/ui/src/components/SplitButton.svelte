@@ -73,7 +73,7 @@
     >
       {#if icon || $$slots.icon}
         <div class="btn-icon pointer-events-none">
-          {#if icon}<Icon bind:icon size={iconSize} {iconProps} />{/if}
+          {#if icon}<Icon {icon} size={iconSize} {iconProps} />{/if}
           {#if $$slots.icon}<slot name="icon" />{/if}
         </div>
       {/if}
@@ -95,7 +95,7 @@
     >
       {#if secondIcon || $$slots.secondIcon}
         <div class="btn-icon pointer-events-none">
-          {#if secondIcon}<Icon bind:icon={secondIcon} size={secondIconSize} iconProps={secondIconProps} />{/if}
+          {#if secondIcon}<Icon icon={secondIcon} size={secondIconSize} iconProps={secondIconProps} />{/if}
           {#if $$slots.secondIcon}<slot name="secondIcon" />{/if}
         </div>
       {/if}

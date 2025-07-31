@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { releaseStream } from '@hcengineering/media'
   import { onDestroy } from 'svelte'
 
   export let selected: MediaDeviceInfo
@@ -21,18 +22,10 @@
   let stream: MediaStream | null = null
   let video: HTMLVideoElement | null = null
 
-  async function releaseStream (stream: MediaStream | null): Promise<void> {
-    if (stream !== null) {
-      stream.getTracks().forEach((track) => {
-        track.stop()
-      })
-    }
-  }
-
   async function updateStream (device: MediaDeviceInfo): Promise<void> {
     const constraints = device !== null ? { video: { deviceId: { exact: device.deviceId } } } : { video: true }
 
-    await releaseStream(stream)
+    releaseStream(stream)
 
     try {
       const newStream = await navigator.mediaDevices.getUserMedia(constraints)
@@ -40,7 +33,7 @@
         stream = newStream
       } else {
         // Device changed while we were waiting the stream
-        await releaseStream(newStream)
+        releaseStream(newStream)
       }
     } catch (err) {
       console.warn(err)
@@ -50,7 +43,7 @@
 
   onDestroy(async () => {
     await streamUpdatePromise
-    await releaseStream(stream)
+    releaseStream(stream)
   })
 
   $: streamUpdatePromise = updateStream(selected)

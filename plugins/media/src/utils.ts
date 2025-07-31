@@ -96,9 +96,8 @@ export async function requestMediaAccess (kind?: MediaDeviceKind, withAccess?: (
       console.error(err)
     }
 
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
+    releaseStream(stream)
+
     return true
   } catch (err) {
     console.warn('Error accessing media devices:', err)
@@ -218,4 +217,12 @@ export async function getDisplayMedia (constraints: MediaStreamConstraints): Pro
   }
 
   throw new Error('getDisplayMedia not supported')
+}
+
+export function releaseStream (stream: MediaStream | null): void {
+  if (stream !== null) {
+    stream.getTracks().forEach((track) => {
+      track.stop()
+    })
+  }
 }

@@ -13,13 +13,34 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
-import { record } from './recording'
+import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+import { translate, type Resources } from '@hcengineering/platform'
+import { getCurrentLanguage } from '@hcengineering/theme'
+import { type FileUploadOptions } from '@hcengineering/uploader'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import view from '@hcengineering/view'
 
+import { record } from './recording'
 import RecorderExt from './components/RecorderExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
 export { ScreenRecorder } from './screen-recorder'
+
+async function uploadHandler ({ onFileUploaded, target }: FileUploadOptions): Promise<void> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
+    addNotification(
+      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
+      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
+      view.component.ReadOnlyNotification,
+      undefined,
+      NotificationSeverity.Info,
+      'readOnlyNotification'
+    )
+    return
+  }
+
+  await record({ onFileUploaded, target })
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -27,6 +48,6 @@ export default async (): Promise<Resources> => ({
     WorkbenchExtension
   },
   function: {
-    Record: record
+    Record: uploadHandler
   }
 })
