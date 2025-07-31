@@ -132,9 +132,14 @@ export async function handleImageGet (
   await writeTempFile(tmpFile, blob.body)
 
   try {
-    const { contentType } = await ctx.with('sharp', {}, () => {
-      return runPipeline(tmpFile, outFile, { format, width, height, fit })
-    })
+    const { contentType } = await ctx.with(
+      'sharp',
+      { format },
+      () => {
+        return runPipeline(tmpFile, outFile, { format, width, height, fit })
+      },
+      { fit, width, height, size: blob.size }
+    )
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Cache-Control', cacheControl)
