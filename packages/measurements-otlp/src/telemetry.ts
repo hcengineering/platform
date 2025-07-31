@@ -18,6 +18,7 @@ import {
 import {
   context,
   metrics as otelMetrics,
+  propagation,
   Span,
   SpanStatusCode,
   trace,
@@ -131,31 +132,37 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
       fullParams?: FullParamsType
       logger?: MeasureLogger
       span?: WithOptions['span'] // By default true
+      meta?: Record<string, string | number | boolean>
     }
   ): MeasureContext {
-    let span: Span | undefined
-    let childContext: Context = context.active()
-    if (opt?.span === true) {
-      childContext =
-        this.span !== undefined
-          ? trace.setSpan(this.context ?? context.active(), this.span)
-          : this.context ?? context.active()
-      span = this.tracer.startSpan(name, undefined, childContext)
+    let _span: Span | undefined
+    let childContext: Context | undefined
+    if (opt?.span === true || opt?.span === 'inherit') {
+      childContext = opt?.span === 'inherit' ? context.active() : this.context ?? context.active()
+
+      if (opt.meta !== undefined && Object.keys(opt.meta).length > 0) {
+        // We need to set meta params
+        childContext = propagation.extract(childContext ?? context.active(), opt.meta)
+      }
+      _span = this.tracer.startSpan(name, undefined, childContext)
 
       const spanParams = [...Object.entries(params)]
       for (const [k, v] of spanParams) {
-        span?.setAttribute(k, v as any)
+        _span?.setAttribute(k, v as any)
       }
     }
     if (opt?.span === 'disable') {
-      childContext = suppressTracing(childContext)
+      childContext = suppressTracing(childContext ?? context.active())
+    }
+    if (childContext !== undefined && _span !== undefined) {
+      childContext = trace.setSpan(childContext, _span)
     }
 
     const result = new OpenTelemetryMetricsContext(
       name,
       this.tracer,
       childContext,
-      span,
+      _span,
       params,
       opt?.fullParams ?? {},
       childMetrics(this.metrics, [name]),
@@ -170,6 +177,14 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     return result
   }
 
+  extractMeta (): Record<string, string | number | boolean> {
+    const headers: Record<string, string> = {}
+    if (this.context !== undefined) {
+      propagation.inject(this.context, headers)
+    }
+    return headers
+  }
+
   with<T>(
     name: string,
     params: ParamsType,
@@ -180,7 +195,8 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     const c = this.newChild(name, opt?.inheritParams === true ? { ...this.params, ...params } : params, {
       fullParams,
       logger: this.logger,
-      span: opt?.span ?? true
+      span: opt?.span ?? true,
+      meta: opt?.meta
     })
     let needFinally = true
     try {

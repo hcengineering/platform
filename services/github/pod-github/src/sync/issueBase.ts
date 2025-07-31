@@ -85,7 +85,6 @@ export type IssueUpdate = DocumentUpdate<WithMarkup<Issue>>
 export abstract class IssueSyncManagerBase {
   provider!: IntegrationManager
   constructor (
-    readonly ctx: MeasureContext,
     readonly client: TxOperations,
     readonly lq: LiveQuery,
     readonly collaborator: CollaboratorClient
@@ -114,6 +113,7 @@ export abstract class IssueSyncManagerBase {
   }
 
   async handleUpdate (
+    ctx: MeasureContext,
     external: IssueExternalData,
     derivedClient: TxOperations,
     update: IssueUpdate,
@@ -156,7 +156,7 @@ export abstract class IssueSyncManagerBase {
             await this.collaborator.updateMarkup(collabId, update.description)
           } catch (err: any) {
             Analytics.handleError(err)
-            this.ctx.error(err)
+            ctx.error(err)
           }
         } else {
           delete update.description
@@ -248,6 +248,7 @@ export abstract class IssueSyncManagerBase {
   }
 
   abstract performIssueFieldsUpdate (
+    ctx: MeasureContext,
     info: DocSyncInfo,
     existing: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
@@ -258,9 +259,16 @@ export abstract class IssueSyncManagerBase {
     account: PersonId
   ): Promise<boolean>
 
-  abstract afterSync (existing: Issue, account: PersonId, issueExternal: any, info: DocSyncInfo): Promise<void>
+  abstract afterSync (
+    ctx: MeasureContext,
+    existing: Issue,
+    account: PersonId,
+    issueExternal: any,
+    info: DocSyncInfo
+  ): Promise<void>
 
   async handleDiffUpdate (
+    ctx: MeasureContext,
     container: ContainerFocus,
     existing: WithMarkup<Issue>,
     info: DocSyncInfo,
@@ -271,7 +279,7 @@ export abstract class IssueSyncManagerBase {
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     let needUpdate = false
     if (!this.client.getHierarchy().hasMixin(existing, github.mixin.GithubIssue)) {
-      await this.ctx.with(
+      await ctx.with(
         'create mixin issue: GithubIssue',
         {},
         async () => {
@@ -318,7 +326,7 @@ export abstract class IssueSyncManagerBase {
     const allAttributes = this.client.getHierarchy().getAllAttributes(existingIssue._class)
     const platformUpdate = collectUpdate<Issue>(previousData, existingIssue, Array.from(allAttributes.keys()))
 
-    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
 
     // Remove current same values from update
     for (const [k, v] of Object.entries(update)) {
@@ -343,7 +351,7 @@ export abstract class IssueSyncManagerBase {
       }
       if (pv != null && pv !== v) {
         // We have conflict of values, assume platform is more proper one.
-        this.ctx.error('conflict', { id: existing.identifier, k })
+        ctx.error('conflict', { id: existing.identifier, k })
         // Assume platform change is more important in case of conflict values.
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete (update as any)[k]
@@ -358,6 +366,7 @@ export abstract class IssueSyncManagerBase {
     if (container !== undefined && okit !== undefined) {
       // Check and update issue fields.
       needExternalSync = await this.performIssueFieldsUpdate(
+        ctx,
         info,
         existing,
         platformUpdate,
@@ -382,7 +391,7 @@ export abstract class IssueSyncManagerBase {
 
     // Update collaborative description
     if (update.description !== undefined) {
-      this.ctx.info(`<= perform ${issueExternal.url} update to collaborator`, {
+      ctx.info(`<= perform ${issueExternal.url} update to collaborator`, {
         workspace: this.provider.getWorkspaceId()
       })
       try {
@@ -392,21 +401,21 @@ export abstract class IssueSyncManagerBase {
         await this.collaborator.updateMarkup(collabId, description)
       } catch (err: any) {
         Analytics.handleError(err)
-        this.ctx.error('error during description update', err)
+        ctx.error('error during description update', err)
       }
       delete update.description
     }
 
     if (Object.keys(update).length > 0) {
       // We have some fields to update of existing from external
-      this.ctx.info(`<= perform ${issueExternal.url} update to platform`, {
+      ctx.info(`<= perform ${issueExternal.url} update to platform`, {
         ...update,
         workspace: this.provider.getWorkspaceId()
       })
       await this.client.update(existingIssue, update, false, new Date().getTime(), accountGH)
     }
 
-    await this.afterSync(existingIssue, accountGH, issueExternal, info)
+    await this.afterSync(ctx, existingIssue, accountGH, issueExternal, info)
     // We need to trigger external version retrieval, via sync or event, to prevent move sync operations from platform before we will be sure all is updated on github.
     return {
       current: issueData,
@@ -564,11 +573,12 @@ export abstract class IssueSyncManagerBase {
       update.assignee = assignees?.[0] ?? null
     }
     if (Object.keys(update).length > 0) {
-      await this.handleUpdate(issueExternal, derivedClient, update, account, container.project, false)
+      await this.handleUpdate(ctx, issueExternal, derivedClient, update, account, container.project, false)
     }
   }
 
   async syncIssues (
+    ctx: MeasureContext,
     _class: Ref<Class<Doc>>,
     repo: GithubIntegrationRepository,
     issues: IssueExternalData[],
@@ -592,14 +602,14 @@ export abstract class IssueSyncManagerBase {
     for (const issue of issues) {
       try {
         if (issue.url === undefined && Object.keys(issue).length === 0) {
-          this.ctx.info('Retrieve empty document', { repo: repo.name, workspace: this.provider.getWorkspaceId() })
+          ctx.info('Retrieve empty document', { repo: repo.name, workspace: this.provider.getWorkspaceId() })
           continue
         }
         const existing =
           syncInfo.find((it) => it.url.toLowerCase() === issue.url.toLowerCase()) ??
           syncInfo.find((it) => (it.external as IssueExternalData)?.id === issue.id)
         if (existing === undefined && syncDocs === undefined) {
-          this.ctx.info('Create sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId() })
+          ctx.info('Create sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId() })
           await ops.createDoc<DocSyncInfo>(github.class.DocSyncInfo, repo.githubProject, {
             url: issue.url.toLowerCase(),
             needSync: '',
@@ -618,7 +628,7 @@ export abstract class IssueSyncManagerBase {
           }
           const externalEqual = deepEqual(existing.external, issue) && existing.repository === repo._id
           if (!externalEqual || existing.externalVersion !== githubExternalSyncVersion) {
-            this.ctx.info('Update sync doc(extarnal changes)', {
+            ctx.info('Update sync doc(extarnal changes)', {
               url: issue.url,
               workspace: this.provider.getWorkspaceId()
             })
@@ -626,7 +636,7 @@ export abstract class IssueSyncManagerBase {
             if (existing.needSync === githubSyncVersion || existing.repository !== repo._id) {
               // Sync external if and only if no changes from platform or we do resync from github.
               // We need to apply changes from Github, while service was offline.
-              await this.performDocumentExternalSync(this.ctx, existing, existing.external, issue, derivedClient)
+              await this.performDocumentExternalSync(ctx, existing, existing.external, issue, derivedClient)
             }
 
             await ops.diffUpdate(
@@ -646,7 +656,7 @@ export abstract class IssueSyncManagerBase {
         }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.ctx.error(err)
+        ctx.error(err)
       }
     }
     // if no sync doc, mark it as synchronized
@@ -661,9 +671,15 @@ export abstract class IssueSyncManagerBase {
     this.provider.sync()
   }
 
-  abstract deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void>
+  abstract deleteGithubDocument (
+    ctx: MeasureContext,
+    container: ContainerFocus,
+    account: PersonId,
+    id: string
+  ): Promise<void>
 
   async handleDelete (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     derivedClient: TxOperations,
@@ -684,7 +700,7 @@ export abstract class IssueSyncManagerBase {
 
     if (issueExternal !== undefined) {
       try {
-        await this.deleteGithubDocument(container, account, issueExternal.id)
+        await this.deleteGithubDocument(ctx, container, account, issueExternal.id)
       } catch (err: any) {
         let cnt = false
         if (Array.isArray(err.errors)) {
@@ -698,7 +714,7 @@ export abstract class IssueSyncManagerBase {
         }
         if (!cnt) {
           Analytics.handleError(err)
-          this.ctx.error('Error', { err })
+          ctx.error('Error', { err })
           await derivedClient.update(info, { error: errorToObj(err), needSync: githubSyncVersion })
           return false
         }
@@ -714,7 +730,7 @@ export abstract class IssueSyncManagerBase {
         await derivedClient.remove(u)
       }
 
-      await deleteObjects(this.ctx, this.client, [existing], account)
+      await deleteObjects(ctx, this.client, [existing], account)
     }
     return true
   }

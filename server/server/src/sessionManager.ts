@@ -1309,7 +1309,10 @@ export class TSessionManager implements SessionManager {
                 this.createOpContext(callTx, requestCtx, pipeline, request.id, service, ws, rateLimit),
                 ...params
               ]),
-            { ...request, user: service.getUser, socialId: service.getRawAccount().primarySocialId }
+            { ...request, user: service.getUser, socialId: service.getRawAccount().primarySocialId },
+            {
+              meta: request.meta
+            }
           )
         })
       } catch (err: any) {
