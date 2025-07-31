@@ -121,6 +121,10 @@
     "NextToLast": "Penúltimo",
     "Last": "Último",
     "Weekday": "Dia da semana",
-    "WeekendDay": "Folga"
+    "WeekendDay": "Folga",
+    "NotConnectedIntegration": "A conta {email} não está integrada com o espaço de trabalho",
+    "SynchronizedCalendars": "Calendários sincronizados",
+    "Account": "Conta",
+    "NoCalendars": "Nenhum calendário encontrado"
   }
 }

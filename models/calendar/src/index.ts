@@ -249,8 +249,10 @@ export function createModel (builder: Builder): void {
       allowMultiple: true,
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
+      onDisconnectAll: calendar.handler.DisconnectAllHandler,
       reconnectComponent: calendar.component.IntegrationConnect,
       configureComponent: calendar.component.IntegrationConfigure,
+      stateComponent: calendar.component.IntegrationState,
       kind: calendarIntegrationKind
     },
     calendar.integrationType.Calendar

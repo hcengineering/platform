@@ -121,6 +121,10 @@
     "NextToLast": "Penultimo",
     "Last": "Ultimo",
     "Weekday": "Giorno lavorativo",
-    "WeekendDay": "Giorno libero"
+    "WeekendDay": "Giorno libero",
+    "NotConnectedIntegration": "L'account {email} non è integrato con il workspace",
+    "SynchronizedCalendars": "Calendari sincronizzati",
+    "Account": "Account",
+    "NoCalendars": "Nessun calendario selezionato per la sincronizzazione"
   }
 }
