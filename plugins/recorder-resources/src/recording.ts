@@ -13,21 +13,15 @@
 // limitations under the License.
 //
 
-import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-import { translate } from '@hcengineering/platform'
-import { getCurrentLanguage } from '@hcengineering/theme'
-import { addNotification, NotificationSeverity, type PopupResult, showPopup } from '@hcengineering/ui'
-import { type FileUploadCallback, type FileUploadOptions } from '@hcengineering/uploader'
-import view from '@hcengineering/view'
+import { type PopupResult, showPopup } from '@hcengineering/ui'
 import { derived, get, writable } from 'svelte/store'
-
-import RecordingPopup from './components/RecordingPopup.svelte'
 
 import { composer } from './stores/composer'
 import { manager } from './stores/manager'
-import { recorder } from './stores/recorder'
+import { type RecorderConfig, recorder } from './stores/recorder'
 
 import type { CameraPosition, CameraSize } from './types'
+import RecordingPopup from './components/RecordingPopup.svelte'
 
 export {
   camEnabled,
@@ -46,21 +40,9 @@ export {
 
 export { recorder } from './stores/recorder'
 
-export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
-  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
-    addNotification(
-      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
-      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
-      view.component.ReadOnlyNotification,
-      undefined,
-      NotificationSeverity.Info,
-      'readOnlyNotification'
-    )
-    return
-  }
-
-  await recorder.initialize()
-  showRecordingPopup(onFileUploaded)
+export async function record (config: RecorderConfig): Promise<void> {
+  await recorder.initialize(config)
+  showRecordingPopup()
 }
 
 export function toggleCam (): void {
@@ -103,19 +85,10 @@ export function setUseScreenShareSound (useScreenShareSound: boolean): void {
 
 const recordingPopup = writable<PopupResult | null>(null)
 
-export function recordingPopupOpened (): void {
-  // TODO
-}
-
-export function recordingPopupClosed (): void {
-  void cancelRecording()
-}
-
-export function showRecordingPopup (onFileUploaded: FileUploadCallback | undefined): void {
+function showRecordingPopup (): void {
   const current = get(recordingPopup)
   if (current === null) {
-    const result = showPopup(RecordingPopup, { onFileUploaded }, 'centered', () => {
-      console.log('Recording popup closed')
+    const result = showPopup(RecordingPopup, {}, 'centered', () => {
       recordingPopup.set(null)
     })
     recordingPopup.set(result)
@@ -143,7 +116,7 @@ export async function startRecording (): Promise<void> {
 
 export async function stopRecording (): Promise<void> {
   await recorder.stop()
-  showRecordingPopup(undefined)
+  showRecordingPopup()
 }
 
 export async function pauseRecording (): Promise<void> {
@@ -155,6 +128,10 @@ export async function resumeRecording (): Promise<void> {
 }
 
 export async function cancelRecording (): Promise<void> {
+  await recorder.cancel()
+}
+
+export async function cleanupRecording (): Promise<void> {
   await recorder.cleanup()
 }
 

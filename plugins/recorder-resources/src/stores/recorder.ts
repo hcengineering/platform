@@ -13,34 +13,37 @@
 // limitations under the License.
 //
 
+import { type FileUploadCallback, type FileUploadTarget } from '@hcengineering/uploader'
+
 import { type Readable, get, writable } from 'svelte/store'
 
 import { type ScreenRecorder, createScreenRecorder } from '../screen-recorder'
 import { composer } from '../stores/composer'
 import { camStream, manager, screenStream } from '../stores/manager'
-import type { CameraPosition, CameraSize, RecordingResult } from '../types'
+import type { RecordingResult } from '../types'
+import { deleteFile } from '@hcengineering/presentation'
 
 export type RecorderState = 'idle' | 'ready' | 'recording' | 'paused' | 'stopping' | 'stopped'
 
+export interface RecorderConfig {
+  onFileUploaded?: FileUploadCallback
+  target?: FileUploadTarget
+}
+
 export interface RecorderStore {
   state: RecorderState
+  config: RecorderConfig
   elapsedTime: number
   result: RecordingResult | null
 }
 
-export interface RecorderConfig {
-  fps: number
-  cameraSize: CameraSize
-  cameraPos: CameraPosition
-  onSuccess?: (result: RecordingResult) => Promise<void>
-}
-
 export interface Recorder {
-  initialize: () => Promise<void>
+  initialize: (config: RecorderConfig) => Promise<void>
   cleanup: () => Promise<void>
 
   start: () => Promise<void>
   stop: () => Promise<void>
+  cancel: () => Promise<void>
 
   pause: () => Promise<void>
   resume: () => Promise<void>
@@ -57,6 +60,7 @@ export interface Recorder {
 function createRecorder (): Readable<RecorderStore> & Recorder {
   const store = writable<RecorderStore>({
     state: 'idle',
+    config: {},
     elapsedTime: 0,
     result: null
   })
@@ -102,7 +106,7 @@ function createRecorder (): Readable<RecorderStore> & Recorder {
   return {
     subscribe: store.subscribe,
 
-    async initialize (): Promise<void> {
+    async initialize (config: RecorderConfig): Promise<void> {
       const { state } = get(store)
 
       if (state !== 'idle') {
@@ -112,7 +116,8 @@ function createRecorder (): Readable<RecorderStore> & Recorder {
 
       manager.initialize()
       composer.initialize()
-      updateStore({ state: 'ready' })
+
+      updateStore({ state: 'ready', config })
     },
 
     async start (): Promise<void> {
@@ -187,6 +192,20 @@ function createRecorder (): Readable<RecorderStore> & Recorder {
       await screenRecorder.resume()
       startElapsedTimer()
       updateStore({ state: 'recording' })
+    },
+
+    async cancel (): Promise<void> {
+      if (screenRecorder !== null) {
+        await screenRecorder?.cancel()
+        screenRecorder = null
+      }
+
+      const { result } = get(store)
+      if (result !== null) {
+        await deleteFile(result.uuid)
+      }
+
+      await this.cleanup()
     },
 
     async cleanup (): Promise<void> {

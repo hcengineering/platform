@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import core, { type Blob, type Ref } from '@hcengineering/core'
-  import drive, { createFile, getFileLink } from '@hcengineering/drive'
+  import drive, { createFile } from '@hcengineering/drive'
   import { enumerateDevices } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { FilePreview, getClient, MessageBox, SpaceSelector } from '@hcengineering/presentation'
-  import { FileUploadCallback } from '@hcengineering/uploader'
   import {
     EditBox,
     IconUpOutline,
@@ -30,8 +29,6 @@
     SelectPopup,
     SplitButton,
     eventToHTMLElement,
-    getCurrentResolvedLocation,
-    navigate,
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
@@ -42,6 +39,7 @@
   import { canvasWidth, canvasHeight, canvasStream } from '../stores/composer'
   import {
     cancelRecording,
+    cleanupRecording,
     pauseRecording,
     resumeRecording,
     setCam,
@@ -75,8 +73,7 @@
   import IconStop from './icons/Stop.svelte'
   import ShareSettingsPopup from './ShareSettingsPopup.svelte'
   import SettingsPopup from './SettingsPopup.svelte'
-
-  export let onFileUploaded: FileUploadCallback | undefined = undefined
+  import { openDocFromRef } from '@hcengineering/view-resources'
 
   const dispatch = createEventDispatcher()
 
@@ -110,35 +107,44 @@
   async function handleCompleteRecording (): Promise<void> {
     if (name.length === 0) return
 
-    const result = $recorderState.result
+    const {
+      result,
+      config: { onFileUploaded, target }
+    } = state
     if (result != null) {
-      // const file = new Blob([], { type: result.type })
-      // await onFileUploaded?.({
-      //   uuid: result.uuid as Ref<Blob>,
-      //   name,
-      //   file,
-      //   metadata: {
-      //     width: result.width,
-      //     height: result.height
-      //   }
-      // })
+      if (onFileUploaded !== undefined) {
+        const file = new Blob([], { type: result.type })
+        await onFileUploaded({
+          name,
+          file,
+          uuid: result.uuid as Ref<Blob>,
+          metadata: {
+            width: result.width,
+            height: result.height
+          }
+        })
+      }
 
-      const client = getClient()
-      const fileId = await createFile(client, space, drive.ids.Root, {
-        title: name,
-        file: result.uuid as Ref<Blob>,
-        size: result.size,
-        type: result.type,
-        lastModified: Date.now(),
-        metadata: {
-          width: result.width,
-          height: result.height
-        }
-      })
-
-      const loc = getCurrentResolvedLocation()
-      navigate(getFileLink(loc, fileId))
+      if (target === undefined) {
+        const client = getClient()
+        const fileId = await createFile(client, space, drive.ids.Root, {
+          title: name,
+          file: result.uuid as Ref<Blob>,
+          size: result.size,
+          type: result.type,
+          lastModified: Date.now(),
+          metadata: {
+            width: result.width,
+            height: result.height
+          }
+        })
+        void openDocFromRef(drive.class.File, fileId)
+      } else {
+        void openDocFromRef(target.objectClass, target.objectId)
+      }
     }
+
+    await cleanupRecording()
 
     dispatch('close')
   }
@@ -422,18 +428,20 @@
 
         <div class="flex-grow" />
 
-        <EditBox bind:value={name} placeholder={core.string.Name} />
+        <EditBox bind:value={name} placeholder={core.string.Name} kind={'default'} autoFocus />
 
-        <SpaceSelector
-          bind:space
-          _class={drive.class.Drive}
-          label={drive.string.Drive}
-          kind={'regular'}
-          size={'small'}
-          iconWithEmoji={view.ids.IconWithEmoji}
-          defaultIcon={drive.icon.Drive}
-          focus={false}
-        />
+        {#if state.config.target === undefined}
+          <SpaceSelector
+            bind:space
+            _class={drive.class.Drive}
+            label={drive.string.Drive}
+            kind={'regular'}
+            size={'medium'}
+            iconWithEmoji={view.ids.IconWithEmoji}
+            defaultIcon={drive.icon.Drive}
+            focus={false}
+          />
+        {/if}
       {:else}
         <!-- Stop Button -->
         {#if state.state === 'stopping'}

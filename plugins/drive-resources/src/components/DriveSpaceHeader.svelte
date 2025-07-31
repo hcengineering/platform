@@ -15,7 +15,8 @@
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { type Drive } from '@hcengineering/drive'
-  import { createQuery } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
   import { FileUploadOptions, getUploadHandlers, UploadHandler } from '@hcengineering/uploader'
   import drive from '../plugin'
@@ -26,7 +27,6 @@
     uploadFilesToDrivePopup,
     getUploadOptionsByFragment
   } from '../utils'
-  import { getResource } from '@hcengineering/platform'
   import { onMount } from 'svelte'
 
   export let currentSpace: Ref<Drive> | undefined
@@ -34,11 +34,12 @@
 
   const myAcc = getCurrentAccount()
 
+  const client = getClient()
   const query = createQuery()
   const actionWithExtensionMap = new Map<string, UploadHandler>()
 
-  onMount(async () => {
-    const handlers = await getUploadHandlers()
+  onMount(() => {
+    const handlers = getUploadHandlers(client)
     for (const handler of handlers) {
       dropdownItems.push({ id: handler._id, label: handler.label, icon: handler.icon })
       const uploadHandler = async (opts: FileUploadOptions): Promise<void> => {

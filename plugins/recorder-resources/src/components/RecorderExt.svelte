@@ -14,10 +14,14 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { tooltip } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
+
+  import IconRec from './icons/Rec.svelte'
+  import IconRecordOn from './icons/RecordOn.svelte'
 
   import plugin from '../plugin'
-  import { stopRecording, recorderState } from '../recording'
+  import { cancelRecording, recorderState, record, stopRecording } from '../recording'
   import { formatElapsedTime } from '../utils'
 
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
@@ -25,9 +29,13 @@
   $: state = $recorderState.state
   $: elapsedTime = $recorderState.elapsedTime
 
-  function handleClick (): void {
-    void stopRecording()
+  function handleRecClick (): void {
+    void record({})
   }
+
+  onDestroy(async (): Promise<void> => {
+    await cancelRecording()
+  })
 </script>
 
 {#if endpoint !== ''}
@@ -35,13 +43,22 @@
     <button
       class="antiButton ghost jf-center bs-none no-focus statusButton negative"
       style="padding-left: 0.25rem"
-      use:tooltip={{ label: plugin.string.Stop }}
-      on:click={handleClick}
+      use:tooltip={{ label: plugin.string.Stop, direction: 'bottom' }}
+      on:click={stopRecording}
     >
       <div class="dot pulse" />
       <div class="timer">
         {formatElapsedTime(elapsedTime)}
       </div>
+    </button>
+  {:else}
+    <button
+      class="antiButton ghost jf-center bs-none no-focus statusButton"
+      style="padding-left: 0.25rem"
+      on:click={handleRecClick}
+    >
+      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
+      <Icon icon={IconRec} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
     </button>
   {/if}
 {/if}
