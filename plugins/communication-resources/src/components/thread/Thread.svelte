@@ -77,6 +77,8 @@
     display: flex;
     flex-shrink: 1;
     min-width: 0;
+    min-height: 2.375rem;
+    height: 2.375rem;
   }
   .replies {
     display: flex;
@@ -89,6 +91,7 @@
     min-width: 0;
     border: 1px solid var(--global-ui-BorderColor);
     min-height: 2.375rem;
+    height: 2.375rem;
 
     &:hover {
       background-color: var(--theme-bg-color);

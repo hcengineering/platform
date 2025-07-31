@@ -2654,6 +2654,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-process",
+      "projectFolder": "services/process",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/integration-client",
       "projectFolder": "packages/integration-client",
       "shouldPublish": false

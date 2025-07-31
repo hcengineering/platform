@@ -109,6 +109,8 @@ export class TTrigger extends TDoc implements Trigger {
   checkFunction?: Resource<CheckFunc>
 
   init!: boolean
+
+  auto?: boolean
 }
 
 @Model(process.class.Transition, core.class.Doc, DOMAIN_MODEL)
@@ -1050,7 +1052,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.CardUpdatePresenter,
       requiredParams: [],
       checkFunction: process.triggerCheck.UpdateCheck,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnCardUpdate
   )
@@ -1062,7 +1065,8 @@ export function createModel (builder: Builder): void {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
       requiredParams: [],
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnSubProcessesDone
   )

@@ -3,7 +3,7 @@ import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { CheckFunc, Method, ProcessFunction, Trigger } from '@hcengineering/process'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { ExecuteFunc, TransformFunc } from './types'
+import { ExecuteFunc, RollbackFunc, TransformFunc } from './types'
 
 export * from './types'
 
@@ -14,6 +14,8 @@ export const serverProcessId = 'server-process' as Plugin
 
 export interface TriggerImpl extends Trigger {
   serverCheckFunc?: Resource<CheckFunc>
+  rollbackFunc?: Resource<RollbackFunc>
+  preventRollback?: boolean
 }
 
 export interface MethodImpl<T extends Doc> extends Method<T> {
@@ -32,6 +34,10 @@ export default plugin(serverProcessId, {
     MethodImpl: '' as Ref<Mixin<MethodImpl<Doc>>>,
     FuncImpl: '' as Ref<Mixin<FuncImpl>>,
     TriggerImpl: '' as Ref<Mixin<TriggerImpl>>
+  },
+  rollbacks: {
+    ToDoCloseRollback: '' as Resource<RollbackFunc>,
+    ToDoCancellRollback: '' as Resource<RollbackFunc>
   },
   func: {
     RunSubProcess: '' as Resource<ExecuteFunc>,
@@ -81,7 +87,6 @@ export default plugin(serverProcessId, {
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,
     OnExecutionCreate: '' as Resource<TriggerFunc>,
-    OnExecutionTransition: '' as Resource<TriggerFunc>,
     OnProcessToDoClose: '' as Resource<TriggerFunc>,
     OnProcessToDoRemove: '' as Resource<TriggerFunc>,
     OnExecutionContinue: '' as Resource<TriggerFunc>

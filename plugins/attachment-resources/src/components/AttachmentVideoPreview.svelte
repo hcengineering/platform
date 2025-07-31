@@ -33,7 +33,7 @@
   function getDimensions (value: Attachment | BlobType): { width: number, height: number } {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
-    if (!value.metadata) {
+    if (value.metadata?.originalWidth == null || value.metadata.originalHeight == null) {
       const baseSize = baseSizeRem * fontSize
       return { width: baseSize, height: baseSize }
     }
