@@ -104,7 +104,6 @@ export function showPopup (
       const pos = popups.findIndex((p) => (p as CompAndProps).id === id && p.type === 'popup')
       if (pos !== -1) {
         popups.splice(pos, 1)
-        void onClose?.(undefined)
       }
       return popups
     })
