@@ -20,14 +20,10 @@
     <div style="width: auto" />
     <div class="flex-between gap-2">
       {#if $allowGuestSignUpStore}
-        <Button
-          label={view.string.ReadOnlyJoinWorkspace}
-          stopPropagation={false}
-          on:click={joinWorkspace}
-        />
+        <Button label={view.string.ReadOnlyJoinWorkspace} stopPropagation={false} on:click={joinWorkspace} />
       {/if}
       <a href="https://huly.io/signup" target="_blank">
-        <Button label={view.string.ReadOnlySignUp} stopPropagation={false} kind="primary"/>
+        <Button label={view.string.ReadOnlySignUp} stopPropagation={false} kind="primary" />
       </a>
     </div>
   </svelte:fragment>

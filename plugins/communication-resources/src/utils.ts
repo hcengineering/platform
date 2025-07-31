@@ -13,7 +13,7 @@
 
 import { canDisplayLinkPreview, fetchLinkPreviewDetails, getCommunicationClient } from '@hcengineering/presentation'
 import { type Card } from '@hcengineering/card'
-import { AccountRole, getCurrentAccount, hasAccountRole, type Markup } from '@hcengineering/core'
+import { AccountRole, getCurrentAccount, type Markup } from '@hcengineering/core'
 import { getMetadata, translate } from '@hcengineering/platform'
 import { addNotification, languageStore, NotificationSeverity, showPopup } from '@hcengineering/ui'
 import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
