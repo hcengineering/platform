@@ -105,6 +105,7 @@
     <div class="mt-0-5" />
     <slot />
     <svelte:fragment slot="visible" let:isOpen>
+      <div class="mt-0-5" />
       <slot name="visible" {isOpen} />
     </svelte:fragment>
   </NavGroup>

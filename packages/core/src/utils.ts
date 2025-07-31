@@ -568,6 +568,27 @@ export async function checkPermission (
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true
 
+  return await hasPermission(client, _id, _space, space)
+}
+
+export async function checkForbiddenPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
+): Promise<boolean> {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return false
+
+  return await hasPermission(client, _id, _space, space)
+}
+
+async function hasPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
+): Promise<boolean> {
   space = space ?? (await client.findOne(core.class.TypedSpace, { _id: _space }))
   const type = await client
     .getModel()

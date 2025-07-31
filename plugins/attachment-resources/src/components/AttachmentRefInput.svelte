@@ -58,6 +58,7 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
+  export let docId: Ref<Doc> | undefined = undefined
   export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let content: Markup = EmptyMarkup
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
@@ -434,6 +435,7 @@
 
   async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
     try {
+      await updateAttachments(objectId)
       await _createAttachment(uuid, name, file, metadata)
     } catch (err: any) {
       void setPlatformStatus(unknownError(err))
@@ -442,25 +444,20 @@
 
   async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
     const upload = await getResource(uploader.handler)
-    await upload({ onFileUploaded })
+    const target = { objectId: docId ?? objectId, objectClass: docClass ?? _class }
+    await upload({ onFileUploaded, target })
   }
 
-  let uploadActions: RefAction[] = []
-  $: void getUploadHandlers({ category: 'media' }).then((handlers) => {
-    let index = 1000
-    const actions: RefAction[] = []
-    for (const handler of handlers) {
-      actions.push({
-        order: handler.order ?? index++,
-        label: handler.label,
-        icon: handler.icon,
-        action: () => {
-          void uploadWith(handler)
-        }
-      })
+  let uploadActionIndex = 1000
+  const uploadHandlers = getUploadHandlers(client, { category: 'media' })
+  const uploadActions: RefAction[] = uploadHandlers.map((handler) => ({
+    order: handler.order ?? uploadActionIndex++,
+    label: handler.label,
+    icon: handler.icon,
+    action: () => {
+      void uploadWith(handler)
     }
-    uploadActions = actions
-  })
+  }))
 </script>
 
 <div class="flex-col no-print" bind:this={refContainer}>

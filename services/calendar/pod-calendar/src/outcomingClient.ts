@@ -23,6 +23,7 @@ import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { getClient } from './client'
 import { removeUserByEmail, setSyncHistory } from './kvsUtils'
+import { lock, synced } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, Token } from './types'
 import {
@@ -31,13 +32,11 @@ import {
   getGoogleClient,
   getMixinFields,
   getTimezone,
-  getWorkspaceToken,
   parseEventDate,
   parseRecurrenceStrings,
   removeIntegrationSecret,
   setCredentials
 } from './utils'
-import { lock, synced } from './mutex'
 
 export class OutcomingClient {
   private readonly calendar: calendar_v3.Calendar
@@ -403,7 +402,7 @@ export class OutcomingClient {
   ): Promise<void> {
     if (event.access === 'owner' || event.access === 'writer') {
       const mutex = await lock(`outcoming:${workspace}`)
-      const client = await getClient(getWorkspaceToken(workspace))
+      const client = await getClient(workspace)
       const txOp = new TxOperations(client, core.account.System)
       try {
         const user = await getTokenByEvent(accountClient, txOp, event, workspace)

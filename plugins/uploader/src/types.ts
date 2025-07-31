@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
-import type { Blob as PlatformBlob, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+import type { Blob as PlatformBlob, Class, Doc, Ref } from '@hcengineering/core'
 
 /** @public */
 export interface FileWithPath extends File {
@@ -28,9 +28,6 @@ export type UploadFilesFn = (files: File[] | FileList, options: FileUploadOption
 
 /** @public */
 export type UploadHandler = (options: FileUploadOptions) => Promise<void>
-
-/** @public */
-export type GetUploadHandlers = (query?: DocumentQuery<UploadHandlerDefinition>) => Promise<UploadHandlerDefinition[]>
 
 /** @public */
 export interface FileUploadTarget {
@@ -59,6 +56,7 @@ export interface FileUploadOptions {
   allowedFileTypes?: string[] | null
 
   onFileUploaded?: FileUploadCallback
+  target?: FileUploadTarget
   showProgress?: FileUploadProgressOptions
 }
 
@@ -73,8 +71,8 @@ export interface FileUploadCallbackParams {
   name: string
   file: File | Blob
   path?: string
+  size?: number
   metadata?: Record<string, any>
-  navigateOnUpload?: boolean
 }
 
 /** @public */

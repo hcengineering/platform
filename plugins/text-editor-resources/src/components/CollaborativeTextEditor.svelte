@@ -524,7 +524,11 @@
   {#if refActions.length > 0}
     <div class="buttons-panel flex-between clear-mins no-print">
       <div class="buttons-group xsmall-gap mt-3">
-        {#each refActions as a}
+        {#each refActions as a, idx (a)}
+          {#if idx !== 0 && a.order % 10 === 0}
+            <div class="buttons-divider" />
+          {/if}
+
           <Button
             disabled={a.disabled}
             icon={a.icon}
@@ -536,9 +540,6 @@
               handleAction(a, evt)
             }}
           />
-          {#if a.order % 10 === 1}
-            <div class="buttons-divider" />
-          {/if}
         {/each}
       </div>
     </div>

@@ -24,7 +24,6 @@ export interface Uploader {
 }
 
 export interface TusUploaderOptions {
-  name: string
   endpoint: string
   workspace: string
   token: string
@@ -38,6 +37,7 @@ export class TusUploader implements Uploader {
   private readonly waiterPromise: Promise<RecordingResult>
   private waiterResolve: (value: RecordingResult) => void = () => {}
   private waiterReject: (reason?: any) => void = () => {}
+  private bytesSent = 0
 
   constructor (reader: ChunkReader, options: TusUploaderOptions) {
     const { endpoint, workspace, token, width, height, contentType } = options
@@ -61,6 +61,9 @@ export class TusUploader implements Uploader {
         token,
         workspace
       },
+      onProgress: (bytesSent) => {
+        this.bytesSent = bytesSent
+      },
       onSuccess: () => {
         const uuid = this.upload.url?.split('/').pop()
         console.debug('TusUploader: upload success:', uuid)
@@ -69,9 +72,9 @@ export class TusUploader implements Uploader {
           return
         }
 
-        const name = options.name + '.mp4'
+        const size = this.bytesSent
         const type = contentType.split(';')[0]
-        this.waiterResolve({ name, uuid, type, width, height })
+        this.waiterResolve({ uuid, type, width, height, size })
       },
       onError: (error) => {
         console.error('TusUploader: upload failed:', error)

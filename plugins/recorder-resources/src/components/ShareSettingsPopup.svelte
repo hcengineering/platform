@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Label, Toggle } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { useScreenShareSound } from '../stores'
+  import { setUseScreenShareSound, useScreenShareSound } from '../recording'
 </script>
 
 <div class="antiPopup p-4 grid">
@@ -9,7 +9,7 @@
   <Toggle
     on={$useScreenShareSound}
     on:change={(e) => {
-      $useScreenShareSound = e.detail
+      setUseScreenShareSound(e.detail)
     }}
   />
 </div>

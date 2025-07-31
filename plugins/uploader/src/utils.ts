@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type DocumentQuery } from '@hcengineering/core'
+import { Client, type DocumentQuery } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 
 import uploader from './plugin'
@@ -35,11 +35,11 @@ export async function uploadFile (file: File, options: FileUploadOptions): Promi
 }
 
 /** @public */
-export async function getUploadHandlers (
+export function getUploadHandlers (
+  client: Client,
   query?: DocumentQuery<UploadHandlerDefinition>
-): Promise<UploadHandlerDefinition[]> {
-  const fn = await getResource(uploader.function.GetUploadHandlers)
-  return await fn(query)
+): UploadHandlerDefinition[] {
+  return client.getModel().findAllSync(uploader.class.UploadHandlerDefinition, query ?? {})
 }
 
 /** @public */
