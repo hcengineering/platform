@@ -26,7 +26,7 @@ const JUMP_COMMANDS = {
 
 type JumpCommand = typeof JUMP_COMMANDS[keyof typeof JUMP_COMMANDS];
 
-export function setupWindowsSpecifics(sendCommand: (cmd: Command, ...args: any[]) => void): void {
+export function setupWindowsSpecific(sendCommand: (cmd: Command, ...args: any[]) => void): void {
 
     app.setAppUserModelId(app.getName());
 

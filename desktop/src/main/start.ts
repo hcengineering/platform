@@ -30,7 +30,7 @@ import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
-import { setupWindowsSpecifics } from './windowsSpecifiecSetup'
+import { setupWindowsSpecific } from './windowsSpecificSetup'
 
 
 let mainWindow: BrowserWindow | undefined
@@ -310,7 +310,7 @@ function sendCommand(cmd: string, ...args: any[]): void {
 }
 
 if (isWindows) {
-  setupWindowsSpecifics(sendCommand)
+  setupWindowsSpecific(sendCommand)
 } else {
   addMenus(sendCommand)
 }
