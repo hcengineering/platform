@@ -62,8 +62,12 @@ export default async (): Promise<Resources> => ({
       }
       const connection = await integrationClient.getConnection(integration)
       const phone = integration.data?.phone ?? connection?.data?.phone
-      await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
-      await restart(phone)
+      const result = await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
+      if (result?.connectionRemoved === true) {
+        await disconnect(phone)
+      } else {
+        await restart(phone)
+      }
     },
     DisconnectAllHandler: async (integration: Integration): Promise<void> => {
       const integrationClient = await getIntegrationClient()

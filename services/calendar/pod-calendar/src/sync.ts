@@ -189,14 +189,14 @@ export class IncomingSyncManager {
     this.ctx.info('Sync calendar', {
       workspace: this.user.workspace,
       user: this.user.userId,
-      emai: this.email,
+      email: this.email,
       calendarId
     })
     await this.syncEvents(calendarId)
     this.ctx.info('Sync calendar finished', {
       workspace: this.user.workspace,
       user: this.user.userId,
-      emai: this.email,
+      email: this.email,
       calendarId
     })
     const watchController = WatchController.get(this.ctx, this.accountClient)
@@ -212,7 +212,7 @@ export class IncomingSyncManager {
       this.ctx.info('Sync started for calendars', {
         workspace: this.user.workspace,
         user: this.user.userId,
-        emai: this.email,
+        email: this.email,
         count: this.calendars.length
       })
       for (const calendar of this.calendars) {
@@ -223,7 +223,7 @@ export class IncomingSyncManager {
       this.ctx.info('Incoming sync finished', {
         workspace: this.user.workspace,
         user: this.user.userId,
-        emai: this.email
+        email: this.email
       })
     } catch (err) {
       this.ctx.error('Start sync error', { workspace: this.user.workspace, user: this.user.userId, err })

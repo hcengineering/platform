@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Integration, IntegrationKey } from '@hcengineering/account-client'
+import { Integration, IntegrationKey, IntegrationSecret } from '@hcengineering/account-client'
 import { IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
 
 export type IntegrationStatus = 'active' | 'inactive' | 'connecting' | 'disconnecting' | 'error' | 'unknown'
@@ -67,6 +67,11 @@ export interface IntegrationClient {
    * Remove connection and all associated integrations
    */
   removeConnection: (connection: Integration) => Promise<void>
+
+  /**
+   * Set or update integration secret
+   */
+  setSecret: (data: IntegrationSecret) => Promise<void>
 }
 
 export interface IntegrationEventData {

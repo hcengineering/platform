@@ -23,6 +23,8 @@ import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
+import { getIntegrationClient } from '@hcengineering/integration-client'
+
 import { AuthController } from './auth'
 import { decode64 } from './base64'
 import { CalendarController } from './calendarController'
@@ -63,6 +65,12 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Service, 'calendar')
 
   const accountClient = getAccountClient(getServiceToken())
+  const integrationClient = getIntegrationClient(
+    config.AccountsURL,
+    getServiceToken(),
+    calendarIntegrationKind,
+    config.ServiceID
+  )
 
   const pushHandler = new PushHandler(ctx, accountClient)
   const watchController = WatchController.get(ctx, accountClient)
@@ -103,7 +111,7 @@ export const main = async (): Promise<void> => {
         try {
           const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
           try {
-            await AuthController.createAndSync(ctx, accountClient, state, code)
+            await AuthController.createAndSync(ctx, accountClient, integrationClient, state, code)
             res.redirect(state.redirectURL)
           } catch (err) {
             ctx.error('signin code error', { message: (err as any).message })
@@ -128,7 +136,7 @@ export const main = async (): Promise<void> => {
           const value = req.query.value as GoogleEmail
           const { account, workspace } = decodeToken(token)
           const userId = await AuthController.getUserId(account, token)
-          await AuthController.signout(ctx, accountClient, userId, workspace, value)
+          await AuthController.signout(ctx, accountClient, integrationClient, userId, workspace, value)
         } catch (err) {
           ctx.error('signout', { message: (err as any).message })
         }

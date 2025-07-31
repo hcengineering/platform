@@ -18,6 +18,7 @@ import {
   getClient as getAccountClientRaw,
   Integration,
   IntegrationKey,
+  IntegrationSecret,
   type AccountClient
 } from '@hcengineering/account-client'
 import { IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
@@ -141,6 +142,34 @@ export class IntegrationClientImpl implements IntegrationClient {
       }
       const existingConnection = await this.client.getIntegration(connection)
       if (existingConnection != null) {
+        // Check if data needs to be updated
+        if (data == null) {
+          return existingConnection
+        }
+        const existingData = existingConnection.data ?? {}
+        const updatedData = {
+          ...existingData,
+          ...data
+        }
+        const needsUpdate = data != null && JSON.stringify(updatedData) !== JSON.stringify(existingData)
+
+        if (needsUpdate) {
+          const updatedConnection = {
+            ...existingConnection,
+            data: updatedData
+          }
+
+          await this.client.updateIntegration(updatedConnection)
+
+          const eventData: IntegrationEventData = {
+            integration: updatedConnection,
+            timestamp: Date.now()
+          }
+          this.emit('connection:updated', eventData)
+
+          return updatedConnection
+        }
+
         return existingConnection
       }
 
@@ -296,6 +325,16 @@ export class IntegrationClientImpl implements IntegrationClient {
       }
       this.emit('integration:error', errorData)
       throw error
+    }
+  }
+
+  async setSecret (data: IntegrationSecret): Promise<void> {
+    const { secret, ...secretKey } = data
+    const currentSecret = await this.client.getIntegrationSecret(secretKey)
+    if (currentSecret != null) {
+      await this.client.updateIntegrationSecret(data)
+    } else {
+      await this.client.addIntegrationSecret(data)
     }
   }
 }

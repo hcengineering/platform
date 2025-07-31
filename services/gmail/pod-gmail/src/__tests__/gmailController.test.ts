@@ -116,13 +116,15 @@ describe('GmailController', () => {
 
     // Mock getIntegrationClient
     const mockIntegrationClient = {
-      getIntegrations: jest.fn().mockResolvedValue([
-        { workspaceUuid: workspaceAId, socialId: 'user1' } as any,
-        { workspaceUuid: workspaceAId, socialId: 'user2' } as any,
-        { workspaceUuid: workspaceBId, socialId: 'user3' } as any,
-        { workspaceUuid: workspaceBId, socialId: 'user4' } as any,
-        { workspaceUuid: workspaceBId, socialId: 'user5' } as any
-      ])
+      getIntegrations: jest
+        .fn()
+        .mockResolvedValue([
+          { workspaceUuid: workspaceAId, socialId: 'user1' } as any,
+          { workspaceUuid: workspaceAId, socialId: 'user2' } as any,
+          { workspaceUuid: workspaceBId, socialId: 'user3' } as any,
+          { workspaceUuid: workspaceBId, socialId: 'user4' } as any,
+          { workspaceUuid: workspaceBId, socialId: 'user5' } as any
+        ])
     }
     jest.spyOn(integrations, 'getIntegrationClient').mockReturnValue(mockIntegrationClient as any)
 

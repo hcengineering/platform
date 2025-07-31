@@ -298,6 +298,61 @@ describe('IntegrationClientImpl', () => {
       const result = await client.connect(testSocialId)
 
       expect(mockAccountClient.createIntegration).not.toHaveBeenCalled()
+      expect(mockAccountClient.updateIntegration).not.toHaveBeenCalled()
+      expect(result).toBe(existingConnection)
+    })
+
+    it('should update existing connection when data is different', async () => {
+      const existingConnection: Integration = {
+        socialId: testSocialId,
+        kind: integrationKind,
+        workspaceUuid: null,
+        data: { existing: true, version: 1 }
+      }
+
+      const newData = { existing: true, version: 2, newField: 'value' }
+      const updatedConnection = {
+        ...existingConnection,
+        data: newData
+      }
+
+      mockAccountClient.getIntegration.mockResolvedValue(existingConnection)
+      mockAccountClient.updateIntegration.mockResolvedValue(undefined)
+
+      const result = await client.connect(testSocialId, newData)
+
+      expect(mockAccountClient.createIntegration).not.toHaveBeenCalled()
+      expect(mockAccountClient.updateIntegration).toHaveBeenCalledWith(updatedConnection)
+
+      expect(mockEvents.emit).toHaveBeenCalledWith(
+        'connection:updated',
+        expect.objectContaining({
+          integration: expect.objectContaining({
+            data: newData
+          }),
+          timestamp: expect.any(Number)
+        })
+      )
+
+      expect(result).toEqual(updatedConnection)
+    })
+
+    it('should not update existing connection when data is the same', async () => {
+      const existingData = { existing: true, version: 1 }
+      const existingConnection: Integration = {
+        socialId: testSocialId,
+        kind: integrationKind,
+        workspaceUuid: null,
+        data: existingData
+      }
+
+      mockAccountClient.getIntegration.mockResolvedValue(existingConnection)
+
+      const result = await client.connect(testSocialId, existingData)
+
+      expect(mockAccountClient.createIntegration).not.toHaveBeenCalled()
+      expect(mockAccountClient.updateIntegration).not.toHaveBeenCalled()
+      expect(mockEvents.emit).not.toHaveBeenCalledWith('connection:updated', expect.any(Object))
       expect(result).toBe(existingConnection)
     })
 

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { fade } from 'svelte/transition'
-  import core, { getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { IntegrationType } from '@hcengineering/setting'
@@ -36,12 +36,10 @@
 
   import IntegrationLabel from './IntegrationLabel.svelte'
   import setting from '../../plugin'
-  import { getAccountClient } from '../../utils'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
   const client = getClient()
-  const accountClient = getAccountClient()
 
   let isDisconnecting = false
 
