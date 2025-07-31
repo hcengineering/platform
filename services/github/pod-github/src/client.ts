@@ -5,7 +5,7 @@
 
 import client, { ClientSocket } from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import { Client, ClientConnectEvent, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { Client, ClientConnectEvent, systemAccountUuid, WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -16,6 +16,7 @@ import config from './config'
  * @public
  */
 export async function createPlatformClient (
+  ctx: MeasureContext,
   workspace: WorkspaceUuid,
   timeout: number,
   reconnect?: (event: ClientConnectEvent, data: any) => Promise<void>
@@ -37,6 +38,7 @@ export async function createPlatformClient (
   const connection = await (
     await clientResources()
   ).function.GetClient(token, endpoint, {
+    ctx,
     onConnect: reconnect,
     useGlobalRPCHandler: true
   })

@@ -43,6 +43,7 @@ import core, {
   reduceCalls,
   systemAccountUuid,
   toIdMap,
+  withContext,
   type Blob,
   type Data,
   type MigrationState,
@@ -166,10 +167,10 @@ export class GithubWorker implements IntegrationManager {
     return this.branding
   }
 
-  async reloadRepositories (installationId: number): Promise<void> {
+  async reloadRepositories (ctx: MeasureContext, installationId: number): Promise<void> {
     const current = this.integrations.get(installationId)
     if (current !== undefined) {
-      await this.repositoryManager.reloadRepositories(current)
+      await this.repositoryManager.reloadRepositories(ctx, current)
       this.triggerUpdate()
     }
   }
@@ -398,11 +399,7 @@ export class GithubWorker implements IntegrationManager {
     this._client = new TxOperations(this.client, core.account.System)
     this.liveQuery = new LiveQuery(client)
 
-    this.repositoryManager = new RepositorySyncMapper(
-      this.ctx.newChild('repository', {}, { span: false }),
-      this._client,
-      this.app
-    )
+    this.repositoryManager = new RepositorySyncMapper(this._client, this.app)
 
     this.collaborator = createCollaboratorClient(this.workspace.uuid)
 
@@ -416,25 +413,15 @@ export class GithubWorker implements IntegrationManager {
       { _class: [github.mixin.GithubProject], mapper: this.repositoryManager },
       {
         _class: [tracker.class.Issue],
-        mapper: new IssueSyncManager(
-          this.ctx.newChild('issue', {}, { span: false }),
-          this._client,
-          this.liveQuery,
-          this.collaborator
-        )
+        mapper: new IssueSyncManager(this._client, this.liveQuery, this.collaborator)
       },
       {
         _class: [github.class.GithubPullRequest],
-        mapper: new PullRequestSyncManager(
-          this.ctx.newChild('pullRequest', {}, { span: false }),
-          this._client,
-          this.liveQuery,
-          this.collaborator
-        )
+        mapper: new PullRequestSyncManager(this._client, this.liveQuery, this.collaborator)
       },
       {
         _class: [chunter.class.ChatMessage],
-        mapper: new CommentSyncManager(this.ctx.newChild('comment', {}, { span: false }), this._client, this.liveQuery)
+        mapper: new CommentSyncManager(this._client, this.liveQuery)
       },
       // {
       //   _class: [contact.class.PersonAccount],
@@ -442,23 +429,15 @@ export class GithubWorker implements IntegrationManager {
       // },
       {
         _class: [github.class.GithubReview],
-        mapper: new ReviewSyncManager(this.ctx.newChild('review', {}, { span: false }), this._client, this.liveQuery)
+        mapper: new ReviewSyncManager(this._client, this.liveQuery)
       },
       {
         _class: [github.class.GithubReviewThread],
-        mapper: new ReviewThreadSyncManager(
-          this.ctx.newChild('review-thread', {}, { span: false }),
-          this._client,
-          this.liveQuery
-        )
+        mapper: new ReviewThreadSyncManager(this._client, this.liveQuery)
       },
       {
         _class: [github.class.GithubReviewComment],
-        mapper: new ReviewCommentSyncManager(
-          this.ctx.newChild('review-comment', {}, { span: false }),
-          this._client,
-          this.liveQuery
-        )
+        mapper: new ReviewCommentSyncManager(this._client, this.liveQuery)
       }
     ]
 
@@ -599,13 +578,13 @@ export class GithubWorker implements IntegrationManager {
         continue
       }
       try {
-        await this.platform.checkRefreshToken(record, true)
+        await this.platform.checkRefreshToken(ctx, record, true)
 
         const ops = new TxOperations(this.client, account._id)
         await syncUser(ctx, record, userAuth, ops, account._id)
       } catch (err: any) {
         try {
-          await this.platform.revokeUserAuth(record)
+          await this.platform.revokeUserAuth(ctx, record)
         } catch (err: any) {
           ctx.error(`Failed to revoke user ${record._id}`, err)
         }
@@ -628,7 +607,8 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async getOctokit (account: PersonId): Promise<Octokit | undefined> {
+  @withContext('get-octokit')
+  async getOctokit (ctx: MeasureContext, account: PersonId): Promise<Octokit | undefined> {
     let record = await this.platform.getAccountByRef(this.workspace.uuid, account)
 
     const accountRef = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
@@ -646,7 +626,7 @@ export class GithubWorker implements IntegrationManager {
     // Check and refresh token if required.
     if (record !== undefined) {
       this.ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
-      await this.platform.checkRefreshToken(record)
+      await this.platform.checkRefreshToken(ctx, record)
       return new Octokit({
         auth: record.token,
         client_id: config.ClientID,
@@ -800,7 +780,7 @@ export class GithubWorker implements IntegrationManager {
             const i = Array.from(this.integrations.values()).find((it) => it.integration._id === r.attachedTo)
             if (i !== undefined) {
               for (const m of this.mappers) {
-                m.mapper.repositoryDisabled(i, r)
+                m.mapper.repositoryDisabled(this.ctx, i, r)
               }
             }
           }
@@ -856,7 +836,7 @@ export class GithubWorker implements IntegrationManager {
     })
   }
 
-  async updateIntegrations (): Promise<void> {
+  async updateIntegrations (ctx: MeasureContext): Promise<void> {
     await this.checkMapping()
     for (const it of this.integrationsRaw) {
       let current = this.integrations.get(it.installationId)
@@ -880,7 +860,7 @@ export class GithubWorker implements IntegrationManager {
             syncLock: new Map()
           }
           this.integrations.set(it.installationId, current)
-          await this.repositoryManager.reloadRepositories(current, inst.repositories)
+          await this.repositoryManager.reloadRepositories(ctx, current, inst.repositories)
         } catch (err: any) {
           Analytics.handleError(err)
           this.ctx.error('Error', { err })
@@ -892,7 +872,7 @@ export class GithubWorker implements IntegrationManager {
           continue
         }
         current.integration = it
-        await this.repositoryManager.reloadRepositories(current, inst.repositories)
+        await this.repositoryManager.reloadRepositories(ctx, current, inst.repositories)
       }
     }
   }
@@ -995,6 +975,7 @@ export class GithubWorker implements IntegrationManager {
   }
 
   async performExternalSync (
+    ctx: MeasureContext,
     projects: GithubProject[],
     repositories: GithubIntegrationRepository[],
     field: ExternalSyncField,
@@ -1058,7 +1039,7 @@ export class GithubWorker implements IntegrationManager {
       for (const [_class, _docs] of byClass.entries()) {
         const mapper = this.mappers.find((it) => it._class.includes(_class))?.mapper
         try {
-          await mapper?.externalSync(integration, derivedClient, field, _docs, repo, prj)
+          await mapper?.externalSync(ctx, integration, derivedClient, field, _docs, repo, prj)
         } catch (err: any) {
           Analytics.handleError(err)
           this.ctx.error('failed to perform external sync', err)
@@ -1211,10 +1192,12 @@ export class GithubWorker implements IntegrationManager {
     while (!this.closing) {
       if (this.updateRequests > 0) {
         this.updateRequests = 0 // Just in case
-        await this.updateIntegrations()
-        void this.performFullSync().catch((err) => {
-          this.ctx.error('Failed to perform full sync', { error: err })
-        })
+        await this.ctx.with('update-integrations', {}, (ctx) => this.updateIntegrations(ctx))
+        void this.ctx.with('performFullSync', {}, (ctx) =>
+          this.performFullSync(ctx).catch((err) => {
+            this.ctx.error('Failed to perform full sync', { error: err })
+          })
+        )
       }
       try {
         const { projects, repositories } = await this.collectActiveProjects()
@@ -1224,21 +1207,17 @@ export class GithubWorker implements IntegrationManager {
         }
 
         // Check if we have documents with external sync request's pending.
-        const hadExternalChanges = await this.performExternalSync(
-          projects,
-          repositories,
-          'externalVersion',
-          githubExternalSyncVersion
+        const hadExternalChanges = await this.ctx.with('performExternalSync', {}, (ctx) =>
+          this.performExternalSync(ctx, projects, repositories, 'externalVersion', githubExternalSyncVersion)
         )
-        const hadSyncChanges = await this.performSync(projects, repositories)
+        const hadSyncChanges = await this.ctx.with('performSync', {}, (ctx) =>
+          this.performSync(ctx, projects, repositories)
+        )
 
         // Perform derived operations
         // Sync derived external data, like pull request reviews, files etc.
-        const hadDerivedChanges = await this.performExternalSync(
-          projects,
-          repositories,
-          'derivedVersion',
-          githubDerivedSyncVersion
+        const hadDerivedChanges = await this.ctx.with('performDerivedSync', {}, (ctx) =>
+          this.performExternalSync(ctx, projects, repositories, 'derivedVersion', githubDerivedSyncVersion)
         )
 
         if (!hadExternalChanges && !hadSyncChanges && !hadDerivedChanges) {
@@ -1256,6 +1235,7 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private async performSync (
+    ctx: MeasureContext,
     projects: GithubProject[],
     repositories: Pick<GithubIntegrationRepository, '_id'>[]
   ): Promise<boolean> {
@@ -1264,7 +1244,7 @@ export class GithubWorker implements IntegrationManager {
 
     const docs = await this.limiter.exec(
       async () =>
-        await this.ctx.with(
+        await ctx.with(
           'find-doc-sync-info',
           {},
           (ctx) =>
@@ -1288,23 +1268,23 @@ export class GithubWorker implements IntegrationManager {
 
     if (docs.length > 0) {
       this.previousWait += docs.length
-      this.ctx.info('Syncing', { docs: docs.length, workspace: this.workspace.uuid })
+      ctx.info('Syncing', { docs: docs.length, workspace: this.workspace.uuid })
 
       const bySpace = groupByArray(docs, (it) => it.space)
       for (const [k, v] of bySpace.entries()) {
-        await this.doSyncFor(v, _projects.get(k as Ref<GithubProject>) as GithubProject)
+        await this.doSyncFor(ctx, v, _projects.get(k as Ref<GithubProject>) as GithubProject)
       }
     }
     return docs.length !== 0
   }
 
-  async doSyncFor (docs: DocSyncInfo[], project: GithubProject): Promise<void> {
+  async doSyncFor (ctx: MeasureContext, docs: DocSyncInfo[], project: GithubProject): Promise<void> {
     const byClass = this.groupByClass(docs)
 
     // We need to reorder based on our sync mappers
 
     for (const [_class, clDocs] of byClass.entries()) {
-      await this.syncClass(_class, clDocs, project)
+      await this.syncClass(ctx, _class, clDocs, project)
     }
   }
 
@@ -1386,7 +1366,12 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async syncClass (_class: Ref<Class<Doc>>, syncInfo: DocSyncInfo[], project: GithubProject): Promise<void> {
+  async syncClass (
+    ctx: MeasureContext,
+    _class: Ref<Class<Doc>>,
+    syncInfo: DocSyncInfo[],
+    project: GithubProject
+  ): Promise<void> {
     const externalDocs = await this._client.findAll<Doc>(_class, {
       _id: { $in: syncInfo.map((it) => it._id as Ref<Doc>) }
     })
@@ -1452,7 +1437,7 @@ export class GithubWorker implements IntegrationManager {
               _id: existing.space as Ref<GithubProject>
             })
             try {
-              if (await mapper.handleDelete(existing, info, derivedClient, false, parent)) {
+              if (await mapper.handleDelete(ctx, existing, info, derivedClient, false, parent)) {
                 const h = this._client.getHierarchy()
                 await derivedClient.remove(info)
                 if (h.hasMixin(existing, github.mixin.GithubIssue)) {
@@ -1491,7 +1476,7 @@ export class GithubWorker implements IntegrationManager {
 
           if (info.deleted === true) {
             try {
-              if (await mapper.handleDelete(existing, info, derivedClient, true)) {
+              if (await mapper.handleDelete(ctx, existing, info, derivedClient, true)) {
                 await derivedClient.remove(info)
               }
             } catch (err: any) {
@@ -1500,10 +1485,10 @@ export class GithubWorker implements IntegrationManager {
             return
           }
 
-          const docUpdate = await this.ctx.with(
+          const docUpdate = await ctx.with(
             'sync doc',
             {},
-            (ctx) => mapper.sync(existing, info, parent, derivedClient),
+            (ctx) => mapper.sync(ctx, existing, info, parent, derivedClient),
             {
               url: info.url.toLowerCase(),
               workspace: this.workspace.uuid,
@@ -1579,15 +1564,15 @@ export class GithubWorker implements IntegrationManager {
     this.triggerSync()
   }
 
-  performFullSync = reduceCalls(async () => {
+  performFullSync = reduceCalls(async (ctx: MeasureContext) => {
     try {
-      await this._performFullSync()
+      await this._performFullSync(ctx)
     } catch (err: any) {
       this.ctx.error('Failed to perform full sync', { error: err })
     }
   })
 
-  async _performFullSync (): Promise<void> {
+  async _performFullSync (ctx: MeasureContext): Promise<void> {
     // Wait previous active sync
     for (const integration of this.integrations.values()) {
       if (this.closing) {
@@ -1692,7 +1677,7 @@ export class GithubWorker implements IntegrationManager {
               'external sync',
               { _class: _class.join(', ') },
               async () => {
-                await mapper.externalFullSync(integration, derivedClient, _projects, _repositories)
+                await mapper.externalFullSync(ctx, integration, derivedClient, _projects, _repositories)
               },
               { installation: integration.installationName, workspace: this.workspace.uuid },
               { log: true }
@@ -1705,7 +1690,12 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async handleEvent<T>(requestClass: Ref<Class<Doc>>, integrationId: number | undefined, event: T): Promise<void> {
+  async handleEvent<T>(
+    ctx: MeasureContext,
+    requestClass: Ref<Class<Doc>>,
+    integrationId: number | undefined,
+    event: T
+  ): Promise<void> {
     if (integrationId === undefined) {
       return
     }
@@ -1717,7 +1707,7 @@ export class GithubWorker implements IntegrationManager {
     for (const { _class, mapper } of this.mappers) {
       if (_class.includes(requestClass)) {
         try {
-          await mapper.handleEvent(integration, derivedClient, event)
+          await mapper.handleEvent(ctx, integration, derivedClient, event)
         } catch (err: any) {
           Analytics.handleError(err)
           this.ctx.error('exception during processing of event:', { event, err })
@@ -1755,14 +1745,19 @@ export class GithubWorker implements IntegrationManager {
     let endpoint: string | undefined
     let maitenanceState = false
     try {
-      ;({ client, endpoint } = await createPlatformClient(workspace.uuid, 30000, async (event: ClientConnectEvent) => {
-        if (event === ClientConnectEvent.Maintenance) {
-          await client?.close()
-          maitenanceState = true
-          throw new Error('Workspace in maintenance')
+      ;({ client, endpoint } = await createPlatformClient(
+        ctx,
+        workspace.uuid,
+        30000,
+        async (event: ClientConnectEvent) => {
+          if (event === ClientConnectEvent.Maintenance) {
+            await client?.close()
+            maitenanceState = true
+            throw new Error('Workspace in maintenance')
+          }
+          reconnect(workspace.uuid, event)
         }
-        reconnect(workspace.uuid, event)
-      }))
+      ))
       ctx.info('connected to github', { workspace: workspace.uuid, endpoint })
 
       const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
