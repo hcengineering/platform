@@ -79,6 +79,5 @@
     on:load={handleLoad}
     on:loadstart={handleLoadStart}
     on:error={handleError}
-    on:loadstart
   />
 </div>
