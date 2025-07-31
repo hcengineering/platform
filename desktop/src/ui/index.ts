@@ -1,4 +1,7 @@
 import { loginId } from '@hcengineering/login'
+import { loveId } from '@hcengineering/love'
+import { timeId } from '@hcengineering/time'
+
 import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
 import presentation, { MessageBox, setDownloadProgress } from '@hcengineering/presentation'
 import settings, { settingId } from '@hcengineering/setting'
@@ -21,7 +24,7 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from './types'
+import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice } from './types'
 import { ipcMainExposed } from './typesUtils'
 import { themeStore } from '@hcengineering/theme'
 
@@ -61,18 +64,34 @@ window.addEventListener('DOMContentLoaded', () => {
     createApp(document.body)
   })
 
-  ipcMain.on(StandardMenuCommandOpenSettings, () => {
+  function openScreen(screenId: any): void {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     loc.query = undefined
-    loc.path[2] = settingId
+    loc.path[2] = screenId
     loc.path.length = 3
     navigate(loc)
+  }
+  
+  ipcMain.on(CommandOpenSettings, () => {
+    openScreen(settingId)  
   })
 
-  ipcMain.on(StandardMenuCommandSelectWorkspace, () => {
+  ipcMain.on(CommandOpenInbox, () => {
+    openScreen(notificationId)
+  })
+
+  ipcMain.on(CommandOpenOffice, () => {
+    openScreen(loveId)
+  })
+  
+  ipcMain.on(CommandOpenPlanner, () => {
+    openScreen(timeId)
+  })
+
+  ipcMain.on(CommandSelectWorkspace, () => {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -84,7 +103,7 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(loc)
   })
 
-  ipcMain.on(StandardMenuCommandLogout, () => {
+  ipcMain.on(CommandLogout, () => {
     void logOut().then(() => {
       navigate({ path: [loginId] })
     })

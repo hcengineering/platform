@@ -14,12 +14,12 @@
 //
 
 import { Menu, MenuItemConstructorOptions } from 'electron'
-import { StandardMenuCommand, StandardMenuCommandOpenSettings, StandardMenuCommandSelectWorkspace, StandardMenuCommandLogout, } from '../ui/types'
+import { Command, CommandOpenSettings, CommandSelectWorkspace, CommandLogout, } from '../ui/types'
 
 const isMac = process.platform === 'darwin'
 const isLinux = process.platform === 'linux'
 
-export const addMenus = (sendCommand: (cmd: StandardMenuCommand, ...args: any[]) => void): void => {
+export const addMenus = (sendCommand: (cmd: Command, ...args: any[]) => void): void => {
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -27,15 +27,15 @@ export const addMenus = (sendCommand: (cmd: StandardMenuCommand, ...args: any[])
         {
           label: 'Settings',
           accelerator: isLinux ? 'Ctrl+,' : 'Meta+,',
-          click: () => { sendCommand(StandardMenuCommandOpenSettings) }
+          click: () => { sendCommand(CommandOpenSettings) }
         },
         {
           label: 'Select workspace',
-          click: () => { sendCommand(StandardMenuCommandSelectWorkspace) }
+          click: () => { sendCommand(CommandSelectWorkspace) }
         },
         {
           label: 'Logout',
-          click: () => { sendCommand(StandardMenuCommandLogout) }
+          click: () => { sendCommand(CommandLogout) }
         },
         { role: isMac ? 'close' : 'quit' }
       ]

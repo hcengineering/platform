@@ -64,12 +64,24 @@
       ],
       "artifactName": "Huly-windows-${version}.${ext}",
       "verifyUpdateCodeSignature": false,
-      "icon": "./src/AppIcon.png",
+      "icon": "./src/AppIcon.ico",
       "publish": {
         "provider": "generic",
         "url": "https://dist.huly.io",
         "channel": "latest"
-      }
+      },
+      "extraResources": [
+        {
+          "from": "./dist/ui/public/icons/",
+          "to": "./icons/",
+          "filter": ["**/*.ico"]
+        }
+      ]
+    },
+    "nsis": {
+      "include": "installer.nsh",
+      "installerIcon": "./src/AppIcon.ico",
+      "uninstallerIcon": "./src/AppIcon.ico"
     },
     "linux": {
       "artifactName": "Huly-linux-${version}.${ext}",
