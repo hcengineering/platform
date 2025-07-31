@@ -15,7 +15,7 @@
   "typescript.surveys.enabled": false,
 
   // Editor performance optimizations
-  "editor.minimap.enabled": false,
+  "editor.minimap.enabled": true,
   "editor.hover.delay": 1000,
   "editor.suggest.localityBonus": true,
   "editor.suggest.shareSuggestSelections": false,
