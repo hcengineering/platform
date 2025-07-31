@@ -20,7 +20,6 @@ import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON 
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
-import { removeUserByEmail } from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, type Token } from './types'
 import {
@@ -32,6 +31,7 @@ import {
   parseEventDate,
   parseRecurrenceStrings,
   removeIntegrationSecret,
+  removeUserByEmail,
   setCredentials
 } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
@@ -66,7 +66,7 @@ export class CalendarClient {
     const calendarClient = new CalendarClient(ctx, accountClient, user, client, workspace)
     const authSucces = await setCredentials(calendarClient.oAuth2Client, user)
     if (!authSucces) {
-      await removeUserByEmail(user, user.email)
+      removeUserByEmail(user, user.email)
       await removeIntegrationSecret(ctx, calendarClient.accountClient, {
         socialId: user.userId,
         kind: CALENDAR_INTEGRATION,

@@ -29,7 +29,7 @@ import { generateToken } from '@hcengineering/server-token'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import config from './config'
-import { CALENDAR_INTEGRATION, ReccuringData, State, type Token, type User } from './types'
+import { CALENDAR_INTEGRATION, GoogleEmail, ReccuringData, State, type Token, type User } from './types'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -362,4 +362,30 @@ export function parseEventDate (date: calendar_v3.Schema$EventDateTime | undefin
     return new Date(date.date).getTime()
   }
   return 0
+}
+
+const users = new Map<GoogleEmail, Token[]>()
+
+export function getUserByEmail (email: GoogleEmail): Token[] {
+  return users.get(email) ?? []
+}
+
+export function addUserByEmail (user: Token, email: GoogleEmail): void {
+  const curr = getUserByEmail(email)
+  const exists = curr.find((p) => p.userId === user.userId && p.workspace === user.workspace)
+  if (exists !== undefined) {
+    return
+  }
+  curr.push(user)
+  users.set(email, curr)
+}
+
+export function removeUserByEmail (user: User, email: GoogleEmail): void {
+  const curr = getUserByEmail(email)
+  const newCurr = curr.filter((p) => p.userId !== user.userId || p.workspace !== user.workspace)
+  if (newCurr.length === 0) {
+    users.delete(email)
+  } else {
+    users.set(email, newCurr)
+  }
 }
