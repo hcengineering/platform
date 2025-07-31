@@ -47,6 +47,8 @@
   const unsubscribers: (() => void)[] = []
 
   let loadIntegrationsPromise: Promise<void> | null = null
+  let refreshTimer: NodeJS.Timeout | null = null
+  let lastEventTime = Date.now()
 
   const viewslist: TabItem[] = [
     { id: 'all', labelIntl: setting.string.AllIntegrations },
@@ -86,6 +88,7 @@
         window.history.replaceState({}, document.title, newUrl)
       }
       subscribe()
+      startRefreshTimer()
     } catch (err) {
       console.error('Error loading integrations:', err)
       await showLoadErrorNotification()
@@ -100,6 +103,9 @@
     unsubscribers.forEach((unsubscribe) => {
       unsubscribe()
     })
+    if (refreshTimer !== null) {
+      clearInterval(refreshTimer)
+    }
   })
 
   function subscribe (): void {
@@ -112,7 +118,23 @@
 
   function onRefreshIntegrations (data: any): void {
     console.log('Refreshing integrations due to:', data.integrationKind, data.operation)
+    lastEventTime = Date.now()
     void refreshIntegrations()
+  }
+
+  function startRefreshTimer (): void {
+    if (refreshTimer !== null) {
+      clearInterval(refreshTimer)
+    }
+
+    // Set up a timer to refresh every 10 seconds if no events received
+    refreshTimer = setInterval(() => {
+      const timeSinceLastEvent = Date.now() - lastEventTime
+      if (timeSinceLastEvent >= 10000) {
+        void refreshIntegrations()
+        lastEventTime = Date.now()
+      }
+    }, 10000)
   }
 
   async function refreshIntegrations (): Promise<void> {
@@ -127,6 +149,7 @@
         const workspace = getCurrentWorkspaceUuid()
         connections = await accountClient.listIntegrations({ workspaceUuid: null })
         integrations = await accountClient.listIntegrations({ workspaceUuid: workspace })
+        lastEventTime = Date.now() // Update last event time after successful refresh
       } catch (err) {
         console.error('Error refreshing integrations:', err)
         showErrorNotification(err instanceof Error ? err.message : 'Unknown error')

@@ -40,6 +40,7 @@ export interface TelegramChannel {
 export interface TelegramChannelConfig extends TelegramChannel {
   access: 'public' | 'private'
   syncEnabled: boolean
+  readonlyAccess?: boolean // access update is not supported for existing channels
 }
 
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''

@@ -92,11 +92,22 @@
       error = null
       const integrationClient = await getIntegrationClient()
       connection = await integrationClient.getConnection(integration)
-      channels = (await listChannels(connection.data.phone)).map((channel) => ({
-        ...channel,
-        access: channel.access ?? 'private',
-        syncEnabled: channel.mode === 'sync'
-      }))
+
+      // Get existing channel configurations from integration data
+      const existingChannelsConfig = integration.data?.config?.channels ?? []
+      const existingChannelsMap = new Map<string, Record<string, any>>(
+        existingChannelsConfig.map((config: any) => [config.telegramId.toString(), config])
+      )
+
+      channels = (await listChannels(connection.data.phone)).map((channel) => {
+        const existingConfig = existingChannelsMap.get(channel.id)
+        return {
+          ...channel,
+          access: existingConfig?.access ?? 'private',
+          syncEnabled: channel.mode === 'sync',
+          readonlyAccess: existingConfig?.readonlyAccess ?? false
+        }
+      })
       isLoading = false
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load channels'
@@ -318,12 +329,13 @@
       ? integration
       : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
     const channelsConfig = channels
-      .filter((channel) => channel.syncEnabled)
+      .filter((channel) => channel.syncEnabled || channel.readonlyAccess)
       .map((channel) => {
         return {
           telegramId: parseInt(channel.id),
           enabled: channel.syncEnabled,
-          access: channel.access
+          access: channel.access,
+          readonlyAccess: true
         }
       })
     await integrationClient.updateConfig(
@@ -472,10 +484,14 @@
                 </div>
                 <div class="channel-access">
                   <DropdownLabelsIntl
-                    label={item.syncEnabled ? telegram.string.SelectAccess : telegram.string.EnableSyncToConfigure}
+                    label={item.readonlyAccess === true
+                      ? telegram.string.AccessCannotBeChanged
+                      : item.syncEnabled
+                        ? telegram.string.SelectAccess
+                        : telegram.string.EnableSyncToConfigure}
                     items={accessOptions}
                     selected={item.access}
-                    disabled={readonly || !item.syncEnabled}
+                    disabled={readonly || !item.syncEnabled || item.readonlyAccess}
                     shouldUpdateUndefined={false}
                     minWidth={'6rem'}
                     on:selected={(e) => {
