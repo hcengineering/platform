@@ -161,7 +161,7 @@ export async function handleBlobDelete (
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blob', { error })
+    ctx.error('failed to delete blob', { workspace, name, error })
     res.status(500).send()
   }
 }
@@ -182,7 +182,7 @@ export async function handleBlobDeleteList (
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blobs', { error })
+    ctx.error('failed to delete blobs', { workspace, names: body.names, error })
     res.status(500).send()
   }
 }
@@ -224,7 +224,7 @@ export async function handleBlobSetParent (
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blob', { error })
+    ctx.error('failed to delete blob', { workspace, name, error })
     res.status(500).send()
   }
 }

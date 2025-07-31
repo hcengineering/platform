@@ -63,8 +63,11 @@ class S3BucketImpl implements S3Bucket {
 
   async head (ctx: MeasureContext, key: string): Promise<S3Object | null> {
     try {
-      const result = await ctx.with('s3.headObject', {}, () =>
-        this.client.headObject({ Bucket: this.bucket, Key: key })
+      const result = await ctx.with(
+        's3.headObject',
+        {},
+        () => this.client.headObject({ Bucket: this.bucket, Key: key }),
+        { bucket: this.bucket }
       )
 
       return {
@@ -77,7 +80,7 @@ class S3BucketImpl implements S3Bucket {
       }
     } catch (err: any) {
       if (err?.$metadata?.httpStatusCode !== 404) {
-        ctx.warn('no object found', { error: err, key })
+        ctx.warn('no object found', { error: err, bucket: this.bucket, key })
       }
       return null
     }
@@ -87,7 +90,7 @@ class S3BucketImpl implements S3Bucket {
     try {
       const command = { Bucket: this.bucket, Key: key, Range: options?.range }
 
-      const result = await ctx.with('s3.getObject', {}, () => this.client.getObject(command))
+      const result = await ctx.with('s3.getObject', {}, () => this.client.getObject(command), { bucket: this.bucket })
 
       if (result.Body === undefined) {
         return null
@@ -115,7 +118,7 @@ class S3BucketImpl implements S3Bucket {
       }
     } catch (err: any) {
       if (err?.$metadata?.httpStatusCode !== 404) {
-        ctx.warn('no object found', { error: err, key })
+        ctx.warn('no object found', { error: err, bucket: this.bucket, key })
       }
       return null
     }
@@ -140,7 +143,7 @@ class S3BucketImpl implements S3Bucket {
     }
 
     if (Buffer.isBuffer(body)) {
-      const result = await ctx.with('s3.putObject', {}, () => this.client.putObject(command))
+      const result = await ctx.with('s3.putObject', {}, () => this.client.putObject(command), { bucket: this.bucket })
 
       return {
         key,
@@ -158,7 +161,7 @@ class S3BucketImpl implements S3Bucket {
         leavePartsOnError: false
       })
 
-      const result = await ctx.with('s3.upload', {}, () => upload.done())
+      const result = await ctx.with('s3.upload', {}, () => upload.done(), { bucket: this.bucket })
 
       return {
         key,
@@ -190,7 +193,9 @@ class S3BucketImpl implements S3Bucket {
       }
     }
 
-    const result = await ctx.with('s3.createMultipartUpload', {}, () => this.client.createMultipartUpload(command))
+    const result = await ctx.with('s3.createMultipartUpload', {}, () => this.client.createMultipartUpload(command), {
+      bucket: this.bucket
+    })
     if (result.UploadId === undefined) {
       throw new Error('failed to create multipart upload')
     }
@@ -215,7 +220,7 @@ class S3BucketImpl implements S3Bucket {
       UploadId: multipart.uploadId,
       PartNumber: options.partNumber
     }
-    const result = await ctx.with('s3.uploadPart', {}, () => this.client.uploadPart(command))
+    const result = await ctx.with('s3.uploadPart', {}, () => this.client.uploadPart(command), { bucket: this.bucket })
     return {
       etag: result.ETag ?? '',
       partNumber: options.partNumber
@@ -241,7 +246,9 @@ class S3BucketImpl implements S3Bucket {
         })
       }
     }
-    await ctx.with('s3.completeMultipartUpload', {}, () => this.client.completeMultipartUpload(command))
+    await ctx.with('s3.completeMultipartUpload', {}, () => this.client.completeMultipartUpload(command), {
+      bucket: this.bucket
+    })
   }
 
   async abortMultipartUpload (ctx: MeasureContext, key: string, multipart: S3MultipartUpload): Promise<void> {
@@ -250,6 +257,8 @@ class S3BucketImpl implements S3Bucket {
       Key: key,
       UploadId: multipart.uploadId
     }
-    await ctx.with('s3.abortMultipartUpload', {}, () => this.client.abortMultipartUpload(command))
+    await ctx.with('s3.abortMultipartUpload', {}, () => this.client.abortMultipartUpload(command), {
+      bucket: this.bucket
+    })
   }
 }
