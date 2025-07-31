@@ -96,8 +96,10 @@ function showRecordingPopup (): void {
 }
 
 export function closeRecordingPopup (): void {
-  const popup = get(recordingPopup)
-  popup?.close()
+  recordingPopup.update((popup) => {
+    popup?.close()
+    return null
+  })
 }
 
 export async function startRecording (): Promise<void> {
