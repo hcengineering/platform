@@ -56,6 +56,7 @@
   import settingsRes from '../plugin'
   import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
   import card, { Card } from '@hcengineering/card'
+  import chat from '@hcengineering/chat'
 
   let loading = true
   let isEditingName = false
@@ -348,12 +349,13 @@
             />
           </div>
           <div class="flex-row-center flex-gap-4">
-            <Label label={settingsRes.string.GuestCardsDescription} />
+            <Label label={settingsRes.string.GuestChannelsDescription} />
             <Component
               is={card.component.CardArrayEditor}
               props={{
+                _class: chat.masterTag.Channel,
                 value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                label: settingsRes.string.GuestCardsArrayLabel,
+                label: settingsRes.string.GuestChannelsArrayLabel,
                 onChange: onAllowedCardsChange
               }}
             />
