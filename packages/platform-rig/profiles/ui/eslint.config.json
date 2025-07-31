@@ -18,7 +18,7 @@
     "extraFileExtensions": [".svelte"]
   },
   "plugins": ["@typescript-eslint", "import"],
-  "ignorePatterns": ["*.json", "node_modules/*", ".eslintrc.js"],
+  "ignorePatterns": ["*.json", "node_modules/*", ".eslintrc.js", "dist/*", "build/*", "coverage/*"],
   "settings": {
     "import/resolver": {
       "node": {
@@ -35,11 +35,14 @@
         "parser": "@typescript-eslint/parser"
       },
       "rules": {
-        "@typescript-eslint/no-unused-vars": ["warn", {
-          // Registered Svelte names for better component typings,
-          // see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
-          "varsIgnorePattern": "^\\$\\$(Props|Events|Slots)$"
-        }],
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          {
+            // Registered Svelte names for better component typings,
+            // see https://raqueebuddinaziz.com/blog/svelte-type-events-slots-and-props/#restprops-props
+            "varsIgnorePattern": "^\\$\\$(Props|Events|Slots)$"
+          }
+        ],
         "@typescript-eslint/array-type": "off",
         "@typescript-eslint/promise-function-async": "off",
         "@typescript-eslint/consistent-type-imports": "off",
@@ -50,9 +53,9 @@
         "no-multiple-empty-lines": "warn",
         "no-undef-init": "off",
         "no-use-before-define": "warn",
-         // This need to be enabled eventually
+        // This need to be enabled eventually
         "@typescript-eslint/explicit-function-return-type": "warn",
-        "@typescript-eslint/strict-boolean-expressions":"warn",
+        "@typescript-eslint/strict-boolean-expressions": "warn",
         "@typescript-eslint/prefer-nullish-coalescing": "warn",
         "@typescript-eslint/no-use-before-define": "warn",
         "@typescript-eslint/no-floating-promises": "warn"

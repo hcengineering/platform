@@ -1,9 +1,54 @@
 {
+  // Memory optimization - limit TypeScript service
+  "typescript.tsserver.maxTsServerMemory": 4096,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.suggest.includeCompletionsForModuleExports": false,
+  "typescript.suggest.includeAutomaticOptionalChainCompletions": false,
+  "typescript.suggest.completeFunctionCalls": false,
+  "typescript.suggest.jsdoc.generateReturns": false,
+  "typescript.suggest.names": false,
+  "typescript.suggest.paths": false,
+  "typescript.npm": "",
+  "typescript.surveys.enabled": false,
+
+  // Editor performance optimizations
+  "editor.minimap.enabled": false,
+  "editor.hover.delay": 1000,
+  "editor.suggest.localityBonus": true,
+  "editor.suggest.shareSuggestSelections": false,
+  "editor.quickSuggestions": {
+    "other": false,
+    "comments": false,
+    "strings": false
+  },
+  "editor.parameterHints.enabled": false,
+  "editor.lightbulb.enabled": "off",
+
+  // Git optimizations for large repo
+  "git.autorefresh": false,
+  "git.autofetch": false,
+  "git.decorations.enabled": false,
+
+  // UI optimizations
+  "breadcrumbs.enabled": false,
+  "explorer.compactFolders": true,
+  "problems.decorations.enabled": false,
+
+  // Extensions
+  "extensions.autoCheckUpdates": false,
+  "extensions.autoUpdate": false,
+
+  // ESLint - run only on save to reduce CPU usage
   "eslint.format.enable": true,
   "eslint.enable": true,
+  "eslint.run": "onSave",
   "eslint.probe": ["javascript", "typescript", "html", "markdown", "svelte"],
   "eslint.validate": ["javascript", "typescript", "markdown", "svelte"],
-  "eslint.lintTask.enable": true,
+  "eslint.lintTask.enable": false,
+
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
@@ -15,5 +60,57 @@
   },
   "[svelte]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/common/temp": true,
+    // "**/node_modules": true, // TODO: Disable if not needed
+    "**/.rush": true,
+    "**/rush-logs": true,
+    "**/.build": true,
+    "**/.validate": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/*.log": true,
+    "**/Thumbs.db": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/lib": true,
+    "**/common/temp": true,
+    "**/.rush": true,
+    "**/.format": true,
+    "**/.validate": true,
+    "**/types": true,
+    "**/.build": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/*.log": true,
+    "**/rush-logs": true,
+    "**/.git": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/lib": true,
+    "**/common/temp": true,
+    "**/.rush": true,
+    "**/.format": true,
+    "**/.validate": true,
+    "**/types": true,
+    "**/.build": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/*.log": true,
+    "**/rush-logs": true
   }
 }

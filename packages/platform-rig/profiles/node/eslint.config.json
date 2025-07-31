@@ -1,10 +1,16 @@
 {
-  "extends": [
-      "standard-with-typescript"
-  ],
-  "ignorePatterns": ["*.json", "node_modules/*", ".eslintrc.js"],
+  "extends": ["standard-with-typescript"],
+  "ignorePatterns": ["*.json", "node_modules/*", ".eslintrc.js", "dist/*", "build/*", "coverage/*"],
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "createDefaultProgram": false
+  },
   "rules": {
-      "@typescript-eslint/array-type": "off",
-      "@typescript-eslint/promise-function-async": "off"
-  }    
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/promise-function-async": "off"
+  },
+  "env": {
+    "node": true,
+    "es2022": true
+  }
 }
