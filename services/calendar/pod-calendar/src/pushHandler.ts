@@ -19,7 +19,7 @@ import { getClient } from './client'
 import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token } from './types'
-import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret, setCredentials } from './utils'
+import { getGoogleClient, removeIntegrationSecret, setCredentials } from './utils'
 
 export class PushHandler {
   constructor (
@@ -33,7 +33,7 @@ export class PushHandler {
       {},
       async () => {
         try {
-          const client = await getClient(getWorkspaceToken(token.workspace))
+          const client = await getClient(token.workspace)
           const res = getGoogleClient()
           const authSuccess = await setCredentials(res.auth, token)
           if (!authSuccess) {
