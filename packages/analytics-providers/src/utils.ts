@@ -79,12 +79,29 @@ function getDeviceType (type: string | undefined | null): string {
 
 export function collectEventMetadata (properties: Record<string, any> = {}): Record<string, any> {
   const trackingParams = getUrlTrackingParams()
-  const referrer = document.referrer === '' ? '$direct' : document.referrer
+
+  const referrer = (() => {
+    if (document.referrer === '') return '$direct'
+
+    try {
+      const currentDomain = window.location.hostname
+      const referrerDomain = new URL(document.referrer).hostname
+
+      if (currentDomain === referrerDomain) return '$direct'
+
+      return document.referrer
+    } catch {
+      return document.referrer
+    }
+  })()
   const referringDomain = referrer !== '$direct' ? new URL(referrer).hostname : '$direct'
 
   const now = new Date()
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const timezoneOffset = -now.getTimezoneOffset()
+
+  const browserLanguage = navigator.language !== '' ? navigator.language : 'en-US'
+  const browserLanguagePrefix = browserLanguage.split('-')[0] !== '' ? browserLanguage.split('-')[0] : 'en'
 
   return {
     ...properties,
@@ -110,6 +127,8 @@ export function collectEventMetadata (properties: Record<string, any> = {}): Rec
     title: document.title,
     $timezone: timezone,
     $timezone_offset: timezoneOffset,
+    $browser_language: browserLanguage,
+    $browser_language_prefix: browserLanguagePrefix,
     ...trackingParams
   }
 }

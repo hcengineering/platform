@@ -21,6 +21,7 @@ import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-colle
 import { extractToken } from '@hcengineering/server-client'
 import config from './config'
 import { ApiError } from './error'
+import { getGeoLocationFromIp, getClientIp, geoFieldMapping } from './geoip'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -110,7 +111,7 @@ function getRecordsByType (event: AnalyticEvent): Record<string, any> {
   }
 }
 
-function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string, any> {
+async function preparePostHogEvent (event: AnalyticEvent, req: Request): Promise<Record<string, any>> {
   let errorMessage = 'Unknown error'
   let errorType = 'Error'
 
@@ -137,8 +138,17 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
   for (const [key, value] of Object.entries(recordsByType)) {
     baseEvent[key] = value
   }
-  baseEvent.$ip = req.ip
+
+  // Add IP address
+  baseEvent.$ip = getClientIp(req)
   baseEvent.timestamp = event.properties.$timestamp ?? new Date(event.timestamp).toISOString()
+
+  // Add geolocation data
+  const geoData = await getGeoLocationFromIp(req)
+
+  for (const [sourceField, targetField] of Object.entries(geoFieldMapping)) {
+    baseEvent[targetField] = geoData[sourceField as keyof typeof geoData]
+  }
 
   if (event.event === AnalyticEventType.SetAlias && typeof event.properties.alias === 'string') {
     const aliasProperties: Record<string, any> = {
@@ -239,9 +249,11 @@ export function createServer (): Express {
 
       console.log(`Received batch: ${events.length} events, ${payloadSize} bytes`)
 
-      const posthogEvents = events.map((event) => {
-        return preparePostHogEvent(event, req)
-      })
+      const posthogEvents = await Promise.all(
+        events.map(async (event) => {
+          return await preparePostHogEvent(event, req)
+        })
+      )
 
       const payload = {
         api_key: config.PostHogAPI,
