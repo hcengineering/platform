@@ -36,7 +36,8 @@ import core, {
   type PluginConfiguration,
   type Ref,
   type TxCUD,
-  platformNow
+  platformNow,
+  ClientConnectEvent
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -140,10 +141,20 @@ export default async () => {
                 }
               }, connectTimeout)
               newOpt.onConnect = async (event, lastTx, data) => {
-                // Any event is fine, it means server is alive.
-                clearTimeout(connectTO)
-                await opt?.onConnect?.(event, lastTx, data)
-                resolve()
+                try {
+                  await opt?.onConnect?.(event, lastTx, data)
+                } catch (error) {
+                  void clientConnection?.close()
+                  void opt?.onDialTimeout?.()
+                  reject(error)
+                  return
+                }
+
+                if (event !== ClientConnectEvent.Maintenance) {
+                  // Any event is fine, it means server is alive.
+                  clearTimeout(connectTO)
+                  resolve()
+                }
               }
             })
           }

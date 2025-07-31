@@ -134,6 +134,16 @@ export class PlatformWorker {
           workspace: i.workspaceUuid,
           installationId: Array.isArray(installationId) ? installationId : [installationId]
         })
+      } else {
+        ctx.warn('Integration without installationId', {
+          accountId: i.socialId,
+          workspace: i.workspaceUuid
+        })
+        await accountsClient.deleteIntegration({
+          kind: 'github',
+          workspaceUuid: i.workspaceUuid,
+          socialId: i.socialId
+        })
       }
     }
 
@@ -1076,9 +1086,9 @@ export class PlatformWorker {
                 index: widx,
                 total: workspaces.length
               })
-              // No if no integration, we will try connect one more time in a time period
               this.clients.set(workspace, worker)
             } else {
+              // No if no integration, we will try connect one more time in a time period
               workerCtx.info(
                 '************************* Failed Register worker, timeout or integrations removed *************************',
                 {

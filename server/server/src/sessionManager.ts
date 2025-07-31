@@ -63,6 +63,7 @@ import {
   type AddSessionResponse,
   type ClientSessionCtx,
   type ConnectionSocket,
+  type ConsumerHandle,
   type GetWorkspaceResponse,
   LOGGING_ENABLED,
   pingConst,
@@ -72,6 +73,7 @@ import {
   type PlatformQueueProducer,
   QueueTopic,
   type QueueUserMessage,
+  QueueWorkspaceEvent,
   type QueueWorkspaceMessage,
   type Session,
   type SessionManager,
@@ -116,6 +118,7 @@ export class TSessionManager implements SessionManager {
 
   workspaceProducer: PlatformQueueProducer<QueueWorkspaceMessage>
   usersProducer: PlatformQueueProducer<QueueUserMessage>
+  workspaceConsumer: ConsumerHandle
 
   now: number = Date.now()
 
@@ -141,8 +144,28 @@ export class TSessionManager implements SessionManager {
         this.handleTick()
       }, 1000 / ticksPerSecond)
     }
-    this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}, { span: false }), QueueTopic.Workspace)
-    this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}, { span: false }), QueueTopic.Users)
+    this.workspaceProducer = this.queue.getProducer(ctx.newChild('ws-queue', {}, { span: false }), QueueTopic.Workspace)
+    this.usersProducer = this.queue.getProducer(ctx.newChild('user-queue', {}, { span: false }), QueueTopic.Users)
+
+    this.workspaceConsumer = this.queue.createConsumer<QueueWorkspaceMessage>(
+      ctx.newChild('ws-queue-consume', {}, { span: false }),
+      QueueTopic.Workspace,
+      generateId(),
+      async (messages) => {
+        for (const msg of messages) {
+          for (const m of msg.value) {
+            if (
+              m.type === QueueWorkspaceEvent.Upgraded ||
+              m.type === QueueWorkspaceEvent.Restored ||
+              m.type === QueueWorkspaceEvent.Deleted
+            ) {
+              // Handle workspace messages
+              this.workspaceInfoCache.delete(msg.workspace)
+            }
+          }
+        }
+      }
+    )
 
     this.ticksContext = ctx.newChild('ticks', {}, { span: false })
   }
@@ -523,6 +546,8 @@ export class TSessionManager implements SessionManager {
 
   maintenanceWorkspaces = new Set<WorkspaceUuid>()
 
+  workspaceInfoCache = new Map<WorkspaceUuid, WorkspaceInfoWithStatus>()
+
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
@@ -552,10 +577,13 @@ export class TSessionManager implements SessionManager {
       if (wsInfo === undefined) {
         // In case of guest or system account
         // We need to get workspace info for system account.
-        const workspaceInfo = await this.getWorkspaceInfo(ctx, rawToken, false)
+        const workspaceInfo =
+          this.workspaceInfoCache.get(token.workspace) ?? (await this.getWorkspaceInfo(ctx, rawToken, false))
         if (workspaceInfo === undefined) {
           return { error: new Error('Workspace not found or not available'), terminate: true }
         }
+        this.workspaceInfoCache.set(token.workspace, workspaceInfo)
+
         wsInfo = {
           url: workspaceInfo.url,
           mode: workspaceInfo.mode,
@@ -569,6 +597,8 @@ export class TSessionManager implements SessionManager {
           endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
           progress: workspaceInfo.processingProgress
         }
+      } else {
+        this.workspaceInfoCache.delete(token.workspace)
       }
       const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
       if (resp !== undefined) {
@@ -961,6 +991,7 @@ export class TSessionManager implements SessionManager {
   async forceClose (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket): Promise<void> {
     const ws = this.workspaces.get(wsId)
     this.maintenanceWorkspaces.delete(wsId)
+    this.workspaceInfoCache.delete(wsId)
     if (ws !== undefined) {
       this.ctx.warn('force-close', { name: ws.wsId.url })
       ws.maintenance = true // We need to similare upgrade to refresh all clients.

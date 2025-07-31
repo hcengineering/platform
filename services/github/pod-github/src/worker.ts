@@ -1753,8 +1753,14 @@ export class GithubWorker implements IntegrationManager {
     ctx.info('Connecting to', { workspace })
     let client: Client | undefined
     let endpoint: string | undefined
+    let maitenanceState = false
     try {
       ;({ client, endpoint } = await createPlatformClient(workspace.uuid, 30000, async (event: ClientConnectEvent) => {
+        if (event === ClientConnectEvent.Maintenance) {
+          await client?.close()
+          maitenanceState = true
+          throw new Error('Workspace in maintenance')
+        }
         reconnect(workspace.uuid, event)
       }))
       ctx.info('connected to github', { workspace: workspace.uuid, endpoint })
@@ -1781,8 +1787,12 @@ export class GithubWorker implements IntegrationManager {
       void worker.init()
       return worker
     } catch (err: any) {
-      ctx.error('timeout during to connect', { workspace, error: err })
       await client?.close()
+      if (maitenanceState) {
+        ctx.info('workspace in maintenance, schedule recheck', { workspace: workspace.uuid, endpoint })
+        return
+      }
+      ctx.error('timeout during to connect', { workspace, error: err })
       return undefined
     }
   }
