@@ -92,7 +92,8 @@ export default mergeIds(githubId, github, {
     RepositoryPresenterRefEditor: '' as AnyComponent,
     GithubIssueInfo: '' as AnyComponent,
     GithubIssueInfoHeader: '' as AnyComponent,
-    GithubIssuePresenter: '' as AnyComponent
+    GithubIssuePresenter: '' as AnyComponent,
+    IntegrationState: '' as AnyComponent
   },
   handler: {
     DisconnectHandler: '' as Handler

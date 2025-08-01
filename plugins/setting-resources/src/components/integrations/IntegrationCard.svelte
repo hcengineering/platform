@@ -210,6 +210,7 @@
   .plugin-container {
     border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
+    max-height: 17rem;
   }
   .header {
     padding: 1rem;

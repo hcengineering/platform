@@ -14,54 +14,53 @@
 -->
 <script lang="ts">
   import { fade } from 'svelte/transition'
-
-  import { Calendar } from '@hcengineering/calendar'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+  import { AttachedDoc, WithLookup } from '@hcengineering/core'
+  import { GithubIntegration, GithubIntegrationRepository } from '@hcengineering/github'
+  import { getClient } from '@hcengineering/presentation'
   import type { Integration } from '@hcengineering/account-client'
-  import calendar from '../plugin'
+  import github from '../plugin'
+  import RepositoryPresenterRef from './RepositoryPresenterRef.svelte'
 
   export let integration: Integration
 
-  let calendars: Calendar[] = []
-  let syncedCalendars: Calendar[] = []
-  const query = createQuery()
-  query.query(
-    calendar.class.ExternalCalendar,
-    {
-      createdBy: { $in: getCurrentAccount().socialIds },
-      externalUser: integration.data?.email
-    },
-    (res) => {
-      calendars = res
-      syncedCalendars = calendars.filter((c) => !c.hidden)
-    }
-  )
+  let githubIntegration: WithLookup<GithubIntegration> | undefined
+
+  const asRepos = (docs: AttachedDoc[]) => docs as GithubIntegrationRepository[]
+
+  const client = getClient()
+  $: loadIntegration(integration)
+
+  async function loadIntegration (integration: Integration): Promise<void> {
+    const installationId = integration?.data?.installationId ?? []
+    const installations = Array.isArray(installationId) ? installationId : [installationId]
+    githubIntegration = await client.findOne(
+      github.class.GithubIntegration,
+      {
+        installationId: { $in: installations }
+      },
+      {
+        lookup: {
+          _id: {
+            repositories: github.class.GithubIntegrationRepository
+          }
+        }
+      }
+    )
+  }
 </script>
 
 <div class="integration-state">
   <div class="state-content">
-    {#if integration.workspaceUuid == null}
-      <div class="flex-center" transition:fade={{ duration: 300 }}>
-        <span class="text-normal content-color">
-          <Label label={calendar.string.NotConnectedIntegration} params={{ email: integration?.data?.email ?? '' }} />
-        </span>
-      </div>
-    {:else if integration.data?.email !== undefined}
+    {#if githubIntegration !== undefined}
       <div class="stats-list" transition:fade={{ duration: 300 }}>
         <div class="stat-row">
-          <span class="text-normal content-color font-medium">{integration.data?.email}</span>
+          <span class="text-normal content-color font-medium">{githubIntegration.name}</span>
         </div>
         <div class="space-divider bottom" />
-        {#if syncedCalendars.length === 0}
-          <div class="stat-row">
-            <span class="text-normal content-color">{calendar.string.NoCalendars}</span>
-          </div>
-        {:else}
-          {#each syncedCalendars as calendar (calendar._id)}
+        {#if githubIntegration.$lookup?.repositories != null}
+          {#each asRepos(githubIntegration.$lookup?.repositories) as repository}
             <div class="stat-row">
-              <span class="text-normal content-halfcontent-color">{calendar.name}</span>
+              <RepositoryPresenterRef value={repository._id} />
             </div>
           {/each}
         {/if}

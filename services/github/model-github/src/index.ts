@@ -586,6 +586,7 @@ export function createModel (builder: Builder): void {
       allowMultiple: false,
       createComponent: github.component.Connect,
       configureComponent: github.component.Configure,
+      stateComponent: github.component.IntegrationState,
       kind: githubIntegrationKind
     },
     github.integrationType.Github
