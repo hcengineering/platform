@@ -44,7 +44,7 @@ import type { ProjectCredentials, Token, User, SyncState } from './types'
 import { addFooter, isToken, serviceToken, getKvsClient } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
-import { createIntegrationIfNotEsixts, disableIntegration, removeIntegration } from './integrations'
+import { createIntegrationIfNotExists, disableIntegration, removeIntegration } from './integrations'
 import { AttachmentHandler } from './message/attachments'
 import { TokenStorage } from './tokens'
 import { createMessageManager } from './message/adapter'
@@ -290,7 +290,7 @@ export class GmailClient {
 
   async createIntregration (): Promise<void> {
     try {
-      this.integration = await createIntegrationIfNotEsixts(this.socialId._id, this.user.workspace, this.email)
+      this.integration = await createIntegrationIfNotExists(this.socialId._id, this.user.workspace, this.email)
     } catch (err: any) {
       this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
     }

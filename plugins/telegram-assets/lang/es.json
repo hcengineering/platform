@@ -60,7 +60,7 @@
     "DisconnectMessage": "⚠️Te has desconectado del servicio. Por favor, vuelve a conectar tu cuenta en {app} usando /{command}.",
     "SyncAllChannels": "Sincronizar todos los canales",
     "SyncStarredChannels": "Sincronizar canales marcados",
-    "Public": "úblico",
+    "Public": "Público",
     "Private": "Privado",
     "TotalChannels": "Total de canales",
     "SyncEnabled": "Sincronización habilitada",

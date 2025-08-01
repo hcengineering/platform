@@ -2,6 +2,7 @@
   "string": {
     "Loading": "Načítání...",
     "IntegrationConnected": "Připojeno jako {phone}",
+    "Disconnect": "Odpojit",
     "SharedMessages": "Sdílené zprávy Telegramu",
     "Next": "Další",
     "Back": "Zpět",
@@ -86,7 +87,6 @@
     "DisableSynchronization": "Zakázat synchronizaci",
     "SetPublicAccess": "Nastavit veřejný přístup",
     "SetPrivateAccess": "Nastavit soukromý přístup",
-    "Disconnect": "Odpojit",
     "NoChannelsFound": "Nenalezeny žádné kanály",
     "TryAdjustingSearch": "Zkuste upravit vyhledávání nebo",
     "ClearSearch": "vymazat vyhledávání",

@@ -312,12 +312,12 @@ export class GmailController {
     return res
   }
 
-  async getState (workspace: WorkspaceUuid, socialdId: PersonId): Promise<SyncState | undefined> {
+  async getState (workspace: WorkspaceUuid, socialId: PersonId): Promise<SyncState | undefined> {
     const workspaceClient = this.workspaces.get(workspace)
     if (workspaceClient === undefined) {
       return undefined
     }
-    const mailClient = workspaceClient.getGmailClient(socialdId)
+    const mailClient = workspaceClient.getGmailClient(socialId)
     if (mailClient === undefined) {
       return undefined
     }

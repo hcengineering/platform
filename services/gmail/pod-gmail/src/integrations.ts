@@ -85,7 +85,7 @@ export async function deleteIntegration (integration: Integration): Promise<void
   await accountClient.deleteIntegration(integration)
 }
 
-export async function createIntegrationIfNotEsixts (
+export async function createIntegrationIfNotExists (
   socialId: PersonId,
   workspace: WorkspaceUuid,
   email: string
