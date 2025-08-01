@@ -190,6 +190,9 @@
     "Integrate": "Integrieren",
     "FailedToLoadIntegrations": "Fehler beim Laden der Integrationen",
     "FailedToDisconnect": "Fehler beim Trennen der Integration",
-    "ServiceIsUnavailable": "Dienst ist nicht verfügbar"
+    "ServiceIsUnavailable": "Dienst ist nicht verfügbar",
+    "Integrated": "Integriert",
+    "Connected": "Verbunden",
+    "Available": "Verfügbar"
   }
 }

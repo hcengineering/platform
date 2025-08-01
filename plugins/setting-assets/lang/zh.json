@@ -190,6 +190,9 @@
     "Integrate": "集成",
     "FailedToLoadIntegrations": "加载集成失败",
     "FailedToDisconnect": "断开集成失败",
-    "ServiceIsUnavailable": "服务不可用"
+    "ServiceIsUnavailable": "服务不可用",
+    "Integrated": "已集成",
+    "Connected": "已连接",
+    "Available": "可用"
   }
 }

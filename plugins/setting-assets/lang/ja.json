@@ -190,6 +190,9 @@
     "Integrate": "統合",
     "FailedToLoadIntegrations": "インテグレーションの読み込みに失敗しました",
     "FailedToDisconnect": "インテグレーションの切断に失敗しました",
-    "ServiceIsUnavailable": "サービスは利用できません"
+    "ServiceIsUnavailable": "サービスは利用できません",
+    "Integrated": "統合済み",
+    "Connected": "接続済み",
+    "Available": "利用可能"
   }
 }

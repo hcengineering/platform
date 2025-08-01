@@ -282,7 +282,10 @@ export default plugin(settingId, {
     Integrate: '' as IntlString,
     FailedToLoadIntegrations: '' as IntlString,
     FailedToDisconnect: '' as IntlString,
-    ServiceIsUnavailable: '' as IntlString
+    ServiceIsUnavailable: '' as IntlString,
+    Integrated: '' as IntlString,
+    Connected: '' as IntlString,
+    Available: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

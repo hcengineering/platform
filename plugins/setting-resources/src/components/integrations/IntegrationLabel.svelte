@@ -14,17 +14,20 @@
 -->
 <script lang="ts">
   import { type Integration } from '@hcengineering/account-client'
+  import { IntlString } from '@hcengineering/platform'
+  import setting from '@hcengineering/setting'
+  import { Label } from '@hcengineering/ui'
 
   export let integration: Integration | undefined
 
-  function getIntegrationLabel (): string {
+  function getIntegrationLabel (): IntlString {
     if (integration === undefined) {
-      return 'Available'
+      return setting.string.Available
     }
     if (integration.workspaceUuid == null) {
-      return 'Connected'
+      return setting.string.Connected
     }
-    return 'Integrated'
+    return setting.string.Integrated
   }
 </script>
 
@@ -34,7 +37,7 @@
   class:connected={integration !== undefined && integration.workspaceUuid == null}
   class:integrated={integration?.workspaceUuid != null}
 >
-  {getIntegrationLabel()}
+  <Label label={getIntegrationLabel()} />
 </span>
 
 <style>

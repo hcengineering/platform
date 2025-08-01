@@ -190,6 +190,9 @@
     "Integrate": "Интегрировать",
     "FailedToLoadIntegrations": "Не удалось загрузить интеграции",
     "FailedToDisconnect": "Не удалось отключить интеграцию",
-    "ServiceIsUnavailable": "Сервис недоступен"
+    "ServiceIsUnavailable": "Сервис недоступен",
+    "Integrated": "Интегрировано",
+    "Connected": "Подключено",
+    "Available": "Доступно"
   }
 }
