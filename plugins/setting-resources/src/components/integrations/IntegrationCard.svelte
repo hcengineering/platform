@@ -98,8 +98,8 @@
       isDisconnecting = true
       if (integration !== undefined && integrationType.onDisconnectAll !== undefined) {
         Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
-        const disconnect = await getResource(integrationType.onDisconnectAll)
-        await disconnect(integration)
+        const disconnectAll = await getResource(integrationType.onDisconnectAll)
+        await disconnectAll(integration)
       }
     } catch (err: any) {
       console.error('Error disconnecting integration:', err)
@@ -199,7 +199,7 @@
           label={setting.string.DisconnectAll}
           minWidth={'5rem'}
           loading={isDisconnecting}
-          on:click={disconnect}
+          on:click={disconnectAll}
         />
       {/if}
     {/if}

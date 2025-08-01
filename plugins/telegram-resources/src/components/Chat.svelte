@@ -214,6 +214,7 @@
   //   return Array.from(res.values())
   // }
 
+  let participants: Contact[]
   $: participants = [] // getParticipants(messages, $personAccountByIdStore, object, $personByIdStore)
 </script>
 

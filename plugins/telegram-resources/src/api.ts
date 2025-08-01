@@ -86,7 +86,7 @@ export async function disconnect (phone: string): Promise<void> {
   await request('DELETE', phone)
 }
 
-export async function command (phone: string, command: 'start' | 'next', input?: string): Promise<Integration> {
+export async function command (phone: string, command: 'start' | 'next', input?: string): Promise<IntegrationState> {
   return await request('POST', phone, { command, input })
 }
 

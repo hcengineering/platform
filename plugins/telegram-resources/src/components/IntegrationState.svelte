@@ -43,7 +43,7 @@
       }
 
       connection = connectionResult
-      channels = (await listChannels(connection.data.phone)).map((channel) => ({
+      channels = (await listChannels(connection?.data?.phone)).map((channel) => ({
         ...channel,
         access: 'private', // Default access since access property doesn't exist on TelegramChannel
         syncEnabled: channel.mode === 'sync'

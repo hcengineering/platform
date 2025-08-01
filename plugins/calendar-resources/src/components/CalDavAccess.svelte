@@ -6,7 +6,7 @@
     getCurrentWorkspaceUuid
   } from '@hcengineering/presentation'
   import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
-  import calendar from '@hcengineering/calendar'
+  import calendar, { caldavIntegrationKind } from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
   import { slide } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
@@ -72,7 +72,7 @@
       const accountClient = getAccountClient()
       const integrations = await accountClient.listIntegrations({
         socialId: socialId._id,
-        kind: 'caldav'
+        kind: caldavIntegrationKind
       })
       for (const integration of integrations) {
         if (integration.workspaceUuid == null) {
@@ -104,7 +104,7 @@
       }
       const accountClient = getAccountClient()
       const socialId = selectedSocialId._id
-      const kind = 'caldav'
+      const kind = caldavIntegrationKind
       const key = 'password'
       if (wasAccessEnabled && !accessEnabled) {
         // Access disabled

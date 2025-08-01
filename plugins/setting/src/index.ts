@@ -29,6 +29,7 @@ import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import { Action, AnyComponent } from '@hcengineering/ui'
+import { type Integration as AccountIntegration } from '@hcengineering/account-client'
 
 import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
@@ -41,7 +42,7 @@ export const DOMAIN_SETTING = 'setting' as Domain
 /**
  * @public
  */
-export type Handler = Resource<(integration: Integration) => Promise<void>>
+export type Handler = Resource<(integration: AccountIntegration) => Promise<void>>
 
 /**
  * @public
@@ -61,7 +62,7 @@ export interface IntegrationType extends Doc {
   reconnectComponent?: AnyComponent
   configureComponent?: AnyComponent
 
-  getActions?: Resource<(integration?: Integration) => Promise<Action[]>>
+  getActions?: Resource<(integration?: AccountIntegration) => Promise<Action[]>>
 }
 
 /**

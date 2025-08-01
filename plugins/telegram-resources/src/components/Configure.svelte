@@ -23,6 +23,7 @@
   } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
+  import type { Integration } from '@hcengineering/account-client'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
   import telegram from '../plugin'
@@ -34,7 +35,7 @@
 
   export let integration: Integration
 
-  let connection: Integration
+  let connection: Integration | null
 
   // Search state
   let searchQuery: string = ''
@@ -82,8 +83,8 @@
   ]
 
   const accessOptions = [
-    { id: 'public', label: telegram.string.Public, icon: telegram.string.Shared },
-    { id: 'private', label: telegram.string.Private, icon: telegram.string.Locked }
+    { id: 'public', label: telegram.string.Public },
+    { id: 'private', label: telegram.string.Private }
   ]
 
   onMount(async () => {
@@ -99,7 +100,7 @@
         existingChannelsConfig.map((config: any) => [config.telegramId.toString(), config])
       )
 
-      channels = (await listChannels(connection.data.phone)).map((channel) => {
+      channels = (await listChannels(connection?.data?.phone)).map((channel) => {
         const existingConfig = existingChannelsMap.get(channel.id)
         return {
           ...channel,
@@ -344,7 +345,7 @@
         channels: channelsConfig
       },
       async () => {
-        await restart(connection.data.phone)
+        await restart(connection?.data?.phone)
       }
     )
 

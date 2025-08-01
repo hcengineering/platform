@@ -65,7 +65,7 @@
 
   function isOptionSelected (optionId: string): boolean {
     if (selectedCategory === null) return false
-    return activeFilters.some((f) => f.categoryId === selectedCategory.id && f.optionId === optionId)
+    return activeFilters.some((f) => f.categoryId === selectedCategory?.id && f.optionId === optionId)
   }
 
   function getActiveOption (categoryId: string): string {
@@ -75,7 +75,7 @@
 
   $: currentActiveFilter = (() => {
     if (selectedCategory === null) return null
-    return activeFilters.find((f) => f.categoryId === selectedCategory.id) ?? null
+    return activeFilters.find((f) => f.categoryId === selectedCategory?.id) ?? null
   })()
 </script>
 

@@ -182,6 +182,11 @@ export const calendarIntegrationKind = 'google-calendar' as IntegrationKind
 /**
  * @public
  */
+export const caldavIntegrationKind = 'caldav' as IntegrationKind
+
+/**
+ * @public
+ */
 export const calendarId = 'calendar' as Plugin
 
 /**

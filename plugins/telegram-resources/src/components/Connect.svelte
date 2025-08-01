@@ -35,7 +35,7 @@
   }
 
   // Wrapper for command API with loading state management
-  async function commandWithLoading (phone: string, action: string, data?: string): Promise<IntegrationState> {
+  async function commandWithLoading (phone: string, action: 'start' | 'next', data?: string): Promise<IntegrationState> {
     if (isLoading) {
       throw new Error('Already processing request')
     }
