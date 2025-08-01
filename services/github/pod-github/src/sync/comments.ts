@@ -9,7 +9,8 @@ import core, {
   DocumentUpdate,
   MeasureContext,
   Ref,
-  TxOperations
+  TxOperations,
+  withContext
 } from '@hcengineering/core'
 import github, { DocSyncInfo, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
 import { LiveQuery } from '@hcengineering/query'
@@ -43,7 +44,6 @@ export class CommentSyncManager implements DocSyncManager {
   externalDerivedSync = false
 
   constructor (
-    readonly ctx: MeasureContext,
     readonly client: TxOperations,
     readonly lq: LiveQuery
   ) {}
@@ -53,10 +53,17 @@ export class CommentSyncManager implements DocSyncManager {
   }
 
   eventSync = new Map<string, Promise<void>>()
-  async handleEvent<T>(integration: IntegrationContainer, derivedClient: TxOperations, evt: T): Promise<void> {
+
+  @withContext('comments-handle-event')
+  async handleEvent<T>(
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    derivedClient: TxOperations,
+    evt: T
+  ): Promise<void> {
     await this.createCommentPromise
     const event = evt as IssueCommentEvent
-    this.ctx.info('comments:handleEvent', {
+    ctx.info('comments:handleEvent', {
       action: event.action,
       login: event.sender.login,
       workspace: this.provider.getWorkspaceId()
@@ -71,13 +78,14 @@ export class CommentSyncManager implements DocSyncManager {
     }
 
     await this.eventSync.get(event.issue.url)
-    const promise = this.processEvent(event, derivedClient, integration)
+    const promise = this.processEvent(ctx, event, derivedClient, integration)
     this.eventSync.set(event.issue.url, promise)
     await promise
     this.eventSync.delete(event.issue.url)
   }
 
   async handleDelete (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     derivedClient: TxOperations,
@@ -99,7 +107,7 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (commentExternal !== undefined) {
       try {
-        await this.deleteGithubDocument(container, account, commentExternal.node_id)
+        await this.deleteGithubDocument(ctx, container, account, commentExternal.node_id)
       } catch (err: any) {
         let cnt = false
         if (Array.isArray(err.errors)) {
@@ -119,13 +127,18 @@ export class CommentSyncManager implements DocSyncManager {
     }
 
     if (existing !== undefined && deleteExisting) {
-      await deleteObjects(this.ctx, this.client, [existing], account)
+      await deleteObjects(ctx, this.client, [existing], account)
     }
     return true
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
+  async deleteGithubDocument (
+    ctx: MeasureContext,
+    container: ContainerFocus,
+    account: PersonId,
+    id: string
+  ): Promise<void> {
+    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
 
     const q = `mutation deleteComment($commentID: ID!) {
       deleteIssueComment(
@@ -142,13 +155,14 @@ export class CommentSyncManager implements DocSyncManager {
   }
 
   private async processEvent (
+    ctx: MeasureContext,
     event: IssueCommentEvent,
     derivedClient: TxOperations,
     integration: IntegrationContainer
   ): Promise<void> {
     const { repository: repo } = await this.provider.getProjectAndRepository(event.repository.node_id)
     if (repo === undefined) {
-      this.ctx.info('No project for repository', {
+      ctx.info('No project for repository', {
         repository: event.repository,
         workspace: this.provider.getWorkspaceId()
       })
@@ -233,7 +247,9 @@ export class CommentSyncManager implements DocSyncManager {
     }
   }
 
+  @withContext('comments-sync')
   async sync (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     parent: DocSyncInfo | undefined,
@@ -252,7 +268,7 @@ export class CommentSyncManager implements DocSyncManager {
       }
 
       // If no external document, we need to create it.
-      this.createCommentPromise = this.createGithubComment(container, existing, info, parent, derivedClient)
+      this.createCommentPromise = this.createGithubComment(ctx, container, existing, info, parent, derivedClient)
       return await this.createCommentPromise
     }
     const comment = info.external as CommentExternalData
@@ -279,16 +295,17 @@ export class CommentSyncManager implements DocSyncManager {
         return { needSync: githubSyncVersion, current: messageData }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.ctx.error(err)
+        ctx.error(err)
         return { needSync: githubSyncVersion, error: errorToObj(err) }
       }
     } else {
-      await this.handleDiffUpdate(existing, info, messageData, container, parent, comment, account)
+      await this.handleDiffUpdate(ctx, existing, info, messageData, container, parent, comment, account)
     }
     return { current: messageData, needSync: githubSyncVersion }
   }
 
   private async handleDiffUpdate (
+    ctx: MeasureContext,
     existing: Doc,
     info: DocSyncInfo,
     messageData: MessageData,
@@ -327,7 +344,7 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
+      const okit = (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit
       const mdown = await this.provider.getMarkdown(existingComment.message)
       if (mdown.trim().length > 0) {
         await okit?.rest.issues.updateComment({
@@ -382,6 +399,7 @@ export class CommentSyncManager implements DocSyncManager {
   }
 
   async createGithubComment (
+    ctx: MeasureContext,
     container: ContainerFocus,
     existing: Doc | undefined,
     info: DocSyncInfo,
@@ -399,7 +417,7 @@ export class CommentSyncManager implements DocSyncManager {
       return {}
     }
     const chatMessage = existing as ChatMessage
-    const okit = (await this.provider.getOctokit(chatMessage.modifiedBy)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(ctx, chatMessage.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {
@@ -430,12 +448,14 @@ export class CommentSyncManager implements DocSyncManager {
       return { needSync: githubSyncVersion }
     } catch (err: any) {
       Analytics.handleError(err)
-      this.ctx.error(err)
+      ctx.error(err)
       return { needSync: githubSyncVersion, error: errorToObj(err) }
     }
   }
 
+  @withContext('comments-externalSync')
   async externalSync (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     kind: ExternalSyncField,
@@ -452,11 +472,13 @@ export class CommentSyncManager implements DocSyncManager {
     this.provider.sync()
   }
 
-  repositoryDisabled (integration: IntegrationContainer, repo: GithubIntegrationRepository): void {
+  repositoryDisabled (ctx: MeasureContext, integration: IntegrationContainer, repo: GithubIntegrationRepository): void {
     integration.synchronized.delete(`${repo._id}:comment`)
   }
 
+  @withContext('comments-externalFullSync')
   async externalFullSync (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     projects: GithubProject[],
@@ -500,25 +522,26 @@ export class CommentSyncManager implements DocSyncManager {
             break
           }
           const comments: CommentExternalData[] = data.data as any
-          this.ctx.info('retrieve comments for', {
+          ctx.info('retrieve comments for', {
             repo: repo.name,
             comments: comments.length,
             used: data.headers['x-ratelimit-used'],
             limit: data.headers['x-ratelimit-limit'],
             workspace: this.provider.getWorkspaceId()
           })
-          await this.syncComments(repo, comments, derivedClient)
+          await this.syncComments(ctx, repo, comments, derivedClient)
           this.provider.sync()
         }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.ctx.error(err)
+        ctx.error(err)
       }
       integration.synchronized.add(syncKey)
     }
   }
 
   async syncComments (
+    ctx: MeasureContext,
     repo: GithubIntegrationRepository,
     comments: CommentExternalData[],
     derivedClient: TxOperations
@@ -571,7 +594,7 @@ export class CommentSyncManager implements DocSyncManager {
         }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.ctx.error(err)
+        ctx.error(err)
       }
     }
   }

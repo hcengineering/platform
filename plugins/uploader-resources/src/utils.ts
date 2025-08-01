@@ -17,21 +17,11 @@ import {
   type FileUploadOptions,
   type FileUploadPopupOptions,
   type FileWithPath,
-  toFileWithPath,
-  type UploadHandlerDefinition
+  toFileWithPath
 } from '@hcengineering/uploader'
-import {
-  type DocumentQuery,
-  type Blob,
-  type Ref,
-  RateLimiter,
-  hasAccountRole,
-  getCurrentAccount,
-  AccountRole
-} from '@hcengineering/core'
+import { type Blob, type Ref, RateLimiter, hasAccountRole, getCurrentAccount, AccountRole } from '@hcengineering/core'
 import { type FileUpload, type Upload, trackUpload, untrackUpload, updateUploads } from './store'
-import uploader from './plugin'
-import { generateFileId, getFileUploadParams, getClient } from '@hcengineering/presentation'
+import { generateFileId, getFileUploadParams } from '@hcengineering/presentation'
 import { addNotification, NotificationSeverity } from '@hcengineering/ui'
 import { translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
@@ -74,13 +64,6 @@ export async function uploadXHR (folders: boolean, options: FileUploadOptions): 
     input.remove()
   }
   input.click()
-}
-
-export async function getUploadHandlers (
-  query?: DocumentQuery<UploadHandlerDefinition>
-): Promise<UploadHandlerDefinition[]> {
-  const client = getClient()
-  return await client.findAll<UploadHandlerDefinition>(uploader.class.UploadHandlerDefinition, query ?? {})
 }
 
 const callbackLimiter = new RateLimiter(1)

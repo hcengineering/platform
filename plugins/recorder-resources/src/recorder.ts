@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { releaseStream } from '@hcengineering/media'
 import { ChunkReader } from './stream'
 import { formatElapsedTime } from './utils'
 
@@ -154,9 +155,7 @@ export class Recorder {
     } catch (err) {
       console.error('Recorder: error stopping MediaRecorder:', err)
     } finally {
-      for (const track of this.mediaStream.getTracks()) {
-        track.stop()
-      }
+      releaseStream(this.mediaStream)
     }
 
     console.debug('Recorder: recording stopped, duration:', this.getRecordedTimeMs(), 'ms')

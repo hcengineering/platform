@@ -36,7 +36,12 @@
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement } from '@hcengineering/ui'
-  import { uploadFiles, type FileUploadCallbackParams } from '@hcengineering/uploader'
+  import {
+    getUploadHandlers,
+    uploadFiles,
+    UploadHandlerDefinition,
+    type FileUploadCallbackParams
+  } from '@hcengineering/uploader'
   import { getCollaborationUser, getObjectId } from '@hcengineering/view-resources'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
@@ -66,6 +71,7 @@
   let refActions: RefAction[] = []
   let extraActions: RefAction[] = []
   let modelRefActions: RefAction[] = []
+  let uploadActions: RefAction[] = []
 
   $: if (enableAttachments && !readonly) {
     extraActions = [
@@ -79,7 +85,7 @@
         label: textEditor.string.Table,
         icon: TableIcon,
         action: handleTable,
-        order: 1501
+        order: 1500
       }
     ]
   } else {
@@ -89,11 +95,30 @@
   void getModelRefActions().then((actions) => {
     modelRefActions = actions
   })
+
+  async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
+    const upload = await getResource(uploader.handler)
+    const target = { objectId: object._id, objectClass: object._class }
+    await upload({ onFileUploaded, target })
+  }
+
+  let uploadActionIndex = 1000
+  const uploadHandlers = getUploadHandlers(client, { category: 'media' })
+  uploadActions = uploadHandlers.map((handler) => ({
+    order: handler.order ?? uploadActionIndex++,
+    label: handler.label,
+    icon: handler.icon,
+    action: () => {
+      void uploadWith(handler)
+    }
+  }))
+
   $: refActions = readonly
     ? []
     : defaultRefActions
       .concat(extraActions)
       .concat(modelRefActions)
+      .concat(uploadActions)
       .sort((a, b) => a.order - b.order)
 
   let progress = false

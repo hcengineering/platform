@@ -62,7 +62,8 @@
       {
         event
       },
-      event.action === ExecutionLogAction.Rollback ? NotificationSeverity.Warning : NotificationSeverity.Info
+      event.action === ExecutionLogAction.Rollback ? NotificationSeverity.Warning : NotificationSeverity.Info,
+      event.execution
     )
   }
 </script>

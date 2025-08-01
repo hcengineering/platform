@@ -43,22 +43,16 @@ import { htmlToMarkup } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { calendar_v3 } from 'googleapis'
 import { getClient } from './client'
-import {
-  getCalendarsSyncHistory,
-  getEventHistory,
-  removeUserByEmail,
-  setCalendarsSyncHistory,
-  setEventHistory
-} from './kvsUtils'
+import { getCalendarsSyncHistory, getEventHistory, setCalendarsSyncHistory, setEventHistory } from './kvsUtils'
 import { lock } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
 import {
   getGoogleClient,
-  getWorkspaceToken,
   parseEventDate,
   parseRecurrenceStrings,
   removeIntegrationSecret,
+  removeUserByEmail,
   setCredentials
 } from './utils'
 import { WatchController } from './watch'
@@ -98,14 +92,14 @@ export class IncomingSyncManager {
   }
 
   static async sync (ctx: MeasureContext, accountClient: AccountClient, user: Token, email: GoogleEmail): Promise<void> {
-    const client = await getClient(getWorkspaceToken(user.workspace))
+    const client = await getClient(user.workspace)
     const txOp = new TxOperations(client, user.userId)
     const google = getGoogleClient()
     const mutex = await lock(`${user.workspace}:${user.userId}:${email}`)
     try {
       const authSucces = await setCredentials(google.auth, user)
       if (!authSucces) {
-        await removeUserByEmail(user, user.email)
+        removeUserByEmail(user, user.email)
         await removeIntegrationSecret(ctx, accountClient, {
           socialId: user.userId,
           kind: CALENDAR_INTEGRATION,

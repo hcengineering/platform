@@ -27,12 +27,12 @@ import core, {
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
-import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
+import { getSyncHistory, setSyncHistory } from './kvsUtils'
+import { synced } from './mutex'
 import { IncomingSyncManager } from './sync'
 import { getWorkspaceTokens } from './tokens'
 import { GoogleEmail, Token } from './types'
-import { getWorkspaceToken } from './utils'
-import { synced } from './mutex'
+import { addUserByEmail } from './utils'
 
 export class WorkspaceClient {
   private readonly clients = new Map<GoogleEmail, CalendarClient>()
@@ -49,7 +49,7 @@ export class WorkspaceClient {
   ) {}
 
   static async run (ctx: MeasureContext, accountClient: AccountClient, workspace: WorkspaceUuid): Promise<void> {
-    const client = await getClient(getWorkspaceToken(workspace))
+    const client = await getClient(workspace)
     const txOp = new TxOperations(client, core.account.System)
     const instance = new WorkspaceClient(ctx, accountClient, txOp, workspace)
 
@@ -90,7 +90,7 @@ export class WorkspaceClient {
     for (const token of tokens) {
       if (token.workspaceUuid === null) continue
       const parsedToken = JSON.parse(token.secret)
-      await addUserByEmail(parsedToken, token.key as GoogleEmail)
+      addUserByEmail(parsedToken, token.key as GoogleEmail)
       await this.createCalendarClient(parsedToken)
     }
     const limiter = new RateLimiter(config.InitLimit)

@@ -12,7 +12,8 @@ import {
   TxOperations,
   WithLookup,
   WorkspaceUuid,
-  type Blob
+  type Blob,
+  type MeasureContext
 } from '@hcengineering/core'
 import {
   DocSyncInfo,
@@ -81,7 +82,7 @@ export interface IntegrationManager {
   getContainer: (space: Ref<Space>) => Promise<ContainerFocus | undefined>
   getAccount: (user?: UserInfo | null) => Promise<PersonId | undefined>
   getAccountU: (user: User) => Promise<PersonId | undefined>
-  getOctokit: (account: PersonId) => Promise<Octokit | undefined>
+  getOctokit: (ctx: MeasureContext, account: PersonId) => Promise<Octokit | undefined>
   getMarkupSafe: (
     container: IntegrationContainer,
     text?: string | null,
@@ -106,13 +107,14 @@ export interface IntegrationManager {
   getTaskTypeOf: (project: Ref<ProjectType>, ofClass: Ref<Class<Doc>>) => Promise<TaskType | undefined>
 
   handleEvent: <T>(
+    ctx: MeasureContext,
     requestClass: Ref<Class<Doc>>,
     integrationId: number | undefined,
     repo: GithubIntegrationRepository,
     event: T
   ) => Promise<void>
 
-  doSyncFor: (docs: DocSyncInfo[], project: GithubProject) => Promise<void>
+  doSyncFor: (ctx: MeasureContext, docs: DocSyncInfo[], project: GithubProject) => Promise<void>
   getWorkspaceId: () => WorkspaceUuid
   getWorkspaceUrl: () => string
   getBranding: () => Branding | null
@@ -145,6 +147,7 @@ export interface DocSyncManager {
   init: (provider: IntegrationManager) => Promise<void>
   // Perform synchronization of document with external source.
   sync: (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     parent: DocSyncInfo | undefined,
@@ -152,6 +155,7 @@ export interface DocSyncManager {
   ) => Promise<DocumentUpdate<DocSyncInfo> | undefined>
 
   handleDelete: (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     derivedClient: TxOperations,
@@ -161,6 +165,7 @@ export interface DocSyncManager {
 
   // Perform synchronization with external source.
   externalFullSync: (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     projects: GithubProject[],
@@ -169,6 +174,7 @@ export interface DocSyncManager {
 
   // Perform synchronization with external source.
   externalSync: (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     kind: ExternalSyncField,
@@ -177,11 +183,20 @@ export interface DocSyncManager {
     project: GithubProject
   ) => Promise<void>
 
-  handleEvent: <T>(integration: IntegrationContainer, derivedClient: TxOperations, event: T) => Promise<void>
+  handleEvent: <T>(
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    derivedClient: TxOperations,
+    event: T
+  ) => Promise<void>
 
   externalDerivedSync: boolean
 
-  repositoryDisabled: (integration: IntegrationContainer, repo: GithubIntegrationRepository) => void
+  repositoryDisabled: (
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    repo: GithubIntegrationRepository
+  ) => void
 }
 
 /**

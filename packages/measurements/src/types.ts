@@ -66,9 +66,12 @@ export interface MeasureLogger {
 }
 
 export interface WithOptions {
-  span?: true | false | 'disable' | 'skip' // 'none' means no span will be created, 'disable' means context will be tracing disabled
+  span?: true | false | 'disable' | 'skip' | 'inherit' // 'none' means no span will be created, 'disable' means context will be tracing disabled
   log?: boolean
   inheritParams?: boolean
+
+  // Passed context metadata
+  meta?: Record<string, string | number | boolean>
 }
 
 /**
@@ -87,6 +90,7 @@ export interface MeasureContext<Q = any> {
       fullParams?: FullParamsType
       logger?: MeasureLogger
       span?: WithOptions['span'] // By default true
+      meta?: Record<string, string | number | boolean>
     }
   ) => MeasureContext
 
@@ -107,6 +111,8 @@ export interface MeasureContext<Q = any> {
     fullParams?: FullParamsType | (() => FullParamsType),
     opt?: WithOptions
   ) => T
+
+  extractMeta: () => Record<string, string | number | boolean>
 
   logger: MeasureLogger
 

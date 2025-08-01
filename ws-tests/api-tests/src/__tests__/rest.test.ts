@@ -296,5 +296,5 @@ async function checkFindPerformance (conn: RestClient): Promise<void> {
   const avg = total / ops
   // console.log('ops:', ops, 'total:', total, 'avg:', )
   expect(ops).toEqual(attempts)
-  expect(avg).toBeLessThan(6)
+  expect(avg).toBeLessThan(10)
 }

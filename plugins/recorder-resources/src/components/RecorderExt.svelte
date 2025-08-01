@@ -14,40 +14,75 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Icon, showPopup } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
 
   import IconRec from './icons/Rec.svelte'
   import IconRecordOn from './icons/RecordOn.svelte'
-  import RecordingPopup from './RecordingPopup.svelte'
 
   import plugin from '../plugin'
-  import { recording } from '../stores'
+  import { cancelRecording, recorderState, record, stopRecording } from '../recording'
+  import { formatElapsedTime } from '../utils'
 
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
 
-  function handleClick (): void {
-    showPopup(RecordingPopup, {}, 'centered')
+  $: state = $recorderState.state
+  $: elapsedTime = $recorderState.elapsedTime
+
+  function handleRecClick (): void {
+    void record({})
   }
+
+  onDestroy(async (): Promise<void> => {
+    await cancelRecording()
+  })
 </script>
 
 {#if endpoint !== ''}
-  {#if $recording !== null}
+  {#if state !== 'stopped' && state !== 'idle' && state !== 'ready'}
     <button
       class="antiButton ghost jf-center bs-none no-focus statusButton negative"
       style="padding-left: 0.25rem"
-      on:click={handleClick}
+      use:tooltip={{ label: plugin.string.Stop, direction: 'bottom' }}
+      on:click={stopRecording}
     >
-      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
-      <Icon icon={IconRec} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
+      <div class="dot pulse" />
+      <div class="timer">
+        {formatElapsedTime(elapsedTime)}
+      </div>
     </button>
   {:else}
     <button
       class="antiButton ghost jf-center bs-none no-focus statusButton"
       style="padding-left: 0.25rem"
-      on:click={handleClick}
+      on:click={handleRecClick}
     >
       <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
       <Icon icon={IconRec} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
     </button>
   {/if}
 {/if}
+
+<style lang="scss">
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: 0.25rem;
+    border-radius: 50%;
+    background: var(--primary-button-color);
+  }
+
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+
+  .timer {
+    margin-left: 0.125rem;
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0;
+    }
+  }
+</style>

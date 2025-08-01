@@ -22,8 +22,6 @@
 
 {#if value === ExecutionLogAction.Started}
   <Icon icon={process.icon.Start} size={'small'} />
-{:else if value === ExecutionLogAction.Transition}
-  <Icon icon={view.icon.ArrowRight} size={'small'} />
-{:else}
+{:else if value === ExecutionLogAction.Rollback}
   <Icon icon={view.icon.Undo} size={'small'} />
 {/if}

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, ArrOf, Ref, RefTo, Type } from '@hcengineering/core'
+  import { AnyAttribute, ArrOf, Class, Ref, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
@@ -23,6 +23,7 @@
   import card from '../plugin'
   import CardsPopup from './CardsPopup.svelte'
 
+  export let _class: Ref<Class<Card>> | undefined = undefined
   export let value: Ref<Card>[] | undefined
   export let readonly: boolean = false
   export let label: IntlString | undefined
@@ -40,10 +41,12 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const _class =
-    ((attribute?.type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
-    ((type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
-    card.class.Card
+  if (_class === undefined) {
+    _class =
+      ((attribute?.type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
+      ((type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
+      card.class.Card
+  }
 
   const handleOpen = (event: MouseEvent): void => {
     if (onChange === undefined) {

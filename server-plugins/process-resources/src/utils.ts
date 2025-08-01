@@ -13,67 +13,22 @@
 // limitations under the License.
 //
 
-import { Doc, getObjectValue } from '@hcengineering/core'
-import card from '@hcengineering/card'
-import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
-import process, { Execution, SelectedContext, Transition, parseContext, processError } from '@hcengineering/process'
-import { TriggerControl } from '@hcengineering/server-core'
-import serverProcess from '@hcengineering/server-process'
+import { getObjectValue } from '@hcengineering/core'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import process, { Execution, SelectedContext, processError } from '@hcengineering/process'
+import { ProcessControl } from '@hcengineering/server-process'
 
-export async function pickTransition (
-  control: TriggerControl,
-  execution: Execution,
-  transitions: Transition[],
-  doc: Doc
-): Promise<Transition | undefined> {
-  for (const tr of transitions) {
-    const trigger = control.modelDb.findObject(tr.trigger)
-    if (trigger === undefined) continue
-    if (trigger.checkFunction === undefined) return tr
-    const impl = control.hierarchy.as(trigger, serverProcess.mixin.TriggerImpl)
-    if (impl?.serverCheckFunc === undefined) return tr
-    const filled = fillParams(tr.triggerParams, execution)
-    const checkFunc = await getResource(impl.serverCheckFunc)
-    if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, doc, control.hierarchy)
-    if (res) return tr
+export function getAttributeValue (control: ProcessControl, execution: Execution, context: SelectedContext): any {
+  const card = control.cache.get(execution.card)
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
+  const val = getObjectValue(context.key, card)
+  if (val == null) {
+    const attr = control.client.getHierarchy().findAttribute(card._class, context.key)
+    throw processError(
+      process.error.EmptyAttributeContextValue,
+      {},
+      { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+    )
   }
-}
-
-function fillParams (params: Record<string, any>, execution: Execution): Record<string, any> {
-  const res: Record<string, any> = {}
-  for (const key in params) {
-    const value = params[key]
-    const context = parseContext(value)
-    if (context === undefined) {
-      res[key] = value
-      continue
-    }
-    if (context.type === 'context') {
-      res[key] = execution.context[context.id]
-    }
-  }
-  return res
-}
-
-export async function getAttributeValue (
-  control: TriggerControl,
-  execution: Execution,
-  context: SelectedContext
-): Promise<any> {
-  const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
-  if (cardValue.length > 0) {
-    const val = getObjectValue(context.key, cardValue[0])
-    if (val == null) {
-      const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.key)
-      throw processError(
-        process.error.EmptyAttributeContextValue,
-        {},
-        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
-      )
-    }
-    return val
-  } else {
-    throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
-  }
+  return val
 }
