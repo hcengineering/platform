@@ -31,11 +31,11 @@ import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import { encode64 } from './base64'
 import { getClient } from './client'
-import { addUserByEmail, removeUserByEmail, setSyncHistory } from './kvsUtils'
+import { setSyncHistory } from './kvsUtils'
 import { lock } from './mutex'
 import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, removeIntegrationSecret } from './utils'
+import { addUserByEmail, getGoogleClient, removeIntegrationSecret, removeUserByEmail } from './utils'
 import { WatchController } from './watch'
 
 interface AuthResult {
@@ -122,7 +122,7 @@ export class AuthController {
     if (integration !== undefined) {
       await this.client.remove(integration)
     }
-    await removeUserByEmail(this.user, value)
+    removeUserByEmail(this.user, value)
     const data = {
       kind: CALENDAR_INTEGRATION,
       workspaceUuid: this.user.workspace,
@@ -283,7 +283,7 @@ export class AuthController {
       } else {
         await this.accountClient.addIntegrationSecret(data)
       }
-      await addUserByEmail(_token, email)
+      addUserByEmail(_token, email)
     } catch (err) {
       this.ctx.error('update token error', { workspace: this.user.workspace, user: this.user.userId, err })
     }
