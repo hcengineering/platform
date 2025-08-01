@@ -146,7 +146,7 @@ export class PlatformWorker {
           workspace: i.workspaceUuid
         })
         await accountsClient.deleteIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: i.workspaceUuid,
           socialId: i.socialId
         })
