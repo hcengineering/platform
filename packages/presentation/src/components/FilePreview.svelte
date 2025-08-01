@@ -30,7 +30,7 @@
   import { imageSizeToRatio } from '../image'
   import { FilePreviewExtension } from '../types'
 
-  export let file: Ref<Blob>
+  export let file: Ref<Blob> | string
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined

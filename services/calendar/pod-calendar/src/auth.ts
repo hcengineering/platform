@@ -33,12 +33,12 @@ import type { IntegrationClient } from '@hcengineering/integration-client'
 
 import { encode64 } from './base64'
 import { getClient } from './client'
-import { addUserByEmail, removeUserByEmail, setSyncHistory } from './kvsUtils'
+import { setSyncHistory } from './kvsUtils'
+import { lock } from './mutex'
 import { IncomingSyncManager } from './sync'
 import { GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
+import { addUserByEmail, getGoogleClient, removeIntegrationSecret, removeUserByEmail } from './utils'
 import { WatchController } from './watch'
-import { lock } from './mutex'
 
 interface AuthResult {
   success: boolean
@@ -75,7 +75,7 @@ export class AuthController {
       async () => {
         const mutex = await lock(`${state.workspace}:${state.userId}`)
         try {
-          const client = await getClient(getWorkspaceToken(state.workspace))
+          const client = await getClient(state.workspace)
           const txOp = new TxOperations(client, state.userId)
           const controller = new AuthController(ctx, accountClient, integrationClient, txOp, state)
           await controller.process(code)
@@ -101,7 +101,7 @@ export class AuthController {
       async () => {
         const mutex = await lock(`${workspace}:${userId}`)
         try {
-          const client = await getClient(getWorkspaceToken(workspace))
+          const client = await getClient(workspace)
           const txOp = new TxOperations(client, core.account.System)
           const controller = new AuthController(ctx, accountClient, integrationClient, txOp, {
             userId,
@@ -127,7 +127,7 @@ export class AuthController {
     if (integration !== undefined) {
       await this.client.remove(integration)
     }
-    await removeUserByEmail(this.user, value)
+    removeUserByEmail(this.user, value)
     const data = {
       kind: calendarIntegrationKind,
       workspaceUuid: this.user.workspace,
@@ -268,7 +268,7 @@ export class AuthController {
     }
     try {
       await this.integrationClient.setSecret(data)
-      await addUserByEmail(_token, email)
+      addUserByEmail(_token, email)
     } catch (err) {
       this.ctx.error('update token error', { workspace: this.user.workspace, user: this.user.userId, err })
     }
@@ -306,8 +306,8 @@ export class AuthController {
     return authUrl
   }
 
-  static async getUserId (account: AccountUuid, token: string): Promise<PersonId> {
-    const client = await getClient(token)
+  static async getUserId (account: AccountUuid, workspace: WorkspaceUuid, token: string): Promise<PersonId> {
+    const client = await getClient(workspace, token)
     const person = await client.findOne(contact.class.Person, { personUuid: account })
     if (person === undefined) {
       throw new Error('Person not found')

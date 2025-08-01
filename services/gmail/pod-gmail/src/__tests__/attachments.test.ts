@@ -27,6 +27,7 @@ describe('AttachmentHandler', () => {
     newChild: jest.fn(),
     with: jest.fn(),
     withSync: jest.fn(),
+    extractMeta: jest.fn(),
     logger: {
       info: jest.fn(),
       error: jest.fn(),

@@ -3,7 +3,7 @@ import { KeyValueClient, getClient as getKeyValueClient } from '@hcengineering/k
 import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 import config from './config'
-import { GoogleEmail, Token, User } from './types'
+import { GoogleEmail, User } from './types'
 import { getServiceToken } from './utils'
 
 let keyValueClient: KeyValueClient | undefined
@@ -60,43 +60,4 @@ export async function setEventHistory (
 ): Promise<void> {
   const client = getKvsClient()
   await client.setValue(eventHistoryKey(user, email, calendarId), historyId)
-}
-
-export async function getUserByEmail (email: GoogleEmail): Promise<Token[]> {
-  const client = getKvsClient()
-  const key = `${calendarIntegrationKind}:users:${email}`
-  return (await client.getValue<Token[]>(key)) ?? []
-}
-
-export async function addUserByEmail (user: Token, email: GoogleEmail): Promise<void> {
-  const client = getKvsClient()
-  const key = `${calendarIntegrationKind}:users:${email}`
-  const curr = (await client.getValue<Token[]>(key)) ?? []
-  const exists = curr.find((p) => p.userId === user.userId && p.workspace === user.workspace)
-  if (exists !== undefined) {
-    return
-  }
-  curr.push(user)
-  await client.setValue<Token[]>(key, curr)
-}
-
-export async function removeUserByEmail (user: User, email: GoogleEmail): Promise<void> {
-  const client = getKvsClient()
-  const key = `${calendarIntegrationKind}:users:${email}`
-  const curr = (await client.getValue<User[]>(key)) ?? []
-  const newCurr = curr.filter((p) => p.userId !== user.userId || p.workspace !== user.workspace)
-  if (newCurr.length === 0) {
-    await client.deleteKey(key)
-  } else {
-    await client.setValue<User[]>(key, newCurr)
-  }
-}
-
-export async function cleanUserByEmail (): Promise<void> {
-  const client = getKvsClient()
-  const keys = await client.listKeys(`${calendarIntegrationKind}:users:`)
-  if (keys == null) return
-  for (const key in keys) {
-    await client.deleteKey(key)
-  }
 }

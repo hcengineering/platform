@@ -13,115 +13,128 @@
 // limitations under the License.
 //
 
-import {
-  AccountRole,
-  type Blob as PlatformBlob,
-  getCurrentAccount,
-  hasAccountRole,
-  type Ref
-} from '@hcengineering/core'
-import { addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
-import { type FileUploadOptions } from '@hcengineering/uploader'
-import { get } from 'svelte/store'
+import { type PopupResult, showPopup } from '@hcengineering/ui'
+import { derived, get, writable } from 'svelte/store'
 
+import { composer } from './stores/composer'
+import { manager } from './stores/manager'
+import { type RecorderConfig, recorder } from './stores/recorder'
+
+import type { CameraPosition, CameraSize } from './types'
 import RecordingPopup from './components/RecordingPopup.svelte'
-import { recorder, recording } from './stores'
-import { createScreenRecorder } from './screen-recorder'
-import { type RecordingOptions, type RecordingResult } from './types'
-import { translate } from '@hcengineering/platform'
-import view from '@hcengineering/view'
-import { getCurrentLanguage } from '@hcengineering/theme'
 
-export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
-  const onSuccess = async (result: RecordingResult): Promise<void> => {
-    const file = new Blob([], { type: result.type })
-    await onFileUploaded?.({
-      uuid: result.uuid as Ref<PlatformBlob>,
-      name: result.name,
-      file,
-      metadata: {
-        width: result.width,
-        height: result.height
-      }
-    })
-  }
-  showPopup(RecordingPopup, { onSuccess }, 'centered')
+export {
+  camEnabled,
+  micEnabled,
+  camDeviceId,
+  micDeviceId,
+  loading,
+  camStream,
+  micStream,
+  screenStream,
+  canShareScreen,
+  recordingCameraPosition,
+  recordingCameraSize,
+  useScreenShareSound
+} from './stores/manager'
+
+export { recorder } from './stores/recorder'
+
+export async function record (config: RecorderConfig): Promise<void> {
+  await recorder.initialize(config)
+  showRecordingPopup()
 }
 
-export async function startRecording (options: RecordingOptions): Promise<void> {
-  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
-    addNotification(
-      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
-      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
-      view.component.ReadOnlyNotification,
-      undefined,
-      NotificationSeverity.Info,
-      'readOnlyNotification'
-    )
-    return
+export function toggleCam (): void {
+  recorder.toggleCam()
+}
+
+export function toggleMic (): void {
+  recorder.toggleMic()
+}
+
+export function setCam (deviceId: string | undefined): void {
+  recorder.setCamDeviceId(deviceId)
+}
+
+export function setMic (deviceId: string | undefined): void {
+  recorder.setMicDeviceId(deviceId)
+}
+
+export async function startScreenShare (): Promise<void> {
+  await recorder.startScreenShare()
+}
+
+export async function stopScreenShare (): Promise<void> {
+  await recorder.stopScreenShare()
+}
+
+export function setCameraPosition (cameraPos: CameraPosition): void {
+  manager.setRecordingCameraPosition(cameraPos)
+  composer.updateConfig({ cameraPos })
+}
+
+export function setCameraSize (cameraSize: CameraSize): void {
+  manager.setRecordingCameraSize(cameraSize)
+  composer.updateConfig({ cameraSize })
+}
+
+export function setUseScreenShareSound (useScreenShareSound: boolean): void {
+  manager.setUseScreenShareSound(useScreenShareSound)
+}
+
+const recordingPopup = writable<PopupResult | null>(null)
+
+function showRecordingPopup (): void {
+  const current = get(recordingPopup)
+  if (current === null) {
+    const result = showPopup(RecordingPopup, {}, 'centered', () => {
+      recordingPopup.set(null)
+    })
+    recordingPopup.set(result)
+  }
+}
+
+export function closeRecordingPopup (): void {
+  recordingPopup.update((popup) => {
+    popup?.close()
+    return null
+  })
+}
+
+export async function startRecording (): Promise<void> {
+  const state = get(manager)
+  if (state.screenStream !== null) {
+    closeRecordingPopup()
+
+    // Wait for the popup to close before recording
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 250)
+    })
   }
 
-  const current = get(recording)
-  if (current !== null) {
-    throw new Error('Recording already started')
-  }
-
-  const recorder = await createScreenRecorder(options)
   await recorder.start()
-
-  recording.set({ recorder, options, stream: options.stream, state: 'recording' })
 }
 
 export async function stopRecording (): Promise<void> {
-  const current = get(recording)
-  const popup = get(recorder)
-  if (current !== null && current.state === 'recording') {
-    recording.set({ ...current, state: 'stopping' })
-    const result = await current.recorder.stop()
-    await current.options.onSuccess?.(result)
-
-    recording.set({ ...current, state: 'stopped' })
-    popup?.close()
-  } else {
-    console.warn('Recording is not in `recording` state', current)
-  }
+  await recorder.stop()
+  showRecordingPopup()
 }
 
 export async function pauseRecording (): Promise<void> {
-  const current = get(recording)
-  if (current !== null && current.state === 'recording') {
-    await current.recorder.pause()
-    recording.set({ ...current, state: 'paused' })
-  } else {
-    console.warn('Recording is not in `recording` state', current)
-  }
-}
-
-export async function restartRecording (): Promise<void> {
-  const current = get(recording)
-  if (current !== null) {
-    await current.recorder.cancel()
-    await current.recorder.start()
-    recording.set({ ...current, state: 'recording' })
-  } else {
-    console.warn('Recording not started', current)
-  }
+  await recorder.pause()
 }
 
 export async function resumeRecording (): Promise<void> {
-  const current = get(recording)
-  if (current !== null && current.state === 'paused') {
-    await current.recorder.resume()
-    recording.set({ ...current, state: 'recording' })
-  } else {
-    console.warn('Recording is not in `paused` state', current)
-  }
+  await recorder.resume()
 }
 
 export async function cancelRecording (): Promise<void> {
-  const current = get(recording)
-  if (current !== null) {
-    await current.recorder.cancel()
-    recording.set(null)
-  }
+  await recorder.cancel()
 }
+
+export async function cleanupRecording (): Promise<void> {
+  await recorder.cleanup()
+}
+
+export const recorderState = derived(recorder, ($recorder) => $recorder)

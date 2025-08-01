@@ -471,47 +471,58 @@ export class LoggedDB implements BlobDB {
   ) {}
 
   async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
-    return await ctx.with('db.getData', {}, () => this.db.getData(this.ctx, dataId))
+    const params = { location: dataId.location }
+    return await ctx.with('db.getData', {}, () => this.db.getData(this.ctx, dataId), params)
   }
 
   async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
-    return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId))
+    const params = { workspace: blobId.workspace }
+    return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId), params)
   }
 
   async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
-    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, options))
+    const params = { workspace }
+    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, options), params)
   }
 
   async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
-    await ctx.with('db.createData', {}, () => this.db.createData(this.ctx, data))
+    const params = { type: data.type }
+    await ctx.with('db.createData', {}, () => this.db.createData(this.ctx, data), params)
   }
 
   async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
-    await ctx.with('db.createBlob', {}, () => this.db.createBlob(this.ctx, blob))
+    const params = { workspace: blob.workspace, location: blob.location }
+    await ctx.with('db.createBlob', {}, () => this.db.createBlob(this.ctx, blob), params)
   }
 
   async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
-    await ctx.with('db.createBlobData', {}, () => this.db.createBlobData(this.ctx, data))
+    const params = { workspace: data.workspace, location: data.location, type: data.type }
+    await ctx.with('db.createBlobData', {}, () => this.db.createBlobData(this.ctx, data), params)
   }
 
   async deleteBlobList (ctx: MeasureContext, blobs: BlobIds): Promise<void> {
-    await ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(this.ctx, blobs))
+    const params = { workspace: blobs.workspace }
+    await ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(this.ctx, blobs), params)
   }
 
   async deleteBlob (ctx: MeasureContext, blob: BlobId): Promise<void> {
-    await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob))
+    const params = { workspace: blob.workspace }
+    await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob), params)
   }
 
   async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
-    return await this.ctx.with('db.getMeta', {}, () => this.db.getMeta(ctx, blobId))
+    const params = { workspace: blobId.workspace }
+    return await this.ctx.with('db.getMeta', {}, () => this.db.getMeta(ctx, blobId), params)
   }
 
   async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
-    await this.ctx.with('db.setMeta', {}, () => this.db.setMeta(ctx, blobId, meta))
+    const params = { workspace: blobId.workspace }
+    await this.ctx.with('db.setMeta', {}, () => this.db.setMeta(ctx, blobId, meta), params)
   }
 
   async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
-    await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent))
+    const params = { workspace: blob.workspace }
+    await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent), params)
   }
 
   async getStats (ctx: MeasureContext): Promise<StatsResult> {
@@ -519,7 +530,8 @@ export class LoggedDB implements BlobDB {
   }
 
   async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
-    return await ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(this.ctx, workspace))
+    const params = { workspace }
+    return await ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(this.ctx, workspace), params)
   }
 }
 

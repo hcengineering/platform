@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,9 +13,37 @@
 // limitations under the License.
 //
 
-import type { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import drive from '@hcengineering/drive'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  createDefaultSpace,
+  tryUpgrade
+} from '@hcengineering/model'
+import { recorderId } from '@hcengineering/recorder'
+import recorder from './plugin'
 
 export const recorderOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, recorderId, [
+      {
+        state: 'create-recorder-drive',
+        func: async (client) => {
+          await createDefaultSpace(
+            client,
+            recorder.space.Drive,
+            {
+              name: 'Screen Recordings',
+              description: 'Screen recordings',
+              type: drive.spaceType.DefaultDrive,
+              autoJoin: true
+            },
+            drive.class.Drive
+          )
+        }
+      }
+    ])
+  }
 }

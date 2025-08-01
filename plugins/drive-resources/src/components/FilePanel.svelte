@@ -67,12 +67,14 @@
 
   function handleUploadFile (): void {
     if (object != null) {
+      const target = { objectId: object._id, objectClass: object._class }
       void showFilesUploadPopup(
         {
           onFileUploaded,
           showProgress: {
-            target: { objectId: object._id, objectClass: object._class }
+            target
           },
+          target,
           maxNumberOfFiles: 1
         },
         {}

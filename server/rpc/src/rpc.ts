@@ -30,6 +30,8 @@ export interface Request<P extends any[]> {
   method: string
   params: P
 
+  meta?: Record<string, string | number | boolean>
+
   time?: number // Server time to perform operation
 }
 

@@ -167,7 +167,6 @@
         actions.push({
           icon: setting.icon.InviteWorkspace,
           label: view.string.ReadOnlyJoinWorkspace,
-          labelParams: { icon: '' },
           action: async () => {
             navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
           },
@@ -177,7 +176,6 @@
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: view.string.ReadOnlySignUp,
-        labelParams: { icon: '' },
         action: async () => {
           open('https://huly.io/signup')
         },

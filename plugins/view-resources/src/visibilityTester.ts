@@ -15,6 +15,7 @@
 
 import core, {
   checkPermission,
+  checkForbiddenPermission,
   getCurrentAccount,
   toIdMap,
   AccountRole,
@@ -50,7 +51,7 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
   return !(
     await Promise.all(
       Array.from(targetSpaces.entries()).map(
-        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
+        async (s) => await checkForbiddenPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
       )
     )
   ).some((r) => r)

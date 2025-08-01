@@ -12,13 +12,13 @@
 // limitations under the License.
 
 import { type IntlString, translate } from '@hcengineering/platform'
-import { DefaultOptions } from './const'
+import { DefaultVideoRes } from './const'
 import { type CameraPosition, type CameraSize } from './types'
 
 export function getRecordingResolution (): number {
   const value = localStorage.getItem('recorder.resolution')
   const parsedValue = parseInt(value ?? '')
-  return Number.isInteger(parsedValue) ? parsedValue : DefaultOptions.videoRes
+  return Number.isInteger(parsedValue) ? parsedValue : DefaultVideoRes
 }
 
 export function setRecordingResolution (resolution: number): void {
@@ -27,7 +27,7 @@ export function setRecordingResolution (resolution: number): void {
 
 export function getRecordingCameraSize (): CameraSize {
   const value = localStorage.getItem('recorder.camera.size')
-  return (value as CameraSize) ?? DefaultOptions.cameraSize
+  return (value as CameraSize) ?? 'medium'
 }
 
 export function setRecordingCameraSize (size: CameraSize): void {
@@ -126,18 +126,20 @@ export const getVideoDimensions = async (stream: MediaStream): Promise<{ width: 
   throw new Error('No video tracks found')
 }
 
-export function whenStreamEnded (stream: MediaStream, fn: () => void): () => void {
-  fn = once(fn)
-
+export function whenStreamEnded (stream: MediaStream, callback: () => void): void {
   const tracks = stream.getTracks()
-  for (const track of tracks) {
-    track.onended = fn
-  }
 
-  return () => {
+  const cleanup = (): void => {
+    callback()
+
     for (const track of tracks) {
       track.onended = null
     }
+  }
+
+  const onendedOnce = once(cleanup)
+  for (const track of tracks) {
+    track.onended = onendedOnce
   }
 }
 

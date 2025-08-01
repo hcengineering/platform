@@ -73,10 +73,20 @@ export interface Branding {
 
 export type BrandingMap = Record<string, Branding>
 
-export const StandardMenuCommandOpenSettings = 'open-settings' as const
-export const StandardMenuCommandSelectWorkspace = 'select-workspace' as const
-export const StandardMenuCommandLogout = 'logout' as const
-export type StandardMenuCommand = typeof StandardMenuCommandOpenSettings | typeof StandardMenuCommandSelectWorkspace | typeof StandardMenuCommandLogout
+export const CommandOpenSettings = 'open-settings' as const
+export const CommandOpenInbox = 'open-inbox' as const
+export const CommandOpenOffice = 'open-office' as const
+export const CommandOpenPlanner = 'open-planner' as const
+export const CommandSelectWorkspace = 'select-workspace' as const
+export const CommandLogout = 'logout' as const
+
+export type Command = 
+  typeof CommandOpenSettings | 
+  typeof CommandOpenInbox | 
+  typeof CommandOpenOffice | 
+  typeof CommandOpenPlanner | 
+  typeof CommandSelectWorkspace | 
+  typeof CommandLogout
 
 export interface NotificationParams {
   title: string

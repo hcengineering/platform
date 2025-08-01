@@ -129,7 +129,7 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         state: payloadData.state
       })
       await ctx.with('request-github-access-token', {}, async (ctx) => {
-        await worker.requestGithubAccessToken({
+        await worker.requestGithubAccessToken(ctx, {
           workspace: decodedToken.workspace,
           accountId: payloadData.accountId,
           code: payloadData.code,

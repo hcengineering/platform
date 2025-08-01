@@ -94,7 +94,7 @@ export const main = async (): Promise<void> => {
           const redirectURL = req.query.redirectURL as string
 
           const { account, workspace } = decodeToken(token)
-          const userId = await AuthController.getUserId(account, token)
+          const userId = await AuthController.getUserId(account, workspace, token)
           const url = AuthController.getAuthUrl(redirectURL, workspace, userId, token)
           res.send(url)
         } catch (err) {
@@ -135,7 +135,7 @@ export const main = async (): Promise<void> => {
 
           const value = req.query.value as GoogleEmail
           const { account, workspace } = decodeToken(token)
-          const userId = await AuthController.getUserId(account, token)
+          const userId = await AuthController.getUserId(account, workspace, token)
           await AuthController.signout(ctx, accountClient, integrationClient, userId, workspace, value)
         } catch (err) {
           ctx.error('signout', { message: (err as any).message })
