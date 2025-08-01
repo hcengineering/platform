@@ -37,19 +37,13 @@
   $: loadSettings(integration)
 
   async function loadSettings (integration: AccountIntegration): Promise<void> {
-    const type = await client.findOne(
-      setting.class.IntegrationType,
-      {
-        kind: integration.kind
-      }
-    )
-    integrationSettings = await client.findOne(
-      setting.class.Integration,
-      {
-        createdBy: integration.socialId,
-        type: type?._id
-      }
-    )
+    const type = await client.findOne(setting.class.IntegrationType, {
+      kind: integration.kind
+    })
+    integrationSettings = await client.findOne(setting.class.Integration, {
+      createdBy: integration.socialId,
+      type: type?._id
+    })
     shared = (integrationSettings?.shared?.length ?? 0) > 0
   }
 
