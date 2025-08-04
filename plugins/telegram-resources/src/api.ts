@@ -59,18 +59,22 @@ async function _request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?
       ...(body !== undefined ? { body: JSON.stringify(body) } : {})
     })
   } catch (err) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {
-      message: 'Network error occurred'
-    }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.ConnectionClosed, {
+        message: 'Network error occurred'
+      })
+    )
   }
 
   if (response.status === 200) {
     try {
       return await response.json()
     } catch (err) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {
-        message: 'Failed to parse response JSON'
-      }))
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.BadRequest, {
+          message: 'Failed to parse response JSON'
+        })
+      )
     }
   } else if (response.status === 202) {
     return undefined
