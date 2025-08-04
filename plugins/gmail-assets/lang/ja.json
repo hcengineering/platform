@@ -38,6 +38,10 @@
     "ConfigLabel": "メール",
     "ConfigDescription": "Gmailメール連携のための拡張機能",
     "GooglePrivacy": "Huly による Google API から受信した情報の他のアプリへの使用および転送は、<a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>（限定的な使用の要件を含む）に準拠します。",
-    "EmailNotificationsDescription": "メールで個人通知を受け取る"
+    "EmailNotificationsDescription": "メールで個人通知を受け取る",
+    "FailedToConnect": "Gmail サービスは利用できません",
+    "TotalMessages": "メッセージの総数",
+    "FailedToLoadState": "Gmail の状態の読み込みに失敗しました",
+    "NotConnectedIntegration": "アカウント {email} はワークスペースに統合されていません"
   }
 }

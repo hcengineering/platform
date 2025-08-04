@@ -150,6 +150,7 @@ describe('withRetry', () => {
         maxDelayMs: 1000,
         backoffFactor: 10 // Would normally go 50 -> 500 -> 5000, but should cap at 1000
       }),
+      isRetryable: retryAllErrors,
       logger: mockLogger
     }
 
@@ -194,6 +195,7 @@ describe('withRetry', () => {
         delayMs: 200,
         jitter: 0
       }),
+      isRetryable: retryAllErrors,
       logger: mockLogger
     }
 
@@ -220,6 +222,7 @@ describe('withRetry', () => {
         maxDelayMs: 10000,
         jitter: 0
       }),
+      isRetryable: retryAllErrors,
       logger: mockLogger
     }
 
@@ -253,6 +256,7 @@ describe('createRetryableFunction', () => {
       maxDelayMs: 100,
       backoffFactor: 2
     }),
+    isRetryable: retryAllErrors,
     logger: mockLogger
   }
 
@@ -294,12 +298,12 @@ describe('createRetryableFunction', () => {
   })
 
   it('should propagate the final error if all retries fail', async () => {
-    const mockError = new Error('persistent failure')
+    const mockError = new Error('network error')
     const mockFn = jest.fn().mockRejectedValue(mockError)
 
     const retryableFn = createRetryableFunction(mockFn, mockOptions)
 
-    await expect(retryableFn()).rejects.toThrow('persistent failure')
+    await expect(retryableFn()).rejects.toThrow('network error')
 
     expect(mockOptions.maxRetries).toBeDefined()
     expect(mockFn).toHaveBeenCalledTimes(mockOptions.maxRetries ?? -1)
@@ -314,7 +318,7 @@ describe('Using retry in class methods', () => {
     async unstableFunction (): Promise<string> {
       this.counter++
       if (this.counter < 3) {
-        throw new Error(`Failure attempt ${this.counter}`)
+        throw new Error(`network error ${this.counter}`)
       }
       return 'success'
     }
@@ -461,12 +465,12 @@ describe('withRetry with isRetryable option', () => {
     expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('non-retriable error'), expect.any(Object))
   })
 
-  it('should use the default retryAllErrors if isRetryable is not provided', async () => {
+  it('should use the default retryNetworkErrors if isRetryable is not provided', async () => {
     // All errors should be retried by default
     const mockOperation = jest
       .fn()
-      .mockRejectedValueOnce(new Error('error 1'))
-      .mockRejectedValueOnce(new Error('error 2'))
+      .mockRejectedValueOnce(new Error('unreachable'))
+      .mockRejectedValueOnce(new Error('ECONNREFUSED'))
       .mockResolvedValueOnce('success')
 
     const result = await withRetry(mockOperation, {

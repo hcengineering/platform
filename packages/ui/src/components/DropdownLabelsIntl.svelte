@@ -36,6 +36,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let minWidth: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let shouldUpdateUndefined: boolean = true
   export let minW0 = true
@@ -86,6 +87,7 @@
     {icon}
     {iconProps}
     width={width ?? 'min-content'}
+    {minWidth}
     {size}
     {kind}
     {disabled}

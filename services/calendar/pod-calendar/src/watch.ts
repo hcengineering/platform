@@ -2,10 +2,11 @@ import { AccountClient } from '@hcengineering/account-client'
 import { generateId, MeasureContext } from '@hcengineering/core'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import config from './config'
 import { getKvsClient } from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { CALENDAR_INTEGRATION, EventWatch, GoogleEmail, Token, User, Watch } from './types'
+import { EventWatch, GoogleEmail, Token, User, Watch } from './types'
 import { getGoogleClient } from './utils'
 
 export class WatchClient {
@@ -35,7 +36,7 @@ export class WatchClient {
 
   private async getWatches (): Promise<string[]> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${this.user.email}`
+    const key = `${calendarIntegrationKind}:watch:${this.user.email}`
     const watches = await client.listKeys(key)
     return watches?.keys ?? []
   }
@@ -54,12 +55,12 @@ export class WatchClient {
     if (err?.response?.data?.error === 'invalid_grant') {
       await this.accountClient.deleteIntegrationSecret({
         socialId: this.user.userId,
-        kind: CALENDAR_INTEGRATION,
+        kind: calendarIntegrationKind,
         workspaceUuid: this.user.workspace,
         key: this.user.email
       })
       const active = await this.accountClient.listIntegrationsSecrets({
-        kind: CALENDAR_INTEGRATION,
+        kind: calendarIntegrationKind,
         key: this.user.email
       })
       if (active.length === 0) {
@@ -128,7 +129,7 @@ async function watchCalendars (email: GoogleEmail, googleClient: calendar_v3.Cal
   const res = await googleClient.calendarList.watch({ requestBody: body })
   if (res.data.expiration != null && res.data.resourceId !== null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${email}:null`
+    const key = `${calendarIntegrationKind}:watch:${email}:null`
     await client.setValue<Watch>(key, {
       email,
       calendarId: null,
@@ -154,7 +155,7 @@ async function watchCalendar (
   const res = await googleClient.events.watch({ calendarId, requestBody: body })
   if (res.data.expiration != null && res.data.resourceId != null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${email}:${calendarId}`
+    const key = `${calendarIntegrationKind}:watch:${email}:${calendarId}`
     await client.setValue<Watch>(key, {
       email,
       calendarId,
@@ -186,7 +187,7 @@ export class WatchController {
 
   private async getUserWatches (email: GoogleEmail): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${email}`
+    const key = `${calendarIntegrationKind}:watch:${email}`
     const keys = (await client.listKeys(key))?.keys ?? []
     const res: Record<string, Watch> = {}
     for (const key of keys) {
@@ -200,7 +201,7 @@ export class WatchController {
 
   async unsubscribe (user: Token): Promise<void> {
     const active = await this.accountClient.listIntegrationsSecrets({
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       key: user.email
     })
     if (active.length === 0) {
@@ -234,7 +235,7 @@ export class WatchController {
   async checkAll (): Promise<void> {
     const expired = Date.now() + 24 * 60 * 60 * 1000
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:`
+    const key = `${calendarIntegrationKind}:watch:`
     const watches = await client.listKeys(key)
     const toRefresh: Watch[] = []
     for (const key of watches?.keys ?? []) {
@@ -254,11 +255,11 @@ export class WatchController {
     }
     for (const group of groups) {
       const secrets = await this.accountClient.listIntegrationsSecrets({
-        kind: CALENDAR_INTEGRATION,
+        kind: calendarIntegrationKind,
         key: group[0]
       })
       for (const val of group[1]) {
-        await client.deleteKey(`${CALENDAR_INTEGRATION}:watch:${group[0]}:${val.calendarId ?? 'null'}`)
+        await client.deleteKey(`${calendarIntegrationKind}:watch:${group[0]}:${val.calendarId ?? 'null'}`)
       }
       for (const secret of secrets) {
         try {
@@ -278,7 +279,7 @@ export class WatchController {
     googleClient: calendar_v3.Calendar
   ): Promise<void> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${email}:${calendarId ?? 'null'}`
+    const key = `${calendarIntegrationKind}:watch:${email}:${calendarId ?? 'null'}`
     const exists = await client.getValue<Watch>(key)
     if (exists != null) {
       this.ctx.info('Watch already exists', {

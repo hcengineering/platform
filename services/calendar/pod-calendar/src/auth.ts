@@ -14,7 +14,7 @@
 //
 
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
-import calendar from '@hcengineering/calendar'
+import calendar, { calendarIntegrationKind } from '@hcengineering/calendar'
 import contact, { Employee, getPrimarySocialId, SocialIdentityRef } from '@hcengineering/contact'
 import core, {
   AccountUuid,
@@ -29,12 +29,14 @@ import core, {
 import setting from '@hcengineering/setting'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
+import type { IntegrationClient } from '@hcengineering/integration-client'
+
 import { encode64 } from './base64'
 import { getClient } from './client'
 import { setSyncHistory } from './kvsUtils'
 import { lock } from './mutex'
 import { IncomingSyncManager } from './sync'
-import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
+import { GoogleEmail, SCOPES, State, Token, User } from './types'
 import { addUserByEmail, getGoogleClient, removeIntegrationSecret, removeUserByEmail } from './utils'
 import { WatchController } from './watch'
 
@@ -51,6 +53,7 @@ export class AuthController {
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly accountClient: AccountClient,
+    private readonly integrationClient: IntegrationClient,
     private readonly client: TxOperations,
     private readonly user: User
   ) {
@@ -62,6 +65,7 @@ export class AuthController {
   static async createAndSync (
     ctx: MeasureContext,
     accountClient: AccountClient,
+    integrationClient: IntegrationClient,
     state: State,
     code: string
   ): Promise<void> {
@@ -73,7 +77,7 @@ export class AuthController {
         try {
           const client = await getClient(state.workspace)
           const txOp = new TxOperations(client, state.userId)
-          const controller = new AuthController(ctx, accountClient, txOp, state)
+          const controller = new AuthController(ctx, accountClient, integrationClient, txOp, state)
           await controller.process(code)
         } finally {
           mutex()
@@ -86,6 +90,7 @@ export class AuthController {
   static async signout (
     ctx: MeasureContext<any>,
     accountClient: AccountClient,
+    integrationClient: IntegrationClient,
     userId: PersonId,
     workspace: WorkspaceUuid,
     value: GoogleEmail
@@ -98,7 +103,7 @@ export class AuthController {
         try {
           const client = await getClient(workspace)
           const txOp = new TxOperations(client, core.account.System)
-          const controller = new AuthController(ctx, accountClient, txOp, {
+          const controller = new AuthController(ctx, accountClient, integrationClient, txOp, {
             userId,
             workspace
           })
@@ -124,7 +129,7 @@ export class AuthController {
     }
     removeUserByEmail(this.user, value)
     const data = {
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       workspaceUuid: this.user.workspace,
       key: value,
       socialId: this.user.userId
@@ -176,7 +181,7 @@ export class AuthController {
       }
     }
     const res = await this.oAuth2Client.refreshAccessToken()
-    await this.createAccIntegrationIfNotExists()
+    await this.createAccIntegrationIfNotExists(email)
     await this.updateToken(res.credentials, email)
 
     return { success: true, email }
@@ -235,24 +240,14 @@ export class AuthController {
     )
   }
 
-  private async createAccIntegrationIfNotExists (): Promise<void> {
+  private async createAccIntegrationIfNotExists (email: string): Promise<void> {
     await this.ctx.with(
       'Create account integration if not exists',
       {},
       async () => {
-        const integration = await this.accountClient.getIntegration({
-          socialId: this.user.userId,
-          kind: CALENDAR_INTEGRATION,
-          workspaceUuid: this.user.workspace
-        })
-        if (integration != null) {
-          return
-        }
-        await this.accountClient.createIntegration({
-          socialId: this.user.userId,
-          kind: CALENDAR_INTEGRATION,
-          workspaceUuid: this.user.workspace
-        })
+        const data = { email }
+        const connection = await this.integrationClient.connect(this.user.userId, data)
+        await this.integrationClient.integrate(connection, this.user.workspace, data)
       },
       { user: this.user.userId }
     )
@@ -266,23 +261,13 @@ export class AuthController {
     }
     const data: IntegrationSecret = {
       socialId: this.user.userId,
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       workspaceUuid: this.user.workspace,
       key: email,
       secret: JSON.stringify(_token)
     }
     try {
-      const currentIntegration = await this.accountClient.getIntegrationSecret({
-        socialId: this.user.userId,
-        kind: CALENDAR_INTEGRATION,
-        workspaceUuid: this.user.workspace,
-        key: email
-      })
-      if (currentIntegration != null) {
-        await this.accountClient.updateIntegrationSecret(data)
-      } else {
-        await this.accountClient.addIntegrationSecret(data)
-      }
+      await this.integrationClient.setSecret(data)
       addUserByEmail(_token, email)
     } catch (err) {
       this.ctx.error('update token error', { workspace: this.user.workspace, user: this.user.userId, err })

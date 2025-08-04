@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { Integration, IntegrationSecret } from '@hcengineering/account'
-import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
+import { buildSocialIdString, IntegrationKind, SocialIdType } from '@hcengineering/core'
 
 import { PlatformUser } from './utils'
 import { getAdminAccountClient } from './API/AccountClient'
@@ -39,7 +39,7 @@ test.describe('integrations in accounts tests', () => {
     // Test data setup
     const integration1: Integration = {
       socialId: personId1,
-      kind: 'github',
+      kind: 'github' as IntegrationKind,
       workspaceUuid: null, // Global integration
       data: {
         repo: 'repo1',
@@ -50,7 +50,7 @@ test.describe('integrations in accounts tests', () => {
 
     const integration2: Integration = {
       socialId: personId2,
-      kind: 'telegram-bot',
+      kind: 'telegram-bot' as IntegrationKind,
       workspaceUuid,
       data: {
         chatId: '123',
@@ -61,7 +61,7 @@ test.describe('integrations in accounts tests', () => {
 
     const integration3: Integration = {
       socialId: personId3,
-      kind: 'mailbox',
+      kind: 'mailbox' as IntegrationKind,
       workspaceUuid,
       data: {
         email: 'test@example.com',
@@ -98,7 +98,7 @@ test.describe('integrations in accounts tests', () => {
     // Create secrets
     const secret1: IntegrationSecret = {
       socialId: personId1,
-      kind: 'github',
+      kind: 'github' as IntegrationKind,
       workspaceUuid: null,
       key: 'token',
       secret: 'github_pat_token_123'
@@ -106,7 +106,7 @@ test.describe('integrations in accounts tests', () => {
 
     const secret2: IntegrationSecret = {
       socialId: personId2,
-      kind: 'telegram-bot',
+      kind: 'telegram-bot' as IntegrationKind,
       workspaceUuid,
       key: 'bot_token',
       secret: 'telegram_bot_token_123'
@@ -114,7 +114,7 @@ test.describe('integrations in accounts tests', () => {
 
     const secret3: IntegrationSecret = {
       socialId: personId2,
-      kind: 'telegram-bot',
+      kind: 'telegram-bot' as IntegrationKind,
       workspaceUuid,
       key: 'api_key',
       secret: 'telegram_api_key_123'
@@ -157,11 +157,11 @@ test.describe('integrations in accounts tests', () => {
     expect(workspaceIntegrations).toHaveLength(2)
     expect(workspaceIntegrations).toEqual(expect.arrayContaining([integration2, integration3]))
 
-    const githubIntegrations = await accountClient.listIntegrations({ kind: 'github' })
+    const githubIntegrations = await accountClient.listIntegrations({ kind: 'github' as IntegrationKind })
     expect(githubIntegrations).toHaveLength(1)
     expect(githubIntegrations[0]).toEqual(integration1)
 
-    const telegramIntegrations = await accountClient.listIntegrations({ kind: 'telegram-bot' })
+    const telegramIntegrations = await accountClient.listIntegrations({ kind: 'telegram-bot' as IntegrationKind })
     expect(telegramIntegrations).toHaveLength(1)
     expect(telegramIntegrations[0]).toEqual(integration2)
 
@@ -176,7 +176,7 @@ test.describe('integrations in accounts tests', () => {
     expect(workspaceSecrets).toHaveLength(2)
     expect(workspaceSecrets).toEqual(expect.arrayContaining([secret2, secret3]))
 
-    const telegramSecrets = await accountClient.listIntegrationsSecrets({ kind: 'telegram-bot' })
+    const telegramSecrets = await accountClient.listIntegrationsSecrets({ kind: 'telegram-bot' as IntegrationKind })
     expect(telegramSecrets).toHaveLength(2)
     expect(telegramSecrets).toEqual(expect.arrayContaining([secret2, secret3]))
 

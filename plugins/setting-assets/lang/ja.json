@@ -13,6 +13,7 @@
     "CurrentPassword": "現在のパスワード",
     "NewPassword": "新しいパスワード",
     "Disconnect": "切断",
+    "DisconnectAll": "すべて切断",
     "Saving": "保存中...",
     "Saved": "保存済み",
     "Add": "追加",
@@ -180,6 +181,18 @@
     "ReleasePrimarySocialId": "プライマリソーシャルIDをリリース",
     "ReleasePrimarySocialIdConfirm": "現在のプライマリソーシャルIDをリリースするには、ページの再読み込みが必要です。続行してもよろしいですか？",
     "Login": "ログイン",
-    "Primary": "プライマリ"
+    "Primary": "プライマリ",
+    "MyIntegrations": "マイインテグレーション",
+    "AllIntegrations": "すべてのインテグレーション",
+    "ConnectedIntegrations": "接続されたインテグレーション",
+    "AvailableIntegrations": "利用可能なインテグレーション",
+    "Connect": "接続",
+    "Integrate": "統合",
+    "FailedToLoadIntegrations": "インテグレーションの読み込みに失敗しました",
+    "FailedToDisconnect": "インテグレーションの切断に失敗しました",
+    "ServiceIsUnavailable": "サービスは利用できません",
+    "Integrated": "統合済み",
+    "Connected": "接続済み",
+    "Available": "利用可能"
   }
 }

@@ -13,6 +13,7 @@
     "CurrentPassword": "Contraseña actual",
     "NewPassword": "Nueva contraseña",
     "Disconnect": "Desconectar",
+    "DisconnectAll": "Desconectar todos",
     "Saving": "Guardando...",
     "Saved": "Guardado",
     "Add": "Añadir",
@@ -171,6 +172,18 @@
     "ReleasePrimarySocialId": "Liberar ID social primario",
     "ReleasePrimarySocialIdConfirm": "Liberar tu ID social primario actual requerirá que se recargue la página. ¿Estás seguro de que quieres continuar?",
     "Login": "Iniciar sesión",
-    "Primary": "Primario"
+    "Primary": "Primario",
+    "MyIntegrations": "Mis integraciones",
+    "AllIntegrations": "Todas",
+    "ConnectedIntegrations": "Conectadas",
+    "AvailableIntegrations": "Disponibles",
+    "Connect": "Conectar",
+    "Integrate": "Integrar",
+    "FailedToLoadIntegrations": "Error al cargar las integraciones",
+    "FailedToDisconnect": "Error al desconectar la integración",
+    "ServiceIsUnavailable": "El servicio no está disponible",
+    "Integrated": "Integrado",
+    "Connected": "Conectado",
+    "Available": "Disponible"
   }
 }

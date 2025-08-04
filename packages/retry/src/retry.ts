@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { defaultLogger, type Logger } from './logger'
-import { type IsRetryable, retryAllErrors } from './retryable'
+import { type IsRetryable, retryNetworkErrors } from './retryable'
 import { type DelayStrategy, DelayStrategyFactory, sleep } from './delay'
 
 /**
@@ -35,7 +35,7 @@ export interface RetryOptions {
  */
 export const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   maxRetries: 5,
-  isRetryable: retryAllErrors,
+  isRetryable: retryNetworkErrors,
   delayStrategy: DelayStrategyFactory.exponentialBackoff({
     initialDelayMs: 1000,
     maxDelayMs: 30000,

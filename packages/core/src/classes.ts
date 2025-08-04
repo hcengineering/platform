@@ -903,3 +903,8 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
 export interface Collaborator extends AttachedDoc {
   collaborator: AccountUuid
 }
+
+/**
+ * @public
+ */
+export type IntegrationKind = string & { __IntegrationKind: true }

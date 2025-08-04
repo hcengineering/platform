@@ -1,9 +1,10 @@
-import { AccountUuid, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, PersonId, WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
 import { getAccountClient } from '@hcengineering/server-client'
+import { gmailIntegrationKind } from '@hcengineering/gmail'
+
 import { TokenStorage } from '../tokens'
-import { GMAIL_INTEGRATION, SecretType, Token } from '../types'
-import type { MeasureContext } from '@hcengineering/core'
+import { SecretType, Token } from '../types'
 
 // Mock the getAccountClient function
 jest.mock('@hcengineering/server-client', () => ({
@@ -62,7 +63,7 @@ describe('TokenStorage', () => {
       expect(result).toBeNull()
       expect(mockAccountClient.getIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId: mockSocialId,
         workspaceUuid: mockWorkspace
       })
@@ -71,7 +72,7 @@ describe('TokenStorage', () => {
     it('should return parsed token when token exists', async () => {
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         workspaceUuid: mockWorkspace,
         key: SecretType.TOKEN,
         secret: JSON.stringify(mockToken)
@@ -87,7 +88,7 @@ describe('TokenStorage', () => {
       const existingToken = { existing: 'token' }
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         workspaceUuid: mockWorkspace,
         key: SecretType.TOKEN,
         secret: JSON.stringify(existingToken)
@@ -103,7 +104,7 @@ describe('TokenStorage', () => {
 
       expect(mockAccountClient.updateIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId: mockSocialId,
         secret: JSON.stringify(expectedMergedToken),
         workspaceUuid: mockWorkspace
@@ -116,7 +117,7 @@ describe('TokenStorage', () => {
       await tokenStorage.saveToken(mockSocialId, mockToken)
       expect(mockAccountClient.addIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId: mockSocialId,
         secret: JSON.stringify(mockToken),
         workspaceUuid: mockWorkspace
@@ -130,7 +131,7 @@ describe('TokenStorage', () => {
       await tokenStorage.deleteToken(mockSocialId)
       expect(mockAccountClient.deleteIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId: mockSocialId,
         workspaceUuid: mockWorkspace
       })

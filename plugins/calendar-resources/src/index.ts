@@ -14,9 +14,9 @@
 //
 
 import { type ReccuringInstance } from '@hcengineering/calendar'
-import { type Doc, type TxOperations, concatLink } from '@hcengineering/core'
-import { type Resources, getMetadata } from '@hcengineering/platform'
-import presentation, { getClient } from '@hcengineering/presentation'
+import { type Doc, type TxOperations } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import { closePopup, showPopup } from '@hcengineering/ui'
 import CalendarView from './components/CalendarView.svelte'
 import CreateEvent from './components/CreateEvent.svelte'
@@ -44,10 +44,13 @@ import ConnectApp from './components/ConnectApp.svelte'
 import CalendarWidget from './components/CalendarWidget.svelte'
 import ScheduleNavSection from './components/ScheduleNavSection.svelte'
 import CalendarSettings from './components/CalendarSettings.svelte'
+import IntegrationState from './components/IntegrationState.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
 import { eventTitleProvider, configureCalDavAccess } from './utils'
+import { type Integration } from '@hcengineering/account-client'
+import { disconnect, disconnectAll } from './api'
 
 export {
   EventElement,
@@ -198,24 +201,19 @@ export default async (): Promise<Resources> => ({
     IntegrationConfigure,
     ConnectApp,
     CalendarWidget,
-    CalendarSettings
+    CalendarSettings,
+    IntegrationState
   },
   actionImpl: {
     SaveEventReminder: saveEventReminder,
     DeleteRecEvent: deleteRecEvent
   },
   handler: {
-    DisconnectHandler: async (value: string) => {
-      const url = getMetadata(calendar.metadata.CalendarServiceURL)
-      const token = getMetadata(presentation.metadata.Token)
-      if (url === undefined || token === undefined) return
-      await fetch(concatLink(url, `/signout?value=${value}`), {
-        method: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        }
-      })
+    DisconnectHandler: async (integration: Integration) => {
+      await disconnect(integration)
+    },
+    DisconnectAllHandler: async (integration: Integration): Promise<void> => {
+      await disconnectAll(integration)
     }
   },
   function: {

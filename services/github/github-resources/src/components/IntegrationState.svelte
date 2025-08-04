@@ -1,0 +1,98 @@
+<!--
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { fade } from 'svelte/transition'
+  import { AttachedDoc, WithLookup } from '@hcengineering/core'
+  import { GithubIntegration, GithubIntegrationRepository } from '@hcengineering/github'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Integration } from '@hcengineering/account-client'
+  import github from '../plugin'
+  import RepositoryPresenterRef from './RepositoryPresenterRef.svelte'
+
+  export let integration: Integration
+
+  let githubIntegration: WithLookup<GithubIntegration> | undefined
+
+  const asRepos = (docs: AttachedDoc[]) => docs as GithubIntegrationRepository[]
+
+  const client = getClient()
+  $: loadIntegration(integration)
+
+  async function loadIntegration (integration: Integration): Promise<void> {
+    const installationId = integration?.data?.installationId ?? []
+    const installations = Array.isArray(installationId) ? installationId : [installationId]
+    githubIntegration = await client.findOne(
+      github.class.GithubIntegration,
+      {
+        installationId: { $in: installations }
+      },
+      {
+        lookup: {
+          _id: {
+            repositories: github.class.GithubIntegrationRepository
+          }
+        }
+      }
+    )
+  }
+</script>
+
+<div class="integration-state">
+  <div class="state-content">
+    {#if githubIntegration !== undefined}
+      <div class="stats-list" transition:fade={{ duration: 300 }}>
+        <div class="stat-row">
+          <span class="text-normal content-color font-medium">{githubIntegration.name}</span>
+        </div>
+        <div class="space-divider bottom" />
+        {#if githubIntegration.$lookup?.repositories != null}
+          {#each asRepos(githubIntegration.$lookup?.repositories) as repository}
+            <div class="stat-row">
+              <RepositoryPresenterRef value={repository._id} />
+            </div>
+          {/each}
+        {/if}
+      </div>
+    {/if}
+  </div>
+</div>
+
+<style lang="scss">
+  .integration-state {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .state-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.15rem 0;
+  }
+</style>

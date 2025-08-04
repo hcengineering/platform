@@ -13,11 +13,23 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, AccountUuid, Domain } from '@hcengineering/core'
+import type {
+  AccountRole,
+  Blob,
+  Class,
+  Configuration,
+  Doc,
+  Mixin,
+  Ref,
+  AccountUuid,
+  Domain,
+  IntegrationKind
+} from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import { AnyComponent } from '@hcengineering/ui'
+import { Action, AnyComponent } from '@hcengineering/ui'
+import { type Integration as AccountIntegration } from '@hcengineering/account-client'
 
 import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
@@ -30,7 +42,7 @@ export const DOMAIN_SETTING = 'setting' as Domain
 /**
  * @public
  */
-export type Handler = Resource<(value: string) => Promise<void>>
+export type Handler = Resource<(integration: AccountIntegration) => Promise<void>>
 
 /**
  * @public
@@ -39,14 +51,18 @@ export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
   descriptionComponent?: AnyComponent
+  stateComponent?: AnyComponent
   icon: AnyComponent
   allowMultiple: boolean
+  kind: IntegrationKind
 
   createComponent?: AnyComponent
   onDisconnect?: Handler
+  onDisconnectAll?: Handler // Disconnect for all workspaces
   reconnectComponent?: AnyComponent
-
   configureComponent?: AnyComponent
+
+  getActions?: Resource<(integration?: AccountIntegration) => Promise<Action[]>>
 }
 
 /**
@@ -196,6 +212,7 @@ export default plugin(settingId, {
     Categories: '' as IntlString,
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
+    DisconnectAll: '' as IntlString,
     Add: '' as IntlString,
     Proceed: '' as IntlString,
     SendConfirmation: '' as IntlString,
@@ -257,7 +274,18 @@ export default plugin(settingId, {
     Customize: '' as IntlString,
     CodeSent: '' as IntlString,
     SendAgain: '' as IntlString,
-    SendAgainIn: '' as IntlString
+    SendAgainIn: '' as IntlString,
+    AllIntegrations: '' as IntlString,
+    ConnectedIntegrations: '' as IntlString,
+    AvailableIntegrations: '' as IntlString,
+    Connect: '' as IntlString,
+    Integrate: '' as IntlString,
+    FailedToLoadIntegrations: '' as IntlString,
+    FailedToDisconnect: '' as IntlString,
+    ServiceIsUnavailable: '' as IntlString,
+    Integrated: '' as IntlString,
+    Connected: '' as IntlString,
+    Available: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

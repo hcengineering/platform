@@ -34,7 +34,8 @@ import {
   type BitrixEntityMapping,
   type BitrixFieldMapping,
   type BitrixSyncDoc,
-  type Fields
+  type Fields,
+  bitrixIntegrationKind
 } from '@hcengineering/bitrix'
 import {
   type AnyAttribute,
@@ -112,7 +113,8 @@ export function createModel (builder: Builder): void {
       icon: bitrix.component.BitrixIcon,
       allowMultiple: false,
       createComponent: bitrix.component.BitrixConnect,
-      configureComponent: bitrix.component.BitrixConfigure
+      configureComponent: bitrix.component.BitrixConfigure,
+      kind: bitrixIntegrationKind
     },
     bitrix.integrationType.Bitrix
   )

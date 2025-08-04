@@ -69,6 +69,7 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import workbench from '@hcengineering/model-workbench'
 import { WidgetType } from '@hcengineering/workbench'
 import preference, { TPreference } from '@hcengineering/model-preference'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 import calendar from './plugin'
 
@@ -248,8 +249,11 @@ export function createModel (builder: Builder): void {
       allowMultiple: true,
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
+      onDisconnectAll: calendar.handler.DisconnectAllHandler,
       reconnectComponent: calendar.component.IntegrationConnect,
-      configureComponent: calendar.component.IntegrationConfigure
+      configureComponent: calendar.component.IntegrationConfigure,
+      stateComponent: calendar.component.IntegrationState,
+      kind: calendarIntegrationKind
     },
     calendar.integrationType.Calendar
   )

@@ -121,6 +121,10 @@
     "NextToLast": "Avant-dernier",
     "Last": "Dernier",
     "Weekday": "Jour de la semaine",
-    "WeekendDay": "Jour de congé"
+    "WeekendDay": "Jour de congé",
+    "NotConnectedIntegration": "Le compte {email} n'est pas intégré au workspace",
+    "SynchronizedCalendars": "Calendriers synchronisés",
+    "Account": "Compte",
+    "NoCalendars": "Aucun calendrier sélectionné pour la synchronisation"
   }
 }

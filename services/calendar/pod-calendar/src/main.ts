@@ -20,8 +20,11 @@ import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
+import { getIntegrationClient } from '@hcengineering/integration-client'
+
 import { AuthController } from './auth'
 import { decode64 } from './base64'
 import { CalendarController } from './calendarController'
@@ -29,7 +32,7 @@ import config from './config'
 import { OutcomingClient } from './outcomingClient'
 import { PushHandler } from './pushHandler'
 import { createServer, listen } from './server'
-import { CALENDAR_INTEGRATION, GoogleEmail, type Endpoint, type State } from './types'
+import { GoogleEmail, type Endpoint, type State } from './types'
 import { getServiceToken } from './utils'
 import { WatchController } from './watch'
 
@@ -42,14 +45,14 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
-  const ctx = initStatisticsContext(CALENDAR_INTEGRATION, {
+  const ctx = initStatisticsContext(calendarIntegrationKind, {
     factory: () =>
       createOpenTelemetryMetricsContext(
         'calendar',
         {},
         {},
         newMetrics(),
-        new SplitLogger(CALENDAR_INTEGRATION, {
+        new SplitLogger(calendarIntegrationKind, {
           root: join(process.cwd(), 'logs'),
           enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
         })
@@ -62,6 +65,12 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Service, 'calendar')
 
   const accountClient = getAccountClient(getServiceToken())
+  const integrationClient = getIntegrationClient(
+    config.AccountsURL,
+    getServiceToken(),
+    calendarIntegrationKind,
+    config.ServiceID
+  )
 
   const pushHandler = new PushHandler(ctx, accountClient)
   const watchController = WatchController.get(ctx, accountClient)
@@ -102,7 +111,7 @@ export const main = async (): Promise<void> => {
         try {
           const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
           try {
-            await AuthController.createAndSync(ctx, accountClient, state, code)
+            await AuthController.createAndSync(ctx, accountClient, integrationClient, state, code)
             res.redirect(state.redirectURL)
           } catch (err) {
             ctx.error('signin code error', { message: (err as any).message })
@@ -127,7 +136,7 @@ export const main = async (): Promise<void> => {
           const value = req.query.value as GoogleEmail
           const { account, workspace } = decodeToken(token)
           const userId = await AuthController.getUserId(account, workspace, token)
-          await AuthController.signout(ctx, accountClient, userId, workspace, value)
+          await AuthController.signout(ctx, accountClient, integrationClient, userId, workspace, value)
         } catch (err) {
           ctx.error('signout', { message: (err as any).message })
         }

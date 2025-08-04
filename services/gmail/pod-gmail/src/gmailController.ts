@@ -26,16 +26,16 @@ import {
 } from '@hcengineering/core'
 import { normalizeEmail } from '@hcengineering/mail-common'
 import type { StorageAdapter } from '@hcengineering/server-core'
-
 import { getAccountClient } from '@hcengineering/server-client'
+
 import { decode64 } from './base64'
 import config from './config'
 import { type GmailClient } from './gmail'
-import { getIntegrations } from './integrations'
 import { getWorkspaceTokens } from './tokens'
-import { type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
+import { SyncState, type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
 import { serviceToken } from './utils'
 import { WorkspaceClient } from './workspaceClient'
+import { getIntegrationClient } from './integrations'
 
 import { AuthProvider } from './gmail/auth'
 import { AccountClient } from '@hcengineering/account-client'
@@ -83,7 +83,7 @@ export class GmailController {
     try {
       const token = serviceToken()
       const sysClient = getAccountClient(token)
-      const integrations = await getIntegrations(sysClient, token)
+      const integrations = await getIntegrationClient().getIntegrations()
       this.ctx.info('Start integrations', { count: integrations.length })
 
       const workspaceIds = new Set<WorkspaceUuid>(
@@ -310,5 +310,17 @@ export class GmailController {
       }
     }
     return res
+  }
+
+  async getState (workspace: WorkspaceUuid, socialId: PersonId): Promise<SyncState | undefined> {
+    const workspaceClient = this.workspaces.get(workspace)
+    if (workspaceClient === undefined) {
+      return undefined
+    }
+    const mailClient = workspaceClient.getGmailClient(socialId)
+    if (mailClient === undefined) {
+      return undefined
+    }
+    return await mailClient.getStateSummary()
   }
 }

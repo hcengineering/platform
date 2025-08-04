@@ -20,13 +20,13 @@
 </script>
 
 <div class="flex-col flex-gap-1 max-w-100">
-  <Label label={telegram.string.TelegramIntegrationDesc} />
-  <br />
-  <Label label={telegram.string.TelegramIntegrationDesc2} />
-  <span class="mt-3">
+  <span class="content-color">
+    <Label label={telegram.string.TelegramIntegrationDesc} />
+  </span>
+  <span class="mt-3 content-color">
     <Label label={telegram.string.ToSetupNotification} />
   </span>
-  <span class="fs-bold">
+  <span class="fs-bold content-color">
     <Label label={telegram.string.TelegramNotificationPath} />
   </span>
 </div>

@@ -24,6 +24,7 @@ import core, {
   WorkspaceUuid,
   type Ref
 } from '@hcengineering/core'
+
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'

@@ -21,7 +21,8 @@ import {
   type AccountUuid,
   type Blob,
   type ClassCollaborators,
-  type Ref
+  type Ref,
+  type IntegrationKind
 } from '@hcengineering/core'
 import exportPlugin from '@hcengineering/export'
 import { Mixin, Model, UX, type Builder } from '@hcengineering/model'
@@ -92,6 +93,8 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler
   configureComponent?: AnyComponent
+  kind!: IntegrationKind
+  stateComponent?: AnyComponent
 }
 
 @Mixin(setting.mixin.Editable, core.class.Class)
@@ -155,10 +158,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc<ClassCollaborators<Integration>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: setting.class.Integration,
     fields: ['modifiedBy']
-  })
-
-  builder.mixin(setting.class.Integration, core.class.Class, view.mixin.ObjectPanel, {
-    component: setting.component.IntegrationPanel
   })
 
   builder.createDoc(

@@ -1,4 +1,3 @@
-<!--
 //
 // Copyright © 2025 Hardcore Engineering Inc.
 //
@@ -13,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
--->
 
-<script lang="ts">
-  import { Notification, NotificationToast } from '@hcengineering/ui'
+import { Integration } from '@hcengineering/account-client'
+import { IntegrationEventData } from './types'
 
-  export let notification: Notification
-  export let onRemove: () => void
-</script>
+export function isWorkspaceIntegration (integration: Integration): boolean {
+  return integration.workspaceUuid != null
+}
 
-<NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>
-  <svelte:fragment slot="content">
-    {notification.subTitle}
-  </svelte:fragment>
-</NotificationToast>
+export function isConnection (integration: Integration): boolean {
+  return integration.workspaceUuid == null
+}
+
+export function isSameIntegrationEvent (event: IntegrationEventData, integration: Integration): boolean {
+  return (
+    event.integration?.socialId === integration.socialId &&
+    event.integration?.workspaceUuid === integration.workspaceUuid
+  )
+}

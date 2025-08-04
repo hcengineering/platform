@@ -14,8 +14,8 @@
 //
 
 import { AccountClient, Integration } from '@hcengineering/account-client'
-import { CALENDAR_INTEGRATION } from './types'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 export async function getIntegrations (client: AccountClient): Promise<Integration[]> {
-  return (await client.listIntegrations({ kind: CALENDAR_INTEGRATION })) ?? []
+  return (await client.listIntegrations({ kind: calendarIntegrationKind })) ?? []
 }
