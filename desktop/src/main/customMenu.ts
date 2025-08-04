@@ -14,7 +14,7 @@
 //
 
 import { app, BrowserWindow } from 'electron'
-import { MenuBarAction, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from '../ui/types'
+import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
 
 export function dipatchMenuBarAction(mainWindow: BrowserWindow | undefined, action: MenuBarAction) {
     if (mainWindow == null) {
@@ -33,13 +33,13 @@ export function dipatchMenuBarAction(mainWindow: BrowserWindow | undefined, acti
     
     switch (action) {
         case 'settings':
-            mainWindow.webContents.send(StandardMenuCommandOpenSettings)
+            mainWindow.webContents.send(CommandOpenSettings)
             break;
         case 'select-workspace':
-            mainWindow.webContents.send(StandardMenuCommandSelectWorkspace)
+            mainWindow.webContents.send(CommandSelectWorkspace)
             break;
         case 'logout':
-            mainWindow.webContents.send(StandardMenuCommandLogout)
+            mainWindow.webContents.send(CommandLogout)
             break;
         case 'exit':
             app.quit();

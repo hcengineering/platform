@@ -16,10 +16,9 @@
 import { AccountClient } from '@hcengineering/account-client'
 import { MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
-import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token } from './types'
-import { getGoogleClient, removeIntegrationSecret, setCredentials } from './utils'
+import { getGoogleClient, getUserByEmail, removeIntegrationSecret, removeUserByEmail, setCredentials } from './utils'
 
 export class PushHandler {
   constructor (
@@ -37,7 +36,7 @@ export class PushHandler {
           const res = getGoogleClient()
           const authSuccess = await setCredentials(res.auth, token)
           if (!authSuccess) {
-            await removeUserByEmail(token, token.email)
+            removeUserByEmail(token, token.email)
             await removeIntegrationSecret(this.ctx, this.accountClient, {
               kind: CALENDAR_INTEGRATION,
               workspaceUuid: token.workspace,
@@ -63,7 +62,7 @@ export class PushHandler {
   }
 
   async push (email: GoogleEmail, mode: 'events' | 'calendar', calendarId?: string): Promise<void> {
-    const tokens = await getUserByEmail(email)
+    const tokens = getUserByEmail(email)
     this.ctx.info('push', { email, mode, calendarId, tokens: tokens.length })
     for (const token of tokens) {
       await this.sync(token, mode === 'events' ? calendarId ?? null : null)

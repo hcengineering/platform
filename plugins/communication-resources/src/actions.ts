@@ -45,7 +45,7 @@ import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup
 import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
 
 export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
-  if (!(await isCardAllowedForCommunications(card))) {
+  if (!isCardAllowedForCommunications(card)) {
     await showForbidden()
     return
   }
@@ -68,7 +68,7 @@ export const addReaction: MessageActionFunction = async (message, card: Card, ev
 }
 
 export const replyInThread: MessageActionFunction = async (message: Message, parentCard: Card): Promise<void> => {
-  if (!(await isCardAllowedForCommunications(parentCard))) {
+  if (!isCardAllowedForCommunications(parentCard)) {
     await showForbidden()
     return
   }

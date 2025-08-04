@@ -22,7 +22,7 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, MenuBarAction, NotificationParams, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { dipatchMenuBarAction } from './customMenu'
@@ -30,6 +30,8 @@ import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
+import { setupWindowsSpecific } from './windowsSpecificSetup'
+
 
 let mainWindow: BrowserWindow | undefined
 let winBadge: any
@@ -39,7 +41,7 @@ const isWindows = process.platform === 'win32'
 const isDev = process.env.NODE_ENV === 'development'
 
 const sessionPartition = !isDev ? 'persist:huly' : 'persist:huly_dev'
-const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', 'AppIcon.png')
+const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', isWindows ? 'AppIcon.ico' : 'AppIcon.png')
 const preloadScriptPath = path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
 
 const defaultWidth = 1440
@@ -200,7 +202,7 @@ function handleAuthRedirects (window: BrowserWindow): void {
 }
 
 function handleWillDownload (window: BrowserWindow): void {
-  window.webContents.session.on('will-download', (event, item) => {
+  window.webContents.session.on('will-download', (_event, item) => {
     const key = generateId()
 
     const notifyDownloadUpdated = (): void => {
@@ -303,10 +305,14 @@ const createWindow = async (): Promise<void> => {
   }
 }
 
-if (false == isWindows) {
-  addMenus((cmd: string, ...args: any[]) => {
-    mainWindow?.webContents.send(cmd, ...args)
-  })
+function sendCommand(cmd: string, ...args: any[]): void {
+  mainWindow?.webContents.send(cmd, ...args)
+}
+
+if (isWindows) {
+  setupWindowsSpecific(sendCommand)
+} else {
+  addMenus(sendCommand)
 }
 
 contextMenu({
@@ -315,7 +321,7 @@ contextMenu({
   showSelectAll: false
 })
 
-ipcMain.on('set-badge', (event, badge: number) => {
+ipcMain.on('set-badge', (_event: any, badge: number) => {
   app.dock?.setBadge(badge > 0 ? `${badge}` : '')
   app.badgeCount = badge
 
@@ -324,11 +330,11 @@ ipcMain.on('set-badge', (event, badge: number) => {
   }
 })
 
-ipcMain.on('dock-bounce', (event) => {
+ipcMain.on('dock-bounce', (_event: any) => {
   app.dock?.bounce('informational')
 })
 
-ipcMain.on('send-notification', (event, notificationParams: NotificationParams) => {
+ipcMain.on('send-notification', (_event: any, notificationParams: NotificationParams) => {
   if (Notification.isSupported()) {
     const notification = new Notification(notificationParams)
 
@@ -341,13 +347,13 @@ ipcMain.on('send-notification', (event, notificationParams: NotificationParams) 
   }
 })
 
-ipcMain.on('set-title', (event, title) => {
+ipcMain.on('set-title', (event: any, title: string) => {
   const webContents = event.sender
   const window = BrowserWindow.fromWebContents(webContents)
   window?.setTitle(title)
 })
 
-ipcMain.on('set-combined-config', (event, config: Config) => {
+ipcMain.on('set-combined-config', (_event: any, config: Config) => {
   log.info('Config set: ', config)
 
   setupCookieHandler(config)
@@ -363,7 +369,7 @@ ipcMain.on('set-combined-config', (event, config: Config) => {
   void autoUpdater.checkForUpdatesAndNotify()
 })
 
-ipcMain.handle('get-main-config', (event, path) => {
+ipcMain.handle('get-main-config', (_event: any, _path: any) => {
   const cfg = {
     CONFIG_URL: process.env.CONFIG_URL ?? '',
     FRONT_URL,
@@ -373,11 +379,11 @@ ipcMain.handle('get-main-config', (event, path) => {
   }
   return cfg
 })
-ipcMain.handle('get-host', (event, path) => {
+ipcMain.handle('get-host', (_event: any, _path: any) => {
   return new URL(FRONT_URL).host
 })
 
-ipcMain.on('set-front-cookie', function (event, host: string, name: string, value: string) {
+ipcMain.on('set-front-cookie', function (event: any, host: string, name: string, value: string) {
   const webContents = event.sender
   const win = BrowserWindow.fromWebContents(webContents)
   const cv: CookiesSetDetails = {
@@ -428,7 +434,7 @@ if (!gotTheLock) {
 ipcMain.handle('get-screen-access', () => systemPreferences.getMediaAccessStatus('screen') === 'granted')
 ipcMain.handle('get-screen-sources', () => {
   return desktopCapturer.getSources({ types: ['window', 'screen'], fetchWindowIcons: true, thumbnailSize: { width: 225, height: 135 } }).then(async sources => {
-    return sources.map(source => {
+    return sources.map((source: any) => {
       return {
         ...source,
         appIconURL: source.appIcon?.toDataURL(),
@@ -490,7 +496,7 @@ autoUpdater.on('update-available', (info: UpdateInfo) => {
       defaultId: 0,
       message: `A new version ${info.version} is available and it is required to continue. It will be downloaded and installed automatically.`
     })
-    .then(({ response }) => {
+    .then(({ response }: any) => {
       log.info(`Update dialog exit code: ${response}`) // eslint-disable-line no-console
 
       if (response !== 0) {
@@ -513,7 +519,7 @@ function setDownloadProgress (percent: number): void {
   mainWindow.webContents.send('handle-update-download-progress', percent)
 }
 
-autoUpdater.on('update-downloaded', (info) => {
+autoUpdater.on('update-downloaded', (_info: any) => {
   // We have listeners that prevents the app from being exited on mac
   app.removeAllListeners('window-all-closed')
   mainWindow?.removeAllListeners('close')

@@ -612,7 +612,8 @@
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
         "PORT": "3500",
-        "STATS_URL": "http://huly.local:4900"
+        "STATS_URL": "http://huly.local:4900",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -665,7 +666,7 @@
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
-        "QUEUE_REGION": "cockroach",
+        "QUEUE_REGION": "cockroach"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

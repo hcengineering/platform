@@ -55,14 +55,7 @@ import core, {
   TxResult,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, {
-  broadcastEvent,
-  getMetadata,
-  PlatformError,
-  Severity,
-  Status,
-  UNAUTHORIZED
-} from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, UNAUTHORIZED } from '@hcengineering/platform'
 import { HelloRequest, HelloResponse, type RateLimitInfo, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { uncompress } from 'snappyjs'
 
@@ -109,9 +102,6 @@ class Connection implements ClientConnection {
   private dialTimer: any | undefined
 
   private sockets = 0
-
-  private incomingTimer: any
-
   private openAction: any
 
   private readonly sessionId: string | undefined
@@ -492,9 +482,6 @@ class Connection implements ClientConnection {
           promise.resolve(resp.result)
         }
       }
-      void broadcastEvent(client.event.NetworkRequests, this.requests.size).catch((err) => {
-        this.ctx.error('failed to broadcast', { err })
-      })
     } else {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
@@ -508,17 +495,6 @@ class Connection implements ClientConnection {
       this.handlers.forEach((handler) => {
         handler(...txArr)
       })
-
-      clearTimeout(this.incomingTimer)
-      void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1).catch((err) => {
-        this.ctx.error('failed to broadcast', { err })
-      })
-
-      this.incomingTimer = setTimeout(() => {
-        void broadcastEvent(client.event.NetworkRequests, this.requests.size).catch((err) => {
-          this.ctx.error('failed to broadcast', { err })
-        })
-      }, 500)
     }
   }
 
@@ -657,10 +633,6 @@ class Connection implements ClientConnection {
         wsocket.close()
         return
       }
-      // console.log('client websocket closed', socketId, ev?.reason)
-      void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
-        this.ctx.error('failed broadcast', { err })
-      })
       this.scheduleOpen(this.ctx, true)
     }
     wsocket.onopen = () => {
@@ -690,9 +662,6 @@ class Connection implements ClientConnection {
       if (opened) {
         console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
       }
-      void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
-        this.ctx.error('failed to broadcast', { err })
-      })
     }
   }
 
@@ -707,83 +676,83 @@ class Connection implements ClientConnection {
     allowReconnect?: boolean
     overrideId?: number
   }): Promise<any> {
-    return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
-      if (this.closed) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
-      }
+    return this.ctx.with(
+      'connection-' + data.method,
+      {},
+      async (ctx) => {
+        if (this.closed) {
+          throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
+        }
 
-      if (this.slowDownTimer > 0) {
-        // We need to wait a bit to avoid ban.
-        await new Promise((resolve) => setTimeout(resolve, this.slowDownTimer))
-      }
+        if (this.slowDownTimer > 0) {
+          // We need to wait a bit to avoid ban.
+          await new Promise((resolve) => setTimeout(resolve, this.slowDownTimer))
+        }
 
-      if (data.once === true) {
-        // Check if has same request already then skip
-        const dparams = JSON.stringify(data.params)
-        for (const [, v] of this.requests) {
-          if (v.method === data.method && JSON.stringify(v.params) === dparams) {
-            // We have same unanswered, do not add one more.
-            return
+        if (data.once === true) {
+          // Check if has same request already then skip
+          const dparams = JSON.stringify(data.params)
+          for (const [, v] of this.requests) {
+            if (v.method === data.method && JSON.stringify(v.params) === dparams) {
+              // We have same unanswered, do not add one more.
+              return
+            }
           }
         }
-      }
 
-      const id = data.overrideId ?? this.lastId++
-      const promise = new RequestPromise(data.method, data.params, data.handleResult)
-      promise.handleTime = data.measure
+        const id = data.overrideId ?? this.lastId++
+        const promise = new RequestPromise(data.method, data.params, data.handleResult)
+        promise.handleTime = data.measure
 
-      const w = this.waitOpenConnection(ctx)
-      if (w instanceof Promise) {
-        await w
-      }
-      if (data.method !== pingConst) {
-        this.requests.set(id, promise)
-      }
-      promise.sendData = (): void => {
-        if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
-          promise.startTime = Date.now()
+        const w = this.waitOpenConnection(ctx)
+        if (w instanceof Promise) {
+          await w
+        }
+        if (data.method !== pingConst) {
+          this.requests.set(id, promise)
+        }
+        promise.sendData = (): void => {
+          if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
+            promise.startTime = Date.now()
 
-          if (data.method !== pingConst) {
-            const dta = ctx.withSync('serialize', {}, () =>
-              this.rpcHandler.serialize(
+            if (data.method !== pingConst) {
+              const dta = this.rpcHandler.serialize(
                 {
                   method: data.method,
                   params: data.params,
+                  meta: ctx.extractMeta(),
                   id,
                   time: Date.now()
                 },
                 this.binaryMode
               )
-            )
 
-            ctx.withSync('send-data', {}, () => this.websocket?.send(dta))
-          } else {
-            this.websocket?.send(pingConst)
+              this.websocket?.send(dta)
+            } else {
+              this.websocket?.send(pingConst)
+            }
           }
         }
-      }
-      if (data.allowReconnect ?? true) {
-        promise.reconnect = () => {
-          setTimeout(async () => {
-            // In case we don't have response yet.
-            if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-              promise.sendData()
-            }
-          }, 50)
+        if (data.allowReconnect ?? true) {
+          promise.reconnect = () => {
+            setTimeout(async () => {
+              // In case we don't have response yet.
+              if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
+                promise.sendData()
+              }
+            }, 50)
+          }
         }
-      }
-      ctx.withSync('send-data', {}, () => {
         promise.sendData()
-      })
-      void ctx
-        .with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))
-        .catch((err) => {
-          this.ctx.error('failed to broadcast', { err })
-        })
-      if (data.method !== pingConst) {
-        return await promise.promise
+        if (data.method !== pingConst) {
+          return await promise.promise
+        }
+      },
+      undefined,
+      {
+        span: 'inherit'
       }
-    })
+    )
   }
 
   loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
