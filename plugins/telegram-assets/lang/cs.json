@@ -93,6 +93,8 @@
     "NoChannelsAvailable": "Nejsou dostupné žádné kanály",
     "EnableSyncToConfigure": "Povolit synchronizaci pro konfiguraci přístupu kanálu",
     "AccessCannotBeChanged": "Přístup nelze změnit pro existující kanál",
-    "ServiceIsUnavailable": "Služba Telegram není k dispozici"
+    "ServiceIsUnavailable": "Služba Telegram není k dispozici",
+    "IncorrectPhoneOrCode": "Nepodařilo se připojit účet Telegram, zkontrolujte, zda je telefonní číslo a kód zadán správně",
+    "UnknownError": "Došlo k neznámé chybě v Telegram službě"
   }
 }

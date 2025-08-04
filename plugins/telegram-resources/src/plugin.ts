@@ -87,7 +87,9 @@ export default mergeIds(telegramId, telegram, {
     NoChannelsAvailable: '' as IntlString,
     EnableSyncToConfigure: '' as IntlString,
     ServiceIsUnavailable: '' as IntlString,
-    AccessCannotBeChanged: '' as IntlString
+    AccessCannotBeChanged: '' as IntlString,
+    IncorrectPhoneOrCode: '' as IntlString,
+    UnknownError: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent
