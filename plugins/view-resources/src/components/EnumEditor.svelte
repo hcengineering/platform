@@ -33,7 +33,7 @@
 
   const query = createQuery()
 
-  query.query(
+  $: query.query(
     core.class.Enum,
     {
       _id: type.of

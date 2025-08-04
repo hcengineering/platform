@@ -22,7 +22,6 @@
   import view from '../../plugin'
   import GrowPresenter from './GrowPresenter.svelte'
   import ListPresenter from './ListPresenter.svelte'
-  import { restrictionStore } from '../../utils'
 
   export let docObject: Doc
   export let model: AttributeModel[]
