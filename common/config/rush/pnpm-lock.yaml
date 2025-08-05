@@ -1678,6 +1678,9 @@ importers:
       '@types/markdown-it':
         specifier: ~13.0.0
         version: 13.0.8
+      '@types/maxmind':
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/mime':
         specifier: ^3.0.1
         version: 3.0.4
@@ -2074,6 +2077,9 @@ importers:
       markdown-it:
         specifier: ^14.0.0
         version: 14.0.0
+      maxmind:
+        specifier: ^4.3.6
+        version: 4.3.28
       mermaid:
         specifier: ~11.4.1
         version: 11.4.1
@@ -5271,7 +5277,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-analytics-collector@file:projects/pod-analytics-collector.tgz':
-    resolution: {integrity: sha512-YsXK0lM7Spe4gaV61mzcLnesPCnB3kxryetFQJEFTNEh+azKvSQTXGvyozSPJL8OriZDNMC/NqsqXqO2/fFLPg==, tarball: file:projects/pod-analytics-collector.tgz}
+    resolution: {integrity: sha512-NyLI9rsK/JB0vx2gpodNNTmfT+ApGsmY8QKkPs1T3cD+zOx15AlsSty43i9f7feiCwCBA2JbfgK60mb5QePr3w==, tarball: file:projects/pod-analytics-collector.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-backup@file:projects/pod-backup.tgz':
@@ -5351,7 +5357,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz':
-    resolution: {integrity: sha512-CX94IUHO3sQtTelqy4CBPydusE7MTCJ/l26hsifScPSCKEZTc4+2Qz3aZSwo2SMLerH1ZrXATpDeI4l2sgOT0A==, tarball: file:projects/pod-process.tgz}
+    resolution: {integrity: sha512-lM7eqcK1IQzWvzrzQ2Iu1H7e1ETVWovBtvpXPpNMMyr6ied0Hbj60PgxUZsTE5ZwKcGv0ZFDfP8HlJSPXrG2zg==, tarball: file:projects/pod-process.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
@@ -5727,7 +5733,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-process@file:projects/server-process.tgz':
-    resolution: {integrity: sha512-pKJ3cCSJOnjIfOQwJp1rHv6WDYuFLhp+J6/O5t1+evZ0YB8/ynv1lb9PPbg9rjGwwGQ41AQlaTn9cCDhfZdAOg==, tarball: file:projects/server-process.tgz}
+    resolution: {integrity: sha512-0FfWPqe+aaK/TXdXElATagm3zoh7G3p8k269zjs34NEpWNHOwK4NWypuh82G8YB3D9CgtF/jKov2KuQRPms8wA==, tarball: file:projects/server-process.tgz}
     version: 0.0.0
 
   '@rush-temp/server-recruit-resources@file:projects/server-recruit-resources.tgz':
@@ -6911,6 +6917,10 @@ packages:
 
   '@types/markdown-it@14.1.2':
     resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
+
+  '@types/maxmind@2.0.5':
+    resolution: {integrity: sha512-fGqeOLsZI189WqKrAvaGfLzaLg5T8NNenAHrvmRuIg6lLfQCMICw4kg9wxyxzLAJnxwN89CJhTq6DZQ/w1K5hw==}
+    deprecated: This is a stub types definition. maxmind provides its own type definitions, so you do not need this installed.
 
   '@types/mdurl@1.0.5':
     resolution: {integrity: sha512-6L6VymKTzYSrEf4Nev4Xa1LCHKrlTlYCBMTlQKFuddo1CvQcE52I0mwfOJayueUC7MJuXOeHTcIU683lzd0cUA==}
@@ -11220,6 +11230,10 @@ packages:
     resolution: {integrity: sha512-OkeDaAZ/bQCxeFAozM55PKcKU0yJMPGifLwV4Qgjitu+5MoAfSQN4lsLJeXZ1b8w0x+/Emda6MZgXS1jvsapng==}
     engines: {node: '>=10'}
 
+  maxmind@4.3.28:
+    resolution: {integrity: sha512-K3PcTVjhrSU6xzY7niQf/CHPmx/qzkMIpMumd3x0JXMkIDJMerL4LY9RsEhArHb4T3IK0NBxQcUlwjsxRm9rIw==}
+    engines: {node: '>=12', npm: '>=6'}
+
   md5@2.3.0:
     resolution: {integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==}
 
@@ -11422,6 +11436,10 @@ packages:
 
   mlly@1.7.4:
     resolution: {integrity: sha512-qmdSIPC4bDJXgZTCR7XosJiNKySV7O215tsPtDN9iEO/7q/76b/ijtgRu/+epFXSJhijtTCCGp3DWS549P3xKw==}
+
+  mmdb-lib@2.2.1:
+    resolution: {integrity: sha512-DXO4L9W+08T+A7h5+xdT32l7IMot8z7WOH+7C1Maol571PnktQ8un7Ni4CyPFp4H+vht/FDA5/tpjRvWMFQDMw==}
+    engines: {node: '>=10', npm: '>=6'}
 
   module-details-from-path@1.0.3:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
@@ -13447,6 +13465,10 @@ packages:
 
   timm@1.7.1:
     resolution: {integrity: sha512-IjZc9KIotudix8bMaBW6QvMuq64BrJWFs1+4V0lXwWGQZwH+LnX87doAYhem4caOEusRP9/g6jVDQmZ8XOk1nw==}
+
+  tiny-lru@11.3.3:
+    resolution: {integrity: sha512-/ShxBZOgHXDdZi7FxajcsH0MfcBqwP+t7i4T3PGjI//NUA5aCpC7cB9bbdAYrAeQLBUTJfg2rk191fzZGeo7DA==}
+    engines: {node: '>=12'}
 
   tiny-typed-emitter@2.1.0:
     resolution: {integrity: sha512-qVtvMxeXbVej0cQWKqVSSAHmKZEHAvxdF8HEUBFWts8h+xEo5m/lEiPakuyZ3BnCBjOD8i24kzNOiOLLgsSxhA==}
@@ -23370,6 +23392,7 @@ snapshots:
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
+      '@types/maxmind': 2.0.5
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -23384,6 +23407,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      maxmind: 4.3.28
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
@@ -30481,6 +30505,10 @@ snapshots:
       '@types/linkify-it': 5.0.0
       '@types/mdurl': 2.0.0
 
+  '@types/maxmind@2.0.5':
+    dependencies:
+      maxmind: 4.3.28
+
   '@types/mdurl@1.0.5': {}
 
   '@types/mdurl@2.0.0': {}
@@ -35776,6 +35804,11 @@ snapshots:
       escape-string-regexp: 4.0.0
     optional: true
 
+  maxmind@4.3.28:
+    dependencies:
+      mmdb-lib: 2.2.1
+      tiny-lru: 11.3.3
+
   md5@2.3.0:
     dependencies:
       charenc: 0.0.2
@@ -35987,6 +36020,8 @@ snapshots:
       pathe: 2.0.2
       pkg-types: 1.3.1
       ufo: 1.5.4
+
+  mmdb-lib@2.2.1: {}
 
   module-details-from-path@1.0.3: {}
 
@@ -38259,6 +38294,8 @@ snapshots:
   thunky@1.1.0: {}
 
   timm@1.7.1: {}
+
+  tiny-lru@11.3.3: {}
 
   tiny-typed-emitter@2.1.0: {}
 
