@@ -29,8 +29,8 @@ export async function performIntegrationMigrations (dbUrl: string, region: strin
   const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
   const accountClient = getAccountClient(token)
 
-  const allWorkpaces = await accountClient.listWorkspaces(region)
-  const byId = new Map(allWorkpaces.map((it) => [it.uuid, it]))
+  const allWorkspaces = await accountClient.listWorkspaces(region)
+  const byId = new Map(allWorkspaces.map((it) => [it.uuid, it]))
   const workspaceProvider: WorkspaceInfoProvider = {
     getWorkspaceInfo: async (workspaceUuid: WorkspaceUuid) => {
       const ws = byId.get(workspaceUuid as any)
