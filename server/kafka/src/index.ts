@@ -133,6 +133,7 @@ class PlatformQueueImpl implements PlatformQueue {
     await this.checkCreateTopic(QueueTopic.Fulltext, topics, 1)
     await this.checkCreateTopic(QueueTopic.Workspace, topics, 1)
     await this.checkCreateTopic(QueueTopic.Users, topics, 1)
+    await this.checkCreateTopic(QueueTopic.Process, topics, 1)
   }
 
   async checkDeleteTopic (topic: QueueTopic | string, topics: Set<string>): Promise<void> {
