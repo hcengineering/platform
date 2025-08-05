@@ -169,7 +169,7 @@ export function configureNotifications (): void {
             body: `${notification.content.senderName}: ${notification.content.shortText}`,
             objectId: notification.content.objectId,
             objectClass: notification.content.objectClass,
-            docNotifyContext: notification.content.docNotifyContext
+            cardId: notification.cardId
           })
         }
       })
@@ -219,9 +219,8 @@ export function configureNotifications (): void {
           electronAPI.sendNotification({
             silent: !preferences.playSound,
             application: notificationId,
-            objectId: notification.objectId as string,
-            objectClass: notification.objectClass as string,
-            docNotifyContext: notification.docNotifyContext as string,
+            objectId: notification.objectId,
+            objectClass: notification.objectClass,
             ...notificationData
           })
         }

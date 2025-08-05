@@ -18,6 +18,7 @@ import {
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
+import { inboxId } from '@hcengineering/inbox'
 import { workbenchId, logOut } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
@@ -26,7 +27,7 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication } from './types'
+import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams } from './types'
 import { ipcMainExposed } from './typesUtils'
 import { themeStore } from '@hcengineering/theme'
 
@@ -158,43 +159,45 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(parseLocation(urlObject))
   })
 
-  ipcMain.handleNotificationNavigation((notificationParams) => {
-    // If we have notification location data, use it for proper navigation
-    if (notificationParams.objectId != null && notificationParams.objectClass != null && notificationParams.docNotifyContext != null) {
-      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-      const currentLocation = getCurrentResolvedLocation()
-      const encodedObjectURI = encodeObjectURI(notificationParams.objectId, notificationParams.objectClass as any)
+  function navigateToUrl (path: string): void {
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+    const urlObject = new URL(`${frontUrl}/${path}`)
+    navigate(parseLocation(urlObject))
+  }
 
+  function getBasicNotificationPath (notificationParams: NotificationParams): string {
+    return `${workbenchId}/${notificationParams.application ?? notificationId}/${notificationId}`
+  }
+
+  ipcMain.handleNotificationNavigation((notificationParams: NotificationParams) => {
+    // Support for new inbox with cardId (card-based)
+    if (notificationParams.cardId != null) {
+      const currentLocation = getCurrentResolvedLocation()
+      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${inboxId}/${notificationParams.cardId}`)
+      return
+    }
+
+    // Support for old inbox with objectId + objectClass (legacy)
+    if (notificationParams.objectId != null && notificationParams.objectClass != null) {
+      const encodedObjectURI = encodeObjectURI(notificationParams.objectId, notificationParams.objectClass)
       const notificationLocation = {
-        path: [workbenchId, currentLocation.path[1], notificationId, encodedObjectURI],
+        path: [workbenchId, notificationParams.application, notificationId, encodedObjectURI],
         fragment: undefined,
         query: {}
       }
 
       void resolveLocation(notificationLocation).then((resolvedLocation) => {
-        if (resolvedLocation !== undefined) {
+        if (resolvedLocation?.loc != null) {
           navigate(resolvedLocation.loc)
         } else {
-          // Fallback navigation if resolution fails
-          const urlString = `${frontUrl}/${workbenchId}/${currentLocation.path[1]}/${notificationId}/${encodedObjectURI}`
-          const urlObject = new URL(urlString)
-          navigate(parseLocation(urlObject))
+          navigateToUrl(`${workbenchId}/${notificationParams.application}/${notificationId}/${encodedObjectURI}`)
         }
       }).catch(() => {
-        // Fallback to basic navigation if resolution fails
-        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-        const location = getCurrentResolvedLocation()
-        const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${notificationParams.application ?? notificationId}`
-        const urlObject = new URL(urlString)
-        navigate(parseLocation(urlObject))
+        navigateToUrl(getBasicNotificationPath(notificationParams))
       })
     } else {
-      // Fallback to basic navigation for old notifications without object data
-      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-      const location = getCurrentResolvedLocation()
-      const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${notificationParams.application ?? notificationId}`
-      const urlObject = new URL(urlString)
-      navigate(parseLocation(urlObject))
+      // Fallback to basic notification navigation
+      navigateToUrl(getBasicNotificationPath(notificationParams))
     }
   })
 
