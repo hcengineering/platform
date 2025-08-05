@@ -166,7 +166,10 @@ export function configureNotifications (): void {
             silent: !preferences.playSound,
             application: inboxId,
             title: notification.content.title,
-            body: `${notification.content.senderName}: ${notification.content.shortText}`
+            body: `${notification.content.senderName}: ${notification.content.shortText}`,
+            objectId: notification.content.objectId,
+            objectClass: notification.content.objectClass,
+            docNotifyContext: notification.content.docNotifyContext
           })
         }
       })
@@ -216,6 +219,9 @@ export function configureNotifications (): void {
           electronAPI.sendNotification({
             silent: !preferences.playSound,
             application: notificationId,
+            objectId: notification.objectId as string,
+            objectClass: notification.objectClass as string,
+            docNotifyContext: notification.docNotifyContext as string,
             ...notificationData
           })
         }

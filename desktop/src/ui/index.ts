@@ -19,6 +19,8 @@ import {
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
 import { workbenchId, logOut } from '@hcengineering/workbench'
+import { encodeObjectURI } from '@hcengineering/view'
+import { resolveLocation } from '@hcengineering/notification-resources'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
@@ -156,13 +158,44 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(parseLocation(urlObject))
   })
 
-  ipcMain.handleNotificationNavigation((application) => {
-    // For now navigate only to Inbox
-    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-    const location = getCurrentResolvedLocation()
-    const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${application ?? notificationId}`
-    const urlObject = new URL(urlString)
-    navigate(parseLocation(urlObject))
+  ipcMain.handleNotificationNavigation((notificationParams) => {
+    // If we have notification location data, use it for proper navigation
+    if (notificationParams.objectId != null && notificationParams.objectClass != null && notificationParams.docNotifyContext != null) {
+      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+      const currentLocation = getCurrentResolvedLocation()
+      const encodedObjectURI = encodeObjectURI(notificationParams.objectId, notificationParams.objectClass as any)
+
+      const notificationLocation = {
+        path: [workbenchId, currentLocation.path[1], notificationId, encodedObjectURI],
+        fragment: undefined,
+        query: {}
+      }
+
+      void resolveLocation(notificationLocation).then((resolvedLocation) => {
+        if (resolvedLocation !== undefined) {
+          navigate(resolvedLocation.loc)
+        } else {
+          // Fallback navigation if resolution fails
+          const urlString = `${frontUrl}/${workbenchId}/${currentLocation.path[1]}/${notificationId}/${encodedObjectURI}`
+          const urlObject = new URL(urlString)
+          navigate(parseLocation(urlObject))
+        }
+      }).catch(() => {
+        // Fallback to basic navigation if resolution fails
+        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+        const location = getCurrentResolvedLocation()
+        const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${notificationParams.application ?? notificationId}`
+        const urlObject = new URL(urlString)
+        navigate(parseLocation(urlObject))
+      })
+    } else {
+      // Fallback to basic navigation for old notifications without object data
+      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+      const location = getCurrentResolvedLocation()
+      const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${notificationParams.application ?? notificationId}`
+      const urlObject = new URL(urlString)
+      navigate(parseLocation(urlObject))
+    }
   })
 
   ipcMain.handleUpdateDownloadProgress((progress) => {

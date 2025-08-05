@@ -95,6 +95,9 @@ export interface NotificationParams {
   body: string
   silent: boolean
   application: Plugin
+  objectId?: string
+  objectClass?: string
+  docNotifyContext?: string
 }
 
 export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
@@ -121,7 +124,7 @@ export interface IPCMainExposed {
   branding: () => Promise<Branding>
   on: (event: string, op: (channel: any, args: any[]) => void) => void
   handleDeepLink: (callback: (url: string) => void) => void
-  handleNotificationNavigation: (callback: (application: Plugin) => void) => void
+  handleNotificationNavigation: (callback: (notificationParams: NotificationParams) => void) => void
   handleUpdateDownloadProgress: (callback: (progress: number) => void) => void
   setFrontCookie: (host: string, name: string, value: string) => Promise<void>
   dockBounce: () => void

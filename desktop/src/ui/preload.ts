@@ -145,8 +145,8 @@ const expose: IPCMainExposed = {
   },
 
   handleNotificationNavigation: (callback) => {
-    ipcRenderer.on('handle-notification-navigation', (event, application) => {
-      callback(application)
+    ipcRenderer.on('handle-notification-navigation', (event, notificationParams) => {
+      callback(notificationParams)
     })
   },
 
