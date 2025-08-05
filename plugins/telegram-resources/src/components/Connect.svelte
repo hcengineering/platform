@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
+  import platform, { IntlString, PlatformError } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import PinPad from './PinPad.svelte'
@@ -68,11 +68,11 @@
         .then((i) => {
           integrationState = i
         })
-        .catch((error) => {
+        .catch((error: any) => {
           state = {
             mode: 'Error',
             hint: error.message,
-            errorLabel: getErrorLabel(error.message),
+            errorLabel: getErrorLabel(error),
             buttons: {
               primary: { label: ui.string.Ok, handler: close }
             }
@@ -81,10 +81,19 @@
     }
   }
 
-  function getErrorLabel (errorMessage: string): IntlString | undefined {
+  function getErrorLabel (error: any): IntlString | undefined {
+    if (error instanceof PlatformError) {
+      if (error.status.code === platform.status.Unauthorized || error.status.code === platform.status.Forbidden) {
+        return telegram.string.IncorrectPhoneOrCode
+      } else if (error.status.code === platform.status.ConnectionClosed) {
+        return telegram.string.ServiceIsUnavailable
+      }
+    }
+    const errorMessage: string = error.message ?? ''
     if (errorMessage.toLowerCase().includes('failed to fetch')) {
       return telegram.string.ServiceIsUnavailable
     }
+    return telegram.string.UnknownError
   }
 
   $: {
@@ -224,7 +233,7 @@
     {:else if state.mode === 'Authorized'}
       <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
     {:else if state.mode === 'Error'}
-      <div class="flex-row-center gap-3 pt-2">
+      <div class="flex-row-top flex-gap-1 gap-3 pt-2">
         <IconError size={'medium'} />
         {#if state.errorLabel !== undefined}
           <Label label={state.errorLabel} />

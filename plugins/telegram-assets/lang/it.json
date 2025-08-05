@@ -94,6 +94,8 @@
     "NoChannelsAvailable": "Nessun canale disponibile",
     "EnableSyncToConfigure": "Abilita sincronizzazione per configurare l'accesso al canale",
     "AccessCannotBeChanged": "L'accesso non può essere modificato per il canale esistente",
-    "ServiceIsUnavailable": "Il servizio Telegram non è disponibile"
+    "ServiceIsUnavailable": "Il servizio Telegram non è disponibile",
+    "IncorrectPhoneOrCode": "Impossibile connettere l'account Telegram, controlla che il numero di telefono e il codice siano inseriti correttamente",
+    "UnknownError": "Si è verificato un errore sconosciuto nel servizio Telegram"
   }
 }

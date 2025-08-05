@@ -94,6 +94,8 @@
     "NoChannelsAvailable": "没有可用的频道",
     "EnableSyncToConfigure": "启用同步以配置频道访问权限",
     "AccessCannotBeChanged": "现有频道的访问权限无法更改",
-    "ServiceIsUnavailable": "Telegram 服务不可用"
+    "ServiceIsUnavailable": "Telegram 服务不可用",
+    "IncorrectPhoneOrCode": "无法连接 Telegram 账户，请检查电话号码和代码是否正确输入",
+    "UnknownError": "在 Telegram 服务中发生了未知错误"
   }
 }

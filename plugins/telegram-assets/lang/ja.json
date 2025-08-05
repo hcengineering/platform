@@ -94,6 +94,8 @@
     "NoChannelsAvailable": "利用可能なチャンネルがありません",
     "EnableSyncToConfigure": "チャンネルアクセスを構成するには同期を有効にしてください",
     "AccessCannotBeChanged": "既存のチャンネルのアクセスは変更できません",
-    "ServiceIsUnavailable": "Telegramサービスは利用できません"
+    "ServiceIsUnavailable": "Telegramサービスは利用できません",
+    "IncorrectPhoneOrCode": "Telegramアカウントの接続に失敗しました。電話番号とコードが正しく入力されていることを確認してください。",
+    "UnknownError": "Telegramサービスで不明なエラーが発生しました"
   }
 }

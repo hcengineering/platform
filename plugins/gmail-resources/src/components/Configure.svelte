@@ -48,10 +48,6 @@
   }
 
   async function change (shared: AccountUuid[]) {
-    const integrationClient = await getIntegrationClient()
-    integration = isWorkspaceIntegration(integration)
-      ? integration
-      : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
     if (integrationSettings == null) {
       console.error('Integrations settings are not found', integration.socialId, integration.kind)
       return
