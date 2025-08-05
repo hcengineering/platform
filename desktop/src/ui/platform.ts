@@ -264,7 +264,7 @@ export class PlatformParameters {
   }
 }
 
-export async function configurePlatform (): Promise<PlatformParameters> {
+export async function configurePlatform (onWorkbenchConnect?: () => Promise<void>): Promise<PlatformParameters> {
   configureI18n()
 
   const ipcMain = ipcMainExposed()
@@ -446,6 +446,7 @@ export async function configurePlatform (): Promise<PlatformParameters> {
       presentation.metadata.Token.replaceAll(':', '-'),
       getMetadata(presentation.metadata.Token) ?? ''
     )
+    await onWorkbenchConnect?.()
   })
 
   configureNotifications()

@@ -79,6 +79,7 @@ export const CommandOpenOffice = 'open-office' as const
 export const CommandOpenPlanner = 'open-planner' as const
 export const CommandSelectWorkspace = 'select-workspace' as const
 export const CommandLogout = 'logout' as const
+export const CommandOpenApplication = 'open-application' as const
 
 export type Command = 
   typeof CommandOpenSettings | 
@@ -86,7 +87,8 @@ export type Command =
   typeof CommandOpenOffice | 
   typeof CommandOpenPlanner | 
   typeof CommandSelectWorkspace | 
-  typeof CommandLogout
+  typeof CommandLogout |
+  typeof CommandOpenApplication
 
 export interface NotificationParams {
   title: string
@@ -99,6 +101,18 @@ export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit',
   , 'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const;
 
 export type MenuBarAction = typeof MenuBarActions[number];
+
+export interface JumpListSpares {
+  applications: LaunchApplication[],
+  settingsLabel: string,
+  inboxLabel: string,
+}
+
+export interface LaunchApplication {
+  title: string
+  id: string
+  alias: string
+}
 
 export interface IPCMainExposed {
   setBadge: (badge: number) => void
@@ -126,4 +140,6 @@ export interface IPCMainExposed {
   onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
   isOsUsingDarkTheme: () => Promise<boolean>
   executeMenuBarAction: (action: MenuBarAction) => void
+
+  rebuildJumpList: (spares: JumpListSpares) => void
 }

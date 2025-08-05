@@ -22,7 +22,7 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, MenuBarAction, NotificationParams } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams, JumpListSpares } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { dipatchMenuBarAction } from './customMenu'
@@ -30,7 +30,7 @@ import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
-import { setupWindowsSpecific } from './windowsSpecificSetup'
+import { rebuildJumpList, setupWindowsSpecific } from './windowsSpecificSetup'
 
 
 let mainWindow: BrowserWindow | undefined
@@ -424,6 +424,12 @@ ipcMain.handle('get-is-os-using-dark-theme', () => {
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
   dipatchMenuBarAction(mainWindow, action)
 });
+
+if (isWindows) {
+  ipcMain.on('rebuild-user-jump-list', (_event: any, spares: JumpListSpares) => {
+    rebuildJumpList(spares)
+  });
+}
 
 const gotTheLock = app.requestSingleInstanceLock()
 

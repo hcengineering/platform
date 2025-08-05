@@ -2,9 +2,9 @@ import { loginId } from '@hcengineering/login'
 import { loveId } from '@hcengineering/love'
 import { timeId } from '@hcengineering/time'
 
-import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
 import presentation, { MessageBox, setDownloadProgress } from '@hcengineering/presentation'
-import settings, { settingId } from '@hcengineering/setting'
+import setting, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
   closePopup,
@@ -17,16 +17,26 @@ import {
   showPopup
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
-import { notificationId } from '@hcengineering/notification'
+import notification, { notificationId } from '@hcengineering/notification'
 import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice } from './types'
+import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication } from './types'
 import { ipcMainExposed } from './typesUtils'
 import { themeStore } from '@hcengineering/theme'
+
+import { getClient } from '@hcengineering/presentation'
+import type { Application } from '@hcengineering/workbench'
+import { isAllowedToRole } from '@hcengineering/workbench-resources'
+import workbench from '@hcengineering/workbench'
+import { getCurrentAccount } from '@hcengineering/core'
+
+function currentOsIsWindows(): boolean {
+  return (window as any).windowsPlatform === true
+}
 
 defineScreenShare()
 defineGetDisplayMedia()
@@ -34,8 +44,8 @@ defineGetDisplayMedia()
 window.addEventListener('DOMContentLoaded', () => {
   
   const ipcMain = ipcMainExposed()
-  
-  if ((window as any).windowsPlatform === true) {
+
+  if (currentOsIsWindows()) {
     const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
     if (titleBarRoot) {
       const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
@@ -55,7 +65,35 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  void configurePlatform().then((parameters) => {
+  const onWorkbenchConnect = currentOsIsWindows() ? async () => {
+    const client = getClient()
+    const account = getCurrentAccount()
+    const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+
+    const applications: Application[] = client
+      .getModel()
+      .findAllSync<Application>(workbench.class.Application, { hidden: false })
+      .filter((it: Application) => !excludedApps.includes(it._id))
+      .filter((it: Application) => isAllowedToRole(it.accessLevel, account))
+
+    const tasks: LaunchApplication[] = [];
+
+    for (const application of applications) {
+        const title = await translate(application.label, {})
+        tasks.push({
+          title: title,
+          id: application._id,
+          alias: application.alias,
+        });
+    }
+    ipcMain.rebuildJumpList({
+      applications: tasks, 
+      settingsLabel: await translate(setting.string.Settings, {}), 
+      inboxLabel: await translate(notification.string.Inbox, {}),
+    })
+  } : undefined
+
+  void configurePlatform(onWorkbenchConnect).then((parameters) => {
     const windowTitle = document.getElementById('application-title-bar-caption')
     if (windowTitle) {
       windowTitle.textContent = parameters.getBranding().getTitle()
@@ -89,6 +127,10 @@ window.addEventListener('DOMContentLoaded', () => {
   
   ipcMain.on(CommandOpenPlanner, () => {
     openScreen(timeId)
+  })
+
+  ipcMain.on(CommandOpenApplication, (_event, applicationId) => {
+    openScreen(applicationId[0])
   })
 
   ipcMain.on(CommandSelectWorkspace, () => {
@@ -168,7 +210,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       showPopup(MessageBox, {
-        label: settings.string.OwnerOrMaintainerRequired
+        label: setting.string.OwnerOrMaintainerRequired
       })
     }
   })
