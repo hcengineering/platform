@@ -13,6 +13,7 @@
     "CurrentPassword": "Текущий пароль",
     "NewPassword": "Новый пароль",
     "Disconnect": "Отключить",
+    "DisconnectAll": "Отключить все",
     "Saving": "Сохранение...",
     "Saved": "Сохранено",
     "Add": "Добавить",
@@ -180,6 +181,18 @@
     "ReleasePrimarySocialId": "Освободить основной социальный ID",
     "ReleasePrimarySocialIdConfirm": "Освобождение вашего текущего основного социального ID потребует перезагрузки страницы. Вы уверены, что хотите продолжить?",
     "Login": "Вход",
-    "Primary": "Основной"
+    "Primary": "Основной",
+    "MyIntegrations": "Мои интеграции",
+    "AllIntegrations": "Все",
+    "ConnectedIntegrations": "Подключенные",
+    "AvailableIntegrations": "Доступные",
+    "Connect": "Подключить",
+    "Integrate": "Интегрировать",
+    "FailedToLoadIntegrations": "Не удалось загрузить интеграции",
+    "FailedToDisconnect": "Не удалось отключить интеграцию",
+    "ServiceIsUnavailable": "Сервис недоступен",
+    "Integrated": "Интегрировано",
+    "Connected": "Подключено",
+    "Available": "Доступно"
   }
 }

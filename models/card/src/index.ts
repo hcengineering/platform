@@ -170,7 +170,7 @@ export class TFavoriteCard extends TPreference implements FavoriteCard {
 export * from './migration'
 
 const listConfig: (BuildModelKey | string)[] = [
-  { key: '', props: { showParent: true } },
+  { key: '' },
   { key: '_class' },
   { key: '', displayProps: { grow: true } },
   {
@@ -180,14 +180,13 @@ const listConfig: (BuildModelKey | string)[] = [
     props: {
       showType: false
     },
-    displayProps: { key: 'tags', fixed: 'right' }
+    displayProps: { optional: true }
   },
   {
     key: '',
     presenter: card.component.LabelsPresenter,
     label: card.string.Labels,
-    props: { fullSize: true },
-    displayProps: { fixed: 'right', key: 'labels' }
+    props: { fullSize: true }
   },
   {
     key: 'modifiedOn',

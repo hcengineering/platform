@@ -44,7 +44,52 @@ export default mergeIds(telegramId, telegram, {
     ConnectBotInfoEnd: '' as IntlString,
     ConnectBotError: '' as IntlString,
     TestConnection: '' as IntlString,
-    Connected: '' as IntlString
+    Connected: '' as IntlString,
+    Public: '' as IntlString,
+    Private: '' as IntlString,
+    TotalChannels: '' as IntlString,
+    SyncedChannels: '' as IntlString,
+    SyncEnabled: '' as IntlString,
+    SyncDisabled: '' as IntlString,
+    SelectAll: '' as IntlString,
+    Selected: '' as IntlString,
+    EnableSync: '' as IntlString,
+    DisableSync: '' as IntlString,
+    SelectAccess: '' as IntlString,
+    ConfigureIntegration: '' as IntlString,
+    Apply: '' as IntlString,
+    NotConnectedIntegration: '' as IntlString,
+    FailedToLoadState: '' as IntlString,
+
+    // Filter categories
+    Type: '' as IntlString,
+    SyncMode: '' as IntlString,
+    Access: '' as IntlString,
+
+    // Filter options
+    User: '' as IntlString,
+    Group: '' as IntlString,
+    Channel: '' as IntlString,
+
+    // Actions
+    Actions: '' as IntlString,
+    SelectAllAction: '' as IntlString,
+    UnselectAllAction: '' as IntlString,
+    EnableSynchronization: '' as IntlString,
+    DisableSynchronization: '' as IntlString,
+    SetPublicAccess: '' as IntlString,
+    SetPrivateAccess: '' as IntlString,
+
+    // Search and empty state messages
+    NoChannelsFound: '' as IntlString,
+    TryAdjustingSearch: '' as IntlString,
+    ClearSearch: '' as IntlString,
+    NoChannelsAvailable: '' as IntlString,
+    EnableSyncToConfigure: '' as IntlString,
+    ServiceIsUnavailable: '' as IntlString,
+    AccessCannotBeChanged: '' as IntlString,
+    IncorrectPhoneOrCode: '' as IntlString,
+    UnknownError: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

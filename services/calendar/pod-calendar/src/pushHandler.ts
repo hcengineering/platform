@@ -14,10 +14,11 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
 import { IncomingSyncManager } from './sync'
-import { CALENDAR_INTEGRATION, GoogleEmail, Token } from './types'
+import { GoogleEmail, Token } from './types'
 import { getGoogleClient, getUserByEmail, removeIntegrationSecret, removeUserByEmail, setCredentials } from './utils'
 
 export class PushHandler {
@@ -38,7 +39,7 @@ export class PushHandler {
           if (!authSuccess) {
             removeUserByEmail(token, token.email)
             await removeIntegrationSecret(this.ctx, this.accountClient, {
-              kind: CALENDAR_INTEGRATION,
+              kind: calendarIntegrationKind,
               workspaceUuid: token.workspace,
               socialId: token.userId,
               key: token.email

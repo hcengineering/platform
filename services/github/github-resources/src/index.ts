@@ -35,6 +35,7 @@ import PullRequestStateValuePresenter from './components/presenters/PullRequestS
 import RepositoryPresenter from './components/presenters/RepositoryPresenter.svelte'
 import TitlePresenter from './components/presenters/TitlePresenter.svelte'
 import GithubIssuePresenter from './components/presenters/GithubIssuePresenter.svelte'
+import IntegrationState from './components/IntegrationState.svelte'
 import github from './plugin'
 
 async function updateIssue (
@@ -99,7 +100,8 @@ export default async (): Promise<Resources> => ({
     PullRequestReviewDecisionValuePresenter,
     PullRequestStateValuePresenter,
     PullRequestMergeState,
-    GithubIssuePresenter
+    GithubIssuePresenter,
+    IntegrationState
   },
   handler: {
     DisconnectHandler: async () => {}

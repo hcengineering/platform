@@ -14,7 +14,13 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance } from '@hcengineering/calendar'
+import calendar, {
+  Event,
+  ExternalCalendar,
+  ReccuringEvent,
+  ReccuringInstance,
+  calendarIntegrationKind
+} from '@hcengineering/calendar'
 import contact, { Contact } from '@hcengineering/contact'
 import core, { MeasureContext, Ref, SocialIdType, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
@@ -25,7 +31,7 @@ import { getClient } from './client'
 import { setSyncHistory } from './kvsUtils'
 import { lock, synced } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { CALENDAR_INTEGRATION, Token } from './types'
+import { Token } from './types'
 import {
   convertDate,
   encodeReccuring,
@@ -421,7 +427,7 @@ export class OutcomingClient {
           removeUserByEmail(user, user.email)
           await removeIntegrationSecret(ctx, accountClient, {
             socialId: user.userId,
-            kind: CALENDAR_INTEGRATION,
+            kind: calendarIntegrationKind,
             workspaceUuid: user.workspace,
             key: user.email
           })
@@ -448,7 +454,7 @@ async function getTokenByEvent (
   if (_calendar === undefined) return
   const res = await accountClient.getIntegrationSecret({
     socialId: event.user,
-    kind: CALENDAR_INTEGRATION,
+    kind: calendarIntegrationKind,
     workspaceUuid: workspace,
     key: _calendar.externalUser
   })

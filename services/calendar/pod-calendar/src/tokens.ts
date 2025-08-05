@@ -15,14 +15,14 @@
 
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
 import { WorkspaceUuid } from '@hcengineering/core'
-import { CALENDAR_INTEGRATION } from './types'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 export async function getWorkspaceTokens (
   accountClient: AccountClient,
   workspace: WorkspaceUuid
 ): Promise<IntegrationSecret[]> {
   const secrets = await accountClient.listIntegrationsSecrets({
-    kind: CALENDAR_INTEGRATION,
+    kind: calendarIntegrationKind,
     workspaceUuid: workspace
   })
   return secrets

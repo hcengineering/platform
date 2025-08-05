@@ -21,7 +21,7 @@
 </script>
 
 <HyperlinkEditor
-  value={repository?.repository?.html_url}
+  value={repository?.repository?.html_url ?? repository?.htmlURL}
   placeholder={getEmbeddedLabel(repository?.name ?? '')}
   title={repository?.name ?? ''}
   readonly

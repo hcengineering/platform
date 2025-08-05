@@ -18,7 +18,7 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
   x="0px"
   y="0px"
-  viewBox="0 0 36 36"
+  viewBox="3 3 30 30"
   style="enable-background:new 0 0 36 36;"
   xml:space="preserve"
 >

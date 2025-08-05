@@ -122,7 +122,8 @@ module.exports = [
   // ------ UI Part --------------------------
   {
     entry: {
-      bundle: ['@hcengineering/theme/styles/global.scss', ...['./src/ui/index.ts']]
+      bundle: ['@hcengineering/theme/styles/global.scss', ...['./src/ui/index.ts']],
+      'recorder-worker': '@hcengineering/recorder-resources/src/recorder-worker.ts'
     },
     ignoreWarnings: [
       {
@@ -147,7 +148,7 @@ module.exports = [
     },
     output: {
       path: path.join(__dirname, '/dist/ui/'),
-      filename: 'bundle.js',
+      filename: '[name].js',
       chunkFilename: '[name].js',
       publicPath: './',
       chunkFormat: false,

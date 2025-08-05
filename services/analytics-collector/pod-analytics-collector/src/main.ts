@@ -25,6 +25,7 @@ import { join } from 'path'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import config from './config'
 import { createServer, listen } from './server'
+import { setGeoipLogContext } from './geoip'
 
 configureAnalytics('analytics-collector', process.env.VERSION ?? '0.7.0')
 const ctx = initStatisticsContext('analytics-collector', {
@@ -47,6 +48,9 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+
+  // Set context for geoip logging
+  setGeoipLogContext(ctx)
 
   ctx.info('Analytics service started', {
     accountsUrl: config.AccountsUrl

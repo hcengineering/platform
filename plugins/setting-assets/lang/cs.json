@@ -13,6 +13,7 @@
     "CurrentPassword": "Aktuální heslo",
     "NewPassword": "Nové heslo",
     "Disconnect": "Odpojit",
+    "DisconnectAll": "Odpojit všechny",
     "Saving": "Ukládání...",
     "Saved": "Uloženo",
     "Add": "Přidat",
@@ -178,6 +179,18 @@
     "ReleaseSocialId": "Uvolnit sociální ID",
     "ReleaseSocialIdConfirm": "Opravdu chcete uvolnit toto sociální ID: {socialId}? Tím ho odeberete ze svého účtu a nebudete ho již moci používat k přihlášení. Také budou odstraněny všechny související integrace.",
     "ReleasePrimarySocialId": "Uvolnit primární sociální ID",
-    "ReleasePrimarySocialIdConfirm": "Uvolnění vašeho současného primárního sociálního ID bude vyžadovat obnovení stránky. Opravdu chcete pokračovat?"
+    "ReleasePrimarySocialIdConfirm": "Uvolnění vašeho současného primárního sociálního ID bude vyžadovat obnovení stránky. Opravdu chcete pokračovat?",
+    "MyIntegrations": "Moje integrace",
+    "AllIntegrations": "Všechny",
+    "ConnectedIntegrations": "Připojené",
+    "AvailableIntegrations": "Dostupné",
+    "Connect": "Připojit",
+    "Integrate": "Integrace",
+    "FailedToLoadIntegrations": "Nepodařilo se načíst integrace",
+    "FailedToDisconnect": "Nepodařilo se odpojit integraci",
+    "ServiceIsUnavailable": "Služba není k dispozici",
+    "Integrated": "Integrované",
+    "Connected": "Připojené",
+    "Available": "Dostupné"
   }
 }

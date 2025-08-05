@@ -15,21 +15,29 @@
 
 import { Integration, type AccountClient } from '@hcengineering/account-client'
 import { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
-import gmail from '@hcengineering/gmail'
+import gmail, { gmailIntegrationKind } from '@hcengineering/gmail'
 import { getAccountClient } from '@hcengineering/server-client'
 import setting from '@hcengineering/setting'
 
-import { getAccountSocialIds } from './accounts'
-import { GMAIL_INTEGRATION } from './types'
 import { serviceToken } from './utils'
+import { getAccountSocialIds } from './accounts'
+import { IntegrationClient, IntegrationClientImpl } from '@hcengineering/integration-client'
+
+let integrationClient: IntegrationClient | undefined
+export function getIntegrationClient (): IntegrationClient {
+  if (integrationClient === undefined) {
+    integrationClient = new IntegrationClientImpl(getAccountClient(serviceToken()), gmailIntegrationKind, 'gmail')
+  }
+  return integrationClient
+}
 
 export async function getIntegration (socialId: PersonId, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {
   const client = getAccountClient(serviceToken())
-  return await client.getIntegration({ kind: GMAIL_INTEGRATION, socialId, workspaceUuid: workspaceUuid ?? null })
+  return await client.getIntegration({ kind: gmailIntegrationKind, socialId, workspaceUuid: workspaceUuid ?? null })
 }
 
 export async function getIntegrations (client: AccountClient, token: string): Promise<Integration[]> {
-  return (await client.listIntegrations({ kind: GMAIL_INTEGRATION })) ?? []
+  return (await client.listIntegrations({ kind: gmailIntegrationKind })) ?? []
 }
 
 export async function getIntegrationByAccount (
@@ -38,7 +46,10 @@ export async function getIntegrationByAccount (
 ): Promise<Integration | null> {
   const token = serviceToken()
   const client = getAccountClient(token)
-  const integrations = await client.listIntegrations({ kind: GMAIL_INTEGRATION, workspaceUuid: workspaceUuid ?? null })
+  const integrations = await client.listIntegrations({
+    kind: gmailIntegrationKind,
+    workspaceUuid: workspaceUuid ?? null
+  })
   if (integrations.length === 0) return null
   const socialIds = await getAccountSocialIds(account)
 
@@ -59,11 +70,11 @@ export async function removeIntegration (
 ): Promise<void> {
   if (socialId == null) return
   const accountClient = getAccountClient(serviceToken())
-  const integrations = await accountClient.listIntegrations({ kind: GMAIL_INTEGRATION, socialId, workspaceUuid })
+  const integrations = await accountClient.listIntegrations({ kind: gmailIntegrationKind, socialId, workspaceUuid })
   for (const integration of integrations) {
     await accountClient.deleteIntegration({
       socialId,
-      kind: GMAIL_INTEGRATION,
+      kind: gmailIntegrationKind,
       workspaceUuid: integration.workspaceUuid
     })
   }
@@ -74,18 +85,16 @@ export async function deleteIntegration (integration: Integration): Promise<void
   await accountClient.deleteIntegration(integration)
 }
 
-export async function createIntegrationIfNotEsixts (socialId: PersonId, workspace: WorkspaceUuid): Promise<Integration> {
-  const accountClient = getAccountClient(serviceToken())
-  const integration = {
-    socialId,
-    kind: GMAIL_INTEGRATION,
-    workspaceUuid: workspace
-  }
-  const existingIntegration = await accountClient.getIntegration(integration)
-  if (existingIntegration != null) return existingIntegration
-
-  await accountClient.createIntegration(integration)
-  return integration
+export async function createIntegrationIfNotExists (
+  socialId: PersonId,
+  workspace: WorkspaceUuid,
+  email: string
+): Promise<Integration> {
+  const client = getIntegrationClient()
+  const connection = await client.connect(socialId, {
+    email
+  })
+  return await client.integrate(connection, workspace)
 }
 
 export async function disableIntegration (integration: Integration): Promise<void> {

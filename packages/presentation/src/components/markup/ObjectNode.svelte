@@ -36,7 +36,10 @@
   const withoutDoc: Ref<Doc>[] = [contact.mention.Here, contact.mention.Everyone]
 
   $: icon =
-    _class !== undefined && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)
+    _class !== undefined &&
+    hierarchy.hasClass(_class) &&
+    !withoutDoc.includes(_id as any) &&
+    !hierarchy.isDerived(_class, contact.class.Contact)
       ? hierarchy.getClass(_class).icon
       : null
 

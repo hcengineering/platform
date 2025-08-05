@@ -358,8 +358,15 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
     const visibility = updTx.operations.visibility
     if (doneOn != null) {
       const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
-      if (todo === undefined || todo.doneOn != null) {
-        // Do not process already processed todos.
+      if (todo === undefined) {
+        continue
+      }
+      const wasProcessed = await control.findAll(control.ctx, core.class.TxUpdateDoc, {
+        objectId: todo._id,
+        doneOn: { $exists: true }
+      })
+      // Do not process already processed todos.
+      if (wasProcessed.filter((p) => p._id !== tx._id).length > 0) {
         continue
       }
       const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })

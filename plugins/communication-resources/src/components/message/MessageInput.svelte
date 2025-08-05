@@ -63,7 +63,6 @@
   export let message: Message | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
-  export let onSubmit: ((markdown: string, blobs: BlobParams[]) => Promise<void>) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
@@ -111,13 +110,13 @@
   }
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
-    if (!(await isCardAllowedForCommunications(card))) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!isCardAllowedForCommunications(card)) {
       await showForbidden()
       return
     }
-
-    event.preventDefault()
-    event.stopPropagation()
 
     const markup = event.detail
     const blobsToLoad = draft.blobs
@@ -132,11 +131,6 @@
     }
 
     const markdown = toMarkdown(markup)
-
-    if (onSubmit !== undefined) {
-      await onSubmit(markdown, blobsToLoad)
-      return
-    }
 
     if (message === undefined) {
       await createMessage(markdown, blobsToLoad, linksToLoad, urlsToLoad, appletsToLoad)

@@ -16,7 +16,8 @@
 import type { AccountClient } from '@hcengineering/account-client'
 import { groupByArray, MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
-import { GMAIL_INTEGRATION, SecretType, Token } from './types'
+import { gmailIntegrationKind } from '@hcengineering/gmail'
+import { SecretType, Token } from './types'
 
 export class TokenStorage {
   private readonly accountClient: AccountClient
@@ -32,7 +33,7 @@ export class TokenStorage {
   async getToken (socialId: PersonId): Promise<Token | null> {
     const secret = await this.accountClient.getIntegrationSecret({
       key: SecretType.TOKEN,
-      kind: GMAIL_INTEGRATION,
+      kind: gmailIntegrationKind,
       socialId,
       workspaceUuid: this.workspace
     })
@@ -49,7 +50,7 @@ export class TokenStorage {
       }
       await this.accountClient.updateIntegrationSecret({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId,
         secret: JSON.stringify(updatedToken),
         workspaceUuid: this.workspace
@@ -58,7 +59,7 @@ export class TokenStorage {
     } else {
       await this.accountClient.addIntegrationSecret({
         key: SecretType.TOKEN,
-        kind: GMAIL_INTEGRATION,
+        kind: gmailIntegrationKind,
         socialId,
         secret: JSON.stringify(token),
         workspaceUuid: this.workspace
@@ -70,7 +71,7 @@ export class TokenStorage {
   async deleteToken (socialId: PersonId): Promise<void> {
     await this.accountClient.deleteIntegrationSecret({
       key: SecretType.TOKEN,
-      kind: GMAIL_INTEGRATION,
+      kind: gmailIntegrationKind,
       socialId,
       workspaceUuid: this.workspace
     })
@@ -85,10 +86,10 @@ export async function getWorkspaceTokens (
     await accountClient.listIntegrationsSecrets(
       workspace !== undefined
         ? {
-            kind: GMAIL_INTEGRATION,
+            kind: gmailIntegrationKind,
             workspaceUuid: workspace
           }
-        : { kind: GMAIL_INTEGRATION }
+        : { kind: gmailIntegrationKind }
     )
   ).filter((it) => it.workspaceUuid != null)
 

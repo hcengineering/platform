@@ -14,6 +14,7 @@
 //
 
 import {
+  type IntegrationKind,
   type MeasureContext,
   type PersonId,
   type PersonUuid,
@@ -227,7 +228,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockIntegration: Integration = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -251,7 +252,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockIntegration: Integration = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -279,7 +280,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockIntegration: Integration = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -307,7 +308,7 @@ describe('integration methods', () => {
 
       const mockIntegration: Integration = {
         socialId: 'nonexistent-social-id' as PersonId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -331,7 +332,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockIntegration: Integration = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'nonexistent-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -356,7 +357,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockIntegration: Integration = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -379,7 +380,7 @@ describe('integration methods', () => {
 
       const mockIntegration: Integration = {
         socialId: 'test-social-id' as PersonId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         data: {}
       }
@@ -397,7 +398,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockIntegration: Integration = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       data: { someData: 'value' }
     }
@@ -511,7 +512,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockIntegrationKey: IntegrationKey = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid
     }
 
@@ -608,7 +609,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockKey: IntegrationKey = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid
     }
 
@@ -697,7 +698,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockIntegration: Integration = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       data: {}
     }
@@ -739,7 +740,7 @@ describe('integration methods', () => {
       ;(mockDb.integration.find as jest.Mock).mockResolvedValue([mockIntegration])
 
       const result = await listIntegrations(mockCtx, mockDb, mockBranding, mockToken, {
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid
       })
 
@@ -869,7 +870,7 @@ describe('integration methods', () => {
         const mockSocialId = 'test-social-id' as PersonId
         const mockSecret: IntegrationSecret = {
           socialId: mockSocialId,
-          kind: 'test-kind',
+          kind: 'test-kind' as IntegrationKind,
           workspaceUuid: 'test-workspace' as WorkspaceUuid,
           key: 'test-key',
           secret: 'test-secret'
@@ -904,7 +905,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
         secret: 'test-secret'
@@ -942,7 +943,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
         secret: 'test-secret'
@@ -979,7 +980,7 @@ describe('integration methods', () => {
       const mockSocialId = 'test-social-id' as PersonId
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
         secret: 'test-secret'
@@ -1004,7 +1005,7 @@ describe('integration methods', () => {
 
       const mockSecret: IntegrationSecret = {
         socialId: 'test-social-id' as PersonId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
         secret: 'test-secret'
@@ -1034,7 +1035,7 @@ describe('integration methods', () => {
 
       const mockSecret: IntegrationSecret = {
         socialId: 'test-social-id' as PersonId,
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
         secret: 'test-secret'
@@ -1053,7 +1054,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockSecret: IntegrationSecret = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key',
       secret: 'new-secret'
@@ -1162,7 +1163,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockSecretKey: IntegrationSecretKey = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key'
     }
@@ -1262,7 +1263,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockSecretKey: IntegrationSecretKey = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key'
     }
@@ -1312,7 +1313,7 @@ describe('integration methods', () => {
     const mockSocialId = 'test-social-id' as PersonId
     const mockSecret: IntegrationSecret = {
       socialId: mockSocialId,
-      kind: 'test-kind',
+      kind: 'test-kind' as IntegrationKind,
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key',
       secret: 'test-secret'
@@ -1359,7 +1360,7 @@ describe('integration methods', () => {
       ;(mockDb.integrationSecret.find as jest.Mock).mockResolvedValue([mockSecret])
 
       const result = await listIntegrationsSecrets(mockCtx, mockDb, mockBranding, mockToken, {
-        kind: 'test-kind',
+        kind: 'test-kind' as IntegrationKind,
         workspaceUuid: 'test-workspace' as WorkspaceUuid
       })
 

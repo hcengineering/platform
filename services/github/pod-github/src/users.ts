@@ -2,6 +2,7 @@ import type { AccountClient, IntegrationSecret } from '@hcengineering/account-cl
 import core, { systemAccountUuid, type MeasureContext, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
+import { githubUserIntegrationKind } from '@hcengineering/github'
 import type { GithubUserRecord } from './types'
 
 export class UserManager {
@@ -20,7 +21,7 @@ export class UserManager {
     if (res !== undefined) {
       return res
     }
-    const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', key: login })
+    const secrets = await this.accountClient.listIntegrationsSecrets({ kind: githubUserIntegrationKind, key: login })
     if (secrets.length === 0) {
       return
     }
@@ -63,7 +64,10 @@ export class UserManager {
         // Ignore failed refs
         return
       }
-      const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', socialId: ref })
+      const secrets = await this.accountClient.listIntegrationsSecrets({
+        kind: githubUserIntegrationKind,
+        socialId: ref
+      })
       if (secrets.length === 0) {
         return
       }
@@ -90,14 +94,14 @@ export class UserManager {
 
     // Need to check if user integeration exists.
     const existing = await this.accountClient.getIntegration({
-      kind: 'github-user',
+      kind: githubUserIntegrationKind,
       workspaceUuid: null,
       socialId: dta.account
     })
 
     if (existing == null) {
       await this.accountClient.createIntegration({
-        kind: 'github-user',
+        kind: githubUserIntegrationKind,
         workspaceUuid: null,
         socialId: dta.account,
         data: {
@@ -108,7 +112,7 @@ export class UserManager {
 
     const exists = await this.accountClient.getIntegrationSecret({
       key: dta._id,
-      kind: 'github-user',
+      kind: githubUserIntegrationKind,
       socialId: dta.account,
       workspaceUuid: null
     })
@@ -116,7 +120,7 @@ export class UserManager {
     if (exists !== null) {
       await this.accountClient.updateIntegrationSecret({
         key: dta._id,
-        kind: 'github-user',
+        kind: githubUserIntegrationKind,
         socialId: dta.account,
         secret: JSON.stringify(dta),
         workspaceUuid: null
@@ -124,7 +128,7 @@ export class UserManager {
     } else {
       await this.accountClient.addIntegrationSecret({
         key: dta._id,
-        kind: 'github-user',
+        kind: githubUserIntegrationKind,
         socialId: dta.account,
         secret: JSON.stringify(dta),
         workspaceUuid: null
@@ -140,7 +144,7 @@ export class UserManager {
     this.userCache.clear()
     this.refUserCache.clear()
 
-    const secerts = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', key: login })
+    const secerts = await this.accountClient.listIntegrationsSecrets({ kind: githubUserIntegrationKind, key: login })
     for (const s of secerts) {
       await this.accountClient.deleteIntegrationSecret(s)
     }

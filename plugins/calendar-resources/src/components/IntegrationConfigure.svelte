@@ -17,9 +17,9 @@
   import { Calendar } from '@hcengineering/calendar'
   import { getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Integration } from '@hcengineering/setting'
   import { Grid, Label, Toggle, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import type { Integration } from '@hcengineering/account-client'
   import calendar from '../plugin'
 
   export let integration: Integration
@@ -32,7 +32,7 @@
     calendar.class.ExternalCalendar,
     {
       createdBy: { $in: getCurrentAccount().socialIds },
-      externalUser: integration.value
+      externalUser: integration.data?.email
     },
     (res) => {
       calendars = res

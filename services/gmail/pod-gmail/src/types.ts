@@ -62,7 +62,6 @@ export interface ProjectCredentialsData {
   client_secret: string
   redirect_uris: string[]
 }
-export const GMAIL_INTEGRATION = 'gmail'
 
 export enum SecretType {
   TOKEN = 'token'
@@ -78,4 +77,18 @@ export interface WorkspaceStateInfo {
   needRecheck: boolean
   archived?: boolean
   inactive?: boolean
+}
+
+export interface SyncState {
+  status: string
+  email: string
+  totalMessages: number | null | undefined
+  lastSynchronization?: Date | null
+  error?: string
+  syncInfo?: {
+    type: 'full' | 'partial' | null
+    processedMessages: number
+    startTime: Date | null
+    isActive: boolean
+  }
 }

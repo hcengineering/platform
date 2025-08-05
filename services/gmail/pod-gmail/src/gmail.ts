@@ -40,11 +40,11 @@ import { encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
-import type { ProjectCredentials, Token, User } from './types'
+import type { ProjectCredentials, Token, User, SyncState } from './types'
 import { addFooter, isToken, serviceToken, getKvsClient } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
-import { createIntegrationIfNotEsixts, disableIntegration, removeIntegration } from './integrations'
+import { createIntegrationIfNotExists, disableIntegration, removeIntegration } from './integrations'
 import { AttachmentHandler } from './message/attachments'
 import { TokenStorage } from './tokens'
 import { createMessageManager } from './message/adapter'
@@ -290,7 +290,7 @@ export class GmailClient {
 
   async createIntregration (): Promise<void> {
     try {
-      this.integration = await createIntegrationIfNotEsixts(this.socialId._id, this.user.workspace)
+      this.integration = await createIntegrationIfNotExists(this.socialId._id, this.user.workspace, this.email)
     } catch (err: any) {
       this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
     }
@@ -564,6 +564,7 @@ export class GmailClient {
       this.ctx.error('Watch error', {
         workspaceUuid: this.user.workspace,
         userId: this.user.userId,
+        email: this.email,
         message: (err as any).message
       })
     }
@@ -575,6 +576,29 @@ export class GmailClient {
     } catch (err: any) {
       this.ctx.error('Failed to make attachment body', err)
       return makeHTMLBody(message, from)
+    }
+  }
+
+  async getStateSummary (): Promise<SyncState> {
+    let totalMessages: number | null | undefined
+    try {
+      const query: gmail_v1.Params$Resource$Users$Messages$List = {
+        userId: 'me',
+        maxResults: 1
+      }
+      const result = await this.gmail.getProfile(query)
+      totalMessages = result.data.messagesTotal
+    } catch (err: any) {
+      this.ctx.error('Failed to get messages count', err.message)
+    }
+
+    const syncStatus = this.syncManager.getSyncStatus()
+
+    return {
+      status: this.syncStarted ? 'active' : 'inactive',
+      email: this.email,
+      totalMessages,
+      syncInfo: syncStatus
     }
   }
 

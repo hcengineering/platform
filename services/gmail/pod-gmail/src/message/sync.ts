@@ -15,7 +15,7 @@
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 
-import { type MeasureContext, PersonId } from '@hcengineering/core'
+import { type MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { SyncMutex, type SyncOptions } from '@hcengineering/mail-common'
 
@@ -28,16 +28,33 @@ export class SyncManager {
   private readonly syncMutex = new SyncMutex()
   private readonly stateManager: SyncStateManager
   private isClosing = false
+  private currentSyncType: 'full' | 'partial' | null = null
+  private processedMessages = 0
+  private syncStartTime: Date | null = null
 
   constructor (
     private readonly ctx: MeasureContext,
     private readonly messageManager: IMessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     keyValueClient: KeyValueClient,
     private readonly rateLimiter: RateLimiter
   ) {
     this.stateManager = new SyncStateManager(keyValueClient, workspace, config.Version)
+  }
+
+  getSyncStatus (): {
+    type: 'full' | 'partial' | null
+    processedMessages: number
+    startTime: Date | null
+    isActive: boolean
+  } {
+    return {
+      type: this.currentSyncType,
+      processedMessages: this.processedMessages,
+      startTime: this.syncStartTime,
+      isActive: this.currentSyncType !== null
+    }
   }
 
   private async partSync (
@@ -49,84 +66,97 @@ export class SyncManager {
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
     }
-    let pageToken: string | undefined
-    let histories: GaxiosResponse<gmail_v1.Schema$ListHistoryResponse>
-    let maxHistoryId: string | undefined
-    while (true) {
-      try {
-        await this.rateLimiter.take(2)
-        histories = await this.gmail.history.list({
-          userId: 'me',
-          historyTypes: ['messageAdded'],
-          startHistoryId: historyId,
-          pageToken
-        })
-      } catch (err: any) {
-        this.ctx.error('Part sync get history error', {
-          workspaceUuid: this.workspace,
-          userId,
-          error: err.message,
-          historyId
-        })
-        void this.syncNewMessages(userId, userEmail)
-        return
-      }
-      const nextPageToken = histories.data.nextPageToken
-      const array = histories.data.history ?? []
-      this.ctx.info('Messages to migrate', { count: array.length })
-      try {
-        for (const history of array) {
-          for (const message of history.messagesAdded ?? []) {
-            if (this.isClosing) return
-            if (message.message?.id == null || (message.message.labelIds?.includes('DRAFT') ?? false)) {
-              continue
-            }
-            try {
-              const res = await this.getMessage(message.message.id)
-              await this.messageManager.saveMessage(res, userEmail)
-            } catch (err) {
-              this.ctx.error('Part sync message error', {
-                workspaceUuid: this.workspace,
-                userId,
-                messageId: message.message.id,
-                err
-              })
-            }
-          }
-          if (history.id != null) {
-            if (maxHistoryId == null || BigInt(maxHistoryId) < BigInt(history.id)) {
-              maxHistoryId = history.id
-            }
-          }
-        }
-        if (nextPageToken == null) {
-          // Set the maximum historyId found during the sync, but only if it's greater than current
-          if (maxHistoryId != null) {
-            const currentHistory = await this.stateManager.getHistory(userId)
-            const currentHistoryId = currentHistory?.historyId
-            if (currentHistoryId == null || BigInt(maxHistoryId) > BigInt(currentHistoryId)) {
-              await this.stateManager.setHistoryId(userId, maxHistoryId)
-              this.ctx.info('Updated history ID', {
-                userId,
-                oldHistoryId: currentHistoryId,
-                newHistoryId: maxHistoryId
-              })
-            } else {
-              this.ctx.info('Skipping history ID update', {
-                userId,
-                currentHistoryId,
-                maxHistoryId
-              })
-            }
-          }
+    // Set sync tracking
+    this.currentSyncType = 'partial'
+    this.processedMessages = 0
+    this.syncStartTime = new Date()
+
+    try {
+      let pageToken: string | undefined
+      let histories: GaxiosResponse<gmail_v1.Schema$ListHistoryResponse>
+      let maxHistoryId: string | undefined
+      while (true) {
+        try {
+          await this.rateLimiter.take(2)
+          histories = await this.gmail.history.list({
+            userId: 'me',
+            historyTypes: ['messageAdded'],
+            startHistoryId: historyId,
+            pageToken
+          })
+        } catch (err: any) {
+          this.ctx.error('Part sync get history error', {
+            workspaceUuid: this.workspace,
+            userId,
+            error: err.message,
+            historyId
+          })
+          void this.syncNewMessages(userId, userEmail)
           return
-        } else {
-          pageToken = nextPageToken
         }
-      } catch (err) {
-        this.ctx.error('Part sync error', { workspaceUuid: this.workspace, userId, historyId, err })
-        return
+        const nextPageToken = histories.data.nextPageToken
+        const array = histories.data.history ?? []
+        this.ctx.info('Messages to migrate', { count: array.length })
+        try {
+          for (const history of array) {
+            for (const message of history.messagesAdded ?? []) {
+              if (this.isClosing) return
+              if (message.message?.id == null || (message.message.labelIds?.includes('DRAFT') ?? false)) {
+                continue
+              }
+              try {
+                const res = await this.getMessage(message.message.id)
+                await this.messageManager.saveMessage(res, userEmail)
+                this.processedMessages++
+              } catch (err) {
+                this.ctx.error('Part sync message error', {
+                  workspaceUuid: this.workspace,
+                  userId,
+                  messageId: message.message.id,
+                  err
+                })
+              }
+            }
+            if (history.id != null) {
+              if (maxHistoryId == null || BigInt(maxHistoryId) < BigInt(history.id)) {
+                maxHistoryId = history.id
+              }
+            }
+          }
+          if (nextPageToken == null) {
+            // Set the maximum historyId found during the sync, but only if it's greater than current
+            if (maxHistoryId != null) {
+              const currentHistory = await this.stateManager.getHistory(userId)
+              const currentHistoryId = currentHistory?.historyId
+              if (currentHistoryId == null || BigInt(maxHistoryId) > BigInt(currentHistoryId)) {
+                await this.stateManager.setHistoryId(userId, maxHistoryId)
+                this.ctx.info('Updated history ID', {
+                  userId,
+                  oldHistoryId: currentHistoryId,
+                  newHistoryId: maxHistoryId
+                })
+              } else {
+                this.ctx.info('Skipping history ID update', {
+                  userId,
+                  currentHistoryId,
+                  maxHistoryId
+                })
+              }
+            }
+            return
+          } else {
+            pageToken = nextPageToken
+          }
+        } catch (err) {
+          this.ctx.error('Part sync error', { workspaceUuid: this.workspace, userId, historyId, err })
+          return
+        }
       }
+    } finally {
+      // Clear sync tracking
+      this.currentSyncType = null
+      this.processedMessages = 0
+      this.syncStartTime = null
     }
   }
 
@@ -136,20 +166,24 @@ export class SyncManager {
       throw new Error('Cannot sync without user email')
     }
 
-    // Get saved page token to continue from
-    let pageToken: string | undefined = (await this.stateManager.getPageToken(userId)) ?? undefined
-
-    const query: gmail_v1.Params$Resource$Users$Messages$List = {
-      userId: 'me',
-      pageToken
-    }
-    if (q !== undefined) {
-      query.q = q
-    }
-    let currentHistoryId: string | undefined
-    let totalProcessedMessages = 0
+    // Set sync tracking
+    this.currentSyncType = 'full'
+    this.processedMessages = 0
+    this.syncStartTime = new Date()
 
     try {
+      // Get saved page token to continue from
+      let pageToken: string | undefined = (await this.stateManager.getPageToken(userId)) ?? undefined
+
+      const query: gmail_v1.Params$Resource$Users$Messages$List = {
+        userId: 'me',
+        pageToken
+      }
+      if (q !== undefined) {
+        query.q = q
+      }
+      let currentHistoryId: string | undefined
+
       // Process one page at a time
       while (true) {
         await this.rateLimiter.take(5)
@@ -160,7 +194,7 @@ export class SyncManager {
           workspace: this.workspace,
           userId,
           messagesInPage: ids.length,
-          totalProcessed: totalProcessedMessages,
+          totalProcessed: this.processedMessages,
           currentHistoryId,
           pageToken: query.pageToken
         })
@@ -172,6 +206,7 @@ export class SyncManager {
             const message = await this.getMessage(id)
             const historyId = message.data.historyId
             await this.messageManager.saveMessage(message, userEmail)
+            this.processedMessages++
 
             if (historyId != null && q === undefined) {
               if (currentHistoryId == null || BigInt(currentHistoryId) < BigInt(historyId)) {
@@ -184,10 +219,8 @@ export class SyncManager {
           }
         }
 
-        totalProcessedMessages += ids.length
-
         if (messages.data.nextPageToken == null) {
-          this.ctx.info('Completed sync', { workspace: this.workspace, userId, totalMessages: totalProcessedMessages })
+          this.ctx.info('Completed sync', { workspace: this.workspace, userId, totalMessages: this.processedMessages })
           break
         }
 
@@ -204,6 +237,11 @@ export class SyncManager {
     } catch (err) {
       if (this.isClosing) return
       this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
+    } finally {
+      // Clear sync tracking
+      this.currentSyncType = null
+      this.processedMessages = 0
+      this.syncStartTime = null
     }
   }
 

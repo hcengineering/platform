@@ -11,7 +11,8 @@ import core, {
   type Ref,
   type Tx,
   type TxCUD,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type IntegrationKind
 } from '@hcengineering/core'
 import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { getAccountClient } from '@hcengineering/server-client'
@@ -149,13 +150,15 @@ export async function performGithubAccountMigrations (
       }
 
       const sid = socialKeyByAccount[it.accountId]
+      const kind: IntegrationKind = 'github' as any
+      const userKind: IntegrationKind = 'github-user' as any
 
       const person = sid !== undefined ? await accountClient.findSocialIdBySocialKey(sid) : undefined
       if (person !== undefined) {
         // Check/create integeration in account
 
         const existing = await githubAccountClient.getIntegration({
-          kind: 'github',
+          kind,
           workspaceUuid: ws?.uuid,
           socialId: person
         })
@@ -163,7 +166,7 @@ export async function performGithubAccountMigrations (
         if (existing == null) {
           try {
             await githubAccountClient.createIntegration({
-              kind: 'github',
+              kind,
               workspaceUuid: ws?.uuid,
               socialId: person,
               data: {
@@ -191,7 +194,7 @@ export async function performGithubAccountMigrations (
             const { _id, accounts, ...data } = u
 
             const existing = await githubAccountClient.getIntegration({
-              kind: 'github-user',
+              kind: userKind,
               workspaceUuid: null,
               socialId: person
             })
@@ -199,7 +202,7 @@ export async function performGithubAccountMigrations (
             if (existing == null) {
               try {
                 await githubAccountClient.createIntegration({
-                  kind: 'github-user',
+                  kind: userKind,
                   workspaceUuid: null,
                   socialId: person,
                   data: {
@@ -208,7 +211,7 @@ export async function performGithubAccountMigrations (
                 })
                 // Check/create integeration in account
                 await githubAccountClient.addIntegrationSecret({
-                  kind: 'github-user',
+                  kind: userKind,
                   workspaceUuid: null,
                   socialId: person,
                   key: u._id, // github login

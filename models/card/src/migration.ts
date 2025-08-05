@@ -14,7 +14,7 @@
 //
 
 import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
-import core, { type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
+import core, { DOMAIN_MODEL, type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
@@ -23,7 +23,7 @@ import {
   type MigrationUpgradeClient,
   createOrUpdate
 } from '@hcengineering/model'
-import view from '@hcengineering/view'
+import view, { type Viewlet } from '@hcengineering/view'
 import card from '.'
 import tags from '@hcengineering/tags'
 
@@ -44,13 +44,18 @@ export const cardOperation: MigrateOperation = {
         state: 'migrate-childs-spaces',
         mode: 'upgrade',
         func: migrateChildsSpaces
+      },
+      {
+        state: 'update-custom-fields-displayprops',
+        mode: 'upgrade',
+        func: updateCustomFieldsDisplayProps
       }
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, cardId, [
       {
-        state: 'migrateViewlets-v4',
+        state: 'migrateViewlets-v5',
         func: migrateViewlets
       },
       {
@@ -301,4 +306,25 @@ async function defaultLabels (client: Client): Promise<void> {
     },
     card.label.NewMessages
   )
+}
+
+async function updateCustomFieldsDisplayProps (client: MigrationClient): Promise<void> {
+  const viewlets = await client.find<Viewlet>(DOMAIN_MODEL, { _class: view.class.Viewlet })
+
+  for (const viewlet of viewlets) {
+    if (viewlet.config !== undefined && Array.isArray(viewlet.config)) {
+      let hasChanges = false
+      const newConfig = viewlet.config.map((item: any) => {
+        if (typeof item === 'string' && item.startsWith('custom')) {
+          hasChanges = true
+          return { key: item, displayProps: { optional: true } }
+        }
+        return item
+      })
+
+      if (hasChanges) {
+        await client.update(DOMAIN_MODEL, { _id: viewlet._id }, { config: newConfig })
+      }
+    }
+  }
 }
