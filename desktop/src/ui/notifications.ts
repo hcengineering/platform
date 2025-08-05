@@ -167,9 +167,9 @@ export function configureNotifications (): void {
             application: inboxId,
             title: notification.content.title,
             body: `${notification.content.senderName}: ${notification.content.shortText}`,
+            cardId: notification.cardId,
             objectId: notification.content.objectId,
-            objectClass: notification.content.objectClass,
-            cardId: notification.cardId
+            objectClass: notification.content.objectClass
           })
         }
       })

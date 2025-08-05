@@ -1,7 +1,7 @@
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
-import { Ref, Class, Doc, Space } from '@hcengineering/core'
+import { Ref, Class, Doc } from '@hcengineering/core'
 import { IpcRendererEvent } from 'electron'
 
 export interface Config {
@@ -96,9 +96,9 @@ export interface NotificationParams {
   body: string
   silent: boolean
   application: Plugin
-  objectId?: Ref<Doc<Space>>
-  objectClass?: Ref<Class<Doc>>
   cardId?: string
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
 }
 
 export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
