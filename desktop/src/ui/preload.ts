@@ -1,7 +1,7 @@
 // preload.js
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { BrandingMap, Config, IPCMainExposed, MenuBarAction, NotificationParams } from './types'
+import { BrandingMap, Config, IPCMainExposed, MenuBarAction, NotificationParams, JumpListSpares } from './types'
 
 /**
  * @public
@@ -175,6 +175,8 @@ const expose: IPCMainExposed = {
   getScreenAccess: () => ipcRenderer.invoke('get-screen-access'),
   getScreenSources: () => ipcRenderer.invoke('get-screen-sources'),
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
-  startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) }
+  startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) },
+
+  rebuildJumpList: (spares: JumpListSpares) => ipcRenderer.send('rebuild-user-jump-list', spares) 
 }
 contextBridge.exposeInMainWorld('electron', expose)
