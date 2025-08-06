@@ -17,7 +17,7 @@ import { type AnalyticProvider } from '@hcengineering/analytics'
 import presentation from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
 import { AnalyticEventType } from '@hcengineering/analytics-collector'
-import { collectEventMetadata } from './utils'
+import { collectEventMetadata, triggerUrlChange } from './utils'
 import { type QueuedEvent } from './types'
 
 export class AnalyticsCollectorProvider implements AnalyticProvider {
@@ -284,6 +284,7 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
   }
 
   navigate (path: string): void {
+    triggerUrlChange()
     this.addEvent(AnalyticEventType.Navigation, { path }, '$pageview')
   }
 

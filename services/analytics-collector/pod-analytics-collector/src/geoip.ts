@@ -29,6 +29,7 @@ let logContext: MeasureContext | null = null
 const DB_DIR = process.env.GEOIP_DB_DIR ?? path.join(__dirname, '../geodb')
 const CITY_DB_PATH = process.env.GEOIP_CITY_DB ?? path.join(DB_DIR, 'GeoLite2-City.mmdb')
 const COUNTRY_DB_PATH = process.env.GEOIP_COUNTRY_DB ?? path.join(DB_DIR, 'GeoLite2-Country.mmdb')
+const ALLOW_PRIVATE_IP = process.env.GEOIP_ALLOW_PRIVATE_IP === 'true'
 
 /**
  * Set logging context for structured logging
@@ -136,27 +137,17 @@ async function initializeMaxMind (): Promise<void> {
 }
 
 /**
- * Gets the real client IP address from request headers,
- * taking into account proxy servers and load balancers
+ * Gets the client IP address from request headers or connection
  */
 export function getClientIp (req: any): string {
-  // Check various headers that may contain the real IP
+  // Check X-Forwarded-For header first
   const forwardedFor = req.headers['x-forwarded-for']
   if (forwardedFor != null && typeof forwardedFor === 'string') {
-    // X-Forwarded-For may contain multiple IPs separated by commas
     const ips = forwardedFor.split(',').map((ip: string) => ip.trim())
-    // Find first non-private IP (original client)
-    for (const ip of ips) {
-      const normalizedIp = normalizeIp(ip)
-      if (isValidIp(normalizedIp) && !isPrivateIp(normalizedIp)) {
-        return normalizedIp
-      }
-    }
-    // If no public IP found, return first IP
     return normalizeIp(ips[0])
   }
 
-  // Cloudflare (higher priority than generic headers)
+  // Check other common headers
   const cfConnectingIp = req.headers['cf-connecting-ip']
   if (cfConnectingIp != null && typeof cfConnectingIp === 'string') {
     return normalizeIp(cfConnectingIp)
@@ -167,25 +158,99 @@ export function getClientIp (req: any): string {
     return normalizeIp(realIp)
   }
 
-  const xClientIp = req.headers['x-client-ip']
-  if (xClientIp != null && typeof xClientIp === 'string') {
-    return normalizeIp(xClientIp)
-  }
-
-  // Additional headers for completeness
-  const trueClientIp = req.headers['true-client-ip']
-  if (trueClientIp != null && typeof trueClientIp === 'string') {
-    return normalizeIp(trueClientIp)
-  }
-
-  const xOriginalForwardedFor = req.headers['x-original-forwarded-for']
-  if (xOriginalForwardedFor != null && typeof xOriginalForwardedFor === 'string') {
-    return normalizeIp(xOriginalForwardedFor)
-  }
-
-  // If no headers are present, use standard req.ip
+  // Fallback to connection IP
   const ip = req.ip ?? req.connection?.remoteAddress ?? req.socket?.remoteAddress ?? '127.0.0.1'
   return normalizeIp(ip)
+}
+
+/**
+ * Collects all possible IP addresses from request headers and connection
+ * Returns an object with all found IPs for debugging purposes
+ */
+export function getAllPossibleIps (req: any): Record<string, string | null> {
+  const ips: Record<string, string | null> = {}
+
+  // Connection IP
+  const connectionIp = req.ip ?? req.connection?.remoteAddress ?? req.socket?.remoteAddress
+  if (connectionIp != null) {
+    ips.ip_connection = normalizeIp(connectionIp)
+  }
+
+  // X-Forwarded-For header (can contain multiple IPs)
+  const forwardedFor = req.headers['x-forwarded-for']
+  if (forwardedFor != null && typeof forwardedFor === 'string') {
+    ips.ip_x_forwarded_for_raw = forwardedFor
+    const forwardedIps = forwardedFor.split(',').map((ip: string) => normalizeIp(ip.trim()))
+    forwardedIps.forEach((ip, index) => {
+      ips[`ip_x_forwarded_for_${index + 1}`] = ip
+    })
+    ips.ip_x_forwarded_for_first = forwardedIps[0] ?? null
+    ips.ip_x_forwarded_for_last = forwardedIps[forwardedIps.length - 1] ?? null
+  }
+
+  // Cloudflare
+  const cfConnectingIp = req.headers['cf-connecting-ip']
+  if (cfConnectingIp != null && typeof cfConnectingIp === 'string') {
+    ips.ip_cf_connecting_ip = normalizeIp(cfConnectingIp)
+  }
+
+  // X-Real-IP
+  const realIp = req.headers['x-real-ip']
+  if (realIp != null && typeof realIp === 'string') {
+    ips.ip_x_real_ip = normalizeIp(realIp)
+  }
+
+  // X-Client-IP
+  const xClientIp = req.headers['x-client-ip']
+  if (xClientIp != null && typeof xClientIp === 'string') {
+    ips.ip_x_client_ip = normalizeIp(xClientIp)
+  }
+
+  // True-Client-IP
+  const trueClientIp = req.headers['true-client-ip']
+  if (trueClientIp != null && typeof trueClientIp === 'string') {
+    ips.ip_true_client_ip = normalizeIp(trueClientIp)
+  }
+
+  // X-Original-Forwarded-For
+  const xOriginalForwardedFor = req.headers['x-original-forwarded-for']
+  if (xOriginalForwardedFor != null && typeof xOriginalForwardedFor === 'string') {
+    ips.ip_x_original_forwarded_for = normalizeIp(xOriginalForwardedFor)
+  }
+
+  // X-Cluster-Client-IP
+  const xClusterClientIp = req.headers['x-cluster-client-ip']
+  if (xClusterClientIp != null && typeof xClusterClientIp === 'string') {
+    ips.ip_x_cluster_client_ip = normalizeIp(xClusterClientIp)
+  }
+
+  // X-Forwarded
+  const xForwarded = req.headers['x-forwarded']
+  if (xForwarded != null && typeof xForwarded === 'string') {
+    ips.ip_x_forwarded = normalizeIp(xForwarded)
+  }
+
+  // Forwarded-For
+  const forwardedForAlt = req.headers['forwarded-for']
+  if (forwardedForAlt != null && typeof forwardedForAlt === 'string') {
+    ips.ip_forwarded_for = normalizeIp(forwardedForAlt)
+  }
+
+  // Forwarded (RFC 7239)
+  const forwarded = req.headers.forwarded
+  if (forwarded != null && typeof forwarded === 'string') {
+    ips.ip_forwarded_raw = forwarded
+    // Try to extract IP from Forwarded header (format: for=192.0.2.60;proto=http;by=203.0.113.43)
+    const forMatch = forwarded.match(/for=([^;,]+)/)
+    if (forMatch != null) {
+      let extractedIp = forMatch[1]
+      // Remove quotes and brackets if present
+      extractedIp = extractedIp.replace(/["[\]]/g, '')
+      ips.ip_forwarded_for_extracted = normalizeIp(extractedIp)
+    }
+  }
+
+  return ips
 }
 
 /**
@@ -205,23 +270,6 @@ function normalizeIp (ip: string): string {
   }
 
   return ip.trim()
-}
-
-/**
- * Validates if string is a proper IP address (IPv4 or IPv6)
- */
-function isValidIp (ip: string): boolean {
-  if (ip == null || ip === '') return false
-
-  // IPv4 regex
-  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-  if (ipv4Regex.test(ip)) return true
-
-  // IPv6 regex (simplified - covers most cases)
-  const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/
-  if (ipv6Regex.test(ip)) return true
-
-  return false
 }
 
 /**
@@ -250,8 +298,8 @@ function isPrivateIp (ip: string): boolean {
 export async function getGeoLocationFromIp (req: any): Promise<GeoLocationData> {
   const ip = getClientIp(req)
 
-  // If IP is private or local, return null data
-  if (isPrivateIp(ip)) {
+  // If IP is private or local, return null data (unless explicitly allowed)
+  if (isPrivateIp(ip) && !ALLOW_PRIVATE_IP) {
     return createNullGeoData()
   }
 
@@ -266,10 +314,7 @@ export async function getGeoLocationFromIp (req: any): Promise<GeoLocationData> 
       const geo = cityReader.get(ip)
       if (geo !== null) {
         const geoData = extractGeoDataFromCity(geo)
-
-        // Check if we actually got useful data
         const hasGeoData = geoData.country !== null || geoData.city !== null || geoData.latitude !== null
-
         if (hasGeoData) {
           return geoData
         }
@@ -281,10 +326,7 @@ export async function getGeoLocationFromIp (req: any): Promise<GeoLocationData> 
       const geo = countryReader.get(ip)
       if (geo !== null) {
         const geoData = extractGeoDataFromCountry(geo)
-
-        // Check if we actually got useful data
         const hasGeoData = geoData.country !== null
-
         if (hasGeoData) {
           return geoData
         }
@@ -293,8 +335,6 @@ export async function getGeoLocationFromIp (req: any): Promise<GeoLocationData> 
 
     return createNullGeoData()
   } catch (error) {
-    const log = logContext ?? { warn: console.warn }
-    log.warn('Failed to get geo location for IP', { ip, error })
     return createNullGeoData()
   }
 }

@@ -21,7 +21,7 @@ import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-colle
 import { extractToken } from '@hcengineering/server-client'
 import config from './config'
 import { ApiError } from './error'
-import { getGeoLocationFromIp, getClientIp, geoFieldMapping } from './geoip'
+import { getGeoLocationFromIp, getClientIp, geoFieldMapping, getAllPossibleIps } from './geoip'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -142,6 +142,14 @@ async function preparePostHogEvent (event: AnalyticEvent, req: Request): Promise
   // Add IP address
   baseEvent.$ip = getClientIp(req)
   baseEvent.timestamp = event.properties.$timestamp ?? new Date(event.timestamp).toISOString()
+
+  // Add all possible IP addresses for debugging
+  const allIps = getAllPossibleIps(req)
+  for (const [key, value] of Object.entries(allIps)) {
+    if (value !== null) {
+      baseEvent[key] = value
+    }
+  }
 
   // Add geolocation data
   const geoData = await getGeoLocationFromIp(req)
