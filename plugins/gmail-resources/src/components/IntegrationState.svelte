@@ -27,7 +27,6 @@
   export let integration: Integration
 
   let isLoading = true
-  let isRefreshing = false
   let error: string | null = null
   let errorLabel: IntlString | undefined
   let status: Status | undefined
@@ -73,12 +72,9 @@
 
   async function refresh (): Promise<void> {
     try {
-      isRefreshing = true
       state = await getState(integration.socialId)
     } catch (err: any) {
       console.error('Error refresh gmail state:', err.message)
-    } finally {
-      isRefreshing = false
     }
   }
 

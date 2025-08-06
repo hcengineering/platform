@@ -30,7 +30,7 @@
 
 <div class="integration-state">
   <div class="state-content">
-    {#if isLoading}
+    {#if isLoading && value == null}
       <div class="loading-container">
         <Loading />
       </div>
@@ -44,16 +44,20 @@
       <div class="stats-list" transition:fade={{ duration: 300 }}>
         {#if value != null && value !== ''}
           <div class="stat-row start">
-            {#if status != null}
-              <StatusBadge
-                {status}
-                tooltip={errorLabel != null
-                  ? { label: errorLabel }
-                  : status === ERROR
-                    ? { label: setting.string.IntegrationIsUnstable }
-                    : undefined}
-              />
-            {/if}
+            <div class="status-container">
+              {#if status != null}
+                <StatusBadge
+                  {status}
+                  tooltip={errorLabel != null
+                    ? { label: errorLabel }
+                    : status === ERROR
+                      ? { label: setting.string.IntegrationIsUnstable }
+                      : undefined}
+                />
+              {:else if isLoading}
+                <Loading size="inline" />
+              {/if}
+            </div>
             <span class="text-normal content-color font-medium">{value}</span>
           </div>
         {/if}
@@ -68,6 +72,12 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .status-container {
+    display: flex;
+    width: 0.75rem;
+    align-items: center;
   }
 
   .state-content {
@@ -98,8 +108,7 @@
     padding: 0.15rem 0;
     &.start {
       justify-content: flex-start;
-      align-items: baseline;
-      gap: 0.375rem;
+      gap: 0.25rem;
     }
   }
 </style>
