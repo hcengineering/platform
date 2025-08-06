@@ -39,6 +39,7 @@
     "ConfigDescription": "Estensione per l'integrazione delle email di Gmail",
     "GooglePrivacy": "L'uso e il trasferimento delle informazioni ricevute dalle API di Google a qualsiasi altra app di Huly adempirà alla <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Politica sui dati degli utenti dei servizi API di Google</a>, inclusi i requisiti di utilizzo limitato.",
     "EmailNotificationsDescription": "Ricevi notifiche personali sulle email.",
-    "FailedToConnect": "Impossibile connettere l'account Gmail"
+    "FailedToConnect": "Il servizio Gmail non è disponibile",
+    "TotalMessages": "Totale messaggi:"
   }
 }

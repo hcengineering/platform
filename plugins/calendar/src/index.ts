@@ -17,6 +17,7 @@ import type {
   Class,
   Client,
   Doc,
+  IntegrationKind,
   Markup,
   Mixin,
   PersonId,
@@ -176,6 +177,16 @@ export interface Schedule extends Doc {
 /**
  * @public
  */
+export const calendarIntegrationKind = 'google-calendar' as IntegrationKind
+
+/**
+ * @public
+ */
+export const caldavIntegrationKind = 'caldav' as IntegrationKind
+
+/**
+ * @public
+ */
 export const calendarId = 'calendar' as Plugin
 
 /**
@@ -229,7 +240,8 @@ const calendarPlugin = plugin(calendarId, {
     DateTimePresenter: '' as AnyComponent,
     DocReminder: '' as AnyComponent,
     ConnectApp: '' as AnyComponent,
-    ScheduleEditor: '' as AnyComponent
+    ScheduleEditor: '' as AnyComponent,
+    IntegrationState: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
@@ -278,10 +290,14 @@ const calendarPlugin = plugin(calendarId, {
     CalDavAccessPasswordWarning: '' as IntlString,
     MeetingScheduledNotification: '' as IntlString,
     MeetingRescheduledNotification: '' as IntlString,
-    MeetingCanceledNotification: '' as IntlString
+    MeetingCanceledNotification: '' as IntlString,
+    SynchronizedCalendars: '' as IntlString,
+    Account: '' as IntlString,
+    NoCalendars: '' as IntlString
   },
   handler: {
-    DisconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler,
+    DisconnectAllHandler: '' as Handler
   },
   integrationType: {
     Calendar: '' as Ref<IntegrationType>

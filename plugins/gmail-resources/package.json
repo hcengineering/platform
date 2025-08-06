@@ -59,6 +59,9 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/templates": "^0.6.11"
+    "@hcengineering/templates": "^0.6.11",
+    "@hcengineering/integration-client": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/setting-resources": "^0.6.0"
   }
 }

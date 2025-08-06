@@ -2,6 +2,7 @@ import core, {
   type AccountUuid,
   DOMAIN_MODEL_TX,
   type Doc,
+  type IntegrationKind,
   MeasureMetricsContext,
   type PersonId,
   type Ref,
@@ -67,7 +68,7 @@ interface WorkspaceInfoProvider {
   getWorkspaceInfo: (workspaceUuid: WorkspaceUuid) => Promise<WorkspaceInfoWithStatus | undefined>
 }
 
-const GMAIL_INTEGRATION = 'gmail'
+const GMAIL_INTEGRATION: IntegrationKind = 'gmail' as any
 const TOKEN_TYPE = 'token'
 
 export async function performGmailAccountMigrations (

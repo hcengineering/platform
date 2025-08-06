@@ -121,6 +121,9 @@
     "NextToLast": "倒数第二个",
     "Last": "最后一个",
     "Weekday": "工作日",
-    "WeekendDay": "周末日"
+    "WeekendDay": "周末日",
+    "SynchronizedCalendars": "已同步的日历",
+    "Account": "帐户",
+    "NoCalendars": "未选择同步日历"
   }
 }

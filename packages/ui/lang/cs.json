@@ -97,6 +97,8 @@
     "Language": "Jazyk",
     "DaysWOValue": "{days, plural, =1 {den} other {dny}}",
     "WeeksWOValue": "{weeks, plural, =1 {týden} other {týdny}}",
-    "MonthsWOValue": "{months, plural, =1 {měsíc} other {měsíce}}"
+    "MonthsWOValue": "{months, plural, =1 {měsíc} other {měsíce}}",
+    "Filter": "Filtr",
+    "Clear": "Vymazat"
   }
 }

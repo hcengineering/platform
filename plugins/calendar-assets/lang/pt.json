@@ -121,6 +121,9 @@
     "NextToLast": "Penúltimo",
     "Last": "Último",
     "Weekday": "Dia da semana",
-    "WeekendDay": "Folga"
+    "WeekendDay": "Folga",
+    "SynchronizedCalendars": "Calendários sincronizados",
+    "Account": "Conta",
+    "NoCalendars": "Nenhum calendário encontrado"
   }
 }

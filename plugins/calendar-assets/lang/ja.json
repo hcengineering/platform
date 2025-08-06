@@ -117,6 +117,9 @@
     "NextToLast": "最後から2番目",
     "Last": "最後",
     "Weekday": "平日",
-    "WeekendDay": "休日"
+    "WeekendDay": "休日",
+    "SynchronizedCalendars": "同期されたカレンダー",
+    "Account": "アカウント",
+    "NoCalendars": "同期するカレンダーが選択されていません"
   }
 }

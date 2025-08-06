@@ -129,7 +129,7 @@ export class WorkspaceClient {
     return this.clients.size
   }
 
-  private getGmailClient (userId: PersonId): GmailClient | undefined {
+  getGmailClient (userId: PersonId): GmailClient | undefined {
     return this.clients.get(userId)
   }
 
@@ -246,6 +246,7 @@ export class WorkspaceClient {
         return [normalize(p.value), p]
       })
     )
+    this.ctx.info('Set channels', { workspaceUuid: this.workspace, channels })
     this.channelsById = new Map(
       channels.map((p) => {
         return [p._id, p]

@@ -2504,6 +2504,8 @@
   }
   .panel-trigger > * { pointer-events: none; }
 }
+// Custom on the ListView
+.list-container .listGrid .yesno-container { flex-shrink: 0; }
 // Labels on the ListView
 .list-container .listitems-container,
 .list-container .listitems-container:hover,

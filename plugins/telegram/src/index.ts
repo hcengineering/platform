@@ -14,9 +14,9 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { AttachedDoc, Class, Doc, IntegrationKind, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
-import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
@@ -61,6 +61,11 @@ export interface SharedTelegramMessages extends AttachedDoc {
 /**
  * @public
  */
+export const telegramIntegrationKind = 'hulygram' as IntegrationKind
+
+/**
+ * @public
+ */
 export const telegramId = 'telegram' as Plugin
 
 export default plugin(telegramId, {
@@ -68,14 +73,17 @@ export default plugin(telegramId, {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
     Reconnect: '' as AnyComponent,
+    Configure: '' as AnyComponent,
     IconTelegram: '' as AnyComponent,
-    SharedMessages: '' as AnyComponent
+    SharedMessages: '' as AnyComponent,
+    StateComponent: '' as AnyComponent
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>
   },
   handler: {
-    DisconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler,
+    DisconnectAllHandler: '' as Handler
   },
   ids: {
     NewMessageNotification: '' as Ref<NotificationType>
@@ -123,5 +131,12 @@ export default plugin(telegramId, {
     TelegramIntegrationDesc2: '' as IntlString,
     ToSetupNotification: '' as IntlString,
     TelegramNotificationPath: '' as IntlString
+  },
+  icon: {
+    Shared: '' as Asset,
+    Locked: '' as Asset,
+    User: '' as Asset,
+    Channel: '' as Asset,
+    Group: '' as Asset
   }
 })

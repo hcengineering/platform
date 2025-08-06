@@ -22,7 +22,7 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, MenuBarAction, NotificationParams } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams, JumpListSpares } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { dipatchMenuBarAction } from './customMenu'
@@ -30,7 +30,7 @@ import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
-import { setupWindowsSpecific } from './windowsSpecificSetup'
+import { rebuildJumpList, setupWindowsSpecific } from './windowsSpecificSetup'
 
 
 let mainWindow: BrowserWindow | undefined
@@ -273,6 +273,10 @@ const createWindow = async (): Promise<void> => {
     mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
   }
 
+  mainWindow.on('blur', () => {
+    mainWindow?.webContents.send('window-focus-loss')
+  });
+
   mainWindow.on('maximize', () => {
     sendWindowMaximizedMessage(true)
   });
@@ -309,8 +313,18 @@ function sendCommand(cmd: string, ...args: any[]): void {
   mainWindow?.webContents.send(cmd, ...args)
 }
 
+function activateWindow (): void {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+    mainWindow.show()
+    mainWindow.focus()
+  }
+}
+
 if (isWindows) {
-  setupWindowsSpecific(sendCommand)
+  setupWindowsSpecific(activateWindow, sendCommand)
 } else {
   addMenus(sendCommand)
 }
@@ -340,7 +354,7 @@ ipcMain.on('send-notification', (_event: any, notificationParams: NotificationPa
 
     notification.on('click', () => {
       mainWindow?.show()
-      mainWindow?.webContents.send('handle-notification-navigation', notificationParams.application)
+      mainWindow?.webContents.send('handle-notification-navigation', notificationParams)
     })
 
     notification.show()
@@ -424,6 +438,12 @@ ipcMain.handle('get-is-os-using-dark-theme', () => {
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
   dipatchMenuBarAction(mainWindow, action)
 });
+
+if (isWindows) {
+  ipcMain.on('rebuild-user-jump-list', (_event: any, spares: JumpListSpares) => {
+    rebuildJumpList(spares)
+  });
+}
 
 const gotTheLock = app.requestSingleInstanceLock()
 

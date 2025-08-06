@@ -13,6 +13,7 @@
     "CurrentPassword": "Password attuale",
     "NewPassword": "Nuova password",
     "Disconnect": "Disconnetti",
+    "DisconnectAll": "Disconnetti tutti",
     "Saving": "Salvataggio...",
     "Saved": "Salvato",
     "Add": "Aggiungi",
@@ -180,6 +181,20 @@
     "ReleasePrimarySocialId": "Rilascia ID social primario",
     "ReleasePrimarySocialIdConfirm": "Rilasciare il tuo ID social primario attuale richiederà il ricaricamento della pagina. Sei sicuro di voler procedere?",
     "Login": "Accesso",
-    "Primary": "Primario"
+    "Primary": "Primario",
+    "MyIntegrations": "Le mie integrazioni",
+    "AllIntegrations": "Tutte",
+    "ConnectedIntegrations": "Connesse",
+    "AvailableIntegrations": "Disponibili",
+    "Connect": "Connetti",
+    "Integrate": "Integra",
+    "FailedToLoadIntegrations": "Impossibile caricare le integrazioni",
+    "FailedToDisconnect": "Impossibile disconnettere l'integrazione",
+    "ServiceIsUnavailable": "Il servizio non è disponibile",
+    "Integrated": "Integrato",
+    "Connected": "Connesso",
+    "Available": "Disponibile",
+    "NotConnectedIntegration": "L'account {account} non è integrato con il workspace",
+    "IntegrationIsUnstable": "Il servizio di integrazione sta riscontrando problemi. Alcune funzionalità potrebbero non funzionare correttamente."
   }
 }

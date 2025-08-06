@@ -1,7 +1,7 @@
 {
   "string": {
     "Github": "Github",
-    "GithubDesc": "Github integration",
+    "GithubDesc": "Connect your GitHub repositories to sync issues, pull requests, and project updates",
     "Settings": "Configure",
     "Connect": "Map repository to project",
     "Configure": "Configure {title} GitHub App",

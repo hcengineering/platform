@@ -111,9 +111,10 @@
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
         } else {
+          const paramValue = param.startsWith('custom') ? { key: param, displayProps: { optional: true } } : param
           const attrCfg: AttributeConfig = {
             type: 'attribute',
-            value: param,
+            value: paramValue,
             enabled: true,
             label: getKeyLabel(client, viewlet.attachTo, param, lookup),
             _class: viewlet.attachTo,
@@ -201,9 +202,12 @@
         result.push(newValue)
       }
     } else {
+      const isCustomAttribute = attribute.name.startsWith('custom')
+      const attributeValue = isCustomAttribute ? { key: value, displayProps: { optional: true } } : value
+
       const newValue: AttributeConfig = {
         type: 'attribute',
-        value: extraProps ? { ...extraProps, key: value } : value,
+        value: extraProps != null ? { ...extraProps, key: value } : attributeValue,
         label: attribute.label,
         enabled: false,
         _class: attribute.attributeOf,
@@ -272,7 +276,13 @@
         ((p.type === 'divider' && typeof p.value === 'object' && p.value.displayProps?.grow) ||
           (p.type === 'attribute' && (p as AttributeConfig).enabled))
     )
-    const config = configValues.map((p) => p.value as string | BuildModelKey)
+    const config = configValues.map((p) => {
+      const value = p.value as string | BuildModelKey
+      if (typeof value === 'string' && value.startsWith('custom')) {
+        return { key: value, displayProps: { optional: true } }
+      }
+      return value
+    })
     const preference = preferences.find((p) => p.attachedTo === viewletId)
     if (preference !== undefined) {
       await client.update(preference, {

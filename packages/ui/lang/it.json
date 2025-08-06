@@ -98,6 +98,8 @@
     "Language": "Lingua",
     "DaysWOValue": "{days, plural, =1 {giorno} other {giorni}}",
     "WeeksWOValue": "{weeks, plural, =1 {settimana} other {settimane}}",
-    "MonthsWOValue": "{months, plural, =1 {mese} other {mesi}}"
+    "MonthsWOValue": "{months, plural, =1 {mese} other {mesi}}",
+    "Filter": "Filtra",
+    "Clear": "Cancella"
   }
 }

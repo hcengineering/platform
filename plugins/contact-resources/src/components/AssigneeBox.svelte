@@ -132,7 +132,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div {id} bind:this={container} class="min-w-0 h-full" class:w-full={width === '100%'} style:flex-shrink={shrink}>
+<div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} style:flex-shrink={shrink}>
   {#if $$slots.content}
     <div
       class="w-full h-full flex-streatch"

@@ -43,7 +43,7 @@
     "HideDetails": "Hide details",
     "ReccuringEvent": "Recurring event",
     "ExternalParticipants": "External participants",
-    "IntegrationDescr": "Integrate with Google Calendar",
+    "IntegrationDescr": "Sync events and tasks with your Google Calendar",
     "Connect": "Connect",
     "RedirectGoogle": "You will be redirected to the Google authentication page. Please make sure to select all permissions.",
     "ConnectCalendar": "Connect Google Calendar account",
@@ -121,6 +121,9 @@
     "NextToLast": "Next to last",
     "Last": "Last",
     "Weekday": "Weekday",
-    "WeekendDay": "Weekend day"
+    "WeekendDay": "Weekend day",
+    "SynchronizedCalendars": "Synchronized calendars",
+    "Account": "Account",
+    "NoCalendars": "No calendars selected for synchronization"
   }
 }

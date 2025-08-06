@@ -121,6 +121,9 @@
     "NextToLast": "Penúltimo",
     "Last": "Último",
     "Weekday": "Día laborable",
-    "WeekendDay": "Día de descanso"
+    "WeekendDay": "Día de descanso",
+    "SynchronizedCalendars": "Calendarios sincronizados",
+    "Account": "Cuenta",
+    "NoCalendars": "No se seleccionaron calendarios para la sincronización"
   }
 }

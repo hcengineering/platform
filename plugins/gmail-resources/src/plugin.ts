@@ -44,6 +44,7 @@ export default mergeIds(gmailId, gmail, {
     HaveWrittenEmail: '' as IntlString,
     NewIncomingMessage: '' as IntlString,
     GooglePrivacy: '' as IntlString,
-    FailedToConnect: '' as IntlString
+    FailedToConnect: '' as IntlString,
+    TotalMessages: '' as IntlString
   }
 })

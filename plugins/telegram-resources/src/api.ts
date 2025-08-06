@@ -12,42 +12,128 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import { concatLink, type PersonId } from '@hcengineering/core'
+import platform, { getMetadata, PlatformError, Status, Severity } from '@hcengineering/platform'
 import telegram from './plugin'
-import presentation from '@hcengineering/presentation'
+import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+import login from '@hcengineering/login'
+import { telegramIntegrationKind } from '@hcengineering/telegram'
+import {
+  getIntegrationClient as getIntegrationClientRaw,
+  type IntegrationClient
+} from '@hcengineering/integration-client'
+import { withRetry } from '@hcengineering/retry'
+import type { Integration } from '@hcengineering/account-client'
 
-export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
+export type IntegrationState =
+  | { status: 'authorized' | 'wantcode' | 'wantpassword', number: string, socialId?: PersonId }
+  | 'Loading'
+  | 'Missing'
+
+export interface TelegramChannel {
+  id: string
+  name: string
+  type: string
+  mode: string
+}
+
+export interface TelegramChannelConfig extends TelegramChannel {
+  access: 'public' | 'private'
+  syncEnabled: boolean
+  readonlyAccess?: boolean // access update is not supported for existing channels
+}
+
+export interface TelegramChannelData {
+  telegramId: number
+  access?: 'public' | 'private'
+  enabled: boolean
+}
 
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
 
-async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
+async function _request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
   const base = concatLink(url, 'api/integrations')
 
-  const response = await fetch(concatLink(base, path ?? ''), {
-    method,
-    headers: {
-      Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-      'Content-Type': 'application/json'
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {})
-  })
+  let response: Response
+  try {
+    response = await fetch(concatLink(base, path ?? ''), {
+      method,
+      headers: {
+        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
+        'Content-Type': 'application/json'
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+    })
+  } catch (err) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.ConnectionClosed, {
+        message: 'Network error occurred'
+      })
+    )
+  }
 
   if (response.status === 200) {
-    return await response.json()
+    try {
+      return await response.json()
+    } catch (err) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.BadRequest, {
+          message: 'Failed to parse response JSON'
+        })
+      )
+    }
+  } else if (response.status === 202) {
+    return undefined
+  } else if (response.status === 401) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+  } else if (response.status === 403) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  } else if (response.status === 404) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: path ?? '' }))
+  } else if (response.status >= 500) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   } else {
-    throw new Error(`Unexpected response: ${response.status}`)
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { status: response.status }))
   }
 }
 
-export async function list (): Promise<Integration[]> {
-  return await request('GET')
+async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
+  return await withRetry(async () => await _request(method, path, body))
 }
 
-export async function command (
-  phone: string,
-  command: 'start' | 'next' | 'cancel',
-  input?: string
-): Promise<Integration> {
+export async function getState (phone: string): Promise<IntegrationState> {
+  return await request('GET', phone)
+}
+
+export async function restart (phone: string): Promise<IntegrationState> {
+  return await request('POST', `${phone}/restart`)
+}
+
+export async function listChannels (phone: string): Promise<TelegramChannel[]> {
+  return await request('GET', `${phone}/chats`)
+}
+
+export async function disconnect (phone: string): Promise<void> {
+  await request('DELETE', phone)
+}
+
+export async function command (phone: string, command: 'start' | 'next', input?: string): Promise<IntegrationState> {
   return await request('POST', phone, { command, input })
+}
+
+export async function getIntegrationClient (): Promise<IntegrationClient> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+  if (accountsUrl === undefined || token === undefined) {
+    throw new Error('Accounts URL or token is not defined')
+  }
+  return getIntegrationClientRaw(accountsUrl, token, telegramIntegrationKind, 'hulygram')
+}
+
+export async function connect (phone: string, socialId: PersonId): Promise<Integration> {
+  const client = await getIntegrationClient()
+  const connection = await client.connect(socialId, {
+    phone
+  })
+  return await client.integrate(connection, getCurrentWorkspaceUuid())
 }

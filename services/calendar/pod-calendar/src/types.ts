@@ -18,8 +18,6 @@ import type { PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 
-export const CALENDAR_INTEGRATION = 'google-calendar'
-
 export type GoogleEmail = string & { googleEmail: true }
 
 export interface WatchBase {

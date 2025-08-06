@@ -13,6 +13,7 @@
     "CurrentPassword": "Aktuelles Passwort",
     "NewPassword": "Neues Passwort",
     "Disconnect": "Trennen",
+    "DisconnectAll": "Alle trennen",
     "Saving": "Wird gespeichert...",
     "Saved": "Gespeichert",
     "Add": "Hinzufügen",
@@ -180,6 +181,20 @@
     "ReleasePrimarySocialId": "Primäre Social ID freigeben",
     "ReleasePrimarySocialIdConfirm": "Die Freigabe Ihrer aktuellen primären Social ID erfordert ein Neuladen der Seite. Sind Sie sicher, dass Sie fortfahren möchten?",
     "Login": "Anmelden",
-    "Primary": "Primär"
+    "Primary": "Primär",
+    "MyIntegrations": "Meine Integrationen",
+    "AllIntegrations": "Alle",
+    "ConnectedIntegrations": "Verbunden",
+    "AvailableIntegrations": "Verfügbar",
+    "Connect": "Verbinden",
+    "Integrate": "Integrieren",
+    "FailedToLoadIntegrations": "Fehler beim Laden der Integrationen",
+    "FailedToDisconnect": "Fehler beim Trennen der Integration",
+    "ServiceIsUnavailable": "Dienst ist nicht verfügbar",
+    "Integrated": "Integriert",
+    "Connected": "Verbunden",
+    "Available": "Verfügbar",
+    "NotConnectedIntegration": "Das Konto {account} ist nicht mit dem Arbeitsbereich integriert",
+    "IntegrationIsUnstable": "Der Integrationsdienst hat Probleme. Einige Funktionen funktionieren möglicherweise nicht richtig."
   }
 }

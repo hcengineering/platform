@@ -13,17 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
-  import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
+  import platform, { IntlString, PlatformError } from '@hcengineering/platform'
+  import ui, { Button, EditBox, IconClose, Label, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { command, list, type Integration } from '../api'
+  import { command, getState, type IntegrationState, connect } from '../api'
+
+  export let integration: any
 
   let phone: string = ''
   let code: string = ''
   let password: string = ''
   let error: string = ''
+  let isLoading: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -31,9 +34,24 @@
     dispatch('close')
   }
 
+  // Wrapper for command API with loading state management
+  async function commandWithLoading (phone: string, action: 'start' | 'next', data?: string): Promise<IntegrationState> {
+    if (isLoading) {
+      throw new Error('Already processing request')
+    }
+
+    try {
+      isLoading = true
+      return await command(phone, action, data)
+    } finally {
+      isLoading = false
+    }
+  }
+
   interface UIState {
-    mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Unauthorized' | 'Error'
+    mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Configured' | 'Unauthorized' | 'Error'
     hint?: string
+    errorLabel?: IntlString
 
     buttons?: {
       primary?: { label: IntlString, handler?: () => any, disabled?: boolean }
@@ -41,19 +59,20 @@
     }
   }
 
-  let integration: Integration = 'Loading'
+  let integrationState: IntegrationState = 'Loading'
   let state: UIState = { mode: 'Loading' }
 
-  function h (handler: () => Promise<Integration>) {
+  function h (handler: () => Promise<IntegrationState>) {
     return () => {
       handler()
         .then((i) => {
-          integration = i
+          integrationState = i
         })
-        .catch((error) => {
+        .catch((error: any) => {
           state = {
             mode: 'Error',
             hint: error.message,
+            errorLabel: getErrorLabel(error),
             buttons: {
               primary: { label: ui.string.Ok, handler: close }
             }
@@ -62,45 +81,73 @@
     }
   }
 
+  function getErrorLabel (error: any): IntlString | undefined {
+    if (error instanceof PlatformError) {
+      if (error.status.code === platform.status.Unauthorized || error.status.code === platform.status.Forbidden) {
+        return telegram.string.IncorrectPhoneOrCode
+      } else if (error.status.code === platform.status.ConnectionClosed) {
+        return telegram.string.ServiceIsUnavailable
+      }
+    }
+    const errorMessage: string = error.message ?? ''
+    if (errorMessage.toLowerCase().includes('failed to fetch')) {
+      return telegram.string.ServiceIsUnavailable
+    }
+    return telegram.string.UnknownError
+  }
+
   $: {
-    if (integration === 'Loading') {
+    if (integrationState === 'Loading') {
       state = { mode: 'Loading' }
-    } else if (integration === 'Missing') {
+    } else if (integrationState === 'Missing') {
       state = {
         mode: 'WantPhone',
         buttons: {
           primary: {
             label: ui.string.Next,
-            handler: h(() => command(phone, 'start')),
-            disabled: phone.match(/^\+\d{9,15}$/) == null
+            handler: h(() => commandWithLoading(phone, 'start')),
+            disabled: phone.match(/^\+\d{9,15}$/) == null || isLoading
           },
           secondary: { label: telegram.string.Cancel, handler: close }
         }
       }
     } else {
-      switch (integration.status) {
+      switch (integrationState.status) {
         case 'authorized': {
           state = {
             mode: 'Authorized',
-            hint: integration.number,
+            hint: integrationState.number,
             buttons: {
               primary: { label: ui.string.Ok, handler: close }
               // secondary: { label: telegram.string.Disconnect }
             }
           }
+
+          if (integrationState.socialId == null) {
+            console.error('Social ID is not defined for integration state', integrationState)
+            state = {
+              mode: 'Error',
+              hint: 'Social ID is not defined',
+              buttons: {
+                primary: { label: ui.string.Ok, handler: close }
+              }
+            }
+            break
+          }
+          void connect(integrationState.number, integrationState.socialId)
           break
         }
 
         case 'wantcode': {
-          const number = integration.number
+          const number = integrationState.number
 
           state = {
             mode: 'WantCode',
             buttons: {
               primary: {
                 label: ui.string.Next,
-                handler: h(() => command(number, 'next', code)),
-                disabled: code.match(/^\d{5}$/) == null
+                handler: h(() => commandWithLoading(number, 'next', code)),
+                disabled: code.match(/^\d{5}$/) == null || isLoading
               },
               secondary: { label: telegram.string.Cancel, handler: close }
             }
@@ -110,15 +157,15 @@
         }
 
         case 'wantpassword': {
-          const number = integration.number
+          const number = integrationState.number
 
           state = {
             mode: 'WantPassword',
             buttons: {
               primary: {
                 label: ui.string.Next,
-                handler: h(() => command(number, 'next', password)),
-                disabled: password.length === 0
+                handler: h(() => commandWithLoading(number, 'next', password)),
+                disabled: password.length === 0 || isLoading
               },
               secondary: { label: telegram.string.Cancel, handler: close }
             }
@@ -132,12 +179,11 @@
 
   async function init (): Promise<void> {
     try {
-      const integrations = await list()
-
-      if (integrations.length === 0) {
-        integration = 'Missing'
+      const phone = integration?.data?.phone
+      if (phone !== undefined && phone !== '') {
+        integrationState = await getState(phone)
       } else {
-        integration = integrations[0]
+        integrationState = 'Missing'
       }
     } catch (ex: any) {
       console.error(ex)
@@ -187,7 +233,14 @@
     {:else if state.mode === 'Authorized'}
       <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
     {:else if state.mode === 'Error'}
-      <p>Error: {state.hint}</p>
+      <div class="flex-row-top flex-gap-1 gap-3 pt-2">
+        <IconError size={'medium'} />
+        {#if state.errorLabel !== undefined}
+          <Label label={state.errorLabel} />
+        {:else}
+          <span>{state.hint}</span>
+        {/if}
+      </div>
     {/if}
 
     <div class="footer">
@@ -195,6 +248,7 @@
         <Button
           label={state.buttons.primary.label}
           kind={'primary'}
+          loading={isLoading}
           disabled={state.buttons.primary.disabled}
           on:click={state.buttons.primary.handler}
         />

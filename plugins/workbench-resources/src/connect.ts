@@ -427,7 +427,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   Analytics.setUser(data.social_id, data)
-  Analytics.setWorkspace(workspace.name, guestRole)
+  Analytics.setWorkspace(workspace.url, guestRole)
   Analytics.handleEvent(WorkbenchEvents.Connect)
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)

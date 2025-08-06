@@ -14,9 +14,8 @@
 // limitations under the License.
 //
 
-import { getMetadata, type Resources } from '@hcengineering/platform'
-import { concatLink } from '@hcengineering/core'
-import presentation from '@hcengineering/presentation'
+import { type Resources } from '@hcengineering/platform'
+import { type Integration } from '@hcengineering/account-client'
 
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
@@ -26,21 +25,25 @@ import TelegramMessageCreated from './components/activity/TelegramMessageCreated
 import MessagePresenter from './components/MessagePresenter.svelte'
 import NotificationProviderPresenter from './components/NotificationProviderPresenter.svelte'
 import TelegramIntegrationDescription from './components/TelegramIntegrationDescription.svelte'
+import Configure from './components/Configure.svelte'
+import StateComponent from './components/IntegrationState.svelte'
 
-import telegram from './plugin'
 import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAvailable } from './utils'
 import SharedMessages from './components/SharedMessages.svelte'
+import { getIntegrationClient, disconnect, restart } from './api'
 
 export default async (): Promise<Resources> => ({
   component: {
     Chat,
     Connect,
     Reconnect,
+    Configure,
     IconTelegram,
     SharedMessages,
     MessagePresenter,
     NotificationProviderPresenter,
-    TelegramIntegrationDescription
+    TelegramIntegrationDescription,
+    StateComponent
   },
   activity: {
     TelegramMessageCreated
@@ -51,15 +54,31 @@ export default async (): Promise<Resources> => ({
     IsTelegramNotificationsAvailable: isTelegramNotificationsAvailable
   },
   handler: {
-    DisconnectHandler: async () => {
-      const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
-      await fetch(concatLink(url, '/signout'), {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) ?? ''),
-          'Content-Type': 'application/json'
-        }
-      })
+    DisconnectHandler: async (integration: Integration): Promise<void> => {
+      const integrationClient = await getIntegrationClient()
+      if (integration == null) {
+        console.warn('DisconnectHandler: No integration provided')
+        return
+      }
+      const connection = await integrationClient.getConnection(integration)
+      const phone = integration.data?.phone ?? connection?.data?.phone
+      const result = await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
+      if (result?.connectionRemoved === true) {
+        await disconnect(phone)
+      } else {
+        await restart(phone)
+      }
+    },
+    DisconnectAllHandler: async (integration: Integration): Promise<void> => {
+      const integrationClient = await getIntegrationClient()
+      const connection = await integrationClient.getConnection(integration)
+      if (connection == null) {
+        console.warn('DisconnectAllHandler: No connection found for integration', integration)
+        return
+      }
+      const phone = integration.data?.phone ?? connection?.data?.phone
+      await disconnect(phone)
+      await integrationClient.removeConnection(connection)
     }
   }
 })

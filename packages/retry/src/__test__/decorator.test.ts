@@ -16,6 +16,7 @@
 import { DelayStrategyFactory } from '../delay'
 import { Retryable } from '../decorator'
 import { type RetryOptions } from '../retry'
+import { retryAllErrors } from '../retryable'
 
 // Instead of mocking withRetry, we'll mock setTimeout to avoid waiting in tests
 jest.spyOn(global, 'setTimeout').mockImplementation((fn: any) => {
@@ -38,6 +39,7 @@ describe('Retryable decorator', () => {
       maxDelayMs: 100,
       backoffFactor: 2
     }),
+    isRetryable: retryAllErrors,
     logger: mockLogger
   }
 
@@ -88,7 +90,7 @@ describe('Retryable decorator', () => {
       async testMethod (): Promise<string> {
         this.callCount++
         if (this.callCount === 1) {
-          throw new Error('First attempt failed')
+          throw new Error('network error')
         }
         return 'success'
       }
@@ -109,7 +111,7 @@ describe('Retryable decorator', () => {
       async incrementAndGet (): Promise<number> {
         if (this.counter === 0) {
           this.counter++
-          throw new Error('First attempt failed')
+          throw new Error('network error')
         }
         this.counter++
         return this.counter
@@ -135,7 +137,8 @@ describe('Retryable decorator', () => {
         delayStrategy: DelayStrategyFactory.fixed({
           delayMs: 10
         }),
-        logger: mockLogger
+        logger: mockLogger,
+        isRetryable: retryAllErrors
       })
       async alwaysFailingMethod (): Promise<string> {
         throw new Error('Persistent failure')
@@ -189,7 +192,8 @@ describe('Retryable decorator', () => {
         delayStrategy: DelayStrategyFactory.fixed({
           delayMs: 10
         }),
-        logger: mockLogger
+        logger: mockLogger,
+        isRetryable: retryAllErrors
       })
       async unstableMethod (): Promise<string> {
         callCount++
@@ -228,7 +232,8 @@ describe('Retryable decorator', () => {
           maxDelayMs: 500,
           backoffFactor: 2,
           jitter: 0 // Disable jitter for predictable tests
-        })
+        }),
+        isRetryable: retryAllErrors
       })
       async delayingMethod (): Promise<string> {
         callCount++
@@ -266,7 +271,8 @@ describe('Retryable decorator', () => {
         delayStrategy: DelayStrategyFactory.fixed({
           delayMs: 100,
           jitter: 0 // Disable jitter for predictable tests
-        })
+        }),
+        isRetryable: retryAllErrors
       })
       async method (): Promise<string> {
         callCount++
@@ -290,7 +296,8 @@ describe('Retryable decorator', () => {
           baseDelayMs: 100,
           maxDelayMs: 1000,
           jitter: 0 // Disable jitter for predictable tests
-        })
+        }),
+        isRetryable: retryAllErrors
       })
       async method (): Promise<string> {
         callCount++

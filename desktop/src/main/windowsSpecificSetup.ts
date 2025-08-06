@@ -13,90 +13,107 @@
 // limitations under the License.
 //
 
-import { app } from 'electron'
-import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenOffice, CommandOpenPlanner } from '../ui/types'
+import { app, JumpListItem, JumpListCategory } from 'electron'
+import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenApplication, JumpListSpares  } from '../ui/types'
 import * as path from 'path'
 
 const JUMP_COMMANDS = {
   INBOX: '--jump-to-inbox',
   SETTINGS: '--jump-to-settings',
-  PLANNER: '--jump-to-planner',
-  OFFICE: '--jump-to-office'
 } as const
 
-type JumpCommand = typeof JUMP_COMMANDS[keyof typeof JUMP_COMMANDS];
+type JumpCommand = typeof JUMP_COMMANDS[keyof typeof JUMP_COMMANDS]
 
-export function setupWindowsSpecific(sendCommand: (cmd: Command, ...args: any[]) => void): void {
+const JUMP_TO_APP_COMMAND_PREFIX = '--jump-to-app='
 
-    app.setAppUserModelId(app.getName());
+function getIconPath(iconName: string): string {
+    return path.join(process.resourcesPath, 'icons', iconName)
+}
 
-    app.on('second-instance', (_event: any, commandLine: any, _workingDirectory: any) => {
-        const jumpCommand = commandLine[1] as JumpCommand;
-        
-        let command: Command | undefined;
-        switch (jumpCommand) {
-            case JUMP_COMMANDS.INBOX:
-                command = CommandOpenInbox;
-                break;
-            case JUMP_COMMANDS.OFFICE:
-                command = CommandOpenOffice;
-                break;
-            case JUMP_COMMANDS.PLANNER:
-                command = CommandOpenPlanner;
-                break;
-            case JUMP_COMMANDS.SETTINGS:
-                command = CommandOpenSettings;
-                break;
-            default: {
-                // compile-time check: if jumpCommand is not a known value, this line errors
-                const _exhaustive: never = jumpCommand;
-                return; // or handle error
-            }
-        }
-        
-        if (command) {
-            sendCommand(command);
-        }
+function addFixedFunctionJumpListItems(spares: JumpListSpares, tasks: JumpListItem[]): void {
+    tasks.push({
+        type: 'task',
+        program: process.execPath,
+        args: JUMP_COMMANDS.SETTINGS,
+        iconPath: getIconPath('SettingsIcon.ico'),
+        title: spares.settingsLabel,
+        iconIndex: 0,
     })
+    tasks.push({
+        type: 'task',
+        program: process.execPath,
+        args: JUMP_COMMANDS.INBOX,
+        iconPath: getIconPath('InboxIcon.ico'),
+        title: spares.inboxLabel,
+        iconIndex: 0,
+    })
+}
 
-    function getIconPath(iconName: string): string {
-      return path.join(process.resourcesPath, 'icons', iconName);
+export function rebuildJumpList(spares: JumpListSpares): void {
+    const tasks: JumpListItem[] = [];
+
+    addFixedFunctionJumpListItems(spares, tasks)
+
+    if (spares.applications.length > 0) {
+        tasks.push({
+            type: 'separator'
+        })
     }
 
-    app.setUserTasks
-    ([
-        {
+    for (const application of spares.applications) {
+        const iconFileName = application.id.replaceAll(":", "_") + '.ico'
+        const cliArguments = `${JUMP_TO_APP_COMMAND_PREFIX}${application.alias}`
+        tasks.push({
+            type: 'task',
             program: process.execPath,
-            arguments: JUMP_COMMANDS.SETTINGS,
-            iconPath: getIconPath('SettingsIcon.ico'),
+            args: cliArguments,
+            iconPath: getIconPath(iconFileName),
+            title: application.title,
             iconIndex: 0,
-            title: 'Settings',
-            description: 'Open Settings Screen'
-        },
-        {
-            program: process.execPath,
-            arguments: JUMP_COMMANDS.INBOX,
-            iconPath: getIconPath('InboxIcon.ico'),
-            iconIndex: 0,
-            title: 'Inbox',
-            description: 'Open Inbox'
-        },
-        {
-            program: process.execPath,
-            arguments: JUMP_COMMANDS.PLANNER,
-            iconPath: getIconPath('PlannerIcon.ico'),
-            iconIndex: 0,
-            title: 'Planner',
-            description: 'Open Planner'
-        },
-        {
-            program: process.execPath,
-            arguments: JUMP_COMMANDS.OFFICE,
-            iconPath: getIconPath('OfficeIcon.ico'),
-            iconIndex: 0,
-            title: 'Office',
-            description: 'Open Office'
-        }
-    ])
+        })
+    }
 
+    const category: JumpListCategory = {
+        type: 'tasks',
+        items: tasks,
+    }
+
+    app.setJumpList([category])
+}
+
+export function setupWindowsSpecific(activateWindow: () => void, sendCommand: (cmd: Command, ...args: any[]) => void): void {
+
+    app.setAppUserModelId(app.getName())
+
+    app.on('second-instance', (_event: any, commandLine: any, _workingDirectory: any) => {
+        const commandArgument = commandLine[1] as string
+        if (typeof commandArgument === 'string' && commandArgument.startsWith(JUMP_TO_APP_COMMAND_PREFIX)) {
+            const applicationId = commandArgument.replace(JUMP_TO_APP_COMMAND_PREFIX, '')
+            sendCommand(CommandOpenApplication, [applicationId])
+            
+        } else {
+            const jumpCommandCode = commandArgument as JumpCommand
+            let command: Command | undefined
+            switch (jumpCommandCode) {
+                case JUMP_COMMANDS.INBOX:
+                    command = CommandOpenInbox
+                    break;
+                case JUMP_COMMANDS.SETTINGS:
+                    command = CommandOpenSettings
+                    break;
+                default: {
+                    // compile-time check: if jumpCommand is not a known value, this line errors
+                    const _exhaustive: never = jumpCommandCode
+                    return; // or handle error
+                }
+            }
+            
+            if (command) {
+                sendCommand(command)
+            }
+        }
+
+        activateWindow()
+    })
+    
 }

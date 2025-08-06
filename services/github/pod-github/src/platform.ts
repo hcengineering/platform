@@ -26,7 +26,13 @@ import core, {
   type PersonUuid,
   type Ref
 } from '@hcengineering/core'
-import github, { GithubAuthentication, githubId, makeQuery, type GithubIntegration } from '@hcengineering/github'
+import github, {
+  GithubAuthentication,
+  githubId,
+  makeQuery,
+  type GithubIntegration,
+  githubIntegrationKind
+} from '@hcengineering/github'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
@@ -119,7 +125,7 @@ export class PlatformWorker {
     const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     const accountsClient = getAccountClient(config.AccountsURL, sysToken)
 
-    const allIntegrations = await accountsClient.listIntegrations({ kind: 'github' })
+    const allIntegrations = await accountsClient.listIntegrations({ kind: githubIntegrationKind })
 
     this.integrations = []
 
@@ -140,7 +146,7 @@ export class PlatformWorker {
           workspace: i.workspaceUuid
         })
         await accountsClient.deleteIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: i.workspaceUuid,
           socialId: i.socialId
         })
@@ -162,14 +168,14 @@ export class PlatformWorker {
         })
         if (has.length > 0) {
           await accountsClient.updateIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: integr.workspace,
             socialId: integr.accountId,
             data: { installationId: has } satisfies IntegrationDataValue
           })
         } else {
           await accountsClient.deleteIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: integr.workspace,
             socialId: integr.accountId
           })
@@ -268,13 +274,13 @@ export class PlatformWorker {
           if (has.length > 0) {
             oldInstallation.installationId = has
             await accountsClient.updateIntegration({
-              kind: 'github',
+              kind: githubIntegrationKind,
               workspaceUuid: oldWorkspace,
               socialId: oldInstallation.accountId
             })
           } else {
             await accountsClient.deleteIntegration({
-              kind: 'github',
+              kind: githubIntegrationKind,
               workspaceUuid: oldWorkspace,
               socialId: oldInstallation.accountId
             })
@@ -286,14 +292,14 @@ export class PlatformWorker {
         if (existingRecord !== undefined) {
           existingRecord.installationId.push(installationId)
           await accountsClient.updateIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: workspace,
             socialId: accountId,
             data: { installationId: existingRecord.installationId } satisfies IntegrationDataValue
           })
         } else {
           await accountsClient.createIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: workspace,
             socialId: accountId,
             data: { installationId } satisfies IntegrationDataValue
@@ -340,7 +346,7 @@ export class PlatformWorker {
         if (existing !== undefined) {
           existing.installationId.push(installationId)
           await accountsClient.updateIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: existing.workspace,
             socialId: existing.accountId,
             data: { installationId: existing.installationId } satisfies IntegrationDataValue
@@ -352,7 +358,7 @@ export class PlatformWorker {
             accountId
           }
           await accountsClient.createIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: record.workspace,
             socialId: record.accountId,
             data: { installationId: record.installationId }
@@ -909,7 +915,7 @@ export class PlatformWorker {
         const has = intgr.installationId.filter((it) => it !== installId)
         if (has.length > 0) {
           await sysAccountClient.updateIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: intgr.workspace,
             socialId: intgr.accountId,
             data: { installationId: has } satisfies IntegrationDataValue
@@ -917,7 +923,7 @@ export class PlatformWorker {
         } else {
           intgr.installationId = []
           await sysAccountClient.deleteIntegration({
-            kind: 'github',
+            kind: githubIntegrationKind,
             workspaceUuid: intgr.workspace,
             socialId: intgr.accountId
           })

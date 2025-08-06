@@ -393,6 +393,18 @@
   --calendar-event-back-color: #2B2D41;
   --calendar-event-border-color: rgba(43, 81, 144, 0.2);
   --calendar-event-handle-color: #2b5190;
+
+  --theme-label-green-color: rgba(34, 197, 94, .8);
+  --theme-label-green-bg-color: rgba(34, 197, 94, .08);
+  --theme-label-green-border-color: rgba(34, 197, 94, .2);
+
+  --theme-label-blue-color: rgba(59, 130, 246, .8);
+  --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
+  --theme-label-blue-border-color: rgba(59, 130, 246, .2);
+
+  --theme-label-gray-color: rgba(255, 255, 255, .6);
+  --theme-label-gray-bg-color: rgba(255, 255, 255, .02);
+  --theme-label-gray-border-color: rgba(255, 255, 255, .09);
 }
 
 /* Light Theme */
@@ -693,4 +705,16 @@
   --theme-button-contrast-disabled: rgba(0, 0, 0, .6);
   --theme-button-contrast-disabled-color: rgba(255, 255, 255, .5);
   --theme-button-contrast-border: rgba(0, 0, 0, .2);
+
+  --theme-label-green-color: rgba(22, 130, 60, 0.9);
+  --theme-label-green-bg-color: rgba(22, 163, 74, .08);
+  --theme-label-green-border-color: rgba(22, 163, 74, .15);
+
+  --theme-label-blue-color: rgba(37, 99, 235, 0.9);
+  --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
+  --theme-label-blue-border-color: rgba(59, 130, 246, .15);
+
+  --theme-label-gray-color: rgba(0, 0, 0, .6);
+  --theme-label-gray-bg-color: rgba(0, 0, 0, .02);
+  --theme-label-gray-border-color: rgba(0, 0, 0, .09)
 }
