@@ -18,13 +18,13 @@
     user-select: none;
     color: var(--theme-content-color);
     &.OK {
-      color: var(--theme-won-color);
+      color: var(--theme-state-positive-color);
     }
     &.WARNING {
       color: var(--theme-warning-color);
     }
     &.ERROR {
-      color: var(--theme-lost-color);
+      color: var(--theme-state-negative-color);
     }
   }
 
