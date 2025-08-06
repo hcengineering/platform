@@ -185,7 +185,7 @@
     "Integrated": "Integrado",
     "Connected": "Conectado",
     "Available": "Disponible",
-    "NotConnectedIntegration": "El cuenta {account} no está integrado con el espacio de trabajo",
+    "NotConnectedIntegration": "La cuenta {account} no está integrada con el espacio de trabajo",
     "IntegrationIsUnstable": "El servicio de integración está experimentando problemas. Algunas funciones pueden no funcionar correctamente."
   }
 }
