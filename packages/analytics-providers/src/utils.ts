@@ -63,7 +63,9 @@ class SessionManager {
 
   private setupNavigationTracking (): void {
     window.addEventListener('popstate', () => {
-      setTimeout(() => { this.onUrlChange() }, 0)
+      setTimeout(() => {
+        this.onUrlChange()
+      }, 0)
     })
     setInterval(() => {
       if (window.location.href !== this.currentUrl) {
@@ -129,7 +131,7 @@ class SessionManager {
     }
 
     const firstVisitTime = parseInt(firstVisit, 10)
-    return (now - firstVisitTime) > (24 * 60 * 60 * 1000)
+    return now - firstVisitTime > 24 * 60 * 60 * 1000
   }
 }
 
