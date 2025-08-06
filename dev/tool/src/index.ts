@@ -122,6 +122,7 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
+import { performIntegrationMigrations } from './integrations'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2695,6 +2696,16 @@ export function devTool (
       await withStorage(async (adapter) => {
         await restoreMarkupRefs(dbUrl, txes, adapter, region)
       })
+    })
+
+  program
+    .command('migrate-integrations')
+    .option('--db <db>', 'DB name', 'gmail-service')
+    .option('--region <region>', 'DB region')
+    .action(async (cmd: { db: string, region?: string }) => {
+      const { dbUrl, txes } = prepareTools()
+
+      await performIntegrationMigrations(dbUrl, cmd.region ?? null, txes)
     })
 
   extendProgram?.(program)
