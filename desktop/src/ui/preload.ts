@@ -78,6 +78,10 @@ const expose: IPCMainExposed = {
     ipcRenderer.on('window-state-changed', callback)
   },
 
+  onWindowFocusLoss: (callback) => {
+    ipcRenderer.on('window-focus-loss', callback)
+  },
+
   isOsUsingDarkTheme: async ()  =>  { 
     return await ipcRenderer.invoke('get-is-os-using-dark-theme')
   },

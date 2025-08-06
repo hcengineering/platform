@@ -273,6 +273,10 @@ const createWindow = async (): Promise<void> => {
     mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
   }
 
+  mainWindow.on('blur', () => {
+    mainWindow?.webContents.send('window-focus-loss')
+  });
+
   mainWindow.on('maximize', () => {
     sendWindowMaximizedMessage(true)
   });
@@ -309,8 +313,18 @@ function sendCommand(cmd: string, ...args: any[]): void {
   mainWindow?.webContents.send(cmd, ...args)
 }
 
+function activateWindow (): void {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+    mainWindow.show()
+    mainWindow.focus()
+  }
+}
+
 if (isWindows) {
-  setupWindowsSpecific(sendCommand)
+  setupWindowsSpecific(activateWindow, sendCommand)
 } else {
   addMenus(sendCommand)
 }

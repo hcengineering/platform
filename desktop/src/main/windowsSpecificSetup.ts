@@ -27,7 +27,7 @@ type JumpCommand = typeof JUMP_COMMANDS[keyof typeof JUMP_COMMANDS]
 const JUMP_TO_APP_COMMAND_PREFIX = '--jump-to-app='
 
 function getIconPath(iconName: string): string {
-    return path.join(process.resourcesPath, 'icons', iconName);
+    return path.join(process.resourcesPath, 'icons', iconName)
 }
 
 function addFixedFunctionJumpListItems(spares: JumpListSpares, tasks: JumpListItem[]): void {
@@ -61,14 +61,16 @@ export function rebuildJumpList(spares: JumpListSpares): void {
     }
 
     for (const application of spares.applications) {
+        const iconFileName = application.id.replaceAll(":", "_") + '.ico'
+        const cliArguments = `${JUMP_TO_APP_COMMAND_PREFIX}${application.alias}`
         tasks.push({
             type: 'task',
             program: process.execPath,
-            args: `${JUMP_TO_APP_COMMAND_PREFIX}${application.alias}`,
-            iconPath: getIconPath(application.id.replaceAll(":", "_") + '.ico'),
+            args: cliArguments,
+            iconPath: getIconPath(iconFileName),
             title: application.title,
             iconIndex: 0,
-        });
+        })
     }
 
     const category: JumpListCategory = {
@@ -76,40 +78,42 @@ export function rebuildJumpList(spares: JumpListSpares): void {
         items: tasks,
     }
 
-    app.setJumpList([category]);
+    app.setJumpList([category])
 }
 
-export function setupWindowsSpecific(sendCommand: (cmd: Command, ...args: any[]) => void): void {
+export function setupWindowsSpecific(activateWindow: () => void, sendCommand: (cmd: Command, ...args: any[]) => void): void {
 
-    app.setAppUserModelId(app.getName());
+    app.setAppUserModelId(app.getName())
 
     app.on('second-instance', (_event: any, commandLine: any, _workingDirectory: any) => {
-        const commandArgument = commandLine[1] as string;
+        const commandArgument = commandLine[1] as string
         if (typeof commandArgument === 'string' && commandArgument.startsWith(JUMP_TO_APP_COMMAND_PREFIX)) {
-            const applicationId = commandArgument.replace(JUMP_TO_APP_COMMAND_PREFIX, '');
-            sendCommand(CommandOpenApplication, [applicationId]);
-            return;
-        }
-        
-        const jumpCommandCode = commandArgument as JumpCommand;
-        let command: Command | undefined;
-        switch (jumpCommandCode) {
-            case JUMP_COMMANDS.INBOX:
-                command = CommandOpenInbox;
-                break;
-            case JUMP_COMMANDS.SETTINGS:
-                command = CommandOpenSettings;
-                break;
-            default: {
-                // compile-time check: if jumpCommand is not a known value, this line errors
-                const _exhaustive: never = jumpCommandCode;
-                return; // or handle error
+            const applicationId = commandArgument.replace(JUMP_TO_APP_COMMAND_PREFIX, '')
+            sendCommand(CommandOpenApplication, [applicationId])
+            
+        } else {
+            const jumpCommandCode = commandArgument as JumpCommand
+            let command: Command | undefined
+            switch (jumpCommandCode) {
+                case JUMP_COMMANDS.INBOX:
+                    command = CommandOpenInbox
+                    break;
+                case JUMP_COMMANDS.SETTINGS:
+                    command = CommandOpenSettings
+                    break;
+                default: {
+                    // compile-time check: if jumpCommand is not a known value, this line errors
+                    const _exhaustive: never = jumpCommandCode
+                    return; // or handle error
+                }
+            }
+            
+            if (command) {
+                sendCommand(command)
             }
         }
-        
-        if (command) {
-            sendCommand(command);
-        }
+
+        activateWindow()
     })
     
 }
