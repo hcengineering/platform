@@ -1,6 +1,7 @@
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
+import { Ref, Class, Doc } from '@hcengineering/core'
 import { IpcRendererEvent } from 'electron'
 
 export interface Config {
@@ -95,6 +96,9 @@ export interface NotificationParams {
   body: string
   silent: boolean
   application: Plugin
+  cardId?: string
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
 }
 
 export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
@@ -121,7 +125,7 @@ export interface IPCMainExposed {
   branding: () => Promise<Branding>
   on: (event: string, op: (channel: any, args: any[]) => void) => void
   handleDeepLink: (callback: (url: string) => void) => void
-  handleNotificationNavigation: (callback: (application: Plugin) => void) => void
+  handleNotificationNavigation: (callback: (notificationParams: NotificationParams) => void) => void
   handleUpdateDownloadProgress: (callback: (progress: number) => void) => void
   setFrontCookie: (host: string, name: string, value: string) => Promise<void>
   dockBounce: () => void
