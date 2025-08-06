@@ -100,7 +100,8 @@
     "ArraySizeGt": "Tamaño mayor que",
     "ArraySizeGte": "Tamaño mayor o igual que",
     "ArraySizeLt": "Tamaño menor que",
-    "ArraySizeLte": "Tamaño menor o igual que"
+    "ArraySizeLte": "Tamaño menor o igual que",
+    "Cancelled": "Cancelado"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

@@ -14,8 +14,8 @@
 -->
 
 <script lang="ts">
-  import core, { AnyAttribute } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { AnyAttribute } from '@hcengineering/core'
+  import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Context, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import {
     AnyComponent,
@@ -27,13 +27,10 @@
     IconClose,
     showPopup
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
   import { buildResult, Mode, Modes, parseValue } from '../../query'
-  import { getContext } from '../../utils'
   import ContextSelectorPopup from '../attributeEditors/ContextSelectorPopup.svelte'
   import ContextValue from '../attributeEditors/ContextValue.svelte'
-  import is from 'date-fns/locale/is'
 
   export let readonly: boolean
   export let value: any
@@ -41,29 +38,13 @@
   export let context: Context
   export let attribute: AnyAttribute
   export let baseEditor: AnyComponent | undefined
-
-  const modes: Mode[] = [
-    Modes.ArrayAll,
-    Modes.ArrayAny,
-    Modes.ArrayNotIncludes,
-    Modes.ArraySizeEquals,
-    Modes.ArraySizeGt,
-    Modes.ArraySizeGte,
-    Modes.ArraySizeLt,
-    Modes.ArraySizeLte
-  ]
-
-  const client = getClient()
-
-  $: numberContext = getContext(client, process, core.class.TypeNumber, 'attribute')
+  export let modes: Mode[] = []
 
   let [val, selectedMode] = parseValue(modes, value)
 
   $: mode = selectedMode.id
-
   const dispatch = createEventDispatcher()
 
-  let contextValue: SelectedContext | undefined = undefined
   $: [val, selectedMode] = parseValue(modes, value)
   $: contextValue = parseContext(val)
 
@@ -73,7 +54,7 @@
       {
         process,
         masterTag: process.masterTag,
-        context: isSize(mode) ? numberContext : context,
+        context,
         attribute,
         onSelect
       },
@@ -82,27 +63,29 @@
   }
 
   function onSelect (res: SelectedContext | null): void {
-    changeResult(res === null ? undefined : '$' + JSON.stringify(res))
+    val = res === null ? undefined : '$' + JSON.stringify(res)
+    changeResult()
   }
 
   function onChange (value: any | undefined): void {
-    changeResult(value)
+    val = value
+    changeResult()
   }
 
-  function changeResult (val: any | undefined, allowEmpty: boolean = false): void {
-    if ((!allowEmpty && val === undefined) || val === '') {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
+
+  function changeResult () {
+    if (val === undefined || val === '') {
       dispatch('change', null)
       return
     }
 
     const result = buildResult(selectedMode, val)
 
-    value = result
     dispatch('change', result)
-  }
-
-  function isSize (mode: string): boolean {
-    return mode.startsWith('size')
   }
 </script>
 
@@ -116,83 +99,45 @@
     width={'100%'}
     on:selected={(e) => {
       mode = e.detail
-      if ((isSize(mode) && !isSize(selectedMode.id)) || (!isSize(mode) && isSize(selectedMode.id))) {
-        val = undefined
-        contextValue = undefined
-      }
       selectedMode = modes.find((m) => m.id === mode) ?? modes[0]
-      changeResult(val, true)
+      changeResult()
     }}
   />
 
   <div class="text-input" class:context={contextValue}>
-    {#if !isSize(mode)}
-      {#if contextValue}
-        <ContextValue
-          {process}
-          masterTag={process.masterTag}
-          {contextValue}
-          {context}
-          {attribute}
-          category={'attribute'}
-          attrClass={core.class.ArrOf}
-          on:update={(e) => {
-            onSelect(e.detail)
-          }}
-        />
-      {:else}
-        <div class="w-full">
-          {#if baseEditor}
-            <Component
-              is={baseEditor}
-              props={{
-                label: attribute?.label,
-                placeholder: attribute?.label,
-                kind: 'ghost',
-                size: 'large',
-                width: '100%',
-                justify: 'left',
-                readonly,
-                type: attribute?.type,
-                value: val,
-                onChange,
-                focus
-              }}
-            />
-          {/if}
-        </div>
-      {/if}
-    {:else if contextValue}
+    {#if contextValue}
       <ContextValue
         {process}
         masterTag={process.masterTag}
         {contextValue}
-        context={numberContext}
+        {context}
         {attribute}
-        category={'attribute'}
-        attrClass={core.class.TypeNumber}
+        category={presenterClass.category}
+        attrClass={presenterClass.attrClass}
         on:update={(e) => {
           onSelect(e.detail)
         }}
       />
-    {:else if !Number.isNaN(val)}
+    {:else}
       <div class="w-full">
-        <Component
-          is={view.component.NumberEditor}
-          props={{
-            label: attribute?.label,
-            placeholder: attribute?.label,
-            kind: 'ghost',
-            size: 'large',
-            width: '100%',
-            justify: 'left',
-            readonly,
-            type: core.class.TypeNumber,
-            value: val,
-            onChange,
-            focus
-          }}
-        />
+        {#if baseEditor}
+          <Component
+            is={baseEditor}
+            props={{
+              label: attribute?.label,
+              placeholder: attribute?.label,
+              kind: 'ghost',
+              size: 'large',
+              width: '100%',
+              justify: 'left',
+              readonly,
+              type: attribute?.type,
+              value: val,
+              onChange,
+              focus
+            }}
+          />
+        {/if}
       </div>
     {/if}
     <div class="button flex-row-center">

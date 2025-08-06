@@ -14,47 +14,16 @@
 -->
 
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import { Trigger, Process } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
+  import { Process } from '@hcengineering/process'
+  import UpdateAttributePresenter from '../presenters/UpdateAttributePresenter.svelte'
 
   export let process: Process
   export let params: Record<string, any>
-
-  const client = getClient()
-
-  $: attributes = getAttributes(params, process)
-
-  function getAttributes (params: Record<string, any>, process: Process): IntlString[] {
-    const res: IntlString[] = []
-    for (const key in params) {
-      if (params[key] !== undefined) {
-        const attr = client.getHierarchy().findAttribute(process.masterTag, key)
-        if (attr?.label !== undefined) {
-          res.push(attr.label)
-        }
-      }
-    }
-    return res
-  }
 </script>
 
-{#if attributes.length > 0}
+{#if Object.keys(params).length > 0}
   :
-  {#each attributes as attr}
-    <div class="title">
-      <Label label={attr} />
-    </div>
+  {#each Object.entries(params) as [key, value]}
+    <UpdateAttributePresenter {process} {key} {value} />
   {/each}
 {/if}
-
-<style lang="scss">
-  .title {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--theme-caption-color);
-  }
-</style>

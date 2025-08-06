@@ -62,7 +62,8 @@ export default mergeIds(processId, process, {
     AddRelationEditor: '' as AnyComponent,
     AddRelationPresenter: '' as AnyComponent,
     CardUpdateEditor: '' as AnyComponent,
-    CardUpdatePresenter: '' as AnyComponent
+    CardUpdatePresenter: '' as AnyComponent,
+    ToDoSettingPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     StringCriteria: '' as AnyComponent,
@@ -173,6 +174,13 @@ export default mergeIds(processId, process, {
     End: '' as IntlString,
     Started: '' as IntlString,
     Each: '' as IntlString,
-    CreateCard: '' as IntlString
+    CreateCard: '' as IntlString,
+    Done: '' as IntlString,
+    Cancelled: '' as IntlString,
+    ArraySizeEquals: '' as IntlString,
+    ArraySizeGt: '' as IntlString,
+    ArraySizeGte: '' as IntlString,
+    ArraySizeLt: '' as IntlString,
+    ArraySizeLte: '' as IntlString
   }
 })

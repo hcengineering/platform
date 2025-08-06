@@ -26,6 +26,7 @@
     ViewletsSettingButton
   } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import NextTriggers from './NextTriggers.svelte'
   import process from '../plugin'
 
   export let execution: Execution
@@ -128,6 +129,7 @@
   showCancelButton={false}
   on:close
 >
+  <NextTriggers {execution} />
   <div class="flex-row-reverse">
     <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
   </div>

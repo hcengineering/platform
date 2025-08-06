@@ -95,7 +95,8 @@
     "Insert": "Einfügen",
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",
-    "RemoveLast": "Letztes entfernen"
+    "RemoveLast": "Letztes entfernen",
+    "Cancelled": "Abgebrochen"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

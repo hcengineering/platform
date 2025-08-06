@@ -53,12 +53,12 @@
 </script>
 
 {#if trigger}
-  <div class="flex flex-gap-2" use:tooltip={{ label: trigger.label }}>
+  <div class="flex-row-center flex-gap-1" use:tooltip={{ label: trigger.label }}>
     <Icon icon={error ? IconError : trigger.icon} size={'medium'} />
     {#if withLabel}
       <Label label={trigger.label} />
       {#if trigger.presenter}
-        <Component is={trigger.presenter} props={{ value, process, params }} />
+        <Component is={trigger.presenter} props={{ process, params }} />
       {/if}
     {/if}
   </div>

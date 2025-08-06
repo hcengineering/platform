@@ -40,7 +40,6 @@ export default mergeIds(processId, process, {
     ContinueExecution: '' as Ref<Action<Doc, any>>
   },
   string: {
-    Done: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     LogAction: '' as IntlString

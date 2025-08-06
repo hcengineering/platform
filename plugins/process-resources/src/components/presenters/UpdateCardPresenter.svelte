@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { IntlString } from '@hcengineering/platform'
+  import { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { MethodParams, Process, Step } from '@hcengineering/process'
   import { Icon, IconError, Label, tooltip } from '@hcengineering/ui'
   import plugin from '../../plugin'
+  import UpdateAttributePresenter from './UpdateAttributePresenter.svelte'
 
   export let step: Step<Card>
   export let process: Process
@@ -26,36 +27,19 @@
 
   const client = getClient()
   $: method = client.getModel().findAllSync(plugin.class.Method, { _id: step.methodId })[0]
-
-  $: attributes = getAttributes(params, process)
-
-  function getAttributes (params: Record<string, any>, process: Process): IntlString[] {
-    const res: IntlString[] = []
-    for (const key in params) {
-      if (params[key] !== undefined) {
-        const attr = client.getHierarchy().findAttribute(process.masterTag, key)
-        if (attr?.label !== undefined) {
-          res.push(attr.label)
-        }
-      }
-    }
-    return res
-  }
 </script>
 
-{#if attributes.length === 0}
+{#if Object.keys(params).length === 0}
   <div class="mr-2" use:tooltip={{ label: plugin.string.NoAttributesForUpdate }}>
     <Icon icon={IconError} size="medium" />
   </div>
 {/if}
 <div class="flex-row-center flex-gap-1">
   <Label label={method.label} />
-  {#if attributes.length > 0}
+  {#if Object.keys(params).length > 0}
     :
-    {#each attributes as attr}
-      <div class="title">
-        <Label label={attr} />
-      </div>
+    {#each Object.entries(params) as [key, value]}
+      <UpdateAttributePresenter {process} {key} {value} />
     {/each}
   {/if}
 </div>

@@ -100,7 +100,8 @@
     "Insert": "Insert",
     "Remove": "Remove",
     "RemoveFirst": "Remove first",
-    "RemoveLast": "Remove last"
+    "RemoveLast": "Remove last",
+    "Cancelled": "Cancelled"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
