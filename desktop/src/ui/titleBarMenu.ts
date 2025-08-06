@@ -19,7 +19,7 @@ import { TitleBarMenuState } from './titleBarMenuState'
 
 export function setupTitleBarMenu(ipcMain: IPCMainExposed, root: HTMLElement): MenuBar {
     const themeManager = new ThemeManager('light')
-    const menuManager = new MenuBarManager(ipcMain, root)
+    const menuManager = new MenuBarManager(root)
 
     const menuBar = menuManager.getView();
 
@@ -282,7 +282,7 @@ class MenuBarManager {
     private readonly StateStyleKeyboardSelected = 'desktop-app-keyboard-selected'
     private readonly StateStyleAltModeActive = 'desktop-app-alt-active'
 
-    constructor(ipcMain: IPCMainExposed, private readonly root: HTMLElement) {
+    constructor(private readonly root: HTMLElement) {
         this.state = new TitleBarMenuState(
             () => this.topLevelMenus().length,
             (topLevelMenuIndex: number) => {
@@ -333,6 +333,13 @@ class MenuBarManager {
 
         document.querySelectorAll<HTMLButtonElement>(this.DropdownItemStyle + '[data-action]').forEach(item => {
             item.addEventListener('click', async () => this.handleMenuButtonClick(ipcMain, item))
+        })
+
+        ipcMain.onWindowFocusLoss(() => {
+            this.state.exitAltMode()
+            this.altPressed = false
+            this.controlKeysActivated = false
+            this.renderState()
         })
     }
 
