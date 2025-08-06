@@ -67,6 +67,8 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
+import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -79,7 +81,9 @@ export {
   SpaceTypeGeneralSectionEditor,
   ClassHierarchy,
   RelationSetting,
-  CreateRelation
+  CreateRelation,
+  BaseIntegrationState,
+  IntegrationStateRow
 }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {

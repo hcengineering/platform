@@ -285,7 +285,9 @@ export default plugin(settingId, {
     ServiceIsUnavailable: '' as IntlString,
     Integrated: '' as IntlString,
     Connected: '' as IntlString,
-    Available: '' as IntlString
+    Available: '' as IntlString,
+    NotConnectedIntegration: '' as IntlString,
+    IntegrationIsUnstable: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

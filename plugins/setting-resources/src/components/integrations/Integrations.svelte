@@ -152,7 +152,6 @@
         lastEventTime = Date.now() // Update last event time after successful refresh
       } catch (err) {
         console.error('Error refreshing integrations:', err)
-        showErrorNotification(err instanceof Error ? err.message : 'Unknown error')
       }
     })()
 

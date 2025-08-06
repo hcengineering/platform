@@ -193,6 +193,8 @@
     "ServiceIsUnavailable": "Сервис недоступен",
     "Integrated": "Интегрировано",
     "Connected": "Подключено",
-    "Available": "Доступно"
+    "Available": "Доступно",
+    "NotConnectedIntegration": "Учетная запись {account} не интегрирована с рабочим пространством",
+    "IntegrationIsUnstable": "Сервис интеграции испытывает проблемы. Некоторые функции могут работать некорректно."
   }
 }

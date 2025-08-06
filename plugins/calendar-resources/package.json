@@ -46,6 +46,7 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/setting-resources": "^0.6.0",
     "@hcengineering/theme": "^0.6.5",
     "svelte": "^4.2.19",
     "@hcengineering/text": "^0.6.5",

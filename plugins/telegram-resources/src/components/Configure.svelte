@@ -418,7 +418,7 @@
         <div class="error-container" transition:fade={{ duration: 300 }}>
           <IconError size={'medium'} />
           <span class="text-normal font-medium">
-            <Label label={telegram.string.FailedToLoadState} />
+            <Label label={telegram.string.ServiceIsUnavailable} />
           </span>
         </div>
       {:else if filteredChannels.length === 0}

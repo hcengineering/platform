@@ -291,7 +291,6 @@ const calendarPlugin = plugin(calendarId, {
     MeetingScheduledNotification: '' as IntlString,
     MeetingRescheduledNotification: '' as IntlString,
     MeetingCanceledNotification: '' as IntlString,
-    NotConnectedIntegration: '' as IntlString,
     SynchronizedCalendars: '' as IntlString,
     Account: '' as IntlString,
     NoCalendars: '' as IntlString

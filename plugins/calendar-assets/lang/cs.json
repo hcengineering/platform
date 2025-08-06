@@ -122,7 +122,6 @@
     "Last": "Poslední",
     "Weekday": "Všední den",
     "WeekendDay": "Víkendový den",
-    "NotConnectedIntegration": "Účet {email} není integrován s pracovním prostorem",
     "SynchronizedCalendars": "Synchronizované kalendáře",
     "Account": "Účet",
     "NoCalendars": "Kalendáře pro synchronizaci nejsou vybrány"

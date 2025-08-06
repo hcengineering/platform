@@ -249,7 +249,6 @@
     column-gap: 1rem;
     padding: 0.75rem 1rem 0.75rem;
     overflow: hidden;
-    border-radius: 0 0 1.25rem 1.25rem;
     background-color: var(--theme-button-default);
   }
 </style>
