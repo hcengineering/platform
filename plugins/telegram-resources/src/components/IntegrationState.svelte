@@ -15,12 +15,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
   import type { Integration } from '@hcengineering/account-client'
-  import { IntegrationClient, IntegrationEventData, onIntegrationEvent } from '@hcengineering/integration-client'
+  import { IntegrationClient, IntegrationUpdatedData, onIntegrationEvent } from '@hcengineering/integration-client'
   import { BaseIntegrationState, IntegrationStateRow } from '@hcengineering/setting-resources'
   import { OK, ERROR, Status } from '@hcengineering/platform'
 
   import telegram from '../plugin'
-  import { type TelegramChannelConfig, getIntegrationClient, listChannels } from '../api'
+  import { type TelegramChannelConfig, type TelegramChannelData, getIntegrationClient, listChannels } from '../api'
 
   export let integration: Integration
 
@@ -67,15 +67,30 @@
   })
 
   function subscribe (): void {
-    unsubscribers.push(onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration))
+    unsubscribers.push(onIntegrationEvent<IntegrationUpdatedData>('integration:updated', onUpdateIntegration))
   }
 
-  function onUpdateIntegration (data: IntegrationEventData): void {
+  function onUpdateIntegration (data: IntegrationUpdatedData): void {
     if (
       data.integration?.socialId === integration.socialId &&
       data.integration?.workspaceUuid === integration.workspaceUuid
     ) {
-      void refresh()
+      const channelConfig: TelegramChannelData[] = data.newConfig?.channels
+      if (channelConfig != null) {
+        channels = channels.map((channel) => {
+          const updatedChannel = channelConfig.find((c) => String(c.telegramId) === String(channel.id))
+          if (updatedChannel != null) {
+            return {
+              ...channel,
+              access: updatedChannel.access ?? channel.access,
+              syncEnabled: updatedChannel.enabled
+            }
+          }
+          return channel
+        })
+      } else {
+        void refresh()
+      }
     }
   }
 
