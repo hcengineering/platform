@@ -100,7 +100,8 @@
     "ArraySizeGt": "Dimensione maggiore di",
     "ArraySizeGte": "Dimensione maggiore o uguale a",
     "ArraySizeLt": "Dimensione minore di",
-    "ArraySizeLte": "Dimensione minore o uguale a"
+    "ArraySizeLte": "Dimensione minore o uguale a",
+    "Cancelled": "Annullato"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

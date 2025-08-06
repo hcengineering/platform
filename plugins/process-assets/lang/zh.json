@@ -100,7 +100,8 @@
     "ArraySizeGt": "大小大于",
     "ArraySizeGte": "大小大于等于",
     "ArraySizeLt": "大小小于",
-    "ArraySizeLte": "大小小于等于"
+    "ArraySizeLte": "大小小于等于",
+    "Cancelled": "已取消"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

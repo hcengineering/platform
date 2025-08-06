@@ -65,8 +65,11 @@ import RefCriteria from './components/criterias/RefCriteria.svelte'
 import EnumCriteria from './components/criterias/EnumCriteria.svelte'
 import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
 import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
+import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
 import { ProcessMiddleware } from './middleware'
 import { continueExecution, showDoneQuery, todoTranstionCheck, updateCardTranstionCheck } from './utils'
+
+export * from './query'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -110,7 +113,8 @@ export default async (): Promise<Resources> => ({
     CreateCardPresenter,
     AddRelationEditor,
     AddRelationPresenter,
-    CardUpdatePresenter
+    CardUpdatePresenter,
+    ToDoSettingPresenter
   },
   criteriaEditor: {
     DateCriteria,

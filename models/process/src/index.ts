@@ -1021,6 +1021,7 @@ export function createModel (builder: Builder): void {
       label: process.string.OnToDoDone,
       icon: process.icon.ToDo,
       editor: process.component.ToDoCloseEditor,
+      presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
       init: false
@@ -1035,6 +1036,7 @@ export function createModel (builder: Builder): void {
       label: process.string.OnToDoCancelled,
       icon: process.icon.ToDoRemove,
       editor: process.component.ToDoRemoveEditor,
+      presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
       init: false
