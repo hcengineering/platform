@@ -122,7 +122,6 @@
     "Last": "Last",
     "Weekday": "Weekday",
     "WeekendDay": "Weekend day",
-    "NotConnectedIntegration": "The account {email} is not integrated with the workspace",
     "SynchronizedCalendars": "Synchronized calendars",
     "Account": "Account",
     "NoCalendars": "No calendars selected for synchronization"

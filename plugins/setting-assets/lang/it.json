@@ -193,6 +193,8 @@
     "ServiceIsUnavailable": "Il servizio non è disponibile",
     "Integrated": "Integrato",
     "Connected": "Connesso",
-    "Available": "Disponibile"
+    "Available": "Disponibile",
+    "NotConnectedIntegration": "L'account {account} non è integrato con il workspace",
+    "IntegrationIsUnstable": "Il servizio di integrazione sta riscontrando problemi. Alcune funzionalità potrebbero non funzionare correttamente."
   }
 }

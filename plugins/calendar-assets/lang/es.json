@@ -122,7 +122,6 @@
     "Last": "Último",
     "Weekday": "Día laborable",
     "WeekendDay": "Día de descanso",
-    "NotConnectedIntegration": "La cuenta {email} no está integrada con el espacio de trabajo",
     "SynchronizedCalendars": "Calendarios sincronizados",
     "Account": "Cuenta",
     "NoCalendars": "No se seleccionaron calendarios para la sincronización"
