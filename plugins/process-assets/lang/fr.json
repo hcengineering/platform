@@ -100,7 +100,8 @@
     "ArraySizeGt": "Taille supérieure à",
     "ArraySizeGte": "Taille supérieure ou égale à",
     "ArraySizeLt": "Taille inférieure à",
-    "ArraySizeLte": "Taille inférieure ou égale à"
+    "ArraySizeLte": "Taille inférieure ou égale à",
+    "Cancelled": "Annulé"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

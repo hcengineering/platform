@@ -510,7 +510,8 @@
   <svelte:fragment slot="footer">
     <div class="footer-container">
       <span class="text-normal font-medium content-color">
-        <Label label={telegram.string.SyncedChannels} />: {syncedChannelsCount}
+        <Label label={telegram.string.SyncedChannels} />
+        {syncedChannelsCount}
       </span>
     </div>
   </svelte:fragment>
@@ -525,12 +526,6 @@
     overflow: hidden;
   }
 
-  .search-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
   .actions-container {
     display: flex;
     align-items: center;
@@ -540,12 +535,6 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-  }
-
-  .search-results {
-    font-size: 0.875rem;
-    color: var(--theme-content-trans-color);
-    padding-left: 0.5rem;
   }
 
   .no-results {
@@ -587,32 +576,6 @@
     &:hover {
       color: var(--theme-primary-hover-color);
     }
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--theme-bg-divider-color);
-  }
-
-  .selection-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .bulk-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .selected-count {
-    font-size: 0.875rem;
-    color: var(--theme-content-color);
-    font-weight: 500;
   }
 
   .error-container {
@@ -683,11 +646,6 @@
     align-items: center;
     gap: 0.5rem;
     padding-right: 1rem;
-  }
-
-  .sync-label {
-    font-size: 0.875rem;
-    color: var(--theme-dark-color);
   }
 
   .channel-access {

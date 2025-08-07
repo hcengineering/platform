@@ -96,11 +96,12 @@
     "Each": "Каждый",
     "CreateCard": "Создать карточку",
     "OnCardUpdate": "При обновлении карточки",
-    "ArraySizeEquals": "Размер равен",
-    "ArraySizeGt": "Размер больше чем",
-    "ArraySizeGte": "Размер больше или равен",
-    "ArraySizeLt": "Размер меньше чем",
-    "ArraySizeLte": "Размер меньше или равен"
+    "ArraySizeEquals": "Количество равно",
+    "ArraySizeGt": "Количество больше",
+    "ArraySizeGte": "Количество больше или равно",
+    "ArraySizeLt": "Количество меньше",
+    "ArraySizeLte": "Количество меньше или равно",
+    "Cancelled": "Отменено"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

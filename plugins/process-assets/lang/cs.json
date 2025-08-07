@@ -95,7 +95,8 @@
     "Insert": "Vložit",
     "Remove": "Odstranit",
     "RemoveFirst": "Odstranit první",
-    "RemoveLast": "Odstranit poslední"
+    "RemoveLast": "Odstranit poslední",
+    "Cancelled": "Zrušeno"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

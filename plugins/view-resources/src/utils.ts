@@ -304,34 +304,33 @@ export function getAttrTypePresenter (hierarchy: Hierarchy, type: Type<any>): An
   }
 }
 
-export async function getAttributePresenter (
+export function findAttributePresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
   key: string,
-  preserveKey: BuildModelKey,
-  mixinClass?: Ref<Mixin<CollectionPresenter>>,
+  mixinClass: Ref<Mixin<CollectionPresenter>> = view.mixin.CollectionPresenter,
   _category?: AttributeCategory
-): Promise<AttributeModel> {
-  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
-
+): AnyComponent | undefined {
+  const model = client.getModel()
   const hierarchy = client.getHierarchy()
-  const attribute = hierarchy.getAttribute(_class, key)
-  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
-  if (_category !== undefined) {
-    category = _category
-  }
 
-  let overridedPresenter = await client
-    .getModel()
-    .findOne(view.class.AttrPresenter, { objectClass: _class, attribute: attribute._id, category })
+  const attribute = hierarchy.findAttribute(_class, key)
+  if (attribute === undefined) return
+  const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+  let overridedPresenter = model.findAllSync(view.class.AttrPresenter, {
+    objectClass: _class,
+    attribute: attribute._id,
+    category
+  })[0]
   if (overridedPresenter === undefined) {
-    overridedPresenter = await client
-      .getModel()
-      .findOne(view.class.AttrPresenter, { attribute: attribute._id, category })
+    overridedPresenter = model.findAllSync(view.class.AttrPresenter, { attribute: attribute._id, category })[0]
+  }
+  if (overridedPresenter !== undefined) {
+    return overridedPresenter.component
   }
 
   const isCollectionAttr = category === 'collection'
-  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : mixinClass
 
   let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
     attrClass,
@@ -342,26 +341,49 @@ export async function getAttributePresenter (
     presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
-  let presenter: AnySvelteComponent | undefined
+  const attributePresenter = presenterMixin as AttributePresenter
+  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+    return attributePresenter.arrayPresenter
+  } else if (presenterMixin?.presenter !== undefined) {
+    return presenterMixin.presenter
+  } else if (attrClass === core.class.TypeAny) {
+    const typeAny = attribute.type as TypeAny
+    return typeAny.presenter
+  }
+}
 
-  if (overridedPresenter !== undefined) {
-    presenter = await getResource(overridedPresenter.component)
+export async function getAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  preserveKey: BuildModelKey,
+  mixinClass?: Ref<Mixin<CollectionPresenter>>,
+  _category?: AttributeCategory
+): Promise<AttributeModel> {
+  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
+  const hierarchy = client.getHierarchy()
+  const attribute = hierarchy.getAttribute(_class, key)
+  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+  if (_category !== undefined) {
+    category = _category
   }
 
-  if (presenter === undefined) {
-    const attributePresenter = presenterMixin as AttributePresenter
-    if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
-      presenter = await getResource(attributePresenter.arrayPresenter)
-    } else if (presenterMixin?.presenter !== undefined) {
-      presenter = await getResource(presenterMixin.presenter)
-    } else if (attrClass === core.class.TypeAny) {
-      const typeAny = attribute.type as TypeAny
-      presenter = await getResource(typeAny.presenter)
-    }
-  }
-
-  if (presenter === undefined) {
+  const presenterRef = findAttributePresenter(client, _class, key, actualMixinClass, category)
+  if (presenterRef === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
+  }
+
+  const isCollectionAttr = category === 'collection'
+
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
+    attrClass,
+    mixin
+  )
+
+  if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
+    presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
@@ -376,7 +398,7 @@ export async function getAttributePresenter (
     sortingKey,
     _class: attrClass,
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
-    presenter,
+    presenter: await getResource(presenterRef),
     props: preserveKey.props,
     displayProps: preserveKey.displayProps,
     icon: presenterMixin?.icon,
