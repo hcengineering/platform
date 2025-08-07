@@ -5,7 +5,7 @@
   "UPLOAD_URL": "http://huly.local:4030/upload/form-data/:workspace",
   "PREVIEW_CONFIG": "image|http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|http://huly.local:4030/meta/:workspace/:blobId",
   "TELEGRAM_URL": "http://huly.local:8086",
-  "GMAIL_URL": "http://huly.huly.local:8088",
+  "GMAIL_URL": "http://huly.local:8093",
   "CALENDAR_URL": "http://localhost:8095",
   "REKONI_URL": "/rekoni",
   "GITHUB_APP": "uberflow-dev",
