@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { type Integration } from '@hcengineering/account-client'
 import {
   type IntegrationClient,
-  getIntegrationClient as getIntegrationClientRaw
+  getIntegrationClient as getIntegrationClientRaw,
+  request
 } from '@hcengineering/integration-client'
 import calendar from './plugin'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
@@ -36,12 +36,11 @@ export async function signout (integration: Integration, client: IntegrationClie
   if (email === undefined) {
     throw new Error('Email is not defined in integration')
   }
-  await fetch(concatLink(url, `/signout?value=${email}`), {
+  await request({
+    baseUrl: url,
+    path: `/signout?value=${email}`,
     method: 'GET',
-    headers: {
-      Authorization: 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    }
+    token
   })
 }
 

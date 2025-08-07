@@ -18,11 +18,11 @@ import login from '@hcengineering/login'
 import { type GmailSyncState, gmailIntegrationKind } from '@hcengineering/gmail'
 import {
   getIntegrationClient as getIntegrationClientRaw,
-  type IntegrationClient
+  type IntegrationClient,
+  request as httpRequest
 } from '@hcengineering/integration-client'
 
 import gmail from './plugin'
-import { concatLink } from '@hcengineering/core'
 
 export async function getIntegrationClient (): Promise<IntegrationClient> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
@@ -36,22 +36,13 @@ export async function getIntegrationClient (): Promise<IntegrationClient> {
 const url = getMetadata(gmail.metadata.GmailURL) ?? ''
 
 async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
-  const response = await fetch(concatLink(url, path ?? ''), {
+  return await httpRequest({
+    baseUrl: url,
     method,
-    headers: {
-      Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-      'Content-Type': 'application/json'
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+    path,
+    token: getMetadata(presentation.metadata.Token),
+    body
   })
-
-  if (response.status === 200) {
-    return await response.json()
-  } else if (response.status === 202) {
-    return undefined
-  } else {
-    throw new Error(`Unexpected response: ${response.status}`)
-  }
 }
 
 export async function getState (socialId: string): Promise<GmailSyncState | null> {
