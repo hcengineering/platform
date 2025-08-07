@@ -91,9 +91,8 @@
   }
 
   function handleNameChange (e: any): void {
-    if (e.detail !== undefined && step.result != null && name !== e.detail) {
-      step.result.name = e.detail
-      name = e.detail
+    if (step.result != null) {
+      step.result.name = name
       dispatch('change', step)
     }
   }
