@@ -1,0 +1,12 @@
+bind_port = 8095
+bind_host = "0.0.0.0"
+payload_size_limit = "2mb"
+
+token_secret = "secret"
+
+redis_urls = "redis://huly.local:6379"
+redis_password = "<invalid>"
+redis_mode = "direct"
+redis_service = "mymaster"
+
+max_ttl = 3600

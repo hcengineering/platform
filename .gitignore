@@ -1,0 +1,9 @@
+/off
+/target
+/scripts/off
+Justfile
+commit.sh
+/src/GO.sh
+GO.sh
+DROP_DB.sh
+TODO.txt
