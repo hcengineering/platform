@@ -543,7 +543,7 @@ async function withRetries (fn: () => Promise<void>, retries: number, delay: num
       await fn()
       return
     } catch (error) {
-      if (attempt >= retries) {
+      if (attempt >= retries - 1) {
         throw error
       }
       console.error(error)
@@ -554,8 +554,8 @@ async function withRetries (fn: () => Promise<void>, retries: number, delay: num
 }
 
 async function connect (name: string, room: Room, _id: string): Promise<void> {
-  const wsURL = getMetadata(love.metadata.WebSocketURL)
-  if (wsURL === undefined || getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
+  const wsURL = getLiveKitEndpoint()
+  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
     return
   }
 
@@ -1096,6 +1096,15 @@ export async function createMeetingSchedule (
       }
     )
   }
+}
+
+export function getLiveKitEndpoint (): string {
+  const endpoint = getMetadata(love.metadata.WebSocketURL)
+  if (endpoint === undefined) {
+    throw new Error('Livekit endpoint not found')
+  }
+
+  return endpoint
 }
 
 export function getLoveEndpoint (): string {
