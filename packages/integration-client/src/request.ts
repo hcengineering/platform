@@ -73,7 +73,7 @@ export async function request (options: RequestOptions): Promise<any> {
     try {
       return JSON.parse(text)
     } catch (error) {
-      console.warn('Failed to parse JSON response:', text)
+      console.warn('Failed to parse JSON response:', text, error)
       return undefined
     }
   } else if (response.status === 202) {
