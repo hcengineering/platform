@@ -44,7 +44,7 @@ export async function request (options: RequestOptions): Promise<any> {
     response = await fetch(concatLink(baseUrl, path ?? ''), {
       method,
       headers: {
-        Authorization: 'Bearer ' + token,
+        ...(token !== undefined ? { Authorization: 'Bearer ' + token } : {}),
         'Content-Type': 'application/json'
       },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {})
