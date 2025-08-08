@@ -7,10 +7,12 @@ pub enum Ttl {
     At(u64),   // EXAT (timestamp in seconds)
 }
 
+#[derive(Debug)]
 pub enum SaveMode {
     Upsert, // default: set or overwrite
     Insert, // only if not exists (NX)
     Update, // only if exists (XX)
+    Equal(String), // only if md5 matches provided
 }
 
 use redis::{
@@ -27,14 +29,16 @@ pub struct RedisArray {
     pub key: String,
     pub data: String,
     pub expires_at: u64, // sec to expire TTL
+    pub etag: String, // md5 hash (data)
 }
 
-fn error<T>(msg: &'static str) -> RedisResult<T> {
-    Err(redis::RedisError::from((redis::ErrorKind::ExtensionError, msg)))
+fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
+    let msg = msg.into();
+    let full = format!("{}: {}", code, msg);
+    Err(redis::RedisError::from(( redis::ErrorKind::ExtensionError, "", full )))
 }
 
 /// redis_list(&connection,workspace,prefix)
-
 pub async fn redis_list(
     conn: &mut MultiplexedConnection,
     workspace: &str,
@@ -70,8 +74,9 @@ pub async fn redis_list(
                 results.push(RedisArray {
                     workspace: workspace.to_string(),
                     key,
-                    data: value,
+                    data: value.clone(),
                     expires_at: ttl as u64,
+		    etag: hex::encode(md5::compute(&value).0),
                 });
             }
         }
@@ -84,9 +89,7 @@ pub async fn redis_list(
 }
 
 
-
 /// redis_read(&connection,workspace,key)
-
 #[allow(dead_code)]
 pub async fn redis_read(
     conn: &mut MultiplexedConnection,
@@ -97,21 +100,22 @@ pub async fn redis_read(
     let data: Option<String> = redis::cmd("HGET").arg(workspace).arg(key).query_async(conn).await?;
     let Some(data) = data else { return Ok(None); };
 
-    // let ttl: i64 =       redis::cmd("HTTL").arg(workspace).arg("FIELDS").arg(1).arg(key).query_async(conn).await?;
     let ttl_vec: Vec<i64> = redis::cmd("HTTL").arg(workspace).arg("FIELDS").arg(1).arg(key).query_async(conn).await?;
     let ttl = ttl_vec.get(0).copied().unwrap_or(-3); // -3 unknown error
 
-    if ttl == -1 { return error("TTL not setL"); }
-    if ttl == -2 { return error("Key not found"); }
-    if ttl < 0 { return error("Unknown TTL error"); }
+    if ttl == -1 { return error(500, "TTL not set"); }
+    if ttl == -2 { return error(500, "Key not found"); }
+    if ttl < 0 { return error(500, "Unknown TTL error"); }
 
     Ok(Some(RedisArray {
         workspace: workspace.to_string(),
         key: key.to_string(),
-        data,
+        data: data.clone(),
 	expires_at: ttl as u64,
+        etag: hex::encode(md5::compute(&data).0),
     }))
 }
+
 
 /// TTL sec
 /// redis_save(&mut conn, "workspace", "key", "val", Some(Ttl::Sec(300)), Some(SaveMode::Insert)).await?;
@@ -139,34 +143,50 @@ pub async fn redis_save<T: ToRedisArgs>(
 	Some(Ttl::At(timestamp)) => {
     	    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
     	    if timestamp <= now {
-        	return error("TTL timestamp exceeds MAX_TTL limit");
+        	return error(400, "TTL timestamp exceeds MAX_TTL limit");
     	    }
     	    (timestamp - now) as usize
 	}
 	None => CONFIG.max_ttl,
     };
-    if sec == 0 { return error("TTL must be > 0"); }
-    if sec > CONFIG.max_ttl { return error("TTL exceeds MAX_TTL"); }
+    if sec == 0 { return error(400, "TTL must be > 0"); }
+    if sec > CONFIG.max_ttl { return error(412, "TTL exceeds MAX_TTL"); }
 
     let mut cmd = redis::cmd("HSET");
     cmd.arg(workspace).arg(key).arg(value);
 
     // Mode variants
     match mode.unwrap_or(SaveMode::Upsert) {
-	SaveMode::Upsert => {} // none
-        SaveMode::Insert => { cmd.arg("NX"); }
-        SaveMode::Update => { cmd.arg("XX"); }
+
+        SaveMode::Upsert => {} // none
+
+        SaveMode::Insert => {
+	    let exists: bool = redis::cmd("HEXISTS").arg(workspace).arg(key).query_async(conn).await?;
+	    if exists { return error(412, "Insert: key already exists"); }
+	}
+
+        SaveMode::Update => {
+	    let exists: bool = redis::cmd("HEXISTS").arg(workspace).arg(key).query_async(conn).await?;
+	    if !exists { return error(404, "Update: key does not exist"); }
+	}
+
+        SaveMode::Equal(md5) => {
+	    let current_value: Option<String> = redis::cmd("HGET").arg(workspace).arg(key).query_async(conn).await?;
+    	    if let Some(existing) = current_value {
+    		let actual_md5 = hex::encode(md5::compute(&existing).0);
+    		if actual_md5 != md5 { return error(412, format!("md5 mismatch, current: {} expected: {}", actual_md5, md5)); }
+	    } else { return error(404, "Equal: key does not exist"); }
+        }
+
     }
 
     // 1) HSET execute
-    if cmd.query_async::<Option<String>>(&mut *conn).await?.is_none() {
-	return error("SET failed: NX/XX condition not met");
-    }
+    cmd.query_async::<i64>(&mut *conn).await?;
 
     // 2) HEXPIRE execute
     let res: Vec<i32> = redis::cmd("HEXPIRE").arg(workspace).arg(sec).arg("FIELDS").arg(1).arg(key).query_async(&mut *conn).await?;
     if res.get(0).copied().unwrap_or(0) == 0 {
-	return error("HEXPIRE failed: field not found or TTL not set");
+	return error(404, "HEXPIRE field not found or TTL not set");
     }
 
     Ok(())

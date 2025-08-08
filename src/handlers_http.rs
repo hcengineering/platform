@@ -8,7 +8,6 @@ use tracing::{error, trace};
 use uuid::Uuid;
 use crate::ws_owner;
 
-// type BucketPath = web::Path<(String)>;
 type ObjectPath = web::Path<(String, String)>;
 
 use crate::redis::{
@@ -21,15 +20,34 @@ use crate::redis::{
 };
 
 use actix_web::{
-    Error, HttpMessage, HttpRequest, HttpResponse, error,
+    HttpRequest, HttpResponse, error, Error,
     web::{self, Data, Json, Query},
 };
 
 
-/// list
-// #[derive(Deserialize)]
-// pub struct ListInfo { prefix: Option<String> }
+pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 
+    let msg = err.to_string();
+
+    if let Some(detail) = msg.split(" - ExtensionError: ").nth(1) {
+        if let Some((code, text)) = detail.split_once(": ") {
+	    let text = format!("{} {}", code, text);
+            return match code {
+                "400" => actix_web::error::ErrorBadRequest(text),
+                "404" => actix_web::error::ErrorNotFound(text),
+                "412" => actix_web::error::ErrorPreconditionFailed(text),
+                "500" => actix_web::error::ErrorInternalServerError(text),
+                _     => actix_web::error::ErrorInternalServerError("unexpected error"),
+            };
+        }
+    }
+    actix_web::error::ErrorInternalServerError("internal error")
+}
+
+
+/// list
+
+// #[derive(Deserialize)]
 pub async fn list(
     req: HttpRequest,
     path: web::Path<String>,
@@ -52,66 +70,8 @@ pub async fn list(
 
         Ok(HttpResponse::Ok().json(entries))
 
-    }()
-    .await
-    .map_err(|err| {
-        tracing::error!(error = %err, "Internal error in GET handler");
-        actix_web::error::ErrorInternalServerError("internal error")
-    })
-
+    }().await.map_err(map_handler_error)
 }
-/*
-    path: BucketPath,
-    query: Query<ListInfo>,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
-) -> Result<Json<ListResponse>, actix_web::error::Error> {
-
-    ws_owner::workspace_owner(&req)?; // Check workspace
-
-    let (workspace) = path.into_inner();
-    trace!(workspace, prefix = ?query.prefix, "list request");
-
-    // ...
-
-    async move || -> anyhow::Result<Json<ListResponse>> {
-        let connection = pool.get().await?;
-
-        let response = if let Some(prefix) = &query.prefix {
-            let pattern = format!("{}%", prefix);
-            let statement = r#"
-                select key from kvs where workspace=$1 and namespace=$2 and key like $3
-            "#;
-
-            connection
-                .query(statement, &[&wsuuid, &nsstr, &pattern])
-                .await?
-        } else {
-            let statement = r#"
-                select key from kvs where workspace=$1 and namespace=$2
-            "#;
-
-            connection.query(statement, &[&wsuuid, &nsstr]).await?
-        };
-
-        let count = response.len();
-
-        let keys = response.into_iter().map(|row| row.get(0)).collect();
-
-        Ok(Json(ListResponse {
-            keys,
-            count,
-            namespace: nsstr.to_owned(),
-            workspace: wsstr.to_owned(),
-        }))
-    }()
-    .await
-    .map_err(|error| {
-        error!(op = "list", workspace, namespace, ?error, "internal error");
-        error::ErrorInternalServerError("")
-    })
-}
-*/
-
 
 /// get / (test)
 
@@ -124,8 +84,6 @@ pub async fn get(
     ws_owner::workspace_owner(&req)?; // Check workspace
 
     let (workspace, key) = path.into_inner();
-    //    println!("\nworkspace = {}", workspace);
-    //    println!("key = {}\n", key);
 
     trace!(workspace, key, "get request");
 
@@ -135,16 +93,13 @@ pub async fn get(
 
 	Ok(
 	    redis_read(&mut *conn, &workspace, &key).await?
-    		.map(|entry| HttpResponse::Ok().json(entry))
+    		.map(|entry| HttpResponse::Ok()
+                    .insert_header(("ETag", &*entry.etag))
+		    .json(entry))
 	        .unwrap_or_else(|| HttpResponse::NotFound().body("empty"))
 	)
 
-    }()
-    .await
-    .map_err(|err| {
-        tracing::error!(error = %err, "Internal error in GET handler");
-        actix_web::error::ErrorInternalServerError("internal error")
-    })
+    }().await.map_err(map_handler_error)
 }
 
 
@@ -160,8 +115,6 @@ pub async fn put(
     ws_owner::workspace_owner(&req)?; // Check workspace
 
     let (workspace, key) = path.into_inner();
-
-    trace!(workspace, key, "put request");
 
     async move || -> anyhow::Result<HttpResponse> {
 
@@ -183,11 +136,9 @@ pub async fn put(
 	let mut mode = Some(SaveMode::Upsert);
 	if let Some(h) = req.headers().get("If-Match") { // `If-Match: *` - update only if the key exists
 	    let s = h.to_str().map_err(|_| anyhow!("Invalid If-Match header"))?;
-	    if s == "*" { mode = Some(SaveMode::Update); } else {
-		// TODO: `If-Match: <md5>` — update only if current value's MD5 matches
-	        return Err(anyhow!("TODO: Only '*' suported now"));
-	    }
-	} else if let Some(h) = req.headers().get("If-None-Match") { // `If-None-Match: *` — insert only if the key does not exist
+	    if s == "*" { mode = Some(SaveMode::Update); } // `If-Match: *` — update only if exist
+	    else { mode = Some(SaveMode::Equal(s.to_string())); } // `If-Match: <md5>` — update only if current
+	} else if let Some(h) = req.headers().get("If-None-Match") { // `If-None-Match: *` — insert only if does not exist
 	    let s = h.to_str().map_err(|_| anyhow!("Invalid If-None-Match header"))?;
 	    if s == "*" { mode = Some(SaveMode::Insert); } else { return Err(anyhow!("If-None-Match must be '*'")); }
 	}
@@ -195,12 +146,7 @@ pub async fn put(
         redis_save(&mut *conn, &workspace, &key, &body[..], ttl, mode).await?;
 	return Ok(HttpResponse::Ok().body("DONE"));
 
-    }()
-    .await
-    .map_err(|err| {
-        tracing::error!(error = %err, "Internal error in GET handler");
-        actix_web::error::ErrorInternalServerError("internal error")
-    })
+    }().await.map_err(map_handler_error)
 }
 
 
@@ -218,9 +164,6 @@ pub async fn delete(
     let (workspace, key) = path.into_inner();
     trace!(workspace, key, "delete request");
 
-//    let wsuuid = Uuid::parse_str(workspace.as_str())
-//        .map_err(|e| error::ErrorBadRequest(format!("Invalid UUID in workspace: {}", e)))?;
-
     async move || -> anyhow::Result<HttpResponse> {
         let mut conn = redis.lock().await;
 
@@ -232,10 +175,6 @@ pub async fn delete(
         };
 
         Ok(response)
-    }()
-    .await
-    .map_err(|err| {
-        tracing::error!(error = %err, "Internal error in DELETE handler");
-        actix_web::error::ErrorInternalServerError("internal error")
-    })
+    }().await.map_err(map_handler_error)
 }
+

@@ -2,7 +2,6 @@ use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
 use actix_web::{ Error, HttpMessage, HttpRequest, error };
 
-
 /// Checking workspace in Authorization
 pub fn workspace_owner(req: &HttpRequest) -> Result<(), Error> {
     let extensions = req.extensions();
@@ -36,4 +35,3 @@ pub fn workspace_owner(req: &HttpRequest) -> Result<(), Error> {
 
     Ok(())
 }
-

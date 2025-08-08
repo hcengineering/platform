@@ -47,8 +47,6 @@ use config::CONFIG;
 use hulyrs::services::jwt::actix::ServiceRequestExt;
 use secrecy::SecretString;
 
-// pub type Pool = bb8::Pool<PostgresConnectionManager<tokio_postgres::NoTls>>;
-
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
 
