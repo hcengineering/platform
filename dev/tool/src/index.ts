@@ -51,6 +51,7 @@ import {
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
+import { getMongoAccountDB } from '@hcengineering/account-service'
 
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -110,6 +111,7 @@ import {
   filterMergedAccountsInMembers,
   migrateCreatedModifiedBy,
   migrateMergedAccounts,
+  migrateTrustedV6Accounts,
   moveAccountDbFromMongoToPG
 } from './db'
 import { performGithubAccountMigrations } from './github'
@@ -2706,6 +2708,32 @@ export function devTool (
       const { dbUrl, txes } = prepareTools()
 
       await performIntegrationMigrations(dbUrl, cmd.region ?? null, txes)
+    })
+
+  program
+    .command('migrate-trusted-v6-accounts')
+    .description('Migrate trusted v6 accounts')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .option('-d|--dry [dry]', 'Dry run', false)
+    .action(async (cmd: { skip: string, dry: boolean }) => {
+      const { dbUrl } = prepareTools()
+      const mongodbUri = getMongoDBUrl()
+
+      if (mongodbUri === dbUrl) {
+        throw new Error('MONGO_URL and DB_URL are the same')
+      }
+
+      const mongoNs = process.env.OLD_ACCOUNTS_NS
+      const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+      await withAccountDatabase(async (pgDb) => {
+        const [v6MongoAccountDb, closeMongoAccountDb] = await getMongoAccountDB(mongodbUri, mongoNs)
+        try {
+          await migrateTrustedV6Accounts(toolCtx, pgDb, v6MongoAccountDb, cmd.dry, skipWorkspaces)
+        } finally {
+          closeMongoAccountDb()
+        }
+      }, dbUrl)
     })
 
   extendProgram?.(program)

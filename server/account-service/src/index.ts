@@ -29,6 +29,9 @@ import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
 
+export * from './migration/utils'
+export * from './migration/types'
+
 const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
 
 const KEEP_ALIVE_HEADERS = {

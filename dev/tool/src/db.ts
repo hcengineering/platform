@@ -8,7 +8,8 @@ import {
   findFullSocialIdBySocialKey,
   findPersonBySocialKey,
   mergeSpecifiedPersons,
-  mergeSpecifiedAccounts
+  mergeSpecifiedAccounts,
+  createAccount
 } from '@hcengineering/account'
 import { getFirstName, getLastName } from '@hcengineering/contact'
 import {
@@ -23,7 +24,11 @@ import {
   type AccountUuid,
   parseSocialIdString,
   DOMAIN_SPACE,
-  AccountRole
+  AccountRole,
+  generateId,
+  type WorkspaceDataId,
+  type WorkspaceUuid,
+  generateUuid
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -39,6 +44,11 @@ import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import {
+  type MongoAccountDB as v6MongoAccountDB,
+  type Account as OldAccount,
+  type Workspace as OldWorkspace
+} from '@hcengineering/account-service'
 import { type MongoClient } from 'mongodb'
 import type postgres from 'postgres'
 import { type Row } from 'postgres'
@@ -1137,4 +1147,332 @@ export async function ensureGlobalPersonsForLocalAccounts (
   } finally {
     pg.close()
   }
+}
+
+export async function migrateTrustedV6Accounts (
+  ctx: MeasureMetricsContext,
+  accountDB: AccountDB,
+  mongoDb: v6MongoAccountDB,
+  dryRun: boolean,
+  skipWorkspaces: Set<string>
+): Promise<void> {
+  // Mapping between <ObjectId, UUID>
+  const accountsIdToUuid: Record<string, AccountUuid> = {}
+  // Mapping between <email, UUID>
+  const accountsEmailToUuid: Record<string, AccountUuid> = {}
+  // Mapping between <OldId, UUID>
+  const workspacesIdToUuid: Record<WorkspaceDataId, WorkspaceUuid> = {}
+
+  console.log('Migrating accounts database...')
+  let accountsProcessed = 0
+  const accountsCursor = mongoDb.account.findCursor({})
+  try {
+    while (await accountsCursor.hasNext()) {
+      const account = await accountsCursor.next()
+      if (account == null) {
+        break
+      }
+
+      try {
+        const accountUuid = await migrateAccount(account, accountDB, dryRun)
+        if (accountUuid == null) {
+          console.log('Account not migrated', account)
+          continue
+        }
+        accountsIdToUuid[account._id.toString()] = accountUuid
+        accountsEmailToUuid[account.email] = accountUuid
+
+        accountsProcessed++
+        if (accountsProcessed % 100 === 0) {
+          console.log('Processed accounts:', accountsProcessed)
+        }
+      } catch (err: any) {
+        console.log('Failed to migrate account', account._id, account.email, err)
+      }
+    }
+  } catch (err: any) {
+    console.log('Failed to migrate accounts', err)
+  } finally {
+    await accountsCursor.close()
+  }
+
+  console.log('Total accounts processed:', accountsProcessed)
+
+  let processedWorkspaces = 0
+  const workspacesCursor = mongoDb.workspace.findCursor({})
+  try {
+    while (await workspacesCursor.hasNext()) {
+      const workspace = await workspacesCursor.next()
+      if (workspace == null) {
+        break
+      }
+
+      if (
+        skipWorkspaces.has(workspace.workspace) ||
+        (workspace.workspaceUrl != null && skipWorkspaces.has(workspace.workspaceUrl))
+      ) {
+        console.log('Skipping workspace', workspace.workspace, workspace.workspaceUrl)
+        continue
+      }
+
+      try {
+        const workspaceUuid = await migrateWorkspace(
+          workspace,
+          accountDB,
+          accountsIdToUuid,
+          accountsEmailToUuid,
+          dryRun
+        )
+
+        if (workspaceUuid !== undefined) {
+          workspacesIdToUuid[workspace.workspace] = workspaceUuid
+        }
+        processedWorkspaces++
+        if (processedWorkspaces % 100 === 0) {
+          console.log('Processed workspaces:', processedWorkspaces)
+        }
+      } catch (err: any) {
+        console.log('Failed to migrate workspace', workspace.workspaceUrl, workspace.workspace, err)
+      }
+    }
+  } catch (err: any) {
+    console.log('Failed to migrate workspaces', err)
+  } finally {
+    await workspacesCursor.close()
+  }
+
+  console.log('Total workspaces processed:', processedWorkspaces)
+  console.log('Total workspaces created/ensured:', Object.values(workspacesIdToUuid).length)
+
+  let invitesProcessed = 0
+  const invitesCursor = mongoDb.invite.findCursor({})
+  try {
+    while (await invitesCursor.hasNext()) {
+      const invite = await invitesCursor.next()
+      if (invite == null) {
+        break
+      }
+
+      try {
+        const workspaceUuid = workspacesIdToUuid[invite.workspace.name]
+        if (workspaceUuid === undefined) {
+          console.log('No workspace with id', invite.workspace.name, 'found for invite', invite._id)
+          continue
+        }
+
+        const existing = await accountDB.invite.findOne({ migratedFrom: invite._id.toString() })
+        if (existing != null) {
+          continue
+        }
+
+        const inviteRecord = {
+          migratedFrom: invite._id.toString(),
+          workspaceUuid,
+          expiresOn: invite.exp,
+          emailPattern: invite.emailMask,
+          remainingUses: invite.limit,
+          role: invite.role ?? AccountRole.User
+        }
+
+        if (!dryRun) {
+          await accountDB.invite.insertOne(inviteRecord)
+        } else {
+          console.log('Creating invite record', inviteRecord)
+        }
+
+        invitesProcessed++
+        if (invitesProcessed % 100 === 0) {
+          console.log('Processed invites:', invitesProcessed)
+        }
+      } catch (err: any) {
+        console.log('Failed to migrate invite', invite._id, err)
+      }
+    }
+  } catch (err: any) {
+    console.log('Failed to migrate invites', err)
+  } finally {
+    await invitesCursor.close()
+  }
+
+  console.log('Total invites processed:', invitesProcessed)
+}
+
+async function migrateAccount (
+  account: OldAccount,
+  accountDB: AccountDB,
+  dryRun = true
+): Promise<AccountUuid | undefined> {
+  const primaryKey: SocialKey = {
+    type: SocialIdType.EMAIL,
+    value: account.email
+  }
+
+  let personUuid: PersonUuid
+  const verified = account.confirmed === true ? { verifiedOn: Date.now() } : {}
+
+  const existing = await accountDB.socialId.findOne(primaryKey)
+  if (existing == null) {
+    // Create new global person
+    const personRecord = {
+      firstName: account.first,
+      lastName: account.last
+    }
+
+    if (!dryRun) {
+      personUuid = await accountDB.person.insertOne(personRecord)
+    } else {
+      console.log('Creating person record', personRecord)
+      personUuid = generateUuid() as PersonUuid
+    }
+
+    const socialIdRecord = {
+      ...primaryKey,
+      personUuid,
+      ...verified
+    }
+
+    if (!dryRun) {
+      await accountDB.socialId.insertOne(socialIdRecord)
+    } else {
+      console.log('Creating social id record', socialIdRecord)
+    }
+
+    if (!dryRun) {
+      await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
+    } else {
+      console.log('Creating account record', { personUuid, confirmed: account.confirmed })
+    }
+
+    if (account.hash != null && account.salt != null) {
+      if (!dryRun) {
+        await accountDB.setPassword(personUuid as AccountUuid, account.hash, account.salt)
+      } else {
+        console.log('Updating account password', { personUuid })
+      }
+    }
+  } else {
+    personUuid = existing.personUuid
+
+    // if there's no existing account, create a new one
+    const existingAcc = await accountDB.account.findOne({ uuid: personUuid as AccountUuid })
+    if (existingAcc == null) {
+      if (!dryRun) {
+        await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
+      } else {
+        console.log('Creating account record', { personUuid, confirmed: account.confirmed })
+      }
+
+      if (account.hash != null && account.salt != null) {
+        if (!dryRun) {
+          await accountDB.setPassword(personUuid as AccountUuid, account.hash, account.salt)
+        } else {
+          console.log('Updating account password', { personUuid })
+        }
+      }
+    }
+  }
+
+  return personUuid as AccountUuid
+}
+
+async function migrateWorkspace (
+  workspace: OldWorkspace,
+  accountDB: AccountDB,
+  accountsIdToUuid: Record<string, AccountUuid>,
+  accountsEmailToUuid: Record<string, AccountUuid>,
+  dryRun = true
+): Promise<WorkspaceUuid | undefined> {
+  if (workspace.workspaceUrl == null) {
+    console.log('No workspace url, skipping', workspace.workspace)
+    return
+  }
+
+  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : undefined
+  if (createdBy === undefined) {
+    console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
+  }
+
+  const existingByUrl = await accountDB.workspace.findOne({ url: workspace.workspaceUrl })
+  const existingByUuid = await accountDB.workspace.findOne({ uuid: workspace.uuid })
+
+  let workspaceUuid: WorkspaceUuid
+
+  if (existingByUuid == null) {
+    let url = workspace.workspaceUrl
+    if (existingByUrl != null) {
+      // generate new url
+      url = `${url}-${generateId('-')}`
+      console.log('Generating new url', url)
+    }
+
+    const workspaceRecord = {
+      uuid: workspace.uuid,
+      name: workspace.workspaceName,
+      url,
+      dataId: workspace.workspace,
+      branding: workspace.branding,
+      region: workspace.region,
+      createdBy,
+      billingAccount: createdBy,
+      createdOn: workspace.createdOn ?? Date.now()
+    }
+
+    if (!dryRun) {
+      workspaceUuid = await accountDB.workspace.insertOne(workspaceRecord)
+    } else {
+      console.log('Creating workspace record', workspaceRecord)
+      workspaceUuid = generateUuid() as WorkspaceUuid
+    }
+  } else {
+    workspaceUuid = existingByUuid.uuid
+  }
+
+  const existingStatus = await accountDB.workspaceStatus.findOne({ workspaceUuid })
+
+  if (existingStatus == null) {
+    const statusRecord = {
+      workspaceUuid,
+      mode: workspace.mode,
+      processingProgress: workspace.progress !== undefined ? Math.floor(workspace.progress) : undefined,
+      versionMajor: workspace.version?.major,
+      versionMinor: workspace.version?.minor,
+      versionPatch: workspace.version?.patch,
+      lastProcessingTime: workspace.lastProcessingTime,
+      lastVisit: workspace.lastVisit,
+      isDisabled: workspace.disabled,
+      processingAttempts: workspace.attempts,
+      processingMessage: workspace.message,
+      backupInfo: workspace.backupInfo
+    }
+
+    if (!dryRun) {
+      await accountDB.workspaceStatus.insertOne(statusRecord)
+    } else {
+      console.log('Creating workspace status record', statusRecord)
+    }
+  }
+
+  const uniqueAccounts = Array.from(new Set((workspace.accounts ?? []).map((it) => it.toString())))
+  const existingMembers = new Set((await accountDB.getWorkspaceMembers(workspaceUuid)).map((mi) => mi.person))
+  for (const member of uniqueAccounts) {
+    const accountUuid = accountsIdToUuid[member]
+
+    if (accountUuid === undefined) {
+      console.log('No account found for workspace', workspace.workspace, 'member', member)
+      continue
+    }
+
+    if (existingMembers.has(accountUuid)) {
+      continue
+    }
+
+    if (!dryRun) {
+      // Actual roles are being set in workspace migration
+      await accountDB.assignWorkspace(accountUuid, workspaceUuid, AccountRole.Guest)
+    } else {
+      console.log('Assigning account', member, accountUuid, 'to workspace', workspaceUuid)
+    }
+  }
+
+  return workspaceUuid
 }
