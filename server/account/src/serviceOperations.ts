@@ -555,7 +555,7 @@ export async function getPersonInfo (
 ): Promise<PersonInfo> {
   const { account } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['workspace', 'tool'], extra)
+  verifyAllowedServices(['workspace', 'tool', 'gmail'], extra)
 
   if (account == null || account === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -908,6 +908,24 @@ export async function findFullSocialIdBySocialKey (
   return await db.socialId.findOne({ key: socialKey })
 }
 
+export async function findFullSocialIds (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialIds: PersonId[] }
+): Promise<SocialId[]> {
+  const { socialIds } = params
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['gmail', 'tool', 'workspace'], extra)
+
+  if (socialIds == null || socialIds.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  return await db.socialId.find({ _id: { $in: socialIds } })
+}
+
 export async function mergeSpecifiedPersons (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1009,6 +1027,7 @@ export type AccountServiceMethods =
   | 'mergeSpecifiedAccounts'
   | 'findPersonBySocialKey'
   | 'listAccounts'
+  | 'findFullSocialIds'
 
 /**
  * @public
@@ -1037,6 +1056,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     getIntegrationSecret: wrap(getIntegrationSecret),
     listIntegrationsSecrets: wrap(listIntegrationsSecrets),
     findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
+    findFullSocialIds: wrap(findFullSocialIds),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
