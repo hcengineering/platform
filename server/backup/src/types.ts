@@ -29,22 +29,24 @@ export interface BlobData extends Doc {
   base64Data: string // base64 encoded data
 }
 
+export type BackupDocId = Ref<Doc> | string
+
 /**
  * @public
  */
 export interface Snapshot {
-  added: Map<Ref<Doc>, string>
-  updated: Map<Ref<Doc>, string>
-  removed: Ref<Doc>[]
+  added: Map<BackupDocId, string>
+  updated: Map<BackupDocId, string>
+  removed: BackupDocId[]
 }
 
 /**
  * @public
  */
 export interface SnapshotV6 {
-  added: Record<Ref<Doc>, string>
-  updated: Record<Ref<Doc>, string>
-  removed: Ref<Doc>[]
+  added: Record<BackupDocId, string>
+  updated: Record<BackupDocId, string>
+  removed: BackupDocId[]
 }
 
 /**

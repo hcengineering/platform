@@ -23,6 +23,7 @@ import core, {
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   MeasureContext,
+  PersonUuid,
   Ref,
   SortingOrder,
   toIdMap,
@@ -33,6 +34,9 @@ import core, {
   type TxCUD,
   type WorkspaceIds
 } from '@hcengineering/core'
+import { type Person as GlobalPerson, type SocialId, type AccountDB } from '@hcengineering/account'
+import contact, { type Person, type SocialIdentity, type SocialIdentityRef } from '@hcengineering/contact'
+import { DOMAIN_CHANNEL, DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import { BlobClient } from '@hcengineering/server-client'
 import { BackupClientOps, createDummyStorageAdapter, estimateDocSize, type Pipeline } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
@@ -45,14 +49,18 @@ import { join } from 'path'
 import { Pack, pack } from 'tar-stream'
 import { gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import { type BackupInfo, type BackupResult, type BackupSnapshot, type DomainData, type Snapshot } from './types'
+import { BackupDocId, type BackupInfo, type BackupResult, type BackupSnapshot, type DomainData, type Snapshot } from './types'
 import {
   checkBackupIntegrity,
+  chunkArray,
   compactBackup,
   doTrimHash,
   extendZero,
+  getObjectHash,
+  isAccountDomain,
   loadDigest,
   rebuildSizeInfo,
+  toAccountDomain,
   verifyDocsFromSnapshot,
   writeChanges
 } from './utils'
@@ -71,6 +79,7 @@ export async function backup (
   pipeline: Pipeline,
   wsIds: WorkspaceIds,
   storage: BackupStorage,
+  accountDb: AccountDB,
   options: {
     include?: Set<string>
     skipDomains: string[]
@@ -147,6 +156,8 @@ export async function backup (
     }
 
     const blobInfo: Record<string, [string, number]> = {}
+    const affectedPersons = new Set<PersonUuid>()
+    const affectedSocialIds = new Set<SocialIdentityRef>()
 
     // Version 0.6.2, format of digest file is changed to
 
@@ -183,11 +194,6 @@ export async function backup (
       backupInfo.domainHashes = {}
     }
 
-    if (backupInfo.domainHashes === undefined) {
-      // Migration
-      backupInfo.domainHashes = {}
-    }
-
     let fullCheck = options.fullVerify === true
 
     if (backupInfo.migrations.forcedFullCheck !== forcedFullCheck) {
@@ -212,6 +218,7 @@ export async function backup (
 
     ctx.warn('starting backup', { workspace: workspaceId })
 
+    let skipWorkspaceDomains = false
     if (!fullCheck) {
       lastTx = (
         await pipeline.findAll(
@@ -223,24 +230,28 @@ export async function backup (
       ).shift()
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
-          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId })
-          result.result = false
-          return result
+          ctx.info('No transaction changes. Skipping workspace domains backup.', { workspace: workspaceId })
+          skipWorkspaceDomains = true
         }
       }
     }
 
-    const blobClient = new BlobClient(pipeline.context.storageAdapter ?? createDummyStorageAdapter(), wsIds)
-
-    const domains = [
-      DOMAIN_BLOB,
-      DOMAIN_MODEL_TX,
-      DOMAIN_TX,
-      ...pipeline.context.hierarchy
-        .domains()
-        .filter(
-          (it) =>
-            it !== DOMAIN_TRANSIENT &&
+    const blobClient = skipWorkspaceDomains ? undefined : new BlobClient(pipeline.context.storageAdapter ?? createDummyStorageAdapter(), wsIds)
+    const accountDomains = [
+      toAccountDomain('person'),
+      toAccountDomain('socialId')
+    ]
+    const domains = skipWorkspaceDomains
+      ? accountDomains
+      : [
+          DOMAIN_BLOB,
+          DOMAIN_MODEL_TX,
+          DOMAIN_TX,
+          ...pipeline.context.hierarchy
+            .domains()
+            .filter(
+              (it) =>
+                it !== DOMAIN_TRANSIENT &&
             it !== DOMAIN_MODEL &&
             it !== DOMAIN_MODEL_TX &&
             it !== DOMAIN_TX &&
@@ -248,12 +259,15 @@ export async function backup (
             it !== ('fulltext-blob' as Domain) &&
             !options.skipDomains.includes(it) &&
             (options.include === undefined || options.include.has(it))
-        )
-    ]
+            ),
+          ...accountDomains
+        ]
 
     ctx.info('domains for dump', { domains: domains.length, workspace: workspaceId, url: wsIds.url })
 
-    backupInfo.lastTxId = '' // Clear until full backup will be complete
+    if (!skipWorkspaceDomains) {
+      backupInfo.lastTxId = '' // Clear until full backup will be complete
+    }
 
     const recheckSizes: string[] = []
 
@@ -298,7 +312,7 @@ export async function backup (
     async function loadChangesFromServer (
       ctx: MeasureContext,
       domain: Domain,
-      digest: Map<Ref<Doc>, string>,
+      digest: Map<BackupDocId, string>,
       changes: Snapshot,
       same: Map<Ref<Doc>, string>
     ): Promise<{ changed: number, needRetrieveChunks: RetriavableChunks[] }> {
@@ -321,6 +335,7 @@ export async function backup (
           }
         }
       }
+
       while (true) {
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, domain, idx))
@@ -817,6 +832,18 @@ export async function backup (
 
             processChanges(d, blobFiled)
           } else {
+            // Remember changes of Persons and SocialIdentities
+            // to process them later in account domains
+            if (domain === DOMAIN_CONTACT && d._class === contact.class.Person) {
+              const person = d as Person
+              if (person.personUuid !== undefined) {
+                affectedPersons.add(person.personUuid)
+              }
+            } else if (domain === DOMAIN_CHANNEL && d._class === contact.class.SocialIdentity) {
+              const sid = d as SocialIdentity
+              affectedSocialIds.add(sid._id)
+            }
+
             const data = JSON.stringify(d)
             await new Promise<void>((resolve, reject) => {
               _pack?.entry({ name: d._id + '.json' }, data, function (err) {
@@ -860,7 +887,208 @@ export async function backup (
       }
     }
 
+    async function processAccountDomain (
+      ctx: MeasureContext,
+      domain: Domain,
+      progress: (value: number) => Promise<void>
+    ): Promise<void> {
+      const isPersonDomain = domain === toAccountDomain('person')
+      let collection: 'person' | 'socialId'
+      let key: 'uuid' | '_id'
+      let getObjKey: (obj: any) => string
+      let affectedObjects: Set<BackupDocId>
+      if (isPersonDomain) {
+        collection = 'person'
+        key = 'uuid'
+        getObjKey = (obj: GlobalPerson) => obj.uuid
+        affectedObjects = affectedPersons
+      } else {
+        collection = 'socialId'
+        key = '_id'
+        getObjKey = (obj: SocialId) => obj._id
+        affectedObjects = affectedSocialIds
+      }
+
+      const processedChanges: Snapshot = {
+        added: new Map(),
+        updated: new Map(),
+        removed: []
+      }
+
+      let stIndex = 0
+      let snapshotIndex = 0
+      const domainInfo: DomainData = {
+        snapshots: [],
+        storage: [],
+        added: 0,
+        updated: 0,
+        removed: 0
+      }
+
+      // Load cumulative digest from existing snapshots
+      const digest = await ctx.with('load-digest', {}, (ctx) =>
+        loadDigest(ctx, storage, backupInfo.snapshots, domain, undefined, options.msg)
+      )
+
+      let _pack: Pack | undefined
+      let _packClose = async (): Promise<void> => {}
+      let addedDocuments = (): number => 0
+      let changed = false
+
+      if (progress !== undefined) {
+        await progress(0)
+      }
+
+      // 1. We need to include global records based on persons/socialIdentities info which are missing in digest
+      // 2. We need to check updates for all records present in digest
+      const batchSize = 1000
+      const toLoad = new Set([...digest.keys(), ...affectedObjects]) as Set<PersonUuid>
+      if (toLoad.size === 0) {
+        ctx.info('No records updates')
+        return
+      }
+
+      const toLoadSorted = Array.from(toLoad).sort()
+      const chunks = chunkArray(toLoadSorted, batchSize)
+      for (const chunk of chunks) {
+        const objs = await accountDb[collection].find({ [key]: { $in: chunk, $gte: chunk[0], $lte: chunk[chunk.length - 1] } })
+        for (const obj of objs) {
+          // check if existing package need to be dumped
+          if (addedDocuments() > dataBlobSize && _pack !== undefined) {
+            await _packClose()
+
+            try {
+              global.gc?.()
+            } catch (err) {}
+
+            snapshot.domains[domain] = domainInfo
+            domainInfo.added += processedChanges.added.size
+            domainInfo.updated += processedChanges.updated.size
+            domainInfo.removed += processedChanges.removed.length
+
+            snapshotIndex++
+            const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${extendZero(snapshotIndex)}.snp.gz`)
+            domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+            await writeChanges(storage, snapshotFile, processedChanges)
+
+            processedChanges.added.clear()
+            processedChanges.removed = []
+            processedChanges.updated.clear()
+            changed = false
+            domainChanges++
+
+            await storage.writeFile(
+              infoFile,
+              gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel, memLevel: 9 })
+            )
+          }
+
+          // prepare new snapshot package if needed
+          if (_pack === undefined) {
+            _pack = pack()
+            stIndex++
+            const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${extendZero(stIndex)}.tar.gz`)
+            domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
+            const tmpFile = join(tmpRoot, basename(storageFile) + '.tmp')
+            const tempFile = createWriteStream(tmpFile)
+            // const dataStream = await storage.write(storageFile)
+
+            const sizePass = new PassThrough()
+            let sz = 0
+            sizePass._transform = (chunk, encoding, cb) => {
+              // No transformation, just pass through data
+              sz += chunk.length
+              sizePass.push(chunk)
+              cb()
+            }
+
+            sizePass.pipe(tempFile)
+
+            const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
+            addedDocuments = () => sz
+            _pack.pipe(storageZip)
+            storageZip.pipe(sizePass)
+
+            _packClose = async () => {
+              await new Promise<void>((resolve) => {
+                tempFile.on('close', () => {
+                  resolve()
+                })
+                _pack?.finalize()
+              })
+
+              // We need to upload file to storage
+              ctx.info('>>>> upload pack', { storageFile, size: sz, url: wsIds.url, workspace: workspaceId })
+              await storage.writeFile(storageFile, createReadStream(tmpFile))
+              await rm(tmpFile)
+
+              _pack = undefined
+            }
+          }
+
+          // return early if canceled
+          if (canceled()) {
+            return
+          }
+
+          // add new document file to the snapshot package if needed
+          const newHash = getObjectHash(obj)
+          const objKey = getObjKey(obj)
+          let include = false
+
+          if (!digest.has(objKey)) {
+            // new person
+            processedChanges.added.set(objKey, newHash)
+            include = true
+          } else {
+            const oldHash = digest.get(objKey)
+
+            if (oldHash !== newHash) {
+              // updated person
+              processedChanges.updated.set(objKey, newHash)
+              include = true
+            }
+          }
+
+          if (include) {
+            const data = JSON.stringify(obj)
+            await new Promise<void>((resolve, reject) => {
+              _pack?.entry({ name: getObjKey(obj) + '.json' }, data, function (err) {
+                if (err != null) reject(err)
+                resolve()
+              })
+            })
+            changed = true
+          }
+        }
+      }
+
+      if (changed && _pack !== undefined) {
+        domainInfo.added += processedChanges.added.size
+        domainInfo.updated += processedChanges.updated.size
+        domainInfo.removed += processedChanges.removed.length
+        if (domainInfo.added + domainInfo.updated + domainInfo.removed > 0) {
+          snapshot.domains[domain] = domainInfo
+
+          snapshotIndex++
+          const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${extendZero(snapshotIndex)}.snp.gz`)
+          domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+          await writeChanges(storage, snapshotFile, processedChanges)
+        }
+
+        processedChanges.added.clear()
+        processedChanges.removed = []
+        processedChanges.updated.clear()
+        changed = false
+        await _packClose()
+        domainChanges++
+        // This will allow to retry in case of critical error.
+        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+      }
+    }
+
     let domainProgress = 0
+
     for (const domain of domains) {
       if (canceled()) {
         break
@@ -877,8 +1105,9 @@ export async function backup (
       if (mm.old > mm.current + mm.current / 10) {
         ctx.info('memory-stats', { ...mm, workspace: workspaceId })
       }
+      const doProcessDomain = isAccountDomain(domain) ? processAccountDomain : processDomain
       await ctx.with('process-domain', { domain }, async (ctx) => {
-        await processDomain(
+        await doProcessDomain(
           ctx,
           domain,
           (value) =>

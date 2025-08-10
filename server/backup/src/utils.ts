@@ -21,6 +21,7 @@ import core, {
   MeasureContext,
   MeasureMetricsContext,
   Ref,
+  type Space,
   type Blob
 } from '@hcengineering/core'
 import {
@@ -33,6 +34,7 @@ import {
   statSync,
   writeFileSync
 } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
 import { PassThrough, type Writable } from 'node:stream'
@@ -41,7 +43,7 @@ import { join } from 'path'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import type { BackupInfo, BackupResult, BackupSnapshot, BlobData, DomainData, Snapshot, SnapshotV6 } from './types'
+import type { BackupDocId, BackupInfo, BackupResult, BackupSnapshot, BlobData, DomainData, Snapshot, SnapshotV6 } from './types'
 export * from './storage'
 
 const dataBlobSize = 250 * 1024 * 1024
@@ -926,8 +928,8 @@ export async function loadDigest (
   domain: Domain,
   date?: number,
   msg?: Record<string, any>
-): Promise<Map<Ref<Doc>, string>> {
-  const result = new Map<Ref<Doc>, string>()
+): Promise<Map<BackupDocId, string>> {
+  const result = new Map<BackupDocId, string>()
   for (const s of snapshots) {
     const d = s.domains[domain]
 
@@ -944,7 +946,7 @@ export async function loadDigest (
           result.set(k as Ref<Doc>, v)
         }
         for (const d of dChanges.removed) {
-          result.delete(d)
+          result.delete(d as Ref<Doc<Space>>)
         }
       } catch (err: any) {
         ctx.warn('failed to load digest', { snapshot: d.snapshot, ...(msg ?? {}) })
@@ -1233,7 +1235,7 @@ export async function verifyDocsFromSnapshot (
   d: DomainData,
   s: BackupSnapshot,
   storage: BackupStorage,
-  digest: Map<Ref<Doc>, string>,
+  digest: Map<BackupDocId, string>,
   verify: (docs: Doc[]) => Promise<void>,
   chunkSize: number
 ): Promise<{ modified: boolean, modifiedFiles: string[] }> {
@@ -1409,4 +1411,29 @@ export async function rebuildSizeInfo (
   await addFileSize(blobInfoFile, true)
 
   await storage.writeFile(sizeFile, gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel }))
+}
+
+export function chunkArray<T> (array: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize))
+  }
+  return chunks
+}
+
+// Using sha1 as we don't need security critical but faster hash
+export function getObjectHash (obj: Record<string, any>): string {
+  const h = createHash('sha1')
+  h.update(JSON.stringify(obj))
+  return h.digest('hex')
+}
+
+const accountPrefix = 'account.'
+
+export function toAccountDomain (domain: string): Domain {
+  return `${accountPrefix}${domain}` as Domain
+}
+
+export function isAccountDomain (domain: Domain): boolean {
+  return domain.startsWith(accountPrefix)
 }
