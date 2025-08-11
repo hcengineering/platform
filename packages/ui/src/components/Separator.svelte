@@ -570,17 +570,18 @@
             .filter((separ) => separ.float !== undefined && !hasSep.includes(separ.float))
             .map((separ) => separ.float)
           const reverseSep = [...separators].reverse()
-          let ind: number = 0
           reverseSep.forEach((separ, i) => {
             const pass = excluded.includes(separ.float)
             if (diff > 0 && !pass && separators != null) {
-              const box = rects.get(reverseSep.length - ind - 1)
+              const originalIndex = separators.length - 1 - i
+              const box = rects.get(originalIndex - excluded.filter((_, idx) => idx <= originalIndex).length)
               if (box != null) {
                 const minSize: number = remToPx(separ.minSize === 'auto' ? 20 : separ.minSize)
-                const forCrop = box.size - minSize
-                if (forCrop > 0) {
-                  const newSize = forCrop - diff < 0 ? minSize : box.size - diff
-                  diff -= forCrop
+                const availableForCrop = box.size - minSize
+                if (availableForCrop > 0) {
+                  const actualCrop = Math.min(diff, availableForCrop)
+                  const newSize = box.size - actualCrop
+                  diff -= actualCrop
                   if (separ.maxSize !== 'auto') {
                     if (direction === 'horizontal') {
                       box.element.style.width = `${newSize}px`
@@ -592,10 +593,9 @@
                       box.element.style.maxHeight = `${newSize}px`
                     }
                   }
-                  separators[separators.length - i - 1].size = newSize
+                  separators[originalIndex].size = pxToRem(newSize)
                 }
               }
-              ind++
             }
           })
         }
