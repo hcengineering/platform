@@ -14,7 +14,7 @@
 //
 
 import MarkdownIt from 'markdown-it'
-import striptags from 'striptags';
+import striptags from 'striptags'
 /**
  * Configuration options for markdown to HTML conversion
  */

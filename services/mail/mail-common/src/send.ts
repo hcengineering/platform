@@ -10,16 +10,14 @@ export async function toNewMessage (client: TxOperations, message: CreateMessage
     const thread = await client.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
     console.log('Thread found', thread)
     if (thread?.parent == null) {
-      return undefined
+      return
     }
     const channel = await client.findOne(chat.masterTag.Channel, { _id: thread.parent })
     console.log('Channel found', channel)
     const mailChannel = await client.findOne(mail.tag.MailChannel, { _id: thread.parent })
     console.log('Mail channel found', mailChannel)
-    return undefined
   } catch (error: any) {
     console.error('Error in toNewMessage:', error.message)
-    return undefined
   }
 }
 

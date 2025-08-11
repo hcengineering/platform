@@ -10,9 +10,6 @@ import { PersonId, SocialIdType } from '@hcengineering/core'
 import { AccountClient } from '@hcengineering/account-client'
 import { HulyMailHeader, HulyMessageIdHeader } from '../../types'
 
-const SENT_HEADER = 'X-Huly-Sent'
-const MESSAGE_ID_HEADER = 'X-Huly-Message-Id'
-
 export async function makeHTMLBodyV2 (
   accountClient: AccountClient,
   message: CreateMessageEvent,
@@ -72,13 +69,13 @@ export function isPlatformSentMessage (message: gmail_v1.Schema$Message): boolea
 
   // Check for custom platform headers
   const headers = message.payload.headers
-  const platformSentHeader = headers.find((h) => h.name === SENT_HEADER)
+  const platformSentHeader = headers.find((h) => h.name === HulyMailHeader)
   if (platformSentHeader?.value === 'true') {
     return true
   }
 
   // Check for platform message ID header
-  const platformMessageIdHeader = headers.find((h) => h.name === MESSAGE_ID_HEADER)
+  const platformMessageIdHeader = headers.find((h) => h.name === HulyMessageIdHeader)
   if (platformMessageIdHeader?.value != null) {
     return true
   }
@@ -100,6 +97,6 @@ export function hasPlatformFooter (messageBody: string): boolean {
 export function getPlatformMessageId (message: GaxiosResponse<gmail_v1.Schema$Message>): string | undefined {
   const headers = message.data?.payload?.headers
   if (headers == null) return undefined
-  const platformMessageIdHeader = headers.find((h) => h.name === MESSAGE_ID_HEADER)
+  const platformMessageIdHeader = headers.find((h) => h.name === HulyMessageIdHeader)
   return platformMessageIdHeader?.value ?? undefined
 }

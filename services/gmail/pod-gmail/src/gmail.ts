@@ -42,7 +42,14 @@ import { encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
-import type { ProjectCredentials, Token, User, SyncState } from './types'
+import {
+  type ProjectCredentials,
+  type Token,
+  type User,
+  type SyncState,
+  HulyMailHeader,
+  HulyMessageIdHeader
+} from './types'
 import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
@@ -66,8 +73,8 @@ function makeHTMLBody (message: NewMessage, from: string): string {
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${message.to} \n`,
     `From: ${from} \n`,
-    'X-Platform-Sent: true\n',
-    `X-Platform-Message-Id: ${message._id}\n`
+    `${HulyMailHeader}: true\n`,
+    `${HulyMessageIdHeader}: ${message._id}\n`
   ]
 
   if (message.replyTo != null) {
@@ -428,7 +435,7 @@ export class GmailClient {
 
       for (const msg of existingMessages.data.messages ?? []) {
         const gmailDate = msg.internalDate != null ? new Date(Number.parseInt(msg.internalDate)) : undefined
-        if (gmailDate === message.date) {
+        if (gmailDate !== undefined && gmailDate?.getTime() === message.date?.getTime()) {
           return true
         }
       }
