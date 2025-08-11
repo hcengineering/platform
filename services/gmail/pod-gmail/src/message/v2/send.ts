@@ -25,7 +25,6 @@ export async function makeHTMLBodyV2 (
   const mailSocialIds = (await accountClient.findFullSocialIds(recipients)).filter(
     (id) => id.type === SocialIdType.EMAIL
   )
-  console.warn('mailSocialIds', mailSocialIds)
   if (mailSocialIds.length === 0) {
     console.warn('No social IDs found for recipients', { recipients })
     return undefined
@@ -50,7 +49,6 @@ export async function makeHTMLBodyV2 (
   }
 
   const subject = getReplySubject(thread.title)
-  console.warn('Creating HTML body for message', { subject })
   if (subject != null) {
     str.push(`Subject: =?UTF-8?B?${encode64(subject)}?= \n`)
   }

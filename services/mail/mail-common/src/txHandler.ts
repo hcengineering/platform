@@ -13,12 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Tx, TxDomainEvent } from '@hcengineering/core'
+import core, { Tx, TxDomainEvent, TxOperations } from '@hcengineering/core'
 import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
 import chat from '@hcengineering/chat'
 
-import { COMMUNICATION_DOMAIN } from './types'
 import { MessageType } from '@hcengineering/communication-types'
+import { Card } from '@hcengineering/card'
+import mail from '@hcengineering/mail'
+
+import { normalizeEmail } from './utils'
+import { COMMUNICATION_DOMAIN } from './types'
 
 export function toMessageEvent (tx: Tx): CreateMessageEvent | undefined {
   if (tx._class !== core.class.TxDomainEvent) {
@@ -36,4 +40,9 @@ export function toMessageEvent (tx: Tx): CreateMessageEvent | undefined {
     return undefined
   }
   return event
+}
+
+export async function getChannel (client: TxOperations, email: string): Promise<Card | undefined> {
+  const normalizedEmail = normalizeEmail(email)
+  return await client.findOne<Card>(mail.tag.MailChannel, { title: normalizedEmail })
 }
