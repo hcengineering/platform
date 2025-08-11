@@ -145,7 +145,7 @@ export async function backup (
 
   const tmpRoot = mkdtempSync('huly')
 
-  const forcedFullCheck = '3'
+  const forcedFullCheck = '4'
 
   try {
     let backupInfo: BackupInfo = {
