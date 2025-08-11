@@ -43,7 +43,16 @@ import { join } from 'path'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import type { BackupDocId, BackupInfo, BackupResult, BackupSnapshot, BlobData, DomainData, Snapshot, SnapshotV6 } from './types'
+import type {
+  BackupDocId,
+  BackupInfo,
+  BackupResult,
+  BackupSnapshot,
+  BlobData,
+  DomainData,
+  Snapshot,
+  SnapshotV6
+} from './types'
 export * from './storage'
 
 const dataBlobSize = 250 * 1024 * 1024

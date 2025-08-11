@@ -147,7 +147,7 @@ export async function restore (
       ctx.info('no changes in domain', { domain: c })
       return
     }
-    const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date) as Map<Ref<Doc>, string>
+    const changeset = (await loadDigest(ctx, storage, snapshots, c, opt.date)) as Map<Ref<Doc>, string>
     // We need to load full changeset from server
     const serverChangeset = new Map<Ref<Doc>, string>()
 
@@ -299,7 +299,7 @@ export async function restore (
       const d = s.domains[c]
 
       if (d !== undefined && docsToAdd.size > 0) {
-        const sDigest = await loadDigest(ctx, storage, [s], c) as Map<Ref<Doc>, string>
+        const sDigest = (await loadDigest(ctx, storage, [s], c)) as Map<Ref<Doc>, string>
         const requiredDocs = new Map(Array.from(sDigest.entries()).filter(([it]) => docsToAdd.has(it)))
 
         let lastSendTime = Date.now()

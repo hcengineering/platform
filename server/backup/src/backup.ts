@@ -49,7 +49,14 @@ import { join } from 'path'
 import { Pack, pack } from 'tar-stream'
 import { gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import { BackupDocId, type BackupInfo, type BackupResult, type BackupSnapshot, type DomainData, type Snapshot } from './types'
+import {
+  BackupDocId,
+  type BackupInfo,
+  type BackupResult,
+  type BackupSnapshot,
+  type DomainData,
+  type Snapshot
+} from './types'
 import {
   checkBackupIntegrity,
   chunkArray,
@@ -236,11 +243,8 @@ export async function backup (
       }
     }
 
-    const blobClient = skipWorkspaceDomains ? undefined : new BlobClient(pipeline.context.storageAdapter ?? createDummyStorageAdapter(), wsIds)
-    const accountDomains = [
-      toAccountDomain('person'),
-      toAccountDomain('socialId')
-    ]
+    const blobClient = new BlobClient(pipeline.context.storageAdapter ?? createDummyStorageAdapter(), wsIds)
+    const accountDomains = [toAccountDomain('person'), toAccountDomain('socialId')]
     const domains = skipWorkspaceDomains
       ? accountDomains
       : [
@@ -252,13 +256,13 @@ export async function backup (
             .filter(
               (it) =>
                 it !== DOMAIN_TRANSIENT &&
-            it !== DOMAIN_MODEL &&
-            it !== DOMAIN_MODEL_TX &&
-            it !== DOMAIN_TX &&
-            it !== DOMAIN_BLOB &&
-            it !== ('fulltext-blob' as Domain) &&
-            !options.skipDomains.includes(it) &&
-            (options.include === undefined || options.include.has(it))
+                it !== DOMAIN_MODEL &&
+                it !== DOMAIN_MODEL_TX &&
+                it !== DOMAIN_TX &&
+                it !== DOMAIN_BLOB &&
+                it !== ('fulltext-blob' as Domain) &&
+                !options.skipDomains.includes(it) &&
+                (options.include === undefined || options.include.has(it))
             ),
           ...accountDomains
         ]
@@ -897,15 +901,62 @@ export async function backup (
       let key: 'uuid' | '_id'
       let getObjKey: (obj: any) => string
       let affectedObjects: Set<BackupDocId>
+
       if (isPersonDomain) {
         collection = 'person'
         key = 'uuid'
         getObjKey = (obj: GlobalPerson) => obj.uuid
+
+        if (fullCheck) {
+          let idx: number | undefined
+          while (true) {
+            const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, DOMAIN_CONTACT, idx))
+            idx = currentChunk.idx
+            const chuckDocs = await connection.loadDocs(
+              ctx,
+              DOMAIN_CONTACT,
+              currentChunk.docs.map((it) => it.id) as Ref<Doc>[]
+            )
+            for (const doc of chuckDocs) {
+              if (doc._class === contact.class.Person) {
+                const person = doc as Person
+                if (person.personUuid !== undefined) {
+                  affectedPersons.add(person.personUuid)
+                }
+              }
+            }
+            if (currentChunk.finished) {
+              break
+            }
+          }
+        }
         affectedObjects = affectedPersons
       } else {
         collection = 'socialId'
         key = '_id'
         getObjKey = (obj: SocialId) => obj._id
+
+        if (fullCheck) {
+          let idx: number | undefined
+          while (true) {
+            const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, DOMAIN_CHANNEL, idx))
+            idx = currentChunk.idx
+            const chuckDocs = await connection.loadDocs(
+              ctx,
+              DOMAIN_CHANNEL,
+              currentChunk.docs.map((it) => it.id) as Ref<Doc>[]
+            )
+            for (const doc of chuckDocs) {
+              if (doc._class === contact.class.SocialIdentity) {
+                const sid = doc as SocialIdentity
+                affectedSocialIds.add(sid._id)
+              }
+            }
+            if (currentChunk.finished) {
+              break
+            }
+          }
+        }
         affectedObjects = affectedSocialIds
       }
 
@@ -951,7 +1002,9 @@ export async function backup (
       const toLoadSorted = Array.from(toLoad).sort()
       const chunks = chunkArray(toLoadSorted, batchSize)
       for (const chunk of chunks) {
-        const objs = await accountDb[collection].find({ [key]: { $in: chunk, $gte: chunk[0], $lte: chunk[chunk.length - 1] } })
+        const objs = await accountDb[collection].find({
+          [key]: { $in: chunk, $gte: chunk[0], $lte: chunk[chunk.length - 1] }
+        })
         for (const obj of objs) {
           // check if existing package need to be dumped
           if (addedDocuments() > dataBlobSize && _pack !== undefined) {
@@ -1117,6 +1170,9 @@ export async function backup (
       domainProgress++
       await options.progress?.(Math.round((domainProgress / domains.length) * 10000) / 100)
     }
+
+    console.info('Affected persons', affectedPersons)
+    console.log('Affected affectedSocialIds', affectedSocialIds)
 
     result.result = true
 
