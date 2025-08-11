@@ -30,6 +30,7 @@ export interface CachedPerson {
  */
 export class PersonCache {
   private readonly cache = new Map<string, Promise<CachedPerson | undefined>>()
+  private readonly emailCache = new Map<PersonId, string>()
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -53,7 +54,12 @@ export class PersonCache {
     if (result === undefined) {
       throw new Error(`Failed to ensure person exists for email: ${email}`)
     }
+    this.emailCache.set(result.socialId, email)
     return result
+  }
+
+  async getEmailBySocialId (socialId: PersonId): Promise<string | undefined> {
+    return this.emailCache.get(socialId)
   }
 
   size (): number {
@@ -62,6 +68,7 @@ export class PersonCache {
 
   clearCache (): void {
     this.cache.clear()
+    this.emailCache.clear()
   }
 
   private async fetchAndCachePerson (

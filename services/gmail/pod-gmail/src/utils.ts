@@ -90,3 +90,20 @@ export function getKvsClient (token: string): KeyValueClient {
   keyValueClient = getKeyValueClient('gmail', config.KvsUrl, token)
   return keyValueClient
 }
+
+export function createGmailSearchQuery (fromDate: Date, toDate: Date, fromEmail: string): string {
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    return `${year}/${month}/${day}`
+  }
+
+  const afterDate = formatDate(fromDate)
+  // Add one day to toDate for proper before date range (Gmail's before is exclusive)
+  const adjustedToDate = new Date(toDate)
+  adjustedToDate.setDate(adjustedToDate.getDate() + 1)
+  const beforeDate = formatDate(adjustedToDate)
+
+  return `after:${afterDate} before:${beforeDate} from:${fromEmail}`
+}

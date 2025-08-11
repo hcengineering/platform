@@ -18,6 +18,8 @@ import { imageSize } from 'image-size'
 
 import { BlobMetadata, MeasureContext } from '@hcengineering/core'
 import { Attachment, EmailContact, EmailMessage } from './types'
+import { MessageExtra } from '@hcengineering/communication-types'
+import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 
 const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
 const NAME_SEGMENT_REGEX = /[\s,;]+/
@@ -159,4 +161,36 @@ export enum MessageTimeShift {
   Thread = -3,
   Collaborator = -2,
   Subject = -1
+}
+
+export function getMessageExtra (type: string, synced: boolean): MessageExtra {
+  return {
+    type,
+    mailSynced: synced
+  }
+}
+
+export function isSyncedMessage (message: CreateMessageEvent): boolean {
+  return message.extra?.mailSynced ?? false
+}
+
+export function getReplySubject (threadName: string | undefined): string | undefined {
+  if (threadName === undefined) {
+    return undefined
+  }
+
+  const trimmedSubject = threadName.trim()
+  if (trimmedSubject === '') {
+    return undefined
+  }
+
+  // Check if subject already has a reply/forward prefix (case-insensitive)
+  const replyPrefixes = /^(re|aw|sv|antw|resp):\s*/i
+  const forwardPrefixes = /^(fwd?|fw|wg|tr|vs):\s*/i
+
+  if (replyPrefixes.test(trimmedSubject) || forwardPrefixes.test(trimmedSubject)) {
+    return trimmedSubject
+  }
+
+  return `Re: ${trimmedSubject}`
 }

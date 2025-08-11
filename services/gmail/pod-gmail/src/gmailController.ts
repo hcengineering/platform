@@ -15,30 +15,41 @@
 
 import {
   AccountUuid,
+  Doc,
   isActiveMode,
   isArchivingMode,
   isDeletingMode,
   MeasureContext,
   RateLimiter,
+  TxCUD,
   WorkspaceInfoWithStatus,
   WorkspaceUuid,
   type PersonId
 } from '@hcengineering/core'
-import { normalizeEmail } from '@hcengineering/mail-common'
-import type { StorageAdapter } from '@hcengineering/server-core'
+import { toMessageEvent, normalizeEmail } from '@hcengineering/mail-common'
+import { ConsumerHandle, PlatformQueue, QueueTopic, type StorageAdapter } from '@hcengineering/server-core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { getAccountClient } from '@hcengineering/server-client'
 
 import { decode64 } from './base64'
 import config from './config'
 import { type GmailClient } from './gmail'
 import { getWorkspaceTokens } from './tokens'
-import { SyncState, type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
+import {
+  SyncState,
+  IntegrationVersion,
+  type ProjectCredentials,
+  type Token,
+  type User,
+  type WorkspaceStateInfo
+} from './types'
 import { serviceToken } from './utils'
 import { WorkspaceClient } from './workspaceClient'
 import { getIntegrationClient } from './integrations'
 
 import { AuthProvider } from './gmail/auth'
 import { AccountClient } from '@hcengineering/account-client'
+import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -53,6 +64,8 @@ export class GmailController {
 
   private readonly initLimitter = new RateLimiter(config.InitLimit)
   private readonly authProvider
+  private queue: PlatformQueue | undefined
+  private txConsumer: ConsumerHandle | undefined
 
   protected static _instance: GmailController
 
@@ -103,7 +116,58 @@ export class GmailController {
       void this.checkPendingWorkspaces(pendingWorkspaces, sysClient)
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', { error: err.message })
+    } finally {
+      await this.startQueue()
     }
+  }
+
+  async startQueue (): Promise<void> {
+    try {
+      if (config.Version === IntegrationVersion.V1) {
+        // For old gmail there is already handler for NewMessage class
+        return
+      }
+      if (this.queue !== undefined) {
+        this.ctx.warn('Queue is already started')
+        return
+      }
+      this.queue = getPlatformQueue('gmail-service', config.QueueRegion)
+      if (this.queue === undefined) {
+        this.ctx.error('Queue not found')
+        return
+      }
+      this.txConsumer = this.queue.createConsumer<TxCUD<Doc>>(
+        this.ctx,
+        QueueTopic.Tx,
+        this.queue.getClientId(),
+        async (msgs) => {
+          for (const msg of msgs) {
+            const workspaceUuid = msg.workspace
+            for (const tx of msg.value) {
+              const messageEvent = toMessageEvent(tx)
+              if (messageEvent !== undefined) {
+                await this.handleNewMessage(workspaceUuid, messageEvent)
+              }
+            }
+          }
+        },
+        {
+          fromBegining: false // Set to true to process all historical messages
+        }
+      )
+      this.ctx.info('Queue consumer started', { topic: QueueTopic.Tx })
+    } catch (err: any) {
+      this.ctx.error('Failed to start queue consumer', { topic: QueueTopic.Tx })
+    }
+  }
+
+  async handleNewMessage (workspaceUuid: WorkspaceUuid, message: CreateMessageEvent): Promise<void> {
+    const client = this.workspaces.get(workspaceUuid)
+    if (client === undefined) {
+      this.ctx.warn('No workspace client found', { socialId: message.socialId, workspaceUuid })
+      return
+    }
+    await client.handleNewMessage(message)
   }
 
   async checkPendingWorkspaces (workspaceIds: Set<WorkspaceUuid>, sysClient: AccountClient): Promise<void> {
@@ -203,14 +267,18 @@ export class GmailController {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients: GmailClient[] = []
     for (const token of tokens) {
+      let timeout: NodeJS.Timeout | undefined
       try {
-        const timeout = setTimeout(() => {
+        timeout = setTimeout(() => {
           this.ctx.info('init client hang', { workspaceUuid: token.workspace, userId: token.userId })
         }, 60000)
         const client = await workspaceClient.createGmailClient(token)
         clearTimeout(timeout)
         clients.push(client)
       } catch (err: any) {
+        if (timeout !== undefined) {
+          clearTimeout(timeout)
+        }
         this.ctx.error("Couldn't create client", {
           workspaceUuid: workspace,
           userId: token.userId,
@@ -288,6 +356,12 @@ export class GmailController {
       await workspace.close()
     }
     this.workspaces.clear()
+    if (this.txConsumer !== undefined) {
+      await this.txConsumer.close()
+    }
+    if (this.queue !== undefined) {
+      await this.queue.shutdown()
+    }
   }
 
   async createClient (user: User | Token, authCode?: string): Promise<GmailClient> {
