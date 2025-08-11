@@ -14,7 +14,7 @@
 //
 
 import MarkdownIt from 'markdown-it'
-
+import striptags from 'striptags';
 /**
  * Configuration options for markdown to HTML conversion
  */
@@ -63,8 +63,8 @@ export function markdownToText (markdown: string): string {
 
   try {
     const html = markdownToHtml(markdown)
-    // Remove HTML tags
-    return html.replace(/<[^>]*>/g, '').trim()
+    // Remove HTML tags using a robust library
+    return striptags(html).trim()
   } catch (error) {
     console.error('Error converting markdown to text:', error)
     return markdown
