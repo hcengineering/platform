@@ -14,11 +14,33 @@
 // limitations under the License.
 //
 
-import { type Client } from '@hcengineering/core'
+import { WorkspaceUuid, type Client } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
+import { systemAccountUuid } from '@hcengineering/core'
+import {
+  createRestClient as createCommunicationRestClient,
+  RestClient as CommunicationRestClient
+} from '@hcengineering/communication-rest-client'
 
 export async function getClient (token: string): Promise<Client> {
   const endpoint = await getTransactorEndpoint(token)
   console.log('connecting to', endpoint)
   return await createClient(endpoint, token)
+}
+
+export async function getCommunicationClient (workspace: WorkspaceUuid): Promise<CommunicationRestClient> {
+  const token = generateToken(systemAccountUuid, workspace, { service: 'gmail' })
+  const endpoint = toHttpUrl(await getTransactorEndpoint(token))
+  return createCommunicationRestClient(endpoint, workspace, token)
+}
+
+function toHttpUrl (url: string): string {
+  if (url.startsWith('ws://')) {
+    return url.replace('ws://', 'http://')
+  }
+  if (url.startsWith('wss://')) {
+    return url.replace('wss://', 'https://')
+  }
+  return url
 }

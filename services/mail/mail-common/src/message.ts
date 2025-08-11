@@ -28,7 +28,6 @@ import core, {
   type TxOperations,
   AccountUuid,
   generateId,
-  OperationDomain,
   RateLimiter
 } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
@@ -45,14 +44,12 @@ import {
 import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, SyncOptions, type Attachment } from './types'
-import { EmailMessage, MailRecipient, MessageData } from './types'
+import { COMMUNICATION_DOMAIN, EmailMessage, MailRecipient, MessageData } from './types'
 import { getBlobMetadata, getMdContent, MessageTimeShift } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
 import { ThreadLookupService } from './thread'
-
-const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 
 /**
  * Creates mail messages in the platform
@@ -289,7 +286,8 @@ async function createMailThread (
     messageId: subjectId,
     options: {
       noNotify: options?.noNotify
-    }
+    },
+    extra: data.extra
   }
   const createSubjectData = toEventBuffer(createSubjectEvent)
   await sendToCommunicationTopic(producer, config, data, createSubjectData)

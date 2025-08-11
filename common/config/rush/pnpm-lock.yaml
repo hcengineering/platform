@@ -2227,6 +2227,9 @@ importers:
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
+      striptags:
+        specifier: ^3.2.0
+        version: 3.2.0
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
@@ -4417,7 +4420,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz':
-    resolution: {integrity: sha512-RkeOzU5zVyx9sAt73Zf/5NXrv8NeDh8AlNCBqv3lFPv23wvvsEUyrGJkeIiz1FU8JXg6ARR/vT3t9+IzNNNFQQ==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-eWYLBlRXnQFqGd3AoaHW837h+8bmx+E7xihore4xPshh7F3AZJ+LuRdnuJhiTQ3YQVp+x1OED3u6+Wn9JzRd9w==, tarball: file:projects/calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
@@ -4497,7 +4500,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-fbzeC4XwbwgeXRdRXsguOzBB7ioJUCr+k1xNqw9d7y7mxhz7rtDsZIF7Qj8xm7gs+P5y0L2gsiGiwe9OMDgAaw==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-tNTGgOqQ1EOdChaNs4PcbEZwaxInVLb1c04YLtc0k/8m046n69zTQhwu/OJo3mjuDcvvkF0BGgtwnDC1iFwKDA==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-rest-client@file:projects/communication-rest-client.tgz':
@@ -4673,7 +4676,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/github-resources@file:projects/github-resources.tgz':
-    resolution: {integrity: sha512-SoxO9GDPj0TrU4JL8RnOYlp/wNx6ZBzTL8xcIx+fES66e1zdsYt4K0Eq1/uV0EnCI+d+tdYeD4sQUMqlYERAkw==, tarball: file:projects/github-resources.tgz}
+    resolution: {integrity: sha512-tQ5ZcI9uIYDVpiT2aOZAV1iIprahWnBThvBfmiCdBt9A1zAH7UdA2od9UwjAOgefnAaaCtVnSZcMtZyRBwY6Dg==, tarball: file:projects/github-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/github@file:projects/github.tgz':
@@ -4685,7 +4688,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-xr9UPYNDxlO/FM2U7inZHlwuMdgdkymGhff2rpurI0uB8fIczQkegJmSqu8olMC7xgMTvdWyp9vkBP7xBpRprw==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-CtPpz9Jx7rGJXdAon9+eI5gUIvhFU/ztjHUUeBYsPA4pjBXZH5xPC0YWqxqbp6LWdnIwy9wL7BTAXRPlAR6eQA==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -4753,7 +4756,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/integration-client@file:projects/integration-client.tgz':
-    resolution: {integrity: sha512-r46KMTTe/Xy/8c7L81e3fmLX/ESI5ChiCmz+KTBVnHqeuM788FYZVdJhb+JebbXoi+lSHhqE0kWm825RhPiUEA==, tarball: file:projects/integration-client.tgz}
+    resolution: {integrity: sha512-73s3IbZbC5cv7DGfYnGP9LXNNsTTn9n+Bdvdmj/xqy3hayPTvQOFuzQHTJXBtoFh9RKATvI8v802e7BcJF3D+w==, tarball: file:projects/integration-client.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -4821,7 +4824,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-5bI4jSUvdgJu9WZfMBixVXIGqXr6vkojFQ05Ruk52dYc+bo6PvPHlQNPgzyDJjAnoX7lBUvsKJwKgY2TbbwcWQ==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-TEKnSqRlNdp+CAZC5Oq5IC9fODEsemF6FboiNgYxwgUcEJeYMEOd9difhrv+BR3e2ok2cMmbYHDnLIVO9VFKOA==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -5293,7 +5296,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-calendar@file:projects/pod-calendar.tgz':
-    resolution: {integrity: sha512-S3ygrMi6bQUc9U7sfujx5iv8t7gHC+Kl/u/NjRtcmEPDdF47zdmr8mr0THnZNfpgpabFcnBaPcTm9mvXXe/Ftg==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-WrzMM2DguMpVeRdZ+OfM2/55ZtMNFmfRpXMN7V2i3+KpsAUKDQBFqHAibiTJJAiI6uuXN8mkZiSfn6Bh6eCvYA==, tarball: file:projects/pod-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-collaborator@file:projects/pod-collaborator.tgz':
@@ -5325,7 +5328,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-HAat9sFoOjj5Shx3UlRU9ACh2mH4gLlp8CEkxv3gbuoQwVQsgJ0VLCe4FwUjj9DPHP8cpBTek6h75DOXbbvN3g==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-gIKoyoL1gSWpWR35vPCMOpYY/Z+TkO0YJvKHU9ysRpH5Uqm8vjBD91RckK86xNoAHCC6Tuk/xsHnLQfSuQTv3w==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -5841,11 +5844,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-WTrqgpE93g8zjpDYMxBcNlR57SdyerXgTwcm/ffH9Rq6g6jeci4d3Ccg866G/ByekstdqoKmL0PsayYuMzcR1g==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-Ypujv1wWqwY3NEz1nnDPTQRPBCMuz71yh8XBeaO/R8LQoxbXNrawIJPSkPhskudFYmmY1yKvWGuV8YO1vYiR2w==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
-    resolution: {integrity: sha512-+aMwLYnIOHywBM7Qx0U8oJFBAFDukVI6aW9XllMbQj4YVjxXMQuZ+IqdW7PdclDq+xMC8u8noU30nzAKIj45eg==, tarball: file:projects/setting.tgz}
+    resolution: {integrity: sha512-HWEdbpzjpofObK2fv0WkpSZeFVpLROeA6s6/7tsJ/51IHCSxbsuqbJO+CGc+g1fZhbLdHUdIKH+J63kwsRaENA==, tarball: file:projects/setting.tgz}
     version: 0.0.0
 
   '@rush-temp/sign@file:projects/sign.tgz':
@@ -5909,7 +5912,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-oNF++UNPuNik4Ak7sGISighoWJtiPGG+x9+Bop7xHYpPk+j4QTobQlqDKBSAXJdXYE2fe4U64QL5vvIeZT/dDQ==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-sC43Z4u+6Q0Rvj7UUk/T0ndVDEhBEgV777XTsoae+Zrsir6w1zXnSJ1gdoM4dmUVrsUiDN3NMeWFHiZODWYURg==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -5997,7 +6000,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-Vi/BPbM8K+6iZBNQRSsjIAtu4vtocPqM89TWdTxQx4xgUuQqptiNCH/OFzCyGEE7PbY3Ng/dAJcafPhAg4UKKw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-9s0FnsEBN/WrQoIcDgSH/hbgkV49BSHIp/TTZqiRVzmV/yZY9dqaSgYhJxTfWZQnELkKWYIRwNTniqipMobGXw==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -13245,6 +13248,9 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  striptags@3.2.0:
+    resolution: {integrity: sha512-g45ZOGzHDMe2bdYMdIvdAfCQkCTDMGBazSw1ypMowwGIee7ZQ5dU0rBJ8Jqgl+jAKIv4dbeE1jscZq9wid1Tkw==}
+
   strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
 
@@ -13748,8 +13754,8 @@ packages:
     resolution: {integrity: sha512-XiBOnM/UpUq21ZZ91q2AVDOnGROE6UQd37WrO9WBgw4u2eGvUCNOheMmZ3EfEUj7DLHr8tre+Um/436Of/Vwzg==}
     hasBin: true
 
-  uc.micro@2.0.0:
-    resolution: {integrity: sha512-DffL94LsNOccVn4hyfRe5rdKa273swqeA5DJpMOeFmEn1wCDc7nAbbB0gXlgBCL7TNzeTv6G7XVWzan7iJtfig==}
+  uc.micro@2.1.0:
+    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
   ufo@1.5.4:
     resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
@@ -21254,6 +21260,7 @@ snapshots:
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
+      '@types/markdown-it': 13.0.8
       '@types/node': 22.15.29
       '@types/sanitize-html': 2.15.0
       '@types/turndown': 5.0.5
@@ -21270,8 +21277,10 @@ snapshots:
       image-size: 1.1.1
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       kafkajs: 2.2.4
+      markdown-it: 14.0.0
       prettier: 3.2.5
       sanitize-html: 2.16.0
+      striptags: 3.2.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
       turndown: 7.2.0
@@ -35521,7 +35530,7 @@ snapshots:
 
   linkify-it@5.0.0:
     dependencies:
-      uc.micro: 2.0.0
+      uc.micro: 2.1.0
 
   linkifyjs@4.2.0: {}
 
@@ -35795,7 +35804,7 @@ snapshots:
       linkify-it: 5.0.0
       mdurl: 2.0.0
       punycode.js: 2.3.1
-      uc.micro: 2.0.0
+      uc.micro: 2.1.0
 
   marked@13.0.3: {}
 
@@ -37974,6 +37983,8 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
+  striptags@3.2.0: {}
+
   strnum@1.0.5: {}
 
   strtok3@6.3.0:
@@ -38604,7 +38615,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  uc.micro@2.0.0: {}
+  uc.micro@2.1.0: {}
 
   ufo@1.5.4: {}
 
