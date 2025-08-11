@@ -15,12 +15,17 @@
 
 import type { Plugin, Asset, IntlString } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { type ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui'
 
 /** @public */
 export const mediaId = 'media' as Plugin
 
 export const mediaPlugin = plugin(mediaId, {
+  component: {
+    MediaPopupCamSelector: '' as AnyComponent,
+    MediaPopupMicSelector: '' as AnyComponent,
+    MediaPopupSpkSelector: '' as AnyComponent
+  },
   extension: {
     StateIndicator: '' as ComponentExtensionId,
     StateContext: '' as ComponentExtensionId

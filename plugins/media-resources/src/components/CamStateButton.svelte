@@ -17,26 +17,19 @@
   import { Icon, tooltip } from '@hcengineering/ui'
 
   import media from '../plugin'
-  import { sessions } from '../stores'
 
   import IconCamOn from './icons/CamOn.svelte'
   import IconCamOff from './icons/CamOff.svelte'
+  import { toggleCamState } from '../utils'
 
   export let state: CamState | undefined
-
-  function handleClick (): void {
-    const enabled = state?.enabled ?? false
-    for (const session of $sessions) {
-      session.emit('camera', !enabled)
-    }
-  }
 </script>
 
 {#if state != null}
   <button
     class="hulyStatusBarButton mini positive {state.enabled ? 'positiveContent' : 'negativeContent'}"
     use:tooltip={{ label: state.enabled ? media.string.TurnOffCam : media.string.TurnOnCam, direction: 'bottom' }}
-    on:click={handleClick}
+    on:click={toggleCamState}
   >
     <Icon icon={state.enabled ? IconCamOn : IconCamOff} size={'small'} />
   </button>

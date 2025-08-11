@@ -29,7 +29,8 @@ import { type IntlString, getEmbeddedLabel } from '@hcengineering/platform'
 import EventEmitter from 'events'
 import { onDestroy } from 'svelte'
 import type TypedEventEmitter from 'typed-emitter'
-import { registerSession, unregisterSession } from './stores'
+import { registerSession, sessions, state, unregisterSession } from './stores'
+import { get } from 'svelte/store'
 
 /** @public */
 export async function getSelectedMic (): Promise<MediaDeviceInfo | undefined> {
@@ -67,6 +68,16 @@ export function getDeviceLabel (device: MediaDeviceInfo): IntlString {
   return getEmbeddedLabel(cleanupDeviceLabel(device.label))
 }
 
+/** @public */
+export function toggleCamState (): void {
+  toggleDeviceState('camera')
+}
+
+/** @public */
+export function toggleMicState (): void {
+  toggleDeviceState('microphone')
+}
+
 export interface UseMediaOptions {
   state: MediaState
   autoDestroy?: boolean
@@ -84,6 +95,14 @@ export function useMedia (options: UseMediaOptions): MediaSession {
   }
 
   return session
+}
+
+function toggleDeviceState (kind: 'camera' | 'microphone'): void {
+  const deviceState: CamState | MicState | undefined = kind === 'camera' ? get(state).camera : get(state).microphone
+  const enabled = deviceState?.enabled ?? false
+  for (const session of get(sessions)) {
+    session.emit(kind, !enabled)
+  }
 }
 
 class MediaSessionImpl

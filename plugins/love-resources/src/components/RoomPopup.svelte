@@ -45,28 +45,25 @@
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
     endMeeting,
     getRoomName,
-    isCamAllowed,
     isCameraEnabled,
     isConnected,
-    isMicAllowed,
     isMicEnabled,
     isShareWithSound,
     isSharingEnabled,
     leaveRoom,
     screenSharing,
-    setCam,
-    setMic,
     setShare,
     tryConnect
   } from '../utils'
-  import CamSettingPopup from './CamSettingPopup.svelte'
-  import MicSettingPopup from './MicSettingPopup.svelte'
+  import CamSettingPopup from './meeting/CamSettingPopup.svelte'
+  import MicSettingPopup from './meeting/MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
 
@@ -97,14 +94,6 @@
   $: allowCam = $currentRoom?.type === RoomType.Video
 
   const dispatch = createEventDispatcher()
-
-  async function changeMute (): Promise<void> {
-    await setMic(!$isMicEnabled)
-  }
-
-  async function changeCam (): Promise<void> {
-    await setCam(!$isCameraEnabled)
-  }
 
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
@@ -206,10 +195,9 @@
         icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
         label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
         showTooltip={{
-          label: !$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute
+          label: $isMicEnabled ? love.string.Mute : love.string.UnMute
         }}
-        disabled={!$isMicAllowed}
-        action={changeMute}
+        action={toggleMicState}
         secondIcon={IconUpOutline}
         secondAction={micSettings}
         separate
@@ -220,14 +208,9 @@
           icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
           label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
           showTooltip={{
-            label: !$isCamAllowed
-              ? love.string.CamPermission
-              : $isCameraEnabled
-                ? love.string.StopVideo
-                : love.string.StartVideo
+            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo
           }}
-          disabled={!$isCamAllowed}
-          action={changeCam}
+          action={toggleCamState}
           secondIcon={IconUpOutline}
           secondAction={camSettings}
           separate
