@@ -132,7 +132,7 @@ export async function handleImageGet (
     return
   }
 
-  const cached = cacheGet({ width, height, format, fit })
+  const cached = cacheGet(blob.etag, { width, height, format, fit })
   if (cached !== undefined) {
     res.setHeader('Content-Type', cached.contentType)
     res.setHeader('Cache-Control', cacheControl)
@@ -154,6 +154,7 @@ export async function handleImageGet (
 
     const body = await streamToBuffer(createReadStream(outFile))
     cachePut(
+      blob.etag,
       { width, height, format, fit },
       {
         name: blob.name,
@@ -308,14 +309,14 @@ async function writeToResponse (ctx: MeasureContext, stream: Readable, res: Resp
   })
 }
 
-function cacheKey (params: ImageTransformParams): string {
-  return `${params.width ?? 0}-${params.height ?? 0}-${params.format}-${params.fit}`
+function cacheKey (name: string, params: ImageTransformParams): string {
+  return `${name}-${params.width ?? 0}-${params.height ?? 0}-${params.format}-${params.fit}`
 }
 
-function cacheGet (params: ImageTransformParams): CacheEntry | undefined {
-  return cache.get(cacheKey(params))
+function cacheGet (name: string, params: ImageTransformParams): CacheEntry | undefined {
+  return cache.get(cacheKey(name, params))
 }
 
-function cachePut (params: ImageTransformParams, entry: CacheEntry): void {
-  cache.set(cacheKey(params), entry)
+function cachePut (name: string, params: ImageTransformParams, entry: CacheEntry): void {
+  cache.set(cacheKey(name, params), entry)
 }
