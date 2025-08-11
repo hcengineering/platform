@@ -17,7 +17,8 @@ import { type BackupConfig } from '@hcengineering/server-backup'
 
 interface Config extends Omit<BackupConfig, 'Token'> {
   AccountsURL: string
-  AccountsNS: string
+  AccountsDbURL: string
+  AccountsDbNS: string
   ServiceID: string
   Secret: string
 
@@ -37,7 +38,8 @@ interface Config extends Omit<BackupConfig, 'Token'> {
 
 const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
-  AccountsNS: 'ACCOUNTS_NS',
+  AccountsDbURL: 'ACCOUNTS_DB_URL',
+  AccountsDbNS: 'ACCOUNTS_NS',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   BucketName: 'BUCKET_NAME',
@@ -55,6 +57,7 @@ const envMap: { [key in keyof Config]: string } = {
 
 const required: Array<keyof Config> = [
   'AccountsURL',
+  'AccountsDbURL',
   'Secret',
   'ServiceID',
   'BucketName',
@@ -66,7 +69,8 @@ const required: Array<keyof Config> = [
 export const config: () => Config = () => {
   const params: Partial<Config> = {
     AccountsURL: process.env[envMap.AccountsURL],
-    AccountsNS: process.env[envMap.AccountsNS],
+    AccountsDbURL: process.env[envMap.AccountsDbURL],
+    AccountsDbNS: process.env[envMap.AccountsDbNS],
     Secret: process.env[envMap.Secret],
     BucketName: process.env[envMap.BucketName] ?? 'backups',
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',

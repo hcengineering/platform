@@ -44,7 +44,8 @@ import { restore } from './restore'
 
 export interface BackupConfig {
   AccountsURL: string
-  AccountsNS?: string
+  AccountsDbURL: string
+  AccountsDbNS?: string
   Token: string
 
   Interval: number // Timeout in seconds
@@ -322,13 +323,13 @@ class BackupWorker {
       if (pipeline === undefined) {
         throw new Error('Pipeline is undefined, cannot proceed with backup')
       }
-      const [accountDB, closeAccountDB] = await getAccountDB(this.config.AccountsURL, this.config.AccountsNS)
+      const [accountDB, closeAccountDB] = await getAccountDB(this.config.AccountsDbURL, this.config.AccountsDbNS)
       const result = await ctx.with(
         'backup',
         {},
-        (ctx) => {
+        async (ctx) => {
           try {
-            return backup(ctx, pipeline as Pipeline, wsIds, storage, accountDB, {
+            return await backup(ctx, pipeline as Pipeline, wsIds, storage, accountDB, {
               skipDomains: this.skipDomains,
               force: true,
               timeout: this.config.Timeout * 1000,
