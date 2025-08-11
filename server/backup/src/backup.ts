@@ -1171,9 +1171,6 @@ export async function backup (
       await options.progress?.(Math.round((domainProgress / domains.length) * 10000) / 100)
     }
 
-    console.info('Affected persons', affectedPersons)
-    console.log('Affected affectedSocialIds', affectedSocialIds)
-
     result.result = true
 
     if (!canceled() && domainChanges > 0) {
