@@ -25,7 +25,7 @@
     "@tsconfig/node16": "^1.0.4",
     "@types/express": "^4.17.13",
     "@types/jest": "^29.5.5",
-    "@types/markdown-it": "^14.1.2",
+    "@types/markdown-it": "~13.0.0",
     "@types/node": "^22.15.29",
     "@types/sanitize-html": "^2.15.0",
     "@types/turndown": "^5.0.5",
@@ -63,7 +63,7 @@
     "@hcengineering/server-storage": "^0.6.0",
     "image-size": "^1.1.1",
     "kafkajs": "^2.2.4",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^14.0.0",
     "sanitize-html": "^2.15.0",
     "turndown": "^7.2.0",
     "uuid": "^8.3.2"
