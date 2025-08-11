@@ -2227,6 +2227,9 @@ importers:
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
+      striptags:
+        specifier: ^3.2.0
+        version: 3.2.0
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
@@ -4821,7 +4824,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-NmlDVqowptxLX5fyWQyIlZQNI/zCNNeu0W7TXRzDeJbTpotQiBgGzmVv0pxWRqfJXSpNQHo8mvJNpq+gStR09Q==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-TEKnSqRlNdp+CAZC5Oq5IC9fODEsemF6FboiNgYxwgUcEJeYMEOd9difhrv+BR3e2ok2cMmbYHDnLIVO9VFKOA==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -13245,6 +13248,9 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  striptags@3.2.0:
+    resolution: {integrity: sha512-g45ZOGzHDMe2bdYMdIvdAfCQkCTDMGBazSw1ypMowwGIee7ZQ5dU0rBJ8Jqgl+jAKIv4dbeE1jscZq9wid1Tkw==}
+
   strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
 
@@ -21274,6 +21280,7 @@ snapshots:
       markdown-it: 14.0.0
       prettier: 3.2.5
       sanitize-html: 2.16.0
+      striptags: 3.2.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
       turndown: 7.2.0
@@ -37975,6 +37982,8 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  striptags@3.2.0: {}
 
   strnum@1.0.5: {}
 
