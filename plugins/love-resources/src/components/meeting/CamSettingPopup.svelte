@@ -21,8 +21,8 @@
         }}
       />
       {#if blurRadius >= 0.5}
-        <div class="separator" />
         <Label label={love.string.BlurRadius} />
+        <div class="separator" />
         <Progress
           editable
           max={10}
