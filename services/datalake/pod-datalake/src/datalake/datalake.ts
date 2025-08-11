@@ -17,21 +17,28 @@ import { type MeasureContext, type Tx, WorkspaceUuid } from '@hcengineering/core
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
+import { type Cache, type CacheEntry, createCache, streamToBuffer } from './cache'
 import { type BlobDB, WorkspaceStatsResult } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
 import { type S3Bucket } from '../s3'
 import { blobEvents } from './queue'
+import { CacheConfig } from '../config'
 
 export class DatalakeImpl implements Datalake {
+  private readonly cache: Cache
+
   constructor (
     private readonly db: BlobDB,
     private readonly buckets: Array<{ location: Location, bucket: S3Bucket }>,
     private readonly producer: PlatformQueueProducer<Tx>,
     private readonly options: {
       cacheControl: string
+      cache: CacheConfig
     }
-  ) {}
+  ) {
+    this.cache = createCache(options.cache)
+  }
 
   async list (
     ctx: MeasureContext,
@@ -82,6 +89,14 @@ export class DatalakeImpl implements Datalake {
       return null
     }
 
+    const cached = this.cache.get(blob.hash)
+    if (cached !== undefined) {
+      return {
+        ...cached,
+        body: Readable.from(cached.body)
+      }
+    }
+
     const { bucket } = await this.selectStorage(ctx, workspace, blob.location)
 
     const range = options.range
@@ -90,7 +105,7 @@ export class DatalakeImpl implements Datalake {
       return null
     }
 
-    return {
+    const result = {
       name: blob.name,
       etag: blob.hash,
       size: blob.size,
@@ -102,6 +117,12 @@ export class DatalakeImpl implements Datalake {
       lastModified: object.lastModified,
       cacheControl: object.cacheControl
     }
+
+    if (this.options.cache.enabled && object.size <= this.options.cache.blobSize) {
+      this.cache.set(blob.hash, { ...result, body: await streamToBuffer(object.body) })
+    }
+
+    return result
   }
 
   async delete (ctx: MeasureContext, workspace: WorkspaceUuid, name: string | string[]): Promise<void> {
@@ -136,10 +157,11 @@ export class DatalakeImpl implements Datalake {
 
     const hash = digestToUUID(sha256)
     const filename = hash
+    const etag = hash
 
     // Check if we have the same blob already
     if (blob?.hash === hash && blob?.type === contentType) {
-      return { name, size, contentType, lastModified, etag: hash }
+      return { name, size, contentType, lastModified, etag }
     }
 
     const data = await this.db.getData(ctx, { hash, location })
@@ -151,14 +173,14 @@ export class DatalakeImpl implements Datalake {
       try {
         const event =
           blob != null
-            ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
-            : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+            ? blobEvents.updated(name, { contentType, lastModified, size, etag })
+            : blobEvents.created(name, { contentType, lastModified, size, etag })
         await this.producer.send(workspace, [event])
       } catch (err) {
         ctx.error('failed to send blob created event', { workspace, name, err })
       }
 
-      return { name, size, contentType, lastModified, etag: hash }
+      return { name, size, contentType, lastModified, etag }
     } else {
       const putOptions = {
         contentLength: size,
@@ -166,20 +188,36 @@ export class DatalakeImpl implements Datalake {
         cacheControl,
         lastModified
       }
+
+      if (this.options.cache.enabled && size <= this.options.cache.blobSize) {
+        body = await streamToBuffer(body)
+        const entry: CacheEntry = {
+          body,
+          bodyLength: body.length,
+          bodyEtag: etag,
+          size,
+          name,
+          etag,
+          ...putOptions
+        }
+        this.cache.set(hash, entry)
+      }
+
       await bucket.put(ctx, filename, body, putOptions)
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
 
       try {
         const event =
           blob != null
-            ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
-            : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+            ? blobEvents.updated(name, { contentType, lastModified, size, etag })
+            : blobEvents.created(name, { contentType, lastModified, size, etag })
         await this.producer.send(workspace, [event])
       } catch (err) {
+        this.cache.delete(hash)
         ctx.error('failed to send blob created event', { workspace, name, err })
       }
 
-      return { name, size, contentType, lastModified, etag: hash }
+      return { name, size, contentType, lastModified, etag }
     }
   }
 

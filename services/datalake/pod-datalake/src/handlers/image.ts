@@ -18,13 +18,16 @@ import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { createReadStream, createWriteStream } from 'fs'
 import sharp from 'sharp'
-import { pipeline, type Readable } from 'stream'
+import { Readable, pipeline } from 'stream'
 
-import { type Datalake } from '../datalake'
+import config from '../config'
+import { CacheEntry, type Datalake, createCache, streamToBuffer } from '../datalake'
 import { TemporaryDir } from '../tempdir'
 
 const cacheControl = 'public, max-age=31536000, immutable'
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
+
+const cache = createCache(config.Cache)
 
 const QualityConfig = {
   jpeg: {
@@ -129,6 +132,14 @@ export async function handleImageGet (
     return
   }
 
+  const cached = cacheGet({ width, height, format, fit })
+  if (cached !== undefined) {
+    res.setHeader('Content-Type', cached.contentType)
+    res.setHeader('Cache-Control', cacheControl)
+    await writeCacheEntryToResponse(ctx, cached, res)
+    return
+  }
+
   await writeTempFile(tmpFile, blob.body)
 
   try {
@@ -139,6 +150,22 @@ export async function handleImageGet (
         return runPipeline(tmpFile, outFile, { format, width, height, fit })
       },
       { fit, width, height, size: blob.size }
+    )
+
+    const body = await streamToBuffer(createReadStream(outFile))
+    cachePut(
+      { width, height, format, fit },
+      {
+        name: blob.name,
+        etag: blob.etag,
+        size: blob.size,
+        bodyEtag: blob.etag,
+        bodyLength: body.length,
+        lastModified: blob.lastModified,
+        body,
+        contentType,
+        cacheControl
+      }
     )
 
     res.setHeader('Content-Type', contentType)
@@ -254,9 +281,17 @@ async function writeTempFile (path: string, stream: Readable): Promise<void> {
   })
 }
 
+async function writeCacheEntryToResponse (ctx: MeasureContext, cached: CacheEntry, res: Response): Promise<void> {
+  const readable = Readable.from(cached.body)
+  await writeToResponse(ctx, readable, res)
+}
+
 async function writeFileToResponse (ctx: MeasureContext, path: string, res: Response): Promise<void> {
   const stream = createReadStream(path)
+  await writeToResponse(ctx, stream, res)
+}
 
+async function writeToResponse (ctx: MeasureContext, stream: Readable, res: Response): Promise<void> {
   pipeline(stream, res, (err) => {
     if (err != null) {
       // ignore abort errors to avoid flooding the logs
@@ -271,4 +306,16 @@ async function writeFileToResponse (ctx: MeasureContext, path: string, res: Resp
       }
     }
   })
+}
+
+function cacheKey (params: ImageTransformParams): string {
+  return `${params.width ?? 0}-${params.height ?? 0}-${params.format}-${params.fit}`
+}
+
+function cacheGet (params: ImageTransformParams): CacheEntry | undefined {
+  return cache.get(cacheKey(params))
+}
+
+function cachePut (params: ImageTransformParams, entry: CacheEntry): void {
+  cache.set(cacheKey(params), entry)
 }

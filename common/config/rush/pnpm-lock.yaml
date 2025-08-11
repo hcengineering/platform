@@ -2071,6 +2071,9 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
+      lru-cache:
+        specifier: ^11.1.0
+        version: 11.1.0
       mammoth:
         specifier: ^1.9.0
         version: 1.9.0
@@ -5304,7 +5307,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-RGpObF2SDrv7PK27GOas+okVOVLiJ2BxR2l1pTDgwdJyPxKkQ8yqA/ZMlsvWINj+SAB7Nh7fNYUB488GmL0P0w==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-h/L+2BZXQTXYeSl+FWGPMR6TMzbvXUGKNyPFXdK70S7Y6ld5T+sm3sVp01Buc+vOU8U+aOt+I3MHFBRI4RVOXw==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -11174,6 +11177,10 @@ packages:
   lru-cache@10.2.0:
     resolution: {integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==}
     engines: {node: 14 || >=16.14}
+
+  lru-cache@11.1.0:
+    resolution: {integrity: sha512-QIXZUBJUx+2zHUdQujWejBkcD9+cs94tLn0+YL8UrCh+D5sCXZ4c7LaEH48pNwRY3MLDgqUFyhlCyjJPf1WP0A==}
+    engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
@@ -23634,6 +23641,7 @@ snapshots:
       express: 4.21.2
       express-fileupload: 1.5.1
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      lru-cache: 11.1.0
       morgan: 1.10.0
       on-headers: 1.0.2
       postgres: 3.4.7
@@ -35729,6 +35737,8 @@ snapshots:
       highlight.js: 11.11.1
 
   lru-cache@10.2.0: {}
+
+  lru-cache@11.1.0: {}
 
   lru-cache@5.1.1:
     dependencies:
