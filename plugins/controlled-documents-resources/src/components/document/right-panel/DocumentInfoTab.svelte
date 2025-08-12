@@ -96,7 +96,7 @@
           value={$controlledDocument}
           isRegular
           disableLink
-          editable={isInitialEditableDraft}
+          canEdit={isInitialEditableDraft}
           on:edit={(e) => {
             handleCodeEdit(e.detail)
           }}

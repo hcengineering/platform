@@ -18,8 +18,8 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { getPanelURI, Icon, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   import documents from '../../../plugin'
 
@@ -41,19 +41,18 @@
 </script>
 
 {#if category}
-  <a
-    class={!disableClick ? 'flex-presenter' : 'category-presenter'}
-    href={!disableClick
-      ? `#${getPanelURI(view.component.EditDoc, category._id, category._class, 'content')}`
-      : undefined}
-    class:inline-presenter={inline}
-    use:tooltip={{ label: getEmbeddedLabel(category.title) }}
-  >
-    <div class="icon category-icon">
-      <Icon icon={documents.icon.Document} size={'small'} />
+  <DocNavLink object={category} disabled={disableClick} accent {inline}>
+    <div
+      class={!disableClick ? 'flex-presenter' : 'category-presenter'}
+      class:inline-presenter={inline}
+      use:tooltip={{ label: getEmbeddedLabel(category.title) }}
+    >
+      <div class="icon category-icon">
+        <Icon icon={documents.icon.Document} size={'small'} />
+      </div>
+      <span class="label fs-bold whitespace-nowrap">{category.code}</span>
     </div>
-    <span class="label whitespace-nowrap">{category.code}</span>
-  </a>
+  </DocNavLink>
 {/if}
 
 <style lang="scss">
