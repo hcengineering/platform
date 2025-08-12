@@ -44,7 +44,6 @@ export const documentPlugin = plugin(documentId, {
     DocumentSearchIcon: '' as AnyComponent
   },
   action: {
-    CopyDocumentLink: '' as Ref<Action<Doc, any>>,
     CreateChildDocument: '' as Ref<Action>,
     CreateDocument: '' as Ref<Action>,
     EditTeamspace: '' as Ref<Action>

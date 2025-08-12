@@ -141,6 +141,7 @@
     "PermissionWarningMessage": "Votre rôle actuel a des autorisations limitées. Pour débloquer cette fonctionnalité et d'autres fonctionnalités avancées, demandez à l'administrateur de votre espace de travail de mettre à jour votre niveau d'accès !",
     "Icon": "Icône",
     "Color": "Couleur",
-    "AutomationOnly": "Automatisation uniquement"
+    "AutomationOnly": "Automatisation uniquement",
+    "CopyLink": "Copier le lien"
   }
 }

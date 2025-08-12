@@ -146,6 +146,7 @@
     "PermissionWarningMessage": "Your current role has limited permissions. To unlock this and other advanced features, ask your workspace admin to upgrade your access level!",
     "Icon": "Icon",
     "Color": "Color",
-    "AutomationOnly": "Automation only"
+    "AutomationOnly": "Automation only",
+    "CopyLink": "Copy link"
   }
 }

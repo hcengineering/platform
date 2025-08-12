@@ -633,7 +633,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     tracker.action.CopyIssueLink
   )

@@ -57,8 +57,8 @@ import core, {
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
-import { getResource, translate } from '@hcengineering/platform'
-import {
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
+import presentation, {
   createQuery,
   getAttributePresenterClass,
   getClient,
@@ -1236,6 +1236,34 @@ export async function openDocFromRef<T extends Doc = Doc> (_class: Ref<Class<T>>
     return true
   }
   return false
+}
+
+export async function canCopyLink (doc?: Doc | Doc[]): Promise<boolean> {
+  doc = Array.isArray(doc) ? doc[0] : doc
+  if (doc === undefined) {
+    return false
+  }
+  return true
+}
+
+export async function getLink (doc?: Doc | Doc[]): Promise<string> {
+  doc = Array.isArray(doc) ? doc[0] : doc
+  if (doc === undefined) {
+    return ''
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const panelComponent = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
+  const comp = panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, doc, {}, comp)
+  const url = locationToUrl(loc)
+
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+  const protocolAndHost = frontUrl ?? `${window.location.protocol}//${window.location.host}`
+
+  return `${protocolAndHost}${url}`
 }
 
 /**

@@ -253,7 +253,7 @@ test.describe('Documents tests', () => {
     await documentsPage.clickOnButtonCreateDocument()
     await documentsPage.createDocument(newDocument)
     await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Lock')
-    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Copy document URL to clipboard')
+    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Copy link')
     await context.grantPermissions(['clipboard-read'])
     const handle = await page.evaluateHandle(() => navigator.clipboard.readText())
     const clipboardContent = await handle.jsonValue()

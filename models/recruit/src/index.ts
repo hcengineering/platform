@@ -1286,7 +1286,8 @@ export function createModel (builder: Builder): void {
         mode: ['context', 'browser'],
         application: recruit.app.Recruit,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     recruit.action.CopyApplicationLink
   )
@@ -1306,7 +1307,8 @@ export function createModel (builder: Builder): void {
         mode: ['context', 'browser'],
         application: recruit.app.Recruit,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     recruit.action.CopyCandidateLink
   )
