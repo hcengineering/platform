@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import { Card } from '@hcengineering/card'
+import { MessageExtra } from '@hcengineering/communication-types'
 import { PersonSpace } from '@hcengineering/contact'
-import { PersonId, PersonUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { OperationDomain, PersonId, PersonUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
 
 //
 export interface Attachment {
@@ -44,6 +45,7 @@ export interface EmailMessage {
   incoming: boolean
   subject: string
   sendOn: number
+  extra?: MessageExtra
 }
 
 export interface MailRecipient {
@@ -73,8 +75,11 @@ export interface MessageData {
   threadId: Ref<Card>
   recipient: MailRecipient
   isReply: boolean
+  extra?: MessageExtra
 }
 
 export interface SyncOptions {
   noNotify?: boolean
 }
+
+export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain

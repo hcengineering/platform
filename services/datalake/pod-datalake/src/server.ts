@@ -14,6 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import { getClient } from '@hcengineering/account-client'
 import { MeasureContext, Tx, metricsAggregate } from '@hcengineering/core'
 import { PlatformQueue, QueueTopic, getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
 import { decodeToken, TokenError } from '@hcengineering/server-token'
@@ -115,6 +116,8 @@ export async function createServer (
   queue: PlatformQueue,
   config: Config
 ): Promise<{ app: Express, close: () => void }> {
+  await ensureAccountReady(ctx, config)
+
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
@@ -347,4 +350,14 @@ export function listen (e: Express, port: number, host?: string): Server {
   server.headersTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 2000
 
   return server
+}
+
+async function ensureAccountReady (ctx: MeasureContext, config: Config): Promise<void> {
+  const client = getClient(config.AccountsUrl)
+  try {
+    await client.getRegionInfo()
+  } catch (err: any) {
+    ctx.error('Accounts service not ready', { err })
+    throw new Error('Accounts service not ready')
+  }
 }

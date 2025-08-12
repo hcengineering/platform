@@ -117,7 +117,6 @@
   }
 
   function onRefreshIntegrations (data: any): void {
-    console.log('Refreshing integrations due to:', data.integrationKind, data.operation)
     lastEventTime = Date.now()
     void refreshIntegrations()
   }
@@ -229,7 +228,6 @@
       }
       return integrationInfo
     })
-    console.log('Filtered Integrations:', filteredIntegrations)
     return filteredIntegrations
   }
 

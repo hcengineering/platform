@@ -17,9 +17,8 @@ import { UAParser } from 'ua-parser-js'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
+import { generateUuid } from '@hcengineering/core'
 import { Analytics } from '@hcengineering/analytics'
-
-const parser = UAParser()
 
 let _isSignUp: boolean = false
 export const signupStore = {
@@ -29,6 +28,115 @@ export const signupStore = {
   getSignUpFlow: () => {
     return _isSignUp
   }
+}
+
+// Session and activity tracking
+class SessionManager {
+  private static instance: SessionManager
+  private readonly sessionId: string
+  private readonly windowId: string
+  private readonly sessionStartTime: number
+  private pageviewId: string
+  private pageStartTime: number
+  private eventCount: number = 0
+  private pageViewCount: number = 0
+  private currentUrl: string = ''
+
+  private constructor () {
+    this.sessionId = generateUuid()
+    this.windowId = generateUuid()
+    this.sessionStartTime = Date.now()
+    this.pageviewId = generateUuid()
+    this.pageStartTime = Date.now()
+    this.currentUrl = window.location.href
+    this.pageViewCount = 1 // First page view
+
+    this.setupNavigationTracking()
+  }
+
+  static getInstance (): SessionManager {
+    if (SessionManager.instance === undefined) {
+      SessionManager.instance = new SessionManager()
+    }
+    return SessionManager.instance
+  }
+
+  private setupNavigationTracking (): void {
+    window.addEventListener('popstate', () => {
+      setTimeout(() => {
+        this.onUrlChange()
+      }, 0)
+    })
+    setInterval(() => {
+      if (window.location.href !== this.currentUrl) {
+        this.onUrlChange()
+      }
+    }, 5000)
+  }
+
+  onUrlChange (): void {
+    if (window.location.href !== this.currentUrl) {
+      this.currentUrl = window.location.href
+      this.pageviewId = generateUuid()
+      this.pageStartTime = Date.now()
+      this.pageViewCount++
+    }
+  }
+
+  getSessionData (): Record<string, any> {
+    const now = Date.now()
+    const timeOnPage = Math.floor((now - this.pageStartTime) / 1000)
+    const sessionDuration = Math.floor((now - this.sessionStartTime) / 1000)
+
+    return {
+      $session_id: this.sessionId,
+      $window_id: this.windowId,
+      $pageview_id: this.pageviewId,
+      $session_duration: sessionDuration,
+      $time_on_page: timeOnPage,
+      $page_view_count: this.pageViewCount,
+      $event_count: this.eventCount,
+      $is_first_session: this.isFirstSession(),
+      $is_returning_user: this.isReturningUser(),
+      $insert_id: this.generateInsertId()
+    }
+  }
+
+  incrementEventCount (): void {
+    this.eventCount++
+  }
+
+  private generateInsertId (): string {
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substr(2, 9)
+    return `${timestamp}-${random}`
+  }
+
+  private isFirstSession (): boolean {
+    const hasVisited = localStorage.getItem('analytics_has_visited')
+    if (hasVisited === null || hasVisited === '') {
+      localStorage.setItem('analytics_has_visited', 'true')
+      return true
+    }
+    return false
+  }
+
+  private isReturningUser (): boolean {
+    const firstVisit = localStorage.getItem('analytics_first_visit')
+    const now = Date.now()
+
+    if (firstVisit === null || firstVisit === '') {
+      localStorage.setItem('analytics_first_visit', now.toString())
+      return false
+    }
+
+    const firstVisitTime = parseInt(firstVisit, 10)
+    return now - firstVisitTime > 24 * 60 * 60 * 1000
+  }
+}
+
+export function triggerUrlChange (): void {
+  SessionManager.getInstance().onUrlChange()
 }
 
 function getUrlTrackingParams (): Record<string, string | null> {
@@ -78,7 +186,16 @@ function getDeviceType (type: string | undefined | null): string {
 }
 
 export function collectEventMetadata (properties: Record<string, any> = {}): Record<string, any> {
-  const trackingParams = getUrlTrackingParams()
+  const parser = new UAParser()
+  const browser = parser.getBrowser()
+  const os = parser.getOS()
+  const device = parser.getDevice()
+
+  const sessionManager = SessionManager.getInstance()
+  sessionManager.incrementEventCount()
+  const sessionData = sessionManager.getSessionData()
+  const urlTracking = getUrlTrackingParams()
+  const searchEngine = getSearchEngine(document.referrer)
 
   const referrer = (() => {
     if (document.referrer === '') return '$direct'
@@ -104,32 +221,42 @@ export function collectEventMetadata (properties: Record<string, any> = {}): Rec
   const browserLanguagePrefix = browserLanguage.split('-')[0] !== '' ? browserLanguage.split('-')[0] : 'en'
 
   return {
-    ...properties,
-    $timestamp: new Date().toISOString(),
-    $os: parser.os.name ?? 'Unknown OS',
-    $os_version: parser.os.version ?? '',
-    $browser: parser.browser.name ?? 'Unknown Browser',
-    $browser_version: parseInt(parser.browser.major ?? '0', 10),
-    $device_type: getDeviceType(parser.device.type),
-    $current_url: window.location.href,
-    $host: window.location.hostname,
-    $pathname: window.location.pathname,
+    title: document.title,
+    // User agent and platform info
+    $lib: desktopPlatform ? 'app' : 'web',
+    $lib_version: getMetadata(presentation.metadata.FrontVersion) ?? '0.0.0',
+    $browser: browser.name ?? 'Unknown Browser',
+    $browser_version: parseInt(browser.major ?? '0', 10),
+    $browser_language: browserLanguage,
+    $browser_language_prefix: browserLanguagePrefix,
+    $os: os.name ?? 'Unknown OS',
+    $os_version: os.version,
+    $device_type: getDeviceType(device.type),
+    $device_model: device.model,
+    $device_vendor: device.vendor,
     $screen_height: window.screen.height,
     $screen_width: window.screen.width,
     $viewport_height: window.innerHeight,
     $viewport_width: window.innerWidth,
-    $lib: desktopPlatform ? 'app' : 'web',
-    $lib_version: getMetadata(presentation.metadata.FrontVersion) ?? '0.0.0',
-    $search_engine: getSearchEngine(referrer),
-    $referrer: referrer,
-    $referring_domain: referringDomain,
+    $language: navigator.language,
     $raw_user_agent: navigator.userAgent,
-    title: document.title,
     $timezone: timezone,
     $timezone_offset: timezoneOffset,
-    $browser_language: browserLanguage,
-    $browser_language_prefix: browserLanguagePrefix,
-    ...trackingParams
+    $timestamp: new Date().toISOString(),
+    // URL and referrer info
+    $current_url: window.location.href,
+    $host: window.location.host,
+    $pathname: window.location.pathname,
+    $search: window.location.search,
+    referrer,
+    $referring_domain: referringDomain,
+    $search_engine: searchEngine,
+    // Session and activity fields (PostHog-compatible)
+    ...sessionData,
+    // URL tracking parameters (UTM, etc.)
+    ...urlTracking,
+    // Custom event parameters
+    ...properties
   }
 }
 

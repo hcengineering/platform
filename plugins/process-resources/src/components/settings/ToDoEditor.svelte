@@ -62,7 +62,7 @@
 </div>
 <div class="divider" />
 {#key step._id}
-  <ResultEditor {step} on:chage={changeResult} />
+  <ResultEditor {step} on:change={changeResult} />
 {/key}
 
 <style lang="scss">

@@ -13,14 +13,15 @@
 //
 
 import { concatLink, type PersonId } from '@hcengineering/core'
-import platform, { getMetadata, PlatformError, Status, Severity } from '@hcengineering/platform'
+import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { telegramIntegrationKind } from '@hcengineering/telegram'
 import {
   getIntegrationClient as getIntegrationClientRaw,
-  type IntegrationClient
+  type IntegrationClient,
+  request as httpRequest
 } from '@hcengineering/integration-client'
 import { withRetry } from '@hcengineering/retry'
 import type { Integration } from '@hcengineering/account-client'
@@ -50,55 +51,11 @@ export interface TelegramChannelData {
 }
 
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
-
-async function _request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
-  const base = concatLink(url, 'api/integrations')
-
-  let response: Response
-  try {
-    response = await fetch(concatLink(base, path ?? ''), {
-      method,
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-        'Content-Type': 'application/json'
-      },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {})
-    })
-  } catch (err) {
-    throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.ConnectionClosed, {
-        message: 'Network error occurred'
-      })
-    )
-  }
-
-  if (response.status === 200) {
-    try {
-      return await response.json()
-    } catch (err) {
-      throw new PlatformError(
-        new Status(Severity.ERROR, platform.status.BadRequest, {
-          message: 'Failed to parse response JSON'
-        })
-      )
-    }
-  } else if (response.status === 202) {
-    return undefined
-  } else if (response.status === 401) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
-  } else if (response.status === 403) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  } else if (response.status === 404) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: path ?? '' }))
-  } else if (response.status >= 500) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
-  } else {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { status: response.status }))
-  }
-}
+const baseUrl = concatLink(url, 'api/integrations')
 
 async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
-  return await withRetry(async () => await _request(method, path, body))
+  const token = getMetadata(presentation.metadata.Token)
+  return await withRetry(async () => await httpRequest({ baseUrl, method, path, token, body }))
 }
 
 export async function getState (phone: string): Promise<IntegrationState> {

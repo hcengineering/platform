@@ -203,7 +203,6 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
   if (cur !== url) {
     const data = !desktopPlatform ? null : { location }
     const _url = !desktopPlatform ? url : undefined
-    Analytics.navigate(url)
     if (replace) {
       history.replaceState(data, '', _url)
     } else {
@@ -214,6 +213,7 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
       localStorage.setItem(`${locationStorageKeyId}_${location.path[1]}`, JSON.stringify(location))
     }
     locationWritable.set(location)
+    Analytics.navigate(url)
     return true
   }
   return false

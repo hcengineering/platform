@@ -17,6 +17,7 @@ import core, {
   AccountUuid,
   Client,
   MeasureContext,
+  PersonId,
   SocialId,
   SocialIdType,
   TxOperations,
@@ -34,14 +35,22 @@ import {
   isWorkspaceLoginInfo,
   AccountClient
 } from '@hcengineering/account-client'
-import { MailRecipient, type SyncOptions } from '@hcengineering/mail-common'
+import { MailRecipient, type SyncOptions, getChannel, isSyncedMessage } from '@hcengineering/mail-common'
+import chat from '@hcengineering/chat'
 
 import { encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
-import type { ProjectCredentials, Token, User, SyncState } from './types'
-import { addFooter, isToken, serviceToken, getKvsClient } from './utils'
+import {
+  type ProjectCredentials,
+  type Token,
+  type User,
+  type SyncState,
+  HulyMailHeader,
+  HulyMessageIdHeader
+} from './types'
+import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
 import { createIntegrationIfNotExists, disableIntegration, removeIntegration } from './integrations'
@@ -51,6 +60,9 @@ import { createMessageManager } from './message/adapter'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
 import { IMessageManager } from './message/types'
+import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
+import { Card } from '@hcengineering/card'
+import { makeHTMLBodyV2 } from './message/v2/send'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -60,7 +72,9 @@ function makeHTMLBody (message: NewMessage, from: string): string {
     'MIME-Version: 1.0\n',
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${message.to} \n`,
-    `From: ${from} \n`
+    `From: ${from} \n`,
+    `${HulyMailHeader}: true\n`,
+    `${HulyMessageIdHeader}: ${message._id}\n`
   ]
 
   if (message.replyTo != null) {
@@ -103,6 +117,7 @@ export class GmailClient {
   private readonly integrationToken: string
   private integration: Integration | undefined = undefined
   private syncStarted: boolean = false
+  private channel: Card | undefined = undefined
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -110,12 +125,13 @@ export class GmailClient {
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly user: User,
     client: Client,
-    accountClient: AccountClient,
+    private readonly accountClient: AccountClient,
     wsInfo: WorkspaceLoginInfo,
     storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceClient,
     email: string,
-    private socialId: SocialId
+    private socialId: SocialId,
+    private readonly allSocialIds: Set<PersonId>
   ) {
     this.email = email
     this.integrationToken = serviceToken(wsInfo.workspace)
@@ -163,6 +179,7 @@ export class GmailClient {
     const { client_secret, client_id, redirect_uris } = credentials.web
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
     const googleClient = google.gmail({ version: 'v1', auth: oAuth2Client }).users
+    ctx.info('Google client created:', { client_id, workspace: user.workspace, socialId: user.socialId })
 
     let token: Credentials | undefined = isToken(user) ? user : undefined
     if (token === undefined && authCode !== undefined) {
@@ -193,6 +210,8 @@ export class GmailClient {
       ctx.error('Unable to get workspace info', { workspaceId, email })
       throw new Error('Unable to get workspace info')
     }
+    const info = await accountClient.getPersonInfo(user.userId)
+    const allSocialIds = new Set(info.socialIds.map((socialId) => socialId._id))
 
     const gmailClient = new GmailClient(
       ctx,
@@ -205,7 +224,8 @@ export class GmailClient {
       storageAdapter,
       workspace,
       email,
-      socialId
+      socialId,
+      allSocialIds
     )
     await gmailClient.createIntregration()
     if (token !== undefined) {
@@ -340,6 +360,92 @@ export class GmailClient {
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
+    }
+  }
+
+  async handleNewMessage (message: CreateMessageEvent): Promise<void> {
+    try {
+      const personId = message.socialId
+      if (personId !== this.socialId._id && !this.allSocialIds.has(personId)) {
+        return
+      }
+      const email = await this.getEmail()
+      const thread = await this.client.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
+      const mailChannel = await this.getMailChannel()
+      if (mailChannel === undefined) {
+        this.ctx.error('Mail channel is not defined', { email, workspace: this.workspace })
+      }
+      if (thread === undefined || thread?.parent !== mailChannel?._id) {
+        return
+      }
+      const isExisting = await this.isExistingGmailMessage(message, email)
+      if (isExisting) {
+        this.ctx.info('Skip existing message', { id: message._id, email })
+        return
+      }
+
+      this.ctx.info('Sending gmail message', { id: message._id, email })
+      const gmailBody = await makeHTMLBodyV2(this.accountClient, message, thread, this.socialId._id, email)
+      await this.rateLimiter.take(100)
+      await this.gmail.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw: gmailBody
+        }
+      })
+    } catch (err: any) {
+      this.ctx.error('Send gmail message v2 error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: err.message
+      })
+      if (err?.response?.data?.error === 'invalid_grant') {
+        await this.refreshToken()
+      }
+    }
+  }
+
+  async getMailChannel (): Promise<Card | undefined> {
+    if (this.channel === undefined) {
+      this.channel = await getChannel(this.client, this.email)
+    }
+    return this.channel
+  }
+
+  async isExistingGmailMessage (message: CreateMessageEvent, from: string): Promise<boolean> {
+    try {
+      if (isSyncedMessage(message)) {
+        return true
+      }
+      await this.rateLimiter.take(10)
+
+      const rawDate = message.date ?? new Date()
+      const messageDate = rawDate instanceof Date ? rawDate : new Date(rawDate)
+
+      const startDate = new Date(messageDate.getTime() - 1000 * 60 * 60) // 1 hour before
+      const endDate = new Date(messageDate.getTime() + 1000 * 60 * 60) // 1 hour after
+
+      const query: gmail_v1.Params$Resource$Users$Messages$List = {
+        userId: 'me',
+        q: createGmailSearchQuery(startDate, endDate, from),
+        maxResults: 20 // Limit results for performance
+      }
+
+      const existingMessages = await this.gmail.messages.list(query)
+
+      for (const msg of existingMessages.data.messages ?? []) {
+        const gmailDate = msg.internalDate != null ? new Date(Number.parseInt(msg.internalDate)) : undefined
+        if (gmailDate !== undefined && gmailDate?.getTime() === message.date?.getTime()) {
+          return true
+        }
+      }
+      return false
+    } catch (err: any) {
+      this.ctx.error('Error checking existing Gmail message', {
+        messageId: message.messageId,
+        error: err.message
+      })
+      return false
     }
   }
 

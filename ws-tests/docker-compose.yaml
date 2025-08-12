@@ -5,11 +5,9 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
-      - STREAM_ENDPOINT_URL=s3://huly.local:9000
+      - STREAM_ENDPOINT_URL=datalake://huly.local:4031
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
-      - AWS_ACCESS_KEY_ID=minioadmin
-      - AWS_SECRET_ACCESS_KEY=minioadmin
     ports:
       - 1081:1080
     restart: unless-stopped
@@ -95,11 +93,38 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     expose:
-      - 9002
-      - 9003
+      - 9000
+      - 9001
     ports:
       - 9002:9000
       - 9003:9001
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      retries: 10
+  datalake:
+    image: hardcoreeng/datalake
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4031:4031
+    environment:
+      - PORT=4031
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+      - STREAM_URL=http://localhost:1081/recording
+      - DB_URL=${DB_EU_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+    restart: unless-stopped
   elastic:
     image: 'elasticsearch:7.14.2'
     expose:

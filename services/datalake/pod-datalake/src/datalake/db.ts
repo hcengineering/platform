@@ -572,7 +572,7 @@ export function escape (value: any): string {
 }
 
 function getMigrations (): [string, string][] {
-  return [migrationV1()]
+  return [migrationV1(), migrationV2()]
 }
 
 function migrationV1 (): [string, string] {
@@ -610,4 +610,23 @@ function migrationV1 (): [string, string] {
     );
   `
   return ['init_tables_01', sql]
+}
+
+function migrationV2 (): [string, string] {
+  const sql = `
+    ALTER TABLE blob.meta DROP CONSTRAINT IF EXISTS fk_blob;
+
+    UPDATE blob.blob
+    SET workspace = w.uuid
+    FROM global_account.workspace w
+    WHERE workspace = w.data_id;
+
+    UPDATE blob.meta
+    SET workspace = w.uuid
+    FROM global_account.workspace w
+    WHERE workspace = w.data_id;
+
+    ALTER TABLE blob.meta ADD CONSTRAINT fk_blob_meta FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name);
+  `
+  return ['migrate_workspaces_02', sql]
 }

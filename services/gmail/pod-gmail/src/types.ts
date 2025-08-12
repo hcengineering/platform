@@ -92,3 +92,7 @@ export interface SyncState {
     isActive: boolean
   }
 }
+
+export const GmailMessageType = 'gmail-message'
+export const HulyMailHeader = 'X-Huly-Sent'
+export const HulyMessageIdHeader = 'X-Huly-Message-Id'

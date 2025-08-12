@@ -39,11 +39,23 @@ jest.mock('@hcengineering/core', () => {
     WorkspaceUuid: String,
     // Provide missing properties
     configUserAccountUuid: 'test-user-id',
+    systemAccountUuid: 'system-user-id',
     core: {
       space: {
         Workspace: 'workspace'
       }
     },
+    // Add toFindResult function to fix the import error
+    toFindResult: jest.fn().mockImplementation((items: any[]) => ({
+      items,
+      total: items.length
+    })),
+    // Add withContext decorator mock
+    withContext: jest.fn().mockImplementation((name: string) => {
+      return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        return descriptor
+      }
+    }),
     TxOperations: jest.fn().mockImplementation(() => ({
       findAll: jest.fn().mockResolvedValue([]),
       findOne: jest.fn().mockResolvedValue(undefined),
@@ -60,7 +72,9 @@ jest.mock('@hcengineering/core', () => {
 })
 
 jest.mock('@hcengineering/mail-common', () => ({
-  createMessages: jest.fn().mockResolvedValue(undefined)
+  createMessages: jest.fn().mockResolvedValue(undefined),
+  getChannel: jest.fn().mockResolvedValue({ _id: 'test-channel-id' }),
+  isSyncedMessage: jest.fn().mockReturnValue(false)
 }))
 
 jest.mock('googleapis', () => ({
@@ -79,8 +93,12 @@ jest.mock('../tokens')
 jest.mock('../message/adapter')
 jest.mock('../message/sync')
 jest.mock('../message/attachments')
-jest.mock('@hcengineering/server-client', () => ({
-  getAccountClient: jest.fn()
+jest.mock('@hcengineering/server-core', () => ({
+  withContext: jest.fn().mockImplementation((name: string) => {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+      return descriptor
+    }
+  })
 }))
 jest.mock('../accounts', () => ({
   getOrCreateSocialId: jest.fn().mockResolvedValue({ _id: 'test-social-id' })
@@ -89,7 +107,7 @@ jest.mock('../gmail/utils', () => ({
   getEmail: jest.fn().mockResolvedValue('test@example.com')
 }))
 jest.mock('../integrations', () => ({
-  createIntegrationIfNotEsixts: jest.fn().mockResolvedValue({ _id: 'test-integration-id' }),
+  createIntegrationIfNotExists: jest.fn().mockResolvedValue({ _id: 'test-integration-id' }),
   disableIntegration: jest.fn(),
   removeIntegration: jest.fn()
 }))
@@ -133,6 +151,15 @@ jest.mock('@hcengineering/account-client', () => ({
       endpoint: 'wss://test-endpoint.com',
       workspace: 'mockWorkspaceId',
       token: 'test-token'
+    }),
+    getPersonInfo: jest.fn().mockResolvedValue({
+      socialIds: [
+        {
+          _id: 'test-social-id',
+          value: 'test@example.com',
+          type: 'email'
+        }
+      ]
     })
   })),
   isWorkspaceLoginInfo: jest.fn().mockImplementation(() => true)
