@@ -21,6 +21,6 @@ cp $SRC_FOLDER/$CHANNEL-linux.yml $TARGET_FOLDER
 rawVersion=$(node ../common/scripts/show_tag.js)
 version=${rawVersion:1:${#rawVersion}-2}
 
-cp $SRC_FOLDER/$CHANNEL.yml $TARGET_FOLDER/${version}.yml
-cp $SRC_FOLDER/$CHANNEL-mac.yml $TARGET_FOLDER/${version}-mac.yml
-cp $SRC_FOLDER/$CHANNEL-linux.yml $TARGET_FOLDER/${version}-linux.yml
+cp $SRC_FOLDER/$CHANNEL.yml $TARGET_FOLDER/qms-${version}.yml
+cp $SRC_FOLDER/$CHANNEL-mac.yml $TARGET_FOLDER/qms-${version}-mac.yml
+cp $SRC_FOLDER/$CHANNEL-linux.yml $TARGET_FOLDER/qms-${version}-linux.yml
