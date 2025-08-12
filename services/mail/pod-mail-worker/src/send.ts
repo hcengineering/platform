@@ -9,10 +9,6 @@ export async function sendEmail (ctx: MeasureContext, message: MailMessage): Pro
     ctx.error('Please provide email service url to enable email sending')
     return
   }
-  ctx.info('Sending email', {
-    to: message.to,
-    from: message.from
-  })
   const mailAuth = config.mailAuth
 
   const response = await fetch(concatLink(mailURL, '/send'), {

@@ -17,7 +17,14 @@ import sanitizeHtml from 'sanitize-html'
 import { imageSize } from 'image-size'
 
 import { BlobMetadata, MeasureContext } from '@hcengineering/core'
-import { Attachment, EmailContact, EmailMessage } from './types'
+import {
+  Attachment,
+  EmailContact,
+  EmailMessage,
+  HulyMailHeader,
+  HulyMessageIdHeader,
+  HulyMessageTypeHeader
+} from './types'
 import { MessageExtra } from '@hcengineering/communication-types'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 
@@ -193,4 +200,21 @@ export function getReplySubject (threadName: string | undefined): string | undef
   }
 
   return `Re: ${trimmedSubject}`
+}
+
+export function getMailHeaders (messageType: string, messageId?: string | undefined): string[] {
+  const headers = [`${HulyMailHeader}: true\n`, `${HulyMessageTypeHeader}: ${messageType}\n`]
+  if (messageId !== undefined) {
+    headers.push(`${HulyMessageIdHeader}: ${messageId}\n`)
+  }
+  return headers
+}
+
+export function isHulyMessage (headers: string[]): boolean {
+  return headers.some(
+    (header) =>
+      header.startsWith(HulyMailHeader) ||
+      header.startsWith(HulyMessageIdHeader) ||
+      header.startsWith(HulyMessageTypeHeader)
+  )
 }

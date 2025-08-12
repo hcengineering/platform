@@ -35,21 +35,20 @@ import {
   isWorkspaceLoginInfo,
   AccountClient
 } from '@hcengineering/account-client'
-import { MailRecipient, type SyncOptions, getChannel, isSyncedMessage } from '@hcengineering/mail-common'
+import {
+  MailRecipient,
+  type SyncOptions,
+  getChannel,
+  getMailHeaders,
+  isSyncedMessage
+} from '@hcengineering/mail-common'
 import chat from '@hcengineering/chat'
 
 import { encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
-import {
-  type ProjectCredentials,
-  type Token,
-  type User,
-  type SyncState,
-  HulyMailHeader,
-  HulyMessageIdHeader
-} from './types'
+import { type ProjectCredentials, type Token, type User, type SyncState, GmailMessageType } from './types'
 import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
@@ -73,8 +72,7 @@ function makeHTMLBody (message: NewMessage, from: string): string {
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${message.to} \n`,
     `From: ${from} \n`,
-    `${HulyMailHeader}: true\n`,
-    `${HulyMessageIdHeader}: ${message._id}\n`
+    ...getMailHeaders(GmailMessageType, message._id)
   ]
 
   if (message.replyTo != null) {

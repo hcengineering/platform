@@ -1,14 +1,21 @@
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
-import { markdownToHtml, getReplySubject, getRecipients } from '@hcengineering/mail-common'
-
-import { encode64 } from '../../base64'
-import { addFooter } from '../../utils'
+import {
+  markdownToHtml,
+  getReplySubject,
+  getRecipients,
+  getMailHeaders,
+  HulyMailHeader,
+  HulyMessageIdHeader
+} from '@hcengineering/mail-common'
 import { Card } from '@hcengineering/card'
 import { PersonId } from '@hcengineering/core'
 import { AccountClient } from '@hcengineering/account-client'
-import { HulyMailHeader, HulyMessageIdHeader } from '../../types'
+
+import { encode64 } from '../../base64'
+import { addFooter } from '../../utils'
+import { GmailMessageType } from '../../types'
 
 export async function makeHTMLBodyV2 (
   accountClient: AccountClient,
@@ -28,8 +35,7 @@ export async function makeHTMLBodyV2 (
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${to} \n`,
     `From: ${from} \n`,
-    `${HulyMailHeader}: true\n`,
-    `${HulyMessageIdHeader}: ${message._id}\n`
+    ...getMailHeaders(GmailMessageType, message._id)
   ]
 
   // TODO: get reply-to from channel

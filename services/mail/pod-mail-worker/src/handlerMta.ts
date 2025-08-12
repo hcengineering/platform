@@ -20,7 +20,8 @@ import {
   type EmailMessage,
   createMessages,
   getProducer,
-  getMessageExtra
+  getMessageExtra,
+  isHulyMessage
 } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
@@ -41,6 +42,11 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     }
 
     const mta: MtaMessage = req.body
+
+    const headers: string[] = mta.message.headers.map((header) => header[0].trim()) ?? []
+    if (isHulyMessage(headers)) {
+      return
+    }
 
     const from: EmailContact = getEmailContact(mta.envelope.from.address)
     if (config.ignoredAddresses.includes(from.email)) {

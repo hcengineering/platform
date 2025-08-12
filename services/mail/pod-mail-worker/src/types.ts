@@ -34,6 +34,7 @@ export interface MailMessage {
   subject: string
   text?: string
   html?: string
+  headers?: Record<string, string> | string[]
   attachments?: {
     name: string
     contentType: string

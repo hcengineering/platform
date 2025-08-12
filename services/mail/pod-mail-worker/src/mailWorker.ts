@@ -21,19 +21,21 @@ import {
   getRecipients,
   getReplySubject,
   markdownToText,
-  isSyncedMessage
+  isSyncedMessage,
+  getMailHeaders
 } from '@hcengineering/mail-common'
 import { ConsumerHandle, PlatformQueue, QueueTopic } from '@hcengineering/server-core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 import chat from '@hcengineering/chat'
+import { Card } from '@hcengineering/card'
 
 import config from './config'
 import { AccountClient, MailboxOptions } from '@hcengineering/account-client'
 import { getAccountClient } from './client'
 import { getClient as getWorkspaceClient } from './workspaceClient'
-import { Card } from '@hcengineering/card'
 import { sendEmail } from './send'
+import { HulyMessageType } from './types'
 
 export class MailWorker {
   private queue: PlatformQueue | undefined
@@ -173,12 +175,6 @@ export class MailWorker {
 
   async handleNewMessage (workspaceUuid: WorkspaceUuid, message: CreateMessageEvent): Promise<void> {
     try {
-      this.ctx.info('Processing new message from queue', {
-        workspaceUuid,
-        messageId: message.messageId,
-        socialId: message.socialId
-      })
-
       if (isSyncedMessage(message)) {
         return
       }
@@ -198,12 +194,6 @@ export class MailWorker {
         return
       }
 
-      this.ctx.info('New message found in Huly mail channel', {
-        workspaceUuid,
-        channelId: channel._id,
-        messageId: message.messageId
-      })
-
       // Convert the platform message to email format and send
       await this.sendMessageAsEmail(message, thread, channel, workspaceUuid)
     } catch (err: any) {
@@ -222,10 +212,10 @@ export class MailWorker {
     workspaceUuid: WorkspaceUuid
   ): Promise<void> {
     try {
-      this.ctx.info('Sending message as email via pod-mail service', {
+      this.ctx.info('Sending email message', {
         workspaceUuid,
         messageId: message.messageId,
-        content: message.content?.substring(0, 100) + '...'
+        socialId: message.socialId
       })
 
       const personUuid = await this.accountClient.findPersonBySocialId(message.socialId)
@@ -253,12 +243,9 @@ export class MailWorker {
         to: [recipients?.to ?? '', ...(recipients?.copy ?? [])],
         subject,
         html,
-        text
+        text,
+        headers: getMailHeaders(HulyMessageType, message._id)
       })
-
-      // TODO: Implement email sending by calling pod-mail service API
-      // This would make HTTP calls to the pod-mail service's /send endpoint
-      // to convert platform messages to emails
     } catch (err: any) {
       this.ctx.error('Failed to send message as email', {
         messageId: message.messageId,
