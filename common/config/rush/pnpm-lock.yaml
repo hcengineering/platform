@@ -903,7 +903,7 @@ importers:
         version: file:projects/pod-love.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@rush-temp/pod-mail':
         specifier: file:./projects/pod-mail.tgz
-        version: file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(typescript@5.8.3)
+        version: file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-mail-worker':
         specifier: file:./projects/pod-mail-worker.tgz
         version: file:projects/pod-mail-worker.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -5336,11 +5336,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz':
-    resolution: {integrity: sha512-xds/8XciOLpX5RjLxtA1o2WVWPa5F3I1X7LeKcUJvn4xYYvORnTxxU4dwRSl9CMH7Sg6E/cY31yCxWZ2mr44pg==, tarball: file:projects/pod-mail-worker.tgz}
+    resolution: {integrity: sha512-pGpDe2VXivzWayLm0pr99f+f5vD5eirwLnB1JTWUUTXtZtbDm6QOaAAEMlzWNwXTZfZGn74Qd7zl1AUCLp6O0A==, tarball: file:projects/pod-mail-worker.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-55+lgpVA2Wl+qSrRRMgf7ZM9rRMz9Jjv7X5pWoU1mO2HNwf079UsUIsbYyCgS3DNcnMEJsgTwWc6y3Q1bp4rGA==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-WhDC0I0bu1HeY3HN/yz6xQHsanXYf0ZAWEToJuKb3IAuLTsq1k/um2url73TyBYmWT+XbzKDRMh+AWM5xkav+w==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
@@ -23997,7 +23997,7 @@ snapshots:
       - node-notifier
       - supports-color
 
-  '@rush-temp/pod-mail@file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(typescript@5.8.3)':
+  '@rush-temp/pod-mail@file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@aws-sdk/client-ses': 3.738.0
       '@tsconfig/node16': 1.0.4
@@ -24024,6 +24024,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -24034,7 +24035,6 @@ snapshots:
       - babel-plugin-macros
       - node-notifier
       - supports-color
-      - typescript
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
