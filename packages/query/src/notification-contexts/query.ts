@@ -417,6 +417,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       if (shouldRefreshTotal) {
         const nRes = await this.client.findNotifications({
           ...this.params.notifications,
+          context: context.id,
           limit: 1,
           total: true
         })
@@ -458,6 +459,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     } else if (shouldRefreshTotal) {
       const nRes = await this.client.findNotifications({
         ...this.params.notifications,
+        context: context.id,
         limit: 1,
         total: true
       })
