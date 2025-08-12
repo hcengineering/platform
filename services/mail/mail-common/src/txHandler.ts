@@ -56,7 +56,11 @@ export async function getChannel (client: TxOperations, email: string): Promise<
   return await client.findOne<Card>(mail.tag.MailChannel, { title: normalizedEmail })
 }
 
-export async function getRecipients (accountClient: AccountClient, thread: Card, personId: PersonId): Promise<MailRecipients | undefined> {
+export async function getRecipients (
+  accountClient: AccountClient,
+  thread: Card,
+  personId: PersonId
+): Promise<MailRecipients | undefined> {
   const collaborators: PersonId[] = (thread as any).members ?? []
   if (collaborators.length === 0) {
     return undefined

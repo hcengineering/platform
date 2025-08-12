@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
+import { MeasureContext, WorkspaceUuid, Doc, TxCUD, Tx } from '@hcengineering/core'
 import {
-  MeasureContext,
-  WorkspaceUuid,
-  Doc,
-  TxCUD,
-  TxCreateDoc,
-  Tx
-} from '@hcengineering/core'
-import { toMessageEvent, isNewChannelTx } from '@hcengineering/mail-common'
+  toMessageEvent,
+  isNewChannelTx,
+  markdownToHtml,
+  getRecipients,
+  getReplySubject,
+  markdownToText,
+  isSyncedMessage
+} from '@hcengineering/mail-common'
 import { ConsumerHandle, PlatformQueue, QueueTopic } from '@hcengineering/server-core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
@@ -29,9 +30,10 @@ import chat from '@hcengineering/chat'
 
 import config from './config'
 import { AccountClient, MailboxOptions } from '@hcengineering/account-client'
-import { getAccountClient } from './utils'
+import { getAccountClient } from './client'
 import { getClient as getWorkspaceClient } from './workspaceClient'
 import { Card } from '@hcengineering/card'
+import { sendEmail } from './send'
 
 export class MailWorker {
   private queue: PlatformQueue | undefined
@@ -48,17 +50,17 @@ export class MailWorker {
     MailWorker._instance = this
   }
 
-  static create (ctx: MeasureContext): MailWorker {
+  static async create (ctx: MeasureContext): Promise<MailWorker> {
     if (MailWorker._instance !== undefined) {
       throw new Error('MailWorker already exists')
     }
     // Create account client for system operations
-    const systemWorkspace = 'system' as WorkspaceUuid
-    const accountClient = getAccountClient(systemWorkspace)
+    const accountClient = getAccountClient()
     const worker = new MailWorker(ctx, accountClient)
 
     // Request mailbox options after creation
-    void worker.loadMailboxOptions()
+    await worker.loadMailboxes()
+    await worker.startQueue()
 
     return worker
   }
@@ -70,7 +72,7 @@ export class MailWorker {
     throw new Error('MailWorker not exist')
   }
 
-  private async loadMailboxOptions (): Promise<void> {
+  private async loadMailboxes (): Promise<void> {
     // If already loading, wait for the existing promise
     if (this.loadingPromise !== undefined) {
       await this.loadingPromise
@@ -127,6 +129,7 @@ export class MailWorker {
               // Check for new channel creation
               if (isNewChannelTx(tx)) {
                 await this.handleNewChannelTx(workspaceUuid, tx)
+                continue
               }
               // Check for message events
               const messageEvent = toMessageEvent(tx)
@@ -158,7 +161,7 @@ export class MailWorker {
       })
 
       // Reload mailbox options when new channels are created
-      await this.loadMailboxOptions()
+      await this.loadMailboxes()
     } catch (err: any) {
       this.ctx.error('Failed to handle new channel transaction', {
         workspaceUuid,
@@ -176,23 +179,21 @@ export class MailWorker {
         socialId: message.socialId
       })
 
+      if (isSyncedMessage(message)) {
+        return
+      }
+
       // Await any active load/reload promise before processing CreateMessageEvent
       if (this.loadingPromise !== undefined) {
         await this.loadingPromise
       }
 
       const workspaceClient = await getWorkspaceClient(workspaceUuid)
-      const thread = await workspaceClient.findOne<Card>(
-        chat.masterTag.Thread,
-        { _id: message.cardId }
-      )
+      const thread = await workspaceClient.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
       if (thread?.parent == null) {
         return
       }
-      const channel = await workspaceClient.findOne<Card>(
-        chat.masterTag.Channel,
-        { _id: thread.parent }
-      )
+      const channel = await workspaceClient.findOne<Card>(chat.masterTag.Channel, { _id: thread.parent })
       if (channel === undefined || !this.isHulyMailChannel(channel)) {
         return
       }
@@ -204,7 +205,7 @@ export class MailWorker {
       })
 
       // Convert the platform message to email format and send
-      await this.sendMessageAsEmail(message, workspaceUuid)
+      await this.sendMessageAsEmail(message, thread, channel, workspaceUuid)
     } catch (err: any) {
       this.ctx.error('Failed to handle new message', {
         workspaceUuid,
@@ -214,18 +215,50 @@ export class MailWorker {
     }
   }
 
-  private async sendMessageAsEmail (message: CreateMessageEvent, workspaceUuid: WorkspaceUuid): Promise<void> {
+  private async sendMessageAsEmail (
+    message: CreateMessageEvent,
+    thread: Card,
+    channel: Card,
+    workspaceUuid: WorkspaceUuid
+  ): Promise<void> {
     try {
       this.ctx.info('Sending message as email via pod-mail service', {
         workspaceUuid,
         messageId: message.messageId,
         content: message.content?.substring(0, 100) + '...'
       })
-      
+
+      const personUuid = await this.accountClient.findPersonBySocialId(message.socialId)
+      if (personUuid === undefined) {
+        this.ctx.error('Person not found for social ID', { socialId: message.socialId })
+        return
+      }
+      const socialIds = await this.accountClient.getPersonInfo(personUuid)
+      const emailSocialId = socialIds.socialIds.find((id) => id.value.toLowerCase() === channel.title.toLowerCase())
+      if (emailSocialId === undefined) {
+        this.ctx.error('Email social ID not found for channel', {
+          channelTitle: channel.title,
+          personUuid,
+          socialIds: socialIds.socialIds.map((id) => id.value)
+        })
+        return
+      }
+      const recipients = await getRecipients(this.accountClient, thread, emailSocialId._id)
+      const html = markdownToHtml(message.content)
+      const text = markdownToText(message.content)
+      const subject = getReplySubject(thread.title) ?? ''
+
+      await sendEmail(this.ctx, {
+        from: emailSocialId.value,
+        to: [recipients?.to ?? '', ...(recipients?.copy ?? [])],
+        subject,
+        html,
+        text
+      })
+
       // TODO: Implement email sending by calling pod-mail service API
       // This would make HTTP calls to the pod-mail service's /send endpoint
       // to convert platform messages to emails
-      
     } catch (err: any) {
       this.ctx.error('Failed to send message as email', {
         messageId: message.messageId,
@@ -251,6 +284,6 @@ export class MailWorker {
     if (domains === undefined || domains.length === 0) {
       return false
     }
-    return domains.some(domain => title.includes(domain.toLowerCase()))
+    return domains.some((domain) => title.includes(domain.toLowerCase()))
   }
 }

@@ -22,7 +22,12 @@ import { AccountClient, getClient as getAccountClientRaw } from '@hcengineering/
 import config from './config'
 
 // TODO: Find account UUID from mailboxes and use personal workspace
-export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'inbound-mail' }, config.secret)
+export const mailServiceToken = generateToken(
+  systemAccountUuid,
+  undefined,
+  { service: config.serviceId },
+  config.secret
+)
 export const baseConfig: BaseConfig = {
   AccountsURL: config.accountsUrl,
   KvsUrl: config.kvsUrl,
@@ -31,9 +36,9 @@ export const baseConfig: BaseConfig = {
   QueueRegion: config.queueRegion ?? '',
   CommunicationTopic: config.communicationTopic
 }
-export const kvsClient = getClient('inbound-mail', baseConfig.KvsUrl, mailServiceToken)
+export const kvsClient = getClient(config.serviceId, baseConfig.KvsUrl, mailServiceToken)
 
-export function getAccountClient (workspaceUuid: WorkspaceUuid): AccountClient {
+export function getAccountClient (workspaceUuid?: WorkspaceUuid): AccountClient {
   const token = generateToken(systemAccountUuid, workspaceUuid, { service: config.serviceId })
   return getAccountClientRaw(config.accountsUrl, token)
 }

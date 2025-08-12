@@ -15,13 +15,19 @@
 import { createHash } from 'crypto'
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
-import { type EmailContact, type EmailMessage, createMessages, getProducer } from '@hcengineering/mail-common'
+import {
+  type EmailContact,
+  type EmailMessage,
+  createMessages,
+  getProducer,
+  getMessageExtra
+} from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
-import { MtaMessage } from './types'
+import { MtaMessage, HulyMessageType } from './types'
 import { getHeader, parseContent } from './utils'
 import { decodeEncodedWords } from './decode'
 
@@ -89,7 +95,8 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       replyTo: inReplyTo,
       incoming: true,
       modifiedOn: date,
-      sendOn: date
+      sendOn: date,
+      extra: getMessageExtra(HulyMessageType, true)
     }
 
     const accountClient = getAccountClient(config.accountsUrl, mailServiceToken)

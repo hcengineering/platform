@@ -26,18 +26,19 @@ import { join } from 'path'
 import { baseConfig } from './client'
 import config from './config'
 import { handleMtaHook } from './handlerMta'
+import { MailWorker } from './mailWorker'
 
 type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
 async function main (): Promise<void> {
-  const ctx = initStatisticsContext('inbound-mail', {
+  const ctx = initStatisticsContext(config.serviceId, {
     factory: () =>
       createOpenTelemetryMetricsContext(
-        'inbound-mail',
+        config.serviceId,
         {},
         {},
         newMetrics(),
-        new SplitLogger('inbound-mail', {
+        new SplitLogger(config.serviceId, {
           root: join(process.cwd(), 'logs'),
           enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
         })
@@ -45,9 +46,9 @@ async function main (): Promise<void> {
   })
 
   setMetadata(serverToken.metadata.Secret, config.secret)
-  setMetadata(serverToken.metadata.Service, 'inbound-mail')
+  setMetadata(serverToken.metadata.Service, config.serviceId)
 
-  initQueue(ctx, 'inbound-mail', baseConfig)
+  initQueue(ctx, config.serviceId, baseConfig)
 
   const app = express()
 
@@ -94,8 +95,14 @@ async function main (): Promise<void> {
       storageConfig: config.storageConfig !== undefined ? '(stripped)' : undefined
     })
   })
+  await MailWorker.create(ctx)
 
   const shutdown = (): void => {
+    MailWorker.getMailWorker()
+      .close()
+      .catch((err) => {
+        ctx.error('Failed to close MailWorker', { error: err.message })
+      })
     server.close(() => {
       void closeQueue().then(() => process.exit())
     })
