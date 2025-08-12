@@ -28,7 +28,8 @@ import { type MtaMessage } from '../types'
 jest.mock('@hcengineering/mail-common', () => ({
   createMessages: jest.fn(),
   getProducer: jest.fn().mockReturnValue({}),
-  getMessageExtra: jest.fn().mockReturnValue({})
+  getMessageExtra: jest.fn().mockReturnValue({}),
+  isHulyMessage: jest.fn().mockReturnValue(false)
 }))
 
 jest.mock('../client', () => ({
