@@ -240,7 +240,7 @@ export class MailWorker {
 
       await sendEmail(this.ctx, {
         from: emailSocialId.value,
-        to: [recipients?.to ?? '', ...(recipients?.copy ?? [])],
+        to: [recipients?.to, ...(recipients?.copy ?? [])].filter(Boolean),
         subject,
         html,
         text,
