@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Tx, TxDomainEvent, TxOperations } from '@hcengineering/core'
+import core, { Tx, TxDomainEvent, TxOperations, TxCreateDoc, PersonId, SocialIdType } from '@hcengineering/core'
 import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
 import chat from '@hcengineering/chat'
 
@@ -22,7 +22,8 @@ import { Card } from '@hcengineering/card'
 import mail from '@hcengineering/mail'
 
 import { normalizeEmail } from './utils'
-import { COMMUNICATION_DOMAIN } from './types'
+import { COMMUNICATION_DOMAIN, MailRecipients } from './types'
+import { AccountClient } from '@hcengineering/account-client'
 
 export function toMessageEvent (tx: Tx): CreateMessageEvent | undefined {
   if (tx._class !== core.class.TxDomainEvent) {
@@ -42,7 +43,36 @@ export function toMessageEvent (tx: Tx): CreateMessageEvent | undefined {
   return event
 }
 
+export function isNewChannelTx (tx: Tx): boolean {
+  if (tx._class !== core.class.TxCreateDoc) {
+    return false
+  }
+  const createTx = tx as TxCreateDoc<any>
+  return createTx.objectClass === chat.masterTag.Channel
+}
+
 export async function getChannel (client: TxOperations, email: string): Promise<Card | undefined> {
   const normalizedEmail = normalizeEmail(email)
   return await client.findOne<Card>(mail.tag.MailChannel, { title: normalizedEmail })
+}
+
+export async function getRecipients (accountClient: AccountClient, thread: Card, personId: PersonId): Promise<MailRecipients | undefined> {
+  const collaborators: PersonId[] = (thread as any).members ?? []
+  if (collaborators.length === 0) {
+    return undefined
+  }
+  const recipients = collaborators.length > 1 ? collaborators.filter((c) => c !== personId) : collaborators
+  const mailSocialIds = (await accountClient.findFullSocialIds(recipients)).filter(
+    (id) => id.type === SocialIdType.EMAIL
+  )
+  if (mailSocialIds.length === 0) {
+    console.warn('No social IDs found for recipients', { recipients })
+    return undefined
+  }
+  const to = mailSocialIds[0].value
+  const copy = mailSocialIds.length > 1 ? mailSocialIds.slice(1).map((s) => s.value) : undefined
+  return {
+    to,
+    copy
+  }
 }

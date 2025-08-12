@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { systemAccountUuid } from '@hcengineering/core'
+import { systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { BaseConfig } from '@hcengineering/mail-common'
 import { generateToken } from '@hcengineering/server-token'
 import { getClient } from '@hcengineering/kvs-client'
+import { AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 
 import config from './config'
 
@@ -31,3 +32,8 @@ export const baseConfig: BaseConfig = {
   CommunicationTopic: config.communicationTopic
 }
 export const kvsClient = getClient('inbound-mail', baseConfig.KvsUrl, mailServiceToken)
+
+export function getAccountClient (workspaceUuid: WorkspaceUuid): AccountClient {
+  const token = generateToken(systemAccountUuid, workspaceUuid, { service: config.serviceId })
+  return getAccountClientRaw(config.accountsUrl, token)
+}

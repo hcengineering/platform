@@ -82,4 +82,9 @@ export interface SyncOptions {
   noNotify?: boolean
 }
 
+export interface MailRecipients {
+  to: string
+  copy?: string[]
+}
+
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain

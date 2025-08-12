@@ -29,6 +29,7 @@ interface Config {
   queueConfig: string
   queueRegion: string
   communicationTopic: string
+  serviceId: string
 }
 
 const config: Config = {
@@ -58,7 +59,8 @@ const config: Config = {
     throw Error('QUEUE_CONFIG env var is not set')
   })(),
   queueRegion: process.env.QUEUE_REGION ?? '',
-  communicationTopic: process.env.COMMUNICATION_TOPIC ?? 'hulygun'
+  communicationTopic: process.env.COMMUNICATION_TOPIC ?? 'hulygun',
+  serviceId: process.env.SERVICE_ID ?? 'huly-mail'
 }
 
 export default config
