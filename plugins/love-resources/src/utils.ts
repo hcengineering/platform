@@ -40,8 +40,8 @@ import {
   RoomType,
   TranscriptionStatus
 } from '@hcengineering/love'
-import { getSelectedCamId, getSelectedMicId, getSelectedSpeakerId } from '@hcengineering/media'
-import { useMedia } from '@hcengineering/media-resources'
+import { getSelectedSpeakerId } from '@hcengineering/media'
+import { getSelectedCam, getSelectedMic, getSelectedSpeaker, useMedia } from '@hcengineering/media-resources'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
   copyTextToClipboard,
@@ -50,14 +50,7 @@ import presentation, {
   getClient,
   type ObjectSearchResult
 } from '@hcengineering/presentation'
-import {
-  closePanel,
-  type DropdownTextItem,
-  getCurrentLocation,
-  navigate,
-  panelstore,
-  showPopup
-} from '@hcengineering/ui'
+import { closePanel, getCurrentLocation, navigate, panelstore, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
@@ -192,8 +185,6 @@ export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
 export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
-export const isMicAllowed = writable<boolean>(false)
-export const isCamAllowed = writable<boolean>(false)
 
 export const currentRoomAudioLevels = writable<Map<Ref<Person>, number>>(new Map())
 
@@ -640,21 +631,16 @@ export async function setCam (value: boolean): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
       const opt: VideoCaptureOptions = {}
-      const selectedDevice = getSelectedCamId()
-      const devices = await LKRoom.getLocalDevices('videoinput')
-      isCamAllowed.set(devices.length > 0)
-      if (selectedDevice !== null) {
-        const available = devices.find((p) => p.deviceId === selectedDevice)
-        if (available !== undefined) {
-          // We need to use exact device id to avoid issues with Firefox
-          // that can switch to another device when using just deviceId
-          opt.deviceId = { exact: available.deviceId }
-        }
+      const selectedDevice = await getSelectedCam()
+      if (selectedDevice !== null && selectedDevice !== undefined) {
+        // We need to use exact device id to avoid issues with Firefox
+        // that can switch to another device when using just deviceId
+        opt.deviceId = { exact: selectedDevice.deviceId }
+        await lk.switchActiveDevice('videoinput', selectedDevice.deviceId)
       }
       await lk.localParticipant.setCameraEnabled(value, opt)
     } catch (err) {
       console.error(err)
-      isCamAllowed.set(false)
     }
   } else {
     sendMessage({ type: 'set_cam', value })
@@ -664,34 +650,24 @@ export async function setCam (value: boolean): Promise<void> {
 export async function setMic (value: boolean): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
-      const speaker = getSelectedSpeakerId()
-      if (speaker !== undefined) {
-        const devices = await LKRoom.getLocalDevices('audiooutput')
-        const available = devices.find((p) => p.deviceId === speaker)
-        if (available !== undefined) {
-          await lk.switchActiveDevice('audiooutput', speaker)
-        }
+      const speaker = await getSelectedSpeaker()
+      if (speaker !== null && speaker !== undefined) {
+        await lk.switchActiveDevice('audiooutput', speaker.deviceId)
       }
     } catch (err) {
       console.error(err)
     }
     try {
       const opt: AudioCaptureOptions = {}
-      const selectedDevice = getSelectedMicId()
-      const devices = await LKRoom.getLocalDevices('audioinput')
-      isMicAllowed.set(devices.length > 0)
-      if (selectedDevice !== null) {
-        const available = devices.find((p) => p.deviceId === selectedDevice)
-        if (available !== undefined) {
-          // We need to use exact device id to avoid issues with Firefox
-          // that can switch to another device when using just deviceId
-          opt.deviceId = { exact: available.deviceId }
-        }
+      const selectedDevice = await getSelectedMic()
+      if (selectedDevice !== null && selectedDevice !== undefined) {
+        // We need to use exact device id to avoid issues with Firefox
+        // that can switch to another device when using just deviceId
+        opt.deviceId = { exact: selectedDevice.deviceId }
       }
       await lk.localParticipant.setMicrophoneEnabled(value, opt)
     } catch (err) {
       console.error(err)
-      isMicAllowed.set(false)
     }
   } else {
     sendMessage({ type: 'set_mic', value })
@@ -971,22 +947,6 @@ export async function invite (person: Ref<Person>, room: Ref<Room> | undefined):
     status: RequestStatus.Pending,
     from: me
   })
-}
-
-export function getActive (
-  devices: DropdownTextItem[],
-  activeId: string | undefined,
-  prevId?: string | null
-): DropdownTextItem {
-  if (activeId !== undefined) {
-    const res = devices.find((p) => p.id === activeId)
-    if (res !== undefined) return res
-  }
-  if (prevId != null) {
-    const res = devices.find((p) => p.id === prevId)
-    if (res !== undefined) return res
-  }
-  return devices[0]
 }
 
 export async function toggleMic (): Promise<void> {

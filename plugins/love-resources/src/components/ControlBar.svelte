@@ -29,20 +29,18 @@
     SplitButton,
     eventToHTMLElement,
     showPopup,
-    type AnySvelteComponent,
     TooltipInstance
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
+  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
 
   import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
-    isCamAllowed,
     isCameraEnabled,
     isConnected,
     isFullScreen,
-    isMicAllowed,
     isMicEnabled,
     isRecording,
     isRecordingAvailable,
@@ -53,20 +51,16 @@
     leaveRoom,
     record,
     screenSharing,
-    setCam,
-    setMic,
     setShare,
     startTranscription,
     stopTranscription
   } from '../utils'
-  import CamSettingPopup from './CamSettingPopup.svelte'
+  import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
-  import MicSettingPopup from './MicSettingPopup.svelte'
+  import MicSettingPopup from './meeting/MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
-  import RoomLanguageSelector from './RoomLanguageSelector.svelte'
   import RoomModal from './RoomModal.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
-  import { Room as LKRoom } from 'livekit-client'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -80,14 +74,6 @@
 
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
-
-  async function changeMute (): Promise<void> {
-    await setMic(!$isMicEnabled)
-  }
-
-  async function changeCam (): Promise<void> {
-    await setCam(!$isCameraEnabled)
-  }
 
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
@@ -183,11 +169,10 @@
         size={'large'}
         icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
         showTooltip={{
-          label: !$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute,
+          label: $isMicEnabled ? love.string.Mute : love.string.UnMute,
           keys: micKeys
         }}
-        action={changeMute}
-        disabled={!$isMicAllowed}
+        action={toggleMicState}
         secondIcon={IconUpOutline}
         secondAction={micSettings}
         separate
@@ -197,15 +182,10 @@
           size={'large'}
           icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
           showTooltip={{
-            label: !$isCamAllowed
-              ? love.string.CamPermission
-              : $isCameraEnabled
-                ? love.string.StopVideo
-                : love.string.StartVideo,
+            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo,
             keys: camKeys
           }}
-          disabled={!$isCamAllowed}
-          action={changeCam}
+          action={toggleCamState}
           secondIcon={IconUpOutline}
           secondAction={camSettings}
           separate

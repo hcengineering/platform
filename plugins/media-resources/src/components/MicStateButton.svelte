@@ -17,26 +17,19 @@
   import { Icon, tooltip } from '@hcengineering/ui'
 
   import media from '../plugin'
-  import { sessions } from '../stores'
 
   import IconMicOn from './icons/MicOn.svelte'
   import IconMicOff from './icons/MicOff.svelte'
+  import { toggleMicState } from '../utils'
 
   export let state: MicState | undefined
-
-  function handleClick (): void {
-    const enabled = state?.enabled ?? false
-    for (const session of $sessions) {
-      session.emit('microphone', !enabled)
-    }
-  }
 </script>
 
 {#if state != null}
   <button
     class="hulyStatusBarButton mini positive {state.enabled ? 'positiveContent' : 'negativeContent'}"
     use:tooltip={{ label: state.enabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction: 'bottom' }}
-    on:click={handleClick}
+    on:click={toggleMicState}
   >
     <Icon icon={state.enabled ? IconMicOn : IconMicOff} size={'small'} />
   </button>
