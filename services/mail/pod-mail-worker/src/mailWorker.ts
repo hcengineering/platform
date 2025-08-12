@@ -48,9 +48,7 @@ export class MailWorker {
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly accountClient: AccountClient
-  ) {
-    // Removed assignment to MailWorker._instance from constructor to avoid race condition
-  }
+  ) {}
 
   static async create (ctx: MeasureContext): Promise<MailWorker> {
     if (MailWorker._instance !== undefined) {
@@ -59,6 +57,7 @@ export class MailWorker {
     // Create account client for system operations
     const accountClient = getAccountClient()
     const worker = new MailWorker(ctx, accountClient)
+    MailWorker._instance = worker
 
     // Request mailbox options after creation
     await worker.loadMailboxes()

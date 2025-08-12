@@ -98,11 +98,15 @@ async function main (): Promise<void> {
   await MailWorker.create(ctx)
 
   const shutdown = (): void => {
-    MailWorker.getMailWorker()
-      .close()
-      .catch((err) => {
-        ctx.error('Failed to close MailWorker', { error: err.message })
-      })
+    try {
+      MailWorker.getMailWorker()
+        .close()
+        .catch((err) => {
+          ctx.error('Failed to close MailWorker', { error: err.message })
+        })
+    } catch (error) {
+      ctx.error('Failed to get MailWorker for shutdown', { error: (error as Error).message })
+    }
     server.close(() => {
       void closeQueue().then(() => process.exit())
     })
