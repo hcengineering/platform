@@ -664,11 +664,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
 
             if (key === '_id') {
+              joinIndex = joinIndex === undefined ? 0 : ++joinIndex
               if (row[column] === null) {
                 skip = true
                 continue
               }
-              joinIndex = joinIndex === undefined ? 0 : ++joinIndex
               skip = false
             }
 
