@@ -189,11 +189,13 @@ export class DatalakeImpl implements Datalake {
         lastModified
       }
 
+      let data: Readable | Buffer = body
+
       if (this.options.cache.enabled && size <= this.options.cache.blobSize) {
-        body = await streamToBuffer(body)
+        data = await streamToBuffer(body)
         const entry: CacheEntry = {
-          body,
-          bodyLength: body.length,
+          body: data,
+          bodyLength: data.length,
           bodyEtag: etag,
           size,
           name,
@@ -203,7 +205,7 @@ export class DatalakeImpl implements Datalake {
         this.cache.set(hash, entry)
       }
 
-      await bucket.put(ctx, filename, body, putOptions)
+      await bucket.put(ctx, filename, data, putOptions)
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
 
       try {
