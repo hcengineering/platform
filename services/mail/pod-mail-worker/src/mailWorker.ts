@@ -49,7 +49,7 @@ export class MailWorker {
     private readonly ctx: MeasureContext,
     private readonly accountClient: AccountClient
   ) {
-    MailWorker._instance = this
+    // Removed assignment to MailWorker._instance from constructor to avoid race condition
   }
 
   static async create (ctx: MeasureContext): Promise<MailWorker> {
