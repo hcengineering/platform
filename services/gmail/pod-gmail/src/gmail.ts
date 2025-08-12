@@ -383,7 +383,7 @@ export class GmailClient {
       }
 
       this.ctx.info('Sending gmail message', { id: message._id, email })
-      const gmailBody = await makeHTMLBodyV2(this.accountClient, message, thread, this.socialId._id, email)
+      const gmailBody = await makeHTMLBodyV2(this.ctx, this.accountClient, message, thread, this.socialId._id, email)
       await this.rateLimiter.take(100)
       await this.gmail.messages.send({
         userId: 'me',

@@ -15,7 +15,7 @@
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
-import core, { PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, { MeasureContext, PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 
@@ -44,11 +44,15 @@ export async function getClient (workspaceUuid: WorkspaceUuid, socialId?: Person
   return cl
 }
 
-export async function releaseClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId): Promise<void> {
+export async function releaseClient (
+  ctx: MeasureContext,
+  workspaceUuid: WorkspaceUuid,
+  socialId?: PersonId
+): Promise<void> {
   const key = `${workspaceUuid}-${socialId ?? ''}`
   let usage = clientUsage.get(key)
   if (usage === undefined) {
-    console.warn(`Client for ${key} not found`)
+    ctx.warn(`Client for ${key} not found`)
     return
   }
   usage--
@@ -56,7 +60,7 @@ export async function releaseClient (workspaceUuid: WorkspaceUuid, socialId?: Pe
   if (usage <= 0) {
     setTimeout(() => {
       close(key).catch((err) => {
-        console.error(`Failed to close client for ${key}`, err)
+        ctx.error(`Failed to close client for ${key}`, err)
       })
     }, 60000)
   }

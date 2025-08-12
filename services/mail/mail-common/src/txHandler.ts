@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { Tx, TxDomainEvent, TxOperations, TxCreateDoc, PersonId, SocialIdType } from '@hcengineering/core'
+import core, {
+  Tx,
+  TxDomainEvent,
+  TxOperations,
+  TxCreateDoc,
+  PersonId,
+  SocialIdType,
+  MeasureContext
+} from '@hcengineering/core'
 import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
 import chat from '@hcengineering/chat'
 
@@ -57,6 +65,7 @@ export async function getChannel (client: TxOperations, email: string): Promise<
 }
 
 export async function getRecipients (
+  ctx: MeasureContext,
   accountClient: AccountClient,
   thread: Card,
   personId: PersonId
@@ -70,7 +79,7 @@ export async function getRecipients (
     (id) => id.type === SocialIdType.EMAIL
   )
   if (mailSocialIds.length === 0) {
-    console.warn('No social IDs found for recipients', { recipients })
+    ctx.warn('No social IDs found for recipients', { recipients })
     return undefined
   }
   const to = mailSocialIds[0].value

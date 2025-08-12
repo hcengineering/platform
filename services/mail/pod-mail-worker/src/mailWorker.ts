@@ -33,7 +33,7 @@ import { Card } from '@hcengineering/card'
 import config from './config'
 import { AccountClient, MailboxOptions } from '@hcengineering/account-client'
 import { getAccountClient } from './client'
-import { getClient as getWorkspaceClient } from './workspaceClient'
+import { getClient as getWorkspaceClient, releaseClient } from './workspaceClient'
 import { sendEmail } from './send'
 import { HulyMessageType } from './types'
 
@@ -184,18 +184,22 @@ export class MailWorker {
         await this.loadingPromise
       }
 
-      const workspaceClient = await getWorkspaceClient(workspaceUuid)
-      const thread = await workspaceClient.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
-      if (thread?.parent == null) {
-        return
-      }
-      const channel = await workspaceClient.findOne<Card>(chat.masterTag.Channel, { _id: thread.parent })
-      if (channel === undefined || !this.isHulyMailChannel(channel)) {
-        return
-      }
+      try {
+        const workspaceClient = await getWorkspaceClient(workspaceUuid)
+        const thread = await workspaceClient.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
+        if (thread?.parent == null) {
+          return
+        }
+        const channel = await workspaceClient.findOne<Card>(chat.masterTag.Channel, { _id: thread.parent })
+        if (channel === undefined || !this.isHulyMailChannel(channel)) {
+          return
+        }
 
-      // Convert the platform message to email format and send
-      await this.sendMessageAsEmail(message, thread, channel, workspaceUuid)
+        // Convert the platform message to email format and send
+        await this.sendMessageAsEmail(message, thread, channel, workspaceUuid)
+      } finally {
+        await releaseClient(this.ctx, workspaceUuid)
+      }
     } catch (err: any) {
       this.ctx.error('Failed to handle new message', {
         workspaceUuid,
@@ -233,14 +237,17 @@ export class MailWorker {
         })
         return
       }
-      const recipients = await getRecipients(this.accountClient, thread, emailSocialId._id)
+      const recipients = await getRecipients(this.ctx, this.accountClient, thread, emailSocialId._id)
       const html = markdownToHtml(message.content)
       const text = markdownToText(message.content)
       const subject = getReplySubject(thread.title) ?? ''
+      const to = [recipients?.to, ...(recipients?.copy ?? [])].filter(
+        (address) => address != null && address !== ''
+      ) as string[]
 
       await sendEmail(this.ctx, {
         from: emailSocialId.value,
-        to: [recipients?.to, ...(recipients?.copy ?? [])].filter(Boolean),
+        to,
         subject,
         html,
         text,

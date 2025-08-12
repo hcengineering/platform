@@ -10,7 +10,7 @@ import {
   HulyMessageIdHeader
 } from '@hcengineering/mail-common'
 import { Card } from '@hcengineering/card'
-import { PersonId } from '@hcengineering/core'
+import { MeasureContext, PersonId } from '@hcengineering/core'
 import { AccountClient } from '@hcengineering/account-client'
 
 import { encode64 } from '../../base64'
@@ -18,13 +18,14 @@ import { addFooter } from '../../utils'
 import { GmailMessageType } from '../../types'
 
 export async function makeHTMLBodyV2 (
+  ctx: MeasureContext,
   accountClient: AccountClient,
   message: CreateMessageEvent,
   thread: Card,
   personId: PersonId,
   from: string
 ): Promise<string | undefined> {
-  const recipients = await getRecipients(accountClient, thread, personId)
+  const recipients = await getRecipients(ctx, accountClient, thread, personId)
   if (recipients === undefined) {
     return undefined
   }

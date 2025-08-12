@@ -23,10 +23,10 @@ export async function sendEmail (ctx: MeasureContext, message: MailMessage): Pro
     })
   })
   if (!response.ok) {
-    const responseBody = await response.text();
-    ctx.error(
-      `Failed to send email: ${response.status} ${response.statusText}. Response body: ${responseBody}`,
-      { to: message.to, from: message.from }
-    );
+    const responseBody = await response.text()
+    ctx.error(`Failed to send email: ${response.status} ${response.statusText}. Response body: ${responseBody}`, {
+      to: message.to,
+      from: message.from
+    })
   }
 }
