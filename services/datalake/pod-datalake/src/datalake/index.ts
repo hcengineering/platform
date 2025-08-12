@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+export * from './cache'
 export * from './datalake'
 export * from './types'
 export * from './utils'

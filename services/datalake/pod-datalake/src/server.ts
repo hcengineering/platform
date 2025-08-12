@@ -138,7 +138,7 @@ export async function createServer (
   const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}, { span: false }), QueueTopic.Tx)
 
   const db = await createDb(ctx, config.DbUrl)
-  const datalake = new DatalakeImpl(db, buckets, producer, { cacheControl })
+  const datalake = new DatalakeImpl(db, buckets, producer, { cacheControl, cache: config.Cache })
   const tempDir = new TemporaryDir(ctx, 'datalake-', config.CleanupInterval)
 
   const app = express()
