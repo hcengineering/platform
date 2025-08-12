@@ -8,8 +8,6 @@ use tracing::{error, trace};
 use uuid::Uuid;
 use crate::ws_owner;
 
-type ObjectPath = web::Path<(String, String)>;
-
 use crate::redis::{
     Ttl, SaveMode,
     RedisArray,
@@ -46,38 +44,35 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 
 
 /// list
-
-// #[derive(Deserialize)]
 pub async fn list(
     req: HttpRequest,
-    path: web::Path<String>,
-    query: web::Query<HashMap<String, String>>,
+    path: web::Path<(String, Option<String>)>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::Error> {
 
     ws_owner::workspace_owner(&req)?; // Check workspace
 
-    let workspace = path.into_inner();
-    let prefix = query.get("prefix").map(|s| s.as_str());
+    let (workspace, key) = path.into_inner();
 
-    trace!(workspace, prefix, "list request");
+    // trace!(workspace, prefix, "list request");
 
     async move || -> anyhow::Result<HttpResponse> {
 
         let mut conn = redis.lock().await;
 
-	let entries = redis_list(&mut *conn, &workspace, prefix).await?;
+	let entries = redis_list(&mut *conn, &workspace, key.as_deref()).await?;
 
         Ok(HttpResponse::Ok().json(entries))
 
     }().await.map_err(map_handler_error)
 }
 
-/// get / (test)
 
+
+/// get
 pub async fn get(
     req: HttpRequest,
-    path: ObjectPath,
+    path: web::Path<(String, String)>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
 
@@ -85,7 +80,7 @@ pub async fn get(
 
     let (workspace, key) = path.into_inner();
 
-    trace!(workspace, key, "get request");
+    // trace!(workspace, key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
 
@@ -104,10 +99,9 @@ pub async fn get(
 
 
 /// put
-
 pub async fn put(
     req: HttpRequest,
-    path: ObjectPath,
+    path: web::Path<(String, String)>,
     body: web::Bytes,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
@@ -117,6 +111,8 @@ pub async fn put(
     let (workspace, key) = path.into_inner();
 
     async move || -> anyhow::Result<HttpResponse> {
+
+        if !req.query_string().is_empty() { return Err(anyhow!("Query parameters are not allowed")); }
 
         let mut conn = redis.lock().await;
 
@@ -151,11 +147,10 @@ pub async fn put(
 
 
 
-// delete
-
+/// delete
 pub async fn delete(
     req: HttpRequest,
-    path: ObjectPath,
+    path: web::Path<(String, String)>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
 

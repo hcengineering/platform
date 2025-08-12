@@ -6,6 +6,129 @@ source ./pulse_lib.sh
 TOKEN=$(./token.sh claims.json)
 ZP="00000000-0000-0000-0000-000000000001/TESTS"
 
+
+echo "--------- if-match ----------"
+
+    put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS/1" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS/2" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS/3$" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS/3/secret$/4" "Value_1" "HULY-TTL: 2"
+    get "00000000-0000-0000-0000-000000000001/TESTS"
+    get "00000000-0000-0000-0000-000000000001/TESTS/"
+    get "00000000-0000-0000-0000-000000000001/TESTS/3/secret$/"
+
+
+exit
+Key
+
+
+
+
+
+Key is a string that consists of one or multiple segments separated by ‘/’. Example: foo/bar/baz.
+
+
+
+
+
+Segment may not contain special characters (‘$’, ‘*’, ‘?’)
+
+
+
+Key may not end with ‘/’
+
+
+
+Segment may not be empty
+
+
+
+Key segment may be private (prefixed with ‘$’)
+
+
+
+Query 
+
+
+
+
+
+May not contain special characters (‘*’, ‘?’)
+
+
+
+It is possible to use prefix, for listings / subscriptions  (prefix ends with segment separator ‘/’)   
+
+
+
+
+
+GET/SUBSCRIBE/..   a/b → single key
+
+
+
+GET/SUBSCRIBE/..   a/b/c/ → multiple
+
+
+
+If multiple 
+
+
+
+
+
+select all keys starting with prefix
+
+
+
+skip keys, containing private segments to the right from the prefix
+
+
+
+example 
+
+
+
+
+
+ 1. /a/b/$c/$d,  2. /a/b/c,  3. /a/b/$c, 4. /a/b/$c/$d/e
+
+
+
+/ → [2]
+
+
+
+/a/b/ → [2]
+
+
+
+/a/b/$c/ → [3]
+
+
+
+/a/b/$c/$d/ → [4]
+
+
+
+/a/b/$c/$d → (1)
+
+
+
+
+
+
+
+exit
+
+echo "--------- Deprecated symbols ----------"
+
+    put "00000000-0000-0000-0000-000000000001/'TESTS" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TES?TS" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS*" "Value_1" "HULY-TTL: 2"
+    put "00000000-0000-0000-0000-000000000001/TESTS/" "Value_1" "HULY-TTL: 2"
+
 echo "--------- if-match ----------"
 
     delete ${ZP}
@@ -36,17 +159,6 @@ echo "================> UPDATE PUT If-Match"
 
     echo "-- Expected OK: 204 No Content (hash still right)"
      put ${ZP} "enother version" "If-Match" "552e21cd4cd9918678e3c1a0df491bc3"
-
-
-
-
-
-
-
-
-
-
-
 
 
 

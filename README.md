@@ -12,13 +12,34 @@ The service is exposed as REST and WebSocket API.
 - service posts a process status
 
 ## Key
-Key is a string that consists of one or multiple segments separated by some separator.
-Example: foo/bar/baz.
 
-It is possible to use wildcard keys to list or subscribe to values with this prefix.
+Key is a string that consists of one or multiple segments separated by ‘/’. Example: foo/bar/baz.
+Key may not end with ‘/’
+Segment may not contain special characters (‘*’, ‘?’, ‘[’, ‘]’,‘\’,‘\x00..\xF1’,‘\x7F’,‘"’,‘'’)
+Segment may not be empty
+Key segment may be private (prefixed with ‘$’)
 
-Key may contain a special section (guard) $that separates public and private data. “Private” data is available when querying or subscribing by exact key.
-Example foo/bar/$/private, this value can be queried by foo/bar/$/private or foo/bar/$/but not by foo/bar/
+    Query
+
+May not contain special characters (‘*’, ‘?’, ‘[’, ‘]’,‘\’,‘\x00..\xF1’,‘\x7F’,‘"’,‘'’)
+It is possible to use prefix, for listings / subscriptions  (prefix ends with segment separator ‘/’)
+
+GET/SUBSCRIBE/..   a/b → single key
+GET/SUBSCRIBE/..   a/b/c/ → multiple
+
+    If multiple
+
+select all keys starting with prefix
+skip keys, containing private segments to the right from the prefix
+
+    example
+1. /a/b/$c/$d,  2. /a/b/c,  3. /a/b/$c, 4. /a/b/$c/$d/e
+/ → [2]
+/a/b/ → [2]
+/a/b/$c/ → [3]
+/a/b/$c/$d/ → [4]
+/a/b/$c/$d → [1]
+
 
 ## Data
 “Data” is an arbitrary JSON document.

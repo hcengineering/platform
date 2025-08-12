@@ -105,10 +105,11 @@ async fn main() -> anyhow::Result<()> {
             .service(
                 web::scope("/api")
                     .wrap(middleware::from_fn(interceptor))
-                    .route("/{workspace}", web::get().to(handlers_http::list))
-                    .route("/{workspace}/{key:.*}",web::get().to(handlers_http::get))
-		    .route("/{workspace}/{key:.*}",web::put().to(handlers_http::put))
-                    .route("/{workspace}/{key:.*}",web::delete().to(handlers_http::delete))
+            	    .route("/{workspace}/", web::get().to(handlers_http::list))
+            	    .route("/{workspace}/{key:.+/}", web::get().to(handlers_http::list))
+                    .route("/{workspace}/{key:.+}", web::get().to(handlers_http::get))
+		    .route("/{workspace}/{key:.+}", web::put().to(handlers_http::put))
+                    .route("/{workspace}/{key:.+}", web::delete().to(handlers_http::delete))
             )
             .route("/status", web::get().to(async || "ok"))
 	    .route("/ws/{workspace}", web::get().to(handlers_ws::handler)) // WebSocket

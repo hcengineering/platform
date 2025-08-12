@@ -2,6 +2,7 @@ use crate::config::{CONFIG, RedisMode};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[derive(serde::Serialize)]
 pub enum Ttl {
     Sec(usize), // EX
     At(u64),   // EXAT (timestamp in seconds)
@@ -32,51 +33,76 @@ pub struct RedisArray {
     pub etag: String, // md5 hash (data)
 }
 
-fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
+/// return Error
+pub fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
     let msg = msg.into();
     let full = format!("{}: {}", code, msg);
     Err(redis::RedisError::from(( redis::ErrorKind::ExtensionError, "", full )))
 }
 
+
+/// Check for redis-deprecated symbols
+pub fn redis_deprecate_symbols(s: &str) -> redis::RedisResult<()> {
+    if s.chars().any(|c| matches!( c,
+        '*' | '?' | '[' | ']' | '\\' |
+        '\0'..='\x1F' | '\x7F' |
+        '"' | '\'' // | ' '
+    )) {
+        error(412, "Deprecated symbols in workspace or key")
+    } else {
+        Ok(())
+    }
+}
+
+
 /// redis_list(&connection,workspace,prefix)
 pub async fn redis_list(
     conn: &mut MultiplexedConnection,
     workspace: &str,
-    prefix: Option<&str>,
+    key: Option<&str>,
 ) -> redis::RedisResult<Vec<RedisArray>> {
+
+    let pattern = if let Some(k) = key {
+    	if !k.ends_with('/') { return error(412, "Key must end with slash"); }
+	Some(format!("{k}*"))
+    } else {
+	None
+    };
+
+    redis_deprecate_symbols(&workspace)?;
+    if let Some(k) = key { redis_deprecate_symbols(k)?; }
+
     let mut cursor = 0;
     let mut results = Vec::new();
-    let pattern = prefix.map(|p| format!("{}*", p));
 
     loop {
         let mut cmd = redis::cmd("HSCAN");
         cmd.arg(workspace).arg(cursor);
         if let Some(ref p) = pattern {
-            cmd.arg("MATCH").arg(p);
-        }
+	    cmd.arg("MATCH").arg(p);
+	}
+
         // cmd.arg("COUNT").arg(100);
 
         let (next_cursor, items): (u64, Vec<(String, String)>) = cmd.query_async(conn).await?;
 
-        for (key, value) in items {
+        for (k, v) in items {
+
+	    // Check for $-security path
+	    if let Some(prefix) = key {
+	        if k[prefix.len()..].contains('$') { continue; }
+	    }
+
             // TTL
-            let ttl_vec: Vec<i64> = redis::cmd("HTTL")
-                .arg(workspace)
-                .arg("FIELDS")
-                .arg(1)
-                .arg(&key)
-                .query_async(conn)
-                .await?;
-
+            let ttl_vec: Vec<i64> = redis::cmd("HTTL").arg(workspace).arg("FIELDS").arg(1).arg(&k).query_async(conn).await?;
             let ttl = ttl_vec.get(0).copied().unwrap_or(-3);
-
             if ttl >= 0 {
                 results.push(RedisArray {
                     workspace: workspace.to_string(),
-                    key,
-                    data: value.clone(),
+                    key: k,
+                    data: v.clone(),
                     expires_at: ttl as u64,
-		    etag: hex::encode(md5::compute(&value).0),
+		    etag: hex::encode(md5::compute(&v).0),
                 });
             }
         }
@@ -96,6 +122,10 @@ pub async fn redis_read(
     workspace: &str,
     key: &str,
 ) -> redis::RedisResult<Option<RedisArray>> {
+
+    redis_deprecate_symbols(&workspace)?;
+    redis_deprecate_symbols(&key)?;
+    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
 
     let data: Option<String> = redis::cmd("HGET").arg(workspace).arg(key).query_async(conn).await?;
     let Some(data) = data else { return Ok(None); };
@@ -136,6 +166,10 @@ pub async fn redis_save<T: ToRedisArgs>(
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
 ) -> RedisResult<()> {
+
+    redis_deprecate_symbols(&workspace)?;
+    redis_deprecate_symbols(&key)?;
+    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
 
     // TTL logic
     let sec = match ttl {
@@ -200,6 +234,10 @@ pub async fn redis_delete(
     workspace: &str,
     key: &str,
 ) -> redis::RedisResult<bool> {
+
+    redis_deprecate_symbols(&workspace)?;
+    redis_deprecate_symbols(&key)?;
+    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
 
     let deleted: i32 = redis::cmd("HDEL")
         .arg(workspace)
@@ -268,3 +306,5 @@ pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
 
     Ok(conn)
 }
+
+

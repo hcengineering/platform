@@ -32,6 +32,9 @@ api() {
 	*)  echo -en "${GRAY}${status}${N}" ;;
   esac
   if [ -n "$etag" ]; then echo -n -e " ${F}${etag}${N}" ; fi
+
+    body=$(echo "$body" | sed 's/{/\\n{/g')
+
   if [ -n "$body" ]; then echo -e "\n   ${GRAY}[${body}]${N}" ; else echo -e " ${L}(no body)${N}" ; fi
   rm -f "$tmpfile"
 }
