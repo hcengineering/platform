@@ -991,6 +991,9 @@ importers:
       '@rush-temp/products-resources':
         specifier: file:./projects/products-resources.tgz
         version: file:projects/products-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/qms-desktop':
+        specifier: file:./projects/qms-desktop.tgz
+        version: file:projects/qms-desktop.tgz(webpack@5.97.1)
       '@rush-temp/qms-doc-import-tool':
         specifier: file:./projects/qms-doc-import-tool.tgz
         version: file:projects/qms-doc-import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -5456,6 +5459,10 @@ packages:
 
   '@rush-temp/products@file:projects/products.tgz':
     resolution: {integrity: sha512-B+3fRdypqBSE3ui4MgFE10DBtbZVLW8Lr+cQQDF7ti1GWp04Vbr0njLPtVvySOAab8pHun4xb2yVz8B31Hr5Nw==, tarball: file:projects/products.tgz}
+    version: 0.0.0
+
+  '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz':
+    resolution: {integrity: sha512-euhJQtYB9bi4EajhGq+TYdDJkmGP5CyFcaAVBLPkmhhKENYJFcLd+E/QbDkWPAZZu7lP9EQ88yFHL5oRBOzyrw==, tarball: file:projects/qms-desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
@@ -15174,7 +15181,7 @@ snapshots:
 
   '@electron/notarize@2.5.0':
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       fs-extra: 9.1.0
       promise-retry: 2.0.1
     transitivePeerDependencies:
@@ -25047,6 +25054,23 @@ snapshots:
       - node-notifier
       - supports-color
       - ts-node
+
+  '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz(webpack@5.97.1)':
+    dependencies:
+      '@electron/notarize': 2.5.0
+      '@types/node': 22.15.29
+      '@vercel/webpack-asset-relocator-loader': 1.7.4
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      electron: 36.3.1
+      electron-builder: 25.1.8
+      electron-squirrel-startup: 1.0.1
+      node-loader: 2.0.0(webpack@5.97.1)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - electron-builder-squirrel-windows
+      - supports-color
+      - webpack
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:

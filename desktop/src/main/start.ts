@@ -31,7 +31,7 @@ import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { rebuildJumpList, setupWindowsSpecific } from './windowsSpecificSetup'
-
+import { readPackedConfig } from './config'
 
 let mainWindow: BrowserWindow | undefined
 let winBadge: any
@@ -46,6 +46,9 @@ const preloadScriptPath = path.join(app.getAppPath(), 'dist', 'main', 'preload.j
 
 const defaultWidth = 1440
 const defaultHeight = 960
+
+const packedConfig = readPackedConfig()
+log.info('packed config', packedConfig)
 
 const envPath = path.join(app.getAppPath(), isDev ? '.env-dev' : '.env')
 console.log('do loading env from', envPath)
@@ -74,7 +77,7 @@ function readServerUrl (): string {
     return process.env.FRONT_URL ?? 'http://huly.local:8087'
   }
 
-  return ((settings as any).get('server', process.env.FRONT_URL) as string) ?? 'https://huly.app'
+  return ((settings as any).get('server') as string) ?? packedConfig?.server ?? process.env.FRONT_URL ?? 'https://huly.app'
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -94,8 +97,8 @@ const disabledFeatures = [
 
 app.commandLine.appendSwitch('disable-features', disabledFeatures.join(','))
 
-function setupWindowTitleBar(windowOptions: Electron.BrowserWindowConstructorOptions): void {
- if (isWindows) {
+function setupWindowTitleBar (windowOptions: Electron.BrowserWindowConstructorOptions): void {
+  if (isWindows) {
     // on Windows we use frameless window with custom hand-made title bar
     windowOptions.frame = false
   } else {
@@ -269,31 +272,31 @@ const createWindow = async (): Promise<void> => {
     }
   })
 
-  function sendWindowMaximizedMessage(maximized: boolean): void {
+  function sendWindowMaximizedMessage (maximized: boolean): void {
     mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
   }
 
   mainWindow.on('blur', () => {
     mainWindow?.webContents.send('window-focus-loss')
-  });
+  })
 
   mainWindow.on('maximize', () => {
     sendWindowMaximizedMessage(true)
-  });
+  })
 
   mainWindow.on('unmaximize', () => {
     sendWindowMaximizedMessage(false)
-  });
+  })
 
   mainWindow.on('enter-full-screen', () => {
     sendWindowMaximizedMessage(true)
-  });
+  })
 
   mainWindow.on('leave-full-screen', () => {
-    if (mainWindow) {
-        sendWindowMaximizedMessage(mainWindow.isMaximized())
+    if (mainWindow != null) {
+      sendWindowMaximizedMessage(mainWindow.isMaximized())
     }
-  });
+  })
 
   if (isMac) {
     mainWindow.on('close', (event) => {
@@ -309,12 +312,12 @@ const createWindow = async (): Promise<void> => {
   }
 }
 
-function sendCommand(cmd: string, ...args: any[]): void {
+function sendCommand (cmd: string, ...args: any[]): void {
   mainWindow?.webContents.send(cmd, ...args)
 }
 
 function activateWindow (): void {
-  if (mainWindow) {
+  if (mainWindow != null) {
     if (mainWindow.isMinimized()) {
       mainWindow.restore()
     }
@@ -373,7 +376,23 @@ ipcMain.on('set-combined-config', (_event: any, config: Config) => {
   setupCookieHandler(config)
 
   const updatesUrl = process.env.DESKTOP_UPDATES_URL ?? config.DESKTOP_UPDATES_URL ?? 'https://dist.huly.io'
-  const updatesChannel = process.env.DESKTOP_UPDATES_CHANNEL ?? config.DESKTOP_UPDATES_CHANNEL ?? 'huly'
+  // NOTE: env format is: default_value;key1:value1;key2:value2...
+  const updatesChannels = (process.env.DESKTOP_UPDATES_CHANNEL ?? config.DESKTOP_UPDATES_CHANNEL ?? 'huly').split(';').map(c => c.trim().split(':'))
+  const updateChannelsMap: Record<string, string> = {}
+  for (const channelInfo of updatesChannels) {
+    if (channelInfo.length === 1) {
+      updateChannelsMap.default = channelInfo[0]
+    } else if (channelInfo.length === 2) {
+      const [key, value] = channelInfo
+      updateChannelsMap[key] = value
+    }
+  }
+
+  const updatesChannelKey = packedConfig?.updatesChannelKey ?? 'default'
+  const updatesChannel = updateChannelsMap[updatesChannelKey] ?? updateChannelsMap.default ?? 'huly'
+
+  log.info('updates channels', updatesChannels)
+  log.info('updates channel', updatesChannelKey, updatesChannel)
 
   autoUpdater.setFeedURL({
     provider: 'generic',
@@ -414,35 +433,35 @@ ipcMain.on('set-front-cookie', function (event: any, host: string, name: string,
 })
 
 ipcMain.handle('window-minimize', () => {
-  mainWindow?.minimize();
-});
+  mainWindow?.minimize()
+})
 
 ipcMain.handle('window-maximize', () => {
-  if (mainWindow) {
+  if (mainWindow != null) {
     if (mainWindow.isMaximized()) {
-      mainWindow.unmaximize();
+      mainWindow.unmaximize()
     } else {
-      mainWindow.maximize();
+      mainWindow.maximize()
     }
   }
-});
+})
 
 ipcMain.handle('window-close', () => {
-  mainWindow?.close();
-});
+  mainWindow?.close()
+})
 
 ipcMain.handle('get-is-os-using-dark-theme', () => {
-  return nativeTheme.shouldUseDarkColors;
-});
+  return nativeTheme.shouldUseDarkColors
+})
 
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
   dipatchMenuBarAction(mainWindow, action)
-});
+})
 
 if (isWindows) {
   ipcMain.on('rebuild-user-jump-list', (_event: any, spares: JumpListSpares) => {
     rebuildJumpList(spares)
-  });
+  })
 }
 
 const gotTheLock = app.requestSingleInstanceLock()
