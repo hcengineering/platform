@@ -619,12 +619,24 @@ function migrationV2 (): [string, string] {
     UPDATE blob.blob
     SET workspace = w.uuid
     FROM global_account.workspace w
-    WHERE workspace = w.data_id;
+    WHERE workspace = w.data_id
+      AND NOT EXISTS (
+        SELECT 1
+        FROM blob.blob existing
+        WHERE existing.workspace = w.uuid::string
+        AND existing.name = blob.blob.name
+      );
 
     UPDATE blob.meta
     SET workspace = w.uuid
     FROM global_account.workspace w
-    WHERE workspace = w.data_id;
+    WHERE workspace = w.data_id
+      AND NOT EXISTS (
+        SELECT 1
+        FROM blob.meta existing
+        WHERE existing.workspace = w.uuid::string
+        AND existing.name = blob.meta.name
+      );
 
     ALTER TABLE blob.meta ADD CONSTRAINT fk_blob_meta FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name);
   `
