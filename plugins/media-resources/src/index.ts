@@ -17,6 +17,9 @@ import { type Resources } from '@hcengineering/platform'
 
 import MediaExt from './components/MediaExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+import MediaPopupCamSelector from './components/MediaPopupCamSelector.svelte'
+import MediaPopupMicSelector from './components/MediaPopupMicSelector.svelte'
+import MediaPopupSpkSelector from './components/MediaPopupSpkSelector.svelte'
 
 export * from './stores'
 export * from './utils'
@@ -24,6 +27,9 @@ export * from './utils'
 export default async (): Promise<Resources> => ({
   component: {
     MediaExt,
+    MediaPopupCamSelector,
+    MediaPopupMicSelector,
+    MediaPopupSpkSelector,
     WorkbenchExtension
   }
 })
