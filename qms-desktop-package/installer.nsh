@@ -1,3 +1,3 @@
 !macro customInit
-  StrCpy $INSTDIR "$LOCALAPPDATA\Programs\HulyDesktop"
+  StrCpy $INSTDIR "$LOCALAPPDATA\Programs\TraceXDesktop"
 !macroend
