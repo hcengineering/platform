@@ -67,7 +67,7 @@
       <span
         class="label nowrap"
         class:fs-bold={!isRegular}
-        class:no-underline={noUnderline || disableLink}
+        class:no-underline={noUnderline}
         class:label-gray={isGray}>{title}</span
       >
     </div>
