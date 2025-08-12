@@ -991,6 +991,9 @@ importers:
       '@rush-temp/products-resources':
         specifier: file:./projects/products-resources.tgz
         version: file:projects/products-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/qms-desktop':
+        specifier: file:./projects/qms-desktop.tgz
+        version: file:projects/qms-desktop.tgz(webpack@5.97.1)
       '@rush-temp/qms-doc-import-tool':
         specifier: file:./projects/qms-doc-import-tool.tgz
         version: file:projects/qms-doc-import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4417,7 +4420,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz':
-    resolution: {integrity: sha512-RkeOzU5zVyx9sAt73Zf/5NXrv8NeDh8AlNCBqv3lFPv23wvvsEUyrGJkeIiz1FU8JXg6ARR/vT3t9+IzNNNFQQ==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-eWYLBlRXnQFqGd3AoaHW837h+8bmx+E7xihore4xPshh7F3AZJ+LuRdnuJhiTQ3YQVp+x1OED3u6+Wn9JzRd9w==, tarball: file:projects/calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
@@ -4497,7 +4500,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-fbzeC4XwbwgeXRdRXsguOzBB7ioJUCr+k1xNqw9d7y7mxhz7rtDsZIF7Qj8xm7gs+P5y0L2gsiGiwe9OMDgAaw==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-tNTGgOqQ1EOdChaNs4PcbEZwaxInVLb1c04YLtc0k/8m046n69zTQhwu/OJo3mjuDcvvkF0BGgtwnDC1iFwKDA==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-rest-client@file:projects/communication-rest-client.tgz':
@@ -4673,7 +4676,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/github-resources@file:projects/github-resources.tgz':
-    resolution: {integrity: sha512-SoxO9GDPj0TrU4JL8RnOYlp/wNx6ZBzTL8xcIx+fES66e1zdsYt4K0Eq1/uV0EnCI+d+tdYeD4sQUMqlYERAkw==, tarball: file:projects/github-resources.tgz}
+    resolution: {integrity: sha512-tQ5ZcI9uIYDVpiT2aOZAV1iIprahWnBThvBfmiCdBt9A1zAH7UdA2od9UwjAOgefnAaaCtVnSZcMtZyRBwY6Dg==, tarball: file:projects/github-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/github@file:projects/github.tgz':
@@ -4685,7 +4688,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-xr9UPYNDxlO/FM2U7inZHlwuMdgdkymGhff2rpurI0uB8fIczQkegJmSqu8olMC7xgMTvdWyp9vkBP7xBpRprw==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-CtPpz9Jx7rGJXdAon9+eI5gUIvhFU/ztjHUUeBYsPA4pjBXZH5xPC0YWqxqbp6LWdnIwy9wL7BTAXRPlAR6eQA==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -4753,7 +4756,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/integration-client@file:projects/integration-client.tgz':
-    resolution: {integrity: sha512-r46KMTTe/Xy/8c7L81e3fmLX/ESI5ChiCmz+KTBVnHqeuM788FYZVdJhb+JebbXoi+lSHhqE0kWm825RhPiUEA==, tarball: file:projects/integration-client.tgz}
+    resolution: {integrity: sha512-73s3IbZbC5cv7DGfYnGP9LXNNsTTn9n+Bdvdmj/xqy3hayPTvQOFuzQHTJXBtoFh9RKATvI8v802e7BcJF3D+w==, tarball: file:projects/integration-client.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -5293,7 +5296,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-calendar@file:projects/pod-calendar.tgz':
-    resolution: {integrity: sha512-S3ygrMi6bQUc9U7sfujx5iv8t7gHC+Kl/u/NjRtcmEPDdF47zdmr8mr0THnZNfpgpabFcnBaPcTm9mvXXe/Ftg==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-WrzMM2DguMpVeRdZ+OfM2/55ZtMNFmfRpXMN7V2i3+KpsAUKDQBFqHAibiTJJAiI6uuXN8mkZiSfn6Bh6eCvYA==, tarball: file:projects/pod-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-collaborator@file:projects/pod-collaborator.tgz':
@@ -5450,6 +5453,10 @@ packages:
 
   '@rush-temp/products@file:projects/products.tgz':
     resolution: {integrity: sha512-B+3fRdypqBSE3ui4MgFE10DBtbZVLW8Lr+cQQDF7ti1GWp04Vbr0njLPtVvySOAab8pHun4xb2yVz8B31Hr5Nw==, tarball: file:projects/products.tgz}
+    version: 0.0.0
+
+  '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz':
+    resolution: {integrity: sha512-euhJQtYB9bi4EajhGq+TYdDJkmGP5CyFcaAVBLPkmhhKENYJFcLd+E/QbDkWPAZZu7lP9EQ88yFHL5oRBOzyrw==, tarball: file:projects/qms-desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
@@ -5841,11 +5848,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-WTrqgpE93g8zjpDYMxBcNlR57SdyerXgTwcm/ffH9Rq6g6jeci4d3Ccg866G/ByekstdqoKmL0PsayYuMzcR1g==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-Ypujv1wWqwY3NEz1nnDPTQRPBCMuz71yh8XBeaO/R8LQoxbXNrawIJPSkPhskudFYmmY1yKvWGuV8YO1vYiR2w==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
-    resolution: {integrity: sha512-+aMwLYnIOHywBM7Qx0U8oJFBAFDukVI6aW9XllMbQj4YVjxXMQuZ+IqdW7PdclDq+xMC8u8noU30nzAKIj45eg==, tarball: file:projects/setting.tgz}
+    resolution: {integrity: sha512-HWEdbpzjpofObK2fv0WkpSZeFVpLROeA6s6/7tsJ/51IHCSxbsuqbJO+CGc+g1fZhbLdHUdIKH+J63kwsRaENA==, tarball: file:projects/setting.tgz}
     version: 0.0.0
 
   '@rush-temp/sign@file:projects/sign.tgz':
@@ -5909,7 +5916,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-oNF++UNPuNik4Ak7sGISighoWJtiPGG+x9+Bop7xHYpPk+j4QTobQlqDKBSAXJdXYE2fe4U64QL5vvIeZT/dDQ==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-sC43Z4u+6Q0Rvj7UUk/T0ndVDEhBEgV777XTsoae+Zrsir6w1zXnSJ1gdoM4dmUVrsUiDN3NMeWFHiZODWYURg==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -5997,7 +6004,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-Vi/BPbM8K+6iZBNQRSsjIAtu4vtocPqM89TWdTxQx4xgUuQqptiNCH/OFzCyGEE7PbY3Ng/dAJcafPhAg4UKKw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-9s0FnsEBN/WrQoIcDgSH/hbgkV49BSHIp/TTZqiRVzmV/yZY9dqaSgYhJxTfWZQnELkKWYIRwNTniqipMobGXw==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -15161,7 +15168,7 @@ snapshots:
 
   '@electron/notarize@2.5.0':
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       fs-extra: 9.1.0
       promise-retry: 2.0.1
     transitivePeerDependencies:
@@ -25030,6 +25037,23 @@ snapshots:
       - node-notifier
       - supports-color
       - ts-node
+
+  '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz(webpack@5.97.1)':
+    dependencies:
+      '@electron/notarize': 2.5.0
+      '@types/node': 22.15.29
+      '@vercel/webpack-asset-relocator-loader': 1.7.4
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      electron: 36.3.1
+      electron-builder: 25.1.8
+      electron-squirrel-startup: 1.0.1
+      node-loader: 2.0.0(webpack@5.97.1)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - electron-builder-squirrel-windows
+      - supports-color
+      - webpack
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
