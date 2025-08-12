@@ -146,6 +146,7 @@
     "PermissionWarningMessage": "您当前角色的权限有限。要解锁此功能和其他高级功能，请让您的工作区管理员升级您的访问权限！",
     "Icon": "图标",
     "Color": "颜色",
-    "AutomationOnly": "仅限自动化"
+    "AutomationOnly": "仅限自动化",
+    "CopyLink": "复制链接"
   }
 }

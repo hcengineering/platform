@@ -141,6 +141,7 @@
     "PermissionWarningMessage": "現在のロールの権限は制限されています。この機能や他の高度な機能を利用するには、ワークスペース管理者にアクセスレベルのアップグレードを依頼してください！",
     "Icon": "アイコン",
     "Color": "色",
-    "AutomationOnly": "自動化のみ"
+    "AutomationOnly": "自動化のみ",
+    "CopyLink": "リンクをコピー"
   }
 }

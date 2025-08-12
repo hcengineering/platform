@@ -51,7 +51,6 @@ import {
   documentTitleProvider,
   getDocumentLink,
   getDocumentLinkId,
-  getDocumentUrl,
   parseDocumentId,
   resolveLocation
 } from './utils'
@@ -192,7 +191,6 @@ export default async (): Promise<Resources> => ({
     UnlockContent: unlockContent
   },
   function: {
-    GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
     DocumentTitleProvider: documentTitleProvider,
     CanLockDocument: canLockDocument,

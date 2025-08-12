@@ -146,6 +146,7 @@
     "PermissionWarningMessage": "Ihre aktuelle Rolle hat eingeschränkte Berechtigungen. Um diese und andere erweiterte Funktionen freizuschalten, bitten Sie Ihren Arbeitsbereich-Administrator, Ihr Zugriffslevel zu erhöhen!",
     "Icon": "Symbol",
     "Color": "Farbe",
-    "AutomationOnly": "Nur Automatisierung"
+    "AutomationOnly": "Nur Automatisierung",
+    "CopyLink": "Link kopieren"
   }
 }

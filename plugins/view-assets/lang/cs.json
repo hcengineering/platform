@@ -146,6 +146,7 @@
     "PermissionWarningMessage": "Vaše současná role má omezená oprávnění. Chcete-li odemknout tuto a další pokročilé funkce, požádejte správce svého pracovního prostoru o zvýšení úrovně přístupu!",
     "Icon": "Ikona",
     "Color": "Barva",
-    "AutomationOnly": "Pouze automatizace"
+    "AutomationOnly": "Pouze automatizace",
+    "CopyLink": "Kopírovat odkaz"
   }
 }

@@ -749,6 +749,24 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: view.function.GetLink
+      },
+      label: view.string.CopyLink,
+      icon: view.icon.CopyLink,
+      category: view.category.General,
+      input: 'any',
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'] },
+      visibilityTester: view.function.CanCopyLink
+    },
+    view.action.CopyLink
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.Delete,
       actionProps: {
         confirmation: view.string.RemoveRelationConfirmation

@@ -141,6 +141,7 @@
     "PermissionWarningMessage": "Seu cargo atual tem permissões limitadas. Para desbloquear este e outros recursos avançados, peça ao administrador do seu espaço de trabalho para atualizar seu nível de acesso!",
     "Icon": "Ícone",
     "Color": "Cor",
-    "AutomationOnly": "Apenas automação"
+    "AutomationOnly": "Apenas automação",
+    "CopyLink": "Copiar link"
   }
 }

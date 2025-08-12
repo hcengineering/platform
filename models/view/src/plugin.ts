@@ -120,7 +120,8 @@ export default mergeIds(viewId, view, {
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
     MarkdownFormatting: '' as IntlString,
-    HideArchived: '' as IntlString
+    HideArchived: '' as IntlString,
+    CopyLink: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,
@@ -153,7 +154,9 @@ export default mergeIds(viewId, view, {
     CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     IsClipboardAvailable: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     BlobImageMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
-    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
+    GetLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>,
+    CanCopyLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
