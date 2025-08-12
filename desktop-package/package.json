@@ -92,6 +92,7 @@
         "deb",
         "zip"
       ],
+      "icon": "./src/AppIcon.png",
       "category": "Utility",
       "publish": {
         "provider": "generic",
