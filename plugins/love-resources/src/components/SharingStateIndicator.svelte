@@ -16,7 +16,7 @@
   import { tooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import love from '../plugin'
-  import { isConnected, isSharingEnabled, isShareWithSound, screenSharing, setShare } from '../utils'
+  import { isCurrentInstanceConnected, isSharingEnabled, isShareWithSound, screenSharing, setShare } from '../utils'
 
   import SharingStatePopup from './SharingStatePopup.svelte'
   import IconShare from './icons/Share.svelte'
@@ -38,10 +38,10 @@
     void setShare(true, audio)
   }
 
-  $: disabled = !$screenSharing && !$isConnected
+  $: disabled = !$screenSharing && !$isCurrentInstanceConnected
 </script>
 
-{#if $isConnected}
+{#if $isCurrentInstanceConnected}
   {#if $isSharingEnabled}
     <button
       class="hulyStatusBarButton mini positive positiveContent"

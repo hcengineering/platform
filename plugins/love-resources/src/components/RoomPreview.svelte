@@ -23,7 +23,7 @@
 
   import love from '../plugin'
   import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
-  import { getRoomLabel, isConnected } from '../utils'
+  import { getRoomLabel, isCurrentInstanceConnected } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import { IntlString } from '@hcengineering/platform'
 
@@ -71,7 +71,7 @@
   async function openRoom (x: number, y: number): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    if ($isConnected && $currentRoom?._id === room._id) {
+    if ($isCurrentInstanceConnected && $currentRoom?._id === room._id) {
       let meeting = $currentMeetingMinutes
       if (meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
         meeting = await client.findOne(love.class.MeetingMinutes, {

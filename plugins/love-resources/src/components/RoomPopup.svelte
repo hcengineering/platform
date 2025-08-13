@@ -50,6 +50,7 @@
   import love from '../plugin'
   import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
+    isCurrentInstanceConnected,
     endMeeting,
     getRoomName,
     isShareWithSound,
@@ -187,7 +188,7 @@
       </div>
     </Scroller>
   </div>
-  {#if joined && $isConnected}
+  {#if joined && $isCurrentInstanceConnected}
     <div class="room-btns" class:no-video={!allowCam}>
       <SplitButton
         size={'large'}
@@ -220,7 +221,7 @@
           size={'large'}
           icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          disabled={($screenSharing && !$isSharingEnabled) || !$isCurrentInstanceConnected}
           action={changeShare}
           secondIcon={IconUpOutline}
           secondAction={shareSettings}

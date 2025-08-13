@@ -21,7 +21,7 @@
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, isConnected, isCurrentInstanceConnected, screenSharing } from '../utils'
+  import { tryConnect, isCurrentInstanceConnected, screenSharing } from '../utils'
   import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
 
   const localNav: boolean = $deviceInfo.navigator.visible
@@ -46,7 +46,6 @@
     if (room === undefined) return
 
     if (
-      !$isConnected &&
       !$isCurrentInstanceConnected &&
       (room.type === RoomType.Video || $screenSharing) &&
       $myInfo?.sessionId &&

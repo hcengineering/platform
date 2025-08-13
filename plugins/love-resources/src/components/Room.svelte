@@ -36,7 +36,6 @@
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
-    isConnected,
     isCurrentInstanceConnected,
     isFullScreen, liveKitClient,
     lk,
@@ -235,7 +234,6 @@
     await waitForOfficeLoaded()
 
     if (
-      !$isConnected &&
       !$isCurrentInstanceConnected &&
       $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
@@ -386,11 +384,7 @@
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
   <ActionContext context={{ mode: 'workbench' }} />
-  {#if $isConnected && !$isCurrentInstanceConnected}
-    <div class="flex justify-center error h-full w-full clear-mins">
-      <Label label={love.string.AnotherWindowError} />
-    </div>
-  {:else if !configured}
+  {#if !configured}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.ServiceNotConfigured} />
     </div>

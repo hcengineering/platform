@@ -18,7 +18,7 @@
   import { AppItem } from '@hcengineering/workbench-resources'
   import { RoomType } from '@hcengineering/love'
   import { currentRoom } from '../../stores'
-  import { isConnected, isSharingEnabled } from '../../utils'
+  import { isCurrentInstanceConnected, isSharingEnabled } from '../../utils'
   import { state } from '@hcengineering/media-resources'
   import love from '../../plugin'
 
@@ -36,9 +36,9 @@
   {label}
   icon={$isSharingEnabled
     ? love.icon.SharingDisabled
-    : $isConnected && allowCam && !isCamEnabled && !isMicEnabled
+    : $isCurrentInstanceConnected && allowCam && !isCamEnabled && !isMicEnabled
       ? love.icon.CamDisabled
-      : $isConnected && !allowCam && isMicEnabled
+      : $isCurrentInstanceConnected && !allowCam && isMicEnabled
         ? love.icon.Mic
         : !allowCam || (!isCamEnabled && isMicEnabled)
             ? love.icon.Mic
@@ -47,11 +47,11 @@
   {size}
   kind={$isSharingEnabled
     ? 'negative'
-    : $isConnected && isCamEnabled
+    : $isCurrentInstanceConnected && isCamEnabled
       ? 'positive'
-      : $isConnected && isMicEnabled
+      : $isCurrentInstanceConnected && isMicEnabled
         ? 'warning'
-        : $isConnected && !(isCamEnabled && isMicEnabled)
+        : $isCurrentInstanceConnected && !(isCamEnabled && isMicEnabled)
           ? 'accented'
           : 'default'}
   on:click

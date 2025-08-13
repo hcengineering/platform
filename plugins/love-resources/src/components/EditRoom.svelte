@@ -19,7 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect, isConnected } from '../utils'
+  import { getRoomName, tryConnect, isCurrentInstanceConnected } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
@@ -54,7 +54,7 @@
     selectedRoomPlace.set(undefined)
   }
 
-  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$isConnected)
+  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$isCurrentInstanceConnected)
 
   let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
     ? love.string.JoinMeeting
@@ -100,7 +100,7 @@
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
-    {#if showConnectionButton(object, connecting, $isConnected, $infos, $myOffice, $currentRoom)}
+    {#if showConnectionButton(object, connecting, $isCurrentInstanceConnected, $infos, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>
