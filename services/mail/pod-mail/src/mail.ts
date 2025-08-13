@@ -15,6 +15,7 @@
 import { type SendMailOptions, type Transporter } from 'nodemailer'
 import { LRUCache } from 'lru-cache'
 import { createHash } from 'node:crypto'
+import * as bcrypt from 'bcrypt'
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
@@ -25,6 +26,7 @@ import { getDefaultTransport, getSmtpTransport } from './transport'
 export class MailClient {
   private readonly transporter: Transporter
   private readonly transporterCache: LRUCache<string, Transporter>
+  private static readonly cacheSalt: string = bcrypt.genSaltSync(12)
 
   constructor () {
     this.transporter = getDefaultTransport(config)
@@ -90,7 +92,8 @@ export class MailClient {
   }
 
   private generateHash (input: string): string {
-    return createHash('sha256').update(input).digest('hex')
+    // Use bcrypt to hash the password for cache key generation
+    return bcrypt.hashSync(input, MailClient.cacheSalt)
   }
 
   close (): void {
