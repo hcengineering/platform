@@ -1985,7 +1985,10 @@ async function getMailboxSecret (
 ): Promise<MailboxSecret[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(['huly-mail'], extra, false)
-  return await db.mailboxSecret.find({ mailbox: params.mailbox })
+): Promise<MailboxSecret | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['huly-mail'], extra, false)
+  return await db.mailboxSecret.findOne({ mailbox: params.mailbox })
 }
 
 async function deleteMailbox (
