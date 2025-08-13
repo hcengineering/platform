@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { SyncOptions } from '@hcengineering/mail-common'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 
@@ -22,5 +23,5 @@ export interface History {
 }
 
 export interface IMessageManager {
-  saveMessage: (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string) => Promise<void>
+  saveMessage: (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string, options?: SyncOptions) => Promise<void>
 }
