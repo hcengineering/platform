@@ -27,3 +27,19 @@ export interface MtaMessage {
     contents: string
   }
 }
+
+export interface MailMessage {
+  from: string
+  to: string[]
+  subject: string
+  text?: string
+  html?: string
+  headers?: Record<string, string> | string[]
+  attachments?: {
+    name: string
+    contentType: string
+    data: Buffer
+  }[]
+}
+
+export const HulyMessageType = 'huly-mail'

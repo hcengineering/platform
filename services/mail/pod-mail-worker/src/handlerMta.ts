@@ -15,13 +15,20 @@
 import { createHash } from 'crypto'
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
-import { type EmailContact, type EmailMessage, createMessages, getProducer } from '@hcengineering/mail-common'
+import {
+  type EmailContact,
+  type EmailMessage,
+  createMessages,
+  getProducer,
+  getMessageExtra,
+  isHulyMessage
+} from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
-import { MtaMessage } from './types'
+import { MtaMessage, HulyMessageType } from './types'
 import { getHeader, parseContent } from './utils'
 import { decodeEncodedWords } from './decode'
 
@@ -35,6 +42,11 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     }
 
     const mta: MtaMessage = req.body
+
+    const headers: string[] = mta.message.headers.map((header) => header[0].trim()) ?? []
+    if (isHulyMessage(headers)) {
+      return
+    }
 
     const from: EmailContact = getEmailContact(mta.envelope.from.address)
     if (config.ignoredAddresses.includes(from.email)) {
@@ -89,7 +101,8 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       replyTo: inReplyTo,
       incoming: true,
       modifiedOn: date,
-      sendOn: date
+      sendOn: date,
+      extra: getMessageExtra(HulyMessageType, true)
     }
 
     const accountClient = getAccountClient(config.accountsUrl, mailServiceToken)

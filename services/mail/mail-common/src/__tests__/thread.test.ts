@@ -25,7 +25,8 @@ describe('ThreadLookupService', () => {
   const MAIL_ID = 'test-mail-id'
   const SPACE_ID = 'test-space-id' as Ref<PersonSpace>
   const THREAD_ID = 'test-thread-id' as Ref<Card>
-  const KEY = `mail-thread-lookup:${MAIL_ID}:${SPACE_ID}`
+  const EMAIL = 'test@example.com'
+  const KEY = `mail-thread-lookup:${MAIL_ID}:${SPACE_ID}:${EMAIL}`
 
   // Mocks
   let mockCtx: MeasureContext
@@ -98,7 +99,7 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -107,7 +108,9 @@ describe('ThreadLookupService', () => {
         'Found existing thread mapping',
         expect.objectContaining({
           mailId: MAIL_ID,
-          threadId: THREAD_ID
+          spaceId: SPACE_ID,
+          threadId: THREAD_ID,
+          email: EMAIL
         })
       )
     })
@@ -118,7 +121,7 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -133,7 +136,7 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -142,6 +145,7 @@ describe('ThreadLookupService', () => {
         'Failed to lookup thread for email',
         expect.objectContaining({
           mailId: MAIL_ID,
+          spaceId: SPACE_ID,
           error: mockError
         })
       )
@@ -152,7 +156,7 @@ describe('ThreadLookupService', () => {
     it('should store thread mapping in KVS', async () => {
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID)
+      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.setValue).toHaveBeenCalledWith(KEY, {
@@ -176,7 +180,7 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID)
+      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.setValue).toHaveBeenCalledWith(KEY, expect.any(Object))
@@ -196,7 +200,7 @@ describe('ThreadLookupService', () => {
     it('should return undefined when inReplyTo is undefined', async () => {
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      const result = await service.getParentThreadId(undefined, SPACE_ID)
+      const result = await service.getParentThreadId(undefined, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(result).toBeUndefined()
@@ -214,10 +218,10 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      const result = await service.getParentThreadId(REPLY_TO, SPACE_ID)
+      const result = await service.getParentThreadId(REPLY_TO, SPACE_ID, EMAIL)
 
       // Verify behavior
-      expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(`mail-thread-lookup:${REPLY_TO}:${SPACE_ID}`)
+      expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(`mail-thread-lookup:${REPLY_TO}:${SPACE_ID}:${EMAIL}`)
       expect(result).toBe(PARENT_THREAD_ID)
     })
   })
@@ -226,7 +230,7 @@ describe('ThreadLookupService', () => {
     it('should delete mapping from KVS', async () => {
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      await service.deleteMapping(MAIL_ID, SPACE_ID)
+      await service.deleteMapping(MAIL_ID, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.deleteKey).toHaveBeenCalledWith(KEY)
@@ -246,7 +250,7 @@ describe('ThreadLookupService', () => {
 
       // Get service and call method
       const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
-      await service.deleteMapping(MAIL_ID, SPACE_ID)
+      await service.deleteMapping(MAIL_ID, SPACE_ID, EMAIL)
 
       // Verify behavior
       expect(mockKeyValueClient.deleteKey).toHaveBeenCalledWith(KEY)

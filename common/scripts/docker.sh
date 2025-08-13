@@ -17,7 +17,7 @@ rush docker:build -p 20 \
 --to @hcengineering/pod-love \
 --to @hcengineering/pod-mail \
 --to @hcengineering/pod-datalake \
---to @hcengineering/pod-inbound-mail \
+--to @hcengineering/pod-mail-worker \
 --to @hcengineering/pod-export \
 --to @hcengineering/pod-msg2file \
 --to @hcengineering/pod-media \

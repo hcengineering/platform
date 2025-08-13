@@ -29,6 +29,9 @@ interface Config {
   queueConfig: string
   queueRegion: string
   communicationTopic: string
+  serviceId: string
+  mailUrl: string
+  mailAuth: string
 }
 
 const config: Config = {
@@ -58,7 +61,15 @@ const config: Config = {
     throw Error('QUEUE_CONFIG env var is not set')
   })(),
   queueRegion: process.env.QUEUE_REGION ?? '',
-  communicationTopic: process.env.COMMUNICATION_TOPIC ?? 'hulygun'
+  communicationTopic: process.env.COMMUNICATION_TOPIC ?? 'hulygun',
+  serviceId: process.env.SERVICE_ID ?? 'huly-mail',
+  mailUrl: (() => {
+    if (process.env.MAIL_URL !== undefined) {
+      return process.env.MAIL_URL
+    }
+    throw Error('MAIL_URL env var is not set')
+  })(),
+  mailAuth: process.env.MAIL_AUTH ?? ''
 }
 
 export default config
