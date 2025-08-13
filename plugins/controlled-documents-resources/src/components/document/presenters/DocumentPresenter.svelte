@@ -64,11 +64,8 @@
           <DocumentIcon size="small" />
         </div>
       {/if}
-      <span
-        class="label nowrap"
-        class:fs-bold={!isRegular}
-        class:no-underline={noUnderline}
-        class:label-gray={isGray}>{title}</span
+      <span class="label nowrap" class:fs-bold={!isRegular} class:no-underline={noUnderline} class:label-gray={isGray}
+        >{title}</span
       >
     </div>
   </DocNavLink>
