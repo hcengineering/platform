@@ -1612,6 +1612,9 @@ importers:
       '@types/archiver':
         specifier: ^6.0.3
         version: 6.0.3
+      '@types/bcrypt':
+        specifier: ^6.0.0
+        version: 6.0.0
       '@types/body-parser':
         specifier: ~1.19.2
         version: 1.19.5
@@ -2077,6 +2080,9 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
+      lru-cache:
+        specifier: ^11.1.0
+        version: 11.1.0
       mammoth:
         specifier: ^1.9.0
         version: 1.9.0
@@ -5346,7 +5352,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-qinA6K1wu5/l1TlFr10jZZlWuO9+gsixFR9E0slsy3KuM35nZS3oiW8I28xadrytSpl9PlEZ64LiMcCxgb50ag==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-0kGmfCDk+EBVRFn28ht0cb+WUUF2sl0BkednIhT99vM5q/g5hfTZeIn5OLBFhqwJyHkj99xA+5eha1nMgH81UA==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
@@ -6657,6 +6663,9 @@ packages:
 
   '@types/babel__traverse@7.20.5':
     resolution: {integrity: sha512-WXCyOcRtH37HAUkpXhUduaxdm82b4GSlyTqajXviN4EfiuPgNYR109xMCKvpl6zPIpua0DGlMEDCq+g8EdoheQ==}
+
+  '@types/bcrypt@6.0.0':
+    resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
 
   '@types/body-parser@1.19.5':
     resolution: {integrity: sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg==}
@@ -24028,6 +24037,7 @@ snapshots:
     dependencies:
       '@aws-sdk/client-ses': 3.738.0
       '@tsconfig/node16': 1.0.4
+      '@types/bcrypt': 6.0.0
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
@@ -30209,6 +30219,10 @@ snapshots:
   '@types/babel__traverse@7.20.5':
     dependencies:
       '@babel/types': 7.23.9
+
+  '@types/bcrypt@6.0.0':
+    dependencies:
+      '@types/node': 22.15.29
 
   '@types/body-parser@1.19.5':
     dependencies:
