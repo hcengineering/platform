@@ -1982,9 +1982,6 @@ async function getMailboxSecret (
   params: {
     mailbox: string
   }
-): Promise<MailboxSecret[]> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['huly-mail'], extra, false)
 ): Promise<MailboxSecret | null> {
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(['huly-mail'], extra, false)
