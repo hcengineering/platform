@@ -42,6 +42,7 @@ import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
   AccountEventType,
+  type MailboxSecret,
   type AccountDB,
   type AccountMethodHandler,
   type LoginInfo,
@@ -1973,6 +1974,20 @@ async function getMailboxes (
   return await db.mailbox.find({ accountUuid: account })
 }
 
+async function getMailboxSecret (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    mailbox: string
+  }
+): Promise<MailboxSecret[]> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['huly-mail'], extra, false)
+  return await db.mailboxSecret.find({ mailbox: params.mailbox })
+}
+
 async function deleteMailbox (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2205,6 +2220,7 @@ export type AccountMethods =
   | 'getMailboxOptions'
   | 'createMailbox'
   | 'getMailboxes'
+  | 'getMailboxSecret'
   | 'deleteMailbox'
   | 'getAccountInfo'
   | 'isReadOnlyGuest'
@@ -2268,6 +2284,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
+    getMailboxSecret: wrap(getMailboxSecret),
     getAccountInfo: wrap(getAccountInfo),
     isReadOnlyGuest: wrap(isReadOnlyGuest),
 

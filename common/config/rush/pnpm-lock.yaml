@@ -2074,9 +2074,6 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
-      lru-cache:
-        specifier: ^11.1.0
-        version: 11.1.0
       mammoth:
         specifier: ^1.9.0
         version: 1.9.0
@@ -4906,7 +4903,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-card@file:projects/model-card.tgz':
-    resolution: {integrity: sha512-SsrZ+0AVeICDFwFdWZt9Zwr8b8/EFjnJcJcqkUKVqqvw7EaABvHV0Gl0/DfvV0xxnxoeJjO+2z/I/QoTB47g7w==, tarball: file:projects/model-card.tgz}
+    resolution: {integrity: sha512-0Gm7Yjag3m6EvKtCWSke4phJ5+N8YcudQLvrphiDWlgxEoVl7FsDq4lVNKX5CZjPcldm79usxWrCJ8+GaAgDuQ==, tarball: file:projects/model-card.tgz}
     version: 0.0.0
 
   '@rush-temp/model-chat@file:projects/model-chat.tgz':
@@ -5346,7 +5343,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-WhDC0I0bu1HeY3HN/yz6xQHsanXYf0ZAWEToJuKb3IAuLTsq1k/um2url73TyBYmWT+XbzKDRMh+AWM5xkav+w==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-EHTD3NZ8Sl8RTooTkOTItXNeCd+9vvTxAYeZesz/bfBM44WZjPL6tfE+YveETQ6d3dKjZK9g5QiCdQPJnXinaA==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
@@ -24035,6 +24032,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      lru-cache: 11.1.0
       nodemailer: 6.10.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)

@@ -91,6 +91,12 @@ export interface MailboxInfo {
   appPasswords: string[]
 }
 
+export interface MailboxSecret {
+  mailbox: string
+  app?: string
+  secret: string
+}
+
 export interface Integration {
   socialId: PersonId
   kind: IntegrationKind // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
