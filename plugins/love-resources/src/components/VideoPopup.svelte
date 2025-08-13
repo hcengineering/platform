@@ -18,7 +18,6 @@
   import { Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import { isSharingEnabled, screenSharing } from '../utils'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
@@ -27,9 +26,9 @@
 
   const dispatch = createEventDispatcher()
 
+  let withScreenSharing: boolean = false
   let divScroll: HTMLElement
 
-  $: dispatchFit($isSharingEnabled)
   const dispatchFit = (_?: boolean): void => {
     setTimeout(() => {
       if (divScroll) {
@@ -38,11 +37,13 @@
       }
     }, 10)
   }
+
+  $: dispatchFit(withScreenSharing)
 </script>
 
 <div class="antiPopup videoPopup-container" class:isDock>
-  <div class="screenContainer" class:hidden={!$screenSharing || $isSharingEnabled}>
-    <ScreenSharingView />
+  <div class="screenContainer" class:hidden={!withScreenSharing}>
+    <ScreenSharingView showLocalTrack={false} bind:hasActiveTrack={withScreenSharing}/>
   </div>
   <Scroller
     bind:divScroll

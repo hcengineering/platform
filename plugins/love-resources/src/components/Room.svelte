@@ -23,7 +23,6 @@
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
     isFullScreen,
-    screenSharing,
     tryConnect
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
@@ -37,6 +36,7 @@
 
   let roomEl: HTMLDivElement
 
+  let withScreenSharing: boolean = false
   let loading: boolean = false
   let configured: boolean = false
 
@@ -145,23 +145,22 @@
   {/if}
   <div
     class="room-container"
-    class:sharing={$screenSharing}
+    class:sharing={withScreenSharing}
     class:many={columns > 3}
     class:hidden={loading}
     class:mobile={$deviceInfo.isMobile}
   >
     <div class="screenContainer">
-      <ScreenSharingView />
+      <ScreenSharingView bind:hasActiveTrack={withScreenSharing}/>
     </div>
     {#if withVideo}
       <div
         class="videoGrid"
-        style={$screenSharing ? '' : gridStyle}
-        class:scroll-m-0={$screenSharing}
+        style={withScreenSharing ? '' : gridStyle}
+        class:scroll-m-0={withScreenSharing}
       >
         <ParticipantsListView room={room._id} on:participantsCount={(evt) => {
-          console.log('participantsCount', evt.detail)
-          updateStyle(evt.detail, $screenSharing)
+          updateStyle(evt.detail, withScreenSharing)
         }}/>
       </div>
     {/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { liveKitClient, lk } from '../../utils'
   import {
     LocalParticipant,
@@ -11,42 +11,80 @@
     Track
   } from 'livekit-client'
 
+  export let hasActiveTrack: boolean = false
+  export let showLocalTrack: boolean = true
+
+  let activeTrack: Track | null = null
   let screen: HTMLVideoElement
 
-  function handleTrackSubscribed (
+  function trySetActiveTrack (track: Track | undefined): boolean {
+    if (track === undefined) return false
+    if (track.kind !== Track.Kind.Video || track.source !== Track.Source.ScreenShare) return false
+    hasActiveTrack = true
+    activeTrack = track
+    track.attach(screen)
+    return true
+  }
+
+  function clearActiveTrack (track: Track | undefined) {
+    if (track !== activeTrack) return
+    hasActiveTrack = false
+    activeTrack?.detach()
+    activeTrack = null
+  }
+
+  function onTrackSubscribed (
     track: RemoteTrack,
     publication: RemoteTrackPublication,
     participant: RemoteParticipant
   ): void {
-    if (track.kind === Track.Kind.Video && track.source === Track.Source.ScreenShare) {
-      track.attach(screen)
-    }
+    trySetActiveTrack(track)
   }
 
-  function handleLocalTrack (publication: LocalTrackPublication, participant: LocalParticipant): void {
-    if (publication.track?.kind === Track.Kind.Video && publication.track.source === Track.Source.ScreenShare) {
-      publication.track.attach(screen)
-    }
+  function onTrackUnsubscribed (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication,
+    participant: RemoteParticipant
+  ): void {
+    clearActiveTrack(track)
+  }
+
+  function onLocalTrackPublished (publication: LocalTrackPublication, participant: LocalParticipant): void {
+    trySetActiveTrack(publication.track)
+  }
+
+  function onLocalTrackUnpublished (publication: LocalTrackPublication, participant: LocalParticipant): void {
+    clearActiveTrack(publication.track)
   }
 
   onMount(async () => {
     await liveKitClient.awaitConnect()
+
+    lk.on(RoomEvent.TrackSubscribed, onTrackSubscribed)
+    lk.on(RoomEvent.TrackUnsubscribed, onTrackUnsubscribed)
     for (const participant of lk.remoteParticipants.values()) {
       for (const publication of participant.trackPublications.values()) {
-        if (publication.track !== undefined && publication.track.kind === Track.Kind.Video && publication.track.source === Track.Source.ScreenShare) {
-          publication.track.attach(screen)
-          break
-        }
+        if (trySetActiveTrack(publication.track)) break
       }
     }
-    for (const publication of lk.localParticipant.trackPublications.values()) {
-      if (publication.track !== undefined && publication.track.kind === Track.Kind.Video && publication.track.source === Track.Source.ScreenShare) {
-        publication.track.attach(screen)
-        break
+
+    if (showLocalTrack) {
+      lk.on(RoomEvent.LocalTrackPublished, onLocalTrackPublished)
+      lk.on(RoomEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
+      for (const publication of lk.localParticipant.trackPublications.values()) {
+        if (trySetActiveTrack(publication.track)) break
       }
     }
-    lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
-    lk.on(RoomEvent.LocalTrackPublished, handleLocalTrack)
+  })
+
+  onDestroy(() => {
+    activeTrack?.detach(screen)
+    lk.off(RoomEvent.TrackSubscribed, onTrackSubscribed)
+    lk.off(RoomEvent.TrackUnsubscribed, onTrackUnsubscribed)
+    if (showLocalTrack) {
+      lk.off(RoomEvent.LocalTrackPublished, onLocalTrackPublished)
+      lk.off(RoomEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
+    }
   })
 </script>
 
