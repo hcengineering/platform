@@ -3,7 +3,8 @@
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
-  import { disconnect, isCurrentInstanceConnected, lk } from '../utils'
+  import { disconnect, lk } from '../utils'
+  import { lkSessionConnected } from '../liveKitClient'
 
   let parentElement: HTMLDivElement
 
@@ -41,7 +42,7 @@
   onDestroy(async () => {
     lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
-    if ($isCurrentInstanceConnected) {
+    if ($lkSessionConnected) {
       await disconnect()
     }
   })

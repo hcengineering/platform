@@ -50,8 +50,7 @@
     screenSharing,
     setShare,
     startTranscription,
-    stopTranscription,
-    isCurrentInstanceConnected
+    stopTranscription
   } from '../utils'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
@@ -59,6 +58,7 @@
   import RoomAccessPopup from './RoomAccessPopup.svelte'
   import RoomModal from './RoomModal.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -164,7 +164,7 @@
         on:click={setAccess}
       />
     {/if}
-    {#if $isCurrentInstanceConnected}
+    {#if $lkSessionConnected}
       <SplitButton
         size={'large'}
         icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
@@ -199,7 +199,7 @@
             fill: $isSharingEnabled ? 'var(--bg-negative-default)' : 'var(--bg-positive-default)'
           }}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isCurrentInstanceConnected}
+          disabled={($screenSharing && !$isSharingEnabled) || !$lkSessionConnected}
           action={changeShare}
           secondIcon={IconUpOutline}
           secondAction={shareSettings}
@@ -210,13 +210,13 @@
         <ModernButton
           icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
           tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
-          disabled={!$isCurrentInstanceConnected}
+          disabled={!$lkSessionConnected}
           kind={'secondary'}
           size={'large'}
           on:click={() => record(room)}
         />
       {/if}
-      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && isTranscriptionAllowed() && $isCurrentInstanceConnected}
+      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && isTranscriptionAllowed() && $lkSessionConnected}
         <ModernButton
           icon={view.icon.Feather}
           iconProps={$isTranscription ? { fill: 'var(--button-negative-BackgroundColor)' } : {}}
@@ -235,7 +235,7 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="left">
-    {#if $isCurrentInstanceConnected && withVideo && onFullScreen}
+    {#if $lkSessionConnected && withVideo && onFullScreen}
       <ModernButton
         icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
         tooltip={{
@@ -250,7 +250,7 @@
       />
     {/if}
 
-    {#if ($screenSharing || room.type === RoomType.Video) && $isCurrentInstanceConnected && canMaximize}
+    {#if ($screenSharing || room.type === RoomType.Video) && $lkSessionConnected && canMaximize}
       <ModernButton
         icon={IconMaximize}
         tooltip={{
@@ -263,7 +263,7 @@
         on:click={maximize}
       />
     {/if}
-    {#if $isCurrentInstanceConnected && moreItems.length > 0}
+    {#if $lkSessionConnected && moreItems.length > 0}
       <ButtonMenu
         items={moreItems}
         icon={IconMoreV}

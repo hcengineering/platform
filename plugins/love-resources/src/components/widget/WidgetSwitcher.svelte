@@ -18,9 +18,10 @@
   import { AppItem } from '@hcengineering/workbench-resources'
   import { RoomType } from '@hcengineering/love'
   import { currentRoom } from '../../stores'
-  import { isCurrentInstanceConnected, isSharingEnabled } from '../../utils'
+  import { isSharingEnabled } from '../../utils'
   import { state } from '@hcengineering/media-resources'
   import love from '../../plugin'
+  import { lkSessionConnected } from '../../liveKitClient'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -36,9 +37,9 @@
   {label}
   icon={$isSharingEnabled
     ? love.icon.SharingDisabled
-    : $isCurrentInstanceConnected && allowCam && !isCamEnabled && !isMicEnabled
+    : $lkSessionConnected && allowCam && !isCamEnabled && !isMicEnabled
       ? love.icon.CamDisabled
-      : $isCurrentInstanceConnected && !allowCam && isMicEnabled
+      : $lkSessionConnected && !allowCam && isMicEnabled
         ? love.icon.Mic
         : !allowCam || (!isCamEnabled && isMicEnabled)
             ? love.icon.Mic
@@ -47,11 +48,11 @@
   {size}
   kind={$isSharingEnabled
     ? 'negative'
-    : $isCurrentInstanceConnected && isCamEnabled
+    : $lkSessionConnected && isCamEnabled
       ? 'positive'
-      : $isCurrentInstanceConnected && isMicEnabled
+      : $lkSessionConnected && isMicEnabled
         ? 'warning'
-        : $isCurrentInstanceConnected && !(isCamEnabled && isMicEnabled)
+        : $lkSessionConnected && !(isCamEnabled && isMicEnabled)
           ? 'accented'
           : 'default'}
   on:click

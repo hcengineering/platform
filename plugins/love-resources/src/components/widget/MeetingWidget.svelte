@@ -20,10 +20,10 @@
 
   import love from '../../plugin'
   import VideoTab from './VideoTab.svelte'
-  import { isCurrentInstanceConnected } from '../../utils'
   import { currentMeetingMinutes, currentRoom } from '../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
+  import { lkSessionConnected } from '../../liveKitClient'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -39,7 +39,7 @@
   $: room = $currentRoom
 
   $: if (
-    !$isCurrentInstanceConnected ||
+    !$lkSessionConnected ||
     widgetState?.data?.room === undefined ||
     $currentRoom === undefined ||
     $currentRoom._id !== widgetState?.data?.room

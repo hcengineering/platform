@@ -111,6 +111,7 @@ export class LiveKitClient {
       },
       autoDestroy: false
     })
+    lkSessionConnected.set(true)
     this.currentMediaSession = session
   }
 

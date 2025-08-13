@@ -36,7 +36,6 @@
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
-    isCurrentInstanceConnected,
     isFullScreen, liveKitClient,
     lk,
     screenSharing,
@@ -47,6 +46,7 @@
   import { Ref } from '@hcengineering/core'
   import { Person } from '@hcengineering/contact'
   import { ParticipantData } from '../types'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
@@ -234,7 +234,7 @@
     await waitForOfficeLoaded()
 
     if (
-      !$isCurrentInstanceConnected &&
+      !$lkSessionConnected &&
       $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)

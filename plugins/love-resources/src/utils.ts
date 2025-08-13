@@ -91,7 +91,7 @@ import {
   myOffice,
   selectedRoomPlace
 } from './stores'
-import { getLiveKitClient, lkSessionConnected } from './liveKitClient'
+import { getLiveKitClient } from './liveKitClient'
 
 export async function getToken (
   roomName: string,
@@ -132,12 +132,6 @@ export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTra
   lk.localParticipant.createScreenTracks = value
 }
 
-export const isConnected = writable<boolean>(false)
-export const isCurrentInstanceConnected = writable<boolean>(false)
-export let $isCurrentInstanceConnected: boolean = false
-isCurrentInstanceConnected.subscribe((value) => {
-  $isCurrentInstanceConnected = value
-})
 export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
 export const isTranscription = writable<boolean>(false)
@@ -402,16 +396,12 @@ lk.on(RoomEvent.Connected, () => {
       void setShare(enabled)
     }
   })
-  isConnected.set(true)
   currentRoomAudioLevels.set(new Map())
-  isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
   void initRoom()
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
-  isConnected.set(false)
-  isCurrentInstanceConnected.set(false)
   Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 

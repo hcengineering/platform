@@ -50,7 +50,6 @@
   import love from '../plugin'
   import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
-    isCurrentInstanceConnected,
     endMeeting,
     getRoomName,
     isShareWithSound,
@@ -60,6 +59,7 @@
     setShare,
     tryConnect
   } from '../utils'
+  import { lkSessionConnected } from '../liveKitClient'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import MicSettingPopup from './meeting/MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
@@ -188,7 +188,7 @@
       </div>
     </Scroller>
   </div>
-  {#if joined && $isCurrentInstanceConnected}
+  {#if joined && $lkSessionConnected}
     <div class="room-btns" class:no-video={!allowCam}>
       <SplitButton
         size={'large'}
@@ -221,7 +221,7 @@
           size={'large'}
           icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isCurrentInstanceConnected}
+          disabled={($screenSharing && !$isSharingEnabled) || !$lkSessionConnected}
           action={changeShare}
           secondIcon={IconUpOutline}
           secondAction={shareSettings}

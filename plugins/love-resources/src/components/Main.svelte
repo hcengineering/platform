@@ -21,8 +21,9 @@
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, isCurrentInstanceConnected, screenSharing } from '../utils'
+  import { tryConnect, screenSharing } from '../utils'
   import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
+  import { lkSessionConnected } from '../liveKitClient'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -46,7 +47,7 @@
     if (room === undefined) return
 
     if (
-      !$isCurrentInstanceConnected &&
+      !$lkSessionConnected &&
       (room.type === RoomType.Video || $screenSharing) &&
       $myInfo?.sessionId &&
       $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
