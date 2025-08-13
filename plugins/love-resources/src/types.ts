@@ -1,6 +1,15 @@
 import { type DefSeparators } from '@hcengineering/ui'
 import { type RoomLanguage } from '@hcengineering/love'
 
+export interface ParticipantData {
+  _id: string
+  name: string
+  connecting: boolean
+  muted: boolean
+  mirror: boolean
+  isAgent: boolean
+}
+
 export interface ResizeInitParams {
   x: number
   y: number

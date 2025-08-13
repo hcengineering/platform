@@ -36,10 +36,9 @@
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
-    awaitConnect,
     isConnected,
     isCurrentInstanceConnected,
-    isFullScreen,
+    isFullScreen, liveKitClient,
     lk,
     screenSharing,
     tryConnect
@@ -48,19 +47,11 @@
   import ParticipantView from './ParticipantView.svelte'
   import { Ref } from '@hcengineering/core'
   import { Person } from '@hcengineering/contact'
+  import { ParticipantData } from '../types'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
   export let room: TypeRoom
-
-  interface ParticipantData {
-    _id: string
-    name: string
-    connecting: boolean
-    muted: boolean
-    mirror: boolean
-    isAgent: boolean
-  }
 
   let participants: ParticipantData[] = []
   const participantElements: ParticipantView[] = []
@@ -252,7 +243,7 @@
       await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
 
-    await awaitConnect()
+    await liveKitClient.awaitConnect()
     for (const participant of lk.remoteParticipants.values()) {
       attachParticipant(participant)
       for (const publication of participant.trackPublications.values()) {
@@ -292,8 +283,6 @@
   let gridStyle = ''
   let columns: number = 0
   let rows: number = 0
-  let roomWidth: number
-  let roomHeight: number
 
   onDestroy(
     infos.subscribe((data) => {
@@ -420,10 +409,6 @@
     </div>
     {#if withVideo}
       <div
-        use:resizeObserver={(element) => {
-          roomWidth = element.clientWidth
-          roomHeight = element.clientHeight
-        }}
         class="videoGrid"
         style={$screenSharing ? '' : gridStyle}
         class:scroll-m-0={$screenSharing}

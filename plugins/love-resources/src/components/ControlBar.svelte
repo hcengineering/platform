@@ -33,15 +33,12 @@
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
-  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
+  import { toggleCamState, toggleMicState, state } from '@hcengineering/media-resources'
 
   import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
-    isCameraEnabled,
-    isConnected,
     isFullScreen,
-    isMicEnabled,
     isRecording,
     isRecordingAvailable,
     isShareWithSound,
@@ -53,7 +50,8 @@
     screenSharing,
     setShare,
     startTranscription,
-    stopTranscription
+    stopTranscription,
+    isConnected
   } from '../utils'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
@@ -74,6 +72,8 @@
 
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
+  $: isMicEnabled = $state.microphone?.enabled === true
+  $: isCamEnabled = $state.camera?.enabled === true
 
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
@@ -167,9 +167,9 @@
     {#if $isConnected}
       <SplitButton
         size={'large'}
-        icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
+        icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
         showTooltip={{
-          label: $isMicEnabled ? love.string.Mute : love.string.UnMute,
+          label: isMicEnabled ? love.string.Mute : love.string.UnMute,
           keys: micKeys
         }}
         action={toggleMicState}
@@ -180,9 +180,9 @@
       {#if allowCam}
         <SplitButton
           size={'large'}
-          icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
+          icon={isCamEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
           showTooltip={{
-            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo,
+            label: isCamEnabled ? love.string.StopVideo : love.string.StartVideo,
             keys: camKeys
           }}
           action={toggleCamState}

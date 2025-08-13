@@ -1,17 +1,13 @@
 import { get } from 'svelte/store'
 import {
-  isCameraEnabled,
-  isConnected,
-  $isCurrentInstanceConnected,
-  isMicEnabled,
   isSharingEnabled,
   setCam,
   setMic,
   setShare
 } from './utils'
-import { getCurrentLocation, location } from '@hcengineering/ui'
+import { location } from '@hcengineering/ui'
 
-let key = 'love' + getCurrentLocation().path?.[2]
+let key = ''
 
 let bc: BroadcastChannel | undefined
 
@@ -20,7 +16,10 @@ location.subscribe((newLocation) => {
     const newKey = 'love' + newLocation.path[2]
     if (key !== newKey) {
       key = newKey
+      bc?.close()
       bc = new BroadcastChannel(key)
+      bc.onmessage = onMessage
+      sendMessage({ type: 'status_ask' })
     }
   }
 })
@@ -55,50 +54,49 @@ interface BroadcastStatusMessage {
   value: boolean
 }
 
-export function sendMessage (req: BroadcastMessage): void {
+function sendMessage (req: BroadcastMessage): void {
   bc?.postMessage(req)
 }
 
-if (bc !== undefined) {
-  bc.onmessage = async (e: MessageEvent<BroadcastMessage>) => {
-    if (e.data.type === 'set_mic') {
-      if ($isCurrentInstanceConnected) {
-        await setMic(e.data.value)
-      }
-    }
-    if (e.data.type === 'set_cam') {
-      if ($isCurrentInstanceConnected) {
-        await setCam(e.data.value)
-      }
-    }
-    if (e.data.type === 'set_share') {
-      if ($isCurrentInstanceConnected) {
-        await setShare(e.data.value)
-      }
-    }
-    if (e.data.type === 'share') {
-      isSharingEnabled.set(e.data.value)
-    }
-    if (e.data.type === 'mic') {
-      isMicEnabled.set(e.data.value)
-    }
-    if (e.data.type === 'cam') {
-      isCameraEnabled.set(e.data.value)
-    }
-    if (e.data.type === 'status_ask') {
-      if ($isCurrentInstanceConnected) {
-        sendMessage({ type: 'connect', value: true })
-        sendMessage({ type: 'mic', value: get(isMicEnabled) })
-        sendMessage({ type: 'cam', value: get(isCameraEnabled) })
-        sendMessage({ type: 'share', value: get(isSharingEnabled) })
-      }
-    }
-    if (e.data.type === 'connect') {
-      if (!$isCurrentInstanceConnected) {
-        isConnected.set(e.data.value)
-      }
+async function onMessage (e: MessageEvent<BroadcastMessage>): Promise<void> {
+  console.log('broadcast message', e.data)
+  /*
+  if (e.data.type === 'set_mic') {
+    if ($isCurrentInstanceConnected) {
+      await setMic(e.data.value)
     }
   }
+  if (e.data.type === 'set_cam') {
+    if ($isCurrentInstanceConnected) {
+      await setCam(e.data.value)
+    }
+  }
+  if (e.data.type === 'set_share') {
+    if ($isCurrentInstanceConnected) {
+      await setShare(e.data.value)
+    }
+  }
+  if (e.data.type === 'share') {
+    isSharingEnabled.set(e.data.value)
+  }
+  if (e.data.type === 'mic') {
+    isMicEnabled.set(e.data.value)
+  }
+  if (e.data.type === 'cam') {
+    isCameraEnabled.set(e.data.value)
+  }
+  if (e.data.type === 'status_ask') {
+    if ($isCurrentInstanceConnected) {
+      sendMessage({ type: 'connect', value: true })
+      sendMessage({ type: 'mic', value: get(isMicEnabled) })
+      sendMessage({ type: 'cam', value: get(isCameraEnabled) })
+      sendMessage({ type: 'share', value: get(isSharingEnabled) })
+    }
+  }
+  if (e.data.type === 'connect') {
+    if (!$isCurrentInstanceConnected) {
+      isConnected.set(e.data.value)
+    }
+  }
+  */
 }
-
-sendMessage({ type: 'status_ask' })

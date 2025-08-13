@@ -45,16 +45,13 @@
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
+  import { toggleCamState, toggleMicState, state } from '@hcengineering/media-resources'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
     endMeeting,
     getRoomName,
-    isCameraEnabled,
-    isConnected,
-    isMicEnabled,
     isShareWithSound,
     isSharingEnabled,
     leaveRoom,
@@ -92,6 +89,8 @@
   const allowShare: boolean = true
 
   $: allowCam = $currentRoom?.type === RoomType.Video
+  $: isMicEnabled = $state.microphone?.enabled === true
+  $: isCamEnabled = $state.camera?.enabled === true
 
   const dispatch = createEventDispatcher()
 
@@ -192,10 +191,10 @@
     <div class="room-btns" class:no-video={!allowCam}>
       <SplitButton
         size={'large'}
-        icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
+        icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
+        label={isMicEnabled ? love.string.Mute : love.string.UnMute}
         showTooltip={{
-          label: $isMicEnabled ? love.string.Mute : love.string.UnMute
+          label: isMicEnabled ? love.string.Mute : love.string.UnMute
         }}
         action={toggleMicState}
         secondIcon={IconUpOutline}
@@ -205,10 +204,10 @@
       {#if allowCam}
         <SplitButton
           size={'large'}
-          icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-          label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
+          icon={isCamEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
+          label={isCamEnabled ? love.string.StopVideo : love.string.StartVideo}
           showTooltip={{
-            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo
+            label: isCamEnabled ? love.string.StopVideo : love.string.StartVideo
           }}
           action={toggleCamState}
           secondIcon={IconUpOutline}

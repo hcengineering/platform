@@ -32,21 +32,13 @@
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
 
   import { infos } from '../stores'
-  import { awaitConnect, isSharingEnabled, lk, screenSharing } from '../utils'
+  import { isSharingEnabled, liveKitClient, lk, screenSharing } from '../utils'
   import ParticipantView from './ParticipantView.svelte'
   import { Person } from '@hcengineering/contact'
+  import { ParticipantData } from '../types'
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
-
-  interface ParticipantData {
-    _id: string
-    name: string
-    muted: boolean
-    mirror: boolean
-    connecting: boolean
-    isAgent: boolean
-  }
 
   let aiPersonRef: Ref<Person> | undefined
   $: if ($aiBotSocialIdentityStore != null) {
@@ -184,7 +176,7 @@
   }
 
   onMount(async () => {
-    await awaitConnect()
+    await liveKitClient.awaitConnect()
     for (const participant of lk.remoteParticipants.values()) {
       attachParticipant(participant)
       for (const publication of participant.trackPublications.values()) {
