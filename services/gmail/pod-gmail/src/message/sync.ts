@@ -71,6 +71,8 @@ export class SyncManager {
     this.processedMessages = 0
     this.syncStartTime = new Date()
 
+    const syncOptions = await this.getSyncOptions(userId, options)
+
     try {
       let pageToken: string | undefined
       let histories: GaxiosResponse<gmail_v1.Schema$ListHistoryResponse>
@@ -91,7 +93,7 @@ export class SyncManager {
             error: err.message,
             historyId
           })
-          void this.syncNewMessages(userId, userEmail)
+          void this.syncNewMessages(userId, userEmail, syncOptions)
           return
         }
         const nextPageToken = histories.data.nextPageToken
@@ -106,7 +108,7 @@ export class SyncManager {
               }
               try {
                 const res = await this.getMessage(message.message.id)
-                await this.messageManager.saveMessage(res, userEmail)
+                await this.messageManager.saveMessage(res, userEmail, syncOptions)
                 this.processedMessages++
               } catch (err) {
                 this.ctx.error('Part sync message error', {
@@ -143,6 +145,7 @@ export class SyncManager {
                 })
               }
             }
+            await this.stateManager.setLastSyncDate(userId, new Date())
             return
           } else {
             pageToken = nextPageToken
@@ -160,7 +163,7 @@ export class SyncManager {
     }
   }
 
-  async fullSync (userId: PersonId, userEmail?: string, q?: string): Promise<void> {
+  async fullSync (userId: PersonId, userEmail?: string, q?: string, options?: SyncOptions): Promise<void> {
     this.ctx.info('Start full sync', { workspaceUuid: this.workspace, userId, userEmail })
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
@@ -170,6 +173,8 @@ export class SyncManager {
     this.currentSyncType = 'full'
     this.processedMessages = 0
     this.syncStartTime = new Date()
+
+    const syncOptions = await this.getSyncOptions(userId, options)
 
     try {
       // Get saved page token to continue from
@@ -205,7 +210,7 @@ export class SyncManager {
           try {
             const message = await this.getMessage(id)
             const historyId = message.data.historyId
-            await this.messageManager.saveMessage(message, userEmail)
+            await this.messageManager.saveMessage(message, userEmail, syncOptions)
             this.processedMessages++
 
             if (historyId != null && q === undefined) {
@@ -233,6 +238,7 @@ export class SyncManager {
       if (currentHistoryId != null) {
         await this.stateManager.setHistoryId(userId, currentHistoryId)
       }
+      await this.stateManager.setLastSyncDate(userId, new Date())
       this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
       if (this.isClosing) return
@@ -245,6 +251,19 @@ export class SyncManager {
     }
   }
 
+  private async getSyncOptions (userId: PersonId, syncOptions?: SyncOptions): Promise<SyncOptions | undefined> {
+    try {
+      const isUpdateAfterFullSync = (await this.stateManager.getLastSyncDate(userId)) != null
+      return {
+        ...(syncOptions ?? {}),
+        noNotify: isUpdateAfterFullSync ? syncOptions?.noNotify ?? false : true
+      }
+    } catch (err) {
+      this.ctx.error('Error getting last sync date', { workspace: this.workspace, userId, err })
+      return syncOptions
+    }
+  }
+
   private async getMessage (id: string): Promise<GaxiosResponse<gmail_v1.Schema$Message>> {
     await this.rateLimiter.take(5)
     return await this.gmail.messages.get({
@@ -254,7 +273,7 @@ export class SyncManager {
     })
   }
 
-  async syncNewMessages (userId: PersonId, userEmail?: string): Promise<void> {
+  async syncNewMessages (userId: PersonId, userEmail?: string, options?: SyncOptions): Promise<void> {
     this.ctx.info('Start sync new messages', { workspaceUuid: this.workspace, userId, userEmail })
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
@@ -266,7 +285,7 @@ export class SyncManager {
 
     if (storedHistoryId == null) {
       this.ctx.info('No stored history ID found, performing full sync instead', { userId })
-      await this.fullSync(userId, userEmail)
+      await this.fullSync(userId, userEmail, undefined, options)
       return
     }
 
@@ -312,7 +331,7 @@ export class SyncManager {
             // If message has a history ID, check if it's newer than stored
             if (messageHistoryId != null) {
               if (BigInt(messageHistoryId) > BigInt(storedHistoryId)) {
-                await this.messageManager.saveMessage(message, userEmail)
+                await this.messageManager.saveMessage(message, userEmail, options)
                 totalProcessedMessages++
 
                 // Track the maximum history ID found
@@ -331,7 +350,7 @@ export class SyncManager {
               }
             } else {
               // Message without history ID, save it anyway
-              await this.messageManager.saveMessage(message, userEmail)
+              await this.messageManager.saveMessage(message, userEmail, options)
               totalProcessedMessages++
             }
           } catch (err: any) {
@@ -401,7 +420,7 @@ export class SyncManager {
         await this.partSync(userId, userEmail, history.historyId, options)
       } else {
         this.ctx.info('Start full sync', { workspaceUuid: this.workspace, userId })
-        await this.fullSync(userId, userEmail)
+        await this.fullSync(userId, userEmail, undefined, options)
       }
     } catch (err) {
       if (this.isClosing) return

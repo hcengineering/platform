@@ -58,6 +58,17 @@ export class SyncStateManager {
     await this.keyValueClient.setValue(pageTokenKey, pageToken)
   }
 
+  async getLastSyncDate (userId: PersonId): Promise<Date | null> {
+    const lastSyncKey = this.getLastSyncKey(userId)
+    const lastSync = await this.keyValueClient.getValue<Date>(lastSyncKey)
+    return lastSync != null ? new Date(lastSync) : null
+  }
+
+  async setLastSyncDate (userId: PersonId, date: Date): Promise<void> {
+    const lastSyncKey = this.getLastSyncKey(userId)
+    await this.keyValueClient.setValue(lastSyncKey, date)
+  }
+
   private getHistoryKey (userId: PersonId): string {
     if (this.version === IntegrationVersion.V2) {
       return `history-v2:${this.workspace}:${userId}`
@@ -70,5 +81,12 @@ export class SyncStateManager {
       return `page-token-v2:${this.workspace}:${userId}`
     }
     return `page-token:${this.workspace}:${userId}`
+  }
+
+  private getLastSyncKey (userId: PersonId): string {
+    if (this.version === IntegrationVersion.V2) {
+      return `last-sync-date-v2:${this.workspace}:${userId}`
+    }
+    return `last-sync-date:${this.workspace}:${userId}`
   }
 }
