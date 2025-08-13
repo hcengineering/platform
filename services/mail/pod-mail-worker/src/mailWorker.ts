@@ -42,7 +42,6 @@ export class MailWorker {
   private txConsumer: ConsumerHandle | undefined
   private mailboxOptions: MailboxOptions | undefined
   private loadingPromise: Promise<void> | undefined
-  private readonly mailboxSecret = new Map<string, string>()
 
   protected static _instance: MailWorker
 
@@ -246,7 +245,7 @@ export class MailWorker {
       ) as string[]
 
       const email = emailSocialId.value
-      const secret = this.mailboxSecret.get(email) ?? (await this.accountClient.getMailboxSecret(email))?.secret
+      const secret = (await this.accountClient.getMailboxSecret(email))?.secret
       if (secret === undefined) {
         this.ctx.error('Mailbox secret not found for email', { email })
         return

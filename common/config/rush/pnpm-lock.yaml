@@ -1783,6 +1783,9 @@ importers:
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
       big-integer:
         specifier: ^1.6.51
         version: 1.6.52
@@ -5343,7 +5346,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-EHTD3NZ8Sl8RTooTkOTItXNeCd+9vvTxAYeZesz/bfBM44WZjPL6tfE+YveETQ6d3dKjZK9g5QiCdQPJnXinaA==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-qinA6K1wu5/l1TlFr10jZZlWuO9+gsixFR9E0slsy3KuM35nZS3oiW8I28xadrytSpl9PlEZ64LiMcCxgb50ag==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
@@ -7726,6 +7729,10 @@ packages:
 
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
+
+  bcrypt@6.0.0:
+    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
+    engines: {node: '>= 18'}
 
   before-after-hook@2.2.3:
     resolution: {integrity: sha512-NzUnlZexiaH/46WDhANlyR2bXRopNg4F/zuSA3OpZnllCUgRaOF2znDioDWrmbNVsuZk6l9pMquQB38cfBZwkQ==}
@@ -11580,6 +11587,10 @@ packages:
   node-addon-api@6.1.0:
     resolution: {integrity: sha512-+eawOlIgy680F0kBzPUNFhMZGtJ1YmqM6l4+Crf4IkImjYrO/mqPwRMh352g23uIaQKFItcQ64I7KMaJxHgAVA==}
 
+  node-addon-api@8.5.0:
+    resolution: {integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==}
+    engines: {node: ^18 || ^20 || >= 21}
+
   node-api-version@0.2.0:
     resolution: {integrity: sha512-fthTTsi8CxaBXMaBAD7ST2uylwvsnYxh2PfaScwpMhos6KlSFajXQPcM4ogNE1q2s3Lbz9GCGqeIHC+C6OZnKg==}
 
@@ -11615,6 +11626,10 @@ packages:
 
   node-gyp-build@4.8.0:
     resolution: {integrity: sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==}
+    hasBin: true
+
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
   node-gyp@9.4.1:
@@ -24020,6 +24035,7 @@ snapshots:
       '@types/nodemailer': 6.4.17
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      bcrypt: 6.0.0
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
@@ -31544,6 +31560,11 @@ snapshots:
 
   batch@0.6.1: {}
 
+  bcrypt@6.0.0:
+    dependencies:
+      node-addon-api: 8.5.0
+      node-gyp-build: 4.8.4
+
   before-after-hook@2.2.3: {}
 
   big-integer@1.6.52: {}
@@ -36170,6 +36191,8 @@ snapshots:
 
   node-addon-api@6.1.0: {}
 
+  node-addon-api@8.5.0: {}
+
   node-api-version@0.2.0:
     dependencies:
       semver: 7.6.3
@@ -36196,6 +36219,8 @@ snapshots:
     optional: true
 
   node-gyp-build@4.8.0: {}
+
+  node-gyp-build@4.8.4: {}
 
   node-gyp@9.4.1:
     dependencies:
