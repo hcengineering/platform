@@ -54,20 +54,21 @@ export class ThreadLookupService {
     ThreadLookupService.instances.delete(token)
   }
 
-  async getThreadId (mailId: string, spaceId: Ref<PersonSpace>): Promise<Ref<Card> | undefined> {
+  async getThreadId (mailId: string, spaceId: Ref<PersonSpace>, email: string): Promise<Ref<Card> | undefined> {
     try {
       if (mailId == null || spaceId == null) {
         this.ctx.warn('Invalid parameters for thread lookup', { mailId, spaceId })
         return undefined
       }
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = this.getLookupKey(mailId, spaceId, email)
       const lookup = await this.keyValueClient.getValue<ThreadInfo>(key)
 
       if (lookup !== null) {
         this.ctx.info('Found existing thread mapping', {
           mailId,
           spaceId,
-          threadId: lookup.threadId
+          threadId: lookup.threadId,
+          email
         })
         return lookup.threadId
       }
@@ -79,9 +80,9 @@ export class ThreadLookupService {
     }
   }
 
-  async setThreadId (mailId: string, spaceId: Ref<PersonSpace>, threadId: Ref<Card>): Promise<void> {
+  async setThreadId (mailId: string, spaceId: Ref<PersonSpace>, threadId: Ref<Card>, email: string): Promise<void> {
     try {
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = this.getLookupKey(mailId, spaceId, email)
 
       const lookupInfo: ThreadInfo = {
         threadId
@@ -99,17 +100,21 @@ export class ThreadLookupService {
     }
   }
 
-  async getParentThreadId (inReplyTo: string | undefined, spaceId: Ref<PersonSpace>): Promise<Ref<Card> | undefined> {
+  async getParentThreadId (
+    inReplyTo: string | undefined,
+    spaceId: Ref<PersonSpace>,
+    email: string
+  ): Promise<Ref<Card> | undefined> {
     if (inReplyTo === undefined) {
       return undefined
     }
 
-    return await this.getThreadId(inReplyTo, spaceId)
+    return await this.getThreadId(inReplyTo, spaceId, email)
   }
 
-  async deleteMapping (mailId: string, spaceId: Ref<PersonSpace>): Promise<void> {
+  async deleteMapping (mailId: string, spaceId: Ref<PersonSpace>, email: string): Promise<void> {
     try {
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = this.getLookupKey(mailId, spaceId, email)
       await this.keyValueClient.deleteKey(key)
       this.ctx.info('Deleted thread mapping', { mailId, spaceId })
     } catch (error) {
@@ -117,7 +122,7 @@ export class ThreadLookupService {
     }
   }
 
-  private getLookupKey (mailId: string, spaceId: Ref<PersonSpace>): string {
-    return `mail-thread-lookup:${mailId}:${spaceId}`
+  private getLookupKey (mailId: string, spaceId: Ref<PersonSpace>, email: string): string {
+    return `mail-thread-lookup:${mailId}:${spaceId}:${email}`
   }
 }

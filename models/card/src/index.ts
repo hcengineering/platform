@@ -57,6 +57,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction, type Viewlet } from '@hcengineering/model-view'
@@ -875,6 +876,8 @@ export function createModel (builder: Builder): void {
     match: card.function.CardCustomLinkMatch,
     encode: card.function.CardCustomLinkEncode
   })
+
+  createPublicLinkAction(builder, card.class.Card, card.action.PublicLink)
 }
 
 function defineTabs (builder: Builder): void {

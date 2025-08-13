@@ -3,7 +3,7 @@ import { loveId } from '@hcengineering/love'
 import { timeId } from '@hcengineering/time'
 
 import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
-import presentation, { MessageBox, setDownloadProgress } from '@hcengineering/presentation'
+import presentation, { MessageBox, setDownloadProgress, getClient } from '@hcengineering/presentation'
 import setting, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
@@ -19,25 +19,21 @@ import {
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
 import { inboxId } from '@hcengineering/inbox'
-import { workbenchId, logOut } from '@hcengineering/workbench'
+import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
 
-import { isOwnerOrMaintainer } from '@hcengineering/core'
+import { isOwnerOrMaintainer, getCurrentAccount } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
 import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams } from './types'
 import { ipcMainExposed } from './typesUtils'
 import { themeStore } from '@hcengineering/theme'
-
-import { getClient } from '@hcengineering/presentation'
 import type { Application } from '@hcengineering/workbench'
 import { isAllowedToRole } from '@hcengineering/workbench-resources'
-import workbench from '@hcengineering/workbench'
-import { getCurrentAccount } from '@hcengineering/core'
 
-function currentOsIsWindows(): boolean {
+function currentOsIsWindows (): boolean {
   return (window as any).windowsPlatform === true
 }
 
@@ -45,12 +41,11 @@ defineScreenShare()
 defineGetDisplayMedia()
 
 window.addEventListener('DOMContentLoaded', () => {
-  
   const ipcMain = ipcMainExposed()
 
   if (currentOsIsWindows()) {
     const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
-    if (titleBarRoot) {
+    if (titleBarRoot != null) {
       const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
 
       themeStore.subscribe((themeOptions) => {
@@ -63,49 +58,51 @@ window.addEventListener('DOMContentLoaded', () => {
       void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
         menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
       }).catch(() => {
-        menuBar.setTheme('light'); // fallback
+        menuBar.setTheme('light') // fallback
       })
     }
   }
 
-  const onWorkbenchConnect = currentOsIsWindows() ? async () => {
-    const client = getClient()
-    const account = getCurrentAccount()
-    const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  const onWorkbenchConnect = currentOsIsWindows()
+    ? async () => {
+      const client = getClient()
+      const account = getCurrentAccount()
+      const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
-    const applications: Application[] = client
-      .getModel()
-      .findAllSync<Application>(workbench.class.Application, { hidden: false })
-      .filter((it: Application) => !excludedApps.includes(it._id))
-      .filter((it: Application) => isAllowedToRole(it.accessLevel, account))
+      const applications: Application[] = client
+        .getModel()
+        .findAllSync<Application>(workbench.class.Application, { hidden: false })
+        .filter((it: Application) => !excludedApps.includes(it._id))
+        .filter((it: Application) => isAllowedToRole(it.accessLevel, account))
 
-    const tasks: LaunchApplication[] = [];
+      const tasks: LaunchApplication[] = []
 
-    for (const application of applications) {
+      for (const application of applications) {
         const title = await translate(application.label, {})
         tasks.push({
-          title: title,
+          title,
           id: application._id,
-          alias: application.alias,
-        });
+          alias: application.alias
+        })
+      }
+      ipcMain.rebuildJumpList({
+        applications: tasks,
+        settingsLabel: await translate(setting.string.Settings, {}),
+        inboxLabel: await translate(notification.string.Inbox, {})
+      })
     }
-    ipcMain.rebuildJumpList({
-      applications: tasks, 
-      settingsLabel: await translate(setting.string.Settings, {}), 
-      inboxLabel: await translate(notification.string.Inbox, {}),
-    })
-  } : undefined
+    : undefined
 
   void configurePlatform(onWorkbenchConnect).then((parameters) => {
     const windowTitle = document.getElementById('application-title-bar-caption')
-    if (windowTitle) {
+    if (windowTitle != null) {
       windowTitle.textContent = parameters.getBranding().getTitle()
     }
 
     createApp(document.body)
   })
 
-  function openScreen(screenId: any): void {
+  function openScreen (screenId: any): void {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -115,9 +112,9 @@ window.addEventListener('DOMContentLoaded', () => {
     loc.path.length = 3
     navigate(loc)
   }
-  
+
   ipcMain.on(CommandOpenSettings, () => {
-    openScreen(settingId)  
+    openScreen(settingId)
   })
 
   ipcMain.on(CommandOpenInbox, () => {
@@ -127,7 +124,7 @@ window.addEventListener('DOMContentLoaded', () => {
   ipcMain.on(CommandOpenOffice, () => {
     openScreen(loveId)
   })
-  
+
   ipcMain.on(CommandOpenPlanner, () => {
     openScreen(timeId)
   })

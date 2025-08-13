@@ -53,6 +53,7 @@ describe('handleSendMail', () => {
     sendMailMock = (mailClient.sendMessage as jest.Mock).mockResolvedValue({})
     mockCtx = {
       info: jest.fn(),
+      warn: jest.fn(),
       error: jest.fn()
     } as unknown as MeasureContext
   })
@@ -64,7 +65,7 @@ describe('handleSendMail', () => {
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.send).toHaveBeenCalledWith({ err: "'text' is missing" })
+    expect(res.send).toHaveBeenCalledWith({ err: "'text' and 'html' are missing" })
   })
 
   it('should return 400 if subject is missing', async () => {

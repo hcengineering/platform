@@ -34,7 +34,8 @@ export default mergeIds(cardId, card, {
   action: {
     DeleteMasterTag: '' as Ref<Action>,
     SetParent: '' as Ref<Action<Doc, any>>,
-    UnsetParent: '' as Ref<Action<Doc, any>>
+    UnsetParent: '' as Ref<Action<Doc, any>>,
+    PublicLink: '' as Ref<Action<Doc, any>>
   },
   category: {
     Card: '' as Ref<ActionCategory>,

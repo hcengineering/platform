@@ -97,7 +97,8 @@ function defineMessageActions (builder: Builder): void {
         mode: ['context', 'browser'],
         application: chunter.app.Chunter,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     chunter.action.CopyChatMessageLink
   )

@@ -2079,6 +2079,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "qms-desktop",
+      "projectFolder": "qms-desktop-package",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/diffview",
       "projectFolder": "plugins/diffview",
       "shouldPublish": false
@@ -2504,8 +2509,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-inbound-mail",
-      "projectFolder": "services/mail/pod-inbound-mail",
+      "packageName": "@hcengineering/pod-mail-worker",
+      "projectFolder": "services/mail/pod-mail-worker",
       "shouldPublish": false
     },
     {

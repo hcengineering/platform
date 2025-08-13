@@ -1,45 +1,42 @@
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
-import { markdownToHtml, getReplySubject } from '@hcengineering/mail-common'
+import {
+  markdownToHtml,
+  getReplySubject,
+  getRecipients,
+  getMailHeaders,
+  HulyMailHeader,
+  HulyMessageIdHeader
+} from '@hcengineering/mail-common'
+import { Card } from '@hcengineering/card'
+import { MeasureContext, PersonId } from '@hcengineering/core'
+import { AccountClient } from '@hcengineering/account-client'
 
 import { encode64 } from '../../base64'
 import { addFooter } from '../../utils'
-import { Card } from '@hcengineering/card'
-import { PersonId, SocialIdType } from '@hcengineering/core'
-import { AccountClient } from '@hcengineering/account-client'
-import { HulyMailHeader, HulyMessageIdHeader } from '../../types'
+import { GmailMessageType } from '../../types'
 
 export async function makeHTMLBodyV2 (
+  ctx: MeasureContext,
   accountClient: AccountClient,
   message: CreateMessageEvent,
   thread: Card,
   personId: PersonId,
   from: string
 ): Promise<string | undefined> {
-  const collaborators: PersonId[] = (thread as any).members ?? []
-  if (collaborators.length === 0) {
+  const recipients = await getRecipients(ctx, accountClient, thread, personId)
+  if (recipients === undefined) {
     return undefined
   }
-  const recipients = collaborators.length > 1 ? collaborators.filter((c) => c !== personId) : collaborators
-  const mailSocialIds = (await accountClient.findFullSocialIds(recipients)).filter(
-    (id) => id.type === SocialIdType.EMAIL
-  )
-  if (mailSocialIds.length === 0) {
-    console.warn('No social IDs found for recipients', { recipients })
-    return undefined
-  }
-  const to = mailSocialIds[0].value
-  const copy = mailSocialIds.length > 1 ? mailSocialIds.slice(1).map((s) => s.value) : []
-
+  const { to, copy } = recipients
   const str = [
     'Content-Type: text/html; charset="UTF-8"\n',
     'MIME-Version: 1.0\n',
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${to} \n`,
     `From: ${from} \n`,
-    `${HulyMailHeader}: true\n`,
-    `${HulyMessageIdHeader}: ${message._id}\n`
+    ...getMailHeaders(GmailMessageType, message._id)
   ]
 
   // TODO: get reply-to from channel

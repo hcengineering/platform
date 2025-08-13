@@ -372,27 +372,6 @@ function defineDocument (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: document.function.GetDocumentLink
-      },
-      label: document.string.CopyDocumentUrl,
-      icon: view.icon.CopyLink,
-      input: 'focus',
-      category: document.category.Document,
-      target: document.class.Document,
-      context: {
-        mode: ['context', 'browser'],
-        application: document.app.Documents,
-        group: 'copy'
-      }
-    },
-    document.action.CopyDocumentLink
-  )
-
-  createAction(
-    builder,
-    {
       action: document.actionImpl.LockContent,
       label: document.string.Lock,
       icon: document.icon.Lock,

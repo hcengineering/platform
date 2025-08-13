@@ -149,7 +149,7 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
-import { openDocFromRef } from './utils'
+import { canCopyLink, getLink, openDocFromRef } from './utils'
 import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
@@ -376,6 +376,8 @@ export default async (): Promise<Resources> => ({
     IsClipboardAvailable: isClipboardAvailable,
     BlobImageMetadata: blobImageMetadata,
     BlobVideoMetadata: blobVideoMetadata,
-    OpenDocument: openDocFromRef
+    OpenDocument: openDocFromRef,
+    CanCopyLink: canCopyLink,
+    GetLink: getLink
   }
 })

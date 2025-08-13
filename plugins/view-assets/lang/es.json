@@ -141,6 +141,7 @@
     "PermissionWarningMessage": "Tu rol actual tiene permisos limitados. ¡Para desbloquear esta y otras funciones avanzadas, pídele al administrador de tu espacio de trabajo que actualice tu nivel de acceso!",
     "Icon": "Icono",
     "Color": "Color",
-    "AutomationOnly": "Solo automatización"
+    "AutomationOnly": "Solo automatización",
+    "CopyLink": "Copiar enlace"
   }
 }

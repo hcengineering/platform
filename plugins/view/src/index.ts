@@ -154,7 +154,9 @@ const view = plugin(viewId, {
     // Edit document
     Open: '' as Ref<Action>,
     OpenInNewTab: '' as Ref<Action>,
-    RemoveRelation: '' as Ref<Action>
+    RemoveRelation: '' as Ref<Action>,
+
+    CopyLink: '' as Ref<Action<Doc, any>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
