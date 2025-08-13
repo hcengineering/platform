@@ -1,4 +1,5 @@
 import {
+  ConnectionQuality,
   ConnectionState,
   type LocalParticipant,
   type LocalTrackPublication,
@@ -12,12 +13,13 @@ import {
 } from 'livekit-client'
 import { getMetadata } from '@hcengineering/platform'
 import { getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
-import love, { LoveEvents, type Room, RoomType } from '@hcengineering/love'
+import love, { LoveEvents } from '@hcengineering/love'
 import { useMedia } from '@hcengineering/media-resources'
 import { writable } from 'svelte/store'
 import { Analytics } from '@hcengineering/analytics'
 
 export const lkSessionConnected = writable<boolean>(false)
+export const lkSessionWithSharing = writable<boolean>(false)
 
 export function getLiveKitClient (): LiveKitClient {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
@@ -27,8 +29,8 @@ export function getLiveKitClient (): LiveKitClient {
 export class LiveKitClient {
   public readonly liveKitRoom: LKRoom
 
-  private currentRoom: Room | null = null
   public currentMediaSession: MediaSession | undefined = undefined
+  private currentSessionSupportsVideo: boolean = false
 
   private readonly wsUrl: string
 
@@ -76,12 +78,13 @@ export class LiveKitClient {
     lkRoom.on(RoomEvent.RecordingStatusChanged, this.onRecordingStatusChanged)
     lkRoom.on(RoomEvent.RoomMetadataChanged, this.onRoomMetadataChanged)
     lkRoom.on(RoomEvent.ActiveSpeakersChanged, this.onActiveSpeakersChanged)
+    lkRoom.on(RoomEvent.ConnectionQualityChanged, this.onConnectionQualityChanged)
 
     this.liveKitRoom = lkRoom
   }
 
-  async connect (token: string, room: Room): Promise<void> {
-    this.currentRoom = room
+  async connect (token: string, withVideo: boolean): Promise<void> {
+    this.currentSessionSupportsVideo = withVideo
     await this.liveKitRoom.connect(this.wsUrl, token)
   }
 
@@ -89,7 +92,7 @@ export class LiveKitClient {
     const me = this.liveKitRoom.localParticipant
     await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
     await this.liveKitRoom.disconnect()
-    this.currentRoom = null
+    this.currentSessionSupportsVideo = false
   }
 
   async awaitConnect (): Promise<void> {
@@ -106,7 +109,7 @@ export class LiveKitClient {
   onConnected = (): void => {
     const session = useMedia({
       state: {
-        camera: this.currentRoom?.type === RoomType.Video ? { enabled: false } : undefined,
+        camera: this.currentSessionSupportsVideo ? { enabled: false } : undefined,
         microphone: { enabled: false }
       },
       autoDestroy: false
@@ -168,5 +171,9 @@ export class LiveKitClient {
   }
 
   onActiveSpeakersChanged = (speakers: Participant[]): void => {
+  }
+
+  onConnectionQualityChanged = (connectionQuality: ConnectionQuality, participant: Participant): void => {
+    console.log('connectionQuality', connectionQuality, participant.name)
   }
 }

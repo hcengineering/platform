@@ -64,7 +64,6 @@ import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-no
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
   type AudioCaptureOptions,
-  type Room as LKRoom,
   LocalAudioTrack,
   type LocalTrack,
   type LocalTrackPublication,
@@ -73,6 +72,7 @@ import {
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
+  type Room as LKRoom,
   RoomEvent,
   type ScreenShareCaptureOptions,
   Track,
@@ -84,13 +84,7 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import {
-  $myPreferences,
-  currentMeetingMinutes,
-  currentRoom,
-  myOffice,
-  selectedRoomPlace
-} from './stores'
+import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 
 export async function getToken (
@@ -401,9 +395,6 @@ lk.on(RoomEvent.Connected, () => {
   void initRoom()
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
-lk.on(RoomEvent.Disconnected, () => {
-  Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
-})
 
 async function initRoom (): Promise<void> {
   const room = get(currentRoom)
@@ -507,7 +498,7 @@ function isRoomOpened (room: Room): boolean {
   return false
 }
 
-export async function setCam (value: boolean): Promise<void> {
+async function setCam (value: boolean): Promise<void> {
   if (value && get(currentRoom)?.type !== RoomType.Video) return
   try {
     const opt: VideoCaptureOptions = {}
@@ -524,7 +515,7 @@ export async function setCam (value: boolean): Promise<void> {
   }
 }
 
-export async function setMic (value: boolean): Promise<void> {
+async function setMic (value: boolean): Promise<void> {
   try {
     const speaker = await getSelectedSpeaker()
     if (speaker !== null && speaker !== undefined) {
@@ -610,7 +601,7 @@ async function moveToRoom (
 }
 
 async function connectLK (token: string, room: Room): Promise<void> {
-  await liveKitClient.connect(token, room)
+  await liveKitClient.connect(token, room.type === RoomType.Video)
   await Promise.all([
     setMic($myPreferences?.micEnabled ?? lk.remoteParticipants.size < 16),
     setCam(room.type === RoomType.Video && ($myPreferences?.camEnabled ?? true))
