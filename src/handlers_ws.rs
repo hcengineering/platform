@@ -1,8 +1,21 @@
+use crate::ws_hub::{WsHub, ServerMessage, Join, Leave}; // NEW
+
+// =============
 use redis::aio::MultiplexedConnection;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use serde_json::{Value, Map, json};
-use actix::{Actor, StreamHandler, AsyncContext, ActorContext, fut, ActorFutureExt };
+use actix::{
+    Actor,
+    StreamHandler,
+    AsyncContext,
+    ActorContext,
+    fut,
+    ActorFutureExt,
+
+    Handler, WrapFuture // добавили Handler, WrapFuture
+
+};
 use actix_web::{web, HttpRequest, HttpResponse, Error};
 use actix_web_actors::ws;
 use serde::Deserialize;
@@ -15,7 +28,8 @@ use crate::redis::{
     redis_read,
     redis_delete,
     redis_list,
-    error
+    error,
+    deprecated_symbol,
 };
 
 type JsonMap = Map<String, Value>;
@@ -56,7 +70,7 @@ pub enum WsCommand {
     List {
         #[serde(default)]
         correlation: Option<String>,
-        key: Option<String>,
+        key: String,
     },
 
     Delete {
@@ -80,20 +94,27 @@ pub enum WsCommand {
         correlation: Option<String>,
         key: String,
     },
+
+    Sublist {
+        #[serde(default)]
+        correlation: Option<String>,
+    },
 }
 
 /// Session condition
 #[allow(dead_code)]
 pub struct WsSession {
-    pub workspace: String,
     pub subscriptions: HashSet<String>, // новые поля
     pub redis: Arc<Mutex<MultiplexedConnection>>, // вот он, тот же тип что и в HTTP API
+
+    pub hub: actix::Addr<WsHub>,   // NEW
+    pub id: Option<usize>,         // NEW
 }
 
 
 
 // ======= ping ========
-use crate::ws_ping::test_message;
+// use crate::ws_ping::test_message;
 // ======= /ping ========
 
 
@@ -105,30 +126,74 @@ impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        println!("WebSocket connected to workspace [{}]", self.workspace);
-        ctx.text(format!("Connected to workspace: {}", self.workspace));
+        println!("WebSocket connected");
+        ctx.text("Connected");
 
 // ======= ping ========
-
-        // Для наглядности во время отладки:
-//        install_ws_ping_with(ctx, std::time::Duration::from_secs(5), PingMode::ControlAndText("__!ping!__"));
-
-        test_message(ctx);
-        // Если захочешь нестандартный интервал:
-        // use std::time::Duration;
-        // use crate::ws_ping::install_ws_ping_with_period;
-        // install_ws_ping_with_period(ctx, Duration::from_secs(5));
+        // test_message(ctx);
+        // регистрируемся в хабе и получаем id
+        let addr = ctx.address().recipient::<ServerMessage>();
+        let hub = self.hub.clone();
+        ctx.wait(
+            hub.send(Join { addr })
+                .into_actor(self)
+                .map(|res, actor, _ctx| {
+                    if let Ok(id) = res {
+                        actor.id = Some(id);
+                    }
+                })
+        );
 // ======= /ping ========
+    }
 
+// ======= ping ========
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        if let Some(id) = self.id.take() {
+            self.hub.do_send(Leave { id });
+        }
+        println!("WebSocket disconnected");
+    }
+// ======= /ping ========
+}
+
+
+
+
+
+// ======= ping ========
+impl actix::Handler<ServerMessage> for WsSession {
+    type Result = ();
+
+    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
+        ctx.text(msg.0);
     }
 }
+// ======= /ping ========
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {
-                println!("Message from [{}]: {}", self.workspace, text);
+                println!("Message: {}", text);
                 match serde_json::from_str::<WsCommand>(&text) {
                     Ok(cmd) => self.handle_command(cmd, ctx),
                     Err(err) => ctx.text(format!("Invalid JSON: {}", err)),
@@ -136,7 +201,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
             }
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
             Ok(ws::Message::Close(reason)) => {
-                println!("Closing WS for workspace [{}]: {:?}", self.workspace, reason);
+                println!("Closing WS: {:?}", reason);
                 ctx.close(reason);
                 ctx.stop();
             }
@@ -160,13 +225,8 @@ impl WsSession {
         ctx.wait(
             fut::wrap_future(fut).map(move |res, _actor: &mut Self, ctx| {
                 match res {
-                    Ok(extra) => {
-			base.extend(extra);
-                    }
-                    Err(err) => {
-                        base.insert("type".into(), json!("error"));
-                        base.insert("message".into(), json!(err));
-                    }
+                    Ok(extra) => { base.extend(extra); }
+                    Err(err) => { base.insert("error".into(), json!(err)); }
                 }
                 ctx.text(Value::Object(base).to_string());
             })
@@ -180,14 +240,12 @@ impl WsSession {
 
             WsCommand::Put { key, data, expires_at, ttl, if_match, if_none_match, correlation } => {
 
-                println!("PUT {} = {} (expires_at: {:?}) (ttl: {:?}) ws={:?}", key, data, expires_at, ttl, self.workspace);
+                println!("PUT {} = {} (expires_at: {:?}) (ttl: {:?})", key, data, expires_at, ttl);
 
 	        let redis = self.redis.clone();
-	        let workspace = self.workspace.clone();
 
 	        let mut base = JsonMap::new();
 	        base.insert("action".into(), json!("put"));
-	        base.insert("workspace".into(), json!(&self.workspace));
 	        base.insert("key".into(), json!(&key));
 	        base.insert("data".into(), json!(&data));
 	        if let Some(x) = &correlation   { base.insert("correlation".into(), json!(x)); }
@@ -225,7 +283,7 @@ impl WsSession {
 
 		    let mut conn = redis.lock().await;
 
-		    redis_save(&mut *conn, &workspace, &key, &data, real_ttl, mode)
+		    redis_save(&mut *conn, &key, &data, real_ttl, mode)
 			    .await
 			    .map_err(|e| e.to_string())?;
 
@@ -243,11 +301,9 @@ impl WsSession {
                 println!("DELETE {}", key);
 
 	        let redis = self.redis.clone();
-	        let workspace = self.workspace.clone();
 
 	        let mut base = JsonMap::new();
 	        base.insert("action".into(), json!("delete"));
-	        base.insert("workspace".into(), json!(&self.workspace));
 	        base.insert("key".into(), json!(&key));
 	        if let Some(x) = &correlation { base.insert("correlation".into(), json!(x)); }
 	        if let Some(x) = &if_match    { base.insert("ifMatch".into(),    json!(x)); }
@@ -256,9 +312,7 @@ impl WsSession {
 
 		    let mut conn = redis.lock().await;
 
-	            let deleted = redis_delete(&mut *conn, &workspace, &key)
-			.await
-			.map_err(|e| e.to_string())?;
+	            let deleted = redis_delete(&mut *conn, &key).await.map_err(|e| e.to_string())?;
 
 		    if deleted {
 	        	let mut extra = JsonMap::new();
@@ -277,11 +331,9 @@ impl WsSession {
                 println!("GET {}{:?}", key, correlation);
 
 	        let redis = self.redis.clone();
-	        let workspace = self.workspace.clone();
 
 	        let mut base = JsonMap::new();
 	        base.insert("action".into(), json!("get"));
-	        base.insert("workspace".into(), json!(&self.workspace));
 	        base.insert("key".into(), json!(&key));
 	        if let Some(x) = &correlation { base.insert("correlation".into(), json!(x)); }
 
@@ -289,7 +341,7 @@ impl WsSession {
 
 		    let mut conn = redis.lock().await;
 
-		    let data_opt = redis_read(&mut *conn, &workspace, &key)
+		    let data_opt = redis_read(&mut *conn, &key)
 		        .await
 	        	.map_err(|e| e.to_string())?;
 
@@ -311,21 +363,17 @@ impl WsSession {
                 println!("LIST {:?}{:?}", key, correlation);
 
 	        let redis = self.redis.clone();
-	        let workspace = self.workspace.clone();
 
 	        let mut base = JsonMap::new();
 	        base.insert("action".into(), json!("get"));
-	        base.insert("workspace".into(), json!(&self.workspace));
-	        if let Some(x) = &key { base.insert("key".into(), json!(x)); }
+		base.insert("key".into(), json!(&key));
 	        if let Some(x) = &correlation { base.insert("correlation".into(), json!(x)); }
 
 		let fut = async move {
 
 		    let mut conn = redis.lock().await;
 
-		    let data = redis_list(&mut *conn, &workspace, key.as_deref())
-		        .await
-	        	.map_err(|e| e.to_string())?;
+		    let data = redis_list(&mut *conn, &key).await.map_err(|e| e.to_string())?;
 
 		    let mut extra = JsonMap::new();
 		    let data_value = serde_json::to_value(&data).map_err(|e| e.to_string())?;
@@ -336,19 +384,69 @@ impl WsSession {
 		self.wait_and_send(ctx, fut, base);
             }
 
-            WsCommand::Sub { key, correlation } => {
-                println!("SUB {}{:?}", key, correlation);
-                ctx.text(format!("OK SUB {}", key));
-                // TODO
-            }
+            // TODO
+
+	    WsCommand::Sub { key, correlation } => {
+	        println!("SUB {}{:?}", key, correlation);
+
+		let mut obj = JsonMap::new();
+		obj.insert("action".into(), json!("sub"));
+		obj.insert("key".into(), json!(key));
+		if let Some(c) = correlation { obj.insert("correlation".into(), json!(c)); }
+
+		if deprecated_symbol(&key) {
+		    obj.insert("error".into(), json!("Deprecated symbol in key"));
+		} else {
+	    	    let added = self.subscriptions.insert(key.clone());
+		    obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
+		    if !added { obj.insert("warning".into(), json!("Subscribe already exist")); }
+		}
+		ctx.text(Value::Object(obj).to_string());
+	    }
+
+	    WsCommand::Unsub { key, correlation } => {
+	        println!("UNSUB {}{:?}", key, correlation);
+		let mut obj = JsonMap::new();
+	        obj.insert("action".into(), json!("unsub"));
+	        obj.insert("key".into(), json!(key));
+	        if let Some(c) = correlation { obj.insert("correlation".into(), json!(c)); }
 
 
-            WsCommand::Unsub { key, correlation } => {
-                println!("UNSUB {}{:?}", key, correlation);
-                ctx.text(format!("OK UNSUB {}", key));
-                // TODO
-            }
+		let removed = if key == "*" {
+			if !self.subscriptions.is_empty() {
+		    	    self.subscriptions.clear();
+			    true
+			} else {
+			    false
+			}
+		} else {
+		    if deprecated_symbol(&key) {
+			obj.insert("error".into(), json!("Deprecated symbol in key"));
+			true
+		    } else {
+			self.subscriptions.remove(&key)
+		    }
+		};
 
+		obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
+		if !removed { obj.insert("warning".into(), json!("Subscribe already deleted")); }
+
+		ctx.text(Value::Object(obj).to_string());
+	    }
+
+	    WsCommand::Sublist { correlation } => {
+	        println!("SUBLIST {:?}", correlation);
+		let mut obj = JsonMap::new();
+	        obj.insert("action".into(), json!("sublist"));
+	        if let Some(c) = correlation { obj.insert("correlation".into(), json!(c)); }
+
+		obj.insert("response".into(), json!(self.subscriptions.iter().cloned().collect::<Vec<_>>()));
+		obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
+
+		ctx.text(Value::Object(obj).to_string());
+	    }
+
+	    // End of commands
         }
     }
 
@@ -358,14 +456,15 @@ impl WsSession {
 pub async fn handler(
     req: HttpRequest,
     stream: web::Payload,
-    path: web::Path<String>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    hub: web::Data<actix::Addr<WsHub>>, // NEW
 ) -> Result<HttpResponse, Error> {
-    let workspace = path.into_inner();
     let session = WsSession {
-        workspace,
         subscriptions: HashSet::new(),
         redis: redis.get_ref().clone(),
+        hub: hub.get_ref().clone(),   // NEW
+        id: None,                     // NEW
     };
     ws::start(session, &req, stream)
 }
+

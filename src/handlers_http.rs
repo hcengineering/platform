@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{error, trace};
 use uuid::Uuid;
-use crate::ws_owner;
+use crate::workspace_owner::workspace_check;
 
 use crate::redis::{
     Ttl, SaveMode,
@@ -46,21 +46,21 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 /// list
 pub async fn list(
     req: HttpRequest,
-    path: web::Path<(String, Option<String>)>,
+    path: web::Path<String>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::Error> {
 
-    ws_owner::workspace_owner(&req)?; // Check workspace
+    workspace_check(&req)?; // Check workspace
 
-    let (workspace, key) = path.into_inner();
+    let key = path.into_inner();
 
-    // trace!(workspace, prefix, "list request");
+    trace!(key, "list request");
 
     async move || -> anyhow::Result<HttpResponse> {
 
         let mut conn = redis.lock().await;
 
-	let entries = redis_list(&mut *conn, &workspace, key.as_deref()).await?;
+	let entries = redis_list(&mut *conn, &key).await?;
 
         Ok(HttpResponse::Ok().json(entries))
 
@@ -68,26 +68,25 @@ pub async fn list(
 }
 
 
-
 /// get
 pub async fn get(
     req: HttpRequest,
-    path: web::Path<(String, String)>,
+    path: web::Path<String>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
 
-    ws_owner::workspace_owner(&req)?; // Check workspace
+    workspace_check(&req)?; // Check workspace
 
-    let (workspace, key) = path.into_inner();
+    let key = path.into_inner();
 
-    // trace!(workspace, key, "get request");
+    // trace!(key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
 
         let mut conn = redis.lock().await;
 
 	Ok(
-	    redis_read(&mut *conn, &workspace, &key).await?
+	    redis_read(&mut *conn, &key).await?
     		.map(|entry| HttpResponse::Ok()
                     .insert_header(("ETag", &*entry.etag))
 		    .json(entry))
@@ -101,14 +100,14 @@ pub async fn get(
 /// put
 pub async fn put(
     req: HttpRequest,
-    path: web::Path<(String, String)>,
+    path: web::Path<String>,
     body: web::Bytes,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
 
-    ws_owner::workspace_owner(&req)?; // Check workspace
+    workspace_check(&req)?; // Check workspace
 
-    let (workspace, key) = path.into_inner();
+    let key: String = path.into_inner();
 
     async move || -> anyhow::Result<HttpResponse> {
 
@@ -139,30 +138,30 @@ pub async fn put(
 	    if s == "*" { mode = Some(SaveMode::Insert); } else { return Err(anyhow!("If-None-Match must be '*'")); }
 	}
 
-        redis_save(&mut *conn, &workspace, &key, &body[..], ttl, mode).await?;
+        redis_save(&mut *conn, &key, &body[..], ttl, mode).await?;
 	return Ok(HttpResponse::Ok().body("DONE"));
 
     }().await.map_err(map_handler_error)
 }
 
 
-
 /// delete
 pub async fn delete(
     req: HttpRequest,
-    path: web::Path<(String, String)>,
+    path: web::Path<String>,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
 
-    ws_owner::workspace_owner(&req)?; // Check workspace
+    workspace_check(&req)?; // Check workspace
 
-    let (workspace, key) = path.into_inner();
-    trace!(workspace, key, "delete request");
+    let key: String = path.into_inner();
+
+    trace!(key, "delete request");
 
     async move || -> anyhow::Result<HttpResponse> {
         let mut conn = redis.lock().await;
 
-        let deleted = redis_delete(&mut *conn, &workspace, &key).await?;
+        let deleted = redis_delete(&mut *conn, &key).await?;
 
         let response = match deleted {
             true => HttpResponse::NoContent().finish(),
