@@ -15,6 +15,10 @@
 
 #![allow(unused_imports)]
 
+// === ping ===
+mod ws_ping;
+// === /ping ===
+
 use std::pin::Pin;
 
 use actix_cors::Cors;

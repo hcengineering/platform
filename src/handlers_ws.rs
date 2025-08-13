@@ -1,9 +1,12 @@
 use redis::aio::MultiplexedConnection;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
-use actix::fut;
-use actix::ActorFutureExt;
+use serde_json::{Value, Map, json};
+use actix::{Actor, StreamHandler, AsyncContext, ActorContext, fut, ActorFutureExt };
+use actix_web::{web, HttpRequest, HttpResponse, Error};
+use actix_web_actors::ws;
+use serde::Deserialize;
+use std::collections::HashSet;
 
 use crate::redis::{
     Ttl, SaveMode,
@@ -15,19 +18,7 @@ use crate::redis::{
     error
 };
 
-use std::future::Future;
-use serde_json::{Value, Map, json};
-
-
 type JsonMap = Map<String, Value>;
-
-// ==================
-use actix::{Actor, StreamHandler, AsyncContext, ActorContext};
-use actix_web::{web, HttpRequest, HttpResponse, Error};
-use actix_web_actors::ws;
-use serde::Deserialize;
-use serde_json::Result as JsonResult;
-use std::collections::HashSet;
 
 /// WsCommand - commands enum (put, delete, sub, unsub)
 #[derive(Deserialize, Debug)]
@@ -100,6 +91,15 @@ pub struct WsSession {
 }
 
 
+
+// ======= ping ========
+use crate::ws_ping::test_message;
+// ======= /ping ========
+
+
+
+
+
 /// Actor External trait: must be in separate impl block
 impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
@@ -107,6 +107,19 @@ impl Actor for WsSession {
     fn started(&mut self, ctx: &mut Self::Context) {
         println!("WebSocket connected to workspace [{}]", self.workspace);
         ctx.text(format!("Connected to workspace: {}", self.workspace));
+
+// ======= ping ========
+
+        // Для наглядности во время отладки:
+//        install_ws_ping_with(ctx, std::time::Duration::from_secs(5), PingMode::ControlAndText("__!ping!__"));
+
+        test_message(ctx);
+        // Если захочешь нестандартный интервал:
+        // use std::time::Duration;
+        // use crate::ws_ping::install_ws_ping_with_period;
+        // install_ws_ping_with_period(ctx, Duration::from_secs(5));
+// ======= /ping ========
+
     }
 }
 
@@ -326,14 +339,14 @@ impl WsSession {
             WsCommand::Sub { key, correlation } => {
                 println!("SUB {}{:?}", key, correlation);
                 ctx.text(format!("OK SUB {}", key));
-                // Здесь — подписка (в будущем pub/sub)
+                // TODO
             }
 
 
             WsCommand::Unsub { key, correlation } => {
                 println!("UNSUB {}{:?}", key, correlation);
                 ctx.text(format!("OK UNSUB {}", key));
-                // Здесь — отписка
+                // TODO
             }
 
         }
