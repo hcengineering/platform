@@ -26,7 +26,7 @@
     return true
   }
 
-  function clearActiveTrack (track: Track | undefined) {
+  function clearActiveTrack (track: Track | undefined): void {
     if (track !== activeTrack) return
     hasActiveTrack = false
     activeTrack?.detach()

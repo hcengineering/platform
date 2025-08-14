@@ -20,55 +20,165 @@
 
   import { currentRoomAudioLevels } from '../utils'
   import MicDisabled from './icons/MicDisabled.svelte'
+  import { onMount, onDestroy } from 'svelte'
+  import {
+    type LocalTrackPublication,
+    Participant, ParticipantEvent, type RemoteTrack,
+    type RemoteTrackPublication, Track, TrackPublication
+  } from 'livekit-client'
 
   export let _id: string
-  export let name: string
-  export let muted: boolean
-  export let mirror: boolean
-  export let connecting: boolean = false
+  export let participant: Participant | undefined = undefined
 
   let parent: HTMLDivElement
-  let activeTrack: boolean = false
+  let mirror: boolean
 
-  export function appendChild (track: HTMLMediaElement, enabled: boolean = true): void {
-    const video = parent.querySelector('.video')
-    if (video != null) {
-      video.remove()
-    }
-
-    track.classList.add('video')
-    if (!enabled) track.classList.add('hidden')
-    parent.appendChild(track)
-    activeTrack = enabled
-  }
-
-  export function setTrackMuted (value: boolean): void {
-    const video = parent.querySelector('video')
-    if (video != null) {
-      if (value) {
-        video.classList.add('hidden')
-      } else {
-        video.classList.remove('hidden')
-      }
-    }
-    activeTrack = !value
-  }
+  let activeParticipant: Participant | undefined = undefined
+  let videoTrack: Track | undefined = undefined
+  let videoTrackElement: HTMLMediaElement | undefined = undefined
+  let videoMuted: boolean = true
+  let microphoneMuted: boolean = true
 
   $: personByRefStore = getPersonByPersonRefStore([_id as Ref<Person>])
   $: user = $personByRefStore.get(_id as Ref<Person>)
+  $: userName = (user !== undefined ? user.name : activeParticipant?.name) ?? ''
 
   $: speach = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
+
+  function attachTrack (track: Track): void {
+    if (parent == null) return
+    detachCurrentTrack()
+
+    videoTrack = track
+    videoTrackElement = track.attach()
+    const enabled = activeParticipant?.isCameraEnabled ?? false
+
+    videoTrackElement.classList.add('video')
+    if (!enabled) videoTrackElement.classList.add('hidden')
+    parent.appendChild(videoTrackElement)
+    videoMuted = !enabled
+  }
+
+  function detachCurrentTrack (): void {
+    if (videoTrackElement !== undefined) {
+      videoTrack?.detach(videoTrackElement)
+      videoTrackElement.remove()
+    }
+  }
+
+  function setTrackMuted (value: boolean): void {
+    if (videoTrackElement !== undefined) {
+      if (value) {
+        videoTrackElement.classList.add('hidden')
+      } else {
+        videoTrackElement.classList.remove('hidden')
+      }
+    }
+    videoMuted = value
+  }
+
+  function muteHandler (publication: TrackPublication): void {
+    if (publication.kind === Track.Kind.Audio) {
+      microphoneMuted = publication.isMuted
+    } else if (publication.kind === Track.Kind.Video && publication.source !== Track.Source.ScreenShare) {
+      setTrackMuted(publication.isMuted)
+    }
+  }
+
+  function onLocalTrackPublished (publication: LocalTrackPublication): void {
+    if (publication.track === undefined) return
+    if (publication.kind === Track.Kind.Audio) {
+      microphoneMuted = publication.isMuted
+    } else if (publication.kind === Track.Kind.Video && publication.source !== Track.Source.ScreenShare) {
+      attachTrack(publication.track)
+    }
+  }
+
+  function onLocalTrackUnpublished (publication: LocalTrackPublication): void {
+    if (videoTrack === publication.track) {
+      detachCurrentTrack()
+    }
+  }
+
+  function onTrackSubscribed (track: RemoteTrack, publication: RemoteTrackPublication): void {
+    if (track.kind === Track.Kind.Audio) {
+      microphoneMuted = track.isMuted
+    } else if (track.kind === Track.Kind.Video && track.source !== Track.Source.ScreenShare) {
+      attachTrack(track)
+    }
+  }
+
+  function onTrackUnsubscribed (track: RemoteTrack, publication: RemoteTrackPublication): void {
+    if (videoTrack === track) {
+      detachCurrentTrack()
+    }
+  }
+
+  function detachParticipant (): void {
+    if (activeParticipant === undefined) return
+    activeParticipant.off(ParticipantEvent.TrackMuted, muteHandler)
+    activeParticipant.off(ParticipantEvent.TrackUnmuted, muteHandler)
+    if (activeParticipant.isLocal) {
+      activeParticipant.off(ParticipantEvent.LocalTrackPublished, onLocalTrackPublished)
+      activeParticipant.off(ParticipantEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
+    } else {
+      activeParticipant.off(ParticipantEvent.TrackSubscribed, onTrackSubscribed)
+      activeParticipant.off(ParticipantEvent.TrackUnsubscribed, onTrackUnsubscribed)
+    }
+    activeParticipant = undefined
+  }
+
+  function setParticipant (p: Participant | undefined): void {
+    if (parent == null) return
+    if (activeParticipant === p) return
+
+    detachParticipant()
+    detachCurrentTrack()
+
+    activeParticipant = p
+    if (p === undefined) return
+
+    for (const publication of p.trackPublications.values()) {
+      if (publication.track !== undefined && publication.track.kind === Track.Kind.Video && publication.track.source !== Track.Source.ScreenShare) {
+        attachTrack(publication.track)
+        break
+      }
+    }
+
+    mirror = p.isLocal
+    microphoneMuted = !p.isMicrophoneEnabled
+    p.on(ParticipantEvent.TrackMuted, muteHandler)
+    p.on(ParticipantEvent.TrackUnmuted, muteHandler)
+
+    if (p.isLocal) {
+      p.on(ParticipantEvent.LocalTrackPublished, onLocalTrackPublished)
+      p.on(ParticipantEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
+    } else {
+      p.on(ParticipantEvent.TrackSubscribed, onTrackSubscribed)
+      p.on(ParticipantEvent.TrackUnsubscribed, onTrackUnsubscribed)
+    }
+  }
+
+  $: setParticipant(participant)
+
+  onDestroy(() => {
+    detachCurrentTrack()
+  })
+
+  onMount(() => {
+    setParticipant(participant)
+  })
 </script>
 
 <div id={_id} class="parent" class:speach={speach > 0}>
-  <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack} />
+  <div bind:this={parent} class="cover" class:active={!videoMuted} class:mirror={mirror && !videoMuted} />
   <div class="ava">
-    <Avatar size={'full'} {name} person={user} showStatus={false} />
+    <Avatar size={'full'} name={userName} person={user} showStatus={false} />
   </div>
-  <div class="label" class:withIcon={muted || connecting}>
-    {#if connecting}<Loading size={'small'} shrink />{/if}
-    {#if muted}<MicDisabled fill={'var(--bg-negative-default)'} size={'small'} />{/if}
-    <span class="overflow-label">{formatName(name)}</span>
+  <div class="label" class:withIcon={microphoneMuted || participant === undefined}>
+    {#if participant === undefined}<Loading size={'small'} shrink />{/if}
+    {#if microphoneMuted}<MicDisabled fill={'var(--bg-negative-default)'} size={'small'} />{/if}
+    <span class="overflow-label">{formatName(userName)}</span>
   </div>
 </div>
 
