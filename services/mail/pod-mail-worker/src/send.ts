@@ -3,7 +3,7 @@ import { concatLink, MeasureContext } from '@hcengineering/core'
 import config from './config'
 import { MailMessage } from './types'
 
-export async function sendEmail (ctx: MeasureContext, message: MailMessage): Promise<void> {
+export async function sendEmail (ctx: MeasureContext, message: MailMessage, secret: string): Promise<void> {
   const mailURL = config.mailUrl
   if (mailURL === undefined || mailURL === '') {
     ctx.error('Please provide email service url to enable email sending')
@@ -19,6 +19,7 @@ export async function sendEmail (ctx: MeasureContext, message: MailMessage): Pro
     },
     body: JSON.stringify({
       ...message,
+      password: secret,
       apiKey: mailAuth
     })
   })

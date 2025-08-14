@@ -106,7 +106,8 @@ describe('handleSendMail', () => {
         subject: 'Test Subject',
         text: 'Hello, world!'
       }),
-      mockCtx
+      mockCtx,
+      undefined
     )
   })
 
@@ -121,7 +122,8 @@ describe('handleSendMail', () => {
         subject: 'Test Subject',
         text: 'Hello, world!'
       }),
-      mockCtx
+      mockCtx,
+      undefined
     )
   })
 
@@ -136,7 +138,25 @@ describe('handleSendMail', () => {
         subject: 'Test Subject',
         text: 'Hello, world!'
       }),
-      mockCtx
+      mockCtx,
+      undefined
+    )
+  })
+
+  it('should send email with credentials', async () => {
+    req.body.to = ['test1@example.com', 'test2@example.com']
+    req.body.password = 'test-password'
+    await handleSendMail(mailClient, req, res, mockCtx)
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'noreply@example.com',
+        to: ['test1@example.com', 'test2@example.com'], // Verify that multiple addresses are passed
+        subject: 'Test Subject',
+        text: 'Hello, world!'
+      }),
+      mockCtx,
+      'test-password'
     )
   })
 })

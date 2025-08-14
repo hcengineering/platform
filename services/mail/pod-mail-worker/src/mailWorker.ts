@@ -244,14 +244,25 @@ export class MailWorker {
         (address) => address != null && address !== ''
       ) as string[]
 
-      await sendEmail(this.ctx, {
-        from: emailSocialId.value,
-        to,
-        subject,
-        html,
-        text,
-        headers: getMailHeaders(HulyMessageType, message._id)
-      })
+      const email = emailSocialId.value
+      const secret = (await this.accountClient.getMailboxSecret(email))?.secret
+      if (secret === undefined) {
+        this.ctx.error('Mailbox secret not found for email', { email })
+        return
+      }
+
+      await sendEmail(
+        this.ctx,
+        {
+          from: email,
+          to,
+          subject,
+          html,
+          text,
+          headers: getMailHeaders(HulyMessageType, message._id)
+        },
+        secret
+      )
     } catch (err: any) {
       this.ctx.error('Failed to send message as email', {
         messageId: message.messageId,
