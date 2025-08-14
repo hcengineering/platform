@@ -68,7 +68,6 @@ import {
   type LocalTrack,
   type LocalTrackPublication,
   LocalVideoTrack,
-  type Participant,
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
@@ -133,8 +132,6 @@ export const isRecordingAvailable = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
 export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
-
-export const currentRoomAudioLevels = writable<Map<Ref<Person>, number>>(new Map())
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -344,10 +341,6 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
   }
 })
 
-lk.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
-  currentRoomAudioLevels.set(new Map(speakers.map((it) => [it.identity as Ref<Person>, it.audioLevel])))
-})
-
 lk.on(RoomEvent.Connected, () => {
   const session = liveKitClient.currentMediaSession
 
@@ -390,7 +383,6 @@ lk.on(RoomEvent.Connected, () => {
       void setShare(enabled)
     }
   })
-  currentRoomAudioLevels.set(new Map())
   isRecording.set(lk.isRecording)
   void initRoom()
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
@@ -451,7 +443,6 @@ export async function disconnect (): Promise<void> {
   await liveKitClient.disconnect()
   screenSharing.set(false)
   isSharingEnabled.set(false)
-  currentRoomAudioLevels.set(new Map())
 }
 
 export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {

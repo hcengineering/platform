@@ -38,12 +38,11 @@
   let videoTrackElement: HTMLMediaElement | undefined = undefined
   let videoMuted: boolean = true
   let microphoneMuted: boolean = true
+  let isSpeaking: boolean = false
 
   $: personByRefStore = getPersonByPersonRefStore([_id as Ref<Person>])
   $: user = $personByRefStore.get(_id as Ref<Person>)
   $: userName = (user !== undefined ? user.name : activeParticipant?.name) ?? ''
-
-  $: speach = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
 
   function attachTrack (track: Track): void {
     if (parent == null) return
@@ -75,6 +74,11 @@
       }
     }
     videoMuted = value
+  }
+
+  function speachHandler (speaking: boolean): void {
+    console.log('speaking', speaking)
+    isSpeaking = speaking
   }
 
   function muteHandler (publication: TrackPublication): void {
@@ -118,6 +122,7 @@
     if (activeParticipant === undefined) return
     activeParticipant.off(ParticipantEvent.TrackMuted, muteHandler)
     activeParticipant.off(ParticipantEvent.TrackUnmuted, muteHandler)
+    activeParticipant.off(ParticipantEvent.IsSpeakingChanged, speachHandler)
     if (activeParticipant.isLocal) {
       activeParticipant.off(ParticipantEvent.LocalTrackPublished, onLocalTrackPublished)
       activeParticipant.off(ParticipantEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
@@ -149,6 +154,7 @@
     microphoneMuted = !p.isMicrophoneEnabled
     p.on(ParticipantEvent.TrackMuted, muteHandler)
     p.on(ParticipantEvent.TrackUnmuted, muteHandler)
+    p.on(ParticipantEvent.IsSpeakingChanged, speachHandler)
 
     if (p.isLocal) {
       p.on(ParticipantEvent.LocalTrackPublished, onLocalTrackPublished)
@@ -170,7 +176,7 @@
   })
 </script>
 
-<div id={_id} class="parent" class:speach={speach > 0}>
+<div id={_id} class="parent" class:speach={isSpeaking}>
   <div bind:this={parent} class="cover" class:active={!videoMuted} class:mirror={mirror && !videoMuted} />
   <div class="ava">
     <Avatar size={'full'} name={userName} person={user} showStatus={false} />
