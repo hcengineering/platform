@@ -81,7 +81,7 @@ export async function handleSendMail (
   res: Response,
   ctx: MeasureContext
 ): Promise<void> {
-  const { from, to, subject, text, html, attachments, headers, apiKey } = req.body
+  const { from, to, subject, text, html, attachments, headers, apiKey, password } = req.body
   if (process.env.API_KEY !== undefined && process.env.API_KEY !== apiKey) {
     ctx.warn('Unauthorized access attempt to send email', {
       from,
@@ -131,7 +131,7 @@ export async function handleSendMail (
     message.attachments = getAttachments(attachments)
   }
   try {
-    await client.sendMessage(message, ctx)
+    await client.sendMessage(message, ctx, password)
   } catch (err: any) {
     ctx.error(err.message)
   }

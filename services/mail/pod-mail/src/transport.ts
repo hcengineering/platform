@@ -52,7 +52,7 @@ function ses (config: SesConfig): Transporter {
   })
 }
 
-export function getTransport (config: Config): Transporter {
+export function getDefaultTransport (config: Config): Transporter {
   if (config.smtpConfig !== undefined) {
     return smtp(config.smtpConfig)
   }
@@ -60,4 +60,17 @@ export function getTransport (config: Config): Transporter {
     return ses(config.sesConfig)
   }
   throw new Error('No transport protocol is configured')
+}
+
+export function getSmtpTransport (config: SmtpConfig, user: string, pass: string): Transporter {
+  const auth = { user, pass }
+  const tlsSettings = getTlsSettings(config)
+  return nodemailer.createTransport({
+    host: config.Host,
+    port: config.Port,
+    auth,
+    logger: true,
+    debug: config.DebugLog,
+    ...tlsSettings
+  })
 }

@@ -42,6 +42,7 @@ import type {
   LoginInfoWithWorkspaces,
   MailboxInfo,
   MailboxOptions,
+  MailboxSecret,
   OtpInfo,
   ProviderInfo,
   RegionInfo,
@@ -126,6 +127,7 @@ export interface AccountClient {
   findFullSocialIdBySocialKey: (socialKey: string) => Promise<SocialId | undefined>
   findFullSocialIds: (socialIds: PersonId[]) => Promise<SocialId[]>
   getMailboxOptions: () => Promise<MailboxOptions>
+  getMailboxSecret: (mailbox: string) => Promise<MailboxSecret | undefined>
   createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
   getMailboxes: () => Promise<MailboxInfo[]>
   deleteMailbox: (mailbox: string) => Promise<void>
@@ -848,6 +850,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'getMailboxOptions' as const,
       params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getMailboxSecret (mailbox: string): Promise<MailboxSecret | undefined> {
+    const request = {
+      method: 'getMailboxSecret' as const,
+      params: { mailbox }
     }
 
     return await this.rpc(request)
