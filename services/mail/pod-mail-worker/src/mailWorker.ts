@@ -22,7 +22,7 @@ import {
   getReplySubject,
   markdownToText,
   isSyncedMessage,
-  getMailHeaders
+  getMailHeadersRecord
 } from '@hcengineering/mail-common'
 import { ConsumerHandle, PlatformQueue, QueueTopic } from '@hcengineering/server-core'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -259,7 +259,7 @@ export class MailWorker {
           subject,
           html,
           text,
-          headers: getMailHeaders(HulyMessageType, message._id)
+          headers: getMailHeadersRecord(HulyMessageType, message._id)
         },
         secret
       )

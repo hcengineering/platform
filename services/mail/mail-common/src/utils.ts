@@ -210,6 +210,17 @@ export function getMailHeaders (messageType: string, messageId?: string | undefi
   return headers
 }
 
+export function getMailHeadersRecord (messageType: string, messageId?: string | undefined): Record<string, string> {
+  const headers: Record<string, string> = {
+    [HulyMailHeader]: 'true',
+    [HulyMessageTypeHeader]: messageType
+  }
+  if (messageId !== undefined) {
+    headers[HulyMessageIdHeader] = messageId
+  }
+  return headers
+}
+
 export function isHulyMessage (headers: string[]): boolean {
   return headers.some(
     (header) =>
