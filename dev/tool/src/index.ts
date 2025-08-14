@@ -131,7 +131,7 @@ import {
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
-import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
+import { backupAccounts, fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import {
   benchmark,
   benchmarkWorker,
@@ -1030,6 +1030,7 @@ export function devTool (
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .option('-in, --internal <internal>', 'Use internal transactor connection', false)
     .action(
       async (
         dirName: string,
@@ -1042,11 +1043,15 @@ export function devTool (
           blobLimit: string
           contentTypes: string
           full: boolean
+          internal: boolean
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
         const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        const endpoint = await getTransactorEndpoint(
+          generateToken(systemAccountEmail, wsid),
+          cmd.internal ? 'internal' : 'external'
+        )
         await backup(toolCtx, endpoint, wsid, storage, {
           force: cmd.force,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
@@ -1062,6 +1067,72 @@ export function devTool (
         })
       }
     )
+
+  program
+    .command('backup-all-to-dir <dirName>')
+    .description('dump workspace transactions and minio resources to file system')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--full', 'Full recheck', false)
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-f, --force', 'Force backup', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .option('-in, --internal <internal>', 'Use internal transactor connection', false)
+    .action(
+      async (
+        dirName: string,
+        cmd: {
+          skip: string
+          force: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+          full: boolean
+          internal: boolean
+        }
+      ) => {
+        await withAccountDatabase(async (db) => {
+          const storage = await createFileBackupStorage(dirName)
+          await backupAccounts(toolCtx, db, storage)
+
+          const workspaces = await listWorkspacesPure(db)
+
+          let processed = 0
+
+          // We need to update workspaces with missing workspaceUrl
+          for (const ws of workspaces) {
+            const wsBakStorage = await createFileBackupStorage(`${dirName}/${ws.workspace}`)
+            const wsid = getWorkspaceId(ws.workspace)
+            const endpoint = await getTransactorEndpoint(
+              generateToken(systemAccountEmail, wsid),
+              cmd.internal ? 'internal' : 'external'
+            )
+            await backup(toolCtx, endpoint, wsid, wsBakStorage, {
+              force: cmd.force,
+              include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+              skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+              timeout: 0,
+              connectTimeout: parseInt(cmd.timeout) * 1000,
+              blobDownloadLimit: parseInt(cmd.blobLimit),
+              skipBlobContentTypes: cmd.contentTypes
+                .split(';')
+                .map((it) => it.trim())
+                .filter((it) => it.length > 0),
+              fullVerify: cmd.full
+            })
+            processed++
+          }
+          toolCtx.info('Processed workspaces', { processed })
+        })
+      }
+    )
+
   program
     .command('backup-find <dirName> <fileId>')
     .description('dump workspace transactions and minio resources')
@@ -2402,6 +2473,16 @@ export function devTool (
     .action(async (cmd: { token?: string }) => {
       await withAccountDatabase(async (db) => {
         await fillGithubUsers(toolCtx, db, cmd.token)
+      })
+    })
+
+  program
+    .command('backup-accounts <dirName>')
+    .description('dump accounts database collections')
+    .action(async (dirName: string) => {
+      const storage = await createFileBackupStorage(dirName)
+      await withAccountDatabase(async (db) => {
+        await backupAccounts(toolCtx, db, storage)
       })
     })
 

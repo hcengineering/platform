@@ -8,6 +8,7 @@ import {
 } from '@hcengineering/account'
 import core, { getWorkspaceId, type MeasureContext, systemAccountEmail, TxOperations } from '@hcengineering/core'
 import contact from '@hcengineering/model-contact'
+import { type BackupStorage } from '@hcengineering/server-backup'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -199,4 +200,17 @@ export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB, ghTok
     }
   }
   ctx.info('finished processing accounts:', { processed, of: accountsToProcess.length })
+}
+
+export async function backupAccounts (ctx: MeasureContext, db: AccountDB, storage: BackupStorage): Promise<void> {
+  ctx.info('dumping accounts database collections')
+  const accounts = await db.account.find({})
+  await storage.writeFile('account.accounts.json', JSON.stringify(accounts))
+
+  const workspaces = await db.workspace.find({})
+  await storage.writeFile('account.workspaces.json', JSON.stringify(workspaces))
+
+  const invites = await db.invite.find({})
+  await storage.writeFile('account.invites.json', JSON.stringify(invites))
+  ctx.info('finished dumping accounts database collections')
 }
