@@ -50,7 +50,8 @@
     screenSharing,
     setShare,
     startTranscription,
-    stopTranscription
+    stopTranscription,
+    lk
   } from '../utils'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
@@ -59,6 +60,7 @@
   import RoomModal from './RoomModal.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
   import { lkSessionConnected } from '../liveKitClient'
+  import emojiPlugin from '@hcengineering/emoji'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -137,15 +139,24 @@
   function maximize (): void {
     showPopup(RoomModal, { room }, 'full-centered')
   }
+
+  function addReaction (event: MouseEvent): void {
+    showPopup(
+      emojiPlugin.component.EmojiPopup,
+      {},
+      event?.target as HTMLElement,
+      async (result) => {
+        const emoji = result?.text
+        if (emoji == null) return
+        void lk.localParticipant.sendChatMessage(emoji, { topic: 'reaction' })
+      },
+      () => {}
+    )
+  }
 </script>
 
 <ControlBarContainer bind:noLabel>
-  <!-- <svelte:fragment slot="right">
-    {#if $isConnected && isTranscriptionAllowed() && $isTranscription}
-      <RoomLanguageSelector {room} kind="icon" />
-    {/if}
-  </svelte:fragment> -->
-  <svelte:fragment slot="center">
+  <svelte:fragment slot="right">
     {#if room._id !== love.ids.Reception}
       <ModernButton
         icon={roomAccessIcon[room.access]}
@@ -164,7 +175,15 @@
         on:click={setAccess}
       />
     {/if}
-    {#if $lkSessionConnected}
+  </svelte:fragment>
+  <svelte:fragment slot="center">
+   {#if $lkSessionConnected}
+      <ModernButton
+        icon={emojiPlugin.icon.Emoji}
+        kind={'secondary'}
+        size={'large'}
+        on:click={addReaction}
+      />
       <SplitButton
         size={'large'}
         icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}

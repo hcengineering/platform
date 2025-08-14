@@ -20,16 +20,19 @@
   import MicDisabled from './icons/MicDisabled.svelte'
   import { onDestroy, onMount } from 'svelte'
   import {
-    ConnectionQuality,
+    ChatMessage,
+    ConnectionQuality, LocalParticipant,
     type LocalTrackPublication,
     Participant,
-    ParticipantEvent,
+    ParticipantEvent, RemoteParticipant,
     type RemoteTrack,
-    type RemoteTrackPublication,
+    type RemoteTrackPublication, RoomEvent,
     Track,
     TrackPublication
   } from 'livekit-client'
   import BadConnection from './icons/BadConnection.svelte'
+  import { lk } from '../utils'
+  import Reaction from './meeting/Reaction.svelte'
 
   export let _id: string
   export let participant: Participant | undefined = undefined
@@ -141,6 +144,23 @@
     activeParticipant = undefined
   }
 
+  function onChatMessage (message: ChatMessage, participant?: RemoteParticipant | LocalParticipant | undefined): void {
+    if (activeParticipant !== participant) return
+    console.log(reactions.length)
+    reactions = [
+      ...reactions,
+      {
+        id: message.id,
+        emoji: message.message,
+        width: parent.offsetWidth,
+        height: parent.offsetHeight
+      }
+    ]
+    // console.log('onChatMessage', evt, scd, trd)
+  }
+
+  let reactions: Array<{ id: string, emoji: string, height: number, width: number }> = []
+
   function setParticipant (p: Participant | undefined): void {
     if (parent == null) return
     if (activeParticipant === p) return
@@ -160,6 +180,7 @@
 
     mirror = p.isLocal
     microphoneMuted = !p.isMicrophoneEnabled
+
     p.on(ParticipantEvent.TrackMuted, muteHandler)
     p.on(ParticipantEvent.TrackUnmuted, muteHandler)
     p.on(ParticipantEvent.IsSpeakingChanged, speachHandler)
@@ -177,10 +198,12 @@
   $: setParticipant(participant)
 
   onDestroy(() => {
+    lk.off(RoomEvent.ChatMessage, onChatMessage)
     detachCurrentTrack()
   })
 
   onMount(() => {
+    lk.on(RoomEvent.ChatMessage, onChatMessage)
     setParticipant(participant)
   })
 </script>
@@ -196,6 +219,9 @@
     {#if microphoneMuted}<MicDisabled fill={'var(--bg-negative-default)'} size={'small'} />{/if}
     <span class="overflow-label">{formatName(userName)}</span>
   </div>
+  {#each reactions as reaction (reaction.id)}
+    <Reaction {...reaction} on:complete={ () => { reactions = reactions.filter((it) => it !== reaction) }} />
+  {/each}
 </div>
 
 <style lang="scss">
