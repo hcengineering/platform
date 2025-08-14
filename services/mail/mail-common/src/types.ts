@@ -89,6 +89,6 @@ export interface MailRecipients {
 
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 
-export const HulyMailHeader = 'X-Huly-Sent'
-export const HulyMessageIdHeader = 'X-Huly-Message-Id'
-export const HulyMessageTypeHeader = 'X-Huly-Message-Type'
+export const HulyMailHeader = 'Huly-Sent'
+export const HulyMessageIdHeader = 'Huly-Message-Id'
+export const HulyMessageTypeHeader = 'Huly-Message-Type'
