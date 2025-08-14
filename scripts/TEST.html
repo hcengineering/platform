@@ -65,58 +65,25 @@
   <button onclick="sendMessage()">Send JSON</button>
   <button onclick="clean()">❌clear</button>
 
-
   <p>
-<button onclick="place()" data='{
-  "type": "put",
-  "key": "foo/bar1",
-  "data": "hello 1",
-  "correlation": "abc123"
-}'>PUT 1</button>
 
-<button onclick="place()" data='{
-  "type": "put",
-  "key": "foo/bar2",
-  "data": "hello 2",
-  "correlation": "abc123"
-}'>PUT 2</button>
+<button onclick="place()" data='{"type":"put", "key":"foo/bar1", "data": "hello 1", "TTL":5, "correlation": "abc123"}'>PUT 1</button>
+<button onclick="place()" data='{"type":"put", "key":"foo/bar2", "data": "hello 2", "TTL":9, "correlation": "abc123"}'>PUT 2</button>
 
-<button onclick="place()" data='{
-  "type": "get",
-  "key": "foo/bar1"
-}'>GET 2</button>
+<button onclick="place()" data='{"type":"delete", "key":"foo/bar1"}'>DEL 1</button>
+<button onclick="place()" data='{"type":"delete", "key":"foo/bar2"}'>DEL 2</button>
 
-<button onclick="place()" data='{
-  "type": "sub",
-  "key": "foo/bar1"
-}'>SUB 1</button>
+<button onclick="place()" data='{"type":"get", "key":"foo/bar1"}'>GET 1</button>
+<button onclick="place()" data='{"type":"get", "key":"foo/bar2"}'>GET 2</button>
 
-<button onclick="place()" data='{
-  "type": "sub",
-  "key": "foo/bar2"
-}'>SUB 2</button>
+<button onclick="place()" data='{"type":"sub", "key":"foo/bar1"}'>SUB 1</button>
+<button onclick="place()" data='{"type":"sub", "key":"foo/bar2"}'>SUB 2</button>
 
-<button onclick="place()" data='{
-  "type": "unsub",
-  "key": "foo/bar1"
-}'>UNSUB 1</button>
+<button onclick="place()" data='{"type":"unsub", "key":"foo/bar1"}'>UNSUB 1</button>
+<button onclick="place()" data='{"type":"unsub", "key":"foo/bar2"}'>UNSUB 2</button>
+<button onclick="place()" data='{"type":"unsub", "key":"*"}'>UNSUB *</button>
 
-<button onclick="place()" data='{
-  "type": "unsub",
-  "key": "foo/bar2"
-}'>UNSUB 2</button>
-
-<button onclick="place()" data='{
-  "type": "unsub",
-  "key": "*"
-}'>UNSUB *</button>
-
-<button onclick="place()" data='{
-  "type": "sublist"
-}'>SUBLIST</button>
-
-<button onclick="clean()">❌clear</button>
-
+<button onclick="place()" data='{"type": "sublist" }'>SUBLIST</button>
 
 
   <div id="output">Waiting for server response...</div>

@@ -36,17 +36,25 @@ mod handlers_http;
 mod handlers_ws;
 use crate::handlers_ws::{WsSession, handler};
 
-mod redis;
-use crate::redis::redis_connect;
-// use ::redis::cmd as redis_cmd; // redis_cmd для GET в таске
+mod redis_lib;
+use crate::redis_lib::redis_connect;
 
 mod workspace_owner;
 
 // == =hub ===
-// mod redis_events;
+mod redis_events;
 mod ws_hub;
 use actix::prelude::*;
-use crate::ws_hub::{WsHub, Broadcast, Count, ServerMessage, Join, Leave};
+// use crate::ws_hub::{WsHub, Broadcast, Count, ServerMessage, Join, Leave};
+use crate::ws_hub::{WsHub, Broadcast, ServerMessage, Join, Leave};
+
+// part 2
+// use redis::Client as RedisClient;
+// use ::redis as redis_crate;
+// use crate::redis::redis_connect;
+// use ::redis::cmd as redis_cmd; // redis_cmd для GET в таске
+
+
 // === /hub ===
 
 
@@ -84,6 +92,53 @@ async fn interceptor(
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+// NEW
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
+async fn start_redis_logger(redis_url: &str) {
+    let client = match redis::Client::open(redis_url) {
+        Ok(c) => c,
+        Err(e) => { eprintln!("[redis] bad url: {e}"); return; }
+    };
+
+    match crate::redis_events::make_pubsub_with_kea(&client).await {
+        Ok(pubsub) => {
+            let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
+            tokio::spawn(async move {
+                use crate::redis_events::RedisEventKind::*;
+                while let Some(ev) = rx.recv().await {
+                    match ev.kind {
+                        Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
+                        Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
+                        // Unlink        => println!("[redis] db{} UNLINK {}", ev.db, ev.key),
+                        Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
+                        Other(kind)   => println!("[redis] db{} {} {}", ev.db, kind, ev.key),
+                    }
+                }
+            });
+        }
+        Err(e) => eprintln!("[redis] pubsub init error: {e}"),
+    }
+}
+
+
 // #[tokio::main]
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
@@ -97,65 +152,17 @@ async fn main() -> anyhow::Result<()> {
 
 
 // ======================================
+    // HUB-Connections
+    let hub_addr = WsHub::default().start();
+    let hub_data = web::Data::new(hub_addr.clone());
 
-let hub_addr = WsHub::default().start();                // NEW
-let hub_data = web::Data::new(hub_addr.clone());        // NEW
-
-// let hub_addr: Addr<WsHub> = WsHub::default().start();
-// let hub_data: web::Data<Addr<WsHub>> = web::Data::new(hub_addr.clone());
-
-/*
 // === HUB: общий реестр WS-подключений ===
-
-
-// === Redis Pub/Sub listener (отдельное соединение) ===
-let mut pubsub_conn = redis_connect().await?;           // NEW: отдельный коннект только для Pub/Sub
-// (опционально) пробуем включить нотификации
-let _ = crate::redis_events::try_enable_keyspace_notifications(&mut pubsub_conn).await; // можно игнорить ошибку
-let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub_conn);      // NEW
-// поток, который читает события из Redis и шлёт их всем WS
-{
-    let hub_for_task = hub_addr.clone();
-    let redis_for_task = redis.clone();
-    tokio::spawn(async move {
-        use crate::redis_events::RedisEventKind;
-        while let Some(ev) = rx.recv().await {
-            let payload_json = match ev.kind {
-                RedisEventKind::Set => {
-                    let mut conn = redis_for_task.lock().await;
-                    let val: Option<String> = redis_cmd("GET")
-                        .arg(&ev.key)
-                        .query_async(&mut *conn)
-                        .await
-                        .ok()
-                        .flatten();
-                    serde_json::json!({
-                        "type": "redis",
-                        "event": "set",
-                        "key": ev.key,
-                        "value": val
-                    })
-                }
-                RedisEventKind::Del => serde_json::json!({
-                    "type": "redis",
-                    "event": "del",
-                    "key": ev.key
-                }),
-                RedisEventKind::Expired => serde_json::json!({
-                    "type": "redis",
-                    "event": "expired",
-                    "key": ev.key
-                }),
-            };
-            hub_for_task.do_send(Broadcast { text: payload_json.to_string() });
-        }
-    });
-}
-
-*/
+// сразу после настройки логирования/перед запуском HttpServer
+// start_redis_logger().await;
+// Например, перед HttpServer::new(...) или сразу после .bind(...):
+start_redis_logger("redis://127.0.0.1/").await;
 
 // ============================================
-
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
     let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
@@ -185,13 +192,10 @@ let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub_conn
             )
             .route("/status", web::get().to(async || "ok"))
 
-            .route("/stat", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
-	            // let count = hub.send(Count).await.unwrap_or(0);
+	    // .route("/stat", web::get().to(ws_hub::stat))
+            .route("/stat2", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
 		    let count = hub.send(crate::ws_hub::Count).await.unwrap_or(0);
-	            HttpResponse::Ok().json(serde_json::json!({
-	                "status": "ok",
-	                "connections": count
-	            }))
+	            HttpResponse::Ok().json(serde_json::json!({ "connections": count }))
 	    }))
 
  	    .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket

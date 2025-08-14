@@ -88,3 +88,18 @@ impl Handler<Count> for WsHub {
         self.sessions.len()
     }
 }
+
+
+/*
+/// stat
+use actix_web::{web, HttpResponse};
+use actix::Addr;
+use serde_json::json;
+
+// use crate::ws_hub::{WsHub, Count};
+
+pub async fn stat(hub: web::Data<Addr<WsHub>>) -> HttpResponse {
+    let count = hub.send(Count).await.unwrap_or(0);
+    HttpResponse::Ok().json(json!({ "connections": count }))
+}
+*/
