@@ -13,19 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, formatName } from '@hcengineering/contact'
+  import { formatName, Person } from '@hcengineering/contact'
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Loading } from '@hcengineering/ui'
-
-  import { currentRoomAudioLevels } from '../utils'
   import MicDisabled from './icons/MicDisabled.svelte'
-  import { onMount, onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import {
+    ConnectionQuality,
     type LocalTrackPublication,
-    Participant, ParticipantEvent, type RemoteTrack,
-    type RemoteTrackPublication, Track, TrackPublication
+    Participant,
+    ParticipantEvent,
+    type RemoteTrack,
+    type RemoteTrackPublication,
+    Track,
+    TrackPublication
   } from 'livekit-client'
+  import BadConnection from './icons/BadConnection.svelte'
 
   export let _id: string
   export let participant: Participant | undefined = undefined
@@ -39,6 +43,7 @@
   let videoMuted: boolean = true
   let microphoneMuted: boolean = true
   let isSpeaking: boolean = false
+  let isBadConnection: boolean = false
 
   $: personByRefStore = getPersonByPersonRefStore([_id as Ref<Person>])
   $: user = $personByRefStore.get(_id as Ref<Person>)
@@ -77,7 +82,6 @@
   }
 
   function speachHandler (speaking: boolean): void {
-    console.log('speaking', speaking)
     isSpeaking = speaking
   }
 
@@ -87,6 +91,10 @@
     } else if (publication.kind === Track.Kind.Video && publication.source !== Track.Source.ScreenShare) {
       setTrackMuted(publication.isMuted)
     }
+  }
+
+  function onConnectionQualityChanged (quality: ConnectionQuality): void {
+    isBadConnection = quality === ConnectionQuality.Lost || quality === ConnectionQuality.Poor
   }
 
   function onLocalTrackPublished (publication: LocalTrackPublication): void {
@@ -155,6 +163,7 @@
     p.on(ParticipantEvent.TrackMuted, muteHandler)
     p.on(ParticipantEvent.TrackUnmuted, muteHandler)
     p.on(ParticipantEvent.IsSpeakingChanged, speachHandler)
+    p.on(ParticipantEvent.ConnectionQualityChanged, onConnectionQualityChanged)
 
     if (p.isLocal) {
       p.on(ParticipantEvent.LocalTrackPublished, onLocalTrackPublished)
@@ -181,8 +190,9 @@
   <div class="ava">
     <Avatar size={'full'} name={userName} person={user} showStatus={false} />
   </div>
-  <div class="label" class:withIcon={microphoneMuted || participant === undefined}>
+  <div class="label" class:withIcon={microphoneMuted || isBadConnection || participant === undefined}>
     {#if participant === undefined}<Loading size={'small'} shrink />{/if}
+    {#if isBadConnection}<BadConnection fill={'var(--bg-negative-default)'} size={'small'} />{/if}
     {#if microphoneMuted}<MicDisabled fill={'var(--bg-negative-default)'} size={'small'} />{/if}
     <span class="overflow-label">{formatName(userName)}</span>
   </div>

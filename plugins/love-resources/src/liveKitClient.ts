@@ -1,15 +1,7 @@
 import {
-  ConnectionQuality,
   ConnectionState,
-  type LocalParticipant,
-  type LocalTrackPublication,
-  type Participant,
-  type RemoteParticipant,
-  type RemoteTrack,
-  type RemoteTrackPublication,
   Room as LKRoom,
-  RoomEvent,
-  type TrackPublication
+  RoomEvent
 } from 'livekit-client'
 import { getMetadata } from '@hcengineering/platform'
 import { getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
@@ -69,17 +61,6 @@ export class LiveKitClient {
     lkRoom.on(RoomEvent.Disconnected, this.onDisconnected)
     // lkRoom.on(RoomEvent.ParticipantConnected, attachParticipant)
     // lkRoom.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
-    lkRoom.on(RoomEvent.TrackMuted, this.onTrackMuted)
-    lkRoom.on(RoomEvent.TrackUnmuted, this.onTrackUnmuted)
-    lkRoom.on(RoomEvent.TrackSubscribed, this.onTrackSubscribed)
-    lkRoom.on(RoomEvent.TrackUnsubscribed, this.onTrackUnsubscribed)
-    lkRoom.on(RoomEvent.LocalTrackPublished, this.onLocalTrackPublished)
-    lkRoom.on(RoomEvent.LocalTrackUnpublished, this.onLocalTrackUnpublished)
-    lkRoom.on(RoomEvent.RecordingStatusChanged, this.onRecordingStatusChanged)
-    lkRoom.on(RoomEvent.RoomMetadataChanged, this.onRoomMetadataChanged)
-    lkRoom.on(RoomEvent.ActiveSpeakersChanged, this.onActiveSpeakersChanged)
-    lkRoom.on(RoomEvent.ConnectionQualityChanged, this.onConnectionQualityChanged)
-
     this.liveKitRoom = lkRoom
   }
 
@@ -124,56 +105,5 @@ export class LiveKitClient {
     this.currentMediaSession = undefined
     lkSessionConnected.set(false)
     Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
-  }
-
-  onTrackSubscribed = (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): void => {
-  }
-
-  onTrackUnsubscribed = (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): void => {
-  }
-
-  onLocalTrackPublished = (
-    publication: LocalTrackPublication,
-    participant: LocalParticipant
-  ): void => {
-  }
-
-  onLocalTrackUnpublished = (
-    publication: LocalTrackPublication,
-    participant: LocalParticipant
-  ): void => {
-  }
-
-  onTrackMuted = (
-    publication: TrackPublication,
-    participant: Participant
-  ): void => {
-  }
-
-  onTrackUnmuted = (
-    publication: TrackPublication,
-    participant: Participant
-  ): void => {
-  }
-
-  onRecordingStatusChanged = (value: boolean): void => {
-  }
-
-  onRoomMetadataChanged = (metadata: string): void => {
-  }
-
-  onActiveSpeakersChanged = (speakers: Participant[]): void => {
-  }
-
-  onConnectionQualityChanged = (connectionQuality: ConnectionQuality, participant: Participant): void => {
-    console.log('connectionQuality', connectionQuality, participant.name)
   }
 }
