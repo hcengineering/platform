@@ -24,8 +24,8 @@ pub struct RedisEvent {
     pub db: u32,
     pub key: String,
     pub kind: RedisEventKind,
-    pub raw_channel: String,
-    pub raw_payload: String,
+//    pub raw_channel: String,
+//    pub raw_payload: String,
 }
 
 fn parse_kind(event: &str) -> RedisEventKind {
@@ -124,8 +124,8 @@ pub fn start_keyevent_listener(
                 db,
                 key: payload.clone(),
                 kind,
-                raw_channel: channel,
-                raw_payload: payload,
+                // raw_channel: channel,
+                // raw_payload: payload,
             };
 
             if tx.send(ev).is_err() {

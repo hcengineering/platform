@@ -1,4 +1,5 @@
-use crate::ws_hub::{WsHub, ServerMessage, Join, Leave}; // NEW
+use actix::{prelude::*};
+use crate::ws_hub::{WsHub, ServerMessage, Connect, Disconnect, SessionId};
 
 // =============
 use redis::aio::MultiplexedConnection;
@@ -107,10 +108,11 @@ pub struct WsSession {
     pub subscriptions: HashSet<String>, // новые поля
     pub redis: Arc<Mutex<MultiplexedConnection>>, // вот он, тот же тип что и в HTTP API
 
-    pub hub: actix::Addr<WsHub>,   // NEW
-    pub id: Option<usize>,         // NEW
+//    pub hub: actix::Addr<WsHub>,   // NEW
+//    pub id: Option<usize>,         // NEW
+    pub id: SessionId,
+    pub hub: Addr<WsHub>,
 }
-
 
 
 // ======= ping ========
@@ -120,19 +122,38 @@ pub struct WsSession {
 
 
 
-
 /// Actor External trait: must be in separate impl block
 impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
+    // type Context = actix_web_actors::ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        println!("WebSocket connected");
-        ctx.text("Connected");
+        // просим ID у хаба
 
-// ======= ping ========
-        // test_message(ctx);
-        // регистрируемся в хабе и получаем id
-        let addr = ctx.address().recipient::<ServerMessage>();
+        // let addr = ctx.address().recipient::<ServerMessage>();
+        let addr = ctx.address();
+
+        let recipient = addr.recipient::<ServerMessage>();
+        println!("WebSocket connected");
+        self.hub
+            .send(Connect { addr: recipient })
+            .into_actor(self)
+            .map(|res, act, _ctx| {
+                match res {
+                    Ok(id) => {
+                        act.id = id;
+                        println!("[ws_session] got id={id}");
+                    }
+                    Err(e) => {
+                        eprintln!("[ws_session] connect to hub failed: {e}");
+                        _ctx.stop();
+                    }
+                }
+            })
+            .wait(ctx); // дождёмся присвоения ID, чтобы он точно был
+
+/*
+        ctx.text("Connected");
         let hub = self.hub.clone();
         ctx.wait(
             hub.send(Join { addr })
@@ -143,21 +164,18 @@ impl Actor for WsSession {
                     }
                 })
         );
-// ======= /ping ========
+*/
     }
 
-// ======= ping ========
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        if let Some(id) = self.id.take() {
-            self.hub.do_send(Leave { id });
-        }
+        // if let Some(id) = self.id.take() { self.hub.do_send(Leave { id }); }
+	if self.id != 0 {
+	    self.hub.do_send(Disconnect { session_id: self.id });
+	}
         println!("WebSocket disconnected");
     }
-// ======= /ping ========
+
 }
-
-
-
 
 
 // ======= ping ========
@@ -169,15 +187,6 @@ impl actix::Handler<ServerMessage> for WsSession {
     }
 }
 // ======= /ping ========
-
-
-
-
-
-
-
-
-
 
 
 
@@ -463,7 +472,7 @@ pub async fn handler(
         subscriptions: HashSet::new(),
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),   // NEW
-        id: None,                     // NEW
+        id: 0,                     // NEW
     };
     ws::start(session, &req, stream)
 }
