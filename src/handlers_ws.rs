@@ -1,5 +1,10 @@
 use actix::{prelude::*};
-use crate::ws_hub::{WsHub, ServerMessage, Connect, Disconnect, SessionId};
+use crate::ws_hub::{
+	WsHub, ServerMessage, SessionId,
+	Connect, Disconnect,
+        Subscribe, Unsubscribe, UnsubscribeAll,
+	SubscribeList,
+};
 
 // =============
 use redis::aio::MultiplexedConnection;
@@ -105,32 +110,20 @@ pub enum WsCommand {
 /// Session condition
 #[allow(dead_code)]
 pub struct WsSession {
-    pub subscriptions: HashSet<String>, // новые поля
-    pub redis: Arc<Mutex<MultiplexedConnection>>, // вот он, тот же тип что и в HTTP API
-
-//    pub hub: actix::Addr<WsHub>,   // NEW
-//    pub id: Option<usize>,         // NEW
+//    pub subscriptions: HashSet<String>, // новые поля
+    pub redis: Arc<Mutex<MultiplexedConnection>>,
     pub id: SessionId,
     pub hub: Addr<WsHub>,
 }
 
 
-// ======= ping ========
-// use crate::ws_ping::test_message;
-// ======= /ping ========
-
-
-
-
 /// Actor External trait: must be in separate impl block
 impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
-    // type Context = actix_web_actors::ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
         // просим ID у хаба
 
-        // let addr = ctx.address().recipient::<ServerMessage>();
         let addr = ctx.address();
 
         let recipient = addr.recipient::<ServerMessage>();
@@ -151,34 +144,28 @@ impl Actor for WsSession {
                 }
             })
             .wait(ctx); // дождёмся присвоения ID, чтобы он точно был
-
-/*
-        ctx.text("Connected");
-        let hub = self.hub.clone();
-        ctx.wait(
-            hub.send(Join { addr })
-                .into_actor(self)
-                .map(|res, actor, _ctx| {
-                    if let Ok(id) = res {
-                        actor.id = Some(id);
-                    }
-                })
-        );
-*/
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        // if let Some(id) = self.id.take() { self.hub.do_send(Leave { id }); }
-	if self.id != 0 {
-	    self.hub.do_send(Disconnect { session_id: self.id });
-	}
+	if self.id != 0 { self.hub.do_send(Disconnect { session_id: self.id });	}
         println!("WebSocket disconnected");
     }
 
 }
 
-
 // ======= ping ========
+impl actix::Handler<ServerMessage> for WsSession {
+    type Result = ();
+
+    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
+        let json = serde_json::to_string(&msg.event)
+            .unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
+        ctx.text(json);
+    }
+}
+
+/*
+
 impl actix::Handler<ServerMessage> for WsSession {
     type Result = ();
 
@@ -186,6 +173,17 @@ impl actix::Handler<ServerMessage> for WsSession {
         ctx.text(msg.0);
     }
 }
+
+impl actix::Handler<ServerMessage> for WsSession {
+    type Result = ();
+    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
+        // Чтобы это работало, добавь #[derive(serde::Serialize)] в RedisEvent и RedisEventKind
+        let json = serde_json::to_string(&msg.0)
+            .unwrap_or_else(|_| "\"serialization error\"".into());
+        ctx.text(json);
+    }
+}
+*/
 // ======= /ping ========
 
 
@@ -393,9 +391,21 @@ impl WsSession {
 		self.wait_and_send(ctx, fut, base);
             }
 
-            // TODO
+
+
+
+
+
+
+
+
+
+
+
+
 
 	    WsCommand::Sub { key, correlation } => {
+		// LEVENT 3
 	        println!("SUB {}{:?}", key, correlation);
 
 		let mut obj = JsonMap::new();
@@ -406,54 +416,53 @@ impl WsSession {
 		if deprecated_symbol(&key) {
 		    obj.insert("error".into(), json!("Deprecated symbol in key"));
 		} else {
-	    	    let added = self.subscriptions.insert(key.clone());
-		    obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
-		    if !added { obj.insert("warning".into(), json!("Subscribe already exist")); }
+		    self.hub.do_send(Subscribe { session_id: self.id, key: key.clone() });
+		    // obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
 		}
+
 		ctx.text(Value::Object(obj).to_string());
 	    }
 
 	    WsCommand::Unsub { key, correlation } => {
+		// LEVENT 4
 	        println!("UNSUB {}{:?}", key, correlation);
 		let mut obj = JsonMap::new();
 	        obj.insert("action".into(), json!("unsub"));
 	        obj.insert("key".into(), json!(key));
 	        if let Some(c) = correlation { obj.insert("correlation".into(), json!(c)); }
 
-
-		let removed = if key == "*" {
-			if !self.subscriptions.is_empty() {
-		    	    self.subscriptions.clear();
-			    true
-			} else {
-			    false
-			}
+		if key == "*" {
+		    self.hub.do_send(UnsubscribeAll { session_id: self.id });
 		} else {
 		    if deprecated_symbol(&key) {
 			obj.insert("error".into(), json!("Deprecated symbol in key"));
-			true
 		    } else {
-			self.subscriptions.remove(&key)
+			self.hub.do_send(Unsubscribe { session_id: self.id, key: key.clone() });
 		    }
 		};
-
-		obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
-		if !removed { obj.insert("warning".into(), json!("Subscribe already deleted")); }
 
 		ctx.text(Value::Object(obj).to_string());
 	    }
 
 	    WsCommand::Sublist { correlation } => {
 	        println!("SUBLIST {:?}", correlation);
-		let mut obj = JsonMap::new();
-	        obj.insert("action".into(), json!("sublist"));
-	        if let Some(c) = correlation { obj.insert("correlation".into(), json!(c)); }
 
-		obj.insert("response".into(), json!(self.subscriptions.iter().cloned().collect::<Vec<_>>()));
-		obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
+	        let mut base = JsonMap::new();
+	        base.insert("action".into(), json!("sublist"));
+	        if let Some(x) = &correlation { base.insert("correlation".into(), json!(x)); }
 
-		ctx.text(Value::Object(obj).to_string());
-	    }
+		let hub = self.hub.clone();
+		let id = self.id;
+
+		let fut = async move {
+		    let keys = hub.send(SubscribeList { session_id: id }).await.unwrap_or_default();
+		    let mut extra = JsonMap::new();
+		    extra.insert("response".into(), serde_json::to_value(&keys).map_err(|e| e.to_string())? );
+		    Ok::<JsonMap, String>(extra)
+		};
+
+		self.wait_and_send(ctx, fut, base);
+            }
 
 	    // End of commands
         }
@@ -466,13 +475,13 @@ pub async fn handler(
     req: HttpRequest,
     stream: web::Payload,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
-    hub: web::Data<actix::Addr<WsHub>>, // NEW
+    hub: web::Data<actix::Addr<WsHub>>,
 ) -> Result<HttpResponse, Error> {
     let session = WsSession {
-        subscriptions: HashSet::new(),
+        // subscriptions: HashSet::new(),
         redis: redis.get_ref().clone(),
-        hub: hub.get_ref().clone(),   // NEW
-        id: 0,                     // NEW
+        hub: hub.get_ref().clone(),
+        id: 0,
     };
     ws::start(session, &req, stream)
 }

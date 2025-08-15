@@ -45,18 +45,11 @@ mod workspace_owner;
 mod redis_events;
 mod ws_hub;
 use actix::prelude::*;
-// use crate::ws_hub::{WsHub, Broadcast, Count, ServerMessage, Join, Leave};
-use crate::ws_hub::{WsHub, Broadcast, ServerMessage}; // , Join, Leave
-
-// part 2
-// use redis::Client as RedisClient;
-// use ::redis as redis_crate;
-// use crate::redis::redis_connect;
-// use ::redis::cmd as redis_cmd; // redis_cmd для GET в таске
-
+use crate::ws_hub::{WsHub, ServerMessage,
+    TestGetSubs,
+};
 
 // === /hub ===
-
 
 use config::CONFIG;
 
@@ -112,6 +105,35 @@ async fn interceptor(
 // =====================================================================================
 // =====================================================================================
 // =====================================================================================
+use crate::redis_events::RedisEventKind::*; // Set, Del, Unlink, Expired, Other
+
+pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
+    let client = match redis::Client::open(redis_url) {
+        Ok(c) => c,
+        Err(e) => { eprintln!("[redis] bad url: {e}"); return; }
+    };
+
+    match crate::redis_events::make_pubsub_with_kea(&client).await {
+        Ok(pubsub) => {
+            let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
+
+            // Просто читаем события и шлём их в хаб.
+            while let Some(ev) = rx.recv().await {
+                match ev.kind {
+                    Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
+                    Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
+                    Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
+                    Other(ref k)  => println!("[redis] db{} {} {}", ev.db, k, ev.key),
+                }
+                hub.do_send(ev.clone()); // RedisEvent помечен #[derive(Message)]
+            }
+        }
+        Err(e) => eprintln!("[redis] pubsub init error: {e}"),
+    }
+}
+
+/*
+
 async fn start_redis_logger(redis_url: &str) {
     let client = match redis::Client::open(redis_url) {
         Ok(c) => c,
@@ -122,22 +144,26 @@ async fn start_redis_logger(redis_url: &str) {
         Ok(pubsub) => {
             let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
             tokio::spawn(async move {
-                use crate::redis_events::RedisEventKind::*;
+
                 while let Some(ev) = rx.recv().await {
+		    // LEVENT 5,6
                     match ev.kind {
                         Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
                         Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
-                        // Unlink        => println!("[redis] db{} UNLINK {}", ev.db, ev.key),
                         Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
                         Other(kind)   => println!("[redis] db{} {} {}", ev.db, kind, ev.key),
                     }
+
+		    // TODO !!!!!!!!!!!!!!!
+		    hub.do_send(ev.clone()); // ev: RedisEvent
+
                 }
             });
         }
         Err(e) => eprintln!("[redis] pubsub init error: {e}"),
     }
 }
-
+*/
 
 // #[tokio::main]
 #[actix_web::main]
@@ -152,15 +178,14 @@ async fn main() -> anyhow::Result<()> {
 
 
 // ======================================
-    // HUB-Connections
-    let hub_addr = WsHub::default().start();
-    let hub_data = web::Data::new(hub_addr.clone());
+    // стартуем хаб
+    let hub = WsHub::default().start();
+    let hub_data = web::Data::new(hub.clone()); // Data<Addr<WsHub>>
 
-// === HUB: общий реестр WS-подключений ===
-// сразу после настройки логирования/перед запуском HttpServer
-// start_redis_logger().await;
-// Например, перед HttpServer::new(...) или сразу после .bind(...):
-start_redis_logger("redis://127.0.0.1/").await;
+    // запускаем логгер редиса в фоне
+    tokio::spawn(start_redis_logger("redis://127.0.0.1/".to_string(), hub.clone()));
+    //    tokio::spawn(start_redis_logger(redis_url, hub.clone()));
+    // start_redis_logger("redis://127.0.0.1/").await;
 
 // ============================================
 
@@ -196,6 +221,13 @@ start_redis_logger("redis://127.0.0.1/").await;
             .route("/stat2", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
 		    let count = hub.send(crate::ws_hub::Count).await.unwrap_or(0);
 	            HttpResponse::Ok().json(serde_json::json!({ "connections": count }))
+	    }))
+
+	    .route("/subs", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
+	        match hub.send(TestGetSubs).await {
+	            Ok(subs) => HttpResponse::Ok().json(subs),
+	            Err(_) => HttpResponse::InternalServerError().body("Failed to get subscriptions"),
+	        }
 	    }))
 
  	    .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket

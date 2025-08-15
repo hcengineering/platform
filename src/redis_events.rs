@@ -1,6 +1,17 @@
+/*
+TODO: Со *
+
+Сперва по точному совпадению
+Потом перебором по *
+*/
+
+
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio_stream::StreamExt;
+
+use serde::Serialize;
+
 
 use redis::{
     self,
@@ -10,7 +21,7 @@ use redis::{
     aio::{PubSub, ConnectionLike},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum RedisEventKind {
     Set,        // создание или перезапись (Redis не различает)
     Del,        // удаление
@@ -19,36 +30,23 @@ pub enum RedisEventKind {
     Other(String),
 }
 
-#[derive(Debug, Clone)]
+use actix::Message;
+// use serde::Serialize;
+
+
+#[derive(Debug, Clone, Serialize, Message)]
+#[rtype(result = "()")]
 pub struct RedisEvent {
     pub db: u32,
     pub key: String,
     pub kind: RedisEventKind,
-//    pub raw_channel: String,
-//    pub raw_payload: String,
 }
 
-fn parse_kind(event: &str) -> RedisEventKind {
-    match event {
-        "set"     => RedisEventKind::Set,
-        "del"     => RedisEventKind::Del,
-        "unlink"  => RedisEventKind::Unlink,
-        "expired" => RedisEventKind::Expired,
-        other     => RedisEventKind::Other(other.to_string()),
-    }
-}
 
-fn parse_db_from_channel(ch: &str) -> u32 {
-    // "__keyevent@0__:set" → db = 0
-    if let Some(at) = ch.find('@') {
-        if let Some(rest) = ch.get(at + 1..) {
-            if let Some(end) = rest.find("__:") {
-                return rest[..end].parse::<u32>().unwrap_or(0);
-            }
-        }
-    }
-    0
-}
+
+
+
+
 
 /// Включаем только нужные нотификации: keyevent + generic + expired → "Egx".
 /// Это отключит шум от многих классов, включая keyspace и т.п.
@@ -57,13 +55,7 @@ async fn try_enable_keyspace_notifications<C>(conn: &mut C) -> RedisResult<()>
 where
     C: ConnectionLike + Send,
 {
-    let _: String = redis::cmd("CONFIG")
-        .arg("SET")
-        .arg("notify-keyspace-events")
-        // .arg("Egx")
-	.arg("E$gx")
-        .query_async(conn)
-        .await?;
+    let _: String = redis::cmd("CONFIG").arg("SET").arg("notify-keyspace-events").arg("E$gx").query_async(conn).await?;
     Ok(())
 }
 
@@ -78,15 +70,14 @@ pub async fn make_pubsub_with_kea(client: &Client) -> RedisResult<PubSub> {
     Ok(pubsub)
 }
 
-/// Слушатель keyevent-событий. Подписываемся ТОЛЬКО на нужные типы,
-/// чтобы даже не получать `expire` (команда установки TTL).
+/// Listener keyevents
 pub fn start_keyevent_listener(
     mut pubsub: PubSub,
 ) -> (mpsc::UnboundedReceiver<RedisEvent>, JoinHandle<()>) {
     let (tx, rx) = mpsc::unbounded_channel();
 
     let handle = tokio::spawn(async move {
-        // Подписываемся точечно
+        // Subscribe to events
         if let Err(e) = pubsub.psubscribe("__keyevent@*__:set").await {
             eprintln!("[redis_events] psubscribe error (set): {e}");
             return;
@@ -117,20 +108,23 @@ pub fn start_keyevent_listener(
 
             // "__keyevent@0__:set" → event="set", db=0; payload = ключ
             let event = channel.rsplit(':').next().unwrap_or("");
-            let kind = parse_kind(event);
-            let db = parse_db_from_channel(&channel);
+	    let kind = match event {
+	        "set"     => RedisEventKind::Set,
+	        "del"     => RedisEventKind::Del,
+	        "unlink"  => RedisEventKind::Unlink,
+    		"expired" => RedisEventKind::Expired,
+	        other     => RedisEventKind::Other(other.to_string()),
+	    };
 
-            let ev = RedisEvent {
-                db,
-                key: payload.clone(),
-                kind,
-                // raw_channel: channel,
-                // raw_payload: payload,
-            };
+	    let db = channel.find('@')
+	        .and_then(|at| channel.get(at + 1..))
+	        .and_then(|rest| rest.find("__:").map(|end| &rest[..end]))
+	        .and_then(|s| s.parse::<u32>().ok())
+	        .unwrap_or(0);
 
-            if tx.send(ev).is_err() {
-                break; // приёмник закрыт
-            }
+            let ev = RedisEvent { db, key: payload.clone(), kind };
+
+            if tx.send(ev).is_err() { break; } // closed
         }
     });
 
