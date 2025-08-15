@@ -28,13 +28,17 @@ export interface MtaMessage {
   }
 }
 
+type Headers =
+  | Record<string, string | string[] | { prepared: boolean, value: string }>
+  | Array<{ key: string, value: string }>
+
 export interface MailMessage {
   from: string
   to: string[]
   subject: string
   text?: string
   html?: string
-  headers?: Record<string, string> | string[]
+  headers?: Headers
   attachments?: {
     name: string
     contentType: string

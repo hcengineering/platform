@@ -266,7 +266,13 @@ export async function handleUploadFormData (
           throw err
         }
 
-        const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
+        let data: Buffer | Readable = file.data
+        if (file.tempFilePath !== undefined) {
+          data = fs.createReadStream(file.tempFilePath)
+          data.on('error', (err) => {
+            ctx.error('stream error during upload', { workspace, name, file: file.name, error: err })
+          })
+        }
 
         try {
           const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
