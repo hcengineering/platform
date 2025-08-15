@@ -1,4 +1,5 @@
 use actix::{prelude::*};
+
 use crate::ws_hub::{
 	WsHub, ServerMessage, SessionId,
 	Connect, Disconnect,
@@ -6,7 +7,6 @@ use crate::ws_hub::{
 	SubscribeList,
 };
 
-// =============
 use redis::aio::MultiplexedConnection;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -18,9 +18,7 @@ use actix::{
     ActorContext,
     fut,
     ActorFutureExt,
-
-    Handler, WrapFuture // добавили Handler, WrapFuture
-
+    Handler, WrapFuture
 };
 use actix_web::{web, HttpRequest, HttpResponse, Error};
 use actix_web_actors::ws;
@@ -110,7 +108,6 @@ pub enum WsCommand {
 /// Session condition
 #[allow(dead_code)]
 pub struct WsSession {
-//    pub subscriptions: HashSet<String>, // новые поля
     pub redis: Arc<Mutex<MultiplexedConnection>>,
     pub id: SessionId,
     pub hub: Addr<WsHub>,
@@ -122,8 +119,7 @@ impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        // просим ID у хаба
-
+        // ask ID from Hub
         let addr = ctx.address();
 
         let recipient = addr.recipient::<ServerMessage>();
@@ -143,7 +139,7 @@ impl Actor for WsSession {
                     }
                 }
             })
-            .wait(ctx); // дождёмся присвоения ID, чтобы он точно был
+            .wait(ctx); // waiting for ID
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
@@ -163,37 +159,7 @@ impl actix::Handler<ServerMessage> for WsSession {
         ctx.text(json);
     }
 }
-
-/*
-
-impl actix::Handler<ServerMessage> for WsSession {
-    type Result = ();
-
-    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
-        ctx.text(msg.0);
-    }
-}
-
-impl actix::Handler<ServerMessage> for WsSession {
-    type Result = ();
-    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
-        // Чтобы это работало, добавь #[derive(serde::Serialize)] в RedisEvent и RedisEventKind
-        let json = serde_json::to_string(&msg.0)
-            .unwrap_or_else(|_| "\"serialization error\"".into());
-        ctx.text(json);
-    }
-}
-*/
 // ======= /ping ========
-
-
-
-
-
-
-
-
-
 
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
@@ -239,7 +205,6 @@ impl WsSession {
             })
         );
     }
-
 
     /// When valid JSON recieved for WsSession
     fn handle_command(&mut self, cmd: WsCommand, ctx: &mut ws::WebsocketContext<Self>) {
@@ -395,15 +360,6 @@ impl WsSession {
 
 
 
-
-
-
-
-
-
-
-
-
 	    WsCommand::Sub { key, correlation } => {
 		// LEVENT 3
 	        println!("SUB {}{:?}", key, correlation);
@@ -417,7 +373,6 @@ impl WsSession {
 		    obj.insert("error".into(), json!("Deprecated symbol in key"));
 		} else {
 		    self.hub.do_send(Subscribe { session_id: self.id, key: key.clone() });
-		    // obj.insert("sub_count".into(), json!( self.subscriptions.len() ));
 		}
 
 		ctx.text(Value::Object(obj).to_string());
@@ -478,7 +433,6 @@ pub async fn handler(
     hub: web::Data<actix::Addr<WsHub>>,
 ) -> Result<HttpResponse, Error> {
     let session = WsSession {
-        // subscriptions: HashSet::new(),
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),
         id: 0,

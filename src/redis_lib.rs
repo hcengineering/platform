@@ -40,9 +40,7 @@ pub fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
     Err(redis::RedisError::from(( redis::ErrorKind::ExtensionError, "", full )))
 }
 
-
 /// Check for redis-deprecated symbols
-
 pub fn deprecated_symbol(s: &str) -> bool {
     s.chars().any(|c| matches!(
         c,

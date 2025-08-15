@@ -4,6 +4,7 @@
 Justfile
 commit.sh
 /src/GO.sh
+/src/GOT.sh
 GO.sh
 DROP_DB.sh
 TODO.txt

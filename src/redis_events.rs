@@ -23,16 +23,14 @@ use redis::{
 
 #[derive(Debug, Clone, Serialize)]
 pub enum RedisEventKind {
-    Set,        // создание или перезапись (Redis не различает)
-    Del,        // удаление
-    Unlink,     // удаление (асинхронное)
-    Expired,    // исчез по TTL
+    Set,        // Insert or Update
+    Del,        // Delete
+    Unlink,     // async Delete
+    Expired,    // TTL Delete
     Other(String),
 }
 
 use actix::Message;
-// use serde::Serialize;
-
 
 #[derive(Debug, Clone, Serialize, Message)]
 #[rtype(result = "()")]
@@ -43,14 +41,7 @@ pub struct RedisEvent {
 }
 
 
-
-
-
-
-
-/// Включаем только нужные нотификации: keyevent + generic + expired → "Egx".
-/// Это отключит шум от многих классов, включая keyspace и т.п.
-/// Если прав на CONFIG нет — это не фатально.
+/// Notifications: keyevent + generic + expired = "Egx" (no keyspace)
 async fn try_enable_keyspace_notifications<C>(conn: &mut C) -> RedisResult<()>
 where
     C: ConnectionLike + Send,
@@ -59,8 +50,7 @@ where
     Ok(())
 }
 
-/// Создаём обычный async-коннект, пробуем включить KEA=Egx,
-/// затем открываем отдельный PubSub-коннект.
+/// Create async-connect, try to enable KEA=Egx, open PubSub-connect
 pub async fn make_pubsub_with_kea(client: &Client) -> RedisResult<PubSub> {
     let mut conn = client.get_multiplexed_async_connection().await?;
     let _ = try_enable_keyspace_notifications(&mut conn).await;
@@ -106,7 +96,7 @@ pub fn start_keyevent_listener(
                 Err(e) => { eprintln!("[redis_events] bad payload: {e}"); continue; }
             };
 
-            // "__keyevent@0__:set" → event="set", db=0; payload = ключ
+            // "__keyevent@0__:set" → event="set", db=0; payload = key
             let event = channel.rsplit(':').next().unwrap_or("");
 	    let kind = match event {
 	        "set"     => RedisEventKind::Set,

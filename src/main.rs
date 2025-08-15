@@ -176,18 +176,13 @@ async fn main() -> anyhow::Result<()> {
     let redis = std::sync::Arc::new(tokio::sync::Mutex::new(redis));
     let redis_data = web::Data::new(redis.clone());
 
-
-// ======================================
-    // стартуем хаб
+    // ======================================
+    // starting Hub
     let hub = WsHub::default().start();
-    let hub_data = web::Data::new(hub.clone()); // Data<Addr<WsHub>>
-
-    // запускаем логгер редиса в фоне
+    let hub_data = web::Data::new(hub.clone());
+    // starting Logger
     tokio::spawn(start_redis_logger("redis://127.0.0.1/".to_string(), hub.clone()));
-    //    tokio::spawn(start_redis_logger(redis_url, hub.clone()));
-    // start_redis_logger("redis://127.0.0.1/").await;
-
-// ============================================
+    // ============================================
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
     let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
@@ -203,8 +198,7 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(payload_config.clone())
             .app_data(redis_data.clone())
-	    .app_data(hub_data.clone()) // ← ЭТО ОБЯЗАТЕЛЬНО
-
+	    .app_data(hub_data.clone()) // Important!
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
