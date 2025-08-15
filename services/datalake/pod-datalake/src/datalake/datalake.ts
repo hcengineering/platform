@@ -221,9 +221,9 @@ export class DatalakeImpl implements Datalake {
       if (cacheBuffer !== undefined) {
         const entry: CacheEntry = {
           body: cacheBuffer,
-          bodyLength: head.size,
+          bodyLength: cacheBuffer.length,
           bodyEtag: head.etag,
-          size: head.size,
+          size,
           etag,
           name,
           ...putOptions
