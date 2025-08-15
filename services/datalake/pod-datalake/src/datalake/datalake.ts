@@ -167,7 +167,7 @@ export class DatalakeImpl implements Datalake {
     const data = await this.db.getData(ctx, { hash, location })
 
     if (data !== null) {
-      // Lucky boy, nothing to upload, use existing blob
+      // Nothing to upload, use existing blob
       await this.db.createBlob(ctx, { workspace, name, hash, location })
 
       try {
@@ -189,23 +189,15 @@ export class DatalakeImpl implements Datalake {
         lastModified
       }
 
-      let data: Readable | Buffer = body
+      let dataToUpload: Readable | Buffer = body
+      let cacheBuffer: Buffer | undefined
 
       if (this.options.cache.enabled && size <= this.options.cache.blobSize) {
-        data = await streamToBuffer(body)
-        const entry: CacheEntry = {
-          body: data,
-          bodyLength: data.length,
-          bodyEtag: etag,
-          size,
-          name,
-          etag,
-          ...putOptions
-        }
-        this.cache.set(hash, entry)
+        cacheBuffer = await streamToBuffer(body)
+        dataToUpload = cacheBuffer
       }
 
-      await bucket.put(ctx, filename, data, putOptions)
+      await bucket.put(ctx, filename, dataToUpload, putOptions)
       const head = await bucket.head(ctx, filename)
 
       if (head === null) {
@@ -225,6 +217,19 @@ export class DatalakeImpl implements Datalake {
       }
 
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
+
+      if (cacheBuffer !== undefined) {
+        const entry: CacheEntry = {
+          body: cacheBuffer,
+          bodyLength: head.size,
+          bodyEtag: head.etag,
+          size: head.size,
+          etag,
+          name,
+          ...putOptions
+        }
+        this.cache.set(hash, entry)
+      }
 
       try {
         const event =
