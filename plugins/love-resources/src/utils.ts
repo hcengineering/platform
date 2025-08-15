@@ -447,7 +447,11 @@ export async function disconnect (): Promise<void> {
 
 export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {
   const me = lk.localParticipant
-  await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
+  try {
+    await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
+  } catch (err: any) {
+    console.error(err)
+  }
   if (ownInfo !== undefined) {
     const client = getClient()
     if (ownOffice !== undefined && ownInfo.room !== ownOffice._id) {

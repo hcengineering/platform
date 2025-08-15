@@ -90,6 +90,9 @@
     "Sharing": "A partilhar...",
     "Browser": "Navegador",
     "Monitor": "Monitor",
-    "Window": "Janela"
+    "Window": "Janela",
+    "MeetingEmptyTitle": "Reunião encerrada?",
+    "MeetingEmptyMessage": "Todos os participantes saíram. Você será desconectado em 1 minuto. Deseja permanecer?",
+    "StayInRoom": "Permanecer na sala"
   }
 }

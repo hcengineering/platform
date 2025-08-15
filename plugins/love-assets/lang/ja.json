@@ -90,6 +90,9 @@
     "Sharing": "共有中...",
     "Browser": "ブラウザ",
     "Monitor": "モニター",
-    "Window": "ウィンドウ"
+    "Window": "ウィンドウ",
+    "MeetingEmptyTitle": "ミーティング終了？",
+    "MeetingEmptyMessage": "全参加者が退出しました。1分後に自動切断されます。ミーティングに残りますか？",
+    "StayInRoom": "ルームに残る"
   }
 }

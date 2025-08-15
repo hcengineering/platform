@@ -1,10 +1,3 @@
-import { get } from 'svelte/store'
-import {
-  isSharingEnabled,
-  setCam,
-  setMic,
-  setShare
-} from './utils'
 import { location } from '@hcengineering/ui'
 
 let key = ''

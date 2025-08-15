@@ -1,11 +1,7 @@
 <script lang="ts">
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
-  import ParticipantView from '../ParticipantView.svelte'
-  import {
-    Participant,
-    RemoteParticipant,
-    RoomEvent
-  } from 'livekit-client'
+  import ParticipantView from './ParticipantView.svelte'
+  import { Participant, RemoteParticipant, RoomEvent } from 'livekit-client'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { liveKitClient, lk } from '../../utils'
   import { infos } from '../../stores'

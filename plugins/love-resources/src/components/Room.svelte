@@ -21,10 +21,7 @@
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import {
-    isFullScreen,
-    tryConnect
-  } from '../utils'
+  import { isFullScreen, tryConnect } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import { lkSessionConnected } from '../liveKitClient'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
@@ -53,10 +50,7 @@
 
     await waitForOfficeLoaded()
 
-    if (
-      !$lkSessionConnected &&
-      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
-    ) {
+    if (!$lkSessionConnected && $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)) {
       const info = $infos.filter((p) => p.room === room._id)
       await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
@@ -131,7 +125,6 @@
   }
 
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
-
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
@@ -151,17 +144,16 @@
     class:mobile={$deviceInfo.isMobile}
   >
     <div class="screenContainer">
-      <ScreenSharingView bind:hasActiveTrack={withScreenSharing}/>
+      <ScreenSharingView bind:hasActiveTrack={withScreenSharing} />
     </div>
     {#if withVideo}
-      <div
-        class="videoGrid"
-        style={withScreenSharing ? '' : gridStyle}
-        class:scroll-m-0={withScreenSharing}
-      >
-        <ParticipantsListView room={room._id} on:participantsCount={(evt) => {
-          updateStyle(evt.detail, withScreenSharing)
-        }}/>
+      <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
+        <ParticipantsListView
+          room={room._id}
+          on:participantsCount={(evt) => {
+            updateStyle(evt.detail, withScreenSharing)
+          }}
+        />
       </div>
     {/if}
   </div>

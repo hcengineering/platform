@@ -43,7 +43,7 @@
 
 <div class="antiPopup videoPopup-container" class:isDock>
   <div class="screenContainer" class:hidden={!withScreenSharing}>
-    <ScreenSharingView showLocalTrack={false} bind:hasActiveTrack={withScreenSharing}/>
+    <ScreenSharingView showLocalTrack={false} bind:hasActiveTrack={withScreenSharing} />
   </div>
   <Scroller
     bind:divScroll
@@ -54,7 +54,12 @@
     stickedScrollBars
   >
     <div class="videoGrid">
-      <ParticipantsListView {room} on:participantsCount={(evt) => { dispatchFit(evt.detail > 0) }}/>
+      <ParticipantsListView
+        {room}
+        on:participantsCount={(evt) => {
+          dispatchFit(evt.detail > 0)
+        }}
+      />
     </div>
   </Scroller>
   <div class="antiNav-space" />

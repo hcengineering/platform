@@ -1,17 +1,18 @@
-import {
-  ConnectionState,
-  Room as LKRoom,
-  RoomEvent
-} from 'livekit-client'
-import { getMetadata } from '@hcengineering/platform'
+import { ConnectionState, type RemoteParticipant, Room as LKRoom, RoomEvent } from 'livekit-client'
+import { getMetadata, translate } from '@hcengineering/platform'
 import { getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
-import love, { LoveEvents } from '@hcengineering/love'
+import { LoveEvents } from '@hcengineering/love'
 import { useMedia } from '@hcengineering/media-resources'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { Analytics } from '@hcengineering/analytics'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { getCurrentLanguage } from '@hcengineering/theme'
+import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
+import love from './plugin'
+import { leaveRoom } from './utils'
+import { myInfo, myOffice } from './stores'
 
 export const lkSessionConnected = writable<boolean>(false)
-export const lkSessionWithSharing = writable<boolean>(false)
 
 export function getLiveKitClient (): LiveKitClient {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
@@ -23,6 +24,8 @@ export class LiveKitClient {
 
   public currentMediaSession: MediaSession | undefined = undefined
   private currentSessionSupportsVideo: boolean = false
+  private lastParticipantNotificationTimeout: number = -1
+  private lastParticipantDisconnectTimeout: number = -1
 
   private readonly wsUrl: string
 
@@ -59,8 +62,6 @@ export class LiveKitClient {
     void lkRoom.prepareConnection(this.wsUrl)
     lkRoom.on(RoomEvent.Connected, this.onConnected)
     lkRoom.on(RoomEvent.Disconnected, this.onDisconnected)
-    // lkRoom.on(RoomEvent.ParticipantConnected, attachParticipant)
-    // lkRoom.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
     this.liveKitRoom = lkRoom
   }
 
@@ -70,6 +71,7 @@ export class LiveKitClient {
   }
 
   async disconnect (): Promise<void> {
+    clearTimeout(this.lastParticipantNotificationTimeout)
     const me = this.liveKitRoom.localParticipant
     await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
     await this.liveKitRoom.disconnect()
@@ -97,6 +99,9 @@ export class LiveKitClient {
     })
     lkSessionConnected.set(true)
     this.currentMediaSession = session
+    this.liveKitRoom.on(RoomEvent.ParticipantConnected, this.onParticipantConnected)
+    this.liveKitRoom.on(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
+    console.log(this.liveKitRoom.numParticipants)
   }
 
   onDisconnected = (): void => {
@@ -104,6 +109,40 @@ export class LiveKitClient {
     this.currentMediaSession?.removeAllListeners()
     this.currentMediaSession = undefined
     lkSessionConnected.set(false)
+    this.liveKitRoom.off(RoomEvent.ParticipantConnected, this.onParticipantConnected)
+    this.liveKitRoom.off(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
     Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
+  }
+
+  onParticipantConnected = (participant: RemoteParticipant): void => {
+    clearTimeout(this.lastParticipantDisconnectTimeout)
+    clearTimeout(this.lastParticipantNotificationTimeout)
+  }
+
+  onParticipantDisconnected = (participant: RemoteParticipant): void => {
+    if (this.liveKitRoom.remoteParticipants.size === 0) {
+      clearTimeout(this.lastParticipantDisconnectTimeout)
+      clearTimeout(this.lastParticipantNotificationTimeout)
+      this.lastParticipantNotificationTimeout = window.setTimeout(
+        () => {
+          void this.showLastParticipantNotification()
+        },
+        2 * 60 * 1000
+      )
+    }
+  }
+
+  async showLastParticipantNotification (): Promise<void> {
+    addNotification(
+      await translate(love.string.MeetingEmptyTitle, {}, getCurrentLanguage()),
+      await translate(love.string.MeetingEmptyMessage, {}, getCurrentLanguage()),
+      LastParticipantNotification,
+      undefined,
+      NotificationSeverity.Info,
+      'love'
+    )
+    this.lastParticipantDisconnectTimeout = window.setTimeout(() => {
+      void leaveRoom(get(myInfo), get(myOffice))
+    }, 60 * 1000)
   }
 }

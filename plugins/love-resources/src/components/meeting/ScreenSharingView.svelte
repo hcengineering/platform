@@ -1,10 +1,10 @@
 <script lang="ts">
-
   import { onDestroy, onMount } from 'svelte'
   import { liveKitClient, lk } from '../../utils'
   import {
     LocalParticipant,
-    LocalTrackPublication, RemoteParticipant,
+    LocalTrackPublication,
+    RemoteParticipant,
     RemoteTrack,
     RemoteTrackPublication,
     RoomEvent,

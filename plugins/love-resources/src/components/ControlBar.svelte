@@ -157,7 +157,7 @@
 
 <ControlBarContainer bind:noLabel>
   <svelte:fragment slot="right">
-    {#if room._id !== love.ids.Reception}
+    {#if room._id !== love.ids.Reception && $lkSessionConnected}
       <ModernButton
         icon={roomAccessIcon[room.access]}
         iconProps={{
@@ -177,13 +177,8 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="center">
-   {#if $lkSessionConnected}
-      <ModernButton
-        icon={emojiPlugin.icon.Emoji}
-        kind={'secondary'}
-        size={'large'}
-        on:click={addReaction}
-      />
+    {#if $lkSessionConnected}
+      <ModernButton icon={emojiPlugin.icon.Emoji} kind={'secondary'} size={'large'} on:click={addReaction} />
       <SplitButton
         size={'large'}
         icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
@@ -251,6 +246,23 @@
           }}
         />
       {/if}
+    {:else}
+      <ModernButton
+        icon={roomAccessIcon[room.access]}
+        iconProps={{
+          fill:
+            room.access === RoomAccess.Open
+              ? 'var(--bg-positive-default)'
+              : room.access === RoomAccess.DND
+                ? 'var(--bg-negative-default)'
+                : 'currentColor'
+        }}
+        tooltip={{ label: love.string.ChangeAccess }}
+        kind={'secondary'}
+        size={'large'}
+        disabled={isOffice(room) && room.person !== me}
+        on:click={setAccess}
+      />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="left">

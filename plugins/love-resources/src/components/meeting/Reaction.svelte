@@ -14,7 +14,7 @@
   let size: number = 0
 
   onMount(() => {
-    offsetX = Math.random() * width / 4 - width / 8
+    offsetX = (Math.random() * width) / 4 - width / 8
     size = height / 4
     x = width / 2 - size / 2
     isVisible = true

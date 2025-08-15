@@ -17,22 +17,25 @@
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Loading } from '@hcengineering/ui'
-  import MicDisabled from './icons/MicDisabled.svelte'
+  import MicDisabled from '../icons/MicDisabled.svelte'
   import { onDestroy, onMount } from 'svelte'
   import {
     ChatMessage,
-    ConnectionQuality, LocalParticipant,
+    ConnectionQuality,
+    LocalParticipant,
     type LocalTrackPublication,
     Participant,
-    ParticipantEvent, RemoteParticipant,
+    ParticipantEvent,
+    RemoteParticipant,
     type RemoteTrack,
-    type RemoteTrackPublication, RoomEvent,
+    type RemoteTrackPublication,
+    RoomEvent,
     Track,
     TrackPublication
   } from 'livekit-client'
-  import BadConnection from './icons/BadConnection.svelte'
-  import { lk } from '../utils'
-  import Reaction from './meeting/Reaction.svelte'
+  import BadConnection from '../icons/BadConnection.svelte'
+  import { lk } from '../../utils'
+  import Reaction from './Reaction.svelte'
 
   export let _id: string
   export let participant: Participant | undefined = undefined
@@ -146,7 +149,6 @@
 
   function onChatMessage (message: ChatMessage, participant?: RemoteParticipant | LocalParticipant | undefined): void {
     if (activeParticipant !== participant) return
-    console.log(reactions.length)
     reactions = [
       ...reactions,
       {
@@ -156,7 +158,6 @@
         height: parent.offsetHeight
       }
     ]
-    // console.log('onChatMessage', evt, scd, trd)
   }
 
   let reactions: Array<{ id: string, emoji: string, height: number, width: number }> = []
@@ -172,7 +173,11 @@
     if (p === undefined) return
 
     for (const publication of p.trackPublications.values()) {
-      if (publication.track !== undefined && publication.track.kind === Track.Kind.Video && publication.track.source !== Track.Source.ScreenShare) {
+      if (
+        publication.track !== undefined &&
+        publication.track.kind === Track.Kind.Video &&
+        publication.track.source !== Track.Source.ScreenShare
+      ) {
         attachTrack(publication.track)
         break
       }
@@ -220,7 +225,12 @@
     <span class="overflow-label">{formatName(userName)}</span>
   </div>
   {#each reactions as reaction (reaction.id)}
-    <Reaction {...reaction} on:complete={ () => { reactions = reactions.filter((it) => it !== reaction) }} />
+    <Reaction
+      {...reaction}
+      on:complete={() => {
+        reactions = reactions.filter((it) => it !== reaction)
+      }}
+    />
   {/each}
 </div>
 
