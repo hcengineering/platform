@@ -20,11 +20,10 @@
     type FilterCategory,
     type ActiveFilter
   } from '@hcengineering/ui'
-  import { getCurrentWorkspaceUuid, getClient } from '@hcengineering/presentation'
+  import { getCurrentWorkspaceUuid, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
   import type { Integration } from '@hcengineering/account-client'
-  import { SpaceSelector } from '@hcengineering/presentation'
-  import contact from '@hcengineering/contact'
+    import contact from '@hcengineering/contact'
   import card from '@hcengineering/card'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
@@ -446,17 +445,23 @@
                     disabled={readonly}
                   />
                 </div>
-                <div class="channel-access">
+                <div class="channel-space">
                   <SpaceSelector
                     _class={core.class.Space}
-                    query={{ archived: false, members: getCurrentAccount().uuid, _class: { $in: [card.class.CardSpace, contact.class.PersonSpace] } }}
+                    query={{
+                      archived: false,
+                      members: getCurrentAccount().uuid,
+                      _class: { $in: [card.class.CardSpace, contact.class.PersonSpace] }
+                    }}
                     label={core.string.Space}
                     kind={'regular'}
                     size={'medium'}
+                    justify={'left'}
                     allowDeselect
                     autoSelect={false}
                     readonly={readonly || !item.syncEnabled || item.readonlyAccess}
                     space={item.space}
+                    width="9rem"
                     on:object={(e) => {
                       updateChannelSpace(item.id, e.detail)
                     }}
@@ -610,8 +615,8 @@
     padding-right: 1rem;
   }
 
-  .channel-access {
-    min-width: 100px;
+  .channel-space {
+    min-width: 9rem;
   }
 
   .footer-container {
