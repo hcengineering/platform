@@ -124,12 +124,7 @@ class S3BucketImpl implements S3Bucket {
     }
   }
 
-  async put (
-    ctx: MeasureContext,
-    key: string,
-    body: Readable | Buffer | string,
-    options: S3PutOptions
-  ): Promise<S3Object> {
+  async put (ctx: MeasureContext, key: string, body: Readable | Buffer | string, options: S3PutOptions): Promise<void> {
     const command = {
       Bucket: this.bucket,
       Key: key,
@@ -143,16 +138,7 @@ class S3BucketImpl implements S3Bucket {
     }
 
     if (Buffer.isBuffer(body)) {
-      const result = await ctx.with('s3.putObject', {}, () => this.client.putObject(command), { bucket: this.bucket })
-
-      return {
-        key,
-        etag: result.ETag ?? '',
-        size: result.Size ?? 0,
-        contentType: options.contentType,
-        lastModified: options.lastModified,
-        cacheControl: options.cacheControl
-      }
+      await ctx.with('s3.putObject', {}, () => this.client.putObject(command), { bucket: this.bucket })
     } else {
       const upload = new Upload({
         client: this.client,
@@ -161,16 +147,7 @@ class S3BucketImpl implements S3Bucket {
         leavePartsOnError: false
       })
 
-      const result = await ctx.with('s3.upload', {}, () => upload.done(), { bucket: this.bucket })
-
-      return {
-        key,
-        etag: result.ETag ?? '',
-        size: options.contentLength,
-        contentType: options.contentType,
-        lastModified: options.lastModified,
-        cacheControl: options.cacheControl
-      }
+      await ctx.with('s3.upload', {}, () => upload.done(), { bucket: this.bucket })
     }
   }
 
