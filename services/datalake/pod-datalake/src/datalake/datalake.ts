@@ -206,6 +206,24 @@ export class DatalakeImpl implements Datalake {
       }
 
       await bucket.put(ctx, filename, data, putOptions)
+      const head = await bucket.head(ctx, filename)
+
+      if (head === null) {
+        ctx.error('failed to upload blob: uploaded blob not found', { workspace, name })
+        throw new Error('Failed to upload blob: uploaded blob not found')
+      }
+
+      if (head.size !== size) {
+        ctx.error('failed to upload blob: uploaded blob size mismatch', {
+          workspace,
+          name,
+          expected: size,
+          uploaded: head.size
+        })
+        await bucket.delete(ctx, filename)
+        throw new Error(`Failed to upload blob: uploaded blob size mismatch, expected ${size}, got ${head.size}`)
+      }
+
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
 
       try {
