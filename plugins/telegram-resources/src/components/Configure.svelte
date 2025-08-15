@@ -23,7 +23,7 @@
   import { getCurrentWorkspaceUuid, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
   import type { Integration } from '@hcengineering/account-client'
-    import contact from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
   import card from '@hcengineering/card'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
