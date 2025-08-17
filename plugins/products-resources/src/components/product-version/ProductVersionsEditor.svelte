@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Product } from '@hcengineering/products'
   import { type Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
-  import { Table, openDoc } from '@hcengineering/view-resources'
+  import { Table, openDocFromRef } from '@hcengineering/view-resources'
 
   import products from '../../plugin'
   import CreateProductVersion from './CreateProductVersion.svelte'
@@ -25,7 +25,6 @@
   export let objectId: Ref<Product>
   export let readonly: boolean = false
 
-  const client = getClient()
   const query = createQuery()
 
   let versions = 0
@@ -46,10 +45,7 @@
   const createProductVersion = (): void => {
     showPopup(CreateProductVersion, { space: objectId }, 'top', async (id) => {
       if (id != null) {
-        const doc = await client.findOne(products.class.ProductVersion, { _id: id })
-        if (doc !== undefined) {
-          void openDoc(client.getHierarchy(), doc)
-        }
+        void openDocFromRef(products.class.Product, objectId)
       }
     })
   }
