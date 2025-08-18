@@ -1,5 +1,4 @@
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
-import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import {
   markdownToHtml,
