@@ -4,6 +4,10 @@ clear
 source ./pulse_lib.sh
 
 TOKEN=$(./token.sh claims.json)
+#echo ${TOKEN}
+#exit
+
+
 ZP="00000000-0000-0000-0000-000000000001/TESTS"
 
 

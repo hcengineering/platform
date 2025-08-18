@@ -67,20 +67,20 @@
 
   <p>
 
-<button onclick="place()" data='{"type":"put", "key":"foo/bar1", "data": "hello 1", "TTL":5, "correlation": "abc123"}'>PUT 1</button>
-<button onclick="place()" data='{"type":"put", "key":"foo/bar2", "data": "hello 2", "TTL":9, "correlation": "abc123"}'>PUT 2</button>
+<button onclick="place()" data='{"type":"put", "key":"00000000-0000-0000-0000-000000000001/foo/bar1", "data": "hello 1", "TTL":5, "correlation": "abc123"}'>PUT 1</button>
+<button onclick="place()" data='{"type":"put", "key":"00000000-0000-0000-0000-000000000001/foo/bar2", "data": "hello 2", "TTL":9, "correlation": "abc123"}'>PUT 2</button>
 
-<button onclick="place()" data='{"type":"delete", "key":"foo/bar1"}'>DEL 1</button>
-<button onclick="place()" data='{"type":"delete", "key":"foo/bar2"}'>DEL 2</button>
+<button onclick="place()" data='{"type":"delete", "key":"00000000-0000-0000-0000-000000000001/foo/bar1"}'>DEL 1</button>
+<button onclick="place()" data='{"type":"delete", "key":"00000000-0000-0000-0000-000000000001/foo/bar2"}'>DEL 2</button>
 
-<button onclick="place()" data='{"type":"get", "key":"foo/bar1"}'>GET 1</button>
-<button onclick="place()" data='{"type":"get", "key":"foo/bar2"}'>GET 2</button>
+<button onclick="place()" data='{"type":"get", "key":"00000000-0000-0000-0000-000000000001/foo/bar1"}'>GET 1</button>
+<button onclick="place()" data='{"type":"get", "key":"00000000-0000-0000-0000-000000000001/foo/bar2"}'>GET 2</button>
 
-<button onclick="place()" data='{"type":"sub", "key":"foo/bar1"}'>SUB 1</button>
-<button onclick="place()" data='{"type":"sub", "key":"foo/bar2"}'>SUB 2</button>
+<button onclick="place()" data='{"type":"sub", "key":"00000000-0000-0000-0000-000000000001/foo/bar1"}'>SUB 1</button>
+<button onclick="place()" data='{"type":"sub", "key":"00000000-0000-0000-0000-000000000001/foo/bar2"}'>SUB 2</button>
 
-<button onclick="place()" data='{"type":"unsub", "key":"foo/bar1"}'>UNSUB 1</button>
-<button onclick="place()" data='{"type":"unsub", "key":"foo/bar2"}'>UNSUB 2</button>
+<button onclick="place()" data='{"type":"unsub", "key":"00000000-0000-0000-0000-000000000001/foo/bar1"}'>UNSUB 1</button>
+<button onclick="place()" data='{"type":"unsub", "key":"00000000-0000-0000-0000-000000000001/foo/bar2"}'>UNSUB 2</button>
 <button onclick="place()" data='{"type":"unsub", "key":"*"}'>UNSUB *</button>
 
 <button onclick="place()" data='{"type": "sublist" }'>SUBLIST</button>
@@ -92,7 +92,12 @@
     const output = document.getElementById("output");
     const textarea = document.getElementById("jsonInput");
 
-    let ws = new WebSocket("ws://localhost:8095/ws");
+//    const workspace="00000000-0000-0000-0000-000000000001";
+
+    let token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiYWFhYWFhYWEtYmJiYi1jY2NjLWRkZGQtZWVlZWVlZWVlZWVlIiwiZXh0cmEiOnsic2VydmljZSI6ImFjY291bnQifSwid29ya3NwYWNlIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIn0.ZrwMvv_0CjuKeF2CkmHyMK2vHd9Ro4M3kHZcZBrBxZQ";
+    let ws = new WebSocket(`ws://localhost:8095/ws?token=${token}`);
+
+//    let ws = new WebSocket(`ws://localhost:8095/ws`);
 
     ws.onopen = () => {
       output.textContent = "✅ WebSocket connected.";

@@ -86,17 +86,6 @@ async fn interceptor(
 
 
 
-
-
-
-
-
-
-
-
-
-
-// NEW
 // =====================================================================================
 // =====================================================================================
 // =====================================================================================
@@ -105,7 +94,7 @@ async fn interceptor(
 // =====================================================================================
 // =====================================================================================
 // =====================================================================================
-use crate::redis_events::RedisEventKind::*; // Set, Del, Unlink, Expired, Other
+use crate::redis_events::RedisEventAction::*; // Set, Del, Unlink, Expired, Other
 
 pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
     let client = match redis::Client::open(redis_url) {
@@ -116,54 +105,29 @@ pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
     match crate::redis_events::make_pubsub_with_kea(&client).await {
         Ok(pubsub) => {
             let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
-
-            // Просто читаем события и шлём их в хаб.
             while let Some(ev) = rx.recv().await {
-                match ev.kind {
+
+                match ev.action {
                     Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
                     Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
                     Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
                     Other(ref k)  => println!("[redis] db{} {} {}", ev.db, k, ev.key),
                 }
-                hub.do_send(ev.clone()); // RedisEvent помечен #[derive(Message)]
+
+                hub.do_send(ev.clone());
             }
         }
         Err(e) => eprintln!("[redis] pubsub init error: {e}"),
     }
 }
 
-/*
 
-async fn start_redis_logger(redis_url: &str) {
-    let client = match redis::Client::open(redis_url) {
-        Ok(c) => c,
-        Err(e) => { eprintln!("[redis] bad url: {e}"); return; }
-    };
 
-    match crate::redis_events::make_pubsub_with_kea(&client).await {
-        Ok(pubsub) => {
-            let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
-            tokio::spawn(async move {
+// use actix_web::http::header;
+// use actix_web::http::header::HeaderValue;
+// use actix_web::body::BoxBody;
+// use url::form_urlencoded;
 
-                while let Some(ev) = rx.recv().await {
-		    // LEVENT 5,6
-                    match ev.kind {
-                        Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
-                        Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
-                        Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
-                        Other(kind)   => println!("[redis] db{} {} {}", ev.db, kind, ev.key),
-                    }
-
-		    // TODO !!!!!!!!!!!!!!!
-		    hub.do_send(ev.clone()); // ev: RedisEvent
-
-                }
-            });
-        }
-        Err(e) => eprintln!("[redis] pubsub init error: {e}"),
-    }
-}
-*/
 
 // #[tokio::main]
 #[actix_web::main]
@@ -176,13 +140,11 @@ async fn main() -> anyhow::Result<()> {
     let redis = std::sync::Arc::new(tokio::sync::Mutex::new(redis));
     let redis_data = web::Data::new(redis.clone());
 
-    // ======================================
     // starting Hub
     let hub = WsHub::default().start();
     let hub_data = web::Data::new(hub.clone());
     // starting Logger
     tokio::spawn(start_redis_logger("redis://127.0.0.1/".to_string(), hub.clone()));
-    // ============================================
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
     let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
@@ -225,6 +187,59 @@ async fn main() -> anyhow::Result<()> {
 	    }))
 
  	    .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket
+
+
+/*
+
+.service(
+    web::resource("/ws")
+
+
+.wrap(middleware::from_fn(|mut req: ServiceRequest, next: Next<BoxBody>| async move {
+    // Уже есть Authorization?
+    let has_auth = req.headers().contains_key(header::AUTHORIZATION);
+
+    if !has_auth {
+        // ?token=...
+        if let Some(token) = form_urlencoded::parse(req.query_string().as_bytes())
+            .find(|(k, _)| k == "token")
+            .map(|(_, v)| v.into_owned())
+        {
+            if !token.is_empty() {
+                let value = format!("Bearer {}", token);
+                req.headers_mut().insert(
+                    header::AUTHORIZATION,
+                    HeaderValue::from_str(&value)
+                        .map_err(|_| actix_web::error::ErrorBadRequest("Invalid token header"))?,
+                );
+            }
+        }
+    }
+
+    next.call(req).await
+}))
+        // затем твой interceptor:
+//        .wrap(middleware::from_fn(interceptor))
+        .route(web::get().to(handlers_ws::handler))
+
+)
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     })
     .bind(socket)?
     .run();

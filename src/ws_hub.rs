@@ -14,13 +14,13 @@ fn subscription_matches(sub_key: &str, key: &str) -> bool {
 
 /// Message from Hub to Session (JSON-string)
 
+use crate::redis_events::RedisEvent;
+
 #[derive(Message, Clone, Debug)]
 #[rtype(result = "()")]
 pub struct ServerMessage {
     pub event: RedisEvent,
 }
-
-use crate::redis_events::RedisEvent;
 
 /// Count of active sessions
 #[derive(Message)]
@@ -35,6 +35,7 @@ pub struct WsHub {
     next_id: SessionId,
 }
 
+/// Init WsHub
 impl Default for WsHub {
     fn default() -> Self {
         Self {
@@ -51,7 +52,7 @@ impl Actor for WsHub {
 
 
 
-
+/// Connect
 #[derive(Message)]
 #[rtype(result = "SessionId")]
 pub struct Connect {
@@ -71,7 +72,7 @@ impl Handler<Connect> for WsHub {
     }
 }
 
-
+/// Disconnect
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Disconnect {
@@ -99,6 +100,7 @@ impl Handler<Disconnect> for WsHub {
     }
 }
 
+/// SubscribeList
 #[derive(Message)]
 #[rtype(result = "Vec<String>")]
 pub struct SubscribeList {
@@ -125,6 +127,7 @@ impl Handler<SubscribeList> for WsHub {
     }
 }
 
+/// Count of IDs
 impl Handler<Count> for WsHub {
     type Result = usize;
 
@@ -133,8 +136,7 @@ impl Handler<Count> for WsHub {
     }
 }
 
-// Subscriptions
-
+/// Subscribe
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Subscribe {
@@ -149,6 +151,7 @@ impl Handler<Subscribe> for WsHub {
     }
 }
 
+/// Unsubscribe
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Unsubscribe {
@@ -182,6 +185,9 @@ impl Handler<UnsubscribeAll> for WsHub {
     }
 }
 
+
+
+
 #[derive(Message)]
 #[rtype(result = "HashMap<String, Vec<SessionId>>")]
 pub struct TestGetSubs;
@@ -211,12 +217,18 @@ impl WsHub {
     }
 }
 
+/// Send Messages
 impl Handler<RedisEvent> for WsHub {
     type Result = ();
 
     fn handle(&mut self, msg: RedisEvent, _ctx: &mut Context<Self>) {
         let targets = self.subscribers_for(&msg.key);
         if targets.is_empty() { return; }
+
+        // TODO: redis_read
+	// conn: &mut MultiplexedConnection,
+	let value = redis::cmd("GET").arg(&msg.key).query_async(conn).await?;
+
 
         let payload = ServerMessage { event: msg.clone() };
 

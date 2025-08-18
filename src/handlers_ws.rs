@@ -1,3 +1,8 @@
+
+use uuid::Uuid;
+
+// -------------------
+
 use actix::{prelude::*};
 
 use crate::ws_hub::{
@@ -105,12 +110,15 @@ pub enum WsCommand {
     },
 }
 
+use hulyrs::services::jwt::Claims;
+
 /// Session condition
 #[allow(dead_code)]
 pub struct WsSession {
     pub redis: Arc<Mutex<MultiplexedConnection>>,
     pub id: SessionId,
     pub hub: Addr<WsHub>,
+    pub claims: Option<Claims>,
 }
 
 
@@ -186,6 +194,21 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
 /// All logic in one impl
 impl WsSession {
 
+    fn ws_error(&self, ctx: &mut ws::WebsocketContext<Self>, msg: &str) {
+        ctx.text(format!(r#"{{"error":"{}"}}"#, msg));
+    }
+
+    fn workspace_check_ws(&self, key: &str) -> Result<(), &'static str> {
+        let claims = self.claims.as_ref().ok_or("Missing auth claims")?;
+        if claims.is_system() { return Ok(()); }
+        let jwt_workspace = claims.workspace.as_ref().ok_or("Missing workspace in token")?;
+        let path_ws = key.split('/').next().ok_or("Invalid key: missing workspace")?;
+        if path_ws.is_empty() { return Err("Invalid key: missing workspace"); }
+        let path_ws_uuid = Uuid::parse_str(path_ws).map_err(|_| "Invalid workspace UUID in key")?;
+        if jwt_workspace != &path_ws_uuid { return Err("Workspace mismatch"); }
+        Ok(())
+    }
+
     fn wait_and_send<F>(
         &mut self,
         ctx: &mut ws::WebsocketContext<Self>,
@@ -213,6 +236,9 @@ impl WsSession {
             WsCommand::Put { key, data, expires_at, ttl, if_match, if_none_match, correlation } => {
 
                 println!("PUT {} = {} (expires_at: {:?}) (ttl: {:?})", key, data, expires_at, ttl);
+
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
 
 	        let redis = self.redis.clone();
 
@@ -272,6 +298,9 @@ impl WsSession {
             WsCommand::Delete { key, correlation, if_match } => {
                 println!("DELETE {}", key);
 
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
+
 	        let redis = self.redis.clone();
 
 	        let mut base = JsonMap::new();
@@ -301,6 +330,9 @@ impl WsSession {
 
             WsCommand::Get { key, correlation } => {
                 println!("GET {}{:?}", key, correlation);
+
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
 
 	        let redis = self.redis.clone();
 
@@ -334,6 +366,9 @@ impl WsSession {
             WsCommand::List { key, correlation } => {
                 println!("LIST {:?}{:?}", key, correlation);
 
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
+
 	        let redis = self.redis.clone();
 
 	        let mut base = JsonMap::new();
@@ -357,12 +392,12 @@ impl WsSession {
             }
 
 
-
-
-
 	    WsCommand::Sub { key, correlation } => {
 		// LEVENT 3
 	        println!("SUB {}{:?}", key, correlation);
+
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
 
 		let mut obj = JsonMap::new();
 		obj.insert("action".into(), json!("sub"));
@@ -381,6 +416,10 @@ impl WsSession {
 	    WsCommand::Unsub { key, correlation } => {
 		// LEVENT 4
 	        println!("UNSUB {}{:?}", key, correlation);
+
+		// Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
+
 		let mut obj = JsonMap::new();
 	        obj.insert("action".into(), json!("unsub"));
 	        obj.insert("key".into(), json!(key));
@@ -401,6 +440,8 @@ impl WsSession {
 
 	    WsCommand::Sublist { correlation } => {
 	        println!("SUBLIST {:?}", correlation);
+
+		// w/o Check workspace!
 
 	        let mut base = JsonMap::new();
 	        base.insert("action".into(), json!("sublist"));
@@ -425,18 +466,50 @@ impl WsSession {
 
 }
 
+// ---- auth
+
+use actix_web::{HttpMessage,error};
+use url::form_urlencoded;
+use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+use crate::CONFIG;
 
 pub async fn handler(
     req: HttpRequest,
     stream: web::Payload,
     redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
-    hub: web::Data<actix::Addr<WsHub>>,
+    hub: web::Data<Addr<WsHub>>,
 ) -> Result<HttpResponse, Error> {
+
+    let token_opt = req.uri().query().and_then(|q| {
+            form_urlencoded::parse(q.as_bytes())
+                .find(|(k, _)| k == "token")
+                .map(|(_, v)| v.into_owned())
+        });
+
+    let claims = match token_opt {
+        Some(t) if !t.is_empty() => {
+
+	    let mut validation = Validation::new(Algorithm::HS256);
+	    validation.required_spec_claims = HashSet::new(); // no: exp/iat/nbf
+
+	    let c = decode::<Claims>(&t, &DecodingKey::from_secret(CONFIG.token_secret.as_bytes()), &validation )
+	        .map(|td| td.claims)
+	        .map_err(|_e| error::ErrorUnauthorized("Invalid token"))?;
+
+
+            Some(c)
+        }
+        _ => None,
+    };
+
+    //   println!("claims={:?}",&claims);
+
     let session = WsSession {
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),
         id: 0,
+        claims,
     };
+
     ws::start(session, &req, stream)
 }
-

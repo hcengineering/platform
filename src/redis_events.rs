@@ -1,11 +1,3 @@
-/*
-TODO: Со *
-
-Сперва по точному совпадению
-Потом перебором по *
-*/
-
-
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio_stream::StreamExt;
@@ -22,7 +14,7 @@ use redis::{
 };
 
 #[derive(Debug, Clone, Serialize)]
-pub enum RedisEventKind {
+pub enum RedisEventAction {
     Set,        // Insert or Update
     Del,        // Delete
     Unlink,     // async Delete
@@ -37,7 +29,8 @@ use actix::Message;
 pub struct RedisEvent {
     pub db: u32,
     pub key: String,
-    pub kind: RedisEventKind,
+//    pub value: String,
+    pub action: RedisEventAction,
 }
 
 
@@ -86,6 +79,7 @@ pub fn start_keyevent_listener(
         }
 
         let mut stream = pubsub.on_message();
+
         while let Some(msg) = stream.next().await {
             let channel = match msg.get_channel::<String>() {
                 Ok(c)  => c,
@@ -98,12 +92,12 @@ pub fn start_keyevent_listener(
 
             // "__keyevent@0__:set" → event="set", db=0; payload = key
             let event = channel.rsplit(':').next().unwrap_or("");
-	    let kind = match event {
-	        "set"     => RedisEventKind::Set,
-	        "del"     => RedisEventKind::Del,
-	        "unlink"  => RedisEventKind::Unlink,
-    		"expired" => RedisEventKind::Expired,
-	        other     => RedisEventKind::Other(other.to_string()),
+	    let action = match event {
+	        "set"     => RedisEventAction::Set,
+	        "del"     => RedisEventAction::Del,
+	        "unlink"  => RedisEventAction::Unlink,
+    		"expired" => RedisEventAction::Expired,
+	        other     => RedisEventAction::Other(other.to_string()),
 	    };
 
 	    let db = channel.find('@')
@@ -112,7 +106,7 @@ pub fn start_keyevent_listener(
 	        .and_then(|s| s.parse::<u32>().ok())
 	        .unwrap_or(0);
 
-            let ev = RedisEvent { db, key: payload.clone(), kind };
+            let ev = RedisEvent { db, key: payload.clone(), action };
 
             if tx.send(ev).is_err() { break; } // closed
         }
