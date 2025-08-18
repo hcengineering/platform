@@ -23,7 +23,8 @@ import {
   EmailMessage,
   HulyMailHeader,
   HulyMessageIdHeader,
-  HulyMessageTypeHeader
+  HulyMessageTypeHeader,
+  MailHeader
 } from './types'
 import { MessageExtra, MessageID } from '@hcengineering/communication-types'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
@@ -219,7 +220,7 @@ export function getMailHeadersRecord (
   const headers: Record<string, string> = {
     [HulyMailHeader]: 'true',
     [HulyMessageTypeHeader]: messageType,
-    [HulyMessageIdHeader]: getEmailMessageIdFromHulyId(messageId, email)
+    [MailHeader.Id]: getEmailMessageIdFromHulyId(messageId, email)
   }
   if (messageId !== undefined) {
     headers[HulyMessageIdHeader] = messageId
