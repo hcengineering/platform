@@ -76,7 +76,8 @@
           attachedTo={channels[0].attachedTo}
           attachedClass={channels[0].attachedToClass}
           length={'short'}
-          editable={false}
+          editable={!disabled}
+          focusIndex={10}
         />
       {/if}
     </div>
