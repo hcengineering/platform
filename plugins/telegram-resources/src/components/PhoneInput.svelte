@@ -8,17 +8,13 @@
   export let placeholder: IntlString | undefined = undefined
   export let disabled: boolean = false
 
-  let formatter: AsYouType
-
-  $: {
-    formatter = new AsYouType()
-  }
+  const formatter: AsYouType = new AsYouType()
 
   function formatPhone (newValue: string | number): string | number {
     newValue = typeof newValue === 'number' ? newValue.toString() : newValue
 
     // Only allow digits, +, spaces, parentheses, and hyphens
-    newValue = newValue.replace(/[^\d+\-() \s]/g, '')
+    newValue = newValue.replace(/[^\d+\-()\s]/g, '')
 
     // Auto-add + prefix if user starts typing a digit and there's no + yet
     if (newValue.length === 1 && /^\d$/.test(newValue)) {
