@@ -1612,9 +1612,6 @@ importers:
       '@types/archiver':
         specifier: ^6.0.3
         version: 6.0.3
-      '@types/bcrypt':
-        specifier: ^6.0.0
-        version: 6.0.0
       '@types/body-parser':
         specifier: ~1.19.2
         version: 1.19.5
@@ -1786,9 +1783,6 @@ importers:
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
-      bcrypt:
-        specifier: ^6.0.0
-        version: 6.0.0
       big-integer:
         specifier: ^1.6.51
         version: 1.6.52
@@ -5348,11 +5342,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz':
-    resolution: {integrity: sha512-pGpDe2VXivzWayLm0pr99f+f5vD5eirwLnB1JTWUUTXtZtbDm6QOaAAEMlzWNwXTZfZGn74Qd7zl1AUCLp6O0A==, tarball: file:projects/pod-mail-worker.tgz}
+    resolution: {integrity: sha512-ylY6rf2LyYPqqXTmNiF2c7B+TrofA0cSlcp5YZWNZwF7zpg2fUR+a/EmN/B8ty+O4EItbE+J17jqrn0TtuikWg==, tarball: file:projects/pod-mail-worker.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-0kGmfCDk+EBVRFn28ht0cb+WUUF2sl0BkednIhT99vM5q/g5hfTZeIn5OLBFhqwJyHkj99xA+5eha1nMgH81UA==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-qHD/u32p4uAjRpcMfOtssAej1pv9AhxFh1D+Cpj/lvmc9ndxrw0NpZZSVqp14dLKkwvoolPZlg0dSG26YJ8Bwg==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
@@ -5928,7 +5922,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-sC43Z4u+6Q0Rvj7UUk/T0ndVDEhBEgV777XTsoae+Zrsir6w1zXnSJ1gdoM4dmUVrsUiDN3NMeWFHiZODWYURg==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-as3ymnFZKdncDu43oVgi8P9nDH5dem7U3hKc4ll3U5m1gB/X/oIiDRA4ZZTH0Evm4a5YQyby/MA6VLKJVDPfcg==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -6663,9 +6657,6 @@ packages:
 
   '@types/babel__traverse@7.20.5':
     resolution: {integrity: sha512-WXCyOcRtH37HAUkpXhUduaxdm82b4GSlyTqajXviN4EfiuPgNYR109xMCKvpl6zPIpua0DGlMEDCq+g8EdoheQ==}
-
-  '@types/bcrypt@6.0.0':
-    resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
 
   '@types/body-parser@1.19.5':
     resolution: {integrity: sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg==}
@@ -7738,10 +7729,6 @@ packages:
 
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
-
-  bcrypt@6.0.0:
-    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
-    engines: {node: '>= 18'}
 
   before-after-hook@2.2.3:
     resolution: {integrity: sha512-NzUnlZexiaH/46WDhANlyR2bXRopNg4F/zuSA3OpZnllCUgRaOF2znDioDWrmbNVsuZk6l9pMquQB38cfBZwkQ==}
@@ -11596,10 +11583,6 @@ packages:
   node-addon-api@6.1.0:
     resolution: {integrity: sha512-+eawOlIgy680F0kBzPUNFhMZGtJ1YmqM6l4+Crf4IkImjYrO/mqPwRMh352g23uIaQKFItcQ64I7KMaJxHgAVA==}
 
-  node-addon-api@8.5.0:
-    resolution: {integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==}
-    engines: {node: ^18 || ^20 || >= 21}
-
   node-api-version@0.2.0:
     resolution: {integrity: sha512-fthTTsi8CxaBXMaBAD7ST2uylwvsnYxh2PfaScwpMhos6KlSFajXQPcM4ogNE1q2s3Lbz9GCGqeIHC+C6OZnKg==}
 
@@ -11635,10 +11618,6 @@ packages:
 
   node-gyp-build@4.8.0:
     resolution: {integrity: sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==}
-    hasBin: true
-
-  node-gyp-build@4.8.4:
-    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
   node-gyp@9.4.1:
@@ -24016,6 +23995,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      lru-cache: 11.1.0
       prettier: 3.2.5
       sanitize-html: 2.16.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
@@ -24037,7 +24017,6 @@ snapshots:
     dependencies:
       '@aws-sdk/client-ses': 3.738.0
       '@tsconfig/node16': 1.0.4
-      '@types/bcrypt': 6.0.0
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
@@ -24045,7 +24024,6 @@ snapshots:
       '@types/nodemailer': 6.4.17
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
-      bcrypt: 6.0.0
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
@@ -30220,10 +30198,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.23.9
 
-  '@types/bcrypt@6.0.0':
-    dependencies:
-      '@types/node': 22.15.29
-
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
@@ -31573,11 +31547,6 @@ snapshots:
   basic-ftp@5.0.5: {}
 
   batch@0.6.1: {}
-
-  bcrypt@6.0.0:
-    dependencies:
-      node-addon-api: 8.5.0
-      node-gyp-build: 4.8.4
 
   before-after-hook@2.2.3: {}
 
@@ -36205,8 +36174,6 @@ snapshots:
 
   node-addon-api@6.1.0: {}
 
-  node-addon-api@8.5.0: {}
-
   node-api-version@0.2.0:
     dependencies:
       semver: 7.6.3
@@ -36233,8 +36200,6 @@ snapshots:
     optional: true
 
   node-gyp-build@4.8.0: {}
-
-  node-gyp-build@4.8.4: {}
 
   node-gyp@9.4.1:
     dependencies:

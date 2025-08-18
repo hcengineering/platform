@@ -65,6 +65,7 @@ export interface BaseConfig {
 
 export interface MessageData {
   subject: string
+  from: string
   content: string
   channel: Ref<Card>
   created: Date
@@ -92,3 +93,11 @@ export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 export const HulyMailHeader = 'Huly-Sent'
 export const HulyMessageIdHeader = 'Huly-Message-Id'
 export const HulyMessageTypeHeader = 'Huly-Message-Type'
+
+export enum MailHeader {
+  Id = 'Message-ID',
+  InReplyTo = 'In-Reply-To',
+  Subject = 'Subject',
+  From = 'From',
+  To = 'To'
+}
