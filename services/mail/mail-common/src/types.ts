@@ -99,5 +99,7 @@ export enum MailHeader {
   InReplyTo = 'In-Reply-To',
   Subject = 'Subject',
   From = 'From',
-  To = 'To'
+  To = 'To',
+  HulySent = 'Huly-Sent',
+  HulyMessageType = 'Huly-Message-Type'
 }

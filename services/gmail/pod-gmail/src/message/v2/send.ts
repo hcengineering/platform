@@ -6,8 +6,7 @@ import {
   getReplySubject,
   getRecipients,
   getMailHeaders,
-  HulyMailHeader,
-  HulyMessageIdHeader,
+  MailHeader,
   getEmailMessageIdFromHulyId
 } from '@hcengineering/mail-common'
 import { Card } from '@hcengineering/card'
@@ -37,7 +36,7 @@ export async function makeHTMLBodyV2 (
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${to} \n`,
     `From: ${from} \n`,
-    `${HulyMessageIdHeader}: ${getEmailMessageIdFromHulyId(message._id, from)}\n`,
+    `${MailHeader.Id}: ${getEmailMessageIdFromHulyId(message._id, from)}\n`,
     ...getMailHeaders(GmailMessageType, message._id)
   ]
 
@@ -66,34 +65,14 @@ export function isPlatformSentMessage (message: gmail_v1.Schema$Message): boolea
 
   // Check for custom platform headers
   const headers = message.payload.headers
-  const platformSentHeader = headers.find((h) => h.name === HulyMailHeader)
+  const platformSentHeader = headers.find((h) => h.name === MailHeader.HulySent)
   if (platformSentHeader?.value === 'true') {
     return true
   }
-
-  // Check for platform message ID header
-  const platformMessageIdHeader = headers.find((h) => h.name === HulyMessageIdHeader)
-  if (platformMessageIdHeader?.value != null) {
+  const hulyMessageType = headers.find((h) => h.name === MailHeader.HulyMessageType)
+  if (hulyMessageType?.value != null) {
     return true
   }
 
   return false
-}
-
-/**
- * Check if message has platform footer signature
- */
-export function hasPlatformFooter (messageBody: string): boolean {
-  const platformFooterPattern = /Sent via Huly/i
-  return platformFooterPattern.test(messageBody)
-}
-
-/**
- * Extract platform message ID from headers if available
- */
-export function getPlatformMessageId (message: GaxiosResponse<gmail_v1.Schema$Message>): string | undefined {
-  const headers = message.data?.payload?.headers
-  if (headers == null) return undefined
-  const platformMessageIdHeader = headers.find((h) => h.name === HulyMessageIdHeader)
-  return platformMessageIdHeader?.value ?? undefined
 }
