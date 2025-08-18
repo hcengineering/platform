@@ -125,12 +125,9 @@ export class LiveKitClient {
     if (this.liveKitRoom.remoteParticipants.size === 0) {
       clearTimeout(this.lastParticipantDisconnectTimeout)
       clearTimeout(this.lastParticipantNotificationTimeout)
-      this.lastParticipantNotificationTimeout = window.setTimeout(
-        () => {
-          void this.showLastParticipantNotification()
-        },
-        LAST_PARTICIPANT_NOTIFICATION_DELAY_MS
-      )
+      this.lastParticipantNotificationTimeout = window.setTimeout(() => {
+        void this.showLastParticipantNotification()
+      }, LAST_PARTICIPANT_NOTIFICATION_DELAY_MS)
     }
   }
 
