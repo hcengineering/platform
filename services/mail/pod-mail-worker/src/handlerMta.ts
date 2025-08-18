@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { createHash } from 'crypto'
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
 import {
@@ -21,7 +20,9 @@ import {
   createMessages,
   getProducer,
   getMessageExtra,
-  isHulyMessage
+  isHulyMessage,
+  generateNewEmailId,
+  MailHeader
 } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
@@ -52,7 +53,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     if (config.ignoredAddresses.includes(from.email)) {
       return
     }
-    const fromHeader = getHeader(mta, 'From')
+    const fromHeader = getHeader(mta, MailHeader.From)
     if (fromHeader !== undefined) {
       const { firstName, lastName } = extractContactName(ctx, fromHeader, from.email)
       from.firstName = firstName
@@ -60,7 +61,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     }
 
     const tos: EmailContact[] = mta.envelope.to.map((to) => getEmailContact(stripTags(to.address)))
-    const toHeader = getHeader(mta, 'To')
+    const toHeader = getHeader(mta, MailHeader.To)
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
         for (const to of tos) {
@@ -73,23 +74,11 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       }
     }
 
-    const subject = decodeEncodedWords(ctx, getHeader(mta, 'Subject') ?? '')
-    const inReplyTo = getHeader(mta, 'In-Reply-To')
+    const subject = decodeEncodedWords(ctx, getHeader(mta, MailHeader.Subject) ?? '')
+    const inReplyTo = getHeader(mta, MailHeader.InReplyTo)
     const { content, attachments } = await parseContent(ctx, mta)
 
-    let mailId = getHeader(mta, 'Message-ID')
-    if (mailId === undefined) {
-      mailId = createHash('sha256')
-        .update(
-          JSON.stringify({
-            from: from.email,
-            to: tos.map((to) => to.email),
-            subject,
-            content
-          })
-        )
-        .digest('hex')
-    }
+    const mailId = getHeader(mta, MailHeader.Id) ?? generateNewEmailId(from.email)
     const date = Date.now()
     const convertedMessage: EmailMessage = {
       mailId,

@@ -7,7 +7,8 @@ import {
   getRecipients,
   getMailHeaders,
   HulyMailHeader,
-  HulyMessageIdHeader
+  HulyMessageIdHeader,
+  getEmailMessageIdFromHulyId
 } from '@hcengineering/mail-common'
 import { Card } from '@hcengineering/card'
 import { MeasureContext, PersonId } from '@hcengineering/core'
@@ -36,6 +37,7 @@ export async function makeHTMLBodyV2 (
     'Content-Transfer-Encoding: 7bit\n',
     `To: ${to} \n`,
     `From: ${from} \n`,
+    `${HulyMessageIdHeader}: ${getEmailMessageIdFromHulyId(message._id, from)}\n`,
     ...getMailHeaders(GmailMessageType, message._id)
   ]
 
