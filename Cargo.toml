@@ -1,0 +1,37 @@
+[package]
+name = "hulylake"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+anyhow = "1.0.99"
+config = "0.15.14"
+serde = "1.0.219"
+actix-web = "4.11.0"
+actix-cors = "0.7.1"
+refinery = { version = "0.8.16", features = ["tokio-postgres"] }
+tokio-postgres = "0.7.13"
+bb8 = "0.9.0"
+bb8-postgres = { version = "0.9.0", features = ["with-uuid-1"] }
+md5 = "0.8.0"
+size = { version = "0.5.0", features = ["serde"] }
+uuid = { version = "1.18", features = ["v4", "serde"] }
+hex = "0.4.3"
+serde_json = "1.0"
+hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
+    "actix",
+] }
+secrecy = "0.10.3"
+tracing-actix-web = "0.7.19"
+aws-config = { version = "1.8.5" }
+aws-sdk-s3 = "1.103.0"
+reqwest = { version = "0.12.15", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "stream",
+] }
+futures-util = "0.3.31"
+tokio-stream = "0.1.17"
