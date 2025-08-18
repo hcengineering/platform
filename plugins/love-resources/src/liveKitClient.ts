@@ -14,6 +14,9 @@ import { myInfo, myOffice } from './stores'
 
 export const lkSessionConnected = writable<boolean>(false)
 
+const LAST_PARTICIPANT_NOTIFICATION_DELAY_MS = 2 * 60 * 1000
+const AUTO_DISCONNECT_DELAY_MS = 60 * 1000
+
 export function getLiveKitClient (): LiveKitClient {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   return new LiveKitClient(wsURL ?? '')
@@ -126,7 +129,7 @@ export class LiveKitClient {
         () => {
           void this.showLastParticipantNotification()
         },
-        2 * 60 * 1000
+        LAST_PARTICIPANT_NOTIFICATION_DELAY_MS
       )
     }
   }
@@ -142,6 +145,6 @@ export class LiveKitClient {
     )
     this.lastParticipantDisconnectTimeout = window.setTimeout(() => {
       void leaveRoom(get(myInfo), get(myOffice))
-    }, 60 * 1000)
+    }, AUTO_DISCONNECT_DELAY_MS)
   }
 }
