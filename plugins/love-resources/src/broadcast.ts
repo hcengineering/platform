@@ -52,7 +52,6 @@ function sendMessage (req: BroadcastMessage): void {
 }
 
 async function onMessage (e: MessageEvent<BroadcastMessage>): Promise<void> {
-  console.log('broadcast message', e.data)
   /*
   if (e.data.type === 'set_mic') {
     if ($isCurrentInstanceConnected) {

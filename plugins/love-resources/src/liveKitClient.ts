@@ -101,7 +101,6 @@ export class LiveKitClient {
     this.currentMediaSession = session
     this.liveKitRoom.on(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.on(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
-    console.log(this.liveKitRoom.numParticipants)
   }
 
   onDisconnected = (): void => {
