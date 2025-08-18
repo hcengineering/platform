@@ -74,7 +74,10 @@ jest.mock('@hcengineering/core', () => {
 jest.mock('@hcengineering/mail-common', () => ({
   createMessages: jest.fn().mockResolvedValue(undefined),
   getChannel: jest.fn().mockResolvedValue({ _id: 'test-channel-id' }),
-  isSyncedMessage: jest.fn().mockReturnValue(false)
+  isSyncedMessage: jest.fn().mockReturnValue(false),
+  getMessageExtra: jest.fn().mockReturnValue({}),
+  getMailHeaders: jest.fn().mockReturnValue([]),
+  isHulyMessage: jest.fn().mockReturnValue(false)
 }))
 
 jest.mock('googleapis', () => ({

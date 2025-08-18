@@ -82,4 +82,13 @@ export interface SyncOptions {
   noNotify?: boolean
 }
 
+export interface MailRecipients {
+  to: string
+  copy?: string[]
+}
+
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
+
+export const HulyMailHeader = 'Huly-Sent'
+export const HulyMessageIdHeader = 'Huly-Message-Id'
+export const HulyMessageTypeHeader = 'Huly-Message-Type'

@@ -81,25 +81,33 @@ export async function handleSendMail (
   res: Response,
   ctx: MeasureContext
 ): Promise<void> {
-  const { from, to, subject, text, html, attachments, headers, apiKey } = req.body
+  const { from, to, subject, text, html, attachments, headers, apiKey, password } = req.body
   if (process.env.API_KEY !== undefined && process.env.API_KEY !== apiKey) {
+    ctx.warn('Unauthorized access attempt to send email', {
+      from,
+      to
+    })
     res.status(401).send({ err: 'Unauthorized' })
     return
   }
   const fromAddress = from ?? config.source
-  if (text === undefined) {
-    res.status(400).send({ err: "'text' is missing" })
+  if (text === undefined && html === undefined) {
+    ctx.warn('Text and html are missing in email request', { from, to })
+    res.status(400).send({ err: "'text' and 'html' are missing" })
     return
   }
   if (subject === undefined) {
+    ctx.warn('Subject is missing in email request', { from, to })
     res.status(400).send({ err: "'subject' is missing" })
     return
   }
   if (to === undefined) {
+    ctx.warn('To address is missing in email request', { from })
     res.status(400).send({ err: "'to' is missing" })
     return
   }
   if (fromAddress === undefined) {
+    ctx.warn('From address is missing in email request', { to })
     res.status(400).send({ err: "'from' is missing" })
     return
   }
@@ -123,7 +131,7 @@ export async function handleSendMail (
     message.attachments = getAttachments(attachments)
   }
   try {
-    await client.sendMessage(message, ctx)
+    await client.sendMessage(message, ctx, password)
   } catch (err: any) {
     ctx.error(err.message)
   }

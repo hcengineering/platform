@@ -4,7 +4,6 @@
   import {
     CheckBox,
     Toggle,
-    DropdownLabelsIntl,
     DropdownLabelsPopupIntl,
     SearchInput,
     Label,
@@ -21,16 +20,20 @@
     type FilterCategory,
     type ActiveFilter
   } from '@hcengineering/ui'
-  import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import { getCurrentWorkspaceUuid, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
   import type { Integration } from '@hcengineering/account-client'
+  import contact from '@hcengineering/contact'
+  import card from '@hcengineering/card'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
   import telegram from '../plugin'
   import { type TelegramChannelConfig, getIntegrationClient, listChannels, restart } from '../api'
+  import core, { getCurrentAccount, Space } from '@hcengineering/core'
 
   export let readonly: boolean = false
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
 
   export let integration: Integration
@@ -71,20 +74,7 @@
         { id: 'enabled', label: telegram.string.SyncEnabled },
         { id: 'disabled', label: telegram.string.SyncDisabled }
       ]
-    },
-    {
-      id: 'access',
-      label: telegram.string.Access,
-      options: [
-        { id: 'public', label: telegram.string.Public },
-        { id: 'private', label: telegram.string.Private }
-      ]
     }
-  ]
-
-  const accessOptions = [
-    { id: 'public', label: telegram.string.Public },
-    { id: 'private', label: telegram.string.Private }
   ]
 
   onMount(async () => {
@@ -100,13 +90,15 @@
         existingChannelsConfig.map((config: any) => [config.telegramId.toString(), config])
       )
 
+      const personalSpace = await client.findOne(contact.class.PersonSpace, { members: getCurrentAccount().uuid })
+
       channels = (await listChannels(connection?.data?.phone)).map((channel) => {
         const existingConfig = existingChannelsMap.get(channel.id)
         return {
           ...channel,
-          access: existingConfig?.access ?? 'private',
           syncEnabled: channel.mode === 'sync',
-          readonlyAccess: existingConfig?.readonlyAccess ?? false
+          readonlyAccess: existingConfig?.readonlyAccess ?? false,
+          space: existingConfig?.space !== undefined ? existingConfig.space : personalSpace?._id
         }
       })
       isLoading = false
@@ -151,9 +143,6 @@
         if ((filter.optionId === 'enabled' && !isSyncEnabled) || (filter.optionId === 'disabled' && isSyncEnabled)) {
           return false
         }
-      }
-      if (filter.categoryId === 'access' && channel.access !== filter.optionId) {
-        return false
       }
     }
 
@@ -202,13 +191,12 @@
     }
   }
 
-  // Update access for individual channel
-  function updateChannelAccess (channelId: string, access: 'public' | 'private'): void {
+  function updateChannelSpace (channelId: string, space: Space): void {
     const channel = channels.find((c) => c.id === channelId)
     if (channel !== undefined && channel?.syncEnabled) {
-      channel.access = access
+      channel.space = space._id
       channels = channels
-      dispatch('channelUpdated', { channelId, field: 'access', value: access })
+      dispatch('channelUpdated', { channelId, field: 'space', value: space._id })
     }
   }
 
@@ -241,21 +229,7 @@
     })
   }
 
-  function setSelectedPublic (): void {
-    selectedChannels.forEach((channelId) => {
-      updateChannelAccess(channelId, 'public')
-    })
-  }
-
-  function setSelectedPrivate (): void {
-    selectedChannels.forEach((channelId) => {
-      updateChannelAccess(channelId, 'private')
-    })
-  }
-
   function showActionsPopup (event: MouseEvent): void {
-    const selectedSyncedChannels = channels.filter((c) => c.syncEnabled && selectedChannels.has(c.id))
-
     const actionItems = [
       {
         id: 'select-all',
@@ -280,18 +254,6 @@
         label: telegram.string.DisableSynchronization,
         action: disableSelectedChannels,
         disabled: selectedChannels.size === 0 || readonly
-      },
-      {
-        id: 'set-public',
-        label: telegram.string.SetPublicAccess,
-        action: setSelectedPublic,
-        disabled: selectedSyncedChannels.length === 0 || readonly
-      },
-      {
-        id: 'set-private',
-        label: telegram.string.SetPrivateAccess,
-        action: setSelectedPrivate,
-        disabled: selectedSyncedChannels.length === 0 || readonly
       }
     ]
     const enabledActions = actionItems.filter((item) => !item.disabled)
@@ -335,7 +297,7 @@
         return {
           telegramId: parseInt(channel.id),
           enabled: channel.syncEnabled,
-          access: channel.access,
+          space: channel.space,
           readonlyAccess: true
         }
       })
@@ -483,20 +445,25 @@
                     disabled={readonly}
                   />
                 </div>
-                <div class="channel-access">
-                  <DropdownLabelsIntl
-                    label={item.readonlyAccess === true
-                      ? telegram.string.AccessCannotBeChanged
-                      : item.syncEnabled
-                        ? telegram.string.SelectAccess
-                        : telegram.string.EnableSyncToConfigure}
-                    items={accessOptions}
-                    selected={item.access}
-                    disabled={readonly || !item.syncEnabled || item.readonlyAccess}
-                    shouldUpdateUndefined={false}
-                    minWidth={'6rem'}
-                    on:selected={(e) => {
-                      updateChannelAccess(item.id, e.detail)
+                <div class="channel-space">
+                  <SpaceSelector
+                    _class={core.class.Space}
+                    query={{
+                      archived: false,
+                      members: getCurrentAccount().uuid,
+                      _class: { $in: [card.class.CardSpace, contact.class.PersonSpace] }
+                    }}
+                    label={core.string.Space}
+                    kind={'regular'}
+                    size={'medium'}
+                    justify={'left'}
+                    allowDeselect
+                    autoSelect={false}
+                    readonly={readonly || !item.syncEnabled || item.readonlyAccess}
+                    space={item.space}
+                    width="9rem"
+                    on:object={(e) => {
+                      updateChannelSpace(item.id, e.detail)
                     }}
                   />
                 </div>
@@ -648,8 +615,8 @@
     padding-right: 1rem;
   }
 
-  .channel-access {
-    min-width: 100px;
+  .channel-space {
+    min-width: 9rem;
   }
 
   .footer-container {

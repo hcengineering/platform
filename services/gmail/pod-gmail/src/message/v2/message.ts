@@ -24,7 +24,10 @@ import {
   EmailMessage,
   getProducer,
   MailRecipient,
-  getMessageExtra
+  getMessageExtra,
+  HulyMailHeader,
+  HulyMessageIdHeader,
+  SyncOptions
 } from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -33,7 +36,7 @@ import { IMessageManager } from '../types'
 import config from '../../config'
 import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
-import { GmailMessageType, HulyMailHeader, HulyMessageIdHeader } from '../../types'
+import { GmailMessageType } from '../../types'
 
 export class MessageManagerV2 implements IMessageManager {
   private wsInfo: WorkspaceLoginInfo | undefined = undefined
@@ -47,7 +50,11 @@ export class MessageManagerV2 implements IMessageManager {
     private readonly recipient: MailRecipient
   ) {}
 
-  async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
+  async saveMessage (
+    message: GaxiosResponse<gmail_v1.Schema$Message>,
+    me: string,
+    options?: SyncOptions
+  ): Promise<void> {
     if (isHulyMessage(message.data.payload)) {
       this.ctx.info('Skipping Huly message', { mailId: message.data.id, me })
       return
@@ -74,7 +81,8 @@ export class MessageManagerV2 implements IMessageManager {
       this.wsInfo,
       res,
       attachments,
-      [this.recipient]
+      [this.recipient],
+      options
     )
   }
 }

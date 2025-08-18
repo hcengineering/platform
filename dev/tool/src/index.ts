@@ -112,7 +112,8 @@ import {
   migrateCreatedModifiedBy,
   migrateMergedAccounts,
   migrateTrustedV6Accounts,
-  moveAccountDbFromMongoToPG
+  moveAccountDbFromMongoToPG,
+  restoreFromv6All
 } from './db'
 import { performGithubAccountMigrations } from './github'
 import { performGmailAccountMigrations } from './gmail'
@@ -2733,6 +2734,17 @@ export function devTool (
         } finally {
           closeMongoAccountDb()
         }
+      }, dbUrl)
+    })
+
+  program
+    .command('restore-from-v6-all <dirName>')
+    .description('Restore from full v6 dump')
+    .action(async (dirName) => {
+      const { txes, dbUrl } = prepareTools()
+
+      await withAccountDatabase(async (pgDb) => {
+        await restoreFromv6All(toolCtx, pgDb, dirName, txes, dbUrl)
       }, dbUrl)
     })
 

@@ -206,14 +206,14 @@ async function saveMessageToSpaces (
     const spaceId = space._id
     let isReply = false
     await rateLimiter.add(async () => {
-      let threadId = await threadLookup.getThreadId(mailId, spaceId)
+      let threadId = await threadLookup.getThreadId(mailId, spaceId, recipient.email)
       if (threadId !== undefined) {
         ctx.info('Message is already in the thread, skip', { mailId, threadId, spaceId })
         return
       }
 
       if (inReplyTo !== undefined) {
-        threadId = await threadLookup.getParentThreadId(inReplyTo, spaceId)
+        threadId = await threadLookup.getParentThreadId(inReplyTo, spaceId, recipient.email)
         isReply = threadId !== undefined
       }
       const channel = await channelCache.getOrCreateChannel(spaceId, participants, recipient.email, recipient.socialId)
@@ -262,7 +262,7 @@ async function saveMessageToSpaces (
       const messageId = await createMailMessage(producer, config, messageData, threadId, options)
       await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
-      await threadLookup.setThreadId(mailId, space._id, threadId)
+      await threadLookup.setThreadId(mailId, space._id, threadId, recipient.email)
     })
   }
   await rateLimiter.waitProcessing()

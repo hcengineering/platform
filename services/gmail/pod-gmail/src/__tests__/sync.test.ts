@@ -133,7 +133,7 @@ describe('SyncManager', () => {
       await syncManager.sync(userId, { noNotify: true }, userEmail)
 
       // Assert
-      expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail)
+      expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail, undefined, { noNotify: true })
     })
 
     it('should perform part sync when history exists', async () => {
@@ -197,7 +197,7 @@ describe('SyncManager', () => {
       // Assert
       expect(spyGetHistory).toHaveBeenCalledWith(userId)
       expect(mockCtx.info).toHaveBeenCalledWith('No stored history ID found, performing full sync instead', { userId })
-      expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail)
+      expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail, undefined, undefined)
     })
 
     it('should throw error when userEmail is undefined', async () => {

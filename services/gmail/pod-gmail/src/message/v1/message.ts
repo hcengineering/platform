@@ -37,6 +37,7 @@ import { type Channel } from '../../types'
 import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
 import { diffAttributes } from '../../utils'
+import { SyncOptions } from '@hcengineering/mail-common'
 
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
@@ -65,7 +66,11 @@ export class MessageManagerV1 implements IMessageManager {
     return result
   }
 
-  async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
+  async saveMessage (
+    message: GaxiosResponse<gmail_v1.Schema$Message>,
+    me: string,
+    options?: SyncOptions
+  ): Promise<void> {
     const res = convertMessage(message, me)
     const channels = this.findChannels(res)
     if (channels.length === 0) return

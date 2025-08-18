@@ -28,7 +28,9 @@ import {
   generateId,
   type WorkspaceDataId,
   type WorkspaceUuid,
-  generateUuid
+  generateUuid,
+  type WorkspaceMode,
+  type Tx
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -43,7 +45,7 @@ import {
 import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { connect } from '@hcengineering/server-tool'
+import { connect, sendTransactorEvent } from '@hcengineering/server-tool'
 import {
   type MongoAccountDB as v6MongoAccountDB,
   type Account as OldAccount,
@@ -53,6 +55,17 @@ import { type MongoClient } from 'mongodb'
 import type postgres from 'postgres'
 import { type Row } from 'postgres'
 import { getToolToken } from './utils'
+import { createFileBackupStorage, restore } from '@hcengineering/server-backup'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { getPlatformQueue } from '@hcengineering/kafka'
+import {
+  type Pipeline,
+  QueueTopic,
+  type QueueWorkspaceMessage,
+  type StorageAdapter,
+  workspaceEvents
+} from '@hcengineering/server-core'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
 
 export async function moveFromMongoToPG (
   accountDb: AccountDB,
@@ -1380,7 +1393,8 @@ async function migrateWorkspace (
   accountDB: AccountDB,
   accountsIdToUuid: Record<string, AccountUuid>,
   accountsEmailToUuid: Record<string, AccountUuid>,
-  dryRun = true
+  dryRun = true,
+  forcedMode?: WorkspaceMode
 ): Promise<WorkspaceUuid | undefined> {
   if (workspace.workspaceUrl == null) {
     console.log('No workspace url, skipping', workspace.workspace)
@@ -1432,7 +1446,7 @@ async function migrateWorkspace (
   if (existingStatus == null) {
     const statusRecord = {
       workspaceUuid,
-      mode: workspace.mode,
+      mode: forcedMode ?? workspace.mode,
       processingProgress: workspace.progress !== undefined ? Math.floor(workspace.progress) : undefined,
       versionMajor: workspace.version?.major,
       versionMinor: workspace.version?.minor,
@@ -1475,4 +1489,227 @@ async function migrateWorkspace (
   }
 
   return workspaceUuid
+}
+
+export async function restoreFromv6All (
+  ctx: MeasureMetricsContext,
+  accountDB: AccountDB,
+  dirName: string,
+  txes: Tx[],
+  dbUrl: string
+): Promise<void> {
+  ctx.info('Restoring from v6 dump...')
+  const v6AccountsFile = 'account.accounts.json'
+  const v6WorkspacesFile = 'account.workspaces.json'
+  const v6InvitesFile = 'account.invites.json'
+
+  const storage = await createFileBackupStorage(dirName)
+
+  if (!(await storage.exists(v6AccountsFile))) {
+    ctx.error('file not pressent', { file: v6AccountsFile })
+    throw new Error(`${v6AccountsFile} should present to restore`)
+  }
+  if (!(await storage.exists(v6WorkspacesFile))) {
+    ctx.error('file not pressent', { file: v6WorkspacesFile })
+    throw new Error(`${v6WorkspacesFile} should present to restore`)
+  }
+  if (!(await storage.exists(v6InvitesFile))) {
+    ctx.error('file not pressent', { file: v6InvitesFile })
+    throw new Error(`${v6InvitesFile} should present to restore`)
+  }
+
+  try {
+    const v6AccountsRaw = JSON.parse((await storage.loadFile(v6AccountsFile)).toString())
+    const v6Workspaces = JSON.parse((await storage.loadFile(v6WorkspacesFile)).toString()) as OldWorkspace[]
+    const v6Invites = JSON.parse((await storage.loadFile(v6InvitesFile)).toString())
+
+    const v6Accounts: OldAccount[] = []
+    for (const rawAccount of v6AccountsRaw) {
+      const hashTypedArray = rawAccount.hash != null ? new Uint8Array(rawAccount.hash.data) : null
+      const saltTypedArray = new Uint8Array(rawAccount.salt.data)
+
+      v6Accounts.push({
+        ...rawAccount,
+        hash: hashTypedArray != null ? Buffer.from(hashTypedArray.buffer) : null,
+        salt: Buffer.from(saltTypedArray.buffer)
+      })
+    }
+
+    // Mapping between <ObjectId, UUID>
+    const accountsIdToUuid: Record<string, AccountUuid> = {}
+    // Mapping between <email, UUID>
+    const accountsEmailToUuid: Record<string, AccountUuid> = {}
+    // Mapping between <OldId, UUID>
+    const workspacesIdToUuid: Record<WorkspaceDataId, WorkspaceUuid> = {}
+
+    ctx.info('Restoring accounts database...')
+
+    let accountsProcessed = 0
+    for (const account of v6Accounts) {
+      try {
+        const accountUuid = await migrateAccount(account, accountDB, false)
+        if (accountUuid == null) {
+          ctx.warn('Account not restored', account)
+          continue
+        }
+
+        accountsIdToUuid[account._id.toString()] = accountUuid
+        accountsEmailToUuid[account.email] = accountUuid
+
+        accountsProcessed++
+        if (accountsProcessed % 100 === 0) {
+          ctx.info('Processed accounts:', { accountsProcessed })
+        }
+      } catch (err: any) {
+        ctx.error('Failed to restore account', { _id: account._id, email: account.email, err })
+      }
+    }
+
+    ctx.info('Total accounts processed:', { accountsProcessed })
+
+    let processedWorkspaces = 0
+    const activeWorkspaces = new Set<WorkspaceUuid>()
+    for (const workspace of v6Workspaces) {
+      const isActive = workspace.mode === 'active'
+
+      try {
+        // Create active workspaces as archived until they are actually restored
+        const workspaceUuid = await migrateWorkspace(
+          workspace,
+          accountDB,
+          accountsIdToUuid,
+          accountsEmailToUuid,
+          false,
+          isActive ? 'archived' : undefined
+        )
+
+        if (workspaceUuid !== undefined) {
+          workspacesIdToUuid[workspace.workspace] = workspaceUuid
+
+          if (isActive) {
+            activeWorkspaces.add(workspaceUuid)
+          }
+        }
+        processedWorkspaces++
+        if (processedWorkspaces % 100 === 0) {
+          ctx.info('Processed workspaces:', { processedWorkspaces })
+        }
+      } catch (err: any) {
+        ctx.error('Failed to restore workspace', { url: workspace.workspaceUrl, workspace: workspace.workspace, err })
+      }
+    }
+
+    ctx.info('Total workspaces processed:', { processedWorkspaces })
+    ctx.info('Total workspaces created/ensured:', { count: Object.values(workspacesIdToUuid).length })
+
+    let invitesProcessed = 0
+    for (const invite of v6Invites) {
+      try {
+        const workspaceUuid = workspacesIdToUuid[invite.workspace.name]
+        if (workspaceUuid === undefined) {
+          ctx.error(`No workspace with id ${invite.workspace.name} found for invite ${invite._id}`)
+          continue
+        }
+
+        const existing = await accountDB.invite.findOne({ migratedFrom: invite._id.toString() })
+        if (existing != null) {
+          continue
+        }
+
+        const inviteRecord = {
+          migratedFrom: invite._id.toString(),
+          workspaceUuid,
+          expiresOn: invite.exp,
+          emailPattern: invite.emailMask,
+          remainingUses: invite.limit,
+          role: invite.role ?? AccountRole.User
+        }
+
+        await accountDB.invite.insertOne(inviteRecord)
+
+        invitesProcessed++
+        if (invitesProcessed % 100 === 0) {
+          ctx.info('Processed invites:', { invitesProcessed })
+        }
+      } catch (err: any) {
+        ctx.error('Failed to restore invite', { _id: invite._id, err })
+      }
+    }
+
+    ctx.info('Total invites processed:', { invitesProcessed })
+    ctx.info('Successfully restored accounts backup')
+    ctx.info('Restoring workspaces...')
+
+    for (const workspace of v6Workspaces) {
+      const dataId = workspace.workspace
+      const url = workspace.workspaceUrl
+      const uuid = workspacesIdToUuid[dataId]
+
+      if (url == null) {
+        ctx.error('Workspace url not set', { dataId })
+        continue
+      }
+
+      if (uuid == null) {
+        ctx.error('Workspace uuid not found', { dataId })
+        continue
+      }
+
+      const wsIds = {
+        uuid,
+        dataId,
+        url
+      }
+
+      const storage = await createFileBackupStorage(`${dirName}/${dataId}`)
+      const storageConfig = storageConfigFromEnv()
+
+      const queue = getPlatformQueue('tool', workspace.region)
+      const wsProducer = queue.getProducer<QueueWorkspaceMessage>(ctx, QueueTopic.Workspace)
+
+      await wsProducer.send(uuid, [workspaceEvents.restoring()])
+
+      const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
+
+      let pipeline: Pipeline | undefined
+      try {
+        pipeline = await createBackupPipeline(ctx, dbUrl, txes, {
+          externalStorage: workspaceStorage,
+          usePassedCtx: true
+        })(ctx, wsIds, createEmptyBroadcastOps(), null)
+        if (pipeline === undefined) {
+          ctx.error('failed to restore, pipeline is undefined', { dataId })
+          return
+        }
+        await sendTransactorEvent(uuid, 'force-maintenance')
+
+        await restore(ctx, pipeline, wsIds, storage, {
+          date: -1,
+          merge: false,
+          parallel: 1,
+          recheck: false
+        })
+
+        await sendTransactorEvent(uuid, 'force-close')
+
+        ctx.info('workspace restored', { dataId })
+        await wsProducer.send(uuid, [workspaceEvents.restored()])
+
+        if (activeWorkspaces.has(uuid)) {
+          // set workspace back to active
+          await accountDB.workspaceStatus.update({ workspaceUuid: uuid }, { mode: 'active' })
+        }
+      } catch (err) {
+        ctx.error('failed to restore workspace', { dataId, err })
+      } finally {
+        await pipeline?.close()
+        await queue.shutdown()
+        await workspaceStorage?.close()
+      }
+    }
+
+    ctx.info('Successfully restored v6 dump')
+  } catch (err: any) {
+    ctx.error('Failed to restore v6 dump', { err })
+  }
 }
