@@ -24,7 +24,8 @@ import {
   type PollAnswer,
   type Poll,
   type CustomActivityPresenter,
-  type GuestCommunicationSettings
+  type GuestCommunicationSettings,
+  type AppletGetTitleFnResource
 } from '@hcengineering/communication'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AppletType } from '@hcengineering/communication-types'
@@ -58,6 +59,7 @@ class TApplet extends TDoc implements Applet {
   createLabel!: IntlString
   createComponent!: AnyComponent
   previewComponent!: AnyComponent
+  getTitleFn!: AppletGetTitleFnResource
   createFn?: AppletCreateFnResource
 }
 

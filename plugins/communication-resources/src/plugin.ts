@@ -17,7 +17,8 @@ import communication, {
   type MessageAction,
   type MessageActionFunctionResource,
   type MessageActionVisibilityTesterResource,
-  type AppletCreateFnResource
+  type AppletCreateFnResource,
+  type AppletGetTitleFnResource
 } from '@hcengineering/communication'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type Ref } from '@hcengineering/core'
@@ -31,6 +32,7 @@ export default mergeIds(communicationId, communication, {
     CreatePoll: '' as AnyComponent,
     PollPreview: '' as AnyComponent,
     CreatePollFn: '' as AppletCreateFnResource,
+    GetPollTitleFn: '' as AppletGetTitleFnResource,
     UserVoteActivityPresenter: '' as AnyComponent,
     UserVotesPresenter: '' as AnyComponent
   },
