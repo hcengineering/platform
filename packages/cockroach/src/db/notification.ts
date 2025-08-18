@@ -463,8 +463,8 @@ export class NotificationsDb extends BaseDb {
             'message_creator',  m.creator,`
                 : ''
             }
-            'patches',          pj.patches,
-            'attachments',      aj.attachments
+            'message_patches',          pj.patches,
+            'message_attachments',      aj.attachments
           )
           ORDER BY n.created ${notificationOrder}
         ), '[]'::jsonb
