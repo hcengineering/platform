@@ -14,7 +14,8 @@ const emptyTooltip: LabelAndProps = {
   keys: undefined,
   kind: 'tooltip',
   style: undefined,
-  noArrow: false
+  noArrow: false,
+  textAlign: undefined
 }
 let storedValue: LabelAndProps = emptyTooltip
 export const tooltipstore = derived(modalStore, (modals) => {
@@ -50,7 +51,8 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
             opt.kind,
             opt.keys,
             opt.style,
-            opt.noArrow
+            opt.noArrow,
+            opt.textAlign
           )
         }, opt.timeout ?? 10)
       } else {
@@ -65,7 +67,8 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
           opt.kind,
           opt.keys,
           opt.style,
-          opt.noArrow
+          opt.noArrow,
+          opt.textAlign
         )
       }
     }
@@ -92,7 +95,8 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
           opt.kind,
           opt.keys,
           opt.style,
-          opt.noArrow
+          opt.noArrow,
+          opt.textAlign
         )
       }
     },
@@ -119,7 +123,8 @@ export function showTooltip (
   kind?: 'tooltip' | 'submenu' | 'popup',
   keys?: string[],
   style?: 'default' | 'modern',
-  noArrow?: boolean
+  noArrow?: boolean,
+  textAlign?: 'left' | 'center' | 'right'
 ): void {
   storedValue = {
     label,
@@ -133,7 +138,8 @@ export function showTooltip (
     keys,
     type: 'tooltip',
     style,
-    noArrow
+    noArrow,
+    textAlign
   }
   modalStore.update((old) => {
     const tooltip = old.find((m) => m?.type === 'tooltip') as LabelAndProps | undefined

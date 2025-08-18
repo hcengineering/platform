@@ -424,8 +424,9 @@
       style:transform={options.transform}
       style:visibility={options.visibility}
       style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      style:text-align={$tooltip.textAlign}
     >
-      <span class="label">
+      <span class="label l1">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
       </span>
       {#if $tooltip.keys !== undefined}

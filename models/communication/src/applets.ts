@@ -28,7 +28,8 @@ export function buildApplets (builder: Builder): void {
       createLabel: communication.string.CreatePoll,
       createComponent: communication.poll.CreatePoll,
       previewComponent: communication.poll.PollPreview,
-      createFn: communication.poll.CreatePollFn
+      createFn: communication.poll.CreatePollFn,
+      getTitleFn: communication.poll.GetPollTitleFn
     },
     communication.ids.PollApplet
   )
