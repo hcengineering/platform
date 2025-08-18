@@ -198,7 +198,8 @@ services:
       - SIGN_URL=http://huly.local:4006
 #      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
-      - DESKTOP_UPDATES_CHANNEL=dev;tracex:dev-tracex
+      - DESKTOP_UPDATES_CHANNEL=dev
+      - DESKTOP_UPDATES_CHANNELS=dev;tracex:dev-tracex
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
       # - DISABLE_SIGNUP=true
