@@ -48,7 +48,6 @@
     disconnect,
     endMeeting,
     getRoomName,
-    isCurrentInstanceConnected,
     leaveRoom,
     screenSharing
   } from '../utils'
@@ -60,6 +59,7 @@
   import RoomPopup from './RoomPopup.svelte'
   import RoomButton from './RoomButton.svelte'
   import { getPersonByPersonRef } from '@hcengineering/contact-resources'
+  import { lkSessionConnected } from '../liveKitClient'
 
   const client = getClient()
 
@@ -194,7 +194,7 @@
     }
   }
 
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $isCurrentInstanceConnected)
+  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $lkSessionConnected)
 
   const myInvitesCategory = 'myInvites'
 
@@ -232,7 +232,7 @@
       return
     }
 
-    if ($isCurrentInstanceConnected) {
+    if ($lkSessionConnected) {
       const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
       if (widget === undefined) return
 
@@ -252,7 +252,7 @@
 
   $: checkActiveVideo(
     $location,
-    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
+    $lkSessionConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
     $currentRoom?._id
   )
 
@@ -283,7 +283,7 @@
   })
 
   const beforeUnloadListener = () => {
-    if ($myInfo !== undefined && $isCurrentInstanceConnected) {
+    if ($myInfo !== undefined && $lkSessionConnected) {
       if ($myOffice !== undefined && $myInfo.room === $myOffice._id) {
         endMeeting($myOffice, $rooms, $infos, $myInfo)
       } else {

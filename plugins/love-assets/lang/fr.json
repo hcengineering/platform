@@ -90,6 +90,9 @@
     "Sharing": "Partage...",
     "Browser": "Navigateur",
     "Monitor": "Moniteur",
-    "Window": "Fenêtre"
+    "Window": "Fenêtre",
+    "MeetingEmptyTitle": "Réunion terminée ?",
+    "MeetingEmptyMessage": "Tous les participants sont partis. Vous serez déconnecté dans 1 minute. Souhaitez-vous rester ?",
+    "StayInRoom": "Rester dans la salle"
   }
 }

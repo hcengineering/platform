@@ -107,7 +107,8 @@ const love = plugin(loveId, {
     MeetingMinutes: '' as Asset
   },
   sound: {
-    Knock: '' as Asset
+    Knock: '' as Asset,
+    MeetingEndNotification: '' as Asset
   },
   metadata: {
     WebSocketURL: '' as Metadata<string>,

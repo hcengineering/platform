@@ -90,6 +90,9 @@
     "Sharing": "Sdílení...",
     "Browser": "Prohlížeč",
     "Monitor": "Monitor",
-    "Window": "Okno"
+    "Window": "Okno",
+    "MeetingEmptyTitle": "Schůzka ukončena?",
+    "MeetingEmptyMessage": "Všichni účastníci odešli. Během 1 minuty budete odpojeni. Chcete zůstat?",
+    "StayInRoom": "Zůstat v místnosti"
   }
 }
