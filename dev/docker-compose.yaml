@@ -537,6 +537,7 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
       - STATS_URL=http://huly.local:4900
       - DB_URL=${DB_CR_URL}
       - REGION=cockroach
