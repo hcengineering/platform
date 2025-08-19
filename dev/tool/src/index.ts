@@ -415,7 +415,7 @@ export function devTool (
             progress: 100
           })
 
-          await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
+          await wsProducer.send(measureCtx, res.workspaceUuid, [workspaceEvents.created()])
           await queue.shutdown()
           console.log(queue)
         })
@@ -500,7 +500,7 @@ export function devTool (
 
       console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
 
-      await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
+      await wsProducer.send(measureCtx, info.uuid, [workspaceEvents.upgraded()])
       await queue.shutdown()
       console.log('upgrade-workspace done')
     })
@@ -1160,7 +1160,7 @@ export function devTool (
           const queue = getPlatformQueue('tool', ws.region)
           const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
 
-          await wsProducer.send(ws.uuid, [workspaceEvents.restoring()])
+          await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restoring()])
 
           const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -1202,7 +1202,7 @@ export function devTool (
             }
 
             console.log('workspace restored')
-            await wsProducer.send(ws.uuid, [workspaceEvents.restored()])
+            await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restored()])
           } catch (err) {
             toolCtx.error('failed to restore', { err })
           }
@@ -2226,7 +2226,7 @@ export function devTool (
         console.log('reindex workspace', workspace)
         const queue = getPlatformQueue('tool', ws.region)
         const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.fullReindex()])
         await queue.shutdown()
         console.log('done', workspace)
       })
@@ -2262,7 +2262,7 @@ export function devTool (
         console.log('reindex workspace', ws)
         const queue = getPlatformQueue('tool', ws.region)
         const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.fullReindex()])
         await queue.shutdown()
       }
       console.log('done')

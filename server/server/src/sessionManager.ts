@@ -151,18 +151,15 @@ export class TSessionManager implements SessionManager {
       ctx.newChild('ws-queue-consume', {}, { span: false }),
       QueueTopic.Workspace,
       generateId(),
-      async (messages) => {
-        for (const msg of messages) {
-          for (const m of msg.value) {
-            if (
-              m.type === QueueWorkspaceEvent.Upgraded ||
-              m.type === QueueWorkspaceEvent.Restored ||
-              m.type === QueueWorkspaceEvent.Deleted
-            ) {
-              // Handle workspace messages
-              this.workspaceInfoCache.delete(msg.workspace)
-            }
-          }
+      async (ctx, msg) => {
+        const m = msg.value
+        if (
+          m.type === QueueWorkspaceEvent.Upgraded ||
+          m.type === QueueWorkspaceEvent.Restored ||
+          m.type === QueueWorkspaceEvent.Deleted
+        ) {
+          // Handle workspace messages
+          this.workspaceInfoCache.delete(msg.workspace)
         }
       }
     )
@@ -502,7 +499,7 @@ export class TSessionManager implements SessionManager {
       })
 
       workspace = this.createWorkspace(ctx.parent ?? ctx, ctx, token, workspaceInfo.url, workspaceInfo.dataId, branding)
-      await this.workspaceProducer.send(workspaceUuid, [workspaceEvents.open()])
+      await this.workspaceProducer.send(ctx, workspaceUuid, [workspaceEvents.open()])
     }
 
     if (token.extra?.model === 'upgrade') {
@@ -629,7 +626,7 @@ export class TSessionManager implements SessionManager {
 
       const accountUuid = account.account
       if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
-        await this.usersProducer.send(workspace.wsId.uuid, [
+        await this.usersProducer.send(ctx, workspace.wsId.uuid, [
           userEvents.login({
             user: accountUuid,
             sessions: this.countUserSessions(workspace, accountUuid),
@@ -933,7 +930,7 @@ export class TSessionManager implements SessionManager {
         workspace.sessions.delete(sessionRef.session.sessionId)
 
         const userUuid = sessionRef.session.getUser()
-        await this.usersProducer.send(workspaceUuid, [
+        await this.usersProducer.send(ctx, workspaceUuid, [
           userEvents.logout({
             user: userUuid,
             sessions: this.countUserSessions(workspace, userUuid),
@@ -1092,7 +1089,7 @@ export class TSessionManager implements SessionManager {
             this.ctx.warn('Closed workspace', logParams)
           }
 
-          await this.workspaceProducer.send(workspace.wsId.uuid, [workspaceEvents.down()])
+          await this.workspaceProducer.send(this.ctx, workspace.wsId.uuid, [workspaceEvents.down()])
         }
       } catch (err: any) {
         Analytics.handleError(err)

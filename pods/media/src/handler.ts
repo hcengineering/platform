@@ -84,7 +84,7 @@ async function handleCreateDocTx (
     }
     const msg: VideoTranscodeRequest = { workspaceUuid, blobId, contentType, source }
     ctx.info('transcode request', { workspaceUuid, msg })
-    await producer.send(workspaceUuid, [msg])
+    await producer.send(ctx, workspaceUuid, [msg])
   }
 }
 
@@ -111,7 +111,7 @@ async function handleCommunicationTx (
       source
     }))
     if (messages.length > 0) {
-      await producer.send(workspaceUuid, messages)
+      await producer.send(ctx, workspaceUuid, messages)
     }
   }
 }

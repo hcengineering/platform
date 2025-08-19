@@ -140,15 +140,12 @@ export class GmailController {
         this.ctx,
         QueueTopic.Tx,
         this.queue.getClientId(),
-        async (msgs) => {
-          for (const msg of msgs) {
-            const workspaceUuid = msg.workspace
-            for (const tx of msg.value) {
-              const messageEvent = toMessageEvent(tx)
-              if (messageEvent !== undefined) {
-                await this.handleNewMessage(workspaceUuid, messageEvent)
-              }
-            }
+        async (ctx, msg) => {
+          const workspaceUuid = msg.workspace
+
+          const messageEvent = toMessageEvent(msg.value)
+          if (messageEvent !== undefined) {
+            await this.handleNewMessage(workspaceUuid, messageEvent)
           }
         },
         {
