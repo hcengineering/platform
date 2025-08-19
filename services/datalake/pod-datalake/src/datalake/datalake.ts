@@ -89,11 +89,13 @@ export class DatalakeImpl implements Datalake {
       return null
     }
 
-    const cached = this.cache.get(blob.hash)
-    if (cached !== undefined) {
-      return {
-        ...cached,
-        body: Readable.from(cached.body)
+    if (options.range === undefined) {
+      const cached = this.cache.get(blob.hash)
+      if (cached !== undefined) {
+        return {
+          ...cached,
+          body: Readable.from(cached.body)
+        }
       }
     }
 
@@ -105,11 +107,10 @@ export class DatalakeImpl implements Datalake {
       return null
     }
 
-    const result = {
+    const result: Omit<BlobBody, 'body'> = {
       name: blob.name,
       etag: blob.hash,
       size: blob.size,
-      body: object.body,
       bodyLength: object.size,
       bodyEtag: object.etag,
       bodyRange: object.range,
@@ -118,11 +119,20 @@ export class DatalakeImpl implements Datalake {
       cacheControl: object.cacheControl
     }
 
-    if (this.options.cache.enabled && object.size <= this.options.cache.blobSize) {
-      this.cache.set(blob.hash, { ...result, body: await streamToBuffer(object.body) })
+    if (this.cache.enabled(object.size) && options.range === undefined) {
+      const buffer = await streamToBuffer(object.body)
+      this.cache.set(blob.hash, { ...result, body: buffer })
+
+      return {
+        ...result,
+        body: Readable.from(buffer)
+      }
     }
 
-    return result
+    return {
+      ...result,
+      body: object.body
+    }
   }
 
   async delete (ctx: MeasureContext, workspace: WorkspaceUuid, name: string | string[]): Promise<void> {
@@ -192,7 +202,7 @@ export class DatalakeImpl implements Datalake {
       let dataToUpload: Readable | Buffer = body
       let cacheBuffer: Buffer | undefined
 
-      if (this.options.cache.enabled && size <= this.options.cache.blobSize) {
+      if (this.cache.enabled(size)) {
         cacheBuffer = await streamToBuffer(body)
         dataToUpload = cacheBuffer
       }

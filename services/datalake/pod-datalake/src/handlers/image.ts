@@ -18,7 +18,8 @@ import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { createReadStream, createWriteStream } from 'fs'
 import sharp from 'sharp'
-import { Readable, pipeline } from 'stream'
+import { Readable } from 'stream'
+import { pipeline } from 'stream/promises'
 
 import config from '../config'
 import { CacheEntry, type Datalake, createCache, streamToBuffer } from '../datalake'
@@ -126,24 +127,26 @@ export async function handleImageGet (
   res.on('error', cleanup)
   res.on('finish', cleanup)
 
+  const cached = cacheGet(workspace, name, { width, height, format, fit })
+  if (cached !== undefined) {
+    await writeCacheEntryToResponse(ctx, cached, res)
+    return
+  }
+
   const blob = await datalake.get(ctx, workspace, name, {})
   if (blob == null) {
     res.status(404).send()
     return
   }
 
-  const cached = cacheGet(blob.etag, { width, height, format, fit })
-  if (cached !== undefined) {
-    res.setHeader('Content-Type', cached.contentType)
-    res.setHeader('Cache-Control', cacheControl)
-    await writeCacheEntryToResponse(ctx, cached, res)
-    return
+  try {
+    await writeTempFile(tmpFile, blob.body)
+  } finally {
+    blob.body.destroy()
   }
 
-  await writeTempFile(tmpFile, blob.body)
-
   try {
-    const { contentType } = await ctx.with(
+    const { contentType, size } = await ctx.with(
       'sharp',
       { format },
       () => {
@@ -152,35 +155,37 @@ export async function handleImageGet (
       { fit, width, height, size: blob.size }
     )
 
-    const body = await streamToBuffer(createReadStream(outFile))
-    cachePut(
-      blob.etag,
-      { width, height, format, fit },
-      {
+    if (cacheEnabled(size)) {
+      const buffer = await streamToBuffer(createReadStream(outFile))
+
+      const entry = {
         name: blob.name,
         etag: blob.etag,
         size: blob.size,
         bodyEtag: blob.etag,
-        bodyLength: body.length,
+        bodyLength: buffer.length,
         lastModified: blob.lastModified,
-        body,
+        body: buffer,
         contentType,
         cacheControl
       }
-    )
 
-    res.setHeader('Content-Type', contentType)
-    res.setHeader('Cache-Control', cacheControl)
+      cachePut(workspace, name, { width, height, format, fit }, entry)
 
-    await writeFileToResponse(ctx, outFile, res)
+      await writeCacheEntryToResponse(ctx, entry, res)
+    } else {
+      await writeFileToResponse(ctx, outFile, res, { contentType, cacheControl })
+    }
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('image processing error', { workspace, name, error: err })
 
-    res.setHeader('Content-Type', blob.contentType)
-    res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
+    const headers = {
+      contentType: blob.contentType,
+      cacheControl: blob.cacheControl ?? cacheControl
+    }
 
-    await writeFileToResponse(ctx, tmpFile, res)
+    await writeFileToResponse(ctx, tmpFile, res, headers)
   }
 }
 
@@ -195,7 +200,7 @@ async function runPipeline (
   inFile: string,
   outFile: string,
   params: ImageTransformParams
-): Promise<{ contentType: string }> {
+): Promise<{ contentType: string, size: number }> {
   const { format, width, height, fit } = params
 
   let pipeline: sharp.Sharp | undefined
@@ -237,9 +242,9 @@ async function runPipeline (
         break
     }
 
-    await pipeline.toFile(outFile)
+    const { size } = await pipeline.toFile(outFile)
 
-    return { contentType }
+    return { contentType, size }
   } finally {
     pipeline?.destroy()
   }
@@ -264,59 +269,66 @@ function getImageTransformParams (accept: string, transform: string): ImageTrans
 async function writeTempFile (path: string, stream: Readable): Promise<void> {
   const outp = createWriteStream(path)
 
-  await new Promise<void>((resolve, reject) => {
-    const cleanup = (err?: any): void => {
-      if (!stream.destroyed) stream.destroy()
-      if (!outp.destroyed) outp.destroy()
-      if (err !== undefined) reject(err)
-    }
-
-    stream.on('error', cleanup)
-    outp.on('finish', resolve)
-    outp.on('error', cleanup)
-
-    stream.pipe(outp)
-  }).finally(() => {
+  try {
+    await pipeline(stream, outp)
+  } finally {
     if (!stream.destroyed) stream.destroy()
     if (!outp.destroyed) outp.destroy()
-  })
+  }
 }
 
 async function writeCacheEntryToResponse (ctx: MeasureContext, cached: CacheEntry, res: Response): Promise<void> {
   const readable = Readable.from(cached.body)
-  await writeToResponse(ctx, readable, res)
+  await writeToResponse(ctx, readable, res, { contentType: cached.contentType, cacheControl })
 }
 
-async function writeFileToResponse (ctx: MeasureContext, path: string, res: Response): Promise<void> {
+async function writeFileToResponse (
+  ctx: MeasureContext,
+  path: string,
+  res: Response,
+  headers: { contentType: string, cacheControl: string }
+): Promise<void> {
   const stream = createReadStream(path)
-  await writeToResponse(ctx, stream, res)
+  await writeToResponse(ctx, stream, res, headers)
 }
 
-async function writeToResponse (ctx: MeasureContext, stream: Readable, res: Response): Promise<void> {
-  pipeline(stream, res, (err) => {
-    if (err != null) {
-      // ignore abort errors to avoid flooding the logs
-      if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
-        return
-      }
-      Analytics.handleError(err)
-      const error = err instanceof Error ? err.message : String(err)
-      ctx.error('error writing response', { error })
-      if (!res.headersSent) {
-        res.status(500).send('Internal Server Error')
-      }
+async function writeToResponse (
+  ctx: MeasureContext,
+  stream: Readable,
+  res: Response,
+  headers: { contentType: string, cacheControl: string }
+): Promise<void> {
+  res.setHeader('Content-Type', headers.contentType)
+  res.setHeader('Cache-Control', headers.cacheControl)
+
+  try {
+    await pipeline(stream, res)
+  } catch (err: any) {
+    // ignore abort errors to avoid flooding the logs
+    if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
+      return
     }
-  })
+    Analytics.handleError(err)
+    const error = err instanceof Error ? err.message : String(err)
+    ctx.error('error writing response', { error })
+    if (!res.headersSent) {
+      res.status(500).send('Internal Server Error')
+    }
+  }
 }
 
-function cacheKey (name: string, params: ImageTransformParams): string {
-  return `${name}-${params.width ?? 0}-${params.height ?? 0}-${params.format}-${params.fit}`
+function cacheKey (workspace: WorkspaceUuid, name: string, params: ImageTransformParams): string {
+  return `${workspace}/${name}/${params.width ?? 0}/${params.height ?? 0}/${params.format}/${params.fit}`
 }
 
-function cacheGet (name: string, params: ImageTransformParams): CacheEntry | undefined {
-  return cache.get(cacheKey(name, params))
+function cacheEnabled (size: number): boolean {
+  return cache.enabled(size)
 }
 
-function cachePut (name: string, params: ImageTransformParams, entry: CacheEntry): void {
-  cache.set(cacheKey(name, params), entry)
+function cacheGet (workspace: WorkspaceUuid, name: string, params: ImageTransformParams): CacheEntry | undefined {
+  return cache.get(cacheKey(workspace, name, params))
+}
+
+function cachePut (workspace: WorkspaceUuid, name: string, params: ImageTransformParams, entry: CacheEntry): void {
+  cache.set(cacheKey(workspace, name, params), entry)
 }
