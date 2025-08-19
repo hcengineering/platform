@@ -1,7 +1,24 @@
-use std::collections::{ HashMap, HashSet };
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+use std::collections::{HashMap, HashSet};
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
-    if sub_key == key { return true; }
+    if sub_key == key {
+        return true;
+    }
     if sub_key.ends_with('/') && key.starts_with(sub_key) {
         let rest = &key[sub_key.len()..];
         return !rest.contains('$');
@@ -9,16 +26,16 @@ fn subscription_matches(sub_key: &str, key: &str) -> bool {
     false
 }
 
-use crate::redis_events::{ RedisEvent, RedisEventAction };
+use crate::redis_events::{RedisEvent, RedisEventAction};
 use serde::Serialize;
 
 #[derive(Message, Clone, Serialize, Debug)]
 #[rtype(result = "()")]
 pub struct ServerMessage {
     #[serde(flatten)]
-    pub event: RedisEvent, // поля RedisEvent «вливаются» в корень JSON
+    pub event: RedisEvent,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub value: Option<String>, // будет только при Set
+    pub value: Option<String>,
 }
 
 /// Count of active sessions
@@ -61,7 +78,7 @@ impl Handler<Connect> for WsHub {
     type Result = SessionId;
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Context<Self>) -> Self::Result {
-	// LEVENT 1
+        // LEVENT 1
         let id = self.next_id;
         self.next_id = self.next_id.wrapping_add(1);
         self.sessions.insert(id, msg.addr);
@@ -81,7 +98,7 @@ impl Handler<Disconnect> for WsHub {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _ctx: &mut Context<Self>) {
-	// LEVENT 2
+        // LEVENT 2
 
         // Delete all subscribes
         self.subs.retain(|_key, session_ids| {
@@ -110,7 +127,8 @@ impl Handler<SubscribeList> for WsHub {
 
     fn handle(&mut self, msg: SubscribeList, _ctx: &mut Context<Self>) -> Self::Result {
         // Collect all keys with my session_id
-        let list = self.subs
+        let list = self
+            .subs
             .iter()
             .filter_map(|(key, sessions)| {
                 if sessions.contains(&msg.session_id) {
@@ -162,7 +180,9 @@ impl Handler<Unsubscribe> for WsHub {
     fn handle(&mut self, msg: Unsubscribe, _ctx: &mut Context<Self>) {
         if let Some(set) = self.subs.get_mut(&msg.key) {
             set.remove(&msg.session_id);
-            if set.is_empty() { self.subs.remove(&msg.key); }
+            if set.is_empty() {
+                self.subs.remove(&msg.key);
+            }
         }
     }
 }
@@ -183,9 +203,6 @@ impl Handler<UnsubscribeAll> for WsHub {
     }
 }
 
-
-
-
 #[derive(Message)]
 #[rtype(result = "HashMap<String, Vec<SessionId>>")]
 pub struct TestGetSubs;
@@ -194,7 +211,8 @@ impl Handler<TestGetSubs> for WsHub {
     type Result = MessageResult<TestGetSubs>;
 
     fn handle(&mut self, _msg: TestGetSubs, _ctx: &mut Context<Self>) -> Self::Result {
-        let s: HashMap<String, Vec<SessionId>> = self.subs
+        let s: HashMap<String, Vec<SessionId>> = self
+            .subs
             .iter()
             .map(|(key, ids)| (key.clone(), ids.iter().copied().collect()))
             .collect();
@@ -215,12 +233,12 @@ impl WsHub {
     }
 }
 
-use actix::prelude::*;
 use actix::ActorFutureExt;
 use actix::fut::ready;
+use actix::prelude::*;
+use redis::aio::MultiplexedConnection;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use redis::aio::MultiplexedConnection;
 
 impl Handler<RedisEvent> for WsHub {
     type Result = ResponseActFuture<Self, ()>;
@@ -231,7 +249,8 @@ impl Handler<RedisEvent> for WsHub {
             return Box::pin(actix::fut::ready(()).into_actor(self));
         }
 
-        let recipients: Vec<Recipient<ServerMessage>> = targets.into_iter()
+        let recipients: Vec<Recipient<ServerMessage>> = targets
+            .into_iter()
             .filter_map(|sid| self.sessions.get(&sid).cloned())
             .collect();
 
@@ -242,9 +261,11 @@ impl Handler<RedisEvent> for WsHub {
         Box::pin(
             async move {
                 let value = if need_get {
-
                     let mut conn = redis.lock().await;
-                    match redis::cmd("GET").arg(&event.key).query_async::<Option<String>>(&mut *conn).await
+                    match redis::cmd("GET")
+                        .arg(&event.key)
+                        .query_async::<Option<String>>(&mut *conn)
+                        .await
                     {
                         Ok(v) => v,
                         Err(e) => {
@@ -262,7 +283,7 @@ impl Handler<RedisEvent> for WsHub {
                     let _ = rcpt.do_send(payload.clone());
                 }
             }
-            .into_actor(self)
+            .into_actor(self),
         )
     }
 }

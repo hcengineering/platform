@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 use crate::config::{CONFIG, RedisMode};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -5,21 +20,20 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[derive(serde::Serialize)]
 pub enum Ttl {
     Sec(usize), // EX
-    At(u64),   // EXAT (timestamp in seconds)
+    At(u64),    // EXAT (timestamp in seconds)
 }
 
 #[derive(Debug)]
 pub enum SaveMode {
-    Upsert, // default: set or overwrite
-    Insert, // only if not exists (NX)
-    Update, // only if exists (XX)
+    Upsert,        // default: set or overwrite
+    Insert,        // only if not exists (NX)
+    Update,        // only if exists (XX)
     Equal(String), // only if md5 matches provided
 }
 
 use redis::{
-    AsyncCommands, RedisResult,
-    ToRedisArgs,
-    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, aio::MultiplexedConnection
+    AsyncCommands, Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult,
+    ToRedisArgs, aio::MultiplexedConnection,
 };
 use url::Url;
 
@@ -30,24 +44,28 @@ pub struct RedisArray {
     pub key: String,
     pub data: String,
     pub expires_at: u64, // sec to expire TTL
-    pub etag: String, // md5 hash (data)
+    pub etag: String,    // md5 hash (data)
 }
 
 /// return Error
 pub fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
     let msg = msg.into();
     let full = format!("{}: {}", code, msg);
-    Err(redis::RedisError::from(( redis::ErrorKind::ExtensionError, "", full )))
+    Err(redis::RedisError::from((
+        redis::ErrorKind::ExtensionError,
+        "",
+        full,
+    )))
 }
 
 /// Check for redis-deprecated symbols
 pub fn deprecated_symbol(s: &str) -> bool {
-    s.chars().any(|c| matches!(
-        c,
-        '*' | '?' | '[' | ']' | '\\' |
-        '\0'..='\x1F' | '\x7F' |
-        '"' | '\''
-    ))
+    s.chars().any(|c| {
+        matches!(
+            c,
+            '*' | '?' | '[' | ']' | '\\' | '\0'..='\x1F' | '\x7F' | '"' | '\''
+        )
+    })
 }
 
 pub fn deprecated_symbol_error(s: &str) -> redis::RedisResult<()> {
@@ -63,50 +81,55 @@ pub async fn redis_list(
     conn: &mut MultiplexedConnection,
     key: &str,
 ) -> redis::RedisResult<Vec<RedisArray>> {
-
     deprecated_symbol_error(key)?;
-    if !key.ends_with('/') { return error(412, "Key must end with slash"); }
+    if !key.ends_with('/') {
+        return error(412, "Key must end with slash");
+    }
     let pattern = format!("{key}*");
 
     let mut cursor = 0u64;
     let mut results = Vec::new();
 
     loop {
-	let mut cmd = redis::cmd("SCAN");
+        let mut cmd = redis::cmd("SCAN");
         cmd.arg(cursor);
         cmd.arg("MATCH").arg(&pattern);
         // cmd.arg("COUNT").arg(100); // Optionally adjust batch size
 
         let (next_cursor, keys): (u64, Vec<String>) = cmd.query_async(conn).await?;
 
-	for k in keys {
+        for k in keys {
+            // Check for $-security path
+            if k.strip_prefix(key).map_or(false, |s| s.contains('$')) {
+                continue;
+            }
 
-	    // Check for $-security path
-	    if k.strip_prefix(key).map_or(false, |s| s.contains('$')) { continue; }
+            // Get value
+            let value: Option<String> = redis::cmd("GET").arg(&k).query_async(conn).await?;
+            let Some(value) = value else {
+                continue;
+            }; // Old and deleted
 
-    	    // Get value
-    	    let value: Option<String> = redis::cmd("GET").arg(&k).query_async(conn).await?;
-            let Some(value) = value else { continue; }; // Old and deleted
+            // Get TTL
+            let ttl: i64 = redis::cmd("TTL").arg(&k).query_async(conn).await?;
+            if ttl >= 0 {
+                results.push(RedisArray {
+                    key: k,
+                    data: value.clone(),
+                    expires_at: ttl as u64,
+                    etag: hex::encode(md5::compute(&value).0),
+                });
+            }
+        }
 
-    	    // Get TTL
-    	    let ttl: i64 = redis::cmd("TTL").arg(&k).query_async(conn).await?;
-    	    if ttl >= 0 {
-        	results.push(RedisArray {
-            	    key: k,
-            	    data: value.clone(),
-            	    expires_at: ttl as u64,
-            	    etag: hex::encode(md5::compute(&value).0),
-        	});
-    	    }
-	}
-
-	if next_cursor == 0 { break;}
-    	cursor = next_cursor;
+        if next_cursor == 0 {
+            break;
+        }
+        cursor = next_cursor;
     }
 
     Ok(results)
 }
-
 
 /// redis_read(&connection,key)
 #[allow(dead_code)]
@@ -114,19 +137,28 @@ pub async fn redis_read(
     conn: &mut MultiplexedConnection,
     key: &str,
 ) -> redis::RedisResult<Option<RedisArray>> {
-
     deprecated_symbol_error(key)?;
 
-    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
+    if key.ends_with('/') {
+        return error(412, "Key must not end with a slash");
+    }
 
     let data: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
 
-    let Some(data) = data else { return Ok(None); };
+    let Some(data) = data else {
+        return Ok(None);
+    };
 
     let ttl: i64 = redis::cmd("TTL").arg(key).query_async(conn).await?;
-    if ttl == -1 { return error(500, "TTL not set"); }
-    if ttl == -2 { return error(500, "Key not found"); }
-    if ttl < 0 { return error(500, "Unknown TTL error"); }
+    if ttl == -1 {
+        return error(500, "TTL not set");
+    }
+    if ttl == -2 {
+        return error(500, "Key not found");
+    }
+    if ttl < 0 {
+        return error(500, "Unknown TTL error");
+    }
 
     Ok(Some(RedisArray {
         key: key.to_string(),
@@ -135,7 +167,6 @@ pub async fn redis_read(
         etag: hex::encode(md5::compute(&data).0),
     }))
 }
-
 
 /// TTL sec
 /// redis_save(&mut conn, "key", "val", Some(Ttl::Sec(300)), Some(SaveMode::Insert)).await?;
@@ -155,25 +186,33 @@ pub async fn redis_save<T: ToRedisArgs>(
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
 ) -> RedisResult<()> {
-
     deprecated_symbol_error(&key)?;
 
-    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
+    if key.ends_with('/') {
+        return error(412, "Key must not end with a slash");
+    }
 
     // TTL logic
     let sec = match ttl {
-	Some(Ttl::Sec(secs)) => secs,
-	Some(Ttl::At(timestamp)) => {
-    	    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-    	    if timestamp <= now {
-        	return error(400, "TTL timestamp exceeds MAX_TTL limit");
-    	    }
-    	    (timestamp - now) as usize
-	}
-	None => CONFIG.max_ttl,
+        Some(Ttl::Sec(secs)) => secs,
+        Some(Ttl::At(timestamp)) => {
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+            if timestamp <= now {
+                return error(400, "TTL timestamp exceeds MAX_TTL limit");
+            }
+            (timestamp - now) as usize
+        }
+        None => CONFIG.max_ttl,
     };
-    if sec == 0 { return error(400, "TTL must be > 0"); }
-    if sec > CONFIG.max_ttl { return error(412, "TTL exceeds MAX_TTL"); }
+    if sec == 0 {
+        return error(400, "TTL must be > 0");
+    }
+    if sec > CONFIG.max_ttl {
+        return error(412, "TTL exceeds MAX_TTL");
+    }
 
     let mut cmd = redis::cmd("SET");
     cmd.arg(key).arg(value).arg("EX").arg(sec);
@@ -182,25 +221,39 @@ pub async fn redis_save<T: ToRedisArgs>(
     let mode = mode.unwrap_or(SaveMode::Upsert);
 
     match mode {
-
         SaveMode::Upsert => {} // none
 
-        SaveMode::Insert => { cmd.arg("NX"); } // if NOT Exist
+        SaveMode::Insert => {
+            cmd.arg("NX");
+        } // if NOT Exist
 
-        SaveMode::Update => { cmd.arg("XX"); } // if Exist
+        SaveMode::Update => {
+            cmd.arg("XX");
+        } // if Exist
 
-        SaveMode::Equal(ref expected_md5) => { // if md5 === actual_md5
-            let current_value: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
+        SaveMode::Equal(ref expected_md5) => {
+            // if md5 === actual_md5
+            let current_value: Option<String> =
+                redis::cmd("GET").arg(key).query_async(conn).await?;
             if let Some(existing) = current_value {
                 let actual_md5 = hex::encode(md5::compute(&existing).0);
-                if &actual_md5 != expected_md5 { return error(412, format!("md5 mismatch, current: {}, expected: {}", actual_md5, expected_md5)); }
-            } else { return error(404, "Equal: key does not exist"); }
+                if &actual_md5 != expected_md5 {
+                    return error(
+                        412,
+                        format!(
+                            "md5 mismatch, current: {}, expected: {}",
+                            actual_md5, expected_md5
+                        ),
+                    );
+                }
+            } else {
+                return error(404, "Equal: key does not exist");
+            }
         }
     }
 
+    // execute
     let result: Option<String> = cmd.query_async(conn).await?;
-//    // execute
-//    cmd.query_async::<i64>(&mut *conn).await?;
 
     if result.is_none() {
         match mode {
@@ -213,27 +266,53 @@ pub async fn redis_save<T: ToRedisArgs>(
     Ok(())
 }
 
-
 /// redis_delete(&connection,key)
-#[allow(dead_code)]
 pub async fn redis_delete(
     conn: &mut MultiplexedConnection,
     key: &str,
-) -> redis::RedisResult<bool> {
-
+    mode: Option<SaveMode>, // <— добавили
+) -> RedisResult<bool> {
     deprecated_symbol_error(key)?;
 
-    if key.ends_with('/') { return error(412, "Key must not end with a slash"); }
+    if key.ends_with('/') {
+        return error(412, "Key must not end with a slash");
+    }
 
-    let deleted: i32 = redis::cmd("DEL")
-        .arg(key)
-        .query_async(conn)
-        .await?;
+    let mode = mode.unwrap_or(SaveMode::Upsert);
+
+    match mode {
+        SaveMode::Equal(ref expected_md5) => {
+            let current: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
+            match current {
+                None => return error(404, "Equal: key does not exist"),
+                Some(val) => {
+                    let actual_md5 = hex::encode(md5::compute(&val).0);
+                    if &actual_md5 != expected_md5 {
+                        return error(
+                            412,
+                            format!(
+                                "md5 mismatch, current: {}, expected: {}",
+                                actual_md5, expected_md5
+                            ),
+                        );
+                    }
+                }
+            }
+        }
+        SaveMode::Insert => {
+            return error(412, "Insert mode is not supported for delete");
+        }
+        SaveMode::Update | SaveMode::Upsert => {}
+    }
+
+    let deleted: i32 = redis::cmd("DEL").arg(key).query_async(conn).await?;
+
+    if deleted == 0 && matches!(mode, SaveMode::Equal(_)) {
+        return error(404, "Delete: key does not exist");
+    }
 
     Ok(deleted > 0)
 }
-
-
 
 /// redis_connect()
 pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
@@ -292,4 +371,3 @@ pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
 
     Ok(conn)
 }
-

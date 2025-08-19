@@ -99,6 +99,7 @@
 
 //    let ws = new WebSocket(`ws://localhost:8095/ws`);
 
+
     ws.onopen = () => {
       output.textContent = "✅ WebSocket connected.";
     };
@@ -122,6 +123,7 @@
       } catch (e) {
         output.textContent += "\n\n⚠️ Invalid JSON:\n" + e.message;
       }
+
     }
 
     function place(event) { textarea.value = (event || window.event).target.getAttribute("data"); sendMessage(); }

@@ -1,43 +1,62 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+use actix_web::{Error, HttpMessage, HttpRequest};
 use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
-use actix_web::{ Error, HttpMessage, HttpRequest, error };
 
-/// Checking workspace in Authorization
-pub fn workspace_check(req: &HttpRequest) -> Result<(), Error> {
-    let extensions = req.extensions();
-
-    // Get key
-    let key = req
-        .match_info()
-        .get("key")
-        .ok_or_else(|| error::ErrorBadRequest("Missing key in URL path"))?;
-
-    // Get workspace
-    let path_ws = match key.find('/') {
-	Some(x) if x > 0 => &key[..x],
-        _ => return Err(error::ErrorBadRequest("Invalid key: missing workspace")),
-    };
-
-    let claims = extensions
-        .get::<Claims>()
-        .ok_or_else(|| error::ErrorUnauthorized("Missing auth claims"))?;
-
-    // is_system - allowed to all
+// common checker
+pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static str> {
     if claims.is_system() {
         return Ok(());
     }
 
-    // else - check workplace
     let jwt_workspace = claims
         .workspace
         .as_ref()
-        .ok_or_else(|| error::ErrorForbidden("Missing workspace in token"))?;
+        .ok_or("Missing workspace in token")?;
+    let path_ws = key
+        .split('/')
+        .next()
+        .ok_or("Invalid key: missing workspace")?;
+    if path_ws.is_empty() {
+        return Err("Invalid key: missing workspace");
+    }
 
-    let path_ws_uuid = Uuid::parse_str(path_ws).map_err(|_| error::ErrorBadRequest("Invalid workspace UUID"))?;
-
+    let path_ws_uuid = Uuid::parse_str(path_ws).map_err(|_| "Invalid workspace UUID in key")?;
     if jwt_workspace != &path_ws_uuid {
-        return Err(error::ErrorForbidden("Workspace mismatch"));
+        return Err("Workspace mismatch");
     }
 
     Ok(())
+}
+
+/// HTTP API
+pub fn workspace_check(req: &HttpRequest) -> Result<(), actix_web::Error> {
+    let key = req
+        .match_info()
+        .get("key")
+        .ok_or_else(|| actix_web::error::ErrorBadRequest("Missing key in URL path"))?;
+    let claims = req
+        .extensions()
+        .get::<Claims>()
+        .cloned()
+        .ok_or_else(|| actix_web::error::ErrorUnauthorized("Missing auth claims"))?;
+
+    match check_workspace_core(&claims, key) {
+        Ok(()) => Ok(()),
+        Err(msg) => Err(actix_web::error::ErrorUnauthorized(msg)),
+    }
 }

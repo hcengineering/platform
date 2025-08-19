@@ -11,6 +11,19 @@ TOKEN=$(./token.sh claims.json)
 ZP="00000000-0000-0000-0000-000000000001/TESTS"
 
 
+echo "--------- authorization_test ----------"
+TOKEN=""
+    put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
+TOKEN=$(./token.sh claims_system.json)
+    put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
+TOKEN=$(./token.sh claims_wrong_ws.json)
+    put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
+TOKEN=$(./token.sh claims.json)
+    put "00000000-0000-0000-0000-000000000002/TESTS" "Value_1" "HULY-TTL: 2"
+exit
+
+
+
 echo "--------- if-match ----------"
 
     put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
@@ -21,106 +34,6 @@ echo "--------- if-match ----------"
     get "00000000-0000-0000-0000-000000000001/TESTS"
     get "00000000-0000-0000-0000-000000000001/TESTS/"
     get "00000000-0000-0000-0000-000000000001/TESTS/3/secret$/"
-
-
-exit
-Key
-
-
-
-
-
-Key is a string that consists of one or multiple segments separated by ‘/’. Example: foo/bar/baz.
-
-
-
-
-
-Segment may not contain special characters (‘$’, ‘*’, ‘?’)
-
-
-
-Key may not end with ‘/’
-
-
-
-Segment may not be empty
-
-
-
-Key segment may be private (prefixed with ‘$’)
-
-
-
-Query 
-
-
-
-
-
-May not contain special characters (‘*’, ‘?’)
-
-
-
-It is possible to use prefix, for listings / subscriptions  (prefix ends with segment separator ‘/’)   
-
-
-
-
-
-GET/SUBSCRIBE/..   a/b → single key
-
-
-
-GET/SUBSCRIBE/..   a/b/c/ → multiple
-
-
-
-If multiple 
-
-
-
-
-
-select all keys starting with prefix
-
-
-
-skip keys, containing private segments to the right from the prefix
-
-
-
-example 
-
-
-
-
-
- 1. /a/b/$c/$d,  2. /a/b/c,  3. /a/b/$c, 4. /a/b/$c/$d/e
-
-
-
-/ → [2]
-
-
-
-/a/b/ → [2]
-
-
-
-/a/b/$c/ → [3]
-
-
-
-/a/b/$c/$d/ → [4]
-
-
-
-/a/b/$c/$d → (1)
-
-
-
-
 
 
 

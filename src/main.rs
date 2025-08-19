@@ -23,9 +23,13 @@ use actix_web::{
     App, Error, HttpMessage, HttpRequest, HttpResponse, HttpServer,
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
+    error::ErrorBadRequest,
+    http::header::{AUTHORIZATION, HeaderValue},
     middleware::{self, Next},
     web::{self, Data, PayloadConfig},
 };
+
+use url::form_urlencoded;
 
 use actix_web_actors::ws;
 
@@ -41,15 +45,10 @@ use crate::redis_lib::redis_connect;
 
 mod workspace_owner;
 
-// == =hub ===
 mod redis_events;
 mod ws_hub;
+use crate::ws_hub::{ServerMessage, TestGetSubs, WsHub};
 use actix::prelude::*;
-use crate::ws_hub::{WsHub, ServerMessage,
-    TestGetSubs,
-};
-
-// === /hub ===
 
 use config::CONFIG;
 
@@ -70,54 +69,55 @@ fn initialize_tracing(level: tracing::Level) {
         .init();
 }
 
-// #[allow(dead_code)]
 async fn interceptor(
-    request: ServiceRequest,
+    mut request: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
+    // Authorization/token patch
+    if request.headers().get(AUTHORIZATION).is_none() {
+        if let Some(qs) = request.uri().query() {
+            if let Some(token) = form_urlencoded::parse(qs.as_bytes())
+                .find(|(k, _)| k == "token")
+                .map(|(_, v)| v.into_owned())
+            {
+                let auth_value = HeaderValue::from_str(&format!("Bearer {}", token))
+                    .map_err(|_| ErrorBadRequest("Malformed token"))?;
+                request.headers_mut().insert(AUTHORIZATION, auth_value);
+            }
+        }
+    }
 
     let secret = SecretString::new(CONFIG.token_secret.clone().into_boxed_str());
-
     let claims = request.extract_claims(&secret)?;
 
-    // TODO: сделать это здесь
-
     request.extensions_mut().insert(claims.to_owned());
-
-    // TODO потом исправить hulyrs: extract_claims
 
     next.call(request).await
 }
 
-
-
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
 use crate::redis_events::RedisEventAction::*; // Set, Del, Unlink, Expired, Other
 
 pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
     let client = match redis::Client::open(redis_url) {
         Ok(c) => c,
-        Err(e) => { eprintln!("[redis] bad url: {e}"); return; }
+        Err(e) => {
+            eprintln!("[redis] bad url: {e}");
+            return;
+        }
     };
 
     match crate::redis_events::make_pubsub_with_kea(&client).await {
         Ok(pubsub) => {
             let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
             while let Some(ev) = rx.recv().await {
-
-                match ev.action {
-                    Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
-                    Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
-                    Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
-                    Other(ref k)  => println!("[redis] db{} {} {}", ev.db, k, ev.key),
-                }
+                /*
+                        match ev.action {
+                            Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
+                            Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
+                            Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
+                            Other(ref k)  => println!("[redis] db{} {} {}", ev.db, k, ev.key),
+                        }
+                */
 
                 hub.do_send(ev.clone());
             }
@@ -125,14 +125,6 @@ pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
         Err(e) => eprintln!("[redis] pubsub init error: {e}"),
     }
 }
-
-
-
-// use actix_web::http::header;
-// use actix_web::http::header::HeaderValue;
-// use actix_web::body::BoxBody;
-// use url::form_urlencoded;
-
 
 // #[tokio::main]
 #[actix_web::main]
@@ -146,12 +138,14 @@ async fn main() -> anyhow::Result<()> {
     let redis_data = web::Data::new(redis.clone());
 
     // starting Hub
-    // let hub = WsHub::default().start();
     let hub = WsHub::new(redis.clone()).start();
 
     let hub_data = web::Data::new(hub.clone());
     // starting Logger
-    tokio::spawn(start_redis_logger("redis://127.0.0.1/".to_string(), hub.clone()));
+    tokio::spawn(start_redis_logger(
+        "redis://127.0.0.1/".to_string(),
+        hub.clone(),
+    ));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
     let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
@@ -167,85 +161,37 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(payload_config.clone())
             .app_data(redis_data.clone())
-	    .app_data(hub_data.clone())
+            .app_data(hub_data.clone())
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
                 web::scope("/api")
                     .wrap(middleware::from_fn(interceptor))
-            	    .route("/{key:.+/}", web::get().to(handlers_http::list))
+                    .route("/{key:.+/}", web::get().to(handlers_http::list))
                     .route("/{key:.+}", web::get().to(handlers_http::get))
-		    .route("/{key:.+}", web::put().to(handlers_http::put))
-                    .route("/{key:.+}", web::delete().to(handlers_http::delete))
+                    .route("/{key:.+}", web::put().to(handlers_http::put))
+                    .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
             .route("/status", web::get().to(async || "ok"))
-
-	    // .route("/stat", web::get().to(ws_hub::stat))
-            .route("/stat2", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
-		    let count = hub.send(crate::ws_hub::Count).await.unwrap_or(0);
-	            HttpResponse::Ok().json(serde_json::json!({ "connections": count }))
-	    }))
-
-	    .route("/subs", web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
-	        match hub.send(TestGetSubs).await {
-	            Ok(subs) => HttpResponse::Ok().json(subs),
-	            Err(_) => HttpResponse::InternalServerError().body("Failed to get subscriptions"),
-	        }
-	    }))
-
- 	    .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket
-
-/*
-
-.service(
-    web::resource("/ws")
-
-
-.wrap(middleware::from_fn(|mut req: ServiceRequest, next: Next<BoxBody>| async move {
-    // Уже есть Authorization?
-    let has_auth = req.headers().contains_key(header::AUTHORIZATION);
-
-    if !has_auth {
-        // ?token=...
-        if let Some(token) = form_urlencoded::parse(req.query_string().as_bytes())
-            .find(|(k, _)| k == "token")
-            .map(|(_, v)| v.into_owned())
-        {
-            if !token.is_empty() {
-                let value = format!("Bearer {}", token);
-                req.headers_mut().insert(
-                    header::AUTHORIZATION,
-                    HeaderValue::from_str(&value)
-                        .map_err(|_| actix_web::error::ErrorBadRequest("Invalid token header"))?,
-                );
-            }
-        }
-    }
-
-    next.call(req).await
-}))
-        // затем твой interceptor:
-//        .wrap(middleware::from_fn(interceptor))
-        .route(web::get().to(handlers_ws::handler))
-
-)
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            .route(
+                "/stat2",
+                web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
+                    let count = hub.send(crate::ws_hub::Count).await.unwrap_or(0);
+                    HttpResponse::Ok().json(serde_json::json!({ "connections": count }))
+                }),
+            )
+            .route(
+                "/subs",
+                web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
+                    match hub.send(TestGetSubs).await {
+                        Ok(subs) => HttpResponse::Ok().json(subs),
+                        Err(_) => {
+                            HttpResponse::InternalServerError().body("Failed to get subscriptions")
+                        }
+                    }
+                }),
+            )
+            .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket
     })
     .bind(socket)?
     .run();
