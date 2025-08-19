@@ -65,9 +65,9 @@ export class LiveKitClient {
     this.liveKitRoom = lkRoom
   }
 
-  async connect (wsURL:string, token: string, withVideo: boolean): Promise<void> {
+  async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.currentSessionSupportsVideo = withVideo
-    await this.liveKitRoom.connect(wsUrl, token)
+    await this.liveKitRoom.connect(wsURL, token)
   }
 
   async disconnect (): Promise<void> {
