@@ -88,6 +88,9 @@
     "Sharing": "Teilen...",
     "Browser": "Browser",
     "Monitor": "Monitor",
-    "Window": "Fenster"
+    "Window": "Fenster",
+    "MeetingEmptyTitle": "Besprechung beendet?",
+    "MeetingEmptyMessage": "Alle Teilnehmer haben die Besprechung verlassen. Sie werden in 1 Minute automatisch getrennt. Möchten Sie bleiben?",
+    "StayInRoom": "Im Raum bleiben"
   }
 }

@@ -13,21 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import products from '../../plugin'
   import CreateProduct from './CreateProduct.svelte'
-  import { openDoc } from '@hcengineering/view-resources'
-
-  const client = getClient()
+  import { openDocFromRef } from '@hcengineering/view-resources'
 
   async function newProduct (): Promise<void> {
     showPopup(CreateProduct, {}, 'top', async (id) => {
       if (id != null) {
-        const doc = await client.findOne(products.class.Product, { _id: id })
-        if (doc !== undefined) {
-          void openDoc(client.getHierarchy(), doc)
-        }
+        void openDocFromRef(products.class.Product, id)
       }
     })
   }

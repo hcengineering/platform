@@ -27,8 +27,6 @@
   let connection: Integration
   let channels: TelegramChannelConfig[] = []
   let isLoading = true
-  let error: string | null = null
-  let isRefreshing = false
   let status: Status | undefined
 
   let integrationClient: IntegrationClient | undefined
@@ -46,7 +44,6 @@
       connection = connectionResult
       channels = (await listChannels(connection?.data?.phone)).map((channel) => ({
         ...channel,
-        access: 'private', // Default access since access property doesn't exist on TelegramChannel
         syncEnabled: channel.mode === 'sync'
       }))
       isLoading = false
@@ -54,7 +51,6 @@
       subscribe()
     } catch (err) {
       status = ERROR
-      error = err instanceof Error ? err.message : 'Failed to load channels'
       isLoading = false
       console.error('Error loading channels:', err)
     }
@@ -82,7 +78,6 @@
           if (updatedChannel != null) {
             return {
               ...channel,
-              access: updatedChannel.access ?? channel.access,
               syncEnabled: updatedChannel.enabled
             }
           }
@@ -96,7 +91,6 @@
 
   async function refresh (): Promise<void> {
     try {
-      isRefreshing = true
       if (integrationClient === undefined) {
         integrationClient = await getIntegrationClient()
       }
@@ -105,13 +99,10 @@
       }
       channels = (await listChannels(connection.data.phone)).map((channel) => ({
         ...channel,
-        access: 'private', // Default access since access property doesn't exist on TelegramChannel
         syncEnabled: channel.mode === 'sync'
       }))
     } catch (err: any) {
       console.error('Error refresh channels:', err.message)
-    } finally {
-      isRefreshing = false
     }
   }
 

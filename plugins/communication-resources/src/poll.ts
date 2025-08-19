@@ -25,7 +25,7 @@ import { type Poll, type PollAnswer } from '@hcengineering/communication'
 import { getClient } from '@hcengineering/presentation'
 import card, { type Card } from '@hcengineering/card'
 import { makeRank } from '@hcengineering/rank'
-import { type MessageID } from '@hcengineering/communication-types'
+import { type AppletAttachment, type MessageID } from '@hcengineering/communication-types'
 
 import communication from './plugin'
 
@@ -85,6 +85,11 @@ export async function createPoll (parent: Card, message: MessageID, params: Poll
   const filledData = fillDefaults(hierarchy, data, communication.type.Poll)
 
   await client.createDoc(communication.type.Poll, parent.space, filledData, params.id)
+}
+
+export function getPollTitle (attachment: AppletAttachment): string {
+  const params = attachment.params as PollConfig
+  return params.question
 }
 
 export function isVotedByMe (result: Poll | undefined, anonymous: boolean = false, answers: PollAnswer[] = []): boolean {

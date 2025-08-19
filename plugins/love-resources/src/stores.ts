@@ -13,7 +13,6 @@ import {
   type ParticipantInfo,
   type Room
 } from '@hcengineering/love'
-import { type MediaSession } from '@hcengineering/media'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
@@ -60,7 +59,6 @@ export let $myPreferences: DevicesPreference | undefined
 
 export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
-export const currentSession = writable<MediaSession | undefined>(undefined)
 
 async function filterParticipantInfo (value: ParticipantInfo[]): Promise<ParticipantInfo[]> {
   const map = new Map<string, ParticipantInfo>()

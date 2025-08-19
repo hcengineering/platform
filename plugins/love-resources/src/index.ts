@@ -36,11 +36,10 @@ import {
   showRoomSettings,
   startTranscription,
   stopTranscription,
-  toggleMic,
-  toggleVideo,
   getMeetingMinutesTitle,
   queryMeetingMinutes
 } from './utils'
+import { toggleMicState, toggleCamState } from '@hcengineering/media-resources'
 
 export { setCustomCreateScreenTracks } from './utils'
 
@@ -90,8 +89,8 @@ export default async (): Promise<Resources> => ({
     MeetingMinutesTitleProvider: getMeetingMinutesTitle
   },
   actionImpl: {
-    ToggleMic: toggleMic,
-    ToggleVideo: toggleVideo,
+    ToggleMic: toggleMicState,
+    ToggleVideo: toggleCamState,
     StartTranscribing: startTranscription,
     StopTranscribing: stopTranscription,
     ShowRoomSettings: showRoomSettings,

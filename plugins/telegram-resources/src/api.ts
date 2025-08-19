@@ -12,7 +12,7 @@
 // limitations under the License.
 //
 
-import { concatLink, type PersonId } from '@hcengineering/core'
+import { concatLink, type Ref, type Space, type PersonId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation, { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
@@ -39,15 +39,15 @@ export interface TelegramChannel {
 }
 
 export interface TelegramChannelConfig extends TelegramChannel {
-  access: 'public' | 'private'
   syncEnabled: boolean
   readonlyAccess?: boolean // access update is not supported for existing channels
+  space?: Ref<Space>
 }
 
 export interface TelegramChannelData {
   telegramId: number
-  access?: 'public' | 'private'
   enabled: boolean
+  space?: Ref<Space>
 }
 
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''

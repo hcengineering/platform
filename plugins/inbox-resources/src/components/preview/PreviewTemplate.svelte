@@ -100,18 +100,24 @@
             <span class="message-preview-template__name overflow-label {color}">{formatName(_person?.name ?? '')}</span>
           {/if}
           {#if showSeparator}
-            <span class="message-preview-template__separator"> • </span>
+            {#if showPersonName}
+              <span class="message-preview-template__separator"> • </span>
+            {:else}
+              <span class="mr-0-5" />
+            {/if}
           {/if}
         </span>
       </PersonPreviewProvider>
 
-      <span
-        class="message-preview-template__content overflow-label {color}"
-        class:fixHeight
-        use:tooltip={tooltipLabel ? { label: tooltipLabel } : undefined}
-      >
-        <slot />
-      </span>
+      {#if $$slots.content}
+        <span
+          class="message-preview-template__content overflow-label {color}"
+          class:fixHeight
+          use:tooltip={tooltipLabel ? { label: tooltipLabel, textAlign: 'left' } : undefined}
+        >
+          <slot name="content" />
+        </span>
+      {/if}
       <slot name="after" />
     </span>
 

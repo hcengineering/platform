@@ -11,7 +11,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AccountID, AppletParams, AppletType, Message, MessageID } from '@hcengineering/communication-types'
+import {
+  AccountID,
+  AppletAttachment,
+  AppletParams,
+  AppletType,
+  Message,
+  MessageID
+} from '@hcengineering/communication-types'
 import { AttachedDoc, Configuration, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card, MasterTag } from '@hcengineering/card'
@@ -59,11 +66,15 @@ export interface Applet extends Doc {
   createLabel: IntlString
   createComponent: AnyComponent
   previewComponent: AnyComponent
+  getTitleFn: AppletGetTitleFnResource
   createFn?: AppletCreateFnResource
 }
 
 export type AppletCreateFn = (parent: Card, message: MessageID, params: AppletParams) => Promise<void>
 export type AppletCreateFnResource = Resource<AppletCreateFn>
+
+export type AppletGetTitleFn = (attachment: AppletAttachment) => string
+export type AppletGetTitleFnResource = Resource<AppletGetTitleFn>
 
 export interface PollAnswer extends AttachedDoc<Poll> {
   options: string[]
