@@ -2701,11 +2701,14 @@ export function devTool (
       })
     })
 
-  program.command('restore-github-integrations').action(async () => {
-    const { dbUrl } = prepareTools()
+  program
+    .command('restore-github-integrations')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      const { dbUrl } = prepareTools()
 
-    await restoreGithubIntegrations(dbUrl)
-  })
+      await restoreGithubIntegrations(dbUrl, cmd.dryrun)
+    })
 
   program
     .command('migrate-trusted-v6-accounts')

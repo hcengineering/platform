@@ -6,7 +6,7 @@ import { getDBClient } from '@hcengineering/postgres'
 
 const GITHUB_INTEGRATION: IntegrationKind = 'github' as any
 
-export async function restoreGithubIntegrations (dbUrl: string): Promise<void> {
+export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean): Promise<void> {
   try {
     const pg = getDBClient(dbUrl)
     const pgClient = await pg.getClient()
@@ -34,6 +34,10 @@ export async function restoreGithubIntegrations (dbUrl: string): Promise<void> {
         })
         if (existingIntegration != null) {
           if (existingIntegration?.data?.installationId === setting.installationId) {
+            if (dryrun) {
+              console.info('Dry run: skip existing integration', existingIntegration)
+              continue
+            }
             continue
           }
           const updatedData = {
@@ -44,17 +48,26 @@ export async function restoreGithubIntegrations (dbUrl: string): Promise<void> {
             ...existingIntegration,
             data: updatedData
           }
+          if (dryrun) {
+            console.info('Dry run: would update integration', existingIntegration, updatedIntegration)
+            continue
+          }
           await accountClient.updateIntegration(updatedIntegration)
           updatedCount++
         } else {
-          await accountClient.createIntegration({
+          const integration: Integration = {
             workspaceUuid: setting.workspaceId,
             socialId: setting.createdBy,
             kind: GITHUB_INTEGRATION,
             data: {
               installationId: setting.installationId
             }
-          })
+          }
+          if (dryrun) {
+            console.info('Dry run: would create integration', integration)
+            continue
+          }
+          await accountClient.createIntegration(integration)
           createdCount++
         }
       } catch (e: any) {
