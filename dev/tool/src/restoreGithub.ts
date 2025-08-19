@@ -36,7 +36,6 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           if (existingIntegration?.data?.installationId === setting.installationId) {
             if (dryrun) {
               console.info('Dry run: skip existing integration', existingIntegration)
-              continue
             }
             continue
           }
