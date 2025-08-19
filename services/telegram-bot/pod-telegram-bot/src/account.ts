@@ -14,6 +14,7 @@
 //
 import {
   AccountUuid,
+  IntegrationKind,
   Person,
   PersonId,
   SocialId,
@@ -24,10 +25,11 @@ import {
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { Integration } from '@hcengineering/account-client'
-import { telegramIntegrationKind } from '@hcengineering/telegram'
 
 import { serviceToken } from './utils'
 import { IntegrationInfo } from './types'
+
+const integrationKind = 'telegram-bot' as IntegrationKind
 
 export async function getAccountPerson (account: AccountUuid): Promise<Person | undefined> {
   try {
@@ -52,7 +54,7 @@ export async function getAccountSocialIds (account: AccountUuid): Promise<Social
 
 export async function listIntegrationsByAccount (account: AccountUuid): Promise<IntegrationInfo[]> {
   const client = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
-  const integrations = await client.listIntegrations({ kind: telegramIntegrationKind })
+  const integrations = await client.listIntegrations({ kind: integrationKind })
   if (integrations.length === 0) return []
   const socialIds = await getAccountSocialIds(account)
 
@@ -80,7 +82,7 @@ export async function listIntegrationsByTelegramId (telegramId: number): Promise
   )
   if (socialId == null) return []
 
-  const integrations = await client.listIntegrations({ kind: telegramIntegrationKind, socialId: socialId._id })
+  const integrations = await client.listIntegrations({ kind: integrationKind, socialId: socialId._id })
   if (integrations == null) return []
 
   return integrations.map((it) => ({
@@ -102,7 +104,7 @@ export async function getAnyIntegrationByTelegramId (
   )
   if (socialId == null) return undefined
 
-  const integrations = await client.listIntegrations({ kind: telegramIntegrationKind, socialId: socialId._id })
+  const integrations = await client.listIntegrations({ kind: integrationKind, socialId: socialId._id })
   if (integrations.length === 0) return undefined
 
   const integration = workspace != null ? integrations.find((it) => it.workspaceUuid === workspace) : integrations[0]
@@ -121,7 +123,7 @@ export async function getAnyIntegrationByAccount (
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
   const client = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
-  const integrations = await client.listIntegrations({ kind: telegramIntegrationKind, workspaceUuid: workspace })
+  const integrations = await client.listIntegrations({ kind: integrationKind, workspaceUuid: workspace })
   if (integrations.length === 0) return undefined
 
   const integration = integrations[0]
@@ -151,7 +153,7 @@ export async function createIntegration (socialId: PersonId, workspace: Workspac
   const accountClient = getAccountClient(serviceToken())
   const integration = {
     socialId,
-    kind: telegramIntegrationKind,
+    kind: integrationKind,
     workspaceUuid: workspace
   }
   await accountClient.createIntegration(integration)
@@ -164,11 +166,11 @@ export async function removeIntegrationsByTg (telegramId: number): Promise<void>
     buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
   )
   if (socialId == null) return
-  const integrations = await accountClient.listIntegrations({ kind: telegramIntegrationKind, socialId })
+  const integrations = await accountClient.listIntegrations({ kind: integrationKind, socialId })
   for (const integration of integrations) {
     await accountClient.deleteIntegration({
       socialId,
-      kind: telegramIntegrationKind,
+      kind: integrationKind,
       workspaceUuid: integration.workspaceUuid
     })
   }
