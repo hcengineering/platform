@@ -54,7 +54,6 @@ import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
 import {
-  currentWorkspaceStore,
   openWidget,
   openWidgetTab,
   sidebarStore,
@@ -109,13 +108,11 @@ export async function getToken (
 }
 
 function getTokenRoomName (roomName: string, roomId: Ref<Room>): string {
-  const currentWorkspace = get(currentWorkspaceStore)
-
-  if (currentWorkspace == null) {
+  const currentWorkspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (currentWorkspaceUuid === undefined) {
     throw new Error('Current workspace not found')
   }
-
-  return `${currentWorkspace.uuid}_${roomName}_${roomId}`
+  return `${currentWorkspaceUuid}_${roomName}_${roomId}`
 }
 
 export const liveKitClient = getLiveKitClient()
@@ -596,7 +593,8 @@ async function moveToRoom (
 }
 
 async function connectLK (token: string, room: Room): Promise<void> {
-  await liveKitClient.connect(token, room.type === RoomType.Video)
+  const wsURL = getLiveKitEndpoint()
+  await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
   await Promise.all([
     setMic($myPreferences?.micEnabled ?? lk.remoteParticipants.size < 16),
     setCam(room.type === RoomType.Video && ($myPreferences?.camEnabled ?? true))
