@@ -27,7 +27,8 @@ import {
   type PersonUuid,
   type WorkspaceUuid,
   type AccountUuid,
-  readOnlyGuestAccountUuid
+  readOnlyGuestAccountUuid,
+  systemAccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
@@ -694,6 +695,10 @@ export async function listIntegrations (
 
   if (isAllowedService) {
     socialIds = socialId != null ? [socialId] : undefined
+    if (socialIds === undefined && account !== systemAccountUuid) {
+      const socialIdObjs = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+      socialIds = socialIdObjs.map((it) => it._id)
+    }
   } else {
     const socialIdObjs = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
 
