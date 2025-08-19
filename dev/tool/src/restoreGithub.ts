@@ -1,9 +1,4 @@
-import {
-  type IntegrationKind,
-  type PersonId,
-  type WorkspaceUuid,
-  systemAccountUuid
-} from '@hcengineering/core'
+import { type IntegrationKind, type PersonId, type WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { type Integration } from '@hcengineering/account-client'
@@ -18,7 +13,9 @@ export async function restoreGithubIntegrations (dbUrl: string): Promise<void> {
     const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
     const accountClient = getAccountClient(token)
 
-    const integrationSettings = await pgClient<{ workspaceId: WorkspaceUuid, createdBy: PersonId, installationId: number }[]>`
+    const integrationSettings = await pgClient<
+    { workspaceId: WorkspaceUuid, createdBy: PersonId, installationId: number }[]
+    >`
       SELECT "workspaceId", "createdBy", data -> 'installationId' "installationId"
       FROM github
       WHERE _class='github:class:GithubIntegration'

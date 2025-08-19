@@ -125,7 +125,7 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
-import { restoreGithubIntegrations } from './integrations'
+import { restoreGithubIntegrations } from './restoreGithub'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2701,13 +2701,11 @@ export function devTool (
       })
     })
 
-  program
-    .command('restore-github-integrations')
-    .action(async () => {
-      const { dbUrl } = prepareTools()
+  program.command('restore-github-integrations').action(async () => {
+    const { dbUrl } = prepareTools()
 
-      await restoreGithubIntegrations(dbUrl)
-    })
+    await restoreGithubIntegrations(dbUrl)
+  })
 
   program
     .command('migrate-trusted-v6-accounts')
