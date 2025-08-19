@@ -30,10 +30,7 @@ export class LiveKitClient {
   private lastParticipantNotificationTimeout: number = -1
   private lastParticipantDisconnectTimeout: number = -1
 
-  private readonly wsUrl: string
-
   constructor (wsUrl: string) {
-    this.wsUrl = wsUrl
     const lkRoom = new LKRoom({
       adaptiveStream: true,
       dynacast: true,
@@ -62,15 +59,15 @@ export class LiveKitClient {
         }
       }
     })
-    void lkRoom.prepareConnection(this.wsUrl)
+    void lkRoom.prepareConnection(wsUrl)
     lkRoom.on(RoomEvent.Connected, this.onConnected)
     lkRoom.on(RoomEvent.Disconnected, this.onDisconnected)
     this.liveKitRoom = lkRoom
   }
 
-  async connect (token: string, withVideo: boolean): Promise<void> {
+  async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.currentSessionSupportsVideo = withVideo
-    await this.liveKitRoom.connect(this.wsUrl, token)
+    await this.liveKitRoom.connect(wsURL, token)
   }
 
   async disconnect (): Promise<void> {
