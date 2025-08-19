@@ -1,8 +1,4 @@
-
 use uuid::Uuid;
-
-// -------------------
-
 use actix::{prelude::*};
 
 use crate::ws_hub::{
@@ -131,7 +127,7 @@ impl Actor for WsSession {
         let addr = ctx.address();
 
         let recipient = addr.recipient::<ServerMessage>();
-        println!("WebSocket connected");
+        // println!("WebSocket connected");
         self.hub
             .send(Connect { addr: recipient })
             .into_actor(self)
@@ -139,10 +135,10 @@ impl Actor for WsSession {
                 match res {
                     Ok(id) => {
                         act.id = id;
-                        println!("[ws_session] got id={id}");
+			tracing::info!("WebSocket connected: {id}");
                     }
                     Err(e) => {
-                        eprintln!("[ws_session] connect to hub failed: {e}");
+			tracing::error!("WebSocket failed connect to hub: {e}");
                         _ctx.stop();
                     }
                 }
@@ -152,29 +148,26 @@ impl Actor for WsSession {
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
 	if self.id != 0 { self.hub.do_send(Disconnect { session_id: self.id });	}
-        println!("WebSocket disconnected");
+	tracing::info!("WebSocket disconnected: {:?}",&self.id);
     }
 
 }
 
-// ======= ping ========
 impl actix::Handler<ServerMessage> for WsSession {
     type Result = ();
 
     fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
-        let json = serde_json::to_string(&msg.event)
-            .unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
+        let json = serde_json::to_string(&msg).unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
         ctx.text(json);
     }
 }
-// ======= /ping ========
 
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {
-                println!("Message: {}", text);
+                // println!("Message: {}", text);
                 match serde_json::from_str::<WsCommand>(&text) {
                     Ok(cmd) => self.handle_command(cmd, ctx),
                     Err(err) => ctx.text(format!("Invalid JSON: {}", err)),
@@ -182,7 +175,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
             }
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
             Ok(ws::Message::Close(reason)) => {
-                println!("Closing WS: {:?}", reason);
+                // println!("Closing WS: {:?}", reason);
                 ctx.close(reason);
                 ctx.stop();
             }
@@ -235,7 +228,7 @@ impl WsSession {
 
             WsCommand::Put { key, data, expires_at, ttl, if_match, if_none_match, correlation } => {
 
-                println!("PUT {} = {} (expires_at: {:?}) (ttl: {:?})", key, data, expires_at, ttl);
+                tracing::info!("PUT {} = {} (expires_at: {:?}) (ttl: {:?}) correlation: {:?}", &key, &data, &expires_at, &ttl, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -296,7 +289,7 @@ impl WsSession {
 
 
             WsCommand::Delete { key, correlation, if_match } => {
-                println!("DELETE {}", key);
+                tracing::info!("DELETE {} correlation:{:?}", &key, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -329,7 +322,7 @@ impl WsSession {
             }
 
             WsCommand::Get { key, correlation } => {
-                println!("GET {}{:?}", key, correlation);
+                tracing::info!("GET {} correlation:{:?}", &key, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -364,7 +357,7 @@ impl WsSession {
             }
 
             WsCommand::List { key, correlation } => {
-                println!("LIST {:?}{:?}", key, correlation);
+                tracing::info!("LIST {:?} correlation: {:?}", &key, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -394,7 +387,7 @@ impl WsSession {
 
 	    WsCommand::Sub { key, correlation } => {
 		// LEVENT 3
-	        println!("SUB {}{:?}", key, correlation);
+	        tracing::info!("SUB {} correlation: {:?}", &key, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -415,7 +408,7 @@ impl WsSession {
 
 	    WsCommand::Unsub { key, correlation } => {
 		// LEVENT 4
-	        println!("UNSUB {}{:?}", key, correlation);
+	        tracing::info!("UNSUB {} correlation: {:?}", &key, &correlation);
 
 		// Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) { self.ws_error(ctx, e); return; }
@@ -439,7 +432,7 @@ impl WsSession {
 	    }
 
 	    WsCommand::Sublist { correlation } => {
-	        println!("SUBLIST {:?}", correlation);
+	        tracing::info!("SUBLIST correlation: {:?}", &correlation);
 
 		// w/o Check workspace!
 
@@ -501,8 +494,6 @@ pub async fn handler(
         }
         _ => None,
     };
-
-    //   println!("claims={:?}",&claims);
 
     let session = WsSession {
         redis: redis.get_ref().clone(),

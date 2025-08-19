@@ -75,11 +75,16 @@ async fn interceptor(
     request: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
+
     let secret = SecretString::new(CONFIG.token_secret.clone().into_boxed_str());
 
     let claims = request.extract_claims(&secret)?;
 
+    // TODO: сделать это здесь
+
     request.extensions_mut().insert(claims.to_owned());
+
+    // TODO потом исправить hulyrs: extract_claims
 
     next.call(request).await
 }
@@ -141,7 +146,9 @@ async fn main() -> anyhow::Result<()> {
     let redis_data = web::Data::new(redis.clone());
 
     // starting Hub
-    let hub = WsHub::default().start();
+    // let hub = WsHub::default().start();
+    let hub = WsHub::new(redis.clone()).start();
+
     let hub_data = web::Data::new(hub.clone());
     // starting Logger
     tokio::spawn(start_redis_logger("redis://127.0.0.1/".to_string(), hub.clone()));
@@ -160,7 +167,7 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(payload_config.clone())
             .app_data(redis_data.clone())
-	    .app_data(hub_data.clone()) // Important!
+	    .app_data(hub_data.clone())
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
@@ -187,7 +194,6 @@ async fn main() -> anyhow::Result<()> {
 	    }))
 
  	    .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket
-
 
 /*
 

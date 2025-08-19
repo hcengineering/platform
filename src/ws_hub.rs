@@ -1,7 +1,4 @@
-use std::collections::HashSet;
-
-use actix::prelude::*;
-use std::collections::HashMap;
+use std::collections::{ HashMap, HashSet };
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key { return true; }
@@ -12,14 +9,16 @@ fn subscription_matches(sub_key: &str, key: &str) -> bool {
     false
 }
 
-/// Message from Hub to Session (JSON-string)
+use crate::redis_events::{ RedisEvent, RedisEventAction };
+use serde::Serialize;
 
-use crate::redis_events::RedisEvent;
-
-#[derive(Message, Clone, Debug)]
+#[derive(Message, Clone, Serialize, Debug)]
 #[rtype(result = "()")]
 pub struct ServerMessage {
-    pub event: RedisEvent,
+    #[serde(flatten)]
+    pub event: RedisEvent, // поля RedisEvent «вливаются» в корень JSON
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>, // будет только при Set
 }
 
 /// Count of active sessions
@@ -33,24 +32,23 @@ pub struct WsHub {
     sessions: HashMap<SessionId, Recipient<ServerMessage>>,
     subs: HashMap<String, HashSet<SessionId>>, // Subscriptions array: key -> {id, id, id ...}
     next_id: SessionId,
+    redis: Arc<Mutex<MultiplexedConnection>>,
 }
 
-/// Init WsHub
-impl Default for WsHub {
-    fn default() -> Self {
+impl WsHub {
+    pub fn new(redis: Arc<Mutex<MultiplexedConnection>>) -> Self {
         Self {
-	    sessions: HashMap::new(),
+            sessions: HashMap::new(),
             subs: HashMap::new(),
-	    next_id: 1u64,
-	 }
+            next_id: 1,
+            redis,
+        }
     }
 }
 
 impl Actor for WsHub {
     type Context = Context<Self>;
 }
-
-
 
 /// Connect
 #[derive(Message)]
@@ -67,7 +65,7 @@ impl Handler<Connect> for WsHub {
         let id = self.next_id;
         self.next_id = self.next_id.wrapping_add(1);
         self.sessions.insert(id, msg.addr);
-        println!("[ws_hub] session connected: id={id} (total={})", self.sessions.len());
+        // tracing::info!("session connected: id={id} (total={})", self.sessions.len());
         id
     }
 }
@@ -93,9 +91,9 @@ impl Handler<Disconnect> for WsHub {
 
         let existed = self.sessions.remove(&msg.session_id).is_some();
         if existed {
-            println!("[ws_hub] session disconnected: id={} (total={})", msg.session_id, self.sessions.len());
+            // tracing::info!("session disconnected: id={} (total={})", msg.session_id, self.sessions.len());
         } else {
-            println!("[ws_hub] disconnect for unknown id={}", msg.session_id);
+            tracing::warn!("disconnect for unknown id={}", msg.session_id);
         }
     }
 }
@@ -217,25 +215,54 @@ impl WsHub {
     }
 }
 
-/// Send Messages
+use actix::prelude::*;
+use actix::ActorFutureExt;
+use actix::fut::ready;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use redis::aio::MultiplexedConnection;
+
 impl Handler<RedisEvent> for WsHub {
-    type Result = ();
+    type Result = ResponseActFuture<Self, ()>;
 
-    fn handle(&mut self, msg: RedisEvent, _ctx: &mut Context<Self>) {
+    fn handle(&mut self, msg: RedisEvent, _ctx: &mut Context<Self>) -> Self::Result {
         let targets = self.subscribers_for(&msg.key);
-        if targets.is_empty() { return; }
-
-        // TODO: redis_read
-	// conn: &mut MultiplexedConnection,
-	let value = redis::cmd("GET").arg(&msg.key).query_async(conn).await?;
-
-
-        let payload = ServerMessage { event: msg.clone() };
-
-        for sid in targets {
-            if let Some(rcpt) = self.sessions.get(&sid) {
-                let _ = rcpt.do_send(payload.clone());
-            }
+        if targets.is_empty() {
+            return Box::pin(actix::fut::ready(()).into_actor(self));
         }
+
+        let recipients: Vec<Recipient<ServerMessage>> = targets.into_iter()
+            .filter_map(|sid| self.sessions.get(&sid).cloned())
+            .collect();
+
+        let redis = self.redis.clone();
+        let event = msg.clone();
+        let need_get = matches!(msg.action, RedisEventAction::Set);
+
+        Box::pin(
+            async move {
+                let value = if need_get {
+
+                    let mut conn = redis.lock().await;
+                    match redis::cmd("GET").arg(&event.key).query_async::<Option<String>>(&mut *conn).await
+                    {
+                        Ok(v) => v,
+                        Err(e) => {
+                            tracing::warn!("redis GET {} failed: {}", &event.key, e);
+                            None
+                        }
+                    }
+                } else {
+                    None
+                };
+
+                let payload = ServerMessage { event, value };
+
+                for rcpt in recipients {
+                    let _ = rcpt.do_send(payload.clone());
+                }
+            }
+            .into_actor(self)
+        )
     }
 }
