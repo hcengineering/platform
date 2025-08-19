@@ -125,7 +125,7 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
-import { performIntegrationMigrations } from './integrations'
+import { restoreGithubIntegrations } from './integrations'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2702,13 +2702,11 @@ export function devTool (
     })
 
   program
-    .command('migrate-integrations')
-    .option('--db <db>', 'DB name', 'gmail-service')
-    .option('--region <region>', 'DB region')
-    .action(async (cmd: { db: string, region?: string }) => {
-      const { dbUrl, txes } = prepareTools()
+    .command('restore-github-integrations')
+    .action(async () => {
+      const { dbUrl } = prepareTools()
 
-      await performIntegrationMigrations(dbUrl, cmd.region ?? null, txes)
+      await restoreGithubIntegrations(dbUrl)
     })
 
   program
