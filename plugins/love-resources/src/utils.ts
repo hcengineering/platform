@@ -53,12 +53,7 @@ import { closePanel, getCurrentLocation, navigate, panelstore, showPopup } from 
 import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
-import {
-  openWidget,
-  openWidgetTab,
-  sidebarStore,
-  updateWidgetState
-} from '@hcengineering/workbench-resources'
+import { openWidget, openWidgetTab, sidebarStore, updateWidgetState } from '@hcengineering/workbench-resources'
 import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
