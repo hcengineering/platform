@@ -41,5 +41,6 @@ loadMetadata(love.icon, {
   MeetingMinutes: `${icons}#meeting-minutes`
 })
 loadMetadata(love.sound, {
-  Knock: require('../assets/knock.wav')
+  Knock: require('../assets/knock.wav'),
+  MeetingEndNotification: require('../assets/meeting-end-notification.wav')
 })

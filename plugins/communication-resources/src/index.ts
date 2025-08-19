@@ -38,7 +38,7 @@ import {
   showOriginalMessage,
   translateMessage
 } from './actions'
-import { createPoll } from './poll'
+import { createPoll, getPollTitle } from './poll'
 
 export { isActivityMessage } from './activity'
 export * from './stores'
@@ -56,6 +56,7 @@ export default async (): Promise<Resources> => ({
     CreatePoll,
     PollPreview,
     CreatePollFn: createPoll,
+    GetPollTitleFn: getPollTitle,
     UserVoteActivityPresenter,
     UserVotesPresenter
   },

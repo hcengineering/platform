@@ -45,16 +45,13 @@
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
+  import { toggleCamState, toggleMicState, state } from '@hcengineering/media-resources'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
     endMeeting,
     getRoomName,
-    isCameraEnabled,
-    isConnected,
-    isMicEnabled,
     isShareWithSound,
     isSharingEnabled,
     leaveRoom,
@@ -62,6 +59,7 @@
     setShare,
     tryConnect
   } from '../utils'
+  import { lkSessionConnected } from '../liveKitClient'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import MicSettingPopup from './meeting/MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
@@ -92,6 +90,8 @@
   const allowShare: boolean = true
 
   $: allowCam = $currentRoom?.type === RoomType.Video
+  $: isMicEnabled = $state.microphone?.enabled === true
+  $: isCamEnabled = $state.camera?.enabled === true
 
   const dispatch = createEventDispatcher()
 
@@ -188,14 +188,14 @@
       </div>
     </Scroller>
   </div>
-  {#if joined && $isConnected}
+  {#if joined && $lkSessionConnected}
     <div class="room-btns" class:no-video={!allowCam}>
       <SplitButton
         size={'large'}
-        icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
+        icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
+        label={isMicEnabled ? love.string.Mute : love.string.UnMute}
         showTooltip={{
-          label: $isMicEnabled ? love.string.Mute : love.string.UnMute
+          label: isMicEnabled ? love.string.Mute : love.string.UnMute
         }}
         action={toggleMicState}
         secondIcon={IconUpOutline}
@@ -205,10 +205,10 @@
       {#if allowCam}
         <SplitButton
           size={'large'}
-          icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-          label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
+          icon={isCamEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
+          label={isCamEnabled ? love.string.StopVideo : love.string.StartVideo}
           showTooltip={{
-            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo
+            label: isCamEnabled ? love.string.StopVideo : love.string.StartVideo
           }}
           action={toggleCamState}
           secondIcon={IconUpOutline}
@@ -221,7 +221,7 @@
           size={'large'}
           icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          disabled={($screenSharing && !$isSharingEnabled) || !$lkSessionConnected}
           action={changeShare}
           secondIcon={IconUpOutline}
           secondAction={shareSettings}

@@ -45,7 +45,10 @@
 {#if notification.message}
   <div class="reaction-notification">
     <PreviewTemplate socialId={content.creator} date={notification.created} color="secondary" showSeparator={false}>
-      <Label label={inbox.string.ReactedToYourMessage} />
+      <svelte:fragment slot="content">
+        <span class="ml-1-5" />
+        <Label label={inbox.string.ReactedToYourMessage} />
+      </svelte:fragment>
     </PreviewTemplate>
 
     <div class="reaction-notification__body">

@@ -19,6 +19,7 @@
   import setting from '@hcengineering/setting'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import PhoneInput from './PhoneInput.svelte'
   import telegram from '../plugin'
   import PinPad from './PinPad.svelte'
 
@@ -165,7 +166,7 @@
     {:else}
       <p><Label label={telegram.string.PhoneDescr} /></p>
       {#await getCurrent() then value}
-        <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+        <PhoneInput label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
       {/await}
     {/if}
     <div class="footer">

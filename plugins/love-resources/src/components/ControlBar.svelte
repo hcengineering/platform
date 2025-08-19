@@ -33,15 +33,12 @@
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
-  import { toggleCamState, toggleMicState } from '@hcengineering/media-resources'
+  import { toggleCamState, toggleMicState, state } from '@hcengineering/media-resources'
 
   import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
-    isCameraEnabled,
-    isConnected,
     isFullScreen,
-    isMicEnabled,
     isRecording,
     isRecordingAvailable,
     isShareWithSound,
@@ -53,7 +50,8 @@
     screenSharing,
     setShare,
     startTranscription,
-    stopTranscription
+    stopTranscription,
+    lk
   } from '../utils'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
@@ -61,6 +59,8 @@
   import RoomAccessPopup from './RoomAccessPopup.svelte'
   import RoomModal from './RoomModal.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
+  import { lkSessionConnected } from '../liveKitClient'
+  import emojiPlugin from '@hcengineering/emoji'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -74,6 +74,8 @@
 
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
+  $: isMicEnabled = $state.microphone?.enabled === true
+  $: isCamEnabled = $state.camera?.enabled === true
 
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
@@ -137,16 +139,25 @@
   function maximize (): void {
     showPopup(RoomModal, { room }, 'full-centered')
   }
+
+  function addReaction (event: MouseEvent): void {
+    showPopup(
+      emojiPlugin.component.EmojiPopup,
+      {},
+      event?.target as HTMLElement,
+      async (result) => {
+        const emoji = result?.text
+        if (emoji == null) return
+        void lk.localParticipant.sendChatMessage(emoji, { topic: 'reaction' })
+      },
+      () => {}
+    )
+  }
 </script>
 
 <ControlBarContainer bind:noLabel>
-  <!-- <svelte:fragment slot="right">
-    {#if $isConnected && isTranscriptionAllowed() && $isTranscription}
-      <RoomLanguageSelector {room} kind="icon" />
-    {/if}
-  </svelte:fragment> -->
-  <svelte:fragment slot="center">
-    {#if room._id !== love.ids.Reception}
+  <svelte:fragment slot="right">
+    {#if room._id !== love.ids.Reception && $lkSessionConnected}
       <ModernButton
         icon={roomAccessIcon[room.access]}
         iconProps={{
@@ -164,12 +175,15 @@
         on:click={setAccess}
       />
     {/if}
-    {#if $isConnected}
+  </svelte:fragment>
+  <svelte:fragment slot="center">
+    {#if $lkSessionConnected}
+      <ModernButton icon={emojiPlugin.icon.Emoji} kind={'secondary'} size={'large'} on:click={addReaction} />
       <SplitButton
         size={'large'}
-        icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
+        icon={isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
         showTooltip={{
-          label: $isMicEnabled ? love.string.Mute : love.string.UnMute,
+          label: isMicEnabled ? love.string.Mute : love.string.UnMute,
           keys: micKeys
         }}
         action={toggleMicState}
@@ -180,9 +194,9 @@
       {#if allowCam}
         <SplitButton
           size={'large'}
-          icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
+          icon={isCamEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
           showTooltip={{
-            label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo,
+            label: isCamEnabled ? love.string.StopVideo : love.string.StartVideo,
             keys: camKeys
           }}
           action={toggleCamState}
@@ -199,7 +213,7 @@
             fill: $isSharingEnabled ? 'var(--bg-negative-default)' : 'var(--bg-positive-default)'
           }}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          disabled={($screenSharing && !$isSharingEnabled) || !$lkSessionConnected}
           action={changeShare}
           secondIcon={IconUpOutline}
           secondAction={shareSettings}
@@ -210,13 +224,13 @@
         <ModernButton
           icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
           tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
-          disabled={!$isConnected}
+          disabled={!$lkSessionConnected}
           kind={'secondary'}
           size={'large'}
           on:click={() => record(room)}
         />
       {/if}
-      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && isTranscriptionAllowed() && $isConnected}
+      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && isTranscriptionAllowed() && $lkSessionConnected}
         <ModernButton
           icon={view.icon.Feather}
           iconProps={$isTranscription ? { fill: 'var(--button-negative-BackgroundColor)' } : {}}
@@ -232,10 +246,27 @@
           }}
         />
       {/if}
+    {:else}
+      <ModernButton
+        icon={roomAccessIcon[room.access]}
+        iconProps={{
+          fill:
+            room.access === RoomAccess.Open
+              ? 'var(--bg-positive-default)'
+              : room.access === RoomAccess.DND
+                ? 'var(--bg-negative-default)'
+                : 'currentColor'
+        }}
+        tooltip={{ label: love.string.ChangeAccess }}
+        kind={'secondary'}
+        size={'large'}
+        disabled={isOffice(room) && room.person !== me}
+        on:click={setAccess}
+      />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="left">
-    {#if $isConnected && withVideo && onFullScreen}
+    {#if $lkSessionConnected && withVideo && onFullScreen}
       <ModernButton
         icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
         tooltip={{
@@ -250,7 +281,7 @@
       />
     {/if}
 
-    {#if ($screenSharing || room.type === RoomType.Video) && $isConnected && canMaximize}
+    {#if ($screenSharing || room.type === RoomType.Video) && $lkSessionConnected && canMaximize}
       <ModernButton
         icon={IconMaximize}
         tooltip={{
@@ -263,7 +294,7 @@
         on:click={maximize}
       />
     {/if}
-    {#if $isConnected && moreItems.length > 0}
+    {#if $lkSessionConnected && moreItems.length > 0}
       <ButtonMenu
         items={moreItems}
         icon={IconMoreV}

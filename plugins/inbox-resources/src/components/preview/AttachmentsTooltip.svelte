@@ -13,17 +13,16 @@
 
 <script lang="ts">
   import { Attachment } from '@hcengineering/communication-types'
-  import { isBlobAttachment } from '@hcengineering/communication-shared'
+
+  import AttachmentName from './AttachmentName.svelte'
 
   export let attachments: Attachment[] = []
-
-  $: blobs = attachments.filter(isBlobAttachment)
 </script>
 
 <div class="tooltip">
-  {#each blobs as blob}
+  {#each attachments as attachment, i}
     <div>
-      {blob.params.fileName}
+      <AttachmentName {attachment} lower={i > 0} />
     </div>
   {/each}
 </div>

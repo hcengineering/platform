@@ -312,6 +312,7 @@ export interface LabelAndProps {
   timeout?: number
   style?: 'default' | 'modern'
   noArrow?: boolean
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 export interface ListItem {
