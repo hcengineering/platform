@@ -39,8 +39,17 @@
   const account = getCurrentAccount()
   const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
-  $: firstName = $myEmployeeStore !== undefined ? getFirstName($myEmployeeStore.name) : ''
-  $: lastName = $myEmployeeStore !== undefined ? getLastName($myEmployeeStore.name) : ''
+  let firstName = ''
+  let lastName = ''
+  let initialized = false
+
+  // Initialize names only once when store value changes from undefined
+  // not to interfere with further user editing
+  $: if ($myEmployeeStore !== undefined && !initialized) {
+    firstName = getFirstName($myEmployeeStore.name)
+    lastName = getLastName($myEmployeeStore.name)
+    initialized = true
+  }
 
   let avatarEditor: EditableAvatar
   async function onAvatarDone (e: any): Promise<void> {
