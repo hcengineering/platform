@@ -268,13 +268,7 @@ function getImageTransformParams (accept: string, transform: string): ImageTrans
 
 async function writeTempFile (path: string, stream: Readable): Promise<void> {
   const outp = createWriteStream(path)
-
-  try {
-    await pipeline(stream, outp)
-  } finally {
-    if (!stream.destroyed) stream.destroy()
-    if (!outp.destroyed) outp.destroy()
-  }
+  await pipeline(stream, outp)
 }
 
 async function writeCacheEntryToResponse (ctx: MeasureContext, cached: CacheEntry, res: Response): Promise<void> {
