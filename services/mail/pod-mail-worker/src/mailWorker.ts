@@ -133,21 +133,19 @@ export class MailWorker {
         this.ctx,
         QueueTopic.Tx,
         this.queue.getClientId(),
-        async (msgs) => {
-          for (const msg of msgs) {
-            const workspaceUuid = msg.workspace
-            for (const tx of msg.value) {
-              // Check for new channel creation
-              if (isNewChannelTx(tx)) {
-                await this.handleNewChannelTx(workspaceUuid, tx)
-                continue
-              }
-              // Check for message events
-              const messageEvent = toMessageEvent(tx)
-              if (messageEvent !== undefined) {
-                await this.handleNewMessage(workspaceUuid, messageEvent)
-              }
-            }
+        async (ctx, msg) => {
+          const workspaceUuid = msg.workspace
+          const tx = msg.value
+
+          // Check for new channel creation
+          if (isNewChannelTx(tx)) {
+            await this.handleNewChannelTx(workspaceUuid, tx)
+            return
+          }
+          // Check for message events
+          const messageEvent = toMessageEvent(tx)
+          if (messageEvent !== undefined) {
+            await this.handleNewMessage(workspaceUuid, messageEvent)
           }
         },
         {

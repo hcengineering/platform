@@ -58,7 +58,8 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
             objectClass !== core.class.BenchmarkDoc &&
             this.context.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
           ) {
-            txToStore.push(tx)
+            const { meta, ...txData } = tx
+            txToStore.push(txData)
           }
         }
       }

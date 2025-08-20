@@ -24,6 +24,7 @@ export type CacheEntry = Omit<BlobBody, 'body'> & {
 }
 
 export interface Cache {
+  enabled: (size: number) => boolean
   get: (key: string) => CacheEntry | undefined
   set: (key: string, value: CacheEntry) => void
   delete: (key: string) => void
@@ -32,10 +33,14 @@ export interface Cache {
 class CacheImpl implements Cache {
   private readonly cache: LRUCache<string, CacheEntry>
 
-  constructor (options: CacheConfig) {
+  constructor (private readonly options: CacheConfig) {
     this.cache = new LRUCache({
       max: options.blobCount
     })
+  }
+
+  enabled (size: number): boolean {
+    return size <= this.options.blobSize
   }
 
   get (key: string): CacheEntry | undefined {
@@ -52,6 +57,10 @@ class CacheImpl implements Cache {
 }
 
 class NoopCache implements Cache {
+  enabled (): boolean {
+    return false
+  }
+
   get (): undefined {
     return undefined
   }
@@ -70,11 +79,15 @@ export async function streamToBuffer (data: Buffer | Readable): Promise<Buffer> 
     return data
   }
 
-  const chunks: Buffer[] = []
-  for await (const chunk of data) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+  try {
+    const chunks: Buffer[] = []
+    for await (const chunk of data) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+    }
+    return Buffer.concat(chunks)
+  } finally {
+    data.destroy()
   }
-  return Buffer.concat(chunks)
 }
 
 export function createCache (options: CacheConfig): Cache {

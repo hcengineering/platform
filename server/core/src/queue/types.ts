@@ -29,7 +29,7 @@ export interface ConsumerHandle {
 
 export interface ConsumerMessage<T> {
   workspace: WorkspaceUuid
-  value: T[]
+  value: T
 }
 
 export interface ConsumerControl {
@@ -48,7 +48,7 @@ export interface PlatformQueue {
     ctx: MeasureContext,
     topic: QueueTopic | string,
     groupId: string,
-    onMessage: (msg: ConsumerMessage<T>[], queue: ConsumerControl) => Promise<void>,
+    onMessage: (ctx: MeasureContext, msg: ConsumerMessage<T>, queue: ConsumerControl) => Promise<void>,
     options?: {
       fromBegining?: boolean
     }
@@ -71,7 +71,7 @@ export interface PlatformQueue {
  * Create a producer for a topic.
  */
 export interface PlatformQueueProducer<T> {
-  send: (workspace: WorkspaceUuid, msgs: T[], partitionKey?: string) => Promise<void>
+  send: (ctx: MeasureContext, workspace: WorkspaceUuid, msgs: T[], partitionKey?: string) => Promise<void>
   close: () => Promise<void>
 
   getQueue: () => PlatformQueue
