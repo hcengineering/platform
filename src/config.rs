@@ -28,6 +28,8 @@ pub struct Config {
 
     pub db_connection: String,
     pub db_scheme: String,
+
+    pub s3_bucket: String,
 }
 
 pub mod hulyrs {
@@ -51,6 +53,8 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
 
         db_connection = "postgresql://root@huly.local:26257/defaultdb?sslmode=disable"
         db_scheme = "hulylake"
+
+        s3_bucket = "hulylake"
     "#;
 
     let mut builder =

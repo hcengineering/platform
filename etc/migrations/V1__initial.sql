@@ -10,8 +10,9 @@ create unique index blob_hash on blob(hash);
 create table object(
     workspace uuid not null,
     key text not null,
-    part int not null,
+    part smallint not null,
     data jsonb not null,
+    inline bytea,
 
     primary key (workspace, key, part)
 )

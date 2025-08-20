@@ -1,8 +1,9 @@
 use std::pin::Pin;
 
 use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use serde::de::DeserializeOwned;
 use tokio_postgres::{self as pg};
+use tokio_postgres::{NoTls, row};
 use tracing::*;
 
 use crate::config::CONFIG;
@@ -100,42 +101,47 @@ pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(
     Ok(())
 }
 
-pub struct Object {
-    part: u32,
-    data: serde_json::Value,
+#[derive(Debug)]
+pub struct Object<T: DeserializeOwned + std::fmt::Debug> {
+    pub part: u16,
+    pub inline: Option<Vec<u8>>,
+    pub data: T,
 }
 
-pub async fn find_parts(
+pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
-) -> anyhow::Result<Vec<Object>> {
+) -> anyhow::Result<Vec<Object<T>>> {
     let connection = pool.get().await?;
 
-    let parts = connection
+    let rows = connection
         .query(
-            "select part, data from object where workspace = $1 and key = $1 order by part",
+            "select part, data, inline from object where workspace = $1 and key = $2 order by part",
             &[&workspace, &key],
         )
         .await?;
 
-    let parts = parts
-        .into_iter()
-        .map(|row| {
-            let part = row.get::<_, u32>("part");
-            let data = row.get::<_, serde_json::Value>("data");
-            Object { part, data }
-        })
-        .collect();
+    let mut parts = Vec::with_capacity(rows.len());
+
+    for row in rows {
+        let part = row.get::<_, i16>("part") as u16;
+        let data = row.get::<_, serde_json::Value>("data");
+        let inline = row.get::<_, Option<Vec<u8>>>("inline");
+
+        let data = serde_json::from_value(data)?;
+        parts.push(Object { part, inline, data })
+    }
 
     Ok(parts)
 }
 
-pub async fn insert_part<D: serde::Serialize>(
+pub async fn append_part<D: serde::Serialize>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
     part: u32,
+    inline: Option<Vec<u8>>,
     data: D,
 ) -> anyhow::Result<()> {
     let connection = pool.get().await?;
@@ -144,18 +150,19 @@ pub async fn insert_part<D: serde::Serialize>(
 
     connection
         .execute(
-            "insert into object (workspace, key, part, data) values ($1, $2, $3, $4)",
-            &[&workspace, &key, &part, &data],
+            "insert into object (workspace, key, part, inline, data) values ($1, $2, $3, $4, $5)",
+            &[&workspace, &key, &part, &inline, &data],
         )
         .await?;
 
     Ok(())
 }
 
-pub async fn shrink<D: serde::Serialize>(
+pub async fn set_part<D: serde::Serialize>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
+    inline: Option<Vec<u8>>,
     data: D,
 ) -> anyhow::Result<()> {
     let mut connection = pool.get().await?;
@@ -164,7 +171,7 @@ pub async fn shrink<D: serde::Serialize>(
 
     transaction
         .execute(
-            "delete from object where workspace = $1 and key = $2 and part > 0",
+            "delete from object where workspace = $1 and key = $2",
             &[&workspace, &key],
         )
         .await?;
@@ -173,8 +180,13 @@ pub async fn shrink<D: serde::Serialize>(
 
     transaction
         .execute(
-            "update object set data=$1 where workspace = $2 and key = $3 and part = 0",
-            &[&data, &workspace, &key],
+            r#"
+            insert into object (workspace, key, part, inline, data) values ($1, $2, 0, $3, $4)
+            on conflict (workspace, key, part) do update set
+                inline = $3,
+                data = $4
+            "#,
+            &[&workspace, &key, &inline, &data],
         )
         .await?;
 

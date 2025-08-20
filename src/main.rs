@@ -6,7 +6,7 @@ use actix_web::{
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
     middleware::{Next, from_fn},
-    web::{Data, Path, get, scope},
+    web::{self, Data, Path},
 };
 use tracing::*;
 use tracing_actix_web::TracingLogger;
@@ -15,7 +15,9 @@ use uuid::Uuid;
 use hulyrs::services::jwt::actix::ServiceRequestExt;
 
 mod config;
+mod handlers;
 mod postgres;
+mod s3;
 
 use config::CONFIG;
 
@@ -44,6 +46,7 @@ async fn main() -> anyhow::Result<()> {
     );
 
     let postgres = postgres::pool().await?;
+    let s3 = s3::client().await;
 
     let bind_to = SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
@@ -81,19 +84,22 @@ async fn main() -> anyhow::Result<()> {
             .supports_credentials()
             .max_age(3600);
 
-        //const KEY_PATH: &str = "/{key:.*}";
+        const KEY_PATH: &str = "/{key:.*}";
 
         App::new()
             .app_data(Data::new(postgres.clone()))
+            .app_data(Data::new(s3.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(
-                scope("/api/{workspace}").wrap(from_fn(auth)), //.route(KEY_PATH, get().to(handlers::get))
-                                                               //.route(KEY_PATH, put().to(handlers::put))
-                                                               //.route(KEY_PATH, post().to(handlers::post))
-                                                               //.route(KEY_PATH, delete().to(handlers::delete)),
+                web::scope("/api/{workspace}")
+                    .wrap(from_fn(auth))
+                    .route(KEY_PATH, web::get().to(handlers::get))
+                    .route(KEY_PATH, web::put().to(handlers::put))
+                    .route(KEY_PATH, web::post().to(handlers::post))
+                    .route(KEY_PATH, web::delete().to(handlers::delete)),
             )
-            .route("/status", get().to(async || "ok"))
+            .route("/status", web::get().to(async || "ok"))
     })
     .bind(bind_to)?
     .run();
