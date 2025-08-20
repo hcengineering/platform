@@ -14,8 +14,8 @@ describe('queue', () => {
         const to = setTimeout(() => {
           reject(new Error(`Timeout waiting for messages:${msgCount}`))
         }, 100000)
-        queue.createConsumer<string>(testCtx, 'qtest', genId, async (msg) => {
-          msgCount += msg.length
+        queue.createConsumer<string>(testCtx, 'qtest', genId, async (ctx, msg) => {
+          msgCount += 1
           console.log('msgCount', msgCount)
           if (msgCount === docsCount) {
             clearTimeout(to)
@@ -26,7 +26,7 @@ describe('queue', () => {
 
       const producer = queue.getProducer<string>(testCtx, 'qtest')
       for (let i = 0; i < docsCount; i++) {
-        await producer.send(genId as any as WorkspaceUuid, ['msg' + i])
+        await producer.send(testCtx, genId as any as WorkspaceUuid, ['msg' + i])
       }
 
       await p1
@@ -45,7 +45,7 @@ describe('queue', () => {
     try {
       let counter = 2
       const p = new Promise<void>((resolve, reject) => {
-        queue.createConsumer<string>(testCtx, 'test', genId, async (msg) => {
+        queue.createConsumer<string>(testCtx, 'test', genId, async (ctx, msg) => {
           counter--
           if (counter > 0) {
             throw new Error('Processing Error')
@@ -55,7 +55,7 @@ describe('queue', () => {
       })
 
       const producer = queue.getProducer<string>(testCtx, 'test')
-      await producer.send(genId as any as WorkspaceUuid, ['msg'])
+      await producer.send(testCtx, genId as any as WorkspaceUuid, ['msg'])
 
       await p
     } finally {

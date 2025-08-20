@@ -42,6 +42,7 @@ import { generateId } from './utils'
  */
 export interface Tx extends Doc {
   objectSpace: Ref<Space> // space where transaction will operate
+  meta?: Record<string, string | number | boolean> // meta information about transaction, non persisted to final DB's
 }
 
 /**
