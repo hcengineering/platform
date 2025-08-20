@@ -13,7 +13,10 @@ serde = "1.0.219"
 actix-web = "4.11.0"
 actix-cors = "0.7.1"
 refinery = { version = "0.8.16", features = ["tokio-postgres"] }
-tokio-postgres = "0.7.13"
+tokio-postgres = { version = "0.7.13", features = [
+    "with-uuid-1",
+    "with-serde_json-1",
+] }
 bb8 = "0.9.0"
 bb8-postgres = { version = "0.9.0", features = ["with-uuid-1"] }
 md5 = "0.8.0"

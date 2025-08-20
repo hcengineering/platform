@@ -6,7 +6,7 @@ use actix_web::{
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
     middleware::{Next, from_fn},
-    web::{Data, Path, delete, get, post, put, scope},
+    web::{Data, Path, get, scope},
 };
 use tracing::*;
 use tracing_actix_web::TracingLogger;
@@ -15,9 +15,7 @@ use uuid::Uuid;
 use hulyrs::services::jwt::actix::ServiceRequestExt;
 
 mod config;
-mod handlers;
 mod postgres;
-mod s3;
 
 use config::CONFIG;
 
@@ -45,7 +43,6 @@ async fn main() -> anyhow::Result<()> {
         env!("CARGO_PKG_VERSION")
     );
 
-    let s3 = s3::client().await;
     let postgres = postgres::pool().await?;
 
     let bind_to = SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
@@ -84,20 +81,17 @@ async fn main() -> anyhow::Result<()> {
             .supports_credentials()
             .max_age(3600);
 
-        const KEY_PATH: &str = "/{key:.*}";
+        //const KEY_PATH: &str = "/{key:.*}";
 
         App::new()
             .app_data(Data::new(postgres.clone()))
-            .app_data(Data::new(s3.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(
-                scope("/api/{workspace}")
-                    .wrap(from_fn(auth))
-                    .route(KEY_PATH, get().to(handlers::get))
-                    .route(KEY_PATH, put().to(handlers::put))
-                    .route(KEY_PATH, post().to(handlers::post))
-                    .route(KEY_PATH, delete().to(handlers::delete)),
+                scope("/api/{workspace}").wrap(from_fn(auth)), //.route(KEY_PATH, get().to(handlers::get))
+                                                               //.route(KEY_PATH, put().to(handlers::put))
+                                                               //.route(KEY_PATH, post().to(handlers::post))
+                                                               //.route(KEY_PATH, delete().to(handlers::delete)),
             )
             .route("/status", get().to(async || "ok"))
     })
@@ -107,40 +101,6 @@ async fn main() -> anyhow::Result<()> {
     info!("http listener on {}", bind_to);
 
     server.await?;
-
-    Ok(())
-}
-
-#[tokio::main]
-async fn main_() -> anyhow::Result<()> {
-    use crate::{postgres::Pool, s3};
-    use aws_sdk_s3::{presigning::PresigningConfig, primitives::ByteStream};
-
-    initialize_tracing();
-
-    let expires_in: std::time::Duration = std::time::Duration::from_secs(600);
-    let expires_in: aws_sdk_s3::presigning::PresigningConfig =
-        PresigningConfig::expires_in(expires_in).unwrap();
-
-    let s3 = s3::client().await;
-
-    let presigned_request = s3
-        .put_object()
-        .set_bucket(Some("hulylake".into()))
-        .set_key(Some("myobject".into()))
-        .presigned(expires_in)
-        .await
-        .unwrap();
-
-    let url = presigned_request.uri();
-
-    debug!(?url, "presigned request");
-
-    let client = reqwest::Client::new();
-    let res = client.put(url).body("hello world").send().await.unwrap();
-
-    debug!(?res, "response");
-    debug!("body: {:?}", res.text().await.unwrap());
 
     Ok(())
 }
