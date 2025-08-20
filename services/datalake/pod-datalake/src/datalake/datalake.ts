@@ -144,7 +144,7 @@ export class DatalakeImpl implements Datalake {
 
     try {
       const events = Array.isArray(name) ? name.map((n) => blobEvents.deleted(n)) : [blobEvents.deleted(name)]
-      await this.producer.send(workspace, events)
+      await this.producer.send(ctx, workspace, events)
     } catch (err) {
       ctx.error('failed to send blob deleted event', { workspace, name, err })
     }
@@ -185,7 +185,7 @@ export class DatalakeImpl implements Datalake {
           blob != null
             ? blobEvents.updated(name, { contentType, lastModified, size, etag })
             : blobEvents.created(name, { contentType, lastModified, size, etag })
-        await this.producer.send(workspace, [event])
+        await this.producer.send(ctx, workspace, [event])
       } catch (err) {
         ctx.error('failed to send blob created event', { workspace, name, err })
       }
@@ -246,7 +246,7 @@ export class DatalakeImpl implements Datalake {
           blob != null
             ? blobEvents.updated(name, { contentType, lastModified, size, etag })
             : blobEvents.created(name, { contentType, lastModified, size, etag })
-        await this.producer.send(workspace, [event])
+        await this.producer.send(ctx, workspace, [event])
       } catch (err) {
         this.cache.delete(hash)
         ctx.error('failed to send blob created event', { workspace, name, err })
@@ -286,7 +286,7 @@ export class DatalakeImpl implements Datalake {
         data != null
           ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
           : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
-      await this.producer.send(workspace, [event])
+      await this.producer.send(ctx, workspace, [event])
     } catch (err) {
       ctx.error('failed to send blob created event', { workspace, name, err })
     }

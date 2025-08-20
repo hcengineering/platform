@@ -91,20 +91,16 @@ export const start = async (): Promise<void> => {
     ctx,
     QueueTopic.TelegramBot,
     queue.getClientId(),
-    async (messages) => {
-      for (const message of messages) {
-        const workspace = message.workspace
-        const records = message.value
-        for (const record of records) {
-          switch (record.type) {
-            case TelegramQueueMessageType.Notification:
-              await worker.processNotification(workspace, record, bot)
-              break
-            case TelegramQueueMessageType.WorkspaceSubscription:
-              await worker.processWorkspaceSubscription(workspace, record)
-              break
-          }
-        }
+    async (ctx, message) => {
+      const workspace = message.workspace
+      const record = message.value
+      switch (record.type) {
+        case TelegramQueueMessageType.Notification:
+          await worker.processNotification(workspace, record, bot)
+          break
+        case TelegramQueueMessageType.WorkspaceSubscription:
+          await worker.processWorkspaceSubscription(workspace, record)
+          break
       }
     }
   )

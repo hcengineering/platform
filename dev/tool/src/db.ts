@@ -1667,7 +1667,7 @@ export async function restoreFromv6All (
       const queue = getPlatformQueue('tool', workspace.region)
       const wsProducer = queue.getProducer<QueueWorkspaceMessage>(ctx, QueueTopic.Workspace)
 
-      await wsProducer.send(uuid, [workspaceEvents.restoring()])
+      await wsProducer.send(ctx, uuid, [workspaceEvents.restoring()])
 
       const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -1693,7 +1693,7 @@ export async function restoreFromv6All (
         await sendTransactorEvent(uuid, 'force-close')
 
         ctx.info('workspace restored', { dataId })
-        await wsProducer.send(uuid, [workspaceEvents.restored()])
+        await wsProducer.send(ctx, uuid, [workspaceEvents.restored()])
 
         if (activeWorkspaces.has(uuid)) {
           // set workspace back to active

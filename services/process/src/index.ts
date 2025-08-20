@@ -54,14 +54,10 @@ async function main (): Promise<void> {
     ctx,
     QueueTopic.Process,
     queue.getClientId(),
-    async (messages) => {
-      for (const message of messages) {
-        const ws = message.workspace
-        const records = message.value
-        for (const record of records) {
-          void messageHandler(record, ws, ctx)
-        }
-      }
+    async (ct, message) => {
+      const ws = message.workspace
+      const record = message.value
+      await messageHandler(record, ws, ctx)
     }
   )
 

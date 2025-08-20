@@ -351,7 +351,7 @@ async function putEventToQueue (
   )
 
   try {
-    await producer.send(control.workspace.uuid, [{ action, event, modifiedBy, changes }])
+    await producer.send(control.ctx, control.workspace.uuid, [{ action, event, modifiedBy, changes }])
   } catch (err) {
     control.ctx.error('Could not queue calendar event', { err, action, event })
   }

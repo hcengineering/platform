@@ -218,14 +218,24 @@ export async function startIndexer (
       req.body = {}
 
       ctx.info('reindex', { workspace: decoded.workspace })
-      await manager.withIndexer(ctx, decoded.workspace, token, true, async (indexer) => {
-        indexer.lastUpdate = Date.now()
-        if (request?.onlyDrop ?? false) {
-          await manager.fulltextProducer.send(decoded.workspace, [workspaceEvents.clearIndex()])
-        } else {
-          await manager.fulltextProducer.send(decoded.workspace, [workspaceEvents.fullReindex()])
+      await ctx.with(
+        'reindex',
+        {},
+        async (ctx) => {
+          await manager.withIndexer(ctx, decoded.workspace, token, true, async (indexer) => {
+            indexer.lastUpdate = Date.now()
+            if (request?.onlyDrop ?? false) {
+              await manager.fulltextProducer.send(ctx, decoded.workspace, [workspaceEvents.clearIndex()])
+            } else {
+              await manager.fulltextProducer.send(ctx, decoded.workspace, [workspaceEvents.fullReindex()])
+            }
+          })
+        },
+        {},
+        {
+          span: 'inherit'
         }
-      })
+      )
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
