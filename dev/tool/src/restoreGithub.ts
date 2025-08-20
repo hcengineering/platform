@@ -57,8 +57,8 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           const allInstallationIds = new Set<number>()
           if (existingInstallationId != null) {
             if (Array.isArray(existingInstallationId)) {
-              existingInstallationId.forEach((id) => allInstallationIds.add(id))
-            } else {
+              existingInstallationId.filter(isValidInstallationId).forEach((id) => allInstallationIds.add(id))
+            } else if (isValidInstallationId(existingInstallationId)) {
               allInstallationIds.add(existingInstallationId)
             }
           }
@@ -91,6 +91,7 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           }
           if (dryrun) {
             console.info('Dry run: would update integration', existingIntegration, updatedIntegration)
+            updatedCount++
             continue
           }
           await accountClient.updateIntegration(updatedIntegration)
@@ -107,6 +108,7 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           }
           if (dryrun) {
             console.info('Dry run: would create integration', integration)
+            createdCount++
             continue
           }
           await accountClient.createIntegration(integration)
@@ -147,4 +149,12 @@ function groupIntegrationSettings (
   }
 
   return Array.from(groupedSettings.values())
+}
+
+function isValidInstallationId (id: any): boolean {
+  if (typeof id === 'number' && !isNaN(id) && id > 0) {
+    return true
+  }
+  const parsed = parseInt(String(id), 10)
+  return !isNaN(parsed) && parsed > 0
 }
