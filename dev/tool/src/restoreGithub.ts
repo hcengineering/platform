@@ -48,7 +48,6 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           kind: GITHUB_INTEGRATION
         })
 
-        // Determine the installationId to use
         let installationId: number | number[]
 
         if (existingIntegration != null) {
@@ -97,7 +96,6 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           await accountClient.updateIntegration(updatedIntegration)
           updatedCount++
         } else {
-          // For new integrations, use the grouped installation IDs
           installationId = setting.installationIds.length === 1 ? setting.installationIds[0] : setting.installationIds
           const integration: Integration = {
             workspaceUuid: setting.workspaceId,
