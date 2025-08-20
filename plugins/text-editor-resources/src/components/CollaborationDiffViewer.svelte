@@ -18,7 +18,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import { MarkupNode } from '@hcengineering/text'
   import { onDestroy, onMount } from 'svelte'
-  import { Doc as Ydoc } from 'yjs'
+  import { Doc as Ydoc, encodeStateAsUpdate, applyUpdate } from 'yjs'
 
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
@@ -40,6 +40,15 @@
 
   let _decoration = DecorationSet.empty
   let oldContent: MarkupNode | undefined
+
+  $: ydocCopy = copyYdoc(ydoc)
+
+  function copyYdoc (ydoc: Ydoc): Ydoc {
+    const copy = new Ydoc()
+    const update = encodeStateAsUpdate(ydoc)
+    applyUpdate(copy, update)
+    return copy
+  }
 
   function updateEditor (editor: Editor, ydoc: Ydoc, field?: string): void {
     const r = calculateDecorations(editor, oldContent, createYdocDocument(editor.schema, ydoc, field))
@@ -78,9 +87,15 @@
   onMount(async () => {
     const kit = await getEditorKit({
       collaboration: {
-        collaboration: { document: ydoc, field },
+        collaboration: { document: ydocCopy, field },
         collaborationCursor: false,
         inlineComments: false
+      },
+      qms: {
+        qmsInlineComment: {
+          isHighlightModeOn: () => false,
+          getNodeHighlight: () => null
+        }
       }
     })
 
