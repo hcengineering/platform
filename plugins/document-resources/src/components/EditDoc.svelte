@@ -18,7 +18,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
-  import { Document, DocumentEvents } from '@hcengineering/document'
+  import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -26,6 +26,8 @@
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
+  import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
+
   import {
     Button,
     ButtonItem,
@@ -258,6 +260,16 @@
   onMount(() => {
     Analytics.handleEvent(DocumentEvents.DocumentOpened, { id: _id })
   })
+
+  let spaceElement: Teamspace | undefined
+
+  $: if (doc?.space !== undefined) {
+    void client.findOne(document.class.Teamspace, { _id: doc.space }).then((res) => {
+      spaceElement = res
+    })
+  } else {
+    spaceElement = undefined
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -285,6 +297,9 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="title">
+      {#if spaceElement !== undefined}
+        <TeamspacePresenter value={spaceElement} noCursor /> /
+      {/if}
       <ParentsNavigator element={doc} />
       <DocumentPresenter value={doc} breadcrumb noUnderline />
       {#if locked}
