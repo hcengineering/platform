@@ -695,10 +695,6 @@ export async function listIntegrations (
 
   if (isAllowedService) {
     socialIds = socialId != null ? [socialId] : undefined
-    if (socialIds === undefined && account !== systemAccountUuid) {
-      const socialIdObjs = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
-      socialIds = socialIdObjs.map((it) => it._id)
-    }
   } else {
     const socialIdObjs = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
 
