@@ -179,21 +179,25 @@ export async function fixMinioBW (
   const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
   const list = await storageService.listStream(ctx, wsIds)
   let removed = 0
-  while (true) {
-    const objs = await list.next()
-    if (objs.length === 0) {
-      break
-    }
-    for (const obj of objs) {
-      if (obj.modifiedOn < from) continue
-      if ((obj._id as string).includes('%preview%')) {
-        await storageService.remove(ctx, wsIds, [obj._id])
-        removed++
-        if (removed % 100 === 0) {
-          console.log('removed: ', removed)
+  try {
+    while (true) {
+      const objs = await list.next()
+      if (objs.length === 0) {
+        break
+      }
+      for (const obj of objs) {
+        if (obj.modifiedOn < from) continue
+        if ((obj._id as string).includes('%preview%')) {
+          await storageService.remove(ctx, wsIds, [obj._id])
+          removed++
+          if (removed % 100 === 0) {
+            console.log('removed: ', removed)
+          }
         }
       }
     }
+  } finally {
+    await list.close()
   }
   console.log('FINISH, removed: ', removed)
 }

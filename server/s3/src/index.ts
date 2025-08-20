@@ -227,7 +227,7 @@ export class S3Service implements StorageAdapter {
     try {
       await removeAllObjects(ctx, this, wsIds)
     } catch (err: any) {
-      ctx.error('failed t oclean all objecrs', { error: err })
+      ctx.error('failed to clean all objects', { error: err })
     }
     if (this.opt.rootBucket === undefined) {
       // We should also delete bucket
