@@ -13,7 +13,16 @@
 // limitations under the License.
 //
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::atomic::AtomicU64,
+};
+
+use actix::prelude::*;
+use redis::aio::MultiplexedConnection;
+use serde::Serialize;
+
+use crate::redis_events::{RedisEvent, RedisEventAction};
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -25,9 +34,6 @@ fn subscription_matches(sub_key: &str, key: &str) -> bool {
     }
     false
 }
-
-use crate::redis_events::{RedisEvent, RedisEventAction};
-use serde::Serialize;
 
 #[derive(Message, Clone, Serialize, Debug)]
 #[rtype(result = "()")]
@@ -45,19 +51,19 @@ pub struct Count;
 
 pub type SessionId = u64;
 
+static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+
 pub struct WsHub {
     sessions: HashMap<SessionId, Recipient<ServerMessage>>,
     subs: HashMap<String, HashSet<SessionId>>, // Subscriptions array: key -> {id, id, id ...}
-    next_id: SessionId,
-    redis: Arc<Mutex<MultiplexedConnection>>,
+    redis: MultiplexedConnection,
 }
 
 impl WsHub {
-    pub fn new(redis: Arc<Mutex<MultiplexedConnection>>) -> Self {
+    pub fn new(redis: MultiplexedConnection) -> Self {
         Self {
             sessions: HashMap::new(),
             subs: HashMap::new(),
-            next_id: 1,
             redis,
         }
     }
@@ -71,7 +77,12 @@ impl Actor for WsHub {
 #[derive(Message)]
 #[rtype(result = "SessionId")]
 pub struct Connect {
+    pub session_id: SessionId,
     pub addr: Recipient<ServerMessage>,
+}
+
+pub fn new_session_id() -> SessionId {
+    NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::SeqCst)
 }
 
 impl Handler<Connect> for WsHub {
@@ -79,11 +90,11 @@ impl Handler<Connect> for WsHub {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Context<Self>) -> Self::Result {
         // LEVENT 1
-        let id = self.next_id;
-        self.next_id = self.next_id.wrapping_add(1);
-        self.sessions.insert(id, msg.addr);
+        //let id = self.next_id;
+        //self.next_id = self.next_id.wrapping_add(1);
+        self.sessions.insert(msg.session_id, msg.addr);
         // tracing::info!("session connected: id={id} (total={})", self.sessions.len());
-        id
+        msg.session_id
     }
 }
 
@@ -137,7 +148,7 @@ impl Handler<SubscribeList> for WsHub {
                     None
                 }
             })
-            .collect::<Vec<String>>();
+            .collect::<Vec<_>>();
 
         MessageResult(list)
     }
@@ -233,13 +244,6 @@ impl WsHub {
     }
 }
 
-use actix::ActorFutureExt;
-use actix::fut::ready;
-use actix::prelude::*;
-use redis::aio::MultiplexedConnection;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-
 impl Handler<RedisEvent> for WsHub {
     type Result = ResponseActFuture<Self, ()>;
 
@@ -254,17 +258,16 @@ impl Handler<RedisEvent> for WsHub {
             .filter_map(|sid| self.sessions.get(&sid).cloned())
             .collect();
 
-        let redis = self.redis.clone();
+        let mut redis = self.redis.clone();
         let event = msg.clone();
         let need_get = matches!(msg.action, RedisEventAction::Set);
 
         Box::pin(
             async move {
                 let value = if need_get {
-                    let mut conn = redis.lock().await;
                     match redis::cmd("GET")
                         .arg(&event.key)
-                        .query_async::<Option<String>>(&mut *conn)
+                        .query_async::<Option<String>>(&mut redis)
                         .await
                     {
                         Ok(v) => v,

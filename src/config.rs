@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+use secrecy::SecretString;
 use serde::Deserialize;
 use serde_with::formats::CommaSeparator;
 use serde_with::{StringWithSeparator, serde_as};
@@ -39,7 +40,7 @@ pub struct Config {
     pub bind_host: String,
     pub payload_size_limit: size::Size,
 
-    pub token_secret: String,
+    pub token_secret: SecretString,
 
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, url::Url>")]
     pub redis_urls: Vec<Url>,

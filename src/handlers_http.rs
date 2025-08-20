@@ -13,24 +13,17 @@
 // limitations under the License.
 //
 
-use crate::workspace_owner::workspace_check;
 use anyhow::anyhow;
 use redis::aio::MultiplexedConnection;
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
-use tokio::sync::Mutex;
-use tracing::{error, trace};
-use uuid::Uuid;
-
-use crate::redis_lib::{
-    RedisArray, SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save,
-};
+use tracing::*;
 
 use actix_web::{
-    Error, HttpRequest, HttpResponse, error,
-    web::{self, Data, Json, Query},
+    Error, HttpRequest, HttpResponse,
+    web::{self},
 };
+
+use crate::redis_lib::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
+use crate::workspace_owner::workspace_check;
 
 pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
@@ -52,20 +45,17 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 
 /// list
 pub async fn list(
-    req: HttpRequest,
     path: web::Path<String>,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    workspace_check(&req)?; // Check workspace
-
     let key = path.into_inner();
 
     trace!(key, "list request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut conn = redis.lock().await;
+        let mut redis = redis.get_ref().clone();
 
-        let entries = redis_list(&mut *conn, &key).await?;
+        let entries = redis_list(&mut redis, &key).await?;
 
         Ok(HttpResponse::Ok().json(entries))
     }()
@@ -75,20 +65,17 @@ pub async fn list(
 
 /// get
 pub async fn get(
-    req: HttpRequest,
     path: web::Path<String>,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    workspace_check(&req)?; // Check workspace
-
     let key = path.into_inner();
 
     // trace!(key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut conn = redis.lock().await;
+        let mut redis = redis.get_ref().clone();
 
-        Ok(redis_read(&mut *conn, &key)
+        Ok(redis_read(&mut redis, &key)
             .await?
             .map(|entry| {
                 HttpResponse::Ok()
@@ -101,23 +88,23 @@ pub async fn get(
     .map_err(map_handler_error)
 }
 
+#[derive(serde::Deserialize)]
+struct MyHeaders {
+    #[serde(rename = "HULY-TTL")]
+    ttl: Option<u64>,
+}
+
 /// put
 pub async fn put(
     req: HttpRequest,
     path: web::Path<String>,
     body: web::Bytes,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    workspace_check(&req)?; // Check workspace
-
     let key: String = path.into_inner();
 
     async move || -> anyhow::Result<HttpResponse> {
-        if !req.query_string().is_empty() {
-            return Err(anyhow!("Query parameters are not allowed"));
-        }
-
-        let mut conn = redis.lock().await;
+        let mut redis = redis.get_ref().clone();
 
         // TTL logic
         let mut ttl = None;
@@ -161,7 +148,7 @@ pub async fn put(
             }
         }
 
-        redis_save(&mut *conn, &key, &body[..], ttl, mode).await?;
+        redis_save(&mut redis, &key, &body[..], ttl, mode).await?;
         return Ok(HttpResponse::Ok().body("DONE"));
     }()
     .await
@@ -172,7 +159,7 @@ pub async fn put(
 pub async fn delete(
     req: HttpRequest,
     path: web::Path<String>,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     workspace_check(&req)?; // Check workspace
 
@@ -181,7 +168,7 @@ pub async fn delete(
     trace!(key, "delete request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut conn = redis.lock().await;
+        let mut redis = redis.get_ref().clone();
 
         // MODE logic
         let mut mode = Some(SaveMode::Upsert);
@@ -197,7 +184,7 @@ pub async fn delete(
             } // `If-Match: <md5>` — delete only if current
         }
 
-        let deleted = redis_delete(&mut *conn, &key, mode).await?;
+        let deleted = redis_delete(&mut redis, &key, mode).await?;
 
         let response = match deleted {
             true => HttpResponse::NoContent().finish(),

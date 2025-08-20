@@ -13,32 +13,22 @@
 // limitations under the License.
 //
 
-use actix::prelude::*;
-use uuid::Uuid;
+use actix::{
+    Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, WrapFuture, fut, prelude::*,
+};
+use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse, web};
+use actix_web_actors::ws;
+use redis::aio::MultiplexedConnection;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 
+use crate::redis_lib::{
+    SaveMode, Ttl, deprecated_symbol, redis_delete, redis_list, redis_read, redis_save,
+};
 use crate::ws_hub::{
     Connect, Disconnect, ServerMessage, SessionId, Subscribe, SubscribeList, Unsubscribe,
     UnsubscribeAll, WsHub,
 };
-
-use actix::{
-    Actor, ActorContext, ActorFutureExt, AsyncContext, Handler, StreamHandler, WrapFuture, fut,
-};
-use actix_web::{Error, HttpRequest, HttpResponse, web};
-use actix_web_actors::ws;
-use redis::aio::MultiplexedConnection;
-use serde::Deserialize;
-use serde_json::{Map, Value, json};
-use std::collections::HashSet;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-
-use crate::redis_lib::{
-    RedisArray, SaveMode, Ttl, deprecated_symbol, error, redis_delete, redis_list, redis_read,
-    redis_save,
-};
-
-use serde::Serialize;
 
 #[derive(Serialize, Default)]
 struct ReturnBase<'a> {
@@ -138,10 +128,10 @@ use hulyrs::services::jwt::Claims;
 /// Session condition
 #[allow(dead_code)]
 pub struct WsSession {
-    pub redis: Arc<Mutex<MultiplexedConnection>>,
+    pub redis: MultiplexedConnection,
     pub id: SessionId,
     pub hub: Addr<WsHub>,
-    pub claims: Option<Claims>,
+    pub claims: Claims,
 }
 
 /// Actor External trait: must be in separate impl block
@@ -155,7 +145,10 @@ impl Actor for WsSession {
         let recipient = addr.recipient::<ServerMessage>();
         // println!("WebSocket connected");
         self.hub
-            .send(Connect { addr: recipient })
+            .send(Connect {
+                addr: recipient,
+                session_id: self.id,
+            })
             .into_actor(self)
             .map(|res, act, _ctx| match res {
                 Ok(id) => {
@@ -217,8 +210,7 @@ impl WsSession {
     }
 
     fn workspace_check_ws(&self, key: &str) -> Result<(), &'static str> {
-        let claims = self.claims.as_ref().ok_or("Missing auth claims")?;
-        check_workspace_core(claims, key)
+        check_workspace_core(&self.claims, key)
     }
 
     fn fut_send(
@@ -274,7 +266,7 @@ impl WsSession {
                     return;
                 }
 
-                let redis = self.redis.clone();
+                let mut redis = self.redis.clone();
 
                 let base = serde_json::json!(ReturnBase {
                     action: "put",
@@ -317,9 +309,7 @@ impl WsSession {
                         }
                     }
 
-                    let mut conn = redis.lock().await;
-
-                    redis_save(&mut *conn, &key, &data, real_ttl, mode)
+                    redis_save(&mut redis, &key, &data, real_ttl, mode)
                         .await
                         .map_err(|e| e.to_string())?;
 
@@ -342,7 +332,7 @@ impl WsSession {
                     return;
                 }
 
-                let redis = self.redis.clone();
+                let mut redis = self.redis.clone();
 
                 let base = serde_json::json!(ReturnBase {
                     action: "delete",
@@ -353,8 +343,6 @@ impl WsSession {
                 });
 
                 let fut = async move {
-                    let mut conn = redis.lock().await;
-
                     // MODE logic
                     let mut mode = Some(SaveMode::Upsert);
                     if let Some(s) = if_match {
@@ -368,7 +356,7 @@ impl WsSession {
                         }
                     }
 
-                    let deleted = redis_delete(&mut *conn, &key, mode)
+                    let deleted = redis_delete(&mut redis, &key, mode)
                         .await
                         .map_err(|e| e.to_string())?;
 
@@ -391,7 +379,7 @@ impl WsSession {
                     return;
                 }
 
-                let redis = self.redis.clone();
+                let mut redis = self.redis.clone();
 
                 let base = serde_json::json!(ReturnBase {
                     action: "get",
@@ -401,9 +389,7 @@ impl WsSession {
                 });
 
                 let fut = async move {
-                    let mut conn = redis.lock().await;
-
-                    let data_opt = redis_read(&mut *conn, &key)
+                    let data_opt = redis_read(&mut redis, &key)
                         .await
                         .map_err(|e| e.to_string())?;
 
@@ -429,7 +415,7 @@ impl WsSession {
                     return;
                 }
 
-                let redis = self.redis.clone();
+                let mut redis = self.redis.clone();
 
                 let base = serde_json::json!(ReturnBase {
                     action: "list",
@@ -439,8 +425,7 @@ impl WsSession {
                 });
 
                 let fut = async move {
-                    let mut conn = redis.lock().await;
-                    let data = redis_list(&mut *conn, &key)
+                    let data = redis_list(&mut redis, &key)
                         .await
                         .map_err(|e| e.to_string())?;
                     Ok(json!({ "result": data }))
@@ -550,47 +535,24 @@ impl WsSession {
 
 // ---- auth
 
-use crate::CONFIG;
-use actix_web::{HttpMessage, error};
-use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode};
-use url::form_urlencoded;
-
 pub async fn handler(
     req: HttpRequest,
-    stream: web::Payload,
-    redis: web::Data<Arc<Mutex<MultiplexedConnection>>>,
+    payload: web::Payload,
+    redis: web::Data<MultiplexedConnection>,
     hub: web::Data<Addr<WsHub>>,
 ) -> Result<HttpResponse, Error> {
-    let token_opt = req.uri().query().and_then(|q| {
-        form_urlencoded::parse(q.as_bytes())
-            .find(|(k, _)| k == "token")
-            .map(|(_, v)| v.into_owned())
-    });
-
-    let claims = match token_opt {
-        Some(t) if !t.is_empty() => {
-            let mut validation = Validation::new(Algorithm::HS256);
-            validation.required_spec_claims = HashSet::new(); // no: exp/iat/nbf
-
-            let c = decode::<Claims>(
-                &t,
-                &DecodingKey::from_secret(CONFIG.token_secret.as_bytes()),
-                &validation,
-            )
-            .map(|td| td.claims)
-            .map_err(|_e| error::ErrorUnauthorized("Invalid token"))?;
-
-            Some(c)
-        }
-        _ => None,
-    };
+    let claims = req
+        .extensions()
+        .get::<Claims>()
+        .expect("Missing claims")
+        .to_owned();
 
     let session = WsSession {
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),
-        id: 0,
+        id: crate::ws_hub::new_session_id(),
         claims,
     };
 
-    ws::start(session, &req, stream)
+    ws::start(session, &req, payload)
 }

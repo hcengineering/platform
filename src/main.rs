@@ -13,47 +13,31 @@
 // limitations under the License.
 //
 
-#![allow(unused_imports)]
-
-use std::pin::Pin;
-
+use actix::prelude::*;
 use actix_cors::Cors;
-
 use actix_web::{
-    App, Error, HttpMessage, HttpRequest, HttpResponse, HttpServer,
+    App, Error, HttpMessage, HttpResponse, HttpServer,
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
-    error::ErrorBadRequest,
-    http::header::{AUTHORIZATION, HeaderValue},
     middleware::{self, Next},
-    web::{self, Data, PayloadConfig},
+    web::{self, Path, Query},
 };
-
-use url::form_urlencoded;
-
-use actix_web_actors::ws;
-
-use tracing::info;
+use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
+use secrecy::ExposeSecret;
+use tracing::*;
 
 mod config;
 mod handlers_http;
 mod handlers_ws;
-use crate::handlers_ws::{WsSession, handler};
-
-mod redis_lib;
-use crate::redis_lib::redis_connect;
-
-mod workspace_owner;
-
 mod redis_events;
+mod redis_lib;
+mod workspace_owner;
 mod ws_hub;
-use crate::ws_hub::{ServerMessage, TestGetSubs, WsHub};
-use actix::prelude::*;
 
 use config::CONFIG;
-
-use hulyrs::services::jwt::actix::ServiceRequestExt;
-use secrecy::SecretString;
+use redis_lib::redis_connect;
+use uuid::Uuid;
+use ws_hub::{TestGetSubs, WsHub};
 
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
@@ -69,33 +53,56 @@ fn initialize_tracing(level: tracing::Level) {
         .init();
 }
 
-async fn interceptor(
+async fn extract_claims(
     mut request: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
-    // Authorization/token patch
-    if request.headers().get(AUTHORIZATION).is_none() {
-        if let Some(qs) = request.uri().query() {
-            if let Some(token) = form_urlencoded::parse(qs.as_bytes())
-                .find(|(k, _)| k == "token")
-                .map(|(_, v)| v.into_owned())
-            {
-                let auth_value = HeaderValue::from_str(&format!("Bearer {}", token))
-                    .map_err(|_| ErrorBadRequest("Malformed token"))?;
-                request.headers_mut().insert(AUTHORIZATION, auth_value);
-            }
-        }
+    #[derive(serde::Deserialize)]
+    struct QueryString {
+        token: Option<String>,
     }
 
-    let secret = SecretString::new(CONFIG.token_secret.clone().into_boxed_str());
-    let claims = request.extract_claims(&secret)?;
+    let query = request.extract::<Query<QueryString>>().await?.into_inner();
 
-    request.extensions_mut().insert(claims.to_owned());
+    let claims = if let Some(token) = query.token {
+        Claims::from_token(token, CONFIG.token_secret.expose_secret()).unwrap()
+    } else {
+        request.extract_claims(&CONFIG.token_secret)?
+    };
 
-    next.call(request).await
+    let workspace = Uuid::parse_str(&request.extract::<Path<String>>().await?);
+
+    if claims.is_system() || Ok(claims.workspace.clone()) == workspace.clone().map(Some) {
+        request.extensions_mut().insert(claims);
+        next.call(request).await
+    } else {
+        warn!(
+            expected = ?claims.workspace,
+            actual = ?workspace,
+            "Unauthorized request, workspace mismatch"
+        );
+        Err(actix_web::error::ErrorUnauthorized("Unauthorized").into())
+    }
 }
 
-use crate::redis_events::RedisEventAction::*; // Set, Del, Unlink, Expired, Other
+async fn check_workspace(
+    mut request: ServiceRequest,
+    next: Next<impl MessageBody>,
+) -> Result<ServiceResponse<impl MessageBody>, Error> {
+    let workspace = Uuid::parse_str(&request.extract::<Path<String>>().await?);
+    let claims = request.extensions().get::<Claims>().cloned().unwrap();
+
+    if claims.is_system() || Ok(claims.workspace.clone()) == workspace.clone().map(Some) {
+        next.call(request).await
+    } else {
+        warn!(
+            expected = ?claims.workspace,
+            actual = ?workspace,
+            "Unauthorized request, workspace mismatch"
+        );
+        Err(actix_web::error::ErrorUnauthorized("Unauthorized").into())
+    }
+}
 
 pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
     let client = match redis::Client::open(redis_url) {
@@ -119,14 +126,13 @@ pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
                         }
                 */
 
-                hub.do_send(ev.clone());
+                hub.do_send(ev);
             }
         }
         Err(e) => eprintln!("[redis] pubsub init error: {e}"),
     }
 }
 
-// #[tokio::main]
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     initialize_tracing(tracing::Level::DEBUG);
@@ -134,13 +140,10 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
     let redis = redis_connect().await?;
-    let redis = std::sync::Arc::new(tokio::sync::Mutex::new(redis));
-    let redis_data = web::Data::new(redis.clone());
 
     // starting Hub
     let hub = WsHub::new(redis.clone()).start();
 
-    let hub_data = web::Data::new(hub.clone());
     // starting Logger
     tokio::spawn(start_redis_logger(
         "redis://127.0.0.1/".to_string(),
@@ -148,7 +151,6 @@ async fn main() -> anyhow::Result<()> {
     ));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
-    let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
@@ -159,20 +161,27 @@ async fn main() -> anyhow::Result<()> {
             .max_age(3600);
 
         App::new()
-            .app_data(payload_config.clone())
-            .app_data(redis_data.clone())
-            .app_data(hub_data.clone())
+            .app_data(web::Data::new(redis.clone()))
+            .app_data(web::Data::new(hub.clone()))
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
-                web::scope("/api")
-                    .wrap(middleware::from_fn(interceptor))
+                web::scope("/api/{workspace}")
+                    .wrap(middleware::from_fn(check_workspace))
+                    .wrap(middleware::from_fn(extract_claims))
                     .route("/{key:.+/}", web::get().to(handlers_http::list))
                     .route("/{key:.+}", web::get().to(handlers_http::get))
                     .route("/{key:.+}", web::put().to(handlers_http::put))
                     .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
+            .route(
+                "/ws",
+                web::get()
+                    .to(handlers_ws::handler)
+                    .wrap(middleware::from_fn(extract_claims)),
+            ) // WebSocket
             .route("/status", web::get().to(async || "ok"))
+            //
             .route(
                 "/stat2",
                 web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
@@ -191,7 +200,6 @@ async fn main() -> anyhow::Result<()> {
                     }
                 }),
             )
-            .route("/ws", web::get().to(handlers_ws::handler)) // WebSocket
     })
     .bind(socket)?
     .run();
