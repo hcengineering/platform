@@ -182,25 +182,28 @@ export async function removeAllObjects (
   ctx.warn('removing all objects from workspace', wsIds)
   // We need to list all files and delete them
   const iterator = await storage.listStream(ctx, wsIds)
-  let bulk: string[] = []
-  while (true) {
-    const objs = await iterator.next()
-    if (objs.length === 0) {
-      break
-    }
-    for (const obj of objs) {
-      bulk.push(obj._id)
-      if (bulk.length > 50) {
-        await storage.remove(ctx, wsIds, bulk)
-        bulk = []
+  try {
+    let bulk: string[] = []
+    while (true) {
+      const objs = await iterator.next()
+      if (objs.length === 0) {
+        break
+      }
+      for (const obj of objs) {
+        bulk.push(obj._id)
+        if (bulk.length > 50) {
+          await storage.remove(ctx, wsIds, bulk)
+          bulk = []
+        }
       }
     }
+    if (bulk.length > 0) {
+      await storage.remove(ctx, wsIds, bulk)
+      bulk = []
+    }
+  } finally {
+    await iterator.close()
   }
-  if (bulk.length > 0) {
-    await storage.remove(ctx, wsIds, bulk)
-    bulk = []
-  }
-  await iterator.close()
 }
 
 export async function objectsToArray (
@@ -210,16 +213,19 @@ export async function objectsToArray (
 ): Promise<ListBlobResult[]> {
   // We need to list all files and delete them
   const iterator = await storage.listStream(ctx, wsIds)
-  const bulk: ListBlobResult[] = []
-  while (true) {
-    const obj = await iterator.next()
-    if (obj.length === 0) {
-      break
+  try {
+    const bulk: ListBlobResult[] = []
+    while (true) {
+      const obj = await iterator.next()
+      if (obj.length === 0) {
+        break
+      }
+      bulk.push(...obj)
     }
-    bulk.push(...obj)
+    return bulk
+  } finally {
+    await iterator.close()
   }
-  await iterator.close()
-  return bulk
 }
 
 export function getDataId (wsIds: WorkspaceIds): WorkspaceDataId {
