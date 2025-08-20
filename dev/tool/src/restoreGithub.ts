@@ -6,6 +6,12 @@ import { getDBClient } from '@hcengineering/postgres'
 
 const GITHUB_INTEGRATION: IntegrationKind = 'github' as any
 
+interface IntegrationSetting {
+  workspaceId: WorkspaceUuid
+  createdBy: PersonId
+  installationIds: number[]
+}
+
 export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean): Promise<void> {
   try {
     const pg = getDBClient(dbUrl)
@@ -20,28 +26,43 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
       FROM github
       WHERE _class='github:class:GithubIntegration'
     `
-    console.info('Start restoring GitHub installation IDs, count: ', integrationSettings.length)
+
+    // Group by workspace and createdBy, collecting installationIds
+    const uniqueSettings = groupIntegrationSettings(integrationSettings)
+    console.info('Start restoring GitHub installation IDs, count: ', uniqueSettings.length)
 
     let createdCount = 0
     let updatedCount = 0
-    for (const setting of integrationSettings) {
+    for (const setting of uniqueSettings) {
       try {
-        if (setting.installationId == null) continue
         const existingIntegration = await accountClient.getIntegration({
           workspaceUuid: setting.workspaceId,
           socialId: setting.createdBy,
           kind: GITHUB_INTEGRATION
         })
+
+        // Determine the installationId to use
+        const installationId =
+          setting.installationIds.length === 1 ? setting.installationIds[0] : setting.installationIds // Use array if multiple values
+
         if (existingIntegration != null) {
-          if (existingIntegration?.data?.installationId === setting.installationId) {
+          const existingInstallationId = existingIntegration?.data?.installationId
+          const isSame = Array.isArray(installationId)
+            ? Array.isArray(existingInstallationId) &&
+              installationId.length === existingInstallationId.length &&
+              installationId.every((id) => existingInstallationId.includes(id))
+            : existingInstallationId === installationId
+
+          if (isSame) {
             if (dryrun) {
               console.info('Dry run: skip existing integration', existingIntegration)
             }
             continue
           }
+
           const updatedData = {
             ...(existingIntegration.data ?? {}),
-            installationId: setting.installationId
+            installationId
           }
           const updatedIntegration: Integration = {
             ...existingIntegration,
@@ -59,7 +80,7 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
             socialId: setting.createdBy,
             kind: GITHUB_INTEGRATION,
             data: {
-              installationId: setting.installationId
+              installationId
             }
           }
           if (dryrun) {
@@ -77,4 +98,31 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
   } catch (e) {
     console.error('Failed to restore GitHub integrations', e)
   }
+}
+
+function groupIntegrationSettings (
+  settings: Array<{ workspaceId: WorkspaceUuid, createdBy: PersonId, installationId: number }>
+): IntegrationSetting[] {
+  const groupedSettings = new Map<string, IntegrationSetting>()
+
+  for (const setting of settings) {
+    if (setting.installationId == null) continue
+
+    const key = `${setting.workspaceId}-${setting.createdBy}`
+    const existing = groupedSettings.get(key)
+
+    if (existing != null) {
+      if (!existing.installationIds.includes(setting.installationId)) {
+        existing.installationIds.push(setting.installationId)
+      }
+    } else {
+      groupedSettings.set(key, {
+        workspaceId: setting.workspaceId,
+        createdBy: setting.createdBy,
+        installationIds: [setting.installationId]
+      })
+    }
+  }
+
+  return Array.from(groupedSettings.values())
 }
