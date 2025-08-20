@@ -27,6 +27,7 @@
   import cardPlugin from '../../plugin'
   import { CardsNavigatorConfig } from '../../types'
   import { getCardIconInfo } from '../../utils'
+  import { CardIcon } from '../../index'
 
   export let type: Ref<MasterTag> | undefined = undefined
   export let card: Card
@@ -110,6 +111,9 @@
   }}
   on:contextmenu
 >
+  <svelte:fragment slot="icon">
+    <CardIcon value={card} _id={card._id} size="small" editable={false} />
+  </svelte:fragment>
   <svelte:fragment slot="actions">
     {#each actions as action}
       {#if action.icon}

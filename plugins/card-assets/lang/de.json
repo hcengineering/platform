@@ -39,6 +39,7 @@
     "Labels": "Labels",
     "Properties": "Eigenschaften",
     "NoChildren": "Keine Kinder",
-    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement."
+    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement.",
+    "AddCollaborators": "Mitarbeiter hinzufügen"
   }
 }

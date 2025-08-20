@@ -85,6 +85,9 @@
     "Voted": "投票済み",
     "VotedFor": "投票したユーザ",
     "RevokedVote": "投票を取り消し",
-    "AnonymousQuiz": "匿名クイズ"
+    "AnonymousQuiz": "匿名クイズ",
+    "Direct": "ダイレクト",
+    "Directs": "ダイレクト",
+    "Members": "メンバー"
   }
 }

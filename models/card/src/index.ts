@@ -19,6 +19,8 @@ import {
   type CardSection,
   type CardSpace,
   type CardViewDefaults,
+  type CreateCardExtension,
+  type CanCreateCardResource,
   DOMAIN_CARD,
   type FavoriteCard,
   type MasterTag,
@@ -166,6 +168,12 @@ export class TRole extends TAttachedDoc implements Role {
 export class TFavoriteCard extends TPreference implements FavoriteCard {
   declare attachedTo: Ref<Card>
   application!: string
+}
+
+@Mixin(card.mixin.CreateCardExtension, card.class.MasterTag)
+export class TCreateCardExtension extends TMasterTag implements CreateCardExtension {
+  component?: AnyComponent
+  canCreate?: CanCreateCardResource
 }
 
 export * from './migration'
@@ -337,7 +345,8 @@ export function createModel (builder: Builder): void {
     TRole,
     TCardSection,
     TCardViewDefaults,
-    TFavoriteCard
+    TFavoriteCard,
+    TCreateCardExtension
   )
 
   defineTabs(builder)

@@ -19,6 +19,7 @@
   import { SubscriptionLabelID } from '@hcengineering/communication-types'
   import chat, { chatId } from '@hcengineering/chat'
   import { Navigator } from '@hcengineering/card-resources'
+  import communication from '@hcengineering/communication'
 
   export let card: Card | undefined = undefined
   export let type: Ref<MasterTag> | undefined = undefined
@@ -36,11 +37,16 @@
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
-      { type: chat.masterTag.Channel, order: 2 }
+      { type: chat.masterTag.Channel, order: 2 },
+      { type: communication.type.Direct, order: 3 }
     ],
-    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel],
+    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel, communication.type.Direct],
+    specialSorting: {
+      [communication.type.Direct]: 'alphabetical'
+    },
+    allowCreate: true,
     defaultSorting: 'recent',
-    lookback: '1w',
+    lookback: '2w',
     showTypeIcon: false,
     showCardIcon: true
   }}
