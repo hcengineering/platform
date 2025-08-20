@@ -236,7 +236,6 @@
 
 <style lang="scss">
   :global(.video) {
-    overflow: hidden;
     object-fit: cover;
     border-radius: 0.75rem;
     width: 100%;
