@@ -15,12 +15,14 @@
 
 use anyhow::anyhow;
 use redis::aio::MultiplexedConnection;
+use serde::{Deserialize, de};
 use tracing::*;
 
 use actix_web::{
     Error, HttpRequest, HttpResponse,
     web::{self},
 };
+use uuid::Uuid;
 
 use crate::redis_lib::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
 use crate::workspace_owner::workspace_check;
@@ -43,12 +45,18 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
     actix_web::error::ErrorInternalServerError("internal error")
 }
 
+#[derive(Deserialize, Debug)]
+pub struct PathParams {
+    //workspace: Uuid,
+    key: String,
+}
+
 /// list
 pub async fn list(
-    path: web::Path<String>,
+    path: web::Path<PathParams>,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let key = path.into_inner();
+    let key = path.into_inner().key;
 
     trace!(key, "list request");
 
@@ -65,12 +73,12 @@ pub async fn list(
 
 /// get
 pub async fn get(
-    path: web::Path<String>,
+    path: web::Path<PathParams>,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    let key = path.into_inner();
+    let key = path.into_inner().key;
 
-    // trace!(key, "get request");
+    trace!(key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
         let mut redis = redis.get_ref().clone();
@@ -97,11 +105,13 @@ struct MyHeaders {
 /// put
 pub async fn put(
     req: HttpRequest,
-    path: web::Path<String>,
+    path: web::Path<PathParams>,
     body: web::Bytes,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    let key: String = path.into_inner();
+    let key: String = path.into_inner().key;
+
+    trace!(key, "put request");
 
     async move || -> anyhow::Result<HttpResponse> {
         let mut redis = redis.get_ref().clone();
@@ -158,12 +168,12 @@ pub async fn put(
 /// delete
 pub async fn delete(
     req: HttpRequest,
-    path: web::Path<String>,
+    path: web::Path<PathParams>,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     workspace_check(&req)?; // Check workspace
 
-    let key: String = path.into_inner();
+    let key: String = path.into_inner().key;
 
     trace!(key, "delete request");
 

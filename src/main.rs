@@ -20,7 +20,7 @@ use actix_web::{
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
     middleware::{self, Next},
-    web::{self, Path, Query},
+    web::{self, Path, Query, trace},
 };
 use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
 use secrecy::ExposeSecret;
@@ -44,7 +44,7 @@ fn initialize_tracing(level: tracing::Level) {
 
     let filter = Targets::default()
         .with_target(env!("CARGO_BIN_NAME"), level)
-        .with_target("actix", level);
+        .with_target("actix", tracing::Level::WARN);
     let format = tracing_subscriber::fmt::layer().compact();
 
     tracing_subscriber::registry()
@@ -70,19 +70,8 @@ async fn extract_claims(
         request.extract_claims(&CONFIG.token_secret)?
     };
 
-    let workspace = Uuid::parse_str(&request.extract::<Path<String>>().await?);
-
-    if claims.is_system() || Ok(claims.workspace.clone()) == workspace.clone().map(Some) {
-        request.extensions_mut().insert(claims);
-        next.call(request).await
-    } else {
-        warn!(
-            expected = ?claims.workspace,
-            actual = ?workspace,
-            "Unauthorized request, workspace mismatch"
-        );
-        Err(actix_web::error::ErrorUnauthorized("Unauthorized").into())
-    }
+    request.extensions_mut().insert(claims);
+    next.call(request).await
 }
 
 async fn check_workspace(
@@ -135,7 +124,7 @@ pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    initialize_tracing(tracing::Level::DEBUG);
+    initialize_tracing(tracing::Level::TRACE);
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
