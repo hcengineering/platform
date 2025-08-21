@@ -25,8 +25,8 @@
   async function updateStream (device: MediaDeviceInfo): Promise<void> {
     const constraints =
       device !== null
-        ? { video: { deviceId: { exact: device.deviceId }, width: 1280, height: 720 } }
-        : { video: { width: 1280, height: 720 } }
+        ? { video: { deviceId: { exact: device.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } }
+        : { video: { width: { ideal: 1280 }, height: { ideal: 720 } } }
 
     releaseStream(stream)
 
