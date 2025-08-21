@@ -24,12 +24,14 @@ import {
 import core, {
   type AccountUuid,
   type Doc,
+  DOMAIN_TX,
   type PersonId,
   pickPrimarySocialId,
   type Ref,
   SocialIdType,
   type Space,
-  toIdMap
+  toIdMap,
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -48,6 +50,7 @@ import {
   getSocialKeyByOldAccount
 } from '@hcengineering/model-core'
 import setting, { DOMAIN_SETTING, type Integration } from '@hcengineering/setting'
+import contact, { type SocialIdentityRef, type SocialIdentity } from '@hcengineering/contact'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
@@ -371,6 +374,71 @@ async function migrateEventUserToNewAccounts (client: MigrationClient): Promise<
   client.logger.log('finished processing events user ', {})
 }
 
+async function migrateEventUserForDeleted (client: MigrationClient): Promise<void> {
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const deletedSocialIdByOldAccount = new Map<string, PersonId | null>()
+
+  client.logger.log('processing events user ', {})
+  const iterator = await client.traverse(DOMAIN_EVENT, {
+    _class: { $in: [calendar.class.Event, calendar.class.ReccuringEvent] }
+  })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const doc of docs) {
+        const event = doc as Event
+        const oldAccount = event.user
+        if (!deletedSocialIdByOldAccount.has(oldAccount)) {
+          const socialKey = socialKeyByAccount[oldAccount]
+          if (socialKey == null) continue
+
+          const deletedIdentityTx = (
+            await client.find<TxUpdateDoc<SocialIdentity>>(DOMAIN_TX, {
+              _class: core.class.TxUpdateDoc,
+              objectClass: contact.class.SocialIdentity,
+              'operations.key': { $like: `${socialKey}#%` }
+            })
+          )[0]
+
+          if (deletedIdentityTx == null) continue
+
+          deletedSocialIdByOldAccount.set(oldAccount, deletedIdentityTx.objectId as SocialIdentityRef)
+        }
+        const socialId = deletedSocialIdByOldAccount.get(oldAccount)
+
+        const newUser = socialId ?? event.user
+
+        if (newUser === event.user) continue
+
+        operations.push({
+          filter: { _id: doc._id },
+          update: {
+            user: newUser
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_EVENT, operations)
+      }
+
+      processed += docs.length
+      client.logger.log('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  client.logger.log('finished processing events user ', {})
+}
+
 async function fillBlockTime (client: MigrationClient): Promise<void> {
   await client.update(DOMAIN_EVENT, { blockTime: { $exists: false }, allDay: true }, { blockTime: false })
   await client.update(DOMAIN_EVENT, { blockTime: { $exists: false } }, { blockTime: true })
@@ -455,6 +523,11 @@ export const calendarOperation: MigrateOperation = {
         state: 'migrate-ev-user-to-new-accounts',
         mode: 'upgrade',
         func: migrateEventUserToNewAccounts
+      },
+      {
+        state: 'migrate-ev-user-for-deleted',
+        mode: 'upgrade',
+        func: migrateEventUserForDeleted
       }
     ])
   },
