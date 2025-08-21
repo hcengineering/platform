@@ -15,14 +15,13 @@
 
 use anyhow::anyhow;
 use redis::aio::MultiplexedConnection;
-use serde::{Deserialize, de};
+use serde::{Deserialize};
 use tracing::*;
 
 use actix_web::{
     Error, HttpRequest, HttpResponse,
     web::{self},
 };
-use uuid::Uuid;
 
 use crate::redis::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
 use crate::workspace_owner::workspace_check;
@@ -96,11 +95,13 @@ pub async fn get(
     .map_err(map_handler_error)
 }
 
+/*
 #[derive(serde::Deserialize)]
 struct MyHeaders {
     #[serde(rename = "HULY-TTL")]
     ttl: Option<u64>,
 }
+*/
 
 /// put
 pub async fn put(

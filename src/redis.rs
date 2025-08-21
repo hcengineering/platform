@@ -15,12 +15,13 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use actix::Addr;
 use ::redis::Msg;
 use tokio_stream::StreamExt;
 use tracing::*;
 
 use crate::config::{CONFIG, RedisMode};
-use crate::ws_hub::{RedisEvent, RedisEventAction};
+use crate::ws_hub::{RedisEvent, RedisEventAction, WsHub};
 
 #[derive(serde::Serialize)]
 pub enum Ttl {
@@ -135,7 +136,6 @@ pub async fn redis_list(
 }
 
 /// redis_read(&connection,key)
-#[allow(dead_code)]
 pub async fn redis_read(
     conn: &mut MultiplexedConnection,
     key: &str,
@@ -181,7 +181,6 @@ pub async fn redis_read(
 /// w/o TTL (CONFIG.max_ttl)
 /// redis_save(&mut conn, "key", "val", None, None).await?;
 
-#[allow(dead_code)]
 pub async fn redis_save<T: ToRedisArgs>(
     conn: &mut MultiplexedConnection,
     key: &str,
@@ -359,7 +358,7 @@ impl TryFrom<Msg> for RedisEvent {
     }
 }
 
-pub async fn receiver(redis_client: Client) -> anyhow::Result<()> {
+pub async fn receiver(redis_client: Client, hub: Addr<WsHub>) -> anyhow::Result<()> {
     let mut redis = redis_client.get_multiplexed_async_connection().await?;
     let mut pubsub = redis_client.get_async_pubsub().await?;
 
@@ -384,7 +383,11 @@ pub async fn receiver(redis_client: Client) -> anyhow::Result<()> {
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
+                
                 debug!("redis event: {ev:#?}");
+
+                hub.do_send(ev);
+                
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

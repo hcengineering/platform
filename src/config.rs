@@ -24,8 +24,6 @@ use std::{path::Path, sync::LazyLock};
 
 use config::FileFormat;
 
-use uuid::Uuid;
-
 #[derive(Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum RedisMode {
@@ -38,7 +36,6 @@ pub enum RedisMode {
 pub struct Config {
     pub bind_port: u16,
     pub bind_host: String,
-    pub payload_size_limit: size::Size,
 
     pub token_secret: SecretString,
 

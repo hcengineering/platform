@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-use actix_web::{Error, HttpMessage, HttpRequest};
+use actix_web::{HttpMessage, HttpRequest};
 use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
 

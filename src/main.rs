@@ -104,7 +104,7 @@ async fn main() -> anyhow::Result<()> {
     let hub = WsHub::new(redis_connection.clone()).start();
 
     // starting Logger
-    tokio::spawn(redis::receiver(redis_client));
+    tokio::spawn(redis::receiver(redis_client, hub.clone()));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 

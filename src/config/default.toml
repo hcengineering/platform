@@ -1,6 +1,5 @@
 bind_port = 8095
 bind_host = "0.0.0.0"
-payload_size_limit = "2mb"
 
 token_secret = "secret"
 
