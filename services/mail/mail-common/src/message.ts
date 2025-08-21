@@ -45,7 +45,7 @@ import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, SyncOptions, type Attachment } from './types'
 import { COMMUNICATION_DOMAIN, EmailMessage, MailRecipient, MessageData } from './types'
-import { getBlobMetadata, getMdContent, MessageTimeShift } from './utils'
+import { getBlobMetadata, getHulyIdFromEmailMessageId, getMdContent, MessageTimeShift } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
@@ -169,7 +169,7 @@ export async function createMessages (
           content,
           attachedBlobs,
           person,
-          message.sendOn,
+          message,
           channelCache,
           replyTo,
           options
@@ -196,12 +196,13 @@ async function saveMessageToSpaces (
   content: string,
   attachments: Attachment[],
   recipient: MailRecipient,
-  createdDate: number,
+  mailMessage: EmailMessage,
   channelCache: ChannelCache,
   inReplyTo?: string,
   options?: SyncOptions
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
+  const createdDate = mailMessage.sendOn ?? Date.now()
   for (const space of spaces) {
     const spaceId = space._id
     let isReply = false
@@ -243,6 +244,7 @@ async function saveMessageToSpaces (
 
       const messageData: MessageData = {
         subject,
+        from: mailMessage.from.email,
         content,
         channel,
         created,
@@ -315,7 +317,7 @@ async function createMailMessage (
   threadId: Ref<Card>,
   options?: SyncOptions
 ): Promise<MessageID> {
-  const messageId = generateMessageId()
+  const messageId = getHulyIdFromEmailMessageId(data.mailId, data.from) ?? generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
     messageType: MessageType.Message,
@@ -327,7 +329,8 @@ async function createMailMessage (
     messageId,
     options: {
       noNotify: options?.noNotify
-    }
+    },
+    extra: data.extra
   }
   const createMessageData = toEventBuffer(createMessageEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
