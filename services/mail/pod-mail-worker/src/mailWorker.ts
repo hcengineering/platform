@@ -186,6 +186,13 @@ export class MailWorker {
         return
       }
 
+      if (message.date !== undefined) {
+        const messageDate = message.date instanceof Date ? message.date : new Date(message.date)
+        if (messageDate < config.outgoingSyncStartDate) {
+          return
+        }
+      }
+
       if (message._id !== undefined && this.sentMessagesCache.has(message._id)) {
         this.ctx.info('Message already sent, skipping', {
           workspaceUuid,
@@ -254,7 +261,10 @@ export class MailWorker {
         return
       }
       const recipients = await getRecipients(this.ctx, this.accountClient, thread, emailSocialId._id)
-      const html = markdownToHtml(message.content)
+      let html = markdownToHtml(message.content)
+      if (config.footerMessage != null && !html.includes(config.footerMessage)) {
+        html = html + config.footerMessage
+      }
       const text = markdownToText(message.content)
       const subject = getReplySubject(thread.title) ?? ''
       const to = [recipients?.to, ...(recipients?.copy ?? [])].filter(

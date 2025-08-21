@@ -329,7 +329,8 @@ async function createMailMessage (
     messageId,
     options: {
       noNotify: options?.noNotify
-    }
+    },
+    extra: data.extra
   }
   const createMessageData = toEventBuffer(createMessageEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
