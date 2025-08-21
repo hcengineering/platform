@@ -13,9 +13,14 @@
 // limitations under the License.
 //
 
-use crate::config::{CONFIG, RedisMode};
-
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use ::redis::Msg;
+use tokio_stream::StreamExt;
+use tracing::*;
+
+use crate::config::{CONFIG, RedisMode};
+use crate::ws_hub::{RedisEvent, RedisEventAction};
 
 #[derive(serde::Serialize)]
 pub enum Ttl {
@@ -32,12 +37,10 @@ pub enum SaveMode {
 }
 
 use redis::{
-    AsyncCommands, Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult,
-    ToRedisArgs, aio::MultiplexedConnection,
+    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult, ToRedisArgs,
+    aio::MultiplexedConnection,
 };
-use url::Url;
-
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct RedisArray {
@@ -314,8 +317,86 @@ pub async fn redis_delete(
     Ok(deleted > 0)
 }
 
+impl TryFrom<Msg> for RedisEvent {
+    type Error = anyhow::Error;
+
+    fn try_from(msg: Msg) -> Result<Self, Self::Error> {
+        let channel = match msg.get_channel::<String>() {
+            Ok(c) => c,
+            Err(e) => {
+                anyhow::bail!("[redis_events] bad channel: {e}");
+            }
+        };
+        let payload = match msg.get_payload::<String>() {
+            Ok(p) => p,
+            Err(e) => {
+                anyhow::bail!("[redis_events] bad payload: {e}");
+            }
+        };
+
+        // "__keyevent@0__:set" → event="set", db=0; payload = key
+        let event = channel.rsplit(':').next().unwrap_or("");
+        let action = match event {
+            "set" => RedisEventAction::Set,
+            "del" => RedisEventAction::Del,
+            "unlink" => RedisEventAction::Unlink,
+            "expired" => RedisEventAction::Expired,
+            other => RedisEventAction::Other(other.to_string()),
+        };
+
+        let db = channel
+            .find('@')
+            .and_then(|at| channel.get(at + 1..))
+            .and_then(|rest| rest.find("__:").map(|end| &rest[..end]))
+            .and_then(|s| s.parse::<u32>().ok())
+            .unwrap_or(0);
+
+        Ok(RedisEvent {
+            db,
+            key: payload.clone(),
+            action,
+        })
+    }
+}
+
+pub async fn receiver(redis_client: Client) -> anyhow::Result<()> {
+    let mut redis = redis_client.get_multiplexed_async_connection().await?;
+    let mut pubsub = redis_client.get_async_pubsub().await?;
+
+    let _: String = ::redis::cmd("CONFIG")
+        .arg("SET")
+        .arg("notify-keyspace-events")
+        .arg("E$gx")
+        .query_async(&mut redis)
+        .await?;
+
+    for pattern in [
+        "__keyevent@*__:set",
+        "__keyevent@*__:del",
+        "__keyevent@*__:unlink",
+        "__keyevent@*__:expired",
+    ] {
+        pubsub.psubscribe(pattern).await?;
+    }
+
+    let mut messages = pubsub.on_message();
+
+    while let Some(message) = messages.next().await {
+        match RedisEvent::try_from(message) {
+            Ok(ev) => {
+                debug!("redis event: {ev:#?}");
+            }
+            Err(e) => {
+                warn!("invalid redis message: {e}");
+            }
+        }
+    }
+
+    Ok(())
+}
+
 /// redis_connect()
-pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
+pub async fn client() -> anyhow::Result<Client> {
     let default_port = match CONFIG.redis_mode {
         RedisMode::Sentinel => 6379,
         RedisMode::Direct => 6380,
@@ -332,7 +413,7 @@ pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
         })
         .collect::<Vec<_>>();
 
-    let conn = if CONFIG.redis_mode == RedisMode::Sentinel {
+    if CONFIG.redis_mode == RedisMode::Sentinel {
         use redis::sentinel::{SentinelClientBuilder, SentinelServerType};
 
         let mut sentinel = SentinelClientBuilder::new(
@@ -347,7 +428,9 @@ pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
         .set_client_to_sentinel_password(CONFIG.redis_password.clone())
         .build()?;
 
-        sentinel.get_async_connection().await?
+        let client = sentinel.async_get_client().await?;
+
+        Ok(client)
     } else {
         let single = urls
             .first()
@@ -366,8 +449,7 @@ pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
         };
 
         let client = Client::open(connection_info)?;
-        client.get_multiplexed_async_connection().await?
-    };
 
-    Ok(conn)
+        Ok(client)
+    }
 }

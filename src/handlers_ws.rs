@@ -22,7 +22,7 @@ use redis::aio::MultiplexedConnection;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::redis_lib::{
+use crate::redis::{
     SaveMode, Ttl, deprecated_symbol, redis_delete, redis_list, redis_read, redis_save,
 };
 use crate::ws_hub::{

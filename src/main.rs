@@ -20,7 +20,7 @@ use actix_web::{
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
     middleware::{self, Next},
-    web::{self, Path, Query, trace},
+    web::{self, Path, Query},
 };
 use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
 use secrecy::ExposeSecret;
@@ -29,13 +29,11 @@ use tracing::*;
 mod config;
 mod handlers_http;
 mod handlers_ws;
-mod redis_events;
-mod redis_lib;
+mod redis;
 mod workspace_owner;
 mod ws_hub;
 
 use config::CONFIG;
-use redis_lib::redis_connect;
 use uuid::Uuid;
 use ws_hub::{TestGetSubs, WsHub};
 
@@ -93,51 +91,20 @@ async fn check_workspace(
     }
 }
 
-pub async fn start_redis_logger(redis_url: String, hub: Addr<WsHub>) {
-    let client = match redis::Client::open(redis_url) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("[redis] bad url: {e}");
-            return;
-        }
-    };
-
-    match crate::redis_events::make_pubsub_with_kea(&client).await {
-        Ok(pubsub) => {
-            let (mut rx, _handle) = crate::redis_events::start_keyevent_listener(pubsub);
-            while let Some(ev) = rx.recv().await {
-                /*
-                        match ev.action {
-                            Set           => println!("[redis] db{} SET {}", ev.db, ev.key),
-                            Del | Unlink  => println!("[redis] db{} DEL {}", ev.db, ev.key),
-                            Expired       => println!("[redis] db{} EXPIRED {}", ev.db, ev.key),
-                            Other(ref k)  => println!("[redis] db{} {} {}", ev.db, k, ev.key),
-                        }
-                */
-
-                hub.do_send(ev);
-            }
-        }
-        Err(e) => eprintln!("[redis] pubsub init error: {e}"),
-    }
-}
-
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     initialize_tracing(tracing::Level::TRACE);
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
-    let redis = redis_connect().await?;
+    let redis_client = redis::client().await?;
+    let redis_connection = redis_client.get_multiplexed_async_connection().await?;
 
     // starting Hub
-    let hub = WsHub::new(redis.clone()).start();
+    let hub = WsHub::new(redis_connection.clone()).start();
 
     // starting Logger
-    tokio::spawn(start_redis_logger(
-        "redis://127.0.0.1/".to_string(),
-        hub.clone(),
-    ));
+    tokio::spawn(redis::receiver(redis_client));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
@@ -150,7 +117,7 @@ async fn main() -> anyhow::Result<()> {
             .max_age(3600);
 
         App::new()
-            .app_data(web::Data::new(redis.clone()))
+            .app_data(web::Data::new(redis_connection.clone()))
             .app_data(web::Data::new(hub.clone()))
             .wrap(middleware::Logger::default())
             .wrap(cors)

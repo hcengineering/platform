@@ -24,7 +24,7 @@ use actix_web::{
 };
 use uuid::Uuid;
 
-use crate::redis_lib::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
+use crate::redis::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
 use crate::workspace_owner::workspace_check;
 
 pub fn map_handler_error(err: impl std::fmt::Display) -> Error {

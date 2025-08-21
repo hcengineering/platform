@@ -22,8 +22,6 @@ use actix::prelude::*;
 use redis::aio::MultiplexedConnection;
 use serde::Serialize;
 
-use crate::redis_events::{RedisEvent, RedisEventAction};
-
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
         return true;
@@ -242,6 +240,25 @@ impl WsHub {
         }
         out
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub enum RedisEventAction {
+    Set,     // Insert or Update
+    Del,     // Delete
+    Unlink,  // async Delete
+    Expired, // TTL Delete
+    Other(String),
+}
+
+use actix::Message;
+
+#[derive(Debug, Clone, Serialize, Message)]
+#[rtype(result = "()")]
+pub struct RedisEvent {
+    pub db: u32,
+    pub key: String,
+    pub action: RedisEventAction,
 }
 
 impl Handler<RedisEvent> for WsHub {
