@@ -45,6 +45,10 @@ export default mergeIds(gmailId, gmail, {
     NewIncomingMessage: '' as IntlString,
     GooglePrivacy: '' as IntlString,
     FailedToConnect: '' as IntlString,
-    TotalMessages: '' as IntlString
+    TotalMessages: '' as IntlString,
+    Configure: '' as IntlString,
+    GmailSpace: '' as IntlString,
+    PersonSpaceInfo: '' as IntlString,
+    SharedSpaceInfo: '' as IntlString
   }
 })

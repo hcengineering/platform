@@ -40,6 +40,10 @@
     "GooglePrivacy": "Použití a přenos informací získaných z Google API do jakékoli jiné aplikace bude v souladu s <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">zásadami Google API Services User Data Policy</a>, včetně požadavků na omezené použití.",
     "EmailNotificationsDescription": "Dostávejte osobní oznámení na e-mail.",
     "FailedToConnect": "Služba Gmail není k dispozici",
-    "TotalMessages": "Celkový počet zpráv:"
+    "TotalMessages": "Celkový počet zpráv:",
+    "Configure": "Konfigurovat integraci Gmail",
+    "GmailSpace": "Prostor pro Gmail zprávy",
+    "PersonSpaceInfo": "E-maily budou dostupné pouze vám",
+    "SharedSpaceInfo": "E-maily budou dostupné všem účastníkům prostoru"
   }
 }

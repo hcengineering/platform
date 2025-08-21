@@ -40,6 +40,10 @@
     "GooglePrivacy": "L'utilisation et le transfert des informations reçues des API Google par Huly à toute autre application respecteront les <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">règles d'utilisation des données utilisateur des services API Google</a>, y compris les exigences d'utilisation limitée.",
     "EmailNotificationsDescription": "Recevez des notifications personnelles par e-mail.",
     "FailedToConnect": "Le service Gmail n'est pas disponible",
-    "TotalMessages": "Total des messages:"
+    "TotalMessages": "Total des messages:",
+    "Configure": "Configurer l'intégration Gmail",
+    "GmailSpace": "Espace pour les messages Gmail",
+    "PersonSpaceInfo": "Les e-mails seront disponibles uniquement pour vous",
+    "SharedSpaceInfo": "Les e-mails seront disponibles pour tous les participants de l'espace"
   }
 }
