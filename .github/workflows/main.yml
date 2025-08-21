@@ -25,6 +25,8 @@ env:
     communication
     common
     desktop
+    desktop-package
+    qms-desktop-package
     dev
     models
     packages
@@ -740,9 +742,10 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
         run: node common/scripts/install-run-rush.js package --to desktop -v
-      - name: Package JSON
+      - name: Bump package JSON version
         run: |
           cd desktop-package
+          node ../common/scripts/install-run-rushx.js bump
           cat ./package.json
       - name: Install the Apple certificate and provisioning profile
         env:
@@ -845,9 +848,10 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
         run: node common/scripts/install-run-rush.js package --to qms-desktop -v
-      - name: Package JSON
+      - name: Bump package JSON version
         run: |
           cd qms-desktop-package
+          node ../common/scripts/install-run-rushx.js bump
           cat ./package.json
       - name: Install the Apple certificate and provisioning profile
         env:
