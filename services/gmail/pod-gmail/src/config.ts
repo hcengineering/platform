@@ -26,6 +26,7 @@ interface Config extends BaseConfig {
   Credentials: string
   WATCH_TOPIC_NAME: string
   FooterMessage: string
+  OutgoingSyncStartDate: Date // ISO date string - messages from mail chanel before this date will not attempt to be sent to Gmail
   InitLimit: number
   Version: IntegrationVersion
   QueueConfig: string
@@ -43,6 +44,7 @@ const envMap: { [key in keyof Config]: string } = {
   Credentials: 'Credentials',
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
   FooterMessage: 'FOOTER_MESSAGE',
+  OutgoingSyncStartDate: 'OUTGOING_SYNC_START_DATE',
   InitLimit: 'INIT_LIMIT',
   KvsUrl: 'KVS_URL',
   StorageConfig: 'STORAGE_CONFIG',
@@ -72,6 +74,7 @@ const config: Config = (() => {
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
+    OutgoingSyncStartDate: new Date(process.env[envMap.OutgoingSyncStartDate] ?? '2025-08-20T00:00:00.000Z'),
     KvsUrl: process.env[envMap.KvsUrl],
     StorageConfig: process.env[envMap.StorageConfig],
     Version: version,

@@ -161,7 +161,6 @@ export class GmailController {
   async handleNewMessage (workspaceUuid: WorkspaceUuid, message: CreateMessageEvent): Promise<void> {
     const client = this.workspaces.get(workspaceUuid)
     if (client === undefined) {
-      this.ctx.warn('No workspace client found', { socialId: message.socialId, workspaceUuid })
       return
     }
     await client.handleNewMessage(message)

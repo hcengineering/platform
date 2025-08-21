@@ -29,24 +29,45 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
 
     // Group by workspace and createdBy, collecting installationIds
     const uniqueSettings = groupIntegrationSettings(integrationSettings)
-    console.info('Start restoring GitHub installation IDs, count: ', uniqueSettings.length)
+    console.info('Start restoring GitHub installation IDs v3, count: ', uniqueSettings.length)
 
     let createdCount = 0
     let updatedCount = 0
     for (const setting of uniqueSettings) {
       try {
+        const isMigratedSocialId = !isNaN(parseInt(setting.createdBy, 10))
+        if (!isMigratedSocialId) {
+          // Integration should not be affected in this case, since in corrupted migration socialIds were also used to search integrations
+          console.info('Skip non-migrated integration:', setting.createdBy, setting.workspaceId)
+          continue
+        }
+
         const existingIntegration = await accountClient.getIntegration({
           workspaceUuid: setting.workspaceId,
           socialId: setting.createdBy,
           kind: GITHUB_INTEGRATION
         })
 
-        // Determine the installationId to use
-        const installationId =
-          setting.installationIds.length === 1 ? setting.installationIds[0] : setting.installationIds // Use array if multiple values
+        let installationId: number | number[]
 
         if (existingIntegration != null) {
           const existingInstallationId = existingIntegration?.data?.installationId
+
+          // Merge existing and new installation IDs
+          const allInstallationIds = new Set<number>()
+          if (existingInstallationId != null) {
+            if (Array.isArray(existingInstallationId)) {
+              existingInstallationId.filter(isValidInstallationId).forEach((id) => allInstallationIds.add(id))
+            } else if (isValidInstallationId(existingInstallationId)) {
+              allInstallationIds.add(existingInstallationId)
+            }
+          }
+          setting.installationIds.forEach((id) => allInstallationIds.add(id))
+
+          const mergedIds = Array.from(allInstallationIds)
+          installationId = mergedIds.length === 1 ? mergedIds[0] : mergedIds
+
+          // Check if the merged result is the same as existing
           const isSame = Array.isArray(installationId)
             ? Array.isArray(existingInstallationId) &&
               installationId.length === existingInstallationId.length &&
@@ -70,11 +91,13 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           }
           if (dryrun) {
             console.info('Dry run: would update integration', existingIntegration, updatedIntegration)
+            updatedCount++
             continue
           }
           await accountClient.updateIntegration(updatedIntegration)
           updatedCount++
         } else {
+          installationId = setting.installationIds.length === 1 ? setting.installationIds[0] : setting.installationIds
           const integration: Integration = {
             workspaceUuid: setting.workspaceId,
             socialId: setting.createdBy,
@@ -85,6 +108,7 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
           }
           if (dryrun) {
             console.info('Dry run: would create integration', integration)
+            createdCount++
             continue
           }
           await accountClient.createIntegration(integration)
@@ -125,4 +149,12 @@ function groupIntegrationSettings (
   }
 
   return Array.from(groupedSettings.values())
+}
+
+function isValidInstallationId (id: any): boolean {
+  if (typeof id === 'number' && !isNaN(id) && id > 0) {
+    return true
+  }
+  const parsed = parseInt(String(id), 10)
+  return !isNaN(parsed) && parsed > 0
 }
