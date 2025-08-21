@@ -402,11 +402,6 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Pr
 async function createUserProfiles (client: MigrationClient): Promise<void> {
   client.logger.log('creating user profiles for persons...', {})
 
-  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
-    _class: contact.class.Person,
-    profile: { $exists: false }
-  })
-
   const lastCard = (
     await client.find<Card>(
       DOMAIN_CARD,
@@ -415,6 +410,11 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
     )
   )[0]
   let prevRank = lastCard?.rank
+
+  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person,
+    profile: { $exists: false }
+  })
 
   try {
     while (true) {

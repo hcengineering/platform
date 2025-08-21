@@ -140,15 +140,12 @@ export class GmailController {
         this.ctx,
         QueueTopic.Tx,
         this.queue.getClientId(),
-        async (msgs) => {
-          for (const msg of msgs) {
-            const workspaceUuid = msg.workspace
-            for (const tx of msg.value) {
-              const messageEvent = toMessageEvent(tx)
-              if (messageEvent !== undefined) {
-                await this.handleNewMessage(workspaceUuid, messageEvent)
-              }
-            }
+        async (ctx, msg) => {
+          const workspaceUuid = msg.workspace
+
+          const messageEvent = toMessageEvent(msg.value)
+          if (messageEvent !== undefined) {
+            await this.handleNewMessage(workspaceUuid, messageEvent)
           }
         },
         {
@@ -164,7 +161,6 @@ export class GmailController {
   async handleNewMessage (workspaceUuid: WorkspaceUuid, message: CreateMessageEvent): Promise<void> {
     const client = this.workspaces.get(workspaceUuid)
     if (client === undefined) {
-      this.ctx.warn('No workspace client found', { socialId: message.socialId, workspaceUuid })
       return
     }
     await client.handleNewMessage(message)

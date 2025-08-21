@@ -291,7 +291,7 @@ export class WorkspaceWorker {
         time: Date.now() - t
       })
 
-      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.created()])
+      await this.workspaceQueue.send(ctx, ws.uuid, [workspaceEvents.created()])
     } catch (err: any) {
       void opt.errorHandler(ws, err)
 
@@ -307,7 +307,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
-      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.createFailed()])
+      await this.workspaceQueue.send(ctx, ws.uuid, [workspaceEvents.createFailed()])
     } finally {
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
@@ -390,7 +390,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
-      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgraded()])
+      await this.workspaceQueue.send(ctx, ws.uuid, [workspaceEvents.upgraded()])
     } catch (err: any) {
       void opt.errorHandler(ws, err)
 
@@ -407,7 +407,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
-      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgradeFailed()])
+      await this.workspaceQueue.send(ctx, ws.uuid, [workspaceEvents.upgradeFailed()])
     } finally {
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
@@ -423,7 +423,7 @@ export class WorkspaceWorker {
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
     await adapter.deleteWorkspace(ctx, workspace.uuid, workspace.dataId)
 
-    await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.clearIndex()])
+    await this.workspaceQueue.send(ctx, workspace.uuid, [workspaceEvents.clearIndex()])
   }
 
   async sendTransactorMaitenance (token: string, ws: WorkspaceUuid): Promise<void> {
@@ -492,7 +492,7 @@ export class WorkspaceWorker {
           return
         }
         await sendEvent('archiving-clean-done', 100)
-        await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.archived()])
+        await this.workspaceQueue.send(ctx, workspace.uuid, [workspaceEvents.archived()])
         break
       }
       case 'pending-deletion':
@@ -507,7 +507,7 @@ export class WorkspaceWorker {
           return
         }
         await sendEvent('delete-done', 100)
-        await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.deleted()])
+        await this.workspaceQueue.send(ctx, workspace.uuid, [workspaceEvents.deleted()])
         break
       }
 
@@ -545,7 +545,7 @@ export class WorkspaceWorker {
 
           workspace.mode = 'active'
           await this._upgradeWorkspace(ctx, workspace, opt)
-          await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.restored()])
+          await this.workspaceQueue.send(ctx, workspace.uuid, [workspaceEvents.restored()])
         }
         break
       default:

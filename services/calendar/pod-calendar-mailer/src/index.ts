@@ -51,41 +51,38 @@ async function main (): Promise<void> {
     ctx,
     QueueTopic.CalendarEventCUD,
     queue.getClientId(),
-    async (messages) => {
-      for (const message of messages) {
-        const ws = message.workspace
-        const records = message.value
-        for (const record of records) {
-          ctx.info('Processing event', {
-            ws,
-            action: record.action,
-            eventId: record.event.eventId,
-            objectId: record.event._id,
-            modifiedBy: record.modifiedBy
-          })
-          try {
-            let skipReason
-            switch (record.action) {
-              case 'create':
-                skipReason = await eventCreated(ctx, ws, record)
-                break
-              case 'update':
-                skipReason = await eventUpdated(ctx, ws, record)
-                break
-              case 'delete':
-                skipReason = await eventDeleted(ctx, ws, record)
-                break
-              case 'mixin':
-                skipReason = await eventMixin(ctx, ws, record)
-                break
-            }
-            if (skipReason !== undefined) {
-              ctx.info('Notification skipped', { reason: skipReason, objectId: record.event._id })
-            }
-          } catch (error) {
-            ctx.error('Error processing event', { error, ws, record })
-          }
+    async (ctx, message) => {
+      const ws = message.workspace
+      const record = message.value
+
+      ctx.info('Processing event', {
+        ws,
+        action: record.action,
+        eventId: record.event.eventId,
+        objectId: record.event._id,
+        modifiedBy: record.modifiedBy
+      })
+      try {
+        let skipReason
+        switch (record.action) {
+          case 'create':
+            skipReason = await eventCreated(ctx, ws, record)
+            break
+          case 'update':
+            skipReason = await eventUpdated(ctx, ws, record)
+            break
+          case 'delete':
+            skipReason = await eventDeleted(ctx, ws, record)
+            break
+          case 'mixin':
+            skipReason = await eventMixin(ctx, ws, record)
+            break
         }
+        if (skipReason !== undefined) {
+          ctx.info('Notification skipped', { reason: skipReason, objectId: record.event._id })
+        }
+      } catch (error) {
+        ctx.error('Error processing event', { error, ws, record })
       }
     }
   )

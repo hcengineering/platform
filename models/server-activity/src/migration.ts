@@ -119,121 +119,125 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
 
   async function generateFor (_class: Ref<Class<Doc>>, documents: MigrationIterator<Doc>): Promise<void> {
     const classNotFound = new Set<string>()
-    while (true) {
-      const docs = await documents.next(100)
 
-      if (docs == null || docs.length === 0) {
-        break
-      }
-      const allTransactions = await getAllObjectTransactions(
-        txClient,
-        _class,
-        docs.map((it) => it._id)
-      )
+    try {
+      while (true) {
+        const docs = await documents.next(100)
 
-      // We need to find parent collection objects if missing
-      const byClass = new Map<Ref<Class<Doc>>, Set<Ref<Doc>>>()
-      for (const vv of allTransactions.values()) {
-        for (const v of vv) {
-          try {
-            const _cl = client.hierarchy.getBaseClass(v.objectClass)
-            const s = byClass.get(_cl) ?? new Set()
-            s.add(v.objectId)
-            byClass.set(_cl, s)
-          } catch {
-            const has = classNotFound.has(v.objectClass)
-            if (!has) {
-              classNotFound.add(v.objectClass)
-              console.log('class not found:', v.objectClass)
-            }
-            continue
-          }
+        if (docs == null || docs.length === 0) {
+          break
+        }
+        const allTransactions = await getAllObjectTransactions(
+          txClient,
+          _class,
+          docs.map((it) => it._id)
+        )
 
-          if (v.attachedToClass !== undefined && v.attachedTo !== undefined) {
+        // We need to find parent collection objects if missing
+        const byClass = new Map<Ref<Class<Doc>>, Set<Ref<Doc>>>()
+        for (const vv of allTransactions.values()) {
+          for (const v of vv) {
             try {
-              const _cl = client.hierarchy.getBaseClass(v.attachedToClass)
+              const _cl = client.hierarchy.getBaseClass(v.objectClass)
               const s = byClass.get(_cl) ?? new Set()
-              s.add(v.attachedTo)
+              s.add(v.objectId)
               byClass.set(_cl, s)
             } catch {
-              const objClass = v.attachedToClass
+              const has = classNotFound.has(v.objectClass)
+              if (!has) {
+                classNotFound.add(v.objectClass)
+                console.log('class not found:', v.objectClass)
+              }
+              continue
+            }
+
+            if (v.attachedToClass !== undefined && v.attachedTo !== undefined) {
+              try {
+                const _cl = client.hierarchy.getBaseClass(v.attachedToClass)
+                const s = byClass.get(_cl) ?? new Set()
+                s.add(v.attachedTo)
+                byClass.set(_cl, s)
+              } catch {
+                const objClass = v.attachedToClass
+                const has = classNotFound.has(objClass)
+                if (!has) {
+                  classNotFound.add(objClass)
+                  console.log('class not found:', objClass)
+                }
+              }
+            }
+          }
+        }
+
+        const docIds: Map<Ref<Doc>, Doc | null> = toIdMap(docs)
+
+        for (const [_class, classDocs] of byClass.entries()) {
+          const ids: Ref<Doc>[] = Array.from(classDocs.values()).filter((it) => !docIds.has(it))
+          if (ids.length > 0) {
+            for (const di of ids) {
+              docIds.set(di, null)
+            }
+            const edocs = await txClient.findAll(txClient.ctx, _class, { _id: { $in: ids } })
+            for (const ed of edocs) {
+              docIds.set(ed._id, ed)
+            }
+          }
+        }
+
+        const docCache = {
+          docs: docIds,
+          transactions: allTransactions
+        }
+        const txIds = new Set<Ref<Tx>>()
+        for (const d of docs) {
+          processed += 1
+          if (processed % 1000 === 0) {
+            console.log('processed', processed)
+          }
+          const transactions = allTransactions.get(d._id) ?? []
+          for (const tx of transactions) {
+            txIds.add(tx._id)
+          }
+        }
+
+        const ids = (
+          await client.find<DocUpdateMessage>(
+            DOMAIN_ACTIVITY,
+            { _class: activity.class.DocUpdateMessage, txId: { $in: Array.from(txIds) as Ref<TxCUD<Doc>>[] } },
+            { projection: { _id: 1, txId: 1 } }
+          )
+        ).map((p) => p.txId as Ref<Tx>)
+
+        const existsMessages = new Set(ids)
+
+        for (const d of docs) {
+          processed += 1
+          if (processed % 1000 === 0) {
+            console.log('processed', processed)
+          }
+          const transactions = allTransactions.get(d._id) ?? []
+          for (const tx of transactions) {
+            if (!client.hierarchy.hasClass(tx.objectClass)) {
+              const objClass = tx.objectClass
               const has = classNotFound.has(objClass)
               if (!has) {
                 classNotFound.add(objClass)
                 console.log('class not found:', objClass)
               }
+              continue
+            }
+
+            try {
+              await generateDocUpdateMessageByTx(tx, notificationControl, client, docCache, existsMessages)
+            } catch (e: any) {
+              console.error('error processing:', d._id, e.stack)
             }
           }
         }
       }
-
-      const docIds: Map<Ref<Doc>, Doc | null> = toIdMap(docs)
-
-      for (const [_class, classDocs] of byClass.entries()) {
-        const ids: Ref<Doc>[] = Array.from(classDocs.values()).filter((it) => !docIds.has(it))
-        if (ids.length > 0) {
-          for (const di of ids) {
-            docIds.set(di, null)
-          }
-          const edocs = await txClient.findAll(txClient.ctx, _class, { _id: { $in: ids } })
-          for (const ed of edocs) {
-            docIds.set(ed._id, ed)
-          }
-        }
-      }
-
-      const docCache = {
-        docs: docIds,
-        transactions: allTransactions
-      }
-      const txIds = new Set<Ref<Tx>>()
-      for (const d of docs) {
-        processed += 1
-        if (processed % 1000 === 0) {
-          console.log('processed', processed)
-        }
-        const transactions = allTransactions.get(d._id) ?? []
-        for (const tx of transactions) {
-          txIds.add(tx._id)
-        }
-      }
-
-      const ids = (
-        await client.find<DocUpdateMessage>(
-          DOMAIN_ACTIVITY,
-          { _class: activity.class.DocUpdateMessage, txId: { $in: Array.from(txIds) as Ref<TxCUD<Doc>>[] } },
-          { projection: { _id: 1, txId: 1 } }
-        )
-      ).map((p) => p.txId as Ref<Tx>)
-
-      const existsMessages = new Set(ids)
-
-      for (const d of docs) {
-        processed += 1
-        if (processed % 1000 === 0) {
-          console.log('processed', processed)
-        }
-        const transactions = allTransactions.get(d._id) ?? []
-        for (const tx of transactions) {
-          if (!client.hierarchy.hasClass(tx.objectClass)) {
-            const objClass = tx.objectClass
-            const has = classNotFound.has(objClass)
-            if (!has) {
-              classNotFound.add(objClass)
-              console.log('class not found:', objClass)
-            }
-            continue
-          }
-
-          try {
-            await generateDocUpdateMessageByTx(tx, notificationControl, client, docCache, existsMessages)
-          } catch (e: any) {
-            console.error('error processing:', d._id, e.stack)
-          }
-        }
-      }
+    } finally {
+      await documents.close()
     }
-    await documents.close()
   }
 
   for (const activityClass of activityDocClasses) {
