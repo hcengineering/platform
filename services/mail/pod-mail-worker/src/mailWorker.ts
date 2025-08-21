@@ -54,7 +54,7 @@ export class MailWorker {
     private readonly accountClient: AccountClient
   ) {
     this.sentMessagesCache = new LRUCache<string, number>({
-      max: 10000, // Maximum number of message IDs to cache
+      max: 1000, // Maximum number of message IDs to cache
       ttl: 24 * 60 * 60 * 1000, // 24 hours TTL in milliseconds
       allowStale: false
     })
