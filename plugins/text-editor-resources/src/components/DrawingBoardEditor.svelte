@@ -21,7 +21,7 @@
     DrawTextCmd,
     Point,
     drawing,
-    makeCommandId,
+    makeCommandUid,
     CommandUid,
     DrawingCommands
   } from '@hcengineering/presentation'
@@ -29,9 +29,10 @@
   import { getResource } from '@hcengineering/platform'
   import { Loading, Component } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
-  import { Array as YArray, Map as YMap } from 'yjs'
+  import { Array as YArray, Map as YMap, Doc as YDoc, UndoManager as YUndoManager } from 'yjs'
 
   export let boardId: string
+  export let document: YDoc
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
   export let grabFocus = false
@@ -64,6 +65,14 @@
   const dataTopicOffset = 'drawing-board-offset'
   const dataTopicCursor = 'drawing-board-cursor'
 
+  const UndoableOperationMarker = 137
+  let disableUndo = false
+  let disableRedo = false
+  const undoManager: YUndoManager = new YUndoManager(savedCmds, {
+    trackedOrigins: new Set([UndoableOperationMarker]),
+    captureTimeout: 0
+  })
+
   $: onSelectedChanged(selected)
   $: onReadonlyChanged(readonly)
   $: onOffsetChanged(offset)
@@ -71,6 +80,10 @@
   function onSavedCommandsChanged (): void {
     const commands = savedCmds.toArray()
     model = { commands, lastExecutedCommand: commands.length - 1 }
+    setTimeout(() => {
+      disableUndo = !undoManager.canUndo()
+      disableRedo = !undoManager.canRedo()
+    })
   }
 
   function showCommandProps (id: CommandUid): void {
@@ -88,30 +101,34 @@
   }
 
   function changeCommand (cmd: DrawingCmd): void {
-    let index = -1
-    for (let i = 0; i < savedCmds.length; i++) {
-      if (savedCmds.get(i).id === cmd.id) {
-        savedCmds.delete(i)
-        index = i
-        break
+    document.transact(() => {
+      let index = -1
+      for (let i = 0; i < savedCmds.length; i++) {
+        if (savedCmds.get(i).id === cmd.id) {
+          savedCmds.delete(i)
+          index = i
+          break
+        }
       }
-    }
-    if (index >= 0) {
-      savedCmds.insert(index, [cmd])
-    } else {
-      savedCmds.push([cmd])
-    }
+      if (index >= 0) {
+        savedCmds.insert(index, [cmd])
+      } else {
+        savedCmds.push([cmd])
+      }
+    }, UndoableOperationMarker)
     changingCmdId = undefined
     cmdEditor = undefined
   }
 
   function deleteCommand (id: string): void {
-    for (let i = 0; i < savedCmds.length; i++) {
-      if (savedCmds.get(i).id === id) {
-        savedCmds.delete(i)
-        break
+    document.transact(() => {
+      for (let i = 0; i < savedCmds.length; i++) {
+        if (savedCmds.get(i).id === id) {
+          savedCmds.delete(i)
+          break
+        }
       }
-    }
+    }, UndoableOperationMarker)
     changingCmdId = undefined
     cmdEditor = undefined
   }
@@ -128,7 +145,10 @@
 
   function onReadonlyChanged (readonly: boolean): void {
     if (oldReadonly !== readonly) {
-      if (!readonly) {
+      document.transact(() => {
+        if (readonly) {
+          return
+        }
         let allHaveIds = true
         for (let i = 0; i < savedCmds.length; i++) {
           if (savedCmds.get(i).id === undefined) {
@@ -139,9 +159,9 @@
         if (!allHaveIds) {
           const cmds = savedCmds.toArray()
           savedCmds.delete(0, savedCmds.length)
-          savedCmds.push(cmds.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandId() })))
+          savedCmds.push(cmds.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandUid() })))
         }
-      }
+      })
       oldReadonly = readonly
     }
   }
@@ -254,7 +274,9 @@
         personCursorPos: personCursorCanvasPos,
         changingCmdId,
         cmdAdded: (cmd) => {
-          savedCmds.push([cmd])
+          document.transact(() => {
+            savedCmds.push([cmd])
+          }, UndoableOperationMarker)
           changingCmdId = undefined
         },
         cmdChanging: showCommandProps,
@@ -291,6 +313,8 @@
           placeInside={true}
           showPanTool={true}
           {cmdEditor}
+          disableUndo={disableUndo}
+          disableRedo={disableRedo}
           bind:toolbar
           bind:tool
           bind:penColor
@@ -298,12 +322,16 @@
           bind:eraserWidth
           bind:fontSize
           on:clear={() => {
-            savedCmds.delete(0, savedCmds.length)
+            document.transact(() => {
+              savedCmds.delete(0, savedCmds.length)
+            }, UndoableOperationMarker)
             offset = { x: 0, y: 0 }
           }}
           on:undo={() => {
+            undoManager.undo()
           }}
           on:redo={() => {
+            undoManager.redo()
           }}
         />
       {/if}

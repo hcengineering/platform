@@ -357,6 +357,7 @@
       board = savedBoards[id]
     }
     return {
+      document: board.ydoc,
       props: board.ydoc.getMap('props'),
       commands: board.ydoc.getArray<DrawingCmd>('commands'),
       loading: !board.localSynced || !board.remoteSynced
