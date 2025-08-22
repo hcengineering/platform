@@ -17,14 +17,17 @@
   import { resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import {
+    CommandUid,
+    DrawingCommands,
     drawing,
-    makeCommandId,
+    makeCommandUid,
     type DrawingCmd,
     type DrawingData,
     type DrawingTool,
     type DrawTextCmd
   } from '../drawing'
   import DrawingBoardToolbar from './DrawingBoardToolbar.svelte'
+  import { CommandsBufferAdapter, DrawingCommandsProcessor } from '../drawingCommandsProcessor'
 
   export let active = false
   export let readonly = true
@@ -38,15 +41,74 @@
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
-  let commands: DrawingCmd[] | undefined
+  let model: DrawingCommands | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
   let toolbarInside = false
   let oldReadonly: boolean
   let oldDrawings: DrawingData[]
-  let modified = false
-  let changingCmdId: string | undefined
+  let changingCmdId: CommandUid | undefined
   let cmdEditor: HTMLDivElement | undefined
+  let disableUndo: boolean = false
+  let disableRedo: boolean = false
+
+  function makeCommands (commands: DrawingCmd[]): DrawingCommands {
+    return { commands, lastExecutedCommand: commands.length > 0 ? commands.length - 1 : undefined }
+  }
+
+  function makeCommandsAdapter (): CommandsBufferAdapter {
+    return {
+      addCommand: function (command: DrawingCmd): void {
+        if (model === undefined) {
+          model = makeCommands([command])
+        } else {
+          model = { ...model, commands: [...model.commands, command] }
+        }
+      },
+      removeCommands: function (fromInclusive: number): void {
+        if (model !== undefined) {
+          model = { ...model, commands: model.commands.slice(0, fromInclusive) }
+        }
+      },
+      changeCommand: function (command: DrawingCmd): void {
+        if (model !== undefined) {
+          model = { ...model, commands: model.commands.map((c) => (c.id === command.id ? command : c)) }
+        }
+      },
+      deleteCommand: function (id: CommandUid): number | undefined {
+        if (model === undefined) {
+          return undefined
+        }
+        const index = model.commands.findIndex((c) => c.id === id)
+        if (index >= 0) {
+          model = { ...model, commands: model.commands.filter((c) => c.id !== id) }
+          return index
+        }
+      },
+      getCommandCount: function (): number {
+        return model?.commands.length ?? 0
+      },
+      setLastExecutedCommandPointer: function (index: number | undefined): void {
+        if (undefined !== model) {
+          model = { ...model, lastExecutedCommand: index }
+        }
+      },
+      getLastExecutedCommandsPointer: function (): number | undefined {
+        return model?.lastExecutedCommand
+      }
+    }
+  }
+
+  function evaluateCanUndoRedo (processor: DrawingCommandsProcessor): void {
+    disableUndo = !processor.canUndo()
+    disableRedo = !processor.canRedo()
+  }
+
+  const processor = new DrawingCommandsProcessor(makeCommandsAdapter(), () => {
+    evaluateCanUndoRedo(processor)
+  })
+
+  evaluateCanUndoRedo(processor)
 
   $: updateToolbarPosition(readonly, board, toolbar)
   $: updateEditableState(drawings, readonly)
@@ -65,18 +127,19 @@
         if (readonly) {
           saveDrawing()
           parseDrawing(drawings[0])
-          modified = false
+          processor.modificationConsumed()
         } else {
-          if (commands === undefined) {
-            commands = []
+          if (model === undefined) {
+            model = makeCommands([])
+            evaluateCanUndoRedo(processor)
           } else {
-            // Edit current content as a new drawing
-            commands = commands.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandId() }))
+            // edit current content as a new drawing
+            model = { ...model, commands: model.commands.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandUid() })) }
           }
-          modified = false
+          processor.modificationConsumed()
         }
       } else {
-        commands = undefined
+        model = undefined
       }
       changingCmdId = undefined
       cmdEditor = undefined
@@ -88,21 +151,24 @@
   function parseDrawing (data: DrawingData | undefined): void {
     if (data?.content !== undefined && data?.content !== null) {
       try {
-        commands = JSON.parse(data.content)
+        const commands: DrawingCmd[] = JSON.parse(data.content)
+        model = makeCommands(commands)
       } catch (error: any) {
-        commands = []
+        model = makeCommands([])
         Analytics.handleError(error)
         console.error('Failed to parse drawing content', error)
       }
     } else {
-      commands = []
+      model = makeCommands([])
     }
+    evaluateCanUndoRedo(processor)
   }
 
   function saveDrawing (): void {
-    if (modified && commands !== undefined) {
+    if (processor.isModified() && model !== undefined) {
+      const lastIdx = model.lastExecutedCommand ?? (model.commands.length - 1)
       const data: DrawingData = {
-        content: JSON.stringify(commands)
+        content: JSON.stringify(model.commands.slice(0, lastIdx + 1))
       }
       createDrawing(data).catch((error) => {
         Analytics.handleError(error)
@@ -111,21 +177,20 @@
     }
   }
 
-  function addCommand (cmd: DrawingCmd): void {
-    if (commands !== undefined) {
-      commands = [...commands, cmd]
+  function addCommand (command: DrawingCmd): void {
+    if (model !== undefined) {
+      processor.new(command)
       changingCmdId = undefined
       cmdEditor = undefined
-      modified = true
     }
   }
 
-  function showCommandProps (id: string): void {
+  function showCommandProps (id: CommandUid): void {
     changingCmdId = id
-    for (const cmd of commands ?? []) {
-      if (cmd.id === id) {
-        if (cmd.type === 'text') {
-          const textCmd = cmd as DrawTextCmd
+    for (const command of model?.commands ?? []) {
+      if (command.id === id) {
+        if (command.type === 'text') {
+          const textCmd = command as DrawTextCmd
           penColor = textCmd.color
           fontSize = textCmd.fontSize
         }
@@ -135,20 +200,18 @@
   }
 
   function changeCommand (cmd: DrawingCmd): void {
-    if (commands !== undefined) {
-      commands = commands.map((c) => (c.id === cmd.id ? cmd : c))
+    if (model !== undefined) {
+      processor.change(cmd)
       changingCmdId = undefined
       cmdEditor = undefined
-      modified = true
     }
   }
 
-  function deleteCommand (id: string): void {
-    if (commands !== undefined) {
-      commands = commands.filter((c) => c.id !== id)
+  function deleteCommand (id: CommandUid): void {
+    if (model !== undefined) {
+      processor.delete(id)
       changingCmdId = undefined
       cmdEditor = undefined
-      modified = true
     }
   }
 
@@ -157,7 +220,7 @@
   })
 </script>
 
-{#if active && commands !== undefined}
+{#if active && model !== undefined}
   <div
     {...$$restProps}
     style:position="relative"
@@ -170,7 +233,7 @@
       readonly,
       imageWidth,
       imageHeight,
-      commands,
+      drawing: model,
       tool,
       penColor,
       penWidth,
@@ -199,9 +262,16 @@
         bind:penWidth
         bind:eraserWidth
         bind:fontSize
+        bind:disableUndo
+        bind:disableRedo
         on:clear={() => {
-          commands = []
-          modified = true
+          processor.clear()
+        }}
+        on:undo={() => {
+          processor.undo()
+        }}
+        on:redo={() => {
+          processor.redo()
         }}
       />
     {/if}

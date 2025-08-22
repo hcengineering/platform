@@ -44,7 +44,16 @@
     "DocumentUrlCopied": "Copied!",
     "CopyLink": "Copy link",
     "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
-    "UnableToFollowMention": "Unable to open mentioned object"
+    "UnableToFollowMention": "Unable to open mentioned object",
+    "Undo": "Undo",
+    "Redo": "Redo",
+    "ClearCanvas": "Clear canvas",
+    "PenTool": "Pen tool",
+    "EraserTool": "Eraser tool",
+    "PanTool": "Pan tool",
+    "TextTool": "Text tool",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "Manage color presets"
   },
   "status": {
     "FileTooLarge": "File too large"

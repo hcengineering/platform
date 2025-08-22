@@ -44,7 +44,16 @@
     "DocumentUrlCopied": "Скопировано!",
     "CopyLink": "Копировать ссылку",
     "AccessDenied": "Объект не существует или у вас нет прав доступа.",
-    "UnableToFollowMention": "Не удалось открыть упомянутый объект"
+    "UnableToFollowMention": "Не удалось открыть упомянутый объект",
+    "Undo": "Отменить",
+    "Redo": "Повторить",
+    "ClearCanvas": "Очистить холст",
+    "PenTool": "Инструмент перо",
+    "EraserTool": "Инструмент ластик",
+    "PanTool": "Инструмент перемещения",
+    "TextTool": "Инструмент текст",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "Управление цветовыми пресетами"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"

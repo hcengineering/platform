@@ -44,7 +44,16 @@
     "DocumentUrlCopied": "Copié !",
     "CopyLink": "Copier le lien",
     "AccessDenied": "L’objet n’existe pas ou vous n’êtes pas autorisé à y accéder.",
-    "UnableToFollowMention": "Impossible d’ouvrir l’objet mentionné"
+    "UnableToFollowMention": "Impossible d’ouvrir l’objet mentionné",
+    "Undo": "Annuler",
+    "Redo": "Rétablir",
+    "ClearCanvas": "Effacer la toile",
+    "PenTool": "Outil stylo",
+    "EraserTool": "Outil gomme",
+    "PanTool": "Outil déplacement",
+    "TextTool": "Outil texte",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "Gérer les préréglages de couleur"
   },
   "status": {
     "FileTooLarge": "Fichier trop volumineux"

@@ -169,13 +169,6 @@
             />
           </svg>
         </div>
-        <div class="handle drag">
-          <svg viewBox="0 0 4 28" height="28" width="4" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="m2 28c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
-            />
-          </svg>
-        </div>
       {/if}
     </DrawingBoardEditor>
   </NodeViewWrapper>

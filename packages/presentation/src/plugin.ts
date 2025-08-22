@@ -145,7 +145,16 @@ export default plugin(presentationId, {
     DocumentUrlCopied: '' as IntlString,
     CopyLink: '' as IntlString,
     UnableToFollowMention: '' as IntlString,
-    AccessDenied: '' as IntlString
+    AccessDenied: '' as IntlString,
+    Undo: '' as IntlString,
+    Redo: '' as IntlString,
+    ClearCanvas: '' as IntlString,
+    PenTool: '' as IntlString,
+    EraserTool: '' as IntlString,
+    PanTool: '' as IntlString,
+    TextTool: '' as IntlString,
+    ColorTooltip: '' as IntlString,
+    PaletteManagementMenu: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

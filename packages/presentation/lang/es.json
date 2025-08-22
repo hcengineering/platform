@@ -44,7 +44,16 @@
     "DocumentUrlCopied": "¡Copiado!",
     "CopyLink": "Copiar enlace",
     "AccessDenied": "El objeto no existe o no tienes permiso para acceder a él.",
-    "UnableToFollowMention": "No se puede abrir el objeto mencionado"
+    "UnableToFollowMention": "No se puede abrir el objeto mencionado",
+    "Undo": "Deshacer",
+    "Redo": "Rehacer",
+    "ClearCanvas": "Limpiar lienzo",
+    "PenTool": "Herramienta lápiz",
+    "EraserTool": "Herramienta borrador",
+    "PanTool": "Herramienta mover",
+    "TextTool": "Herramienta texto",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "Gestionar preajustes de color"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"

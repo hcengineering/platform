@@ -21,7 +21,9 @@
     DrawTextCmd,
     Point,
     drawing,
-    makeCommandId
+    makeCommandId,
+    CommandUid,
+    DrawingCommands
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
@@ -45,9 +47,9 @@
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
-  let commands: DrawingCmd[] = []
+  let model: DrawingCommands = { commands: [], lastExecutedCommand: undefined }
   let offset: { x: number, y: number } = { x: 0, y: 0 }
-  let changingCmdId: string | undefined
+  let changingCmdId: CommandUid | undefined
   let cmdEditor: HTMLDivElement | undefined
   let personCursorCanvasPos: Point | undefined
   let personCursorNodePos: Point | undefined
@@ -66,13 +68,14 @@
   $: onReadonlyChanged(readonly)
   $: onOffsetChanged(offset)
 
-  function listenSavedCommands (): void {
-    commands = savedCmds.toArray()
+  function onSavedCommandsChanged (): void {
+    const commands = savedCmds.toArray()
+    model = { commands, lastExecutedCommand: commands.length - 1 }
   }
 
-  function showCommandProps (id: string): void {
+  function showCommandProps (id: CommandUid): void {
     changingCmdId = id
-    for (const cmd of commands) {
+    for (const cmd of model.commands) {
       if (cmd.id === id) {
         if (cmd.type === 'text') {
           const textCmd = cmd as DrawTextCmd
@@ -178,8 +181,8 @@
   }
 
   onMount(() => {
-    commands = savedCmds.toArray()
-    savedCmds.observe(listenSavedCommands)
+    onSavedCommandsChanged()
+    savedCmds.observe(onSavedCommandsChanged)
 
     getResource(presence.function.PublishData)
       .then((func) => {
@@ -206,7 +209,7 @@
   })
 
   onDestroy(() => {
-    savedCmds.unobserve(listenSavedCommands)
+    savedCmds.unobserve(onSavedCommandsChanged)
 
     getResource(presence.function.FolloweeDataUnsubscribe)
       .then((unsubscribe) => {
@@ -241,7 +244,7 @@
       use:drawing={{
         readonly,
         autoSize: true,
-        commands,
+        drawing: model,
         offset,
         tool,
         penColor,
@@ -297,6 +300,10 @@
           on:clear={() => {
             savedCmds.delete(0, savedCmds.length)
             offset = { x: 0, y: 0 }
+          }}
+          on:undo={() => {
+          }}
+          on:redo={() => {
           }}
         />
       {/if}

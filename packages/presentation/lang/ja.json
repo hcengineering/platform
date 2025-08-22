@@ -44,7 +44,16 @@
     "DocumentUrlCopied": "コピーしました",
     "CopyLink": "リンクをコピー",
     "AccessDenied": "オブジェクトが存在しないか、アクセス権限がありません。",
-    "UnableToFollowMention": "言及されたオブジェクトを開くことができません"
+    "UnableToFollowMention": "言及されたオブジェクトを開くことができません",
+    "Undo": "元に戻す",
+    "Redo": "やり直し",
+    "ClearCanvas": "キャンバスをクリア",
+    "PenTool": "ペンツール",
+    "EraserTool": "消しゴムツール",
+    "PanTool": "パンツール",
+    "TextTool": "テキストツール",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "カラープリセットを管理"
   },
   "status": {
     "FileTooLarge": "ファイルサイズが大きすぎます"

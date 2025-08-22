@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { generateId } from '@hcengineering/core'
+
 export interface DrawingData {
   content?: string
 }
@@ -22,7 +24,7 @@ export interface DrawingProps {
   autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  commands: DrawingCmd[]
+  drawing?: DrawingCommands
   offset?: Point
   tool?: DrawingTool
   penColor?: string
@@ -30,14 +32,14 @@ export interface DrawingProps {
   eraserWidth?: number
   fontSize?: number
   defaultCursor?: string
-  changingCmdId?: string
+  changingCmdId?: CommandUid
   personCursorPos?: Point
   personCursorVisible?: boolean
   cmdAdded?: (cmd: DrawingCmd) => void
-  cmdChanging?: (id: string) => void
-  cmdUnchanged?: (id: string) => void
+  cmdChanging?: (id: CommandUid) => void
+  cmdUnchanged?: (id: CommandUid) => void
   cmdChanged?: (cmd: DrawingCmd) => void
-  cmdDeleted?: (id: string) => void
+  cmdDeleted?: (id: CommandUid) => void
   editorCreated?: (editor: HTMLDivElement) => void
   pointerMoved?: (canvasPos: Point) => void
   personCursorMoved?: (nodePos: Point) => void
@@ -45,9 +47,16 @@ export interface DrawingProps {
   panned?: (offset: Point) => void
 }
 
+export type CommandUid = string & { readonly __brand: 'CommandUid' }
+
 export interface DrawingCmd {
-  id: string
+  id: CommandUid
   type: 'line' | 'text'
+}
+
+export interface DrawingCommands {
+  commands: DrawingCmd[]
+  lastExecutedCommand: number | undefined
 }
 
 export interface DrawTextCmd extends DrawingCmd {
@@ -78,8 +87,8 @@ function avgPoint (p1: Point, p2: Point): Point {
 
 const maxTextLength = 500
 
-export const makeCommandId = (): string => {
-  return crypto.randomUUID().toString()
+export const makeCommandUid = (): CommandUid => {
+  return (crypto?.randomUUID?.() ?? generateId()) as CommandUid
 }
 
 function easeInOutCubic (x: number): number {
@@ -320,12 +329,24 @@ export function drawing (
     pos: Point
     box: HTMLDivElement
     editor: HTMLDivElement
-    cmdId: string
+    cmdId: CommandUid
   }
   let liveTextBox: LiveTextBox | undefined
 
-  let commands = props.commands
-  replayCommands()
+  let currentDrawing = props.drawing
+
+  function traverseCommands (target: DrawingCommands | undefined, delegate: (command: DrawingCmd) => boolean): void {
+    if (undefined === target?.lastExecutedCommand) {
+      return
+    }
+    for (let i = 0; i <= target.lastExecutedCommand; i++) {
+      if (delegate(target.commands[i])) {
+        break
+      }
+    }
+  }
+
+  replayCommands(currentDrawing)
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -336,7 +357,7 @@ export function drawing (
           canvas.height = Math.floor(entry.contentRect.height)
           draw.center.x = canvas.width / 2
           draw.center.y = canvas.height / 2
-          replayCommands()
+          replayCommands(currentDrawing)
         } else {
           draw.scale = {
             x: canvas.width / entry.contentRect.width,
@@ -475,7 +496,7 @@ export function drawing (
       requestAnimationFrame(() => {
         draw.offset.x += p.x - prevPos.x
         draw.offset.y += p.y - prevPos.y
-        replayCommands()
+        replayCommands(currentDrawing)
         prevPos = p
         if (props.panning !== undefined) {
           props.panning(draw.offset)
@@ -501,11 +522,10 @@ export function drawing (
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
         if (liveTextBox !== undefined) {
-          storeTextCommand()
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: false })
         } else {
           const cmd = findTextCommand(prevPos)
-          props.cmdChanging?.(cmd?.id ?? '')
+          props.cmdChanging?.(cmd?.id ?? '' as CommandUid)
         }
       }
       draw.on = false
@@ -513,11 +533,17 @@ export function drawing (
   }
 
   function findTextCommand (mousePos: Point): DrawTextCmd | undefined {
+    if (currentDrawing === undefined) {
+      return undefined
+    }
     const pos = draw.mouseToCanvasPoint(mousePos)
-    for (let i = commands.length - 1; i >= 0; i--) {
-      const anyCmd = commands[i]
-      if (anyCmd.type === 'text') {
-        const cmd = anyCmd as DrawTextCmd
+    if (undefined === currentDrawing.lastExecutedCommand) {
+      return undefined
+    }
+    for (let i = currentDrawing.lastExecutedCommand; i >= 0; i--) {
+      const candidate = currentDrawing.commands[i]
+      if (candidate.type === 'text') {
+        const cmd = candidate as DrawTextCmd
         if (draw.isPointInText(pos, cmd)) {
           return cmd
         }
@@ -526,16 +552,17 @@ export function drawing (
     return undefined
   }
 
-  function makeLiveTextBox (cmdId: string): void {
+  function makeLiveTextBox (targetCommandId: CommandUid): void {
     let pos = prevPos
-    let existingCmd: DrawTextCmd | undefined
-    for (const cmd of commands) {
-      if (cmd.id === cmdId && cmd.type === 'text') {
-        existingCmd = cmd as DrawTextCmd
-        pos = draw.canvasToMousePoint(existingCmd.pos)
-        break
+    let foundTextCommand: DrawTextCmd | undefined
+    traverseCommands(currentDrawing, (candidate) => {
+      if (candidate.id === targetCommandId && candidate.type === 'text') {
+        foundTextCommand = candidate as DrawTextCmd
+        pos = draw.canvasToMousePoint(foundTextCommand.pos)
+        return true
       }
-    }
+      return false
+    })
 
     const padding = 6
     const handleSize = 14
@@ -565,8 +592,8 @@ export function drawing (
     editor.style.outline = 'none'
     editor.style.minWidth = '2rem'
     editor.style.whiteSpace = 'nowrap'
-    if (existingCmd !== undefined) {
-      editor.innerText = existingCmd.text
+    if (foundTextCommand !== undefined) {
+      editor.innerText = foundTextCommand.text
     }
     editor.addEventListener('input', (e) => {
       if (editor.innerText.length > maxTextLength) {
@@ -615,11 +642,10 @@ export function drawing (
           }, 0)
         }
         closeLiveTextBox()
-        replayCommands()
+        replayCommands(currentDrawing)
       } else if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault()
-        storeTextCommand()
-        closeLiveTextBox()
+        commitTextEdit({ deferCommandStore: false })
       }
     })
     box.appendChild(editor)
@@ -751,7 +777,7 @@ export function drawing (
     box.appendChild(deleteButton)
 
     node.appendChild(box)
-    liveTextBox = { box, editor, pos, cmdId }
+    liveTextBox = { box, editor, pos, cmdId: targetCommandId }
     updateLiveTextBox()
     setTimeout(() => {
       editor.focus()
@@ -776,13 +802,13 @@ export function drawing (
     }
   }
 
-  function storeTextCommand (defer = false): void {
+  function storeTextCommand (parameters: { defer: boolean }): void {
     if (liveTextBox !== undefined) {
       const text = (liveTextBox.editor.innerText ?? '').trim()
       if (text !== '') {
         const cmdId = liveTextBox.cmdId
         const cmd: DrawTextCmd = {
-          id: cmdId === '' ? makeCommandId() : cmdId,
+          id: cmdId === '' ? makeCommandUid() : cmdId,
           type: 'text',
           text,
           pos: draw.mouseToCanvasPoint(liveTextBox.pos),
@@ -797,7 +823,7 @@ export function drawing (
             props.cmdAdded?.(cmd)
           }
         }
-        if (defer) {
+        if (parameters.defer) {
           setTimeout(notify, 0)
         } else {
           notify()
@@ -808,11 +834,16 @@ export function drawing (
     }
   }
 
+  function commitTextEdit (parameters: { deferCommandStore: boolean }): void {
+    storeTextCommand({ defer: parameters.deferCommandStore })
+    closeLiveTextBox()
+  }
+
   function storeLineCommand (): void {
     if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
       const cmd: DrawLineCmd = {
-        id: makeCommandId(),
+        id: makeCommandUid(),
         type: 'line',
         lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
         erasing,
@@ -929,14 +960,14 @@ export function drawing (
     canvas.style.touchAction = readonly ? 'unset' : 'none'
   }
 
-  function replayCommands (): void {
+  function replayCommands (drawing: DrawingCommands | undefined): void {
     draw.ctx.reset()
-    for (const cmd of commands) {
-      if (cmd.id !== undefined && liveTextBox?.cmdId === cmd.id) {
-        continue
+    traverseCommands(drawing, (command) => {
+      if (command.id === undefined || liveTextBox?.cmdId !== command.id) {
+        draw.drawCommand(command)
       }
-      draw.drawCommand(cmd)
-    }
+      return false
+    })
   }
 
   return {
@@ -946,6 +977,7 @@ export function drawing (
       let offsetDelta: Point | undefined
       let replay = false
       let syncToolCursor = false
+      let toolChanged = false
       let syncPersonCursor: Point | undefined
       let syncLiveTextBox = false
       if (props.offset !== undefined && !isOffsetAnimating) {
@@ -960,9 +992,12 @@ export function drawing (
           replay = true
         }
       }
-      if (props.commands !== undefined) {
-        if (commands !== props.commands) {
-          commands = props.commands
+      if (props.drawing !== undefined) {
+        if (
+          currentDrawing?.commands !== props.drawing.commands ||
+          currentDrawing?.lastExecutedCommand !== props.drawing.lastExecutedCommand
+        ) {
+          currentDrawing = props.drawing
           replay = true
         }
       }
@@ -970,6 +1005,7 @@ export function drawing (
         if (draw.tool !== props.tool) {
           draw.tool = props.tool
           syncToolCursor = true
+          toolChanged = true
         }
       }
       if (props.penColor !== undefined) {
@@ -1009,10 +1045,9 @@ export function drawing (
           syncPersonCursor = props.personCursorPos
         }
       }
-      if (props.changingCmdId === undefined) {
+      if (props.changingCmdId === undefined || toolChanged) {
         if (liveTextBox !== undefined) {
-          storeTextCommand(true)
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: true })
           replay = true
         }
       } else {
@@ -1020,8 +1055,7 @@ export function drawing (
           makeLiveTextBox(props.changingCmdId)
           replay = true
         } else if (liveTextBox.cmdId !== props.changingCmdId) {
-          storeTextCommand(true)
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: true })
           replay = true
         }
       }
@@ -1059,7 +1093,7 @@ export function drawing (
                 x: Math.round(oldOffset.x + distance.x * fracDist),
                 y: Math.round(oldOffset.y + distance.y * fracDist)
               }
-              replayCommands()
+              replayCommands(currentDrawing)
               updatePersonCursor()
               if (fracTime >= 1) {
                 isOffsetAnimating = false
@@ -1071,7 +1105,7 @@ export function drawing (
           isOffsetAnimating = true
           requestAnimationFrame(animate)
         } else {
-          replayCommands()
+          replayCommands(currentDrawing)
           updatePersonCursor()
         }
       }
