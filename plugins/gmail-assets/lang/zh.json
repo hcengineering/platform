@@ -44,6 +44,7 @@
     "Configure": "配置 Gmail 集成",
     "GmailSpace": "Gmail 消息空间",
     "PersonSpaceInfo": "邮件将仅对您可用",
-    "SharedSpaceInfo": "邮件将对所有空间参与者可用"
+    "SharedSpaceInfo": "邮件将对所有空间参与者可用",
+    "ConfigurationRequired": "请配置您的 Gmail 集成以开始使用"
   }
 }

@@ -23,7 +23,7 @@ import core, {
   TxOperations,
   WorkspaceUuid
 } from '@hcengineering/core'
-import gmail, { type NewMessage } from '@hcengineering/gmail'
+import gmail, { gmailIntegrationKind, type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
@@ -113,7 +113,7 @@ export class GmailClient {
   private readonly messageManager: IMessageManager
   private readonly syncManager: SyncManager
   private readonly integrationToken: string
-  private integration: Integration | undefined = undefined
+  private integration: Integration | null | undefined = undefined
   private syncStarted: boolean = false
   private channel: Card | undefined = undefined
 
@@ -314,6 +314,18 @@ export class GmailClient {
     }
   }
 
+  async refreshIntegration (): Promise<void> {
+    try {
+      this.integration = await this.accountClient.getIntegration({
+        socialId: this.socialId._id,
+        workspaceUuid: this.user.workspace,
+        kind: gmailIntegrationKind
+      })
+    } catch (err: any) {
+      this.ctx.error('Failed to refresh integration', { socialdId: this.socialId, workspace: this.workspace })
+    }
+  }
+
   async getNewMessagesAfterAuth (): Promise<void> {
     const newMessages = await this.client.findAll(gmail.class.NewMessage, {
       status: 'new',
@@ -494,7 +506,7 @@ export class GmailClient {
   }
 
   async disableIntegration (byError: boolean = false): Promise<void> {
-    if (this.integration !== undefined) {
+    if (this.integration != null) {
       if (byError) {
         await disableIntegration(this.integration)
       } else {
@@ -527,7 +539,7 @@ export class GmailClient {
     try {
       this.syncStarted = true
       this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
-      await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
+      await this.syncManager.sync(this.socialId._id, { noNotify: true, spaceId: getSpaceId(this.integration) }, this.email)
       await this.watch()
       // recall every 24 hours https://developers.google.com/gmail/api/guides/push
       if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
@@ -550,7 +562,11 @@ export class GmailClient {
       return
     }
     this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.syncManager.sync(this.socialId._id, options, this.email)
+    const syncOptions = {
+      ...options,
+      spaceId: getSpaceId(this.integration)
+    }
+    await this.syncManager.sync(this.socialId._id, syncOptions, this.email)
   }
 
   async newChannel (value: string): Promise<void> {
@@ -732,7 +748,8 @@ export class GmailClient {
       status: this.syncStarted ? 'active' : 'inactive',
       email: this.email,
       totalMessages,
-      syncInfo: syncStatus
+      syncInfo: syncStatus,
+      isConfigured: this.isConfigured()
     }
   }
 

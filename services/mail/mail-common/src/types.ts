@@ -14,8 +14,7 @@
 
 import { Card } from '@hcengineering/card'
 import { MessageExtra } from '@hcengineering/communication-types'
-import { PersonSpace } from '@hcengineering/contact'
-import { OperationDomain, PersonId, PersonUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { OperationDomain, PersonId, PersonUuid, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 
 //
 export interface Attachment {
@@ -71,7 +70,7 @@ export interface MessageData {
   created: Date
   modifiedBy: PersonId
   mailId: string
-  spaceId: Ref<PersonSpace>
+  spaceId: Ref<Space>
   workspace: WorkspaceUuid
   threadId: Ref<Card>
   recipient: MailRecipient
@@ -81,6 +80,7 @@ export interface MessageData {
 
 export interface SyncOptions {
   noNotify?: boolean
+  spaceId?: Ref<Space>
 }
 
 export interface MailRecipients {

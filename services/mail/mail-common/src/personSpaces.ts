@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, PersonUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, PersonUuid, Space, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import contact, { PersonSpace } from '@hcengineering/contact'
 
 /**
@@ -28,7 +28,7 @@ export class PersonSpacesCache {
     private readonly workspace: WorkspaceUuid
   ) {}
 
-  async getPersonSpaces (mailId: string, personUuid: PersonUuid, email: string): Promise<PersonSpace[]> {
+  async getPersonSpaces (mailId: string, personUuid: PersonUuid, email: string): Promise<Space[]> {
     let spacesPromise = this.cache.get(personUuid)
 
     if (spacesPromise === undefined) {

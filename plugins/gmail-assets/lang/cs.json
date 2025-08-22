@@ -44,6 +44,7 @@
     "Configure": "Konfigurovat integraci Gmail",
     "GmailSpace": "Prostor pro Gmail zprávy",
     "PersonSpaceInfo": "E-maily budou dostupné pouze vám",
-    "SharedSpaceInfo": "E-maily budou dostupné všem účastníkům prostoru"
+    "SharedSpaceInfo": "E-maily budou dostupné všem účastníkům prostoru",
+    "ConfigurationRequired": "Prosím, nakonfigurujte svou integraci Gmail, abyste ji mohli začít používat"
   }
 }

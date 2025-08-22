@@ -49,6 +49,7 @@ export default mergeIds(gmailId, gmail, {
     Configure: '' as IntlString,
     GmailSpace: '' as IntlString,
     PersonSpaceInfo: '' as IntlString,
-    SharedSpaceInfo: '' as IntlString
+    SharedSpaceInfo: '' as IntlString,
+    ConfigurationRequired: '' as IntlString
   }
 })

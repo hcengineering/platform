@@ -44,6 +44,7 @@
     "Configure": "Configurar integração do Gmail",
     "GmailSpace": "Espaço para mensagens do Gmail",
     "PersonSpaceInfo": "O email estará disponível apenas para você",
-    "SharedSpaceInfo": "O email estará disponível para todos os participantes do espaço"
+    "SharedSpaceInfo": "O email estará disponível para todos os participantes do espaço",
+    "ConfigurationRequired": "Por favor, configure sua integração de Gmail para começar a usá-la"
   }
 }

@@ -44,6 +44,7 @@
     "Configure": "Gmail 統合を設定",
     "GmailSpace": "Gmail メッセージスペース",
     "PersonSpaceInfo": "メールはあなたのみに利用可能になります",
-    "SharedSpaceInfo": "メールはすべてのスペース参加者が利用可能になります"
+    "SharedSpaceInfo": "メールはすべてのスペース参加者が利用可能になります",
+    "ConfigurationRequired": "Gmail 統合を設定する必要があります"
   }
 }

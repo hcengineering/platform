@@ -44,6 +44,7 @@
     "Configure": "Configure Gmail integration",
     "GmailSpace": "Space for message channel",
     "PersonSpaceInfo": "Mail will be available to you",
-    "SharedSpaceInfo": "Mail will be available to all space participants"
+    "SharedSpaceInfo": "Mail will be available to all space participants",
+    "ConfigurationRequired": "Please configure your Gmail integration to start using it"
   }
 }
