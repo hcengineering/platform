@@ -19,11 +19,11 @@
   import presentation, { Card, getClient, getCurrentWorkspaceUuid, SpaceSelector } from '@hcengineering/presentation'
   import { Icon, Label, Loading } from '@hcengineering/ui'
   import type { Integration } from '@hcengineering/account-client'
-  import { isWorkspaceIntegration } from '@hcengineering/integration-client'
+  import { isWorkspaceIntegration, getIntegrationConfig } from '@hcengineering/integration-client'
   import card from '@hcengineering/card'
   import contact from '@hcengineering/contact'
 
-  import { getIntegrationClient } from '../api'
+  import { getIntegrationClient, startSync } from '../api'
   import gmail from '../plugin'
   import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import GmailColor from './icons/GmailColor.svelte'
@@ -40,8 +40,9 @@
   onMount(async () => {
     try {
       const personSpaceObj = await client.findOne(contact.class.PersonSpace, { members: getCurrentAccount().uuid })
+      const integrationSpace = getIntegrationConfig(integration)?.spaceId as Ref<Space>
       personSpace = personSpaceObj?._id
-      selectedSpace = personSpace
+      selectedSpace = integrationSpace ?? personSpace
       isLoading = false
     } catch (err) {
       isLoading = false
@@ -54,12 +55,10 @@
     integration = isWorkspaceIntegration(integration)
       ? integration
       : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
-    await integrationClient.updateConfig(
-      integration,
-      {
-        spaceId: selectedSpace
-      }
-    )
+    await integrationClient.updateConfig(integration, {
+      spaceId: selectedSpace
+    })
+    await startSync(integration.socialId)
   }
 
   const dispatch = createEventDispatcher()
@@ -79,7 +78,7 @@
 >
   <svelte:fragment slot="title">
     <div class="flex-row-center gap-2">
-      <GmailColor size="medium"/>
+      <GmailColor size="medium" />
       <span class="text-normal">
         <Label label={gmail.string.Configure} />
       </span>
@@ -116,12 +115,12 @@
   <svelte:fragment slot="footer">
     <div class="flex-row-center max-w-80 pr-4">
       {#if personSpace === selectedSpace}
-        <Icon size={'small'} icon={contact.icon.Person}/>
+        <Icon size={'small'} icon={contact.icon.Person} />
         <span class="text-sm ml-2">
           <Label label={gmail.string.PersonSpaceInfo} />
         </span>
       {:else}
-        <Icon size={'small'} icon={contact.icon.Contacts}/>
+        <Icon size={'small'} icon={contact.icon.Contacts} />
         <span class="text-sm ml-2">
           <Label label={gmail.string.SharedSpaceInfo} />
         </span>

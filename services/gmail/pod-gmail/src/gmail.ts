@@ -49,7 +49,7 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
 import { type ProjectCredentials, type Token, type User, type SyncState, GmailMessageType } from './types'
-import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery } from './utils'
+import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery, getSpaceId } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
 import { createIntegrationIfNotExists, disableIntegration, removeIntegration } from './integrations'
@@ -367,6 +367,11 @@ export class GmailClient {
       if (personId !== this.socialId._id && !this.allSocialIds.has(personId)) {
         return
       }
+
+      if (!this.isConfigured()) {
+        return
+      }
+
       const email = await this.getEmail()
       const thread = await this.client.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
       const mailChannel = await this.getMailChannel()
@@ -502,6 +507,17 @@ export class GmailClient {
       return
     }
 
+    // Check for spaceId requirement in v2 configurations
+    if (!this.isConfigured()) {
+      this.ctx.info('Cannot start sync: spaceId is required for v2 configuration', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        email: this.email,
+        integrationVersion: this.integration?.data?.integrationVersion
+      })
+      return
+    }
+
     try {
       this.syncStarted = true
       this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
@@ -524,6 +540,9 @@ export class GmailClient {
   }
 
   async sync (options: SyncOptions): Promise<void> {
+    if (!this.isConfigured()) {
+      return
+    }
     this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
     await this.syncManager.sync(this.socialId._id, options, this.email)
   }
@@ -681,6 +700,11 @@ export class GmailClient {
       this.ctx.error('Failed to make attachment body', err)
       return makeHTMLBody(message, from)
     }
+  }
+
+  private isConfigured (): boolean {
+    if (this.integration?.data?.integrationVersion !== 'v2') return true
+    return getSpaceId(this.integration) !== undefined
   }
 
   async getStateSummary (): Promise<SyncState> {

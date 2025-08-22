@@ -77,7 +77,7 @@
 </script>
 
 {#if isNewGmailIntegration(integration)}
-  <ConfigureV2 integration={integration} on:close />
+  <ConfigureV2 {integration} on:close />
 {:else}
   <Card
     label={gmail.string.Shared}
