@@ -18,7 +18,6 @@ use uuid::Uuid;
 
 // common checker
 pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static str> {
-
     if claims.is_system() {
         return Ok(());
     }

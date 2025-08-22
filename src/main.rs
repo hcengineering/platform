@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-// https://github.com/hcengineering/hulypulse/
-
 use actix_cors::Cors;
 use actix_web::{
-    body::MessageBody, dev::{ServiceRequest, ServiceResponse}, middleware::{self, Next}, web::{self, Path, Query}, App, Error, HttpMessage, HttpResponse, HttpServer
+    App, Error, HttpMessage, HttpResponse, HttpServer,
+    body::MessageBody,
+    dev::{ServiceRequest, ServiceResponse},
+    middleware::{self, Next},
+    web::{self, Path, Query},
 };
 use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
 use secrecy::ExposeSecret;
@@ -109,7 +111,7 @@ async fn main() -> anyhow::Result<()> {
 
     let url = format!("http://{}:{}", &CONFIG.bind_host, &CONFIG.bind_port);
     tracing::info!("Server running at {}", &url);
-    tracing::info!("HTTP API: {}/api",  &url);
+    tracing::info!("HTTP API: {}/api", &url);
     tracing::info!("WebSocket API: {}/ws", &url);
     tracing::info!("Status: {}/status", &url);
 
@@ -135,22 +137,27 @@ async fn main() -> anyhow::Result<()> {
                     .route("/{key:.+}", web::put().to(handlers_http::put))
                     .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
-            .route("/ws", web::get().to(handlers_ws::handler)
+            .route(
+                "/ws",
+                web::get()
+                    .to(handlers_ws::handler)
                     .wrap(middleware::from_fn(extract_claims)),
             ) // WebSocket
-            
             // .route("/status", web::get().to(async || "ok"))
+            .route(
+                "/status",
+                web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+                    let count = hub.count().await;
+                    Ok::<_, actix_web::Error>(
+                        HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })),
+                    )
+                }),
+            )
 
-            .route("/status", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-                let count = hub.count().await;
-                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })))
-            }))
-
-            // .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-            //     let subs = hub.dump_subs().await;
-            //     Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
-            // }))
-
+        // .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+        //     let subs = hub.dump_subs().await;
+        //     Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
+        // }))
     })
     .bind(socket)?
     .run();

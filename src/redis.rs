@@ -19,7 +19,10 @@ use ::redis::Msg;
 use tokio_stream::StreamExt;
 use tracing::*;
 
-use crate::{config::{RedisMode, CONFIG}, hub_service::{HubServiceHandle, RedisEvent, RedisEventAction}};
+use crate::{
+    config::{CONFIG, RedisMode},
+    hub_service::{HubServiceHandle, RedisEvent, RedisEventAction},
+};
 
 #[derive(serde::Serialize)]
 pub enum Ttl {
@@ -356,7 +359,6 @@ impl TryFrom<Msg> for RedisEvent {
     }
 }
 
-
 pub async fn receiver(redis_client: Client, hub: HubServiceHandle) -> anyhow::Result<()> {
     let mut redis = redis_client.get_multiplexed_async_connection().await?;
     let mut pubsub = redis_client.get_async_pubsub().await?;
@@ -382,11 +384,9 @@ pub async fn receiver(redis_client: Client, hub: HubServiceHandle) -> anyhow::Re
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-
                 // debug!("redis event: {ev:#?}");
 
                 hub.push_event(ev);
-                
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

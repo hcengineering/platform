@@ -48,7 +48,7 @@ pub enum RedisEventAction {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RedisEvent {
-//    pub db: u32,
+    //    pub db: u32,
     pub key: String,
     pub action: RedisEventAction,
 }
@@ -119,7 +119,6 @@ impl HubServiceHandle {
 
             while let Some(cmd) = rx.recv().await {
                 match cmd {
-
                     Command::Connect { session_id, addr } => {
                         sessions.insert(session_id, addr);
                     }
@@ -177,7 +176,6 @@ impl HubServiceHandle {
                     //         .collect::<std::collections::HashMap<_, _>>();
                     //     let _ = reply.send(snapshot);
                     // }
-
                     Command::RedisEvent(event) => {
                         let targets = subscribers_for(&subs, &event.key);
                         if targets.is_empty() {
@@ -204,10 +202,7 @@ impl HubServiceHandle {
                             }
                         }
 
-                        let payload = ServerMessage {
-                            event,
-                            value,
-                        };
+                        let payload = ServerMessage { event, value };
 
                         for rcpt in recipients {
                             let _ = rcpt.do_send(payload.clone());
@@ -244,7 +239,13 @@ impl HubServiceHandle {
 
     pub async fn subscribe_list(&self, session_id: SessionId) -> Vec<String> {
         let (tx, rx) = oneshot::channel();
-        let _ = self.tx.send(Command::SubscribeList { session_id, reply: tx }).await;
+        let _ = self
+            .tx
+            .send(Command::SubscribeList {
+                session_id,
+                reply: tx,
+            })
+            .await;
         rx.await.unwrap_or_default()
     }
 

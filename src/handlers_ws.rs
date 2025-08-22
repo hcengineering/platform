@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-use actix::{
-    Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, fut,
-};
+use actix::{Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, fut};
 use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use redis::aio::MultiplexedConnection;
@@ -28,7 +26,6 @@ use crate::redis::{
 
 use crate::hub_service::{HubServiceHandle, ServerMessage, SessionId, new_session_id};
 use crate::workspace_owner::check_workspace_core;
-
 
 #[derive(Serialize, Default)]
 struct ReturnBase<'a> {
@@ -45,7 +42,6 @@ struct ReturnBase<'a> {
 
     #[serde(rename = "TTL", skip_serializing_if = "Option::is_none")]
     ttl: Option<u64>,
-
     // #[serde(rename = "expiresAt", skip_serializing_if = "Option::is_none")]
     // expires_at: Option<u64>,
 
@@ -157,11 +153,11 @@ impl Actor for WsSession {
 impl actix::Handler<ServerMessage> for WsSession {
     type Result = ();
     fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
-        let json = serde_json::to_string(&msg).unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
+        let json =
+            serde_json::to_string(&msg).unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
         ctx.text(json);
     }
 }
-
 
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
@@ -404,7 +400,6 @@ impl WsSession {
                 self.fut_send(ctx, fut, base);
             }
 
-
             WsCommand::Sub { key, correlation } => {
                 // LEVENT 3
                 tracing::info!("SUB {}", &key); //  correlation: {:?} , &correlation
@@ -432,7 +427,6 @@ impl WsSession {
                 }
                 ctx.text(obj.to_string());
             }
-
 
             WsCommand::Unsub { key, correlation } => {
                 // LEVENT 4
@@ -466,7 +460,6 @@ impl WsSession {
                 ctx.text(obj.to_string());
             }
 
-
             WsCommand::Sublist { correlation } => {
                 tracing::info!("SUBLIST"); //  correlation: {:?} , &correlation
                 // w/o Check workspace!
@@ -487,13 +480,10 @@ impl WsSession {
                     },
                     base,
                 );
-            }
-
-        // End of commands
+            } // End of commands
         }
     }
 }
-
 
 pub async fn handler(
     req: HttpRequest,

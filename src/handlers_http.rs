@@ -15,7 +15,7 @@
 
 use anyhow::anyhow;
 use redis::aio::MultiplexedConnection;
-use serde::{Deserialize};
+use serde::Deserialize;
 use tracing::*;
 
 use actix_web::{
@@ -162,7 +162,6 @@ pub async fn delete(
     path: web::Path<PathParams>,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-
     let key: String = path.into_inner().key;
 
     trace!(key, "delete request");
