@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { MeasureContext, Ref } from '@hcengineering/core'
+import { MeasureContext, Ref, Space } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { Card } from '@hcengineering/card'
-import { PersonSpace } from '@hcengineering/contact'
 
 export interface ThreadInfo {
   threadId: Ref<Card>
@@ -54,7 +53,7 @@ export class ThreadLookupService {
     ThreadLookupService.instances.delete(token)
   }
 
-  async getThreadId (mailId: string, spaceId: Ref<PersonSpace>, email: string): Promise<Ref<Card> | undefined> {
+  async getThreadId (mailId: string, spaceId: Ref<Space>, email: string): Promise<Ref<Card> | undefined> {
     try {
       if (mailId == null || spaceId == null) {
         this.ctx.warn('Invalid parameters for thread lookup', { mailId, spaceId })
@@ -80,7 +79,7 @@ export class ThreadLookupService {
     }
   }
 
-  async setThreadId (mailId: string, spaceId: Ref<PersonSpace>, threadId: Ref<Card>, email: string): Promise<void> {
+  async setThreadId (mailId: string, spaceId: Ref<Space>, threadId: Ref<Card>, email: string): Promise<void> {
     try {
       const key = this.getLookupKey(mailId, spaceId, email)
 
@@ -102,7 +101,7 @@ export class ThreadLookupService {
 
   async getParentThreadId (
     inReplyTo: string | undefined,
-    spaceId: Ref<PersonSpace>,
+    spaceId: Ref<Space>,
     email: string
   ): Promise<Ref<Card> | undefined> {
     if (inReplyTo === undefined) {
@@ -112,7 +111,7 @@ export class ThreadLookupService {
     return await this.getThreadId(inReplyTo, spaceId, email)
   }
 
-  async deleteMapping (mailId: string, spaceId: Ref<PersonSpace>, email: string): Promise<void> {
+  async deleteMapping (mailId: string, spaceId: Ref<Space>, email: string): Promise<void> {
     try {
       const key = this.getLookupKey(mailId, spaceId, email)
       await this.keyValueClient.deleteKey(key)
@@ -122,7 +121,7 @@ export class ThreadLookupService {
     }
   }
 
-  private getLookupKey (mailId: string, spaceId: Ref<PersonSpace>, email: string): string {
+  private getLookupKey (mailId: string, spaceId: Ref<Space>, email: string): string {
     return `mail-thread-lookup:${mailId}:${spaceId}:${email}`
   }
 }

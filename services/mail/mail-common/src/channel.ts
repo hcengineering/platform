@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { MeasureContext, PersonId, Ref, TxOperations, WorkspaceUuid, generateId } from '@hcengineering/core'
+import { MeasureContext, PersonId, Ref, Space, TxOperations, WorkspaceUuid, generateId } from '@hcengineering/core'
 import { type Card } from '@hcengineering/card'
 import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
-import { PersonSpace } from '@hcengineering/contact'
 import { SyncMutex } from './mutex'
 import { MessageTimeShift, normalizeEmail } from './utils'
 
@@ -40,7 +39,7 @@ export class ChannelCache {
    * Gets or creates a mail channel with caching
    */
   async getOrCreateChannel (
-    spaceId: Ref<PersonSpace>,
+    spaceId: Ref<Space>,
     participants: PersonId[],
     email: string,
     owner: PersonId
@@ -61,7 +60,7 @@ export class ChannelCache {
     return channel
   }
 
-  clearCache (spaceId: Ref<PersonSpace>, email: string): void {
+  clearCache (spaceId: Ref<Space>, email: string): void {
     const normalizedEmail = normalizeEmail(email)
     this.cache.delete(`${spaceId}:${normalizedEmail}`)
   }
@@ -75,7 +74,7 @@ export class ChannelCache {
   }
 
   private async fetchOrCreateChannel (
-    space: Ref<PersonSpace>,
+    space: Ref<Space>,
     participants: PersonId[],
     email: string,
     personId: PersonId
@@ -109,7 +108,7 @@ export class ChannelCache {
   }
 
   private async createNewChannel (
-    space: Ref<PersonSpace>,
+    space: Ref<Space>,
     participants: PersonId[],
     email: string,
     personId: PersonId
