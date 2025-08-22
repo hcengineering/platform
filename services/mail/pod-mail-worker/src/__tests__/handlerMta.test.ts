@@ -24,13 +24,15 @@ import { handleMtaHook } from '../handlerMta'
 import * as client from '../client'
 import { type MtaMessage } from '../types'
 
-// Mock dependencies
-jest.mock('@hcengineering/mail-common', () => ({
-  createMessages: jest.fn(),
-  getProducer: jest.fn().mockReturnValue({}),
-  getMessageExtra: jest.fn().mockReturnValue({}),
-  isHulyMessage: jest.fn().mockReturnValue(false)
-}))
+// Mock only the functions that need to be mocked for testing
+jest.mock('@hcengineering/mail-common', () => {
+  const actualMailCommon = jest.requireActual('@hcengineering/mail-common')
+  return {
+    ...actualMailCommon,
+    createMessages: jest.fn(),
+    getProducer: jest.fn().mockReturnValue({})
+  }
+})
 
 jest.mock('../client', () => ({
   mailServiceToken: 'mock-token',

@@ -372,6 +372,12 @@ export class GmailClient {
         return
       }
 
+      if (message.date !== undefined) {
+        const messageDate = message.date instanceof Date ? message.date : new Date(message.date)
+        if (messageDate < config.OutgoingSyncStartDate) {
+          return
+        }
+      }
       const email = await this.getEmail()
       const thread = await this.client.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
       const mailChannel = await this.getMailChannel()

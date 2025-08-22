@@ -21,7 +21,7 @@
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import { isFullScreen, tryConnect } from '../utils'
+  import { isFullScreen, lk, tryConnect } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import { lkSessionConnected } from '../liveKitClient'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
@@ -125,6 +125,7 @@
   }
 
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
+  $: updateStyle(lk.numParticipants, withScreenSharing)
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
