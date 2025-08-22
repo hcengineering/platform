@@ -34,7 +34,7 @@ mod redis;
 mod workspace_owner;
 
 mod hub_service;
-use hub_service::{HubServiceHandle, HubState};
+use hub_service::{HubState};
 
 use config::CONFIG;
 
@@ -102,13 +102,10 @@ async fn main() -> anyhow::Result<()> {
     let redis_connection = redis_client.get_multiplexed_async_connection().await?;
 
     // starting HubService
-    let hub = HubServiceHandle::start(redis_connection.clone());
-
-    let hub_state = HubState::default();
-    let hub_state = Arc::new(RwLock::new(hub_state));
+    let hub_state = Arc::new(RwLock::new(HubState::default()));
 
     // starting Logger
-    tokio::spawn(redis::receiver(redis_client, hub.clone()));
+    tokio::spawn(redis::receiver(redis_client, hub_state.clone()));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
@@ -144,27 +141,20 @@ async fn main() -> anyhow::Result<()> {
                     .route("/{key:.+}", web::put().to(handlers_http::put))
                     .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
-            .route(
-                "/ws",
-                web::get()
-                    .to(handlers_ws::handler)
+            .route("/ws",web::get().to(handlers_ws::handler)
                     .wrap(middleware::from_fn(extract_claims)),
             ) // WebSocket
-            // .route("/status", web::get().to(async || "ok"))
-            .route(
-                "/status",
-                web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-                    let count = hub.count().await;
-                    Ok::<_, actix_web::Error>(
-                        HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })),
-                    )
-                }),
-            )
-
-        // .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-        //     let subs = hub.dump_subs().await;
-        //     Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
-        // }))
+            .route("/status", web::get().to({
+                move |hub_state: web::Data<Arc<RwLock<HubState>>>| {
+                    let hub_state = hub_state.clone();
+                    async move {
+                        let count = hub_state.read().await.count();
+                        Ok::<_, actix_web::Error>(
+                            HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })),
+                        )
+                    }
+                }
+            }))
     })
     .bind(socket)?
     .run();

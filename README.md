@@ -178,11 +178,11 @@ Size of data is limited to some reasonable size
 
 ** Server to Client ** subscribed events:
 
-    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Set","value":"hello"}`
+    - `{"message":"Set","key":"00000000-0000-0000-0000-000000000001/foo/bar","value":"hello"}`
 
-    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Expired"}`
+    - `{"message":"Expired","key":"00000000-0000-0000-0000-000000000001/foo/bar"}`
 
-    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Del"}`
+    - `{"message":"Del","key":"00000000-0000-0000-0000-000000000001/foo/bar"}`
 
 
 ## Running

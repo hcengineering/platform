@@ -63,7 +63,7 @@
 
   <br />
   <button onclick="sendMessage()">Send JSON</button>
-  <button onclick="clean()">❌clear</button>
+  <button onclick="pr('clear')">❌clear</button>
 
   <p>
 
@@ -89,8 +89,14 @@
   <div id="output">Waiting for server response...</div>
 
   <script>
+
     const output = document.getElementById("output");
     const textarea = document.getElementById("jsonInput");
+
+    function pr(s) {
+	if(s=="clear") return output.textContent = "";
+	output.textContent = s+"\n\n"+output.textContent;
+    }
 
 //    const workspace="00000000-0000-0000-0000-000000000001";
 
@@ -101,15 +107,16 @@
 
 
     ws.onopen = () => {
-      output.textContent = "✅ WebSocket connected.";
+	pr("clear");
+	pr("✅ WebSocket connected.");
     };
 
     ws.onmessage = (e) => {
-      output.textContent += "\n\n📥 From server:\n" + e.data;
+	pr(e.data);
     };
 
     ws.onerror = (e) => {
-      output.textContent += "\n\n❌ WebSocket error!";
+      pr("❌ WebSocket error!");
       console.error(e);
     };
 
@@ -119,16 +126,14 @@
       try {
         const parsed = JSON.parse(json); // validate JSON
         ws.send(JSON.stringify(parsed));
-        output.textContent += "\n\n📤 Sent:\n" + JSON.stringify(parsed, null, 2);
+        pr("📤 Sent:\n" + JSON.stringify(parsed, null, 2));
       } catch (e) {
-        output.textContent += "\n\n⚠️ Invalid JSON:\n" + e.message;
+        pr("\n\n⚠️ Invalid JSON:\n" + e.message);
       }
 
     }
 
     function place(event) { textarea.value = (event || window.event).target.getAttribute("data"); sendMessage(); }
-
-    function clean() { output.textContent = ""; }
 
   </script>
 

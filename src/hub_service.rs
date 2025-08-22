@@ -1,11 +1,27 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 use actix::prelude::*;
 
 use redis::aio::MultiplexedConnection;
 use serde::Serialize;
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{RwLock};
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -49,45 +65,11 @@ pub enum RedisEventAction {
 #[derive(Debug, Clone, Serialize)]
 pub struct RedisEvent {
     //    pub db: u32,
+    pub message: RedisEventAction,
     pub key: String,
-    pub action: RedisEventAction,
 }
 
-// ==== Commands for worker ====
-
-enum Command {
-    Connect {
-        session_id: SessionId,
-        addr: Recipient<ServerMessage>,
-    },
-    Disconnect {
-        session_id: SessionId,
-    },
-    Subscribe {
-        session_id: SessionId,
-        key: String,
-    },
-    Unsubscribe {
-        session_id: SessionId,
-        key: String,
-    },
-    UnsubscribeAll {
-        session_id: SessionId,
-    },
-    SubscribeList {
-        session_id: SessionId,
-        reply: oneshot::Sender<Vec<String>>,
-    },
-    Count {
-        reply: oneshot::Sender<usize>,
-    },
-    // DumpSubs {
-    //     reply: oneshot::Sender<std::collections::HashMap<String, Vec<SessionId>>>,
-    // },
-    RedisEvent(RedisEvent),
-}
-
-// ==== Handle  ====
+// ==== Handle ====
 
 #[derive(Debug, Default)]
 pub struct HubState {
@@ -96,184 +78,93 @@ pub struct HubState {
 }
 
 impl HubState {
+    pub fn connect(&mut self, session_id: SessionId, addr: Recipient<ServerMessage>) {
+        self.sessions.insert(session_id, addr);
+    }
+    pub fn disconnect(&mut self, session_id: SessionId) {
+        self.sessions.remove(&session_id);
+        self.subs.retain(|_, ids| { ids.remove(&session_id); !ids.is_empty() });
+    }
     pub fn subscribe(&mut self, session_id: SessionId, key: String) {
         self.subs.entry(key).or_default().insert(session_id);
     }
-}
-
-#[derive(Clone)]
-pub struct HubServiceHandle {
-    tx: mpsc::Sender<Command>,
-}
-
-impl HubServiceHandle {
-    pub fn start(redis: MultiplexedConnection) -> Self {
-        let (tx, mut rx) = mpsc::channel::<Command>(1024);
-
-        // Владелец состояния живёт внутри задачи
-        tokio::spawn(async move {
-            let mut sessions: HashMap<SessionId, Recipient<ServerMessage>> = HashMap::new();
-            let mut subs: HashMap<String, HashSet<SessionId>> = HashMap::new();
-            let mut redis_conn = redis;
-
-            fn subscribers_for(
-                subs: &HashMap<String, HashSet<SessionId>>,
-                key: &str,
-            ) -> HashSet<SessionId> {
-                let mut out = HashSet::<SessionId>::new();
-                for (sub_key, set) in subs.iter() {
-                    if subscription_matches(sub_key, key) {
-                        out.extend(set.iter().copied());
-                    }
-                }
-                out
+    pub fn unsubscribe(&mut self, session_id: SessionId, key: String) {
+        if let Some(set) = self.subs.get_mut(&key) {
+            set.remove(&session_id);
+            if set.is_empty() {
+                self.subs.remove(&key);
             }
-
-            while let Some(cmd) = rx.recv().await {
-                match cmd {
-                    Command::Connect { session_id, addr } => {
-                        sessions.insert(session_id, addr);
-                    }
-
-                    Command::Disconnect { session_id } => {
-                        subs.retain(|_, ids| {
-                            ids.remove(&session_id);
-                            !ids.is_empty()
-                        });
-                        sessions.remove(&session_id);
-                    }
-
-                    Command::Subscribe { session_id, key } => {
-                        subs.entry(key).or_default().insert(session_id);
-                    }
-
-                    Command::Unsubscribe { session_id, key } => {
-                        if let Some(set) = subs.get_mut(&key) {
-                            set.remove(&session_id);
-                            if set.is_empty() {
-                                subs.remove(&key);
-                            }
-                        }
-                    }
-
-                    Command::UnsubscribeAll { session_id } => {
-                        subs.retain(|_, ids| {
-                            ids.remove(&session_id);
-                            !ids.is_empty()
-                        });
-                    }
-
-                    Command::SubscribeList { session_id, reply } => {
-                        let list = subs
-                            .iter()
-                            .filter_map(|(key, ids)| {
-                                if ids.contains(&session_id) {
-                                    Some(key.clone())
-                                } else {
-                                    None
-                                }
-                            })
-                            .collect::<Vec<_>>();
-                        let _ = reply.send(list);
-                    }
-
-                    Command::Count { reply } => {
-                        let _ = reply.send(sessions.len());
-                    }
-
-                    // Command::DumpSubs { reply } => {
-                    //     let snapshot = subs
-                    //         .iter()
-                    //         .map(|(k, set)| (k.clone(), set.iter().copied().collect::<Vec<_>>()))
-                    //         .collect::<std::collections::HashMap<_, _>>();
-                    //     let _ = reply.send(snapshot);
-                    // }
-                    Command::RedisEvent(event) => {
-                        let targets = subscribers_for(&subs, &event.key);
-                        if targets.is_empty() {
-                            continue;
-                        }
-                        let recipients: Vec<Recipient<ServerMessage>> = targets
-                            .into_iter()
-                            .filter_map(|sid| sessions.get(&sid).cloned())
-                            .collect();
-
-                        // Inside: waiting GET
-                        let need_get = matches!(event.action, RedisEventAction::Set);
-                        let mut value: Option<String> = None;
-                        if need_get {
-                            match redis::cmd("GET")
-                                .arg(&event.key)
-                                .query_async::<Option<String>>(&mut redis_conn)
-                                .await
-                            {
-                                Ok(v) => value = v,
-                                Err(e) => {
-                                    tracing::warn!("redis GET {} failed: {}", &event.key, e);
-                                }
-                            }
-                        }
-
-                        let payload = ServerMessage { event, value };
-
-                        for rcpt in recipients {
-                            let _ = rcpt.do_send(payload.clone());
-                        }
-                    }
-                }
-            }
+        }
+    }
+    pub fn unsubscribe_all(&mut self, session_id: SessionId) {
+        self.subs.retain(|_, ids| {
+            ids.remove(&session_id);
+            !ids.is_empty()
         });
-
-        Self { tx }
     }
-
-    // ---- API, ничего не выполняет параллельно внутри worker'а ----
-
-    pub fn connect(&self, session_id: SessionId, addr: Recipient<ServerMessage>) {
-        let _ = self.tx.try_send(Command::Connect { session_id, addr });
-    }
-
-    pub fn disconnect(&self, session_id: SessionId) {
-        let _ = self.tx.try_send(Command::Disconnect { session_id });
-    }
-
-    pub fn subscribe(&self, session_id: SessionId, key: String) {
-        let _ = self.tx.try_send(Command::Subscribe { session_id, key });
-    }
-
-    pub fn unsubscribe(&self, session_id: SessionId, key: String) {
-        let _ = self.tx.try_send(Command::Unsubscribe { session_id, key });
-    }
-
-    pub fn unsubscribe_all(&self, session_id: SessionId) {
-        let _ = self.tx.try_send(Command::UnsubscribeAll { session_id });
-    }
-
-    pub async fn subscribe_list(&self, session_id: SessionId) -> Vec<String> {
-        let (tx, rx) = oneshot::channel();
-        let _ = self
-            .tx
-            .send(Command::SubscribeList {
-                session_id,
-                reply: tx,
+    pub fn subscribe_list(&self, session_id: SessionId) -> Vec<String> {
+        self.subs   
+            .iter()
+            .filter_map(|(key, ids)| {
+                if ids.contains(&session_id) {
+                    Some(key.clone())
+                } else {
+                    None
+                }
             })
-            .await;
-        rx.await.unwrap_or_default()
+            .collect()
+    }
+    pub fn count(&self) -> usize {
+        self.sessions.len()
+    }
+    pub fn recipients_for_key(&self, key: &str) -> Vec<Recipient<ServerMessage>> {
+        let mut out = Vec::new();
+        for (sub_key, set) in &self.subs {
+            if subscription_matches(sub_key, key) {
+                for sid in set {
+                    if let Some(r) = self.sessions.get(sid) {
+                        out.push(r.clone());
+                    }
+                }
+            }
+        }
+        out
     }
 
-    pub async fn count(&self) -> usize {
-        let (tx, rx) = oneshot::channel();
-        let _ = self.tx.send(Command::Count { reply: tx }).await;
-        rx.await.unwrap_or_default()
+}
+
+
+
+// Send messages about new Redis events
+pub async fn push_event(
+    hub_state: &Arc<RwLock<HubState>>,
+    redis: &mut MultiplexedConnection,
+    ev: RedisEvent,
+) {
+    // Collect Addresses
+    let recipients: Vec<Recipient<ServerMessage>> = {
+        hub_state.read().await.recipients_for_key(&ev.key)
+    };
+    if recipients.is_empty() {
+        return;
     }
 
-    // pub async fn dump_subs(&self) -> std::collections::HashMap<String, Vec<SessionId>> {
-    //     let (tx, rx) = oneshot::channel();
-    //     let _ = self.tx.send(Command::DumpSubs { reply: tx }).await;
-    //     rx.await.unwrap_or_default()
-    // }
+    // Get value from Redis (only for `Set` event, not for `Delete`, `Expire`)
+    let mut value: Option<String> = None;
+    if matches!(ev.message, RedisEventAction::Set) {
+        match redis::cmd("GET")
+            .arg(&ev.key)
+            .query_async::<Option<String>>(redis)
+            .await
+        {
+            Ok(v) => value = v,
+            Err(e) => tracing::warn!("redis GET {} failed: {}", &ev.key, e),
+        }
+    }
 
-    pub fn push_event(&self, ev: RedisEvent) {
-        let _ = self.tx.try_send(Command::RedisEvent(ev));
+    // Sending
+    let payload = ServerMessage { event: ev, value };
+    for rcpt in recipients {
+        let _ = rcpt.do_send(payload.clone());
     }
 }

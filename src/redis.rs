@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
 
 use ::redis::Msg;
+use tokio::sync::RwLock;
 use tokio_stream::StreamExt;
 use tracing::*;
 
 use crate::{
-    config::{CONFIG, RedisMode},
-    hub_service::{HubServiceHandle, RedisEvent, RedisEventAction},
+    config::{RedisMode, CONFIG},
+    hub_service::{push_event, HubState, RedisEvent, RedisEventAction},
 };
 
 #[derive(serde::Serialize)]
@@ -336,7 +337,7 @@ impl TryFrom<Msg> for RedisEvent {
 
         // "__keyevent@0__:set" → event="set", db=0; payload = key
         let event = channel.rsplit(':').next().unwrap_or("");
-        let action = match event {
+        let message = match event {
             "set" => RedisEventAction::Set,
             "del" => RedisEventAction::Del,
             "unlink" => RedisEventAction::Unlink,
@@ -354,12 +355,15 @@ impl TryFrom<Msg> for RedisEvent {
         Ok(RedisEvent {
             // db,
             key: payload.clone(),
-            action,
+            message,
         })
     }
 }
 
-pub async fn receiver(redis_client: Client, hub: HubServiceHandle) -> anyhow::Result<()> {
+pub async fn receiver(redis_client: Client,
+    // hub: HubServiceHandle
+    hub_state: Arc<RwLock<HubState>>,
+) -> anyhow::Result<()> {
     let mut redis = redis_client.get_multiplexed_async_connection().await?;
     let mut pubsub = redis_client.get_async_pubsub().await?;
 
@@ -386,7 +390,8 @@ pub async fn receiver(redis_client: Client, hub: HubServiceHandle) -> anyhow::Re
             Ok(ev) => {
                 // debug!("redis event: {ev:#?}");
 
-                hub.push_event(ev);
+                push_event(&hub_state, &mut redis, ev).await;
+
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

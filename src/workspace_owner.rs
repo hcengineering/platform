@@ -16,8 +16,15 @@
 use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
 
+use crate::redis::deprecated_symbol;
+
 // common checker
 pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static str> {
+
+    if deprecated_symbol(key) {
+        return Err("Invalid key: deprecated symbols");
+    }
+
     if claims.is_system() {
         return Ok(());
     }
