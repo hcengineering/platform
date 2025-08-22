@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-use actix_web::{HttpMessage, HttpRequest};
 use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
 
 // common checker
 pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static str> {
+
     if claims.is_system() {
         return Ok(());
     }
@@ -41,22 +41,4 @@ pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static s
     }
 
     Ok(())
-}
-
-/// HTTP API
-pub fn workspace_check(req: &HttpRequest) -> Result<(), actix_web::Error> {
-    let key = req
-        .match_info()
-        .get("key")
-        .ok_or_else(|| actix_web::error::ErrorBadRequest("Missing key in URL path"))?;
-    let claims = req
-        .extensions()
-        .get::<Claims>()
-        .cloned()
-        .ok_or_else(|| actix_web::error::ErrorUnauthorized("Missing auth claims"))?;
-
-    match check_workspace_core(&claims, key) {
-        Ok(()) => Ok(()),
-        Err(msg) => Err(actix_web::error::ErrorUnauthorized(msg)),
-    }
 }

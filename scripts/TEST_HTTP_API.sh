@@ -10,6 +10,11 @@ TOKEN=$(./token.sh claims.json)
 
 ZP="00000000-0000-0000-0000-000000000001/TESTS"
 
+    delete "0000000/TESTS"
+    delete ${ZP}
+    put ${ZP} "Value_1" "HULY-TTL: 2"
+    delete ${ZP}
+
 
 echo "--------- authorization_test ----------"
 TOKEN=""
@@ -20,7 +25,6 @@ TOKEN=$(./token.sh claims_wrong_ws.json)
     put "00000000-0000-0000-0000-000000000001/TESTS" "Value_1" "HULY-TTL: 2"
 TOKEN=$(./token.sh claims.json)
     put "00000000-0000-0000-0000-000000000002/TESTS" "Value_1" "HULY-TTL: 2"
-exit
 
 
 
@@ -35,9 +39,6 @@ echo "--------- if-match ----------"
     get "00000000-0000-0000-0000-000000000001/TESTS/"
     get "00000000-0000-0000-0000-000000000001/TESTS/3/secret$/"
 
-
-
-exit
 
 echo "--------- Deprecated symbols ----------"
 

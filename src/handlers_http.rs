@@ -24,7 +24,6 @@ use actix_web::{
 };
 
 use crate::redis::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
-use crate::workspace_owner::workspace_check;
 
 pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
@@ -46,7 +45,6 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 
 #[derive(Deserialize, Debug)]
 pub struct PathParams {
-    //workspace: Uuid,
     key: String,
 }
 
@@ -94,14 +92,6 @@ pub async fn get(
     .await
     .map_err(map_handler_error)
 }
-
-/*
-#[derive(serde::Deserialize)]
-struct MyHeaders {
-    #[serde(rename = "HULY-TTL")]
-    ttl: Option<u64>,
-}
-*/
 
 /// put
 pub async fn put(
@@ -172,7 +162,6 @@ pub async fn delete(
     path: web::Path<PathParams>,
     redis: web::Data<MultiplexedConnection>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    workspace_check(&req)?; // Check workspace
 
     let key: String = path.into_inner().key;
 

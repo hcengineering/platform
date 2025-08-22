@@ -13,29 +13,26 @@
 // limitations under the License.
 //
 
-use actix::prelude::*;
 use actix_cors::Cors;
 use actix_web::{
-    App, Error, HttpMessage, HttpResponse, HttpServer,
-    body::MessageBody,
-    dev::{ServiceRequest, ServiceResponse},
-    middleware::{self, Next},
-    web::{self, Path, Query},
+    body::MessageBody, dev::{ServiceRequest, ServiceResponse}, middleware::{self, Next}, web::{self, Path, Query}, App, Error, HttpMessage, HttpResponse, HttpServer
 };
 use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
 use secrecy::ExposeSecret;
+use serde_json::json;
 use tracing::*;
+use uuid::Uuid;
 
 mod config;
 mod handlers_http;
 mod handlers_ws;
 mod redis;
 mod workspace_owner;
-mod ws_hub;
+
+mod hub_service;
+use hub_service::HubServiceHandle;
 
 use config::CONFIG;
-use uuid::Uuid;
-use ws_hub::{TestGetSubs, WsHub};
 
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
@@ -100,13 +97,21 @@ async fn main() -> anyhow::Result<()> {
     let redis_client = redis::client().await?;
     let redis_connection = redis_client.get_multiplexed_async_connection().await?;
 
-    // starting Hub
-    let hub = WsHub::new(redis_connection.clone()).start();
+    // starting HubService
+    let hub = HubServiceHandle::start(redis_connection.clone());
 
     // starting Logger
     tokio::spawn(redis::receiver(redis_client, hub.clone()));
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
+
+    let url = format!("http://{}:{}", &CONFIG.bind_host, &CONFIG.bind_port);
+    tracing::info!("Server running at {}", &url);
+    tracing::info!("HTTP API: {}/api",  &url);
+    tracing::info!("WebSocket API: {}/ws", &url);
+    tracing::info!("Status: {}/status", &url);
+    tracing::info!("Stats: {}/stat", &url);
+    tracing::info!("Subscriptions: {}/subs", &url);
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
@@ -130,32 +135,21 @@ async fn main() -> anyhow::Result<()> {
                     .route("/{key:.+}", web::put().to(handlers_http::put))
                     .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
-            .route(
-                "/ws",
-                web::get()
-                    .to(handlers_ws::handler)
+            .route("/ws", web::get().to(handlers_ws::handler)
                     .wrap(middleware::from_fn(extract_claims)),
             ) // WebSocket
             .route("/status", web::get().to(async || "ok"))
-            //
-            .route(
-                "/stat2",
-                web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
-                    let count = hub.send(crate::ws_hub::Count).await.unwrap_or(0);
-                    HttpResponse::Ok().json(serde_json::json!({ "connections": count }))
-                }),
-            )
-            .route(
-                "/subs",
-                web::get().to(|hub: web::Data<Addr<WsHub>>| async move {
-                    match hub.send(TestGetSubs).await {
-                        Ok(subs) => HttpResponse::Ok().json(subs),
-                        Err(_) => {
-                            HttpResponse::InternalServerError().body("Failed to get subscriptions")
-                        }
-                    }
-                }),
-            )
+
+            .route("/stat", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+                let count = hub.count().await;
+                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({ "connections": count })))
+            }))
+
+            .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+                let subs = hub.dump_subs().await;
+                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
+            }))
+            
     })
     .bind(socket)?
     .run();

@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+// https://github.com/hcengineering/hulypulse/
+
 use actix::{
-    Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, WrapFuture, fut, prelude::*,
+    Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, fut,
 };
 use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
@@ -25,10 +27,10 @@ use serde_json::{Value, json};
 use crate::redis::{
     SaveMode, Ttl, deprecated_symbol, redis_delete, redis_list, redis_read, redis_save,
 };
-use crate::ws_hub::{
-    Connect, Disconnect, ServerMessage, SessionId, Subscribe, SubscribeList, Unsubscribe,
-    UnsubscribeAll, WsHub,
-};
+
+use crate::hub_service::{HubServiceHandle, ServerMessage, SessionId, new_session_id};
+use crate::workspace_owner::check_workspace_core;
+
 
 #[derive(Serialize, Default)]
 struct ReturnBase<'a> {
@@ -130,7 +132,7 @@ use hulyrs::services::jwt::Claims;
 pub struct WsSession {
     pub redis: MultiplexedConnection,
     pub id: SessionId,
-    pub hub: Addr<WsHub>,
+    pub hub: HubServiceHandle,
     pub claims: Claims,
 }
 
@@ -139,35 +141,16 @@ impl Actor for WsSession {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        // ask ID from Hub
         let addr = ctx.address();
-
         let recipient = addr.recipient::<ServerMessage>();
-        // println!("WebSocket connected");
-        self.hub
-            .send(Connect {
-                addr: recipient,
-                session_id: self.id,
-            })
-            .into_actor(self)
-            .map(|res, act, _ctx| match res {
-                Ok(id) => {
-                    act.id = id;
-                    tracing::info!("WebSocket connected: {id}");
-                }
-                Err(e) => {
-                    tracing::error!("WebSocket failed connect to hub: {e}");
-                    _ctx.stop();
-                }
-            })
-            .wait(ctx); // waiting for ID
+
+        self.hub.connect(self.id, recipient);
+        tracing::info!("WebSocket connected: {}", self.id);
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         if self.id != 0 {
-            self.hub.do_send(Disconnect {
-                session_id: self.id,
-            });
+            self.hub.disconnect(self.id);
         }
         tracing::info!("WebSocket disconnected: {:?}", &self.id);
     }
@@ -175,13 +158,12 @@ impl Actor for WsSession {
 
 impl actix::Handler<ServerMessage> for WsSession {
     type Result = ();
-
     fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
-        let json =
-            serde_json::to_string(&msg).unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
+        let json = serde_json::to_string(&msg).unwrap_or_else(|_| "{\"error\":\"serialization\"}".into());
         ctx.text(json);
     }
 }
+
 
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
@@ -201,8 +183,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
     }
 }
 
-use crate::workspace_owner::check_workspace_core;
-
 /// All logic in one impl
 impl WsSession {
     fn ws_error(&self, ctx: &mut ws::WebsocketContext<Self>, msg: &str) {
@@ -221,7 +201,6 @@ impl WsSession {
     ) {
         ctx.wait(
             fut::wrap_future(fut).map(move |res, _actor: &mut Self, ctx| {
-                // if !base.is_object() { base = json!({ "base": base }); }
                 let obj = base.as_object_mut().unwrap();
                 match res {
                     Ok(Value::Object(extra)) => {
@@ -251,14 +230,7 @@ impl WsSession {
                 if_none_match,
                 correlation,
             } => {
-                tracing::info!(
-                    "PUT {} = {} (expires_at: {:?}) (ttl: {:?}) correlation: {:?}",
-                    &key,
-                    &data,
-                    &expires_at,
-                    &ttl,
-                    &correlation
-                );
+                tracing::info!("PUT {} = {}", &key, &data); //  (expires_at: {:?}) (ttl: {:?}) correlation: {:?} &expires_at, &ttl, &correlation
 
                 // Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) {
@@ -324,13 +296,15 @@ impl WsSession {
                 correlation,
                 if_match,
             } => {
-                tracing::info!("DELETE {} correlation:{:?}", &key, &correlation);
+                tracing::info!("DELETE {}", &key); //  correlation:{:?} , &correlation
 
                 // Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) {
                     self.ws_error(ctx, e);
                     return;
                 }
+
+                tracing::info!("DELETE!!! {}", &key);
 
                 let mut redis = self.redis.clone();
 
@@ -371,7 +345,7 @@ impl WsSession {
             }
 
             WsCommand::Get { key, correlation } => {
-                tracing::info!("GET {} correlation:{:?}", &key, &correlation);
+                tracing::info!("GET {}", &key); //  correlation:{:?} , &correlation
 
                 // Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) {
@@ -407,7 +381,7 @@ impl WsSession {
             }
 
             WsCommand::List { key, correlation } => {
-                tracing::info!("LIST {:?} correlation: {:?}", &key, &correlation);
+                tracing::info!("LIST {:?}", &key); //  correlation: {:?} , &correlation
 
                 // Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) {
@@ -434,9 +408,10 @@ impl WsSession {
                 self.fut_send(ctx, fut, base);
             }
 
+
             WsCommand::Sub { key, correlation } => {
                 // LEVENT 3
-                tracing::info!("SUB {} correlation: {:?}", &key, &correlation);
+                tracing::info!("SUB {}", &key); //  correlation: {:?} , &correlation
 
                 // Check workspace
                 if let Err(e) = self.workspace_check_ws(&key) {
@@ -456,19 +431,16 @@ impl WsSession {
                 if deprecated_symbol(&key) {
                     map.insert("error".into(), json!("Deprecated symbol in key"));
                 } else {
-                    self.hub.do_send(Subscribe {
-                        session_id: self.id,
-                        key: key.clone(),
-                    });
+                    self.hub.subscribe(self.id, key.clone());
                     map.insert("result".into(), json!("OK"));
                 }
-
                 ctx.text(obj.to_string());
             }
 
+
             WsCommand::Unsub { key, correlation } => {
                 // LEVENT 4
-                tracing::info!("UNSUB {} correlation: {:?}", &key, &correlation);
+                tracing::info!("UNSUB {}", &key); //  correlation: {:?} , &correlation
 
                 let mut obj = serde_json::json!(ReturnBase {
                     action: "unsub",
@@ -480,9 +452,7 @@ impl WsSession {
                 let map = obj.as_object_mut().unwrap();
 
                 if key == "*" {
-                    self.hub.do_send(UnsubscribeAll {
-                        session_id: self.id,
-                    });
+                    self.hub.unsubscribe_all(self.id);
                     map.insert("result".into(), json!("OK"));
                 } else {
                     // Check workspace
@@ -490,26 +460,20 @@ impl WsSession {
                         self.ws_error(ctx, e);
                         return;
                     }
-
                     if deprecated_symbol(&key) {
                         map.insert("error".into(), json!("Deprecated symbol in key"));
                     } else {
+                        self.hub.unsubscribe(self.id, key.clone());
                         map.insert("result".into(), json!("OK"));
-                        self.hub.do_send(Unsubscribe {
-                            session_id: self.id,
-                            key: key.clone(),
-                        });
                     }
-                };
-
+                }
                 ctx.text(obj.to_string());
             }
 
+
             WsCommand::Sublist { correlation } => {
-                tracing::info!("SUBLIST correlation: {:?}", &correlation);
-
+                tracing::info!("SUBLIST"); //  correlation: {:?} , &correlation
                 // w/o Check workspace!
-
                 let base = serde_json::json!(ReturnBase {
                     action: "list",
                     correlation: correlation.as_deref(),
@@ -519,27 +483,27 @@ impl WsSession {
                 let hub = self.hub.clone();
                 let id = self.id;
 
-                let fut = async move {
-                    let keys = hub
-                        .send(SubscribeList { session_id: id })
-                        .await
-                        .unwrap_or_default();
-                    Ok(json!({ "result": keys }))
-                };
+                self.fut_send(
+                    ctx,
+                    async move {
+                        let keys = hub.subscribe_list(id).await;
+                        Ok(json!({ "result": keys }))
+                    },
+                    base,
+                );
+            }
 
-                self.fut_send(ctx, fut, base);
-            } // End of commands
+        // End of commands
         }
     }
 }
 
-// ---- auth
 
 pub async fn handler(
     req: HttpRequest,
     payload: web::Payload,
     redis: web::Data<MultiplexedConnection>,
-    hub: web::Data<Addr<WsHub>>,
+    hub: web::Data<HubServiceHandle>, // <-- было Addr<WsHub>
 ) -> Result<HttpResponse, Error> {
     let claims = req
         .extensions()
@@ -550,7 +514,7 @@ pub async fn handler(
     let session = WsSession {
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),
-        id: crate::ws_hub::new_session_id(),
+        id: new_session_id(),
         claims,
     };
 

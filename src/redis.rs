@@ -15,13 +15,11 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use actix::Addr;
 use ::redis::Msg;
 use tokio_stream::StreamExt;
 use tracing::*;
 
-use crate::config::{CONFIG, RedisMode};
-use crate::ws_hub::{RedisEvent, RedisEventAction, WsHub};
+use crate::{config::{RedisMode, CONFIG}, hub_service::{HubServiceHandle, RedisEvent, RedisEventAction}};
 
 #[derive(serde::Serialize)]
 pub enum Ttl {
@@ -358,7 +356,8 @@ impl TryFrom<Msg> for RedisEvent {
     }
 }
 
-pub async fn receiver(redis_client: Client, hub: Addr<WsHub>) -> anyhow::Result<()> {
+
+pub async fn receiver(redis_client: Client, hub: HubServiceHandle) -> anyhow::Result<()> {
     let mut redis = redis_client.get_multiplexed_async_connection().await?;
     let mut pubsub = redis_client.get_async_pubsub().await?;
 
@@ -383,10 +382,10 @@ pub async fn receiver(redis_client: Client, hub: Addr<WsHub>) -> anyhow::Result<
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-                
-                debug!("redis event: {ev:#?}");
 
-                hub.do_send(ev);
+                // debug!("redis event: {ev:#?}");
+
+                hub.push_event(ev);
                 
             }
             Err(e) => {

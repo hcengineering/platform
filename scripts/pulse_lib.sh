@@ -72,5 +72,6 @@ delete() {
   local tmpfile
   tmpfile=$(mktemp)
   curl -i -s -X DELETE "$URL/$1" -H "Authorization: Bearer ${TOKEN}" | tr -d '\r' > "$tmpfile"
+#  curl -v -i -s -X DELETE "$URL/$1" -H "Authorization: Bearer ${TOKEN}" | tr -d '\r' > "$tmpfile"
   api ${tmpfile}
 }
