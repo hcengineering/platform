@@ -48,7 +48,7 @@ pub enum RedisEventAction {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RedisEvent {
-    pub db: u32,
+//    pub db: u32,
     pub key: String,
     pub action: RedisEventAction,
 }
@@ -81,9 +81,9 @@ enum Command {
     Count {
         reply: oneshot::Sender<usize>,
     },
-    DumpSubs {
-        reply: oneshot::Sender<std::collections::HashMap<String, Vec<SessionId>>>,
-    },
+    // DumpSubs {
+    //     reply: oneshot::Sender<std::collections::HashMap<String, Vec<SessionId>>>,
+    // },
     RedisEvent(RedisEvent),
 }
 
@@ -170,13 +170,13 @@ impl HubServiceHandle {
                         let _ = reply.send(sessions.len());
                     }
 
-                    Command::DumpSubs { reply } => {
-                        let snapshot = subs
-                            .iter()
-                            .map(|(k, set)| (k.clone(), set.iter().copied().collect::<Vec<_>>()))
-                            .collect::<std::collections::HashMap<_, _>>();
-                        let _ = reply.send(snapshot);
-                    }
+                    // Command::DumpSubs { reply } => {
+                    //     let snapshot = subs
+                    //         .iter()
+                    //         .map(|(k, set)| (k.clone(), set.iter().copied().collect::<Vec<_>>()))
+                    //         .collect::<std::collections::HashMap<_, _>>();
+                    //     let _ = reply.send(snapshot);
+                    // }
 
                     Command::RedisEvent(event) => {
                         let targets = subscribers_for(&subs, &event.key);
@@ -254,11 +254,11 @@ impl HubServiceHandle {
         rx.await.unwrap_or_default()
     }
 
-    pub async fn dump_subs(&self) -> std::collections::HashMap<String, Vec<SessionId>> {
-        let (tx, rx) = oneshot::channel();
-        let _ = self.tx.send(Command::DumpSubs { reply: tx }).await;
-        rx.await.unwrap_or_default()
-    }
+    // pub async fn dump_subs(&self) -> std::collections::HashMap<String, Vec<SessionId>> {
+    //     let (tx, rx) = oneshot::channel();
+    //     let _ = self.tx.send(Command::DumpSubs { reply: tx }).await;
+    //     rx.await.unwrap_or_default()
+    // }
 
     pub fn push_event(&self, ev: RedisEvent) {
         let _ = self.tx.try_send(Command::RedisEvent(ev));

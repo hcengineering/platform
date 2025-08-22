@@ -24,8 +24,8 @@ Key segment may be private (prefixed with ‘$’)
 May not contain special characters (‘*’, ‘?’, ‘[’, ‘]’,‘\’,‘\x00..\xF1’,‘\x7F’,‘"’,‘'’)
 It is possible to use prefix, for listings / subscriptions  (prefix ends with segment separator ‘/’)
 
-GET/SUBSCRIBE/..   a/b → single key
-GET/SUBSCRIBE/..   a/b/c/ → multiple
+- GET/SUBSCRIBE/..   a/b → single key
+- GET/SUBSCRIBE/..   a/b/c/ → multiple
 
     If multiple
 
@@ -33,47 +33,34 @@ select all keys starting with prefix
 skip keys, containing private segments to the right from the prefix
 
     example
-1. /a/b/$c/$d,  2. /a/b/c,  3. /a/b/$c, 4. /a/b/$c/$d/e
-/ → [2]
-/a/b/ → [2]
-/a/b/$c/ → [3]
-/a/b/$c/$d/ → [4]
-/a/b/$c/$d → [1]
+
+- 1. /a/b/$c/$d,  2. /a/b/c,  3. /a/b/$c, 4. /a/b/$c/$d/e
+- / → [2]
+- /a/b/ → [2]
+- /a/b/$c/ → [3]
+- /a/b/$c/$d/ → [4]
+- /a/b/$c/$d → [1]
 
 
 ## Data
 “Data” is an arbitrary JSON document.
 Size of data is limited to some reasonable size
 
-## API
-Methods
-
-GET - returns values of one key
-
-LIST - returns values with given prefix until the “sentinel”
-
-PUT - put value to the key
-- Support CAS
-- Support If-* headers
-
-DELETE - delete value of the key
-
-SUB - subscribe to key data + get initial state
-Behavior identical to LIST
-
-UNSUB - unsubscribe to key data
-
-
 ## HTTP API
 
-```PUT /{workspace}/{key}```
+```GET /status``` - server status and websockets count
+- Answer: {"status":"OK","websockets":2}
+
+
+```PUT /{workspace}/{key}``` - Save key
 - Input
     Body - data
-    Content-Type: application/json (do we need something else?)
+    Content-Type: application/json
     Content-Length: optional
     Headers: TTL or absolute expiration time
-        HULY-TTL
-        HULY-EXPIRE-AT
+	- `HULY-TTL` — autodelete in N seconds
+	- or `HULY-EXPIRE-AT` — autodelete in UnixTime
+	- default max_ttl = 3600 (settings in config/default.toml)
     ** Conditional Headers If-*: **
 	- `If-Match: *` — update only if the key exists
 	- `If-Match: <md5>` — update only if current value's MD5 matches
@@ -84,73 +71,118 @@ UNSUB - unsubscribe to key data
 	- `204` on successful insert or update
 	- `412` if the condition is not met
 	- `400` if headers are invalid
-    - No body
+    - Body: `DONE`
 
-```PATCH /{workspace}/{key}```
-- TODO (not in v1)
-
-```DELETE /{workspace}/{key}```
+```DELETE /{workspace}/{key}``` - Delete key
 - Output
-    Status: 204
+    - Status: `204 No content`, no body
+    - `404 Not Found` if nothing to do
 
-```GET /{workspace}/{key}```
+```GET /{workspace}/{key}``` - Read one key
 - Output
     - Status 200
     - Content-type: application/json
+    - Header: `Etag: <md5>`
     - Body:
-        - workspace
-	- key
-        - data
-        - expiresAt ?
+        - workspace (copy of input)
+	- key (copy of input)
+        - data (copy of input)
+        - expiresAt / TTL (copy of input, optional)
+	- etag <md5>
 
-```GET /{workspace}?prefix={key}```
+```GET /{workspace}/{key}/``` - Read array of keys
 - Output
     - Status 200
     - Content-type: application/json
     - Body (array):
-        - workspace
-        - key
-        - data
-        - expiresAt ?
+	- [{"key","data","expires_at","etag"}, ...]
 
 ## WebSocket API
 
 **Client to Server**
 
 ```PUT```
-    - correlation id (optional)
     - type: "put"
-    - key: “foo/bar“
+    - correlation id (optional)
+    - key:
+	- “workspace/foo/bar“ - shared key
+	- “workspace/foo/bar/$/secret“ - secret key
     - data
-    - TTL / expiresAt
+    ** time control (optional) **
+	- `TTL` — autodelete in N seconds
+	- `ExpireAt` — autodelete in UnixTime
+	- or default max_ttl = 3600 (settings in config/default.toml)
+    ** Conditional (optional) **
+	- `ifMatch: *` — update only if the key exists
+	- `ifMatch: <md5>` — update only if current value's MD5 matches
+	- `ifNoneMatch: *` — insert only if the key does not exist
+
+- Answer: {"action":"put","correlation":"abc123","result":"OK"}
+
+
+```GET```
+    - type: "get"
+    - correlation id (optional)
+    - key:
+	- “workspace/foo/bar“ - one shared key
+	- “workspace/foo/bar/$/secret“ - one secret key
+
+- Answer: {"action":"get","result":{"data":"hello","etag":"5d41402abc4b2a76b9719d911017c592","expires_at":3599,"key":"00000000-0000-0000-0000-000000000001/foo/bar"}}
+
+
+```LIST```
+    - type: "list"
+    - correlation id (optional)
+    - key:
+	- “workspace/foo/bar/“ - keys from public space
+	- “workspace/foo/bar/$/secret/“ - keys from secret space
+
+- Answer: {"action":"list","result":[{"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","expires_at":3570,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},{"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","expires_at":3555,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}]}
+
 
 ```DELETE```
-    - correlation id (optional)
     - type: "delete"
-    - key: “foo/bar“
+    - correlation id (optional)
+    - key: “workspace/foo/bar“
+    ** Conditional (optional) **
+	- `ifMatch: <md5>` — delete only if current value's MD5 matches
+	- `ifMatch: *` — return error if key does not exist
 
-```SUB```
+- Answer: {"action":"delete","result":"OK"}
+
+
+```SUBSCRIBE```
     type: "sub"
-    key: “foo/bar“
+    key:
+	- “workspace/foo/bar“ - subscribe one shared key
+	- “workspace/foo/bar/“ - subscribe all keys started with
+	- “workspace/foo/bar/$/my_secret“ - subscribe one secret key
+	- “workspace/foo/bar/$/my_secret/“ - subscribe all keys started with secret
 
-```UNSUB```
+- Answer: {"action":"sub","result":"OK"}
+
+
+```UNSUBSCRIBE```
     - type: "unsub"
-    - key: “foo/bar“
+    - key:
+	- “workspace/foo/bar“ - unsubscribe subscribed key
+	- “*“ - unsubscribe all
 
-**Server to Client**
+- Answer: {"action":"unsub","result":"OK"}
 
-```PUT```
-    - correlation id (optional)
-    - type: "put"
-    - ?? TODO: user? workspace: "11111111-2222-3333-4444-555555555555"
-    - key: “foo/bar“
-    - data
-    - expiresAt
+```MY SUBSCRIBES```
+    - type: "sublist"
 
-```DELETE```
-    - correlation id (optional)
-    - type: "delete"
-    - key: “foo/bar“
+- Answer: {"action":"list","result":["00000000-0000-0000-0000-000000000001/foo/bar1","00000000-0000-0000-0000-000000000001/foo/bar2"]}
+
+
+** Server to Client ** subscribed events:
+
+    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Set","value":"hello"}
+
+    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Expired"}
+
+    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Del"}
 
 
 ## Running
@@ -179,22 +211,19 @@ Hulypulse uses bearer JWT token authetication. At the moment, it will accept any
 The following environment variables are used to configure hulypulse:
    - ```HULY_BIND_HOST```: host to bind the server to (default: 0.0.0.0)
    - ```HULY_BIND_PORT```: port to bind the server to (default: 8094)
-   - ```HULY_PAYLOAD_SIZE_LIMIT```: maximum size of the payload (default: 2Mb)
    - ```HULY_TOKEN_SECRET```: secret used to sign JWT tokens (default: secret)
    - ```HULY_REDIS_URLS```: redis connection string (default: redis://huly.local:6379)
    - ```HULY_REDIS_PASSWORD```: redis password (default: "&lt;invalid&gt;")
    - ```HULY_REDIS_MODE```: redis mode "direct" or "sentinel" (default: "direct")
    - ```HULY_REDIS_SERVICE```: redis service (default: "mymaster")
    - ```HULY_MAX_TTL```: maximum storage time (default: 3600)
+   - TODO: ```HULY_PAYLOAD_SIZE_LIMIT```: maximum size of the payload (default: 2Mb)
 
 ## Todo (in no particular order)
 - [ ] Optional value encryption
-- [ ] HEAD request
-- [ ] Conditional update (optimistic locking)
 - [ ] Support for open telemetry
 - [ ] Concurrency control for database migration (several instances of hulypulse are updated at the same time)
 - [ ] TLS support
-- [ ] Namespacee based access control
 - [ ] Liveness/readiness probe endpoint
 
 ## Contributing

@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+// https://github.com/hcengineering/hulypulse/
+
 use actix_cors::Cors;
 use actix_web::{
     body::MessageBody, dev::{ServiceRequest, ServiceResponse}, middleware::{self, Next}, web::{self, Path, Query}, App, Error, HttpMessage, HttpResponse, HttpServer
@@ -110,8 +112,6 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("HTTP API: {}/api",  &url);
     tracing::info!("WebSocket API: {}/ws", &url);
     tracing::info!("Status: {}/status", &url);
-    tracing::info!("Stats: {}/stat", &url);
-    tracing::info!("Subscriptions: {}/subs", &url);
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
@@ -138,18 +138,19 @@ async fn main() -> anyhow::Result<()> {
             .route("/ws", web::get().to(handlers_ws::handler)
                     .wrap(middleware::from_fn(extract_claims)),
             ) // WebSocket
-            .route("/status", web::get().to(async || "ok"))
-
-            .route("/stat", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-                let count = hub.count().await;
-                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({ "connections": count })))
-            }))
-
-            .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
-                let subs = hub.dump_subs().await;
-                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
-            }))
             
+            // .route("/status", web::get().to(async || "ok"))
+
+            .route("/status", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+                let count = hub.count().await;
+                Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })))
+            }))
+
+            // .route("/subs", web::get().to(|hub: web::Data<HubServiceHandle>| async move {
+            //     let subs = hub.dump_subs().await;
+            //     Ok::<_, actix_web::Error>(HttpResponse::Ok().json(subs))
+            // }))
+
     })
     .bind(socket)?
     .run();

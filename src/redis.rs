@@ -341,15 +341,15 @@ impl TryFrom<Msg> for RedisEvent {
             other => RedisEventAction::Other(other.to_string()),
         };
 
-        let db = channel
-            .find('@')
-            .and_then(|at| channel.get(at + 1..))
-            .and_then(|rest| rest.find("__:").map(|end| &rest[..end]))
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
+        // let db = channel
+        //     .find('@')
+        //     .and_then(|at| channel.get(at + 1..))
+        //     .and_then(|rest| rest.find("__:").map(|end| &rest[..end]))
+        //     .and_then(|s| s.parse::<u32>().ok())
+        //     .unwrap_or(0);
 
         Ok(RedisEvent {
-            db,
+            // db,
             key: payload.clone(),
             action,
         })

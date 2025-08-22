@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-// https://github.com/hcengineering/hulypulse/
-
 use actix::{
     Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, fut,
 };
@@ -48,14 +46,14 @@ struct ReturnBase<'a> {
     #[serde(rename = "TTL", skip_serializing_if = "Option::is_none")]
     ttl: Option<u64>,
 
-    #[serde(rename = "expiresAt", skip_serializing_if = "Option::is_none")]
-    expires_at: Option<u64>,
+    // #[serde(rename = "expiresAt", skip_serializing_if = "Option::is_none")]
+    // expires_at: Option<u64>,
 
-    #[serde(rename = "ifMatch", skip_serializing_if = "Option::is_none")]
-    if_match: Option<&'a str>,
+    // #[serde(rename = "ifMatch", skip_serializing_if = "Option::is_none")]
+    // if_match: Option<&'a str>,
 
-    #[serde(rename = "ifNoneMatch", skip_serializing_if = "Option::is_none")]
-    if_none_match: Option<&'a str>,
+    // #[serde(rename = "ifNoneMatch", skip_serializing_if = "Option::is_none")]
+    // if_none_match: Option<&'a str>,
 }
 
 /// WsCommand - commands enum (put, delete, sub, unsub)
@@ -242,13 +240,14 @@ impl WsSession {
 
                 let base = serde_json::json!(ReturnBase {
                     action: "put",
-                    key: Some(key.as_str()),
-                    data: Some(data.as_str()),
+                    // key: Some(key.as_str()),
+                    // data: Some(data.as_str()),
                     correlation: correlation.as_deref(),
-                    ttl,
-                    expires_at,
-                    if_match: if_match.as_deref(),
-                    if_none_match: if_none_match.as_deref(),
+                    // ttl,
+                    // expires_at,
+                    // if_match: if_match.as_deref(),
+                    // if_none_match: if_none_match.as_deref(),
+                    ..Default::default()
                 });
 
                 let fut = async move {
@@ -304,15 +303,13 @@ impl WsSession {
                     return;
                 }
 
-                tracing::info!("DELETE!!! {}", &key);
-
                 let mut redis = self.redis.clone();
 
                 let base = serde_json::json!(ReturnBase {
                     action: "delete",
-                    key: Some(key.as_str()),
+                    // key: Some(key.as_str()),
                     correlation: correlation.as_deref(),
-                    if_match: if_match.as_deref(),
+                    // if_match: if_match.as_deref(),
                     ..Default::default()
                 });
 
@@ -320,12 +317,11 @@ impl WsSession {
                     // MODE logic
                     let mut mode = Some(SaveMode::Upsert);
                     if let Some(s) = if_match {
-                        // `If-Match: *` - delete only if the key exists
                         if s == "*" {
                             // `If-Match: *` — return error if not exist
                             mode = Some(SaveMode::Update);
                         } else {
-                            // `If-Match: <md5>` — update only if current
+                            // `If-Match: <md5>` — delete only if current
                             mode = Some(SaveMode::Equal(s.to_string()));
                         }
                     }
@@ -357,7 +353,7 @@ impl WsSession {
 
                 let base = serde_json::json!(ReturnBase {
                     action: "get",
-                    key: Some(key.as_str()),
+                    // key: Some(key.as_str()),
                     correlation: correlation.as_deref(),
                     ..Default::default()
                 });
@@ -393,7 +389,7 @@ impl WsSession {
 
                 let base = serde_json::json!(ReturnBase {
                     action: "list",
-                    key: Some(key.as_str()),
+                    // key: Some(key.as_str()),
                     correlation: correlation.as_deref(),
                     ..Default::default()
                 });
@@ -421,7 +417,7 @@ impl WsSession {
 
                 let mut obj = serde_json::json!(ReturnBase {
                     action: "sub",
-                    key: Some(key.as_str()),
+                    // key: Some(key.as_str()),
                     correlation: correlation.as_deref(),
                     ..Default::default()
                 });
@@ -444,7 +440,7 @@ impl WsSession {
 
                 let mut obj = serde_json::json!(ReturnBase {
                     action: "unsub",
-                    key: Some(key.as_str()),
+                    // key: Some(key.as_str()),
                     correlation: correlation.as_deref(),
                     ..Default::default()
                 });
