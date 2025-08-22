@@ -89,6 +89,18 @@ enum Command {
 
 // ==== Handle  ====
 
+#[derive(Debug, Default)]
+pub struct HubState {
+    sessions: HashMap<SessionId, Recipient<ServerMessage>>,
+    subs: HashMap<String, HashSet<SessionId>>,
+}
+
+impl HubState {
+    pub fn subscribe(&mut self, session_id: SessionId, key: String) {
+        self.subs.entry(key).or_default().insert(session_id);
+    }
+}
+
 #[derive(Clone)]
 pub struct HubServiceHandle {
     tx: mpsc::Sender<Command>,

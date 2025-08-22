@@ -127,6 +127,7 @@ pub struct WsSession {
     pub redis: MultiplexedConnection,
     pub id: SessionId,
     pub hub: HubServiceHandle,
+    hub_state: Arc<RwLock<HubState>>,
     pub claims: Claims,
 }
 
@@ -400,6 +401,7 @@ impl WsSession {
                 self.fut_send(ctx, fut, base);
             }
 
+            /*
             WsCommand::Sub { key, correlation } => {
                 // LEVENT 3
                 tracing::info!("SUB {}", &key); //  correlation: {:?} , &correlation
@@ -423,6 +425,41 @@ impl WsSession {
                     map.insert("error".into(), json!("Deprecated symbol in key"));
                 } else {
                     self.hub.subscribe(self.id, key.clone());
+                    map.insert("result".into(), json!("OK"));
+                }
+                ctx.text(obj.to_string());
+            }*/
+            WsCommand::Sub { key, correlation } => {
+                // LEVENT 3
+                tracing::info!("SUB {}", &key); //  correlation: {:?} , &correlation
+
+                // Check workspace
+                if let Err(e) = self.workspace_check_ws(&key) {
+                    self.ws_error(ctx, e);
+                    return;
+                }
+
+                let mut obj = serde_json::json!(ReturnBase {
+                    action: "sub",
+                    // key: Some(key.as_str()),
+                    correlation: correlation.as_deref(),
+                    ..Default::default()
+                });
+
+                let map = obj.as_object_mut().unwrap();
+
+                if deprecated_symbol(&key) {
+                    map.insert("error".into(), json!("Deprecated symbol in key"));
+                } else {
+                    let fut = async move {
+                        let mut hub_state = self.hub_state.write().await;
+
+                        hub_state.subscribe(self.id, key.clone());
+                    };
+
+                    // spawn and respond when done
+                    //ctx.spawn(fut);
+
                     map.insert("result".into(), json!("OK"));
                 }
                 ctx.text(obj.to_string());
@@ -472,6 +509,14 @@ impl WsSession {
                 let hub = self.hub.clone();
                 let id = self.id;
 
+                let fut = async move {
+                    let hub_state = self.hub_state.read().await;
+
+                    //hub_state.subscribe(self.id, key.clone());
+
+                    //
+                };
+
                 self.fut_send(
                     ctx,
                     async move {
@@ -485,11 +530,16 @@ impl WsSession {
     }
 }
 
+use crate::hub_service::HubState;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+
 pub async fn handler(
     req: HttpRequest,
     payload: web::Payload,
     redis: web::Data<MultiplexedConnection>,
     hub: web::Data<HubServiceHandle>, // <-- было Addr<WsHub>
+    hub_state: web::Data<Arc<RwLock<HubState>>>,
 ) -> Result<HttpResponse, Error> {
     let claims = req
         .extensions()
@@ -500,6 +550,7 @@ pub async fn handler(
     let session = WsSession {
         redis: redis.get_ref().clone(),
         hub: hub.get_ref().clone(),
+        hub_state: hub_state.get_ref().clone(),
         id: new_session_id(),
         claims,
     };

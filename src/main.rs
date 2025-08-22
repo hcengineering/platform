@@ -34,7 +34,7 @@ mod redis;
 mod workspace_owner;
 
 mod hub_service;
-use hub_service::HubServiceHandle;
+use hub_service::{HubServiceHandle, HubState};
 
 use config::CONFIG;
 
@@ -104,6 +104,9 @@ async fn main() -> anyhow::Result<()> {
     // starting HubService
     let hub = HubServiceHandle::start(redis_connection.clone());
 
+    let hub_state = HubState::default();
+    let hub_state = Arc::new(RwLock::new(hub_state));
+
     // starting Logger
     tokio::spawn(redis::receiver(redis_client, hub.clone()));
 
@@ -115,6 +118,9 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("WebSocket API: {}/ws", &url);
     tracing::info!("Status: {}/status", &url);
 
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
+
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -125,7 +131,8 @@ async fn main() -> anyhow::Result<()> {
 
         App::new()
             .app_data(web::Data::new(redis_connection.clone()))
-            .app_data(web::Data::new(hub.clone()))
+            //.app_data(web::Data::new(hub.clone()))
+            .app_data(web::Data::new(hub_state.clone()))
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
