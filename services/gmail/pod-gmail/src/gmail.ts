@@ -310,7 +310,7 @@ export class GmailClient {
     try {
       this.integration = await createIntegrationIfNotExists(this.socialId._id, this.user.workspace, this.email)
     } catch (err: any) {
-      this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
+      this.ctx.error('Failed to create integration', { socialId: this.socialId, workspace: this.workspace })
     }
   }
 
@@ -322,7 +322,7 @@ export class GmailClient {
         kind: gmailIntegrationKind
       })
     } catch (err: any) {
-      this.ctx.error('Failed to refresh integration', { socialdId: this.socialId, workspace: this.workspace })
+      this.ctx.error('Failed to refresh integration', { socialId: this.socialId, workspace: this.workspace })
     }
   }
 
@@ -539,7 +539,11 @@ export class GmailClient {
     try {
       this.syncStarted = true
       this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
-      await this.syncManager.sync(this.socialId._id, { noNotify: true, spaceId: getSpaceId(this.integration) }, this.email)
+      await this.syncManager.sync(
+        this.socialId._id,
+        { noNotify: true, spaceId: getSpaceId(this.integration) },
+        this.email
+      )
       await this.watch()
       // recall every 24 hours https://developers.google.com/gmail/api/guides/push
       if (this.watchTimer !== undefined) clearInterval(this.watchTimer)

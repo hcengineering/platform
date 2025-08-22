@@ -407,6 +407,6 @@ export class GmailController {
     }
     this.ctx.info('Starting sync for specific client', { workspace, socialId })
     await mailClient.refreshIntegration()
-    await mailClient.startSync()
+    void mailClient.startSync()
   }
 }

@@ -117,6 +117,6 @@ export function createGmailSearchQuery (fromDate: Date, toDate: Date, fromEmail:
   return `after:${afterDate} before:${beforeDate} from:${fromEmail}`
 }
 
-export function getSpaceId (integration: Integration | null | undefined): Ref<Space> {
+export function getSpaceId (integration: Integration | null | undefined): Ref<Space> | undefined {
   return integration?.data?.config?.spaceId
 }

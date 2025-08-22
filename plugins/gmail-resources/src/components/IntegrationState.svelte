@@ -87,7 +87,7 @@
       <IntegrationStateRow label={gmail.string.TotalMessages} value={state.totalMessages} />
     {/if}
     {#if state?.isConfigured !== true}
-      <IntegrationStateRow label={gmail.string.IntegrationStatus} />
+      <IntegrationStateRow label={gmail.string.ConfigurationRequired} />
     {/if}
   </svelte:fragment>
 </BaseIntegrationState>
