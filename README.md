@@ -49,19 +49,19 @@ Size of data is limited to some reasonable size
 ## HTTP API
 
 ```GET /status``` - server status and websockets count
-- Answer: {"status":"OK","websockets":2}
+- Answer: `{"status":"OK","websockets":2}`
 
 
 ```PUT /{workspace}/{key}``` - Save key
 - Input
-    Body - data
-    Content-Type: application/json
-    Content-Length: optional
-    Headers: TTL or absolute expiration time
+    - Body - data
+    - Content-Type: application/json
+    - Content-Length: optional
+    - Headers: TTL or absolute expiration time
 	- `HULY-TTL` — autodelete in N seconds
 	- or `HULY-EXPIRE-AT` — autodelete in UnixTime
 	- default max_ttl = 3600 (settings in config/default.toml)
-    ** Conditional Headers If-*: **
+    - Conditional Headers:
 	- `If-Match: *` — update only if the key exists
 	- `If-Match: <md5>` — update only if current value's MD5 matches
 	- `If-None-Match: *` — insert only if the key does not exist
@@ -117,7 +117,7 @@ Size of data is limited to some reasonable size
 	- `ifMatch: <md5>` — update only if current value's MD5 matches
 	- `ifNoneMatch: *` — insert only if the key does not exist
 
-- Answer: {"action":"put","correlation":"abc123","result":"OK"}
+- Answer: `{"action":"put","correlation":"abc123","result":"OK"}`
 
 
 ```GET```
@@ -127,7 +127,7 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar“ - one shared key
 	- “workspace/foo/bar/$/secret“ - one secret key
 
-- Answer: {"action":"get","result":{"data":"hello","etag":"5d41402abc4b2a76b9719d911017c592","expires_at":3599,"key":"00000000-0000-0000-0000-000000000001/foo/bar"}}
+- Answer: `{"action":"get","result":{"data":"hello","etag":"5d41402abc4b2a76b9719d911017c592","expires_at":3599,"key":"00000000-0000-0000-0000-000000000001/foo/bar"}}`
 
 
 ```LIST```
@@ -137,7 +137,7 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar/“ - keys from public space
 	- “workspace/foo/bar/$/secret/“ - keys from secret space
 
-- Answer: {"action":"list","result":[{"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","expires_at":3570,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},{"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","expires_at":3555,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}]}
+- Answer: `{"action":"list","result":[{"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","expires_at":3570,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},{"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","expires_at":3555,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}]}`
 
 
 ```DELETE```
@@ -148,7 +148,7 @@ Size of data is limited to some reasonable size
 	- `ifMatch: <md5>` — delete only if current value's MD5 matches
 	- `ifMatch: *` — return error if key does not exist
 
-- Answer: {"action":"delete","result":"OK"}
+- Answer: `{"action":"delete","result":"OK"}`
 
 
 ```SUBSCRIBE```
@@ -159,7 +159,7 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar/$/my_secret“ - subscribe one secret key
 	- “workspace/foo/bar/$/my_secret/“ - subscribe all keys started with secret
 
-- Answer: {"action":"sub","result":"OK"}
+- Answer: `{"action":"sub","result":"OK"}`
 
 
 ```UNSUBSCRIBE```
@@ -168,21 +168,21 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar“ - unsubscribe subscribed key
 	- “*“ - unsubscribe all
 
-- Answer: {"action":"unsub","result":"OK"}
+- Answer: `{"action":"unsub","result":"OK"}`
 
 ```MY SUBSCRIBES```
     - type: "sublist"
 
-- Answer: {"action":"list","result":["00000000-0000-0000-0000-000000000001/foo/bar1","00000000-0000-0000-0000-000000000001/foo/bar2"]}
+- Answer: `{"action":"list","result":["00000000-0000-0000-0000-000000000001/foo/bar1","00000000-0000-0000-0000-000000000001/foo/bar2"]}`
 
 
 ** Server to Client ** subscribed events:
 
-    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Set","value":"hello"}
+    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Set","value":"hello"}`
 
-    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Expired"}
+    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Expired"}`
 
-    - {"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Del"}
+    - `{"key":"00000000-0000-0000-0000-000000000001/foo/bar","action":"Del"}`
 
 
 ## Running
