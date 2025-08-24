@@ -16,14 +16,20 @@
 use hulyrs::services::jwt::Claims;
 use uuid::Uuid;
 
-use crate::redis::deprecated_symbol;
+use crate::{config::CONFIG, redis::deprecated_symbol};
 
 // common checker
-pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static str> {
+pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(), &'static str> {
 
     if deprecated_symbol(key) {
         return Err("Invalid key: deprecated symbols");
     }
+
+    if CONFIG.no_authorization == Some(true) {
+        return Ok(());
+    }
+
+    let claims = claims_opt.ok_or("Missing authorization")?;
 
     if claims.is_system() {
         return Ok(());
@@ -40,11 +46,12 @@ pub fn check_workspace_core(claims: &Claims, key: &str) -> Result<(), &'static s
     if path_ws.is_empty() {
         return Err("Invalid key: missing workspace");
     }
-
+        
     let path_ws_uuid = Uuid::parse_str(path_ws).map_err(|_| "Invalid workspace UUID in key")?;
     if jwt_workspace != &path_ws_uuid {
         return Err("Workspace mismatch");
     }
-
+        
     Ok(())
+
 }

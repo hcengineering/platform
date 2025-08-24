@@ -1,21 +1,26 @@
 #!/bin/bash
 
 clear
-source ./pulse_lib.sh
+source ./pulse_lib_lleo.sh
 
-TOKEN=$(./token.sh claims.json)
+#TOKEN=$(./token.sh claims.json)
 #echo ${TOKEN}
-#exit
+
+
+
+put "dnevnik/onlline/admin" "oki" "HULY-TTL: 3"
+
+
+
+exit
 ZP="00000000-0000-0000-0000-000000000001/TESTS"
 
-
-
-put "00000000-0000-0000-0000-000000000001/TESTS/val1" "value" "HULY-TTL: 1"
+put "00000000-0000-0000-0000-000000000001/TESTS/val1" "value" "HULY-TTL: 3"
 put "00000000-0000-0000-0000-000000000001/TESTS/val2" "value" "HULY-TTL: 12"
-put "00000000-0000-0000-0000-000000000001/TESTS/val3" "value" "HULY-TTL: 1"
+put "00000000-0000-0000-0000-000000000001/TESTS/val3" "value" "HULY-TTL: 3"
 
 get "00000000-0000-0000-0000-000000000001/TESTS/"
-sleep 2
+sleep 4
 # get "00000000-0000-0000-0000-000000000001/TESTS/val2"
 get "00000000-0000-0000-0000-000000000001/TESTS/"
 

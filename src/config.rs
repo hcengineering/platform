@@ -46,6 +46,9 @@ pub struct Config {
     pub redis_service: String,
 
     pub max_ttl: usize,
+
+    pub memory_mode: Option<bool>,
+    pub no_authorization: Option<bool>,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {

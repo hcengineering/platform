@@ -14,7 +14,6 @@
 //
 
 use anyhow::anyhow;
-use redis::aio::MultiplexedConnection;
 use serde::Deserialize;
 use tracing::*;
 
@@ -23,7 +22,10 @@ use actix_web::{
     web::{self},
 };
 
-use crate::redis::{SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save};
+use crate::{
+    db::Db,
+    redis::{SaveMode, Ttl}
+};
 
 pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
@@ -51,17 +53,14 @@ pub struct PathParams {
 /// list
 pub async fn list(
     path: web::Path<PathParams>,
-    redis: web::Data<MultiplexedConnection>,
+    db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let key = path.into_inner().key;
 
     trace!(key, "list request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut redis = redis.get_ref().clone();
-
-        let entries = redis_list(&mut redis, &key).await?;
-
+        let entries = db.list(&key).await?;
         Ok(HttpResponse::Ok().json(entries))
     }()
     .await
@@ -71,23 +70,21 @@ pub async fn list(
 /// get
 pub async fn get(
     path: web::Path<PathParams>,
-    redis: web::Data<MultiplexedConnection>,
+    db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let key = path.into_inner().key;
 
     trace!(key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut redis = redis.get_ref().clone();
-
-        Ok(redis_read(&mut redis, &key)
-            .await?
-            .map(|entry| {
-                HttpResponse::Ok()
-                    .insert_header(("ETag", &*entry.etag))
-                    .json(entry)
-            })
-            .unwrap_or_else(|| HttpResponse::NotFound().body("empty")))
+        let entry_opt = db.read(&key).await?;
+        let resp = match entry_opt {
+            Some(entry) => HttpResponse::Ok()
+                .insert_header(("ETag", entry.etag.clone()))
+                .json(entry),
+            None => HttpResponse::NotFound().body("empty"),
+        };
+        Ok(resp)
     }()
     .await
     .map_err(map_handler_error)
@@ -98,14 +95,13 @@ pub async fn put(
     req: HttpRequest,
     path: web::Path<PathParams>,
     body: web::Bytes,
-    redis: web::Data<MultiplexedConnection>,
+    db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let key: String = path.into_inner().key;
 
     trace!(key, "put request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut redis = redis.get_ref().clone();
 
         // TTL logic
         let mut ttl = None;
@@ -149,8 +145,8 @@ pub async fn put(
             }
         }
 
-        redis_save(&mut redis, &key, &body[..], ttl, mode).await?;
-        return Ok(HttpResponse::Ok().body("DONE"));
+        db.save(&key, &body[..], ttl, mode).await?;
+        Ok(HttpResponse::Ok().body("DONE"))
     }()
     .await
     .map_err(map_handler_error)
@@ -160,14 +156,13 @@ pub async fn put(
 pub async fn delete(
     req: HttpRequest,
     path: web::Path<PathParams>,
-    redis: web::Data<MultiplexedConnection>,
+    db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let key: String = path.into_inner().key;
 
     trace!(key, "delete request");
 
     async move || -> anyhow::Result<HttpResponse> {
-        let mut redis = redis.get_ref().clone();
 
         // MODE logic
         let mut mode = Some(SaveMode::Upsert);
@@ -183,8 +178,7 @@ pub async fn delete(
             } // `If-Match: <md5>` — delete only if current
         }
 
-        let deleted = redis_delete(&mut redis, &key, mode).await?;
-
+        let deleted = db.delete(&key, mode).await?;
         let response = match deleted {
             true => HttpResponse::NoContent().finish(),
             false => HttpResponse::NotFound().body("not found"),

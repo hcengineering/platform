@@ -43,15 +43,11 @@ pub struct ServerMessage {
     pub value: Option<String>,
 }
 
-// ==== ID ====
-
 pub type SessionId = u64;
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 pub fn new_session_id() -> SessionId {
     NEXT_ID.fetch_add(1, Ordering::SeqCst)
 }
-
-// ==== Redis events ====
 
 #[derive(Debug, Clone, Serialize)]
 pub enum RedisEventAction {
@@ -68,8 +64,6 @@ pub struct RedisEvent {
     pub message: RedisEventAction,
     pub key: String,
 }
-
-// ==== Handle ====
 
 #[derive(Debug, Default)]
 pub struct HubState {
@@ -134,14 +128,13 @@ impl HubState {
 }
 
 
-
-// Send messages about new Redis events
-pub async fn push_event(
+// Send messages about new db events
+pub async fn broadcast_event(
     hub_state: &Arc<RwLock<HubState>>,
-    redis: &mut MultiplexedConnection,
     ev: RedisEvent,
+    value: Option<String>,
 ) {
-    // Collect Addresses
+    // Collect
     let recipients: Vec<Recipient<ServerMessage>> = {
         hub_state.read().await.recipients_for_key(&ev.key)
     };
@@ -149,10 +142,22 @@ pub async fn push_event(
         return;
     }
 
-    // Get value from Redis (only for `Set` event, not for `Delete`, `Expire`)
+    // Send
+    let payload = ServerMessage { event: ev, value };
+    for rcpt in recipients {
+        let _ = rcpt.do_send(payload.clone());
+    }
+}
+
+pub async fn push_event(
+    hub_state: &Arc<RwLock<HubState>>,
+    redis: &mut MultiplexedConnection,
+    ev: RedisEvent,
+) {
+    // Value only for Set
     let mut value: Option<String> = None;
     if matches!(ev.message, RedisEventAction::Set) {
-        match redis::cmd("GET")
+        match ::redis::cmd("GET")
             .arg(&ev.key)
             .query_async::<Option<String>>(redis)
             .await
@@ -162,9 +167,5 @@ pub async fn push_event(
         }
     }
 
-    // Sending
-    let payload = ServerMessage { event: ev, value };
-    for rcpt in recipients {
-        let _ = rcpt.do_send(payload.clone());
-    }
+    broadcast_event(hub_state, ev, value).await;
 }

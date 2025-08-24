@@ -38,6 +38,12 @@ use hub_service::{HubState};
 
 use config::CONFIG;
 
+mod db;
+mod memory;
+
+use crate::db::Db;
+use crate::memory::MemoryBackend;
+
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
 
@@ -61,6 +67,10 @@ async fn extract_claims(
         token: Option<String>,
     }
 
+    if CONFIG.no_authorization == Some(true) {
+        return next.call(request).await;
+    }
+
     let query = request.extract::<Query<QueryString>>().await?.into_inner();
 
     let claims = if let Some(token) = query.token {
@@ -77,6 +87,11 @@ async fn check_workspace(
     mut request: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
+
+    if CONFIG.no_authorization.unwrap_or(false) {
+        return next.call(request).await;
+    }
+
     let workspace = Uuid::parse_str(&request.extract::<Path<String>>().await?);
     let claims = request.extensions().get::<Claims>().cloned().unwrap();
 
@@ -98,14 +113,21 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
-    let redis_client = redis::client().await?;
-    let redis_connection = redis_client.get_multiplexed_async_connection().await?;
-
     // starting HubService
     let hub_state = Arc::new(RwLock::new(HubState::default()));
 
-    // starting Logger
-    tokio::spawn(redis::receiver(redis_client, hub_state.clone()));
+    let db_backend = if CONFIG.memory_mode == Some(true) {
+        let memory = MemoryBackend::new();
+        memory.spawn_ticker(hub_state.clone());
+        tracing::info!("Memory mode enabled");
+        Db::new_memory(memory, hub_state.clone())
+    } else {
+        let redis_client = redis::client().await?;
+        let redis_connection = redis_client.get_multiplexed_async_connection().await?;
+        tokio::spawn(crate::redis::receiver(redis_client, hub_state.clone()));
+        tracing::info!("Redis mode enabled");
+        Db::new_redis(redis_connection, hub_state.clone())
+    };
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
@@ -127,8 +149,7 @@ async fn main() -> anyhow::Result<()> {
             .max_age(3600);
 
         App::new()
-            .app_data(web::Data::new(redis_connection.clone()))
-            //.app_data(web::Data::new(hub.clone()))
+            .app_data(web::Data::new(db_backend.clone()))
             .app_data(web::Data::new(hub_state.clone()))
             .wrap(middleware::Logger::default())
             .wrap(cors)

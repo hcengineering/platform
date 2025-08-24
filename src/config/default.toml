@@ -9,3 +9,6 @@ redis_mode = "direct"
 redis_service = "mymaster"
 
 max_ttl = 3600
+
+memory_mode = true
+no_authorization = true
