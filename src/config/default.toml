@@ -10,5 +10,8 @@ redis_service = "mymaster"
 
 max_ttl = 3600
 
+# optional settings
+
 memory_mode = true
 no_authorization = true
+max_size = 100

@@ -184,6 +184,11 @@ Size of data is limited to some reasonable size
 
     - `{"message":"Del","key":"00000000-0000-0000-0000-000000000001/foo/bar"}`
 
+## Special options in config/default.toml
+    - ```memory_mode = true``` Use native memory storage instead Redis
+    - ```no_authorization = true``` Don't check authorization
+    - ```max_size = 100``` Max value size in bytes
+
 
 ## Running
 

@@ -185,6 +185,12 @@ pub async fn memory_save<V: AsRef<[u8]>>(
         Err(_) => return error(400, "Value must be valid UTF-8"),
     };
 
+    // If max_size != 0 and value size > max_size, return error
+    let max_size = CONFIG.max_size.unwrap_or(0);
+    if max_size != 0 && value.len() > max_size {
+        return error(400, format!("Value in memory mode must be less than {} bytes", max_size));
+    }
+
     deprecated_symbol_error(key)?;
     if key.ends_with('/') {
         return error(412, "Key must not end with a slash");

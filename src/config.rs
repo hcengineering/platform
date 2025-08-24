@@ -46,6 +46,7 @@ pub struct Config {
     pub redis_service: String,
 
     pub max_ttl: usize,
+    pub max_size: Option<usize>,
 
     pub memory_mode: Option<bool>,
     pub no_authorization: Option<bool>,

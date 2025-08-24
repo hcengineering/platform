@@ -196,6 +196,12 @@ pub async fn redis_save<T: ToRedisArgs>(
         return error(412, "Key must not end with a slash");
     }
 
+    // If max_size != 0 and value size > max_size, return error
+    let max_size = CONFIG.max_size.unwrap_or(0);
+    if max_size != 0 && value.to_redis_args().iter().map(|a| a.len()).sum::<usize>() > max_size {
+        return error(400, format!("Value in memory mode must be less than {} bytes", max_size));
+    }
+
     // TTL logic
     let sec = match ttl {
         Some(Ttl::Sec(secs)) => secs,
