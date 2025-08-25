@@ -58,10 +58,10 @@ describe('clone', () => {
 
   it('should respect depth parameter', () => {
     const deep = { a: { b: { c: { d: 1 } } } }
-    expect(clone(deep, 0)).toBe(deep)
-    expect(clone(deep, 1)).toEqual({ a: { b: { c: { d: 1 } } } })
-    expect(clone(deep, 2)).toEqual({ a: { b: { c: { d: 1 } } } })
-    expect(clone(deep, 3)).toEqual({ a: { b: { c: { d: 1 } } } })
+    expect(clone(deep, undefined, undefined, 0)).toBe(deep)
+    expect(clone(deep, undefined, undefined, 1)).toEqual({ a: { b: { c: { d: 1 } } } })
+    expect(clone(deep, undefined, undefined, 2)).toEqual({ a: { b: { c: { d: 1 } } } })
+    expect(clone(deep, undefined, undefined, 3)).toEqual({ a: { b: { c: { d: 1 } } } })
   })
 
   it('should handle functions', () => {

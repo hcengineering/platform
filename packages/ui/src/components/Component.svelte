@@ -39,7 +39,7 @@
   // Here we filter out undefined values from props on updates to ensure we don't overwrite them.
   const filterDefaultUndefined = (pnew: any, pold: any): any =>
     pnew != null
-      ? Object.fromEntries(Object.entries(clone(pnew)).filter(([k, v]) => v !== undefined || pold?.[k] !== undefined))
+      ? Object.fromEntries(Object.entries(clone(pnew, undefined, undefined, 10)).filter(([k, v]) => v !== undefined || pold?.[k] !== undefined))
       : pnew
 
   let _props: any = filterDefaultUndefined(props, props)
