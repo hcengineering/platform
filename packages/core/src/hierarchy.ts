@@ -607,6 +607,7 @@ export class Hierarchy {
   clone (obj: any): any {
     return deepClone(
       obj,
+      5,
       (doc, m) => this.as(doc, m),
       (value) => Hierarchy.mixinClass(value)
     )
