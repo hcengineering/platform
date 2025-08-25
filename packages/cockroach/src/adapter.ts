@@ -45,7 +45,8 @@ import {
   type BlobID,
   type AttachmentData,
   type AttachmentID,
-  type AttachmentUpdateData, WithTotal
+  type AttachmentUpdateData, WithTotal, PeerKind, PeerExtra,
+  FindPeersParams, Peer, FindThreadParams
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
@@ -66,11 +67,13 @@ import { formatName } from './utils'
 import { initSchema } from './init'
 import { LabelsDb } from './db/label'
 import { SqlClient } from './client'
+import { PeersDb } from './db/peer'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
   private readonly notification: NotificationsDb
   private readonly label: LabelsDb
+  private readonly peer: PeersDb
 
   constructor (
     private readonly sql: SqlClient,
@@ -81,6 +84,7 @@ export class CockroachAdapter implements DbAdapter {
     this.message = new MessagesDb(this.sql, this.workspace, logger, options)
     this.notification = new NotificationsDb(this.sql, this.workspace, logger, options)
     this.label = new LabelsDb(this.sql, this.workspace, logger, options)
+    this.peer = new PeersDb(this.sql, this.workspace, logger, options)
   }
 
   async createMessage (
@@ -201,8 +205,8 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.findMessagesGroups(params)
   }
 
-  async findThread (thread: CardID): Promise<Thread | undefined> {
-    return await this.message.findThread(thread)
+  async findThreads (params: FindThreadParams): Promise<Thread[]> {
+    return await this.message.findThreads(params)
   }
 
   async addCollaborators (
@@ -316,6 +320,28 @@ export class CockroachAdapter implements DbAdapter {
     return this.label.updateLabels(card, updates)
   }
 
+  async createPeer (
+    workspaceId: WorkspaceID,
+    cardId: CardID,
+    kind: PeerKind,
+    value: string,
+    extra: PeerExtra,
+    date: Date
+  ): Promise<void> {
+    await this.peer.createPeer(workspaceId, cardId, kind, value, extra, date)
+  }
+
+  async removePeer (workspaceId: WorkspaceID,
+    cardId: CardID,
+    kind: PeerKind,
+    value: string): Promise<void> {
+    await this.peer.removePeer(workspaceId, cardId, kind, value)
+  }
+
+  findPeers (params: FindPeersParams): Promise<Peer[]> {
+    return this.peer.findPeers(params)
+  }
+
   async getAccountsByPersonIds (ids: string[]): Promise<AccountID[]> {
     if (ids.length === 0) return []
     const sql = `SELECT data ->> 'personUuid' AS "personUuid"
@@ -348,6 +374,19 @@ export class CockroachAdapter implements DbAdapter {
     const result = await this.sql.execute(sql, [this.workspace, _id])
 
     return result[0]?.title
+  }
+
+  // TODO: remove later
+  async getCardSpaceMembers (cardId: CardID): Promise<AccountID[]> {
+    const sql = `SELECT s.members
+FROM public.space AS s
+JOIN public.card AS c ON c.space = s._id
+                 WHERE c."workspaceId" = $1::uuid
+                   AND c."_id" = $2::text
+                 LIMIT 1`
+
+    const result = await this.sql.execute(sql, [this.workspace, cardId])
+    return result[0]?.members ?? []
   }
 
   async getMessageCreated (cardId: CardID, messageId: MessageID): Promise<Date | undefined> {

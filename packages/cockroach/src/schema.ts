@@ -28,7 +28,8 @@ import {
   type LabelID,
   type CardType,
   NotificationContent,
-  NotificationType, AttachmentID
+  NotificationType, AttachmentID,
+  PeerKind, PeerExtra
 } from '@hcengineering/communication-types'
 import { Domain } from '@hcengineering/communication-sdk-types'
 
@@ -130,6 +131,14 @@ export const schemas = {
     last_view: 'timestamptz',
     last_update: 'timestamptz',
     last_notify: 'timestamptz'
+  },
+  [Domain.Peer]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    kind: 'varchar',
+    value: 'varchar',
+    extra: 'jsonb',
+    created: 'timestamptz'
   }
 } as const
 
@@ -141,11 +150,11 @@ export interface DomainDbModel {
   [Domain.Reaction]: ReactionDbModel
   [Domain.Thread]: ThreadDbModel
   [Domain.Attachment]: AttachmentDbModel
-  // [Domain.LinkPreview]: LinkPreviewDbModel
   [Domain.Notification]: NotificationDbModel
   [Domain.NotificationContext]: ContextDbModel
   [Domain.Collaborator]: CollaboratorDbModel
   [Domain.Label]: LabelDbModel
+  [Domain.Peer]: PeerDbModel
 }
 
 export type DbModel<D extends keyof DomainDbModel> = DomainDbModel[D]
@@ -272,5 +281,14 @@ interface LabelDbModel {
   card_id: CardID
   card_type: CardType
   account: AccountID
+  created: Date
+}
+
+interface PeerDbModel {
+  workspace_id: WorkspaceID
+  card_id: CardID
+  kind: PeerKind
+  value: string
+  extra: PeerExtra
   created: Date
 }

@@ -25,7 +25,8 @@ import type {
   FindLabelsParams,
   Label,
   FindCollaboratorsParams,
-  Collaborator
+  Collaborator,
+  FindThreadParams, Thread, FindPeersParams, Peer
 } from '@hcengineering/communication-types'
 import type { Account, MeasureContext } from '@hcengineering/core'
 
@@ -60,6 +61,9 @@ export interface ServerApi {
 
   findLabels: (session: SessionData, params: FindLabelsParams) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
+
+  findThreads: (session: SessionData, params: FindThreadParams) => Promise<Thread[]>
+  findPeers: (session: SessionData, params: FindPeersParams) => Promise<Peer[]>
 
   event: (session: SessionData, event: Event) => Promise<EventResult>
 

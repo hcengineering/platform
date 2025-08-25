@@ -17,8 +17,9 @@ import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
 import type { ContextID, NotificationID, NotificationType } from './notification'
-import type { AccountID, BlobID, CardID, CardType } from './core'
+import type { AccountID, BlobID, CardID, CardType, WorkspaceID } from './core'
 import type { LabelID } from './label'
+import { PeerKind } from './peer'
 
 export { SortingOrder }
 
@@ -99,6 +100,19 @@ export interface FindLabelsParams extends FindParams {
   card?: CardID
   cardType?: CardType | CardType[]
   account?: AccountID
+}
+
+export interface FindThreadParams extends FindParams {
+  cardId?: CardID
+  messageId?: MessageID
+  threadId?: CardID
+}
+
+export interface FindPeersParams extends FindParams {
+  workspaceId?: WorkspaceID
+  cardId?: CardID
+  kind?: PeerKind
+  value?: string
 }
 
 export type WithTotal<T> = T[] & { total: number }

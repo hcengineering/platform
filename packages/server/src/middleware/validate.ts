@@ -18,7 +18,8 @@ import {
   MessageEventType,
   NotificationEventType,
   type Event,
-  type SessionData
+  type SessionData,
+  PeerEventType
 } from '@hcengineering/communication-sdk-types'
 import {
   type Collaborator,
@@ -151,11 +152,18 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case NotificationEventType.UpdateNotificationContext:
         this.validate(event, UpdateNotificationContextEventSchema)
         break
+      case PeerEventType.CreatePeer:
+        this.validate(event, CreatePeerEventSchema)
+        break
+      case PeerEventType.RemovePeer:
+        this.validate(event, RemovePeerEventSchema)
+        break
     }
     return await this.provideEvent(session, deserializeEvent(event), derived)
   }
 }
 
+const WorkspaceIDSchema = z.string().uuid()
 const AccountIDSchema = z.string()
 const BlobIDSchema = z.string().uuid()
 const AttachmentIDSchema = z.string().uuid()
@@ -290,7 +298,8 @@ const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
 
 const BaseEventSchema = z
   .object({
-    _id: z.string().optional()
+    _id: z.string().optional(),
+    _eventExtra: z.record(z.any()).optional()
   })
   .strict()
 
@@ -469,6 +478,25 @@ const RemoveCollaboratorsEventSchema = BaseEventSchema.extend({
   cardType: CardTypeSchema,
   collaborators: z.array(AccountIDSchema).nonempty(),
   socialId: SocialIDSchema,
+  date: DateSchema
+}).strict()
+
+const CreatePeerEventSchema = BaseEventSchema.extend({
+  type: z.literal(PeerEventType.CreatePeer),
+  workspaceId: WorkspaceIDSchema,
+  cardId: CardIDSchema,
+  kind: z.string().nonempty(),
+  value: z.string().nonempty(),
+  extra: z.record(z.any()).optional(),
+  date: DateSchema
+}).strict()
+
+const RemovePeerEventSchema = BaseEventSchema.extend({
+  type: z.literal(PeerEventType.RemovePeer),
+  workspaceId: WorkspaceIDSchema,
+  cardId: CardIDSchema,
+  kind: z.string().nonempty(),
+  value: z.string().nonempty(),
   date: DateSchema
 }).strict()
 

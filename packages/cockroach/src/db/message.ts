@@ -25,6 +25,7 @@ import {
   type CardType,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
+  FindThreadParams,
   type Markdown,
   type Message,
   type MessageExtra,
@@ -753,21 +754,52 @@ export class MessagesDb extends BaseDb {
     return { where: `WHERE ${where.join(' AND ')}`, values }
   }
 
-  // Find thread
-  async findThread (thread: CardID): Promise<Thread | undefined> {
-    const sql = `SELECT t.card_id,
-                        t.message_id::text,
-                        t.thread_id,
-                        t.thread_type,
-                        t.replies_count::int,
-                        t.last_reply
-                 FROM ${Domain.Thread} t
-                 WHERE t.workspace_id = $1::uuid
-                   AND t.thread_id = $2::varchar
-                 LIMIT 1;`
+  // Find threads
+  async findThreads (params: FindThreadParams): Promise<Thread[]> {
+    const { where, values } = this.buildThreadWhere(params)
+    const select = `
+            SELECT *
+            FROM ${Domain.Thread} t
+        `
 
-    const result = await this.execute(sql, [this.workspace, thread], 'find thread')
-    return result.map((it: any) => toThread(it))[0]
+    const limit = params.limit != null ? ` LIMIT ${params.limit}` : ''
+    const orderBy =
+      params.order != null ? `ORDER BY t.date ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+
+    const sql = [select, where, orderBy, limit].join(' ')
+    const result = await this.execute(sql, values, 'find threads')
+
+    return result.map((it: any) => toThread(it))
+  }
+
+  private buildThreadWhere (
+    params: FindThreadParams,
+    startIndex: number = 0,
+    prefix: string = 't.'
+  ): { where: string, values: any[] } {
+    const where: string[] = []
+    const values: any[] = []
+    let index = startIndex + 1
+
+    where.push(`${prefix}workspace_id = $${index++}::uuid`)
+    values.push(this.workspace)
+
+    if (params.cardId != null) {
+      where.push(`${prefix}card_id = $${index++}::varchar`)
+      values.push(params.cardId)
+    }
+
+    if (params.messageId != null) {
+      where.push(`${prefix}message_id = $${index++}::varchar`)
+      values.push(params.messageId)
+    }
+
+    if (params.threadId != null) {
+      where.push(`${prefix}thread_id = $${index++}::varchar`)
+      values.push(params.threadId)
+    }
+
+    return { where: `WHERE ${where.join(' AND ')}`, values }
   }
 
   // Find messages groups

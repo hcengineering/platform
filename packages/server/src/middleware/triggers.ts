@@ -23,6 +23,7 @@ import { notify } from '../notification/notification'
 
 export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private ctx: MeasureContext
+  private processedPeersEvents = new Set<string>()
 
   constructor (
     private readonly callbacks: CommunicationCallbacks,
@@ -60,6 +61,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       registeredCards: this.context.registeredCards,
       accountBySocialID: this.context.accountBySocialID,
       removedContexts: this.context.removedContexts,
+      processedPeersEvents: this.processedPeersEvents,
       derived,
       execute: async (event: Event) => {
         // Will be enriched in head
@@ -90,6 +92,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
           (session.asyncData as Enriched<Event>[]).sort((a, b) => a.date.getTime() - b.date.getTime())
         )
         session.asyncData = []
+        this.processedPeersEvents = new Set()
       }
     }
   }

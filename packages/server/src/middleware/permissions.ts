@@ -19,6 +19,7 @@ import {
   EventResult,
   MessageEventType,
   NotificationEventType,
+  PeerEventType,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import { AccountRole, systemAccountUuid } from '@hcengineering/core'
@@ -66,6 +67,8 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         this.checkAccount(session, event.account)
         break
       }
+      case PeerEventType.CreatePeer:
+      case PeerEventType.RemovePeer:
       case MessageEventType.CreateMessagesGroup:
       case MessageEventType.RemoveMessagesGroup: {
         this.onlySystemAccount(session)

@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,30 +10,34 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-import type { CardID, CardType, SocialID } from '@hcengineering/communication-types'
+import { CardID, WorkspaceID } from './core'
 
-import type { BaseEvent } from './common'
+export type PeerKind = 'card' | string
+export type PeerExtra = Record<string, any>
 
-export enum CardEventType {
-  UpdateCardType = 'updateCardType',
-  RemoveCard = 'removeCard'
+interface BasePeer {
+  workspaceId: WorkspaceID
+  cardId: CardID
+  kind: PeerKind
+  value: string
+  extra: PeerExtra
+  created: Date
 }
 
-export type CardEvent = UpdateCardTypeEvent | RemoveCardEvent
-
-export interface UpdateCardTypeEvent extends BaseEvent {
-  type: CardEventType.UpdateCardType
-  cardId: CardID
-  cardType: CardType
-  socialId: SocialID
-  date?: Date
+export interface CardPeer extends BasePeer {
+  kind: 'card'
+  members: CardPeerMember[]
 }
 
-export interface RemoveCardEvent extends BaseEvent {
-  type: CardEventType.RemoveCard
+export interface ExternalPeer extends BasePeer {
+  kind: string
+}
+
+export type Peer = CardPeer | ExternalPeer
+
+export interface CardPeerMember {
+  workspaceId: WorkspaceID
   cardId: CardID
-  socialId: SocialID
-  date?: Date
+  extra: PeerExtra
 }

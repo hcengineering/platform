@@ -13,28 +13,32 @@
 // limitations under the License.
 //
 
-import type { CardID, CardType, SocialID } from '@hcengineering/communication-types'
-
 import type { BaseEvent } from './common'
+import { CardID, PeerKind, PeerExtra, WorkspaceID } from '@hcengineering/communication-types'
 
-export enum CardEventType {
-  UpdateCardType = 'updateCardType',
-  RemoveCard = 'removeCard'
+// Peer events only for system
+export enum PeerEventType {
+  CreatePeer = 'createPeer',
+  RemovePeer = 'removePeer'
 }
 
-export type CardEvent = UpdateCardTypeEvent | RemoveCardEvent
+export type PeerEvent = CreatePeerEvent | RemovePeerEvent
 
-export interface UpdateCardTypeEvent extends BaseEvent {
-  type: CardEventType.UpdateCardType
+export interface CreatePeerEvent extends BaseEvent {
+  type: PeerEventType.CreatePeer
+  workspaceId: WorkspaceID
   cardId: CardID
-  cardType: CardType
-  socialId: SocialID
+  kind: PeerKind
+  value: string
+  extra?: PeerExtra
   date?: Date
 }
 
-export interface RemoveCardEvent extends BaseEvent {
-  type: CardEventType.RemoveCard
+export interface RemovePeerEvent extends BaseEvent {
+  type: PeerEventType.RemovePeer
+  workspaceId: WorkspaceID
   cardId: CardID
-  socialId: SocialID
+  kind: PeerKind
+  value: string
   date?: Date
 }

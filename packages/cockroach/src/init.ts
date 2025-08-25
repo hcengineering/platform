@@ -129,7 +129,8 @@ function getMigrations (): [string, string][] {
     migrationV7_3(),
     migrationV8_1(),
     migrationV8_2(),
-    migrationV8_3()
+    migrationV8_3(),
+    migrationV9_1()
   ]
 }
 
@@ -497,7 +498,8 @@ function migrationV6_7 (): [string, string] {
       CREATE INDEX IF NOT EXISTS idx_reactions_workspace_card_message
           ON communication.reactions (workspace_id, card_id, message_id);
 
-      ALTER TABLE communication.thread ADD CONSTRAINT thread_unique_constraint UNIQUE (workspace_id, card_id, message_id);
+      ALTER TABLE communication.thread
+          ADD CONSTRAINT thread_unique_constraint UNIQUE (workspace_id, card_id, message_id);
 
       CREATE INDEX IF NOT EXISTS idx_thread_workspace_card_message
           ON communication.thread (workspace_id, card_id, message_id);
@@ -541,9 +543,8 @@ function migrationV7_2 (): [string, string] {
       FROM communication.notification_context AS nc
                JOIN communication.messages_groups AS mg
                     ON mg.workspace_id = nc.workspace_id
-                        AND mg.card_id      = nc.card_id
-      WHERE
-          n.context_id = nc.id
+                        AND mg.card_id = nc.card_id
+      WHERE n.context_id = nc.id
         AND n.message_created BETWEEN mg.from_date AND mg.to_date
         AND n.blob_id IS NULL;
   `
@@ -552,12 +553,12 @@ function migrationV7_2 (): [string, string] {
 
 function migrationV7_3 (): [string, string] {
   const sql = `
-    UPDATE communication.notification_context
-    SET last_notify = last_update
-    WHERE last_notify IS NULL;
+      UPDATE communication.notification_context
+      SET last_notify = last_update
+      WHERE last_notify IS NULL;
 
-    ALTER TABLE communication.notification_context
-      ALTER COLUMN last_notify SET NOT NULL;
+      ALTER TABLE communication.notification_context
+          ALTER COLUMN last_notify SET NOT NULL;
   `
   return ['make_last_notify_not_null-v7_3', sql]
 }
@@ -600,7 +601,34 @@ function migrationV8_2 (): [string, string] {
 
 function migrationV8_3 (): [string, string] {
   const sql = `
-        CREATE INDEX IF NOT EXISTS attachment_workspace_card_message_idx ON ${Domain.Attachment} (workspace_id, card_id, message_id)
-        `
+      CREATE INDEX IF NOT EXISTS attachment_workspace_card_message_idx ON ${Domain.Attachment} (workspace_id, card_id, message_id)
+  `
   return ['add_attachment_indexes-v8_3', sql]
+}
+
+// CREATE TABLE ${Domain.CardPeerGroup}
+// (
+//     group_id     UUID         NOT NULL,
+//     workspace_id UUID         NOT NULL,
+//     card_id      VARCHAR(255) NOT NULL,
+//     created   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+//     PRIMARY KEY (group_id,workspace_id, card_id)
+// );
+
+function migrationV9_1 (): [string, string] {
+  const sql = `
+      CREATE TABLE IF NOT EXISTS ${Domain.Peer}
+      (
+          workspace_id UUID         NOT NULL,
+          card_id      VARCHAR(255) NOT NULL,
+          kind         TEXT         NOT NULL,
+          value        TEXT         NOT NULL,
+          extra        JSONB        NOT NULL DEFAULT '{}',
+          created      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+          PRIMARY KEY (workspace_id, card_id, kind, value)
+      );
+
+      CREATE INDEX IF NOT EXISTS peer_workspace_card_kind ON ${Domain.Peer} (workspace_id, card_id, kind);
+      CREATE INDEX IF NOT EXISTS peer_kind_value ON ${Domain.Peer} (kind, value);`
+  return ['init_peer_tables-v9_1', sql]
 }

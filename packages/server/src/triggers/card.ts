@@ -52,7 +52,7 @@ async function onCardTypeUpdates (ctx: TriggerCtx, event: Enriched<UpdateCardTyp
   await ctx.db.updateCollaborators({ card: event.cardId }, { cardType: event.cardType })
   await ctx.db.updateLabels(event.cardId, { cardType: event.cardType })
 
-  const thread = await ctx.db.findThread(event.cardId)
+  const thread = (await ctx.db.findThreads({ threadId: event.cardId, limit: 1 }))[0]
   if (thread === undefined) return []
 
   return [

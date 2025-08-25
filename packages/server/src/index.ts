@@ -27,7 +27,8 @@ import type {
   FindLabelsParams,
   Label,
   FindCollaboratorsParams,
-  Collaborator
+  Collaborator, FindPeersParams, Peer, Thread,
+  FindThreadParams
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, Event, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
@@ -52,8 +53,9 @@ export class Api implements ServerApi {
       withLogs: process.env.COMMUNICATION_TIME_LOGGING_ENABLED === 'true'
     })
 
+    const peers = await db.findPeers({ workspaceId: workspace })
     const metadata = getMetadata()
-    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, callbacks)
+    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, callbacks, peers)
 
     return new Api(ctx, middleware)
   }
@@ -88,6 +90,14 @@ export class Api implements ServerApi {
 
   async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     return await this.middlewares.findCollaborators(session, params)
+  }
+
+  async findPeers (session: SessionData, params: FindPeersParams): Promise<Peer[]> {
+    return await this.middlewares.findPeers(session, params)
+  }
+
+  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
+    return await this.middlewares.findThreads(session, params)
   }
 
   async unsubscribeQuery (session: SessionData, id: number): Promise<void> {

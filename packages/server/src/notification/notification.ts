@@ -220,6 +220,7 @@ async function notifyMessage (
   date: Date
 ): Promise<Event[]> {
   const cursor = ctx.db.getCollaboratorsCursor(cardId, date, BATCH_SIZE)
+  const spaceMembers = await ctx.db.getCardSpaceMembers(cardId)
   const creatorAccount = await findAccount(ctx, socialId)
   const result: Event[] = []
 
@@ -235,6 +236,7 @@ async function notifyMessage (
     })
 
     for (const collaborator of collaborators) {
+      if (!spaceMembers.includes(collaborator)) continue
       try {
         const context = contexts.find((it) => it.account === collaborator)
         const res = await processCollaborator(

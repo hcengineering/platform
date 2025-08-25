@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { MeasureContext } from '@hcengineering/core'
+import { MeasureContext } from '@hcengineering/core'
 import type { DbAdapter, EventResult, Event, SessionData } from '@hcengineering/communication-sdk-types'
 import type {
   Collaborator,
@@ -23,11 +23,14 @@ import type {
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  FindPeersParams,
+  FindThreadParams,
   Label,
   Message,
   MessagesGroup,
   Notification,
-  NotificationContext,
+  NotificationContext, Peer,
+  Thread,
   WorkspaceID
 } from '@hcengineering/communication-types'
 
@@ -48,13 +51,14 @@ import { ValidateMiddleware } from './middleware/validate'
 import { DateMiddleware } from './middleware/date'
 import { IdentityMiddleware } from './middleware/indentity'
 import { IdMiddleware } from './middleware/id'
+import { PeerMiddleware } from './middleware/peer'
 
 export async function buildMiddlewares (
   ctx: MeasureContext,
   workspace: WorkspaceID,
   metadata: Metadata,
   db: DbAdapter,
-  callbacks: CommunicationCallbacks
+  callbacks: CommunicationCallbacks, peers: Peer[]
 ): Promise<Middlewares> {
   const createFns: MiddlewareCreateFn[] = [
     // Enrich events
@@ -69,7 +73,8 @@ export async function buildMiddlewares (
     // Process events
     async (context, next) => new TriggersMiddleware(callbacks, db, context, next),
     async (context, next) => new BroadcastMiddleware(callbacks, context, next),
-    async (context, next) => new DatabaseMiddleware(db, context, next)
+    async (context, next) => new DatabaseMiddleware(db, context, next),
+    async (context, next) => new PeerMiddleware(context, next)
   ]
 
   const context: MiddlewareContext = {
@@ -78,7 +83,8 @@ export async function buildMiddlewares (
     workspace,
     registeredCards: new Set(),
     accountBySocialID: new Map(),
-    removedContexts: new Map()
+    removedContexts: new Map(),
+    cadsWithPeers: new Set(peers.map(it => it.cardId))
   }
 
   return await Middlewares.create(ctx, context, createFns)
@@ -167,6 +173,16 @@ export class Middlewares {
   async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     if (this.head === undefined) return []
     return await this.head.findCollaborators(session, params)
+  }
+
+  async findPeers (session: SessionData, params: FindPeersParams): Promise<Peer[]> {
+    if (this.head === undefined) return []
+    return await this.head.findPeers(session, params)
+  }
+
+  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
+    if (this.head === undefined) return []
+    return await this.head.findThreads(session, params)
   }
 
   async unsubscribeQuery (session: SessionData, id: number): Promise<void> {

@@ -26,7 +26,8 @@ export enum Domain {
 
   Collaborator = 'communication.collaborator',
   Label = 'communication.label',
-  // LinkPreview = 'communication.link_preview'
+
+  Peer = 'communication.peer'
 }
 
 export const Domains = Object.values(Domain)

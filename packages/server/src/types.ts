@@ -23,19 +23,23 @@ import type {
 import type {
   AccountID,
   CardID,
-  Collaborator, ContextID,
+  Collaborator,
+  ContextID,
   FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  FindPeersParams,
+  FindThreadParams,
   Label,
   Message,
   MessagesGroup,
   Notification,
   NotificationContext,
-  SocialID,
+  Peer,
+  SocialID, Thread,
   WorkspaceID
 } from '@hcengineering/communication-types'
 
@@ -69,6 +73,8 @@ export interface Middleware {
 
   findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
+  findPeers: (session: SessionData, params: FindPeersParams) => Promise<Peer[]>
+  findThreads: (session: SessionData, params: FindThreadParams) => Promise<Thread[]>
 
   event: (session: SessionData, event: Enriched<Event>, derived: boolean) => Promise<EventResult>
 
@@ -87,6 +93,8 @@ export interface MiddlewareContext {
   registeredCards: Set<CardID>
   accountBySocialID: Map<SocialID, AccountID>
   removedContexts: Map<ContextID, NotificationContext>
+
+  cadsWithPeers: Set<CardID>
 
   derived?: Middleware
   head?: Middleware
@@ -110,6 +118,7 @@ export interface TriggerCtx {
   accountBySocialID: Map<SocialID, AccountID>
   removedContexts: Map<ContextID, NotificationContext>
   derived: boolean
+  processedPeersEvents: Set<string>
   execute: (event: Event) => Promise<EventResult>
 }
 
@@ -117,6 +126,8 @@ export type TriggerFn = (ctx: TriggerCtx, event: Enriched<Event>) => Promise<Eve
 export type Triggers = [string, EventType, TriggerFn][]
 
 export type Enriched<T> = T & {
+  _id: string
   skipPropagate?: boolean
   date: Date
+  _eventExtra: Record<string, any>
 }

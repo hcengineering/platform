@@ -26,7 +26,11 @@ import type {
   FindLabelsParams,
   Label,
   FindCollaboratorsParams,
-  Collaborator
+  Collaborator,
+  FindPeersParams,
+  Peer,
+  FindThreadParams,
+  Thread
 } from '@hcengineering/communication-types'
 
 import type { Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
@@ -71,6 +75,14 @@ export class BaseMiddleware implements Middleware {
 
   async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     return await this.provideFindCollaborators(session, params)
+  }
+
+  async findPeers (session: SessionData, params: FindPeersParams): Promise<Peer[]> {
+    return await this.provideFindPeers(session, params)
+  }
+
+  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
+    return await this.provideFindThreads(session, params)
   }
 
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
@@ -158,6 +170,20 @@ export class BaseMiddleware implements Middleware {
   ): Promise<Collaborator[]> {
     if (this.next !== undefined) {
       return await this.next.findCollaborators(session, params)
+    }
+    return []
+  }
+
+  protected async provideFindPeers (session: SessionData, params: FindPeersParams): Promise<Peer[]> {
+    if (this.next !== undefined) {
+      return await this.next.findPeers(session, params)
+    }
+    return []
+  }
+
+  protected async provideFindThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
+    if (this.next !== undefined) {
+      return await this.next.findThreads(session, params)
     }
     return []
   }

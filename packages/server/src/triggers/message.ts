@@ -23,9 +23,9 @@ import {
   RemovePatchEvent,
   ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
-import { type CardID, MessageType } from '@hcengineering/communication-types'
+import { type CardID, CardPeer, MessageType, Peer } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
-import { type AccountUuid, concatLink, systemAccountUuid } from '@hcengineering/core'
+import { type AccountUuid, concatLink, generateId, systemAccountUuid } from '@hcengineering/core'
 import { extractReferences } from '@hcengineering/text-core'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 
@@ -41,7 +41,7 @@ async function onMessagesGroupCreated (ctx: TriggerCtx, event: CreateMessagesGro
 
 async function onMessageRemoved (ctx: TriggerCtx, event: Enriched<RemovePatchEvent>): Promise<Event[]> {
   const { cardId } = event
-  const thread = await ctx.db.findThread(cardId)
+  const thread = (await ctx.db.findThreads({ threadId: cardId, limit: 1 }))[0]
   if (thread === undefined) return []
 
   return [
@@ -126,7 +126,7 @@ async function addThreadReply (ctx: TriggerCtx, event: Enriched<CreateMessageEve
     return []
   }
   const { cardId, socialId, date } = event
-  const thread = await ctx.db.findThread(cardId)
+  const thread = (await ctx.db.findThreads({ threadId: cardId, limit: 1 }))[0]
 
   if (thread === undefined) return []
 
@@ -201,6 +201,43 @@ async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEve
   return result
 }
 
+async function checkPeers (ctx: TriggerCtx, event: Enriched<CreateMessageEvent | PatchEvent>): Promise<Event[]> {
+  if (ctx.processedPeersEvents.has(event._id)) return []
+  if (event.type === MessageEventType.CreateMessage) {
+    if (event.messageType === MessageType.Activity) {
+      return []
+    }
+  }
+
+  if (event.type === MessageEventType.ThreadPatch) {
+    return []
+  }
+
+  const cardPeers = new Set(
+    (((event._eventExtra.peers ?? []) as Peer[]).filter((it) => it.kind === 'card') as CardPeer[])
+      .flatMap((it) => it.members)
+      .filter((it) => it.workspaceId === ctx.workspace && it.cardId !== event.cardId)
+      .map((it) => it.cardId)
+  )
+
+  if (cardPeers.size === 0) return []
+  const res: Event[] = []
+
+  for (const peer of cardPeers) {
+    const ev = {
+      ...event,
+      _id: generateId(),
+      cardId: peer
+    }
+
+    ctx.processedPeersEvents.add(ev._id)
+
+    res.push(ev)
+  }
+
+  return res
+}
+
 const triggers: Triggers = [
   ['add_collaborators_on_message_created', MessageEventType.CreateMessage, addCollaborators as TriggerFn],
   ['add_thread_reply_on_message_created', MessageEventType.CreateMessage, addThreadReply as TriggerFn],
@@ -214,7 +251,15 @@ const triggers: Triggers = [
 
   ['on_messages_group_created', MessageEventType.CreateMessagesGroup, onMessagesGroupCreated as TriggerFn],
   ['remove_reply_on_messages_removed', MessageEventType.RemovePatch, onMessageRemoved as TriggerFn],
-  ['on_thread_created', MessageEventType.ThreadPatch, onThreadAttached as TriggerFn]
+  ['on_thread_created', MessageEventType.ThreadPatch, onThreadAttached as TriggerFn],
+
+  ['check_peers_on_message_created', MessageEventType.CreateMessage, checkPeers as TriggerFn],
+  ['check_peers_on_update_patch', MessageEventType.UpdatePatch, checkPeers as TriggerFn],
+  ['check_peers_on_remove_patch', MessageEventType.RemovePatch, checkPeers as TriggerFn],
+  ['check_peers_on_reaction_patch', MessageEventType.ReactionPatch, checkPeers as TriggerFn],
+  ['check_peers_on_blob_patch', MessageEventType.BlobPatch, checkPeers as TriggerFn],
+  ['check_peers_on_attachment_patch', MessageEventType.AttachmentPatch, checkPeers as TriggerFn],
+  ['check_peers_on_thread_patch', MessageEventType.ThreadPatch, checkPeers as TriggerFn]
 ]
 
 export default triggers

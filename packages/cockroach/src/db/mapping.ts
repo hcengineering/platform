@@ -35,7 +35,10 @@ import {
   type AccountID,
   type MessageExtra,
   AttachmentID,
-  Attachment
+  Attachment,
+  Peer,
+  WorkspaceID,
+  PeerExtra
 } from '@hcengineering/communication-types'
 import { Domain } from '@hcengineering/communication-sdk-types'
 import { applyPatches } from '@hcengineering/communication-shared'
@@ -295,4 +298,32 @@ export function toLabel (raw: DbModel<Domain.Label>): Label {
     account: raw.account,
     created: new Date(raw.created)
   }
+}
+
+export function toPeer (
+  raw: DbModel<Domain.Peer> & { members?: { workspace_id: WorkspaceID, card_id: CardID, extra?: PeerExtra }[] }
+): Peer {
+  const peer: Peer = {
+    workspaceId: raw.workspace_id,
+    cardId: raw.card_id,
+    kind: raw.kind,
+    value: raw.value,
+    extra: raw.extra,
+    created: new Date(raw.created)
+  }
+
+  if (peer.kind === 'card') {
+    return {
+      ...peer,
+      kind: 'card',
+      members:
+        raw.members?.map((it) => ({
+          workspaceId: it.workspace_id,
+          cardId: it.card_id,
+          extra: it.extra ?? {}
+        })) ?? []
+    }
+  }
+
+  return peer
 }

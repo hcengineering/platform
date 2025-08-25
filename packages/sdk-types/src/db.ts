@@ -44,7 +44,7 @@ import {
   NotificationType,
   AttachmentData,
   AttachmentID,
-  AttachmentUpdateData, WithTotal
+  AttachmentUpdateData, WithTotal, WorkspaceID, PeerKind, PeerExtra, FindPeersParams, Peer, FindThreadParams
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -82,9 +82,25 @@ export interface DbAdapter {
   removeThreads: (query: ThreadQuery) => Promise<void>
   updateThread: (cardId: CardID, messageId: MessageID, thread: CardID, update: ThreadUpdates, socialId: SocialID, date: Date) => Promise<void>
 
+  createPeer: (
+    workspaceId: WorkspaceID,
+    cardId: CardID,
+    kind: PeerKind,
+    value: string,
+    extra: PeerExtra,
+    date: Date
+  ) => Promise<void>
+
+  removePeer: (workspaceId: WorkspaceID,
+    cardId: CardID,
+    kind: PeerKind,
+    value: string) => Promise<void>
+
+  findPeers: (params: FindPeersParams) => Promise<Peer[]>
+
   findMessages: (params: FindMessagesParams) => Promise<Message[]>
   findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-  findThread: (threadId: CardID) => Promise<Thread | undefined>
+  findThreads: (params: FindThreadParams) => Promise<Thread[]>
 
   addCollaborators: (cardId: CardID, cardType: CardType, collaborators: AccountID[], date: Date) => Promise<AccountID[]>
   removeCollaborators: (cardId: CardID, accounts: AccountID[], unsafe?: boolean) => Promise<void>
@@ -126,6 +142,7 @@ export interface DbAdapter {
   updateLabels: (cardId: CardID, update: LabelUpdates) => Promise<void>
 
   getCardTitle: (cardId: CardID) => Promise<string | undefined>
+  getCardSpaceMembers: (cardId: CardID) => Promise<AccountID[]>
   getAccountsByPersonIds: (ids: string[]) => Promise<AccountID[]>
   getNameByAccount: (id: AccountID) => Promise<string | undefined>
   getMessageCreated: (cardId: CardID, messageId: MessageID) => Promise<Date | undefined>

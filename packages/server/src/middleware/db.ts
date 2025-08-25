@@ -23,6 +23,8 @@ import {
   type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
+  FindPeersParams,
+  FindThreadParams,
   type Label,
   type Message,
   MessageID,
@@ -30,7 +32,9 @@ import {
   type Notification,
   type NotificationContext,
   PatchType,
+  Peer,
   SocialID,
+  Thread,
   UpdatePatchData
 } from '@hcengineering/communication-types'
 import {
@@ -62,7 +66,10 @@ import {
   ThreadPatchEvent,
   EventResult,
   AttachmentPatchEvent,
-  BlobPatchEvent
+  BlobPatchEvent,
+  PeerEventType,
+  CreatePeerEvent,
+  RemovePeerEvent
 } from '@hcengineering/communication-sdk-types'
 
 import type { Enriched, Middleware, MiddlewareContext } from '../types'
@@ -109,11 +116,21 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     return await this.db.findCollaborators(params)
   }
 
-  async event (session: SessionData, event: Enriched<Event>): Promise<EventResult> {
+  async findPeers (_: SessionData, params: FindPeersParams): Promise<Peer[]> {
+    return await this.db.findPeers(params)
+  }
+
+  async findThreads (_: SessionData, params: FindThreadParams): Promise<Thread[]> {
+    return await this.db.findThreads(params)
+  }
+
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     const result = await this.processEvent(session, event)
 
     if (result.skipPropagate === true) {
       event.skipPropagate = true
+    } else {
+      await this.provideEvent(session, event, derived)
     }
 
     return result.result ?? {}
@@ -152,6 +169,12 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         return await this.updateCardType(event)
       case CardEventType.RemoveCard:
         return await this.removeCard(event)
+
+      // Peers
+      case PeerEventType.RemovePeer:
+        return await this.removePeer(event)
+      case PeerEventType.CreatePeer:
+        return await this.createPeer(event)
 
       // Collaborators
       case NotificationEventType.AddCollaborators:
@@ -457,6 +480,16 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       account: event.account
     })
 
+    return {}
+  }
+
+  private async createPeer (event: Enriched<CreatePeerEvent>): Promise<Result> {
+    await this.db.createPeer(event.workspaceId, event.cardId, event.kind, event.value, event.extra ?? {}, event.date)
+    return {}
+  }
+
+  private async removePeer (event: Enriched<RemovePeerEvent>): Promise<Result> {
+    await this.db.removePeer(event.workspaceId, event.cardId, event.kind, event.value)
     return {}
   }
 

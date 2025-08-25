@@ -20,6 +20,7 @@ import {
   LabelEventType,
   MessageEventType,
   NotificationEventType,
+  PeerEventType,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import type {
@@ -223,6 +224,9 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case CardEventType.UpdateCardType:
       case CardEventType.RemoveCard:
         return true
+      case PeerEventType.RemovePeer:
+      case PeerEventType.CreatePeer:
+        return false
     }
   }
 
