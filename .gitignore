@@ -1,5 +1,6 @@
 /off
 /target
+/scripts/other
 /scripts/off
 Justfile
 commit.sh
