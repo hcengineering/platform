@@ -43,7 +43,7 @@
 
 /* Dark Theme */
 .theme-dark {
-  --global-ui-BackgroundColor: #A5BDFF0D;
+  --global-ui-BackgroundColor: 1530720D;
   --global-ui-BorderColor: #A5BDFF1A;
   --global-ui-hover-BackgroundColor: #A5BDFF1A;
   --global-ui-active-BackgroundColor: #A5BDFF26;
@@ -134,6 +134,8 @@
   --love-active-call-filter: blur(17px);
 
   --global-offline-color: #d1d5de;
+
+  --avatar-counter-BackgroundColor: #141523
 }
 
 /* Light Theme */
@@ -229,4 +231,6 @@
   --love-active-call-transform: scaleY(0.3) scaleX(0.42);
 
   --global-offline-color: #5A667E;
+
+  --avatar-counter-BackgroundColor: #F1F1F5;
 }

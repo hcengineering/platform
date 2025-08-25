@@ -121,9 +121,7 @@ export async function attachCardToMessage (
     },
     type
   )
-  const apply = client.apply('create thread', undefined, true)
-  await apply.createDoc(type, parentCard.space, data, threadCardID)
-  await apply.commit()
+  await client.createDoc(type, parentCard.space, data, threadCardID)
 
   if (author?.active === true && author?.personUuid !== undefined) {
     await communicationClient.addCollaborators(threadCardID, type, [author.personUuid])

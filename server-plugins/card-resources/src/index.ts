@@ -20,10 +20,13 @@ import core, {
   Data,
   Doc,
   fillDefaults,
+  generateId,
   getDiffUpdate,
   Mixin,
+  notEmpty,
   OperationDomain,
   Ref,
+  Space,
   splitMixinUpdate,
   Tx,
   TxCreateDoc,
@@ -39,11 +42,17 @@ import {
   AddCollaboratorsEvent,
   CardEventType,
   NotificationEventType,
+  PeerEventType,
   RemoveCardEvent,
-  UpdateCardTypeEvent
+  UpdateCardTypeEvent,
+  CreatePeerEvent,
+  ThreadPatchEvent,
+  MessageEventType
 } from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
-import contact from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
+import communication, { Direct } from '@hcengineering/communication'
+import { CardPeer } from '@hcengineering/communication-types'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -400,6 +409,192 @@ async function updateParentInfoName (
   return res
 }
 
+async function OnThreadCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of ctx) {
+    if (tx.space === core.space.DerivedTx) continue
+    const doc = TxProcessor.createDoc2Doc(tx)
+    const parent = doc.parentInfo?.[0]
+    if (parent == null) continue
+    if (!control.hierarchy.isDerived(parent._class, communication.type.Direct)) continue
+    const direct = (await control.findAll(control.ctx, parent._class, { _id: parent._id }, { limit: 1 }))[0] as Direct
+    if (direct == null) continue
+
+    res.push(...(await createThreadCardPeers(direct, doc, control)))
+  }
+
+  return res
+}
+
+async function createThreadCardPeers (direct: Direct, doc: Card, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
+  const members = direct.members ?? []
+  if (members.length === 0) return []
+
+  const thread = (
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+      findThreads: { params: { threadId: doc._id } }
+    })
+  ).value[0]
+  if (thread === undefined) return []
+
+  const messageId = thread.messageId
+  const directPeer = (
+    (
+      await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+        findPeers: { params: { kind: 'card', cardId: direct._id } }
+      })
+    ).value as CardPeer[]
+  )[0]
+
+  const personSpaces = (await getPersonSpaces(control)).filter(
+    (it) => it._id !== doc.space && members.includes(it.person)
+  )
+  if (personSpaces.length === 0) return []
+  const accounts = (
+    await control.findAll(control.ctx, contact.mixin.Employee, {
+      _id: { $in: personSpaces.map((it) => it.person) as Ref<Employee>[] }
+    })
+  )
+    .map((it) => it.personUuid)
+    .filter(notEmpty)
+  if (accounts.length === 0) return []
+
+  // TODO: create directs in person_workspace
+  for (const personSpace of personSpaces) {
+    const _id = generateId<Card>()
+    const _class = doc._class
+    cardIds.set(_id, personSpace._id)
+    res.push(
+      control.txFactory.createTxCreateDoc(
+        _class,
+        personSpace._id,
+        {
+          ...doc
+        },
+        _id
+      )
+    )
+
+    const parentDirect = directPeer?.members?.find((m) => m.extra?.space === personSpace._id)
+
+    if (parentDirect !== undefined) {
+      const threadPatchEvent: ThreadPatchEvent = {
+        type: MessageEventType.ThreadPatch,
+        cardId: parentDirect.cardId,
+        messageId,
+        operation: {
+          opcode: 'attach',
+          threadId: _id,
+          threadType: _class
+        },
+        socialId: doc.modifiedBy
+      }
+      await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+        event: threadPatchEvent
+      })
+    }
+  }
+
+  if (cardIds.size > 1) {
+    const group = generateId()
+    for (const [cardId, spaceId] of cardIds.entries()) {
+      const event: CreatePeerEvent = {
+        type: PeerEventType.CreatePeer,
+        workspaceId: control.workspace.uuid, // TODO: person_workspace
+        cardId,
+        kind: 'card',
+        value: group,
+        extra: { space: spaceId },
+        date: new Date(doc.modifiedOn)
+      }
+      await control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+    }
+  }
+
+  return res
+}
+
+async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
+  if (members.length === 0) return []
+
+  const personSpaces = (await getPersonSpaces(control)).filter(
+    (it) => it._id !== doc.space && members.includes(it.person)
+  )
+  if (personSpaces.length === 0) return []
+  const accounts = (
+    await control.findAll(control.ctx, contact.mixin.Employee, {
+      _id: { $in: personSpaces.map((it) => it.person) as Ref<Employee>[] }
+    })
+  )
+    .map((it) => it.personUuid)
+    .filter(notEmpty)
+  if (accounts.length === 0) return []
+
+  // TODO: create directs in person_workspace
+  for (const personSpace of personSpaces) {
+    const _id = generateId<Card>()
+    const _class = doc._class
+    cardIds.set(_id, personSpace._id)
+    res.push(
+      control.txFactory.createTxCreateDoc(
+        _class,
+        personSpace._id,
+        {
+          ...doc
+        },
+        _id
+      )
+    )
+
+    const event: AddCollaboratorsEvent = {
+      type: NotificationEventType.AddCollaborators,
+      cardId: _id,
+      cardType: _class,
+      collaborators: accounts,
+      socialId: doc.modifiedBy,
+      date: new Date(doc.modifiedOn + 1)
+    }
+
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+  }
+
+  if (cardIds.size > 1) {
+    const group = generateId()
+    for (const [cardId, spaceId] of cardIds.entries()) {
+      const event: CreatePeerEvent = {
+        type: PeerEventType.CreatePeer,
+        workspaceId: control.workspace.uuid, // TODO: person_workspace
+        cardId,
+        kind: 'card',
+        value: group,
+        extra: { space: spaceId },
+        date: new Date(doc.modifiedOn)
+      }
+      await control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+    }
+  }
+
+  return res
+}
+
+async function OnDirectCreate (ctx: TxCreateDoc<Direct>[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+
+  for (const tx of ctx) {
+    if (tx.space === core.space.DerivedTx) continue
+    const doc = TxProcessor.createDoc2Doc(tx)
+    const members = doc.members ?? []
+
+    res.push(...(await createDirectCardPeers(doc, members, control)))
+  }
+
+  return res
+}
+
 async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
   const createTx = ctx[0]
   const doc = TxProcessor.createDoc2Doc(createTx)
@@ -515,6 +710,8 @@ export default async () => ({
     OnCardRemove,
     OnCardCreate,
     OnCardUpdate,
-    OnCardTag
+    OnCardTag,
+    OnDirectCreate,
+    OnThreadCreate
   }
 })

@@ -39,6 +39,7 @@
     "Properties": "Proprietà",
     "NoChildren": "Nessun figlio",
     "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
-    "ConfigDescription": "Estensione per la gestione della conoscenza in stile database."
+    "ConfigDescription": "Estensione per la gestione della conoscenza in stile database.",
+    "AddCollaborators": "Aggiungi collaboratori"
   }
 }

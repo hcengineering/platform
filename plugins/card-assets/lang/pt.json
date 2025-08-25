@@ -39,6 +39,7 @@
     "Labels": "Etiquetas",
     "Properties": "Propriedades",
     "NoChildren": "Sem filhos",
-    "ConfigDescription": "Extensão para gerenciamento de conhecimento no estilo de banco de dados."
+    "ConfigDescription": "Extensão para gerenciamento de conhecimento no estilo de banco de dados.",
+    "AddCollaborators": "Adicionar colaboradores"
   }
 }

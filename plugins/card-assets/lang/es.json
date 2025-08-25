@@ -39,6 +39,7 @@
     "Labels": "Etiquetas",
     "Properties": "Propiedades",
     "NoChildren": "No hay hijos",
-    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos."
+    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos.",
+    "AddCollaborators": "Agregar colaboradores"
   }
 }

@@ -21,8 +21,10 @@ import CreatePoll from './components/poll/CreatePoll.svelte'
 import PollPreview from './components/poll/PollPreview.svelte'
 import UserVoteActivityPresenter from './components/poll/UserVoteActivityPresenter.svelte'
 import UserVotesPresenter from './components/poll/UserVotesPresenter.svelte'
+import DirectIcon from './components/DirectIcon.svelte'
+import CreateDirect from './components/CreateDirect.svelte'
 
-import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
+import { unsubscribe, subscribe, canSubscribe, canUnsubscribe, canCreateDirect } from './utils'
 import {
   addReaction,
   canCreateCard,
@@ -49,7 +51,9 @@ export { default as ActivityMessageViewer } from './components/message/ActivityM
 
 export default async (): Promise<Resources> => ({
   component: {
-    CardMessagesSection
+    CardMessagesSection,
+    DirectIcon,
+    CreateDirect
   },
   poll: {
     PollPresenter,
@@ -81,6 +85,7 @@ export default async (): Promise<Resources> => ({
     CanShowOriginalMessage: canShowOriginalMessage,
     CanEditMessage: canEditMessage,
     CanRemoveMessage: canRemoveMessage,
-    CanCreateCard: canCreateCard
+    CanCreateCard: canCreateCard,
+    CanCreateDirect: canCreateDirect
   }
 })

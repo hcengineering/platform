@@ -33,7 +33,8 @@ export default plugin(communicationId, {
     GuestCommunicationSettings: '' as Ref<Class<GuestCommunicationSettings>>
   },
   type: {
-    Poll: '' as Ref<MasterTag>
+    Poll: '' as Ref<MasterTag>,
+    Direct: '' as Ref<MasterTag>
   },
   icon: {
     Bell: '' as Asset,

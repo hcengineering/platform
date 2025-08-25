@@ -25,6 +25,9 @@ import { Card, MasterTag } from '@hcengineering/card'
 import { AnyComponent } from '@hcengineering/ui'
 import { PersonSpace } from '@hcengineering/contact'
 
+export * from './poll'
+export * from './direct'
+
 export enum MessagesNavigationAnchors {
   ConversationStart = 'conversationStart',
   LatestMessages = 'latestMessages'

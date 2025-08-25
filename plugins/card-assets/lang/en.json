@@ -39,6 +39,7 @@
     "Labels": "Labels",
     "Properties": "Properties",
     "NoChildren": "No children",
-    "ConfigDescription": "Extension for database-style knowledge management."
+    "ConfigDescription": "Extension for database-style knowledge management.",
+    "AddCollaborators": "Add collaborators"
   }
 }
