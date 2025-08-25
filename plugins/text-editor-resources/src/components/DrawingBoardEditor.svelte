@@ -21,15 +21,14 @@
     DrawTextCmd,
     Point,
     drawing,
-    makeCommandUid,
-    CommandUid,
-    DrawingCommands
+    CommandUid
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
   import { Loading, Component } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
-  import { Array as YArray, Map as YMap, Doc as YDoc, UndoManager as YUndoManager } from 'yjs'
+  import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
+  import { DrawingCommandsProcessor } from '@hcengineering/presentation/src/drawingCommandsProcessor'
 
   export let boardId: string
   export let document: YDoc
@@ -48,7 +47,7 @@
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
-  let model: DrawingCommands = { commands: [], lastExecutedCommand: undefined }
+  let model: DrawingCmd[] = []
   let offset: { x: number, y: number } = { x: 0, y: 0 }
   let changingCmdId: CommandUid | undefined
   let cmdEditor: HTMLDivElement | undefined
@@ -65,35 +64,32 @@
   const dataTopicOffset = 'drawing-board-offset'
   const dataTopicCursor = 'drawing-board-cursor'
 
-  const UndoableOperationMarker = 137
   let disableUndo = false
   let disableRedo = false
-  const undoManager: YUndoManager = new YUndoManager(savedCmds, {
-    trackedOrigins: new Set([UndoableOperationMarker]),
-    captureTimeout: 0
-  })
+
+  const commandsProcessor = new DrawingCommandsProcessor(document, savedCmds)
 
   $: onSelectedChanged(selected)
   $: onReadonlyChanged(readonly)
   $: onOffsetChanged(offset)
 
   function onSavedCommandsChanged (): void {
-    const commands = savedCmds.toArray()
-    model = { commands, lastExecutedCommand: commands.length - 1 }
+    model = commandsProcessor.snapshot()
     setTimeout(() => {
-      disableUndo = !undoManager.canUndo()
-      disableRedo = !undoManager.canRedo()
+      const status = commandsProcessor.getUndoRedoAvailability()
+      disableUndo = status.undoDisabled
+      disableRedo = status.redoDisabled
     })
   }
 
   function showCommandProps (id: CommandUid): void {
     changingCmdId = id
-    for (const cmd of model.commands) {
-      if (cmd.id === id) {
-        if (cmd.type === 'text') {
-          const textCmd = cmd as DrawTextCmd
-          penColor = textCmd.color
-          fontSize = textCmd.fontSize
+    for (const command of model) {
+      if (command.id === id) {
+        if (command.type === 'text') {
+          const textWriting = command as DrawTextCmd
+          penColor = textWriting.color
+          fontSize = textWriting.fontSize
         }
         break
       }
@@ -101,68 +97,33 @@
   }
 
   function changeCommand (cmd: DrawingCmd): void {
-    document.transact(() => {
-      let index = -1
-      for (let i = 0; i < savedCmds.length; i++) {
-        if (savedCmds.get(i).id === cmd.id) {
-          savedCmds.delete(i)
-          index = i
-          break
-        }
-      }
-      if (index >= 0) {
-        savedCmds.insert(index, [cmd])
-      } else {
-        savedCmds.push([cmd])
-      }
-    }, UndoableOperationMarker)
     changingCmdId = undefined
     cmdEditor = undefined
+    commandsProcessor.changeCommand(cmd)
   }
 
-  function deleteCommand (id: string): void {
-    document.transact(() => {
-      for (let i = 0; i < savedCmds.length; i++) {
-        if (savedCmds.get(i).id === id) {
-          savedCmds.delete(i)
-          break
-        }
-      }
-    }, UndoableOperationMarker)
+  function deleteCommand (id: CommandUid): void {
     changingCmdId = undefined
     cmdEditor = undefined
+    commandsProcessor.deleteCommand(id)
   }
 
-  function onSelectedChanged (selected: boolean): void {
-    if (oldSelected !== selected) {
-      if (oldSelected && !selected && changingCmdId !== undefined) {
+  function onSelectedChanged (newSelected: boolean): void {
+    if (oldSelected !== newSelected) {
+      if (oldSelected && !newSelected && changingCmdId !== undefined) {
         changingCmdId = undefined
         cmdEditor = undefined
       }
-      oldSelected = selected
+      oldSelected = newSelected
     }
   }
 
-  function onReadonlyChanged (readonly: boolean): void {
-    if (oldReadonly !== readonly) {
-      document.transact(() => {
-        if (readonly) {
-          return
-        }
-        let allHaveIds = true
-        for (let i = 0; i < savedCmds.length; i++) {
-          if (savedCmds.get(i).id === undefined) {
-            allHaveIds = false
-            break
-          }
-        }
-        if (!allHaveIds) {
-          const cmds = savedCmds.toArray()
-          savedCmds.delete(0, savedCmds.length)
-          savedCmds.push(cmds.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandUid() })))
-        }
-      })
-      oldReadonly = readonly
+  function onReadonlyChanged (newReadonly: boolean): void {
+    if (oldReadonly !== newReadonly) {
+      if (!newReadonly) {
+        commandsProcessor.ensureAllCommandsWithUids()
+      }
+      oldReadonly = newReadonly
     }
   }
 
@@ -264,7 +225,7 @@
       use:drawing={{
         readonly,
         autoSize: true,
-        drawing: model,
+        commands: model,
         offset,
         tool,
         penColor,
@@ -273,10 +234,8 @@
         fontSize,
         personCursorPos: personCursorCanvasPos,
         changingCmdId,
-        cmdAdded: (cmd) => {
-          document.transact(() => {
-            savedCmds.push([cmd])
-          }, UndoableOperationMarker)
+        cmdAdded: (commandToAdd) => {
+          commandsProcessor.addCommand(commandToAdd)
           changingCmdId = undefined
         },
         cmdChanging: showCommandProps,
@@ -322,16 +281,14 @@
           bind:eraserWidth
           bind:fontSize
           on:clear={() => {
-            document.transact(() => {
-              savedCmds.delete(0, savedCmds.length)
-            }, UndoableOperationMarker)
+            commandsProcessor.clear()
             offset = { x: 0, y: 0 }
           }}
           on:undo={() => {
-            undoManager.undo()
+            commandsProcessor.undo()
           }}
           on:redo={() => {
-            undoManager.redo()
+            commandsProcessor.redo()
           }}
         />
       {/if}
@@ -363,7 +320,7 @@
   .board {
     position: relative;
     width: 100%;
-    background-color: var(--drawing-bg-color);
+    background-color: var(--theme-drawing-bg-color);
     border-radius: var(--small-BorderRadius);
     border: 1px solid var(--theme-navpanel-border);
 

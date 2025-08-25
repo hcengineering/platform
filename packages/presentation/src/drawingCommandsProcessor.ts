@@ -13,105 +13,125 @@
 // limitations under the License.
 //
 
-import { type CommandUid, type DrawingCmd } from './drawing'
+import { makeCommandUid, type CommandUid, type DrawingCmd } from './drawing'
+import { type Array as YArray, type Doc as YDoc, UndoManager as YUndoManager } from 'yjs'
 
-export interface CommandsBufferAdapter {
-  addCommand: (command: DrawingCmd) => void
-  removeCommands: (fromInclusive: number) => void
-  deleteCommand: (id: CommandUid) => number | undefined
-  changeCommand: (command: DrawingCmd) => void
-  getCommandCount: () => number
+export class UndoRedoAvailability {
+  constructor (private readonly disableUndo: boolean, private readonly disableRedo: boolean) {
+  }
 
-  setLastExecutedCommandPointer: (index: number | undefined) => void
-  getLastExecutedCommandsPointer: () => number | undefined
+  get undoDisabled (): boolean {
+    return this.disableUndo
+  }
+
+  get redoDisabled (): boolean {
+    return this.disableRedo
+  }
 }
 
 export class DrawingCommandsProcessor {
-  modified: boolean
+  private readonly document: YDoc
+  private readonly commands: YArray<DrawingCmd>
+  private readonly undoManager: YUndoManager
 
-  constructor (
-    private readonly adapter: CommandsBufferAdapter,
-    private readonly onCommandsChanged?: () => void
-  ) {
-    this.modified = false
+  private readonly UndoableOperationMarker = 137
+
+  constructor (document: YDoc, backend: YArray<DrawingCmd>) {
+    this.document = document
+    this.commands = backend
+    this.undoManager = new YUndoManager(backend, {
+      trackedOrigins: new Set([this.UndoableOperationMarker]),
+      captureTimeout: 0
+    })
   }
 
-  private notifyCommandsChanged (): void {
-    this.onCommandsChanged?.()
+  set (commands: DrawingCmd[]): void {
+    this.document.transact(() => {
+      this.removeAllCommands()
+      for (const command of commands) {
+        this.commands.push([command])
+      }
+    })
+    this.undoManager.clear()
   }
 
-  modificationConsumed (): void {
-    this.modified = false
+  getUndoRedoAvailability (): UndoRedoAvailability {
+    const disableUndo = !this.undoManager.canUndo()
+    const disableRedo = !this.undoManager.canRedo()
+    return new UndoRedoAvailability(disableUndo, disableRedo)
   }
 
-  isModified (): boolean {
-    return this.modified
-  }
-
-  canUndo (): boolean {
-    const commandPointer = this.adapter.getLastExecutedCommandsPointer()
-
-    return commandPointer !== undefined && commandPointer >= 0
-  }
-
-  canRedo (): boolean {
-    const commandPointer = this.adapter.getLastExecutedCommandsPointer()
-    const commandCount = this.adapter.getCommandCount()
-
-    return commandPointer !== undefined && commandPointer < commandCount - 1
-  }
-
-  clear (): void {
-    this.adapter.removeCommands(0)
-    this.adapter.setLastExecutedCommandPointer(undefined)
-    this.modified = true
-    this.notifyCommandsChanged()
-  }
-
-  change (command: DrawingCmd): void {
-    this.adapter.changeCommand(command)
-    this.modified = true
-  }
-
-  delete (id: CommandUid): void {
-    const deletedCommandIndex = this.adapter.deleteCommand(id)
-    if (deletedCommandIndex === undefined) {
-      return
-    }
-    const lastExecutedCommandIndex = this.adapter.getLastExecutedCommandsPointer()
-    if (undefined !== lastExecutedCommandIndex && deletedCommandIndex <= lastExecutedCommandIndex) {
-      this.adapter.setLastExecutedCommandPointer(lastExecutedCommandIndex - 1)
-    }
-    this.modified = true
-    this.notifyCommandsChanged()
-  }
-
-  new (command: DrawingCmd): void {
-    const commandPointer = this.adapter.getLastExecutedCommandsPointer()
-    if (undefined !== commandPointer && commandPointer + 1 < this.adapter.getCommandCount()) {
-      this.adapter.removeCommands(commandPointer + 1)
-    }
-    this.adapter.addCommand(command)
-    this.adapter.setLastExecutedCommandPointer(this.adapter.getCommandCount() - 1)
-    this.modified = true
-    this.notifyCommandsChanged()
+  snapshot (): DrawingCmd[] {
+    return this.commands.toArray()
   }
 
   undo (): void {
-    const commandPointer = this.adapter.getLastExecutedCommandsPointer()
-    if (undefined !== commandPointer && commandPointer >= 0) {
-      this.adapter.setLastExecutedCommandPointer(commandPointer - 1)
-      this.modified = true
-      this.notifyCommandsChanged()
-    }
+    this.undoManager.undo()
   }
 
   redo (): void {
-    const commandPointer = this.adapter.getLastExecutedCommandsPointer()
-    if (undefined !== commandPointer && commandPointer + 1 < this.adapter.getCommandCount()) {
-      this.adapter.setLastExecutedCommandPointer(commandPointer + 1)
-      this.modified = true
-      this.notifyCommandsChanged()
-    }
+    this.undoManager.redo()
+  }
+
+  clear (): void {
+    this.document.transact(() => {
+      this.removeAllCommands()
+    }, this.UndoableOperationMarker)
+  }
+
+  ensureAllCommandsWithUids (): void {
+    this.document.transact(() => {
+      let anyLacksId = false
+      for (let i = 0; i < this.commands.length; i++) {
+        if (this.commands.get(i).id === undefined) {
+          anyLacksId = true
+          break
+        }
+      }
+      if (anyLacksId) {
+        const snapshot = this.commands.toArray()
+        this.removeAllCommands()
+        this.commands.push(snapshot.map((x: DrawingCmd) => ({ ...x, id: x.id ?? makeCommandUid() })))
+      }
+    })
+  }
+
+  addCommand (target: DrawingCmd): void {
+    this.document.transact(() => {
+      this.commands.push([target])
+    }, this.UndoableOperationMarker)
+  }
+
+  deleteCommand (id: CommandUid): void {
+    this.document.transact(() => {
+      for (let i = 0; i < this.commands.length; i++) {
+        if (this.commands.get(i).id === id) {
+          this.commands.delete(i)
+          break
+        }
+      }
+    }, this.UndoableOperationMarker)
+  }
+
+  changeCommand (newOne: DrawingCmd): void {
+    this.document.transact(() => {
+      let index = -1
+      for (let i = 0; i < this.commands.length; i++) {
+        if (this.commands.get(i).id === newOne.id) {
+          this.commands.delete(i)
+          index = i
+          break
+        }
+      }
+      if (index >= 0) {
+        this.commands.insert(index, [newOne])
+      } else {
+        this.commands.push([newOne])
+      }
+    }, this.UndoableOperationMarker)
+  }
+
+  private removeAllCommands (): void {
+    this.commands.delete(0, this.commands.length)
   }
 }

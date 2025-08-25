@@ -24,7 +24,7 @@ export interface DrawingProps {
   autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  drawing?: DrawingCommands
+  commands?: DrawingCmd[]
   offset?: Point
   tool?: DrawingTool
   penColor?: string
@@ -52,11 +52,6 @@ export type CommandUid = string & { readonly __brand: 'CommandUid' }
 export interface DrawingCmd {
   id: CommandUid
   type: 'line' | 'text'
-}
-
-export interface DrawingCommands {
-  commands: DrawingCmd[]
-  lastExecutedCommand: number | undefined
 }
 
 export interface DrawTextCmd extends DrawingCmd {
@@ -333,20 +328,20 @@ export function drawing (
   }
   let liveTextBox: LiveTextBox | undefined
 
-  let currentDrawing = props.drawing
+  let currentCommands = props.commands
 
-  function traverseCommands (target: DrawingCommands | undefined, delegate: (command: DrawingCmd) => boolean): void {
-    if (undefined === target?.lastExecutedCommand) {
+  function traverseCommands (target: DrawingCmd[] | undefined, delegate: (command: DrawingCmd) => boolean): void {
+    if (undefined === target) {
       return
     }
-    for (let i = 0; i <= target.lastExecutedCommand; i++) {
-      if (delegate(target.commands[i])) {
+    for (let i = 0; i < target.length; i++) {
+      if (delegate(target[i])) {
         break
       }
     }
   }
 
-  replayCommands(currentDrawing)
+  replayCommands(currentCommands)
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -357,7 +352,7 @@ export function drawing (
           canvas.height = Math.floor(entry.contentRect.height)
           draw.center.x = canvas.width / 2
           draw.center.y = canvas.height / 2
-          replayCommands(currentDrawing)
+          replayCommands(currentCommands)
         } else {
           draw.scale = {
             x: canvas.width / entry.contentRect.width,
@@ -496,7 +491,7 @@ export function drawing (
       requestAnimationFrame(() => {
         draw.offset.x += p.x - prevPos.x
         draw.offset.y += p.y - prevPos.y
-        replayCommands(currentDrawing)
+        replayCommands(currentCommands)
         prevPos = p
         if (props.panning !== undefined) {
           props.panning(draw.offset)
@@ -533,15 +528,12 @@ export function drawing (
   }
 
   function findTextCommand (mousePos: Point): DrawTextCmd | undefined {
-    if (currentDrawing === undefined) {
+    if (currentCommands === undefined) {
       return undefined
     }
     const pos = draw.mouseToCanvasPoint(mousePos)
-    if (undefined === currentDrawing.lastExecutedCommand) {
-      return undefined
-    }
-    for (let i = currentDrawing.lastExecutedCommand; i >= 0; i--) {
-      const candidate = currentDrawing.commands[i]
+    for (let i = currentCommands.length - 1; i >= 0; i--) {
+      const candidate = currentCommands[i]
       if (candidate.type === 'text') {
         const cmd = candidate as DrawTextCmd
         if (draw.isPointInText(pos, cmd)) {
@@ -555,7 +547,7 @@ export function drawing (
   function makeLiveTextBox (targetCommandId: CommandUid): void {
     let pos = prevPos
     let foundTextCommand: DrawTextCmd | undefined
-    traverseCommands(currentDrawing, (candidate) => {
+    traverseCommands(currentCommands, (candidate) => {
       if (candidate.id === targetCommandId && candidate.type === 'text') {
         foundTextCommand = candidate as DrawTextCmd
         pos = draw.canvasToMousePoint(foundTextCommand.pos)
@@ -568,6 +560,9 @@ export function drawing (
     const handleSize = 14
 
     const box = document.createElement('div')
+    const editor = document.createElement('div')
+    box.appendChild(editor)
+
     box.style.zIndex = '1'
     box.style.position = 'absolute'
     box.style.left = `calc(${pos.x}px - ${padding}px)`
@@ -585,7 +580,6 @@ export function drawing (
       editor.focus()
     })
 
-    const editor = document.createElement('div')
     editor.style.cursor = 'text'
     editor.style.padding = '0'
     editor.contentEditable = 'true'
@@ -642,13 +636,12 @@ export function drawing (
           }, 0)
         }
         closeLiveTextBox()
-        replayCommands(currentDrawing)
+        replayCommands(currentCommands)
       } else if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault()
         commitTextEdit({ deferCommandStore: false })
       }
     })
-    box.appendChild(editor)
 
     const moveCaretToEnd = (): void => {
       const selection = window.getSelection()
@@ -960,8 +953,17 @@ export function drawing (
     canvas.style.touchAction = readonly ? 'unset' : 'none'
   }
 
-  function replayCommands (drawing: DrawingCommands | undefined): void {
+  function replayCommands (drawing: DrawingCmd[] | undefined): void {
     draw.ctx.reset()
+
+    /*
+    On Safari (checked on 22.08.2025) reset() does not immediatly resets the canvas.
+    The result looks like the "reset" command being cached and executed upon some
+    action like mouse entering the canvas. Anyway with this line undo/redo (instantly
+    adding commands) works good.
+    */
+    draw.ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     traverseCommands(drawing, (command) => {
       if (command.id === undefined || liveTextBox?.cmdId !== command.id) {
         draw.drawCommand(command)
@@ -992,12 +994,9 @@ export function drawing (
           replay = true
         }
       }
-      if (props.drawing !== undefined) {
-        if (
-          currentDrawing?.commands !== props.drawing.commands ||
-          currentDrawing?.lastExecutedCommand !== props.drawing.lastExecutedCommand
-        ) {
-          currentDrawing = props.drawing
+      if (props.commands !== undefined) {
+        if (currentCommands !== props.commands) {
+          currentCommands = props.commands
           replay = true
         }
       }
@@ -1045,6 +1044,7 @@ export function drawing (
           syncPersonCursor = props.personCursorPos
         }
       }
+
       if (props.changingCmdId === undefined || toolChanged) {
         if (liveTextBox !== undefined) {
           commitTextEdit({ deferCommandStore: true })
@@ -1052,13 +1052,16 @@ export function drawing (
         }
       } else {
         if (liveTextBox === undefined) {
-          makeLiveTextBox(props.changingCmdId)
-          replay = true
+          if (props.tool === 'text') {
+            makeLiveTextBox(props.changingCmdId)
+            replay = true
+          }
         } else if (liveTextBox.cmdId !== props.changingCmdId) {
           commitTextEdit({ deferCommandStore: true })
           replay = true
         }
       }
+
       if (syncToolCursor) {
         updateToolCursor()
       }
@@ -1093,7 +1096,7 @@ export function drawing (
                 x: Math.round(oldOffset.x + distance.x * fracDist),
                 y: Math.round(oldOffset.y + distance.y * fracDist)
               }
-              replayCommands(currentDrawing)
+              replayCommands(currentCommands)
               updatePersonCursor()
               if (fracTime >= 1) {
                 isOffsetAnimating = false
@@ -1105,7 +1108,7 @@ export function drawing (
           isOffsetAnimating = true
           requestAnimationFrame(animate)
         } else {
-          replayCommands(currentDrawing)
+          replayCommands(currentCommands)
           updatePersonCursor()
         }
       }

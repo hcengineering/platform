@@ -16,7 +16,7 @@
 import '@testing-library/jest-dom'
 
 import { makeCommandUid, drawing } from '../drawing'
-import type { DrawTextCmd, CommandUid, DrawingCommands, DrawingTool, DrawingProps, DrawingCmd } from '../drawing'
+import type { DrawTextCmd, CommandUid, DrawingTool, DrawingProps, DrawingCmd } from '../drawing'
 
 const fakeCanvasContext = {
   clearRect: jest.fn(),
@@ -123,7 +123,7 @@ describe('drawing module tests', () => {
         readonly: false,
         imageWidth: 40,
         imageHeight: 40,
-        drawing: { commands: [], lastExecutedCommand: undefined }
+        commands: []
       })
 
       expect(drawingBoard).toBeDefined()
@@ -156,10 +156,10 @@ describe('drawing module tests', () => {
         existingTextCommand: DrawTextCmd | undefined,
         overrides: Partial<Parameters<typeof drawing>[1]> = {}
       ): { drawingBoard: ReturnType<typeof drawing>, initialState: DrawingProps } => {
-        const commands: DrawingCommands =
+        const commands =
           existingTextCommand === undefined
-            ? { commands: [], lastExecutedCommand: undefined }
-            : { commands: [existingTextCommand], lastExecutedCommand: 0 }
+            ? []
+            : [existingTextCommand]
 
         const initialState = {
           readonly: false,
@@ -362,6 +362,27 @@ describe('drawing module tests', () => {
         expect(changedCommand?.type).toBe('text')
         expect(changedCommand?.text).toBe(newText)
         expect(changedCommand?.color).toBe(newColor)
+      })
+
+      it('text editor closing with tool change', () => {
+        const { drawingBoard, initialState } = createDrawingBoard(undefined, {})
+
+        const textCmdId = makeCommandUid()
+        drawingBoard.update?.({ ...initialState, tool: 'text' })
+        drawingBoard.update?.({ ...initialState, tool: 'text', changingCmdId: textCmdId })
+
+        jest.runOnlyPendingTimers()
+        expect(isLiveTextEditorPresent(drawingPlugInPoint)).toBe(true)
+
+        drawingBoard.update?.({ ...initialState, tool: 'pen', changingCmdId: textCmdId })
+
+        jest.runOnlyPendingTimers()
+        expect(isLiveTextEditorPresent(drawingPlugInPoint)).toBe(false)
+
+        drawingBoard.update?.({ ...initialState, tool: 'erase', changingCmdId: undefined })
+
+        jest.runOnlyPendingTimers()
+        expect(isLiveTextEditorPresent(drawingPlugInPoint)).toBe(false)
       })
     })
   })

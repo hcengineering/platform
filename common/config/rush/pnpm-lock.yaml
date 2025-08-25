@@ -5418,7 +5418,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-IWj6bajwWcurFjvElhq5ujpZunODZD+/Y26o1LHQAnGAbisDJmyNwSxlzTY2MNQ3nnmv/b5EjIyMQwTN07i8Lw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-j00+daHWZ+3GFc+1dXsCeABWAuTZbIG8mvvvPIiLGIfqVSmkH4trxbsP0appWm+/bkPfwtP0wJjhsQ4d7kgzMQ==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -24700,6 +24700,7 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
       uuid: 8.3.2
+      yjs: 13.6.23
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
