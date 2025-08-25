@@ -85,6 +85,9 @@
     "Voted": "已投票",
     "VotedFor": "投票于",
     "RevokedVote": "撤销投票",
-    "AnonymousQuiz": "匿名测验"
+    "AnonymousQuiz": "匿名测验",
+    "Direct": "私信",
+    "Directs": "私信",
+    "Members": "成员"
   }
 }

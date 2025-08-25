@@ -39,6 +39,7 @@
     "Labels": "标签",
     "Properties": "属性",
     "NoChildren": "没有子级",
-    "ConfigDescription": "用于数据库风格知识管理的扩展。"
+    "ConfigDescription": "用于数据库风格知识管理的扩展。",
+    "AddCollaborators": "添加协作者"
   }
 }

@@ -20,7 +20,7 @@ interface BaseNavigatorConfig {
   types: Array<Ref<MasterTag>>
   groupBySpace?: boolean
   savedViews?: boolean
-  allowCreate?: boolean // for now works only when groupBySpace is true
+  allowCreate?: boolean
   preorder?: Array<{ type: Ref<MasterTag>, order: number }>
 }
 

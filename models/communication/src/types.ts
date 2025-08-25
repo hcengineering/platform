@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Builder, Model, TypeAny, TypeNumber } from '@hcengineering/model'
+import { ArrOf, type Builder, Model, TypeAny, TypeNumber, TypeRef } from '@hcengineering/model'
 import core, { TAttachedDoc, TConfiguration, TDoc } from '@hcengineering/model-core'
 import { type Class, type Domain, DOMAIN_MODEL, type Ref } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
@@ -25,17 +25,19 @@ import {
   type Poll,
   type CustomActivityPresenter,
   type GuestCommunicationSettings,
-  type AppletGetTitleFnResource
+  type AppletGetTitleFnResource,
+  MessagesNavigationAnchors
 } from '@hcengineering/communication'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AppletType } from '@hcengineering/communication-types'
-import { createSystemType } from '@hcengineering/model-card'
+import card, { createSystemType } from '@hcengineering/model-card'
 import type { AnyComponent } from '@hcengineering/ui'
-import { type PersonSpace } from '@hcengineering/contact'
-
-import communication from './plugin'
+import contact, { type PersonSpace } from '@hcengineering/contact'
 import { type Card, type MasterTag } from '@hcengineering/card'
 import { DOMAIN_SETTING } from '@hcengineering/setting'
+import view from '@hcengineering/model-view'
+
+import communication from './plugin'
 
 export const DOMAIN_POLL = 'poll' as Domain
 
@@ -86,6 +88,48 @@ export class TGuestCommunicationSettings extends TConfiguration implements Guest
 export function buildTypes (builder: Builder): void {
   builder.createModel(TMessageAction, TApplet, TPollAnswer, TCustomActivityPresenter, TGuestCommunicationSettings)
 
+  defineDirect(builder)
+  definePoll(builder)
+}
+
+function defineDirect (builder: Builder): void {
+  createSystemType(
+    builder,
+    communication.type.Direct,
+    contact.icon.Contacts,
+    communication.string.Direct,
+    communication.string.Directs,
+    {
+      defaultSection: communication.ids.CardMessagesSection,
+      defaultNavigation: MessagesNavigationAnchors.LatestMessages
+    },
+    PaletteColorIndexes.Lavander
+  )
+
+  builder.createDoc(core.class.Attribute, core.space.Model, {
+    name: 'members',
+    readonly: true, // TODO: remove
+    attributeOf: communication.type.Direct,
+    type: ArrOf(TypeRef(contact.class.Person)),
+    label: communication.string.Members
+  })
+
+  builder.mixin(communication.type.Direct, core.class.Class, view.mixin.ObjectIcon, {
+    component: communication.component.DirectIcon
+  })
+  builder.mixin(communication.type.Direct, core.class.Class, card.mixin.CreateCardExtension, {
+    component: communication.component.CreateDirect,
+    canCreate: communication.function.CanCreateDirect,
+    disableTitle: true,
+    hideSpace: true
+  })
+
+  builder.mixin(communication.type.Direct, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
+}
+
+function definePoll (builder: Builder): void {
   createSystemType(
     builder,
     communication.type.Poll,

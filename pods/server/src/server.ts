@@ -119,6 +119,8 @@ export function start (
         findCollaborators: async () => [],
         findNotifications: async () => [],
         findLabels: async () => [],
+        findThreads: async () => [],
+        findPeers: async () => [],
         unsubscribeQuery: async () => {},
         event: async () => {
           return {}

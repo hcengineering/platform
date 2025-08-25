@@ -85,6 +85,9 @@
     "Voted": "Hlasováno",
     "VotedFor": "Hlasováno pro",
     "RevokedVote": "Zrušeno hlasování",
-    "AnonymousQuiz": "Anonymní test"
+    "AnonymousQuiz": "Anonymní test",
+    "Direct": "Přímý",
+    "Directs": "Přímé",
+    "Members": "Členové"
   }
 }

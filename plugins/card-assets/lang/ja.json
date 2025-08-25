@@ -39,6 +39,7 @@
     "Labels": "ラベル",
     "Properties": "プロパティ",
     "NoChildren": "子がありません",
-    "ConfigDescription": "データベーススタイルのナレッジマネジメント用の拡張機能。"
+    "ConfigDescription": "データベーススタイルのナレッジマネジメント用の拡張機能。",
+    "AddCollaborators": "コラボレーターを追加"
   }
 }

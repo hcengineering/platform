@@ -39,6 +39,7 @@
     "Labels": "Štítky",
     "Properties": "Vlastnosti",
     "NoChildren": "Žádné děti",
-    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze."
+    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
+    "AddCollaborators": "Přidat spolupracovníky"
   }
 }

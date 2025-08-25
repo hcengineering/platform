@@ -31,7 +31,7 @@ export async function generateActivity (
 ): Promise<void> {
   const { hierarchy } = control
 
-  if (tx.space === core.space.DerivedTx) return
+  // if (tx.space === core.space.DerivedTx) return
 
   if (
     hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage) ||
@@ -43,6 +43,9 @@ export async function generateActivity (
   switch (tx._class) {
     case core.class.TxCreateDoc: {
       const card = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Card>)
+      if (card._class === 'chat:masterTag:Thread') {
+        break
+      }
       await createMessages(tx, control, card)
       break
     }
