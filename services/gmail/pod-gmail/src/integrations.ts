@@ -18,10 +18,11 @@ import { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } fr
 import gmail, { gmailIntegrationKind } from '@hcengineering/gmail'
 import { getAccountClient } from '@hcengineering/server-client'
 import setting from '@hcengineering/setting'
+import { IntegrationClient, IntegrationClientImpl } from '@hcengineering/integration-client'
 
 import { serviceToken } from './utils'
 import { getAccountSocialIds } from './accounts'
-import { IntegrationClient, IntegrationClientImpl } from '@hcengineering/integration-client'
+import config from './config'
 
 let integrationClient: IntegrationClient | undefined
 export function getIntegrationClient (): IntegrationClient {
@@ -94,7 +95,9 @@ export async function createIntegrationIfNotExists (
   const connection = await client.connect(socialId, {
     email
   })
-  return await client.integrate(connection, workspace)
+  return await client.integrate(connection, workspace, {
+    integrationVersion: config.Version
+  })
 }
 
 export async function disableIntegration (integration: Integration): Promise<void> {

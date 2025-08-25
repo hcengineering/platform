@@ -393,4 +393,20 @@ export class GmailController {
     }
     return await mailClient.getStateSummary()
   }
+
+  async startSyncForClient (workspace: WorkspaceUuid, socialId: PersonId): Promise<void> {
+    const workspaceClient = this.workspaces.get(workspace)
+    if (workspaceClient === undefined) {
+      this.ctx.info('Workspace client not found for startSync', { workspace, socialId })
+      return
+    }
+    const mailClient = workspaceClient.getGmailClient(socialId)
+    if (mailClient === undefined) {
+      this.ctx.info('Gmail client not found for startSync', { workspace, socialId })
+      return
+    }
+    this.ctx.info('Starting sync for specific client', { workspace, socialId })
+    await mailClient.refreshIntegration()
+    void mailClient.startSync()
+  }
 }

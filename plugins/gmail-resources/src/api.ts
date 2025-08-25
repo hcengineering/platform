@@ -49,6 +49,10 @@ export async function getState (socialId: string): Promise<GmailSyncState | null
   return await request('GET', `/state?socialId=${encodeURIComponent(socialId)}`)
 }
 
+export async function startSync (socialId: string): Promise<void> {
+  await request('POST', `/start-sync?socialId=${encodeURIComponent(socialId)}`)
+}
+
 export async function signout (): Promise<void> {
   await request('GET', '/signout')
 }

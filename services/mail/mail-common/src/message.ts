@@ -18,7 +18,6 @@ import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { type Card } from '@hcengineering/card'
 import { MessageID, MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
-import { PersonSpace } from '@hcengineering/contact'
 import core, {
   type Blob,
   type MeasureContext,
@@ -28,7 +27,8 @@ import core, {
   type TxOperations,
   AccountUuid,
   generateId,
-  RateLimiter
+  RateLimiter,
+  Space
 } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 
@@ -152,7 +152,10 @@ export async function createMessages (
 
   for (const person of messageRecipients) {
     try {
-      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)
+      let spaces = options?.spaceId != null ? [options.spaceId] : undefined
+      if (spaces === undefined) {
+        spaces = (await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)).map((s) => s._id)
+      }
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           config,
@@ -189,7 +192,7 @@ async function saveMessageToSpaces (
   threadLookup: ThreadLookupService,
   wsInfo: WorkspaceLoginInfo,
   mailId: string,
-  spaces: PersonSpace[],
+  spaces: Ref<Space>[],
   participants: PersonId[],
   modifiedBy: PersonId,
   subject: string,
@@ -203,8 +206,7 @@ async function saveMessageToSpaces (
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
   const createdDate = mailMessage.sendOn ?? Date.now()
-  for (const space of spaces) {
-    const spaceId = space._id
+  for (const spaceId of spaces) {
     let isReply = false
     await rateLimiter.add(async () => {
       let threadId = await threadLookup.getThreadId(mailId, spaceId, recipient.email)
@@ -221,7 +223,7 @@ async function saveMessageToSpaces (
       if (threadId === undefined) {
         const newThreadId = await client.createDoc(
           chat.masterTag.Thread,
-          space._id,
+          spaceId,
           {
             title: subject,
             description: content,
@@ -264,7 +266,7 @@ async function saveMessageToSpaces (
       const messageId = await createMailMessage(producer, config, messageData, threadId, options)
       await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
-      await threadLookup.setThreadId(mailId, space._id, threadId, recipient.email)
+      await threadLookup.setThreadId(mailId, spaceId, threadId, recipient.email)
     })
   }
   await rateLimiter.waitProcessing()
