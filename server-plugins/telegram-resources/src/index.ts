@@ -354,7 +354,7 @@ async function processNotification (
       link
     }
 
-    await producer.send(control.workspace.uuid, [record])
+    await producer.send(control.ctx, control.workspace.uuid, [record])
   } catch (err) {
     control.ctx.error('Could not send telegram notification', {
       err,
@@ -376,7 +376,7 @@ async function updateWorkspaceSubscription (
   if (account == null) {
     return
   }
-  await producer.send(control.workspace.uuid, [
+  await producer.send(control.ctx, control.workspace.uuid, [
     {
       type: TelegramQueueMessageType.WorkspaceSubscription,
       account,

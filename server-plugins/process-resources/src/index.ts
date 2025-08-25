@@ -75,7 +75,7 @@ async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control:
   const producer = control.queue.getProducer<ProcessMessage>(control.ctx.newChild('queue', {}), QueueTopic.Process)
 
   try {
-    await producer.send(control.workspace.uuid, [
+    await producer.send(control.ctx, control.workspace.uuid, [
       {
         ...value,
         account: control.txFactory.account

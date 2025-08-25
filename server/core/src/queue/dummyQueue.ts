@@ -5,7 +5,7 @@ import { type ConsumerHandle, type PlatformQueue, type PlatformQueueProducer, ty
  * A dummy implementation of PlatformQueueProducer for testing and development
  */
 class DummyQueueProducer<T> implements PlatformQueueProducer<T> {
-  async send (id: WorkspaceUuid | string, msgs: T[]): Promise<void> {
+  async send (ctx: MeasureContext, id: WorkspaceUuid | string, msgs: T[]): Promise<void> {
     await Promise.resolve()
   }
 
@@ -39,7 +39,8 @@ export class DummyQueue implements PlatformQueue {
     topic: QueueTopic | string,
     groupId: string,
     onMessage: (
-      msg: { workspace: WorkspaceUuid, value: T }[],
+      ctx: MeasureContext,
+      msg: { workspace: WorkspaceUuid, value: T },
       queue: {
         pause: () => void
         heartbeat: () => Promise<void>

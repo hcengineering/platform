@@ -128,10 +128,10 @@ export class MigrateClientImpl implements MigrationClient {
   }
 
   async fullReindex (): Promise<void> {
-    await this.queue.send(this.wsIds.uuid, [workspaceEvents.fullReindex()])
+    await this.queue.send(this.ctx, this.wsIds.uuid, [workspaceEvents.fullReindex()])
   }
 
   async reindex (domain: Domain, classes: Ref<Class<Doc>>[]): Promise<void> {
-    await this.queue.send(this.wsIds.uuid, [workspaceEvents.reindex(domain, classes)])
+    await this.queue.send(this.ctx, this.wsIds.uuid, [workspaceEvents.reindex(domain, classes)])
   }
 }

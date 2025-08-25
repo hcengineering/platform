@@ -32,6 +32,8 @@ interface Config {
   serviceId: string
   mailUrl: string
   mailAuth: string
+  footerMessage: string
+  outgoingSyncStartDate: Date // ISO date string - messages from mail channel before this date will not attempt to be sent to Gmail
 }
 
 const config: Config = {
@@ -69,7 +71,9 @@ const config: Config = {
     }
     throw Error('MAIL_URL env var is not set')
   })(),
-  mailAuth: process.env.MAIL_AUTH ?? ''
+  mailAuth: process.env.MAIL_AUTH ?? '',
+  footerMessage: process.env.FOOTER_MESSAGE ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
+  outgoingSyncStartDate: new Date(process.env.OUTGOING_SYNC_START_DATE ?? '2025-08-20T00:00:00.000Z')
 }
 
 export default config

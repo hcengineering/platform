@@ -49,11 +49,16 @@ export class QueueMiddleware extends BaseMiddleware {
       this.connected = undefined
     }
 
+    const meta = ctx.extractMeta()
+
     await Promise.all([
       this.provideBroadcast(ctx),
       this.txProducer.send(
+        ctx,
         this.context.workspace.uuid,
-        ctx.contextData.broadcast.txes.concat(ctx.contextData.broadcast.queue)
+        ctx.contextData.broadcast.txes
+          .concat(ctx.contextData.broadcast.queue)
+          .map((tx) => ({ ...tx, meta: { ...(tx.meta ?? {}), ...meta } }))
       )
     ])
   }

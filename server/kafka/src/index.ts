@@ -98,7 +98,7 @@ class PlatformQueueImpl implements PlatformQueue {
     ctx: MeasureContext,
     topic: QueueTopic | string,
     groupId: string,
-    onMessage: (msg: ConsumerMessage<T>[], queue: ConsumerControl) => Promise<void>,
+    onMessage: (ctx: MeasureContext, msg: ConsumerMessage<T>, queue: ConsumerControl) => Promise<void>,
     options?: {
       fromBegining?: boolean
     }
@@ -184,7 +184,7 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
     return this.queue
   }
 
-  async send (workspace: WorkspaceUuid, msgs: any[], partitionKey?: string): Promise<void> {
+  async send (ctx: MeasureContext, workspace: WorkspaceUuid, msgs: any[], partitionKey?: string): Promise<void> {
     if (this.connected !== undefined) {
       await this.connected
       this.connected = undefined
@@ -196,7 +196,8 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
           key: Buffer.from(`${partitionKey ?? workspace}`),
           value: Buffer.from(JSON.stringify(m)),
           headers: {
-            workspace
+            workspace,
+            meta: JSON.stringify(ctx.extractMeta())
           }
         }))
       })
@@ -222,7 +223,11 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
     readonly config: QueueConfig,
     private readonly topic: QueueTopic | string,
     groupId: string,
-    private readonly onMessage: (msg: ConsumerMessage<any>[], queue: ConsumerControl) => Promise<void>,
+    private readonly onMessage: (
+      ctx: MeasureContext,
+      msg: ConsumerMessage<any>,
+      queue: ConsumerControl
+    ) => Promise<void>,
     private readonly options?: {
       fromBegining?: boolean
     }
@@ -245,12 +250,21 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
       eachMessage: async ({ topic, message, pause, heartbeat }) => {
         const msgKey = message.key?.toString() ?? ''
         const msgData = JSON.parse(message.value?.toString() ?? '{}')
+        const meta = JSON.parse(message.headers?.meta?.toString() ?? '{}')
         const workspace = (message.headers?.workspace?.toString() ?? msgKey) as WorkspaceUuid
 
         let to = 1
         while (true) {
           try {
-            await this.onMessage([{ workspace, value: [msgData] }], { heartbeat, pause })
+            await this.ctx.with(
+              'handle-msg',
+              {},
+              (ctx) => this.onMessage(ctx, { workspace, value: msgData }, { heartbeat, pause }),
+              {},
+              {
+                meta
+              }
+            )
             break
           } catch (err: any) {
             this.ctx.error('failed to process message', { err, msgKey, msgData, workspace })
@@ -262,39 +276,6 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
           }
         }
       }
-      // , // TODO: Finish testinf
-      // eachBatch: async ({ batch, pause, heartbeat, resolveOffset }) => {
-      //   const queueInfo = {
-      //     pause,
-      //     heartbeat
-      //   }
-      //   const batchMessages = batch.messages
-
-      //   const currentMsg: ConsumerMessage<any> = {
-      //     id: '',
-      //     value: []
-      //   }
-      //   let lastOffset: string = ' '
-
-      //   const sendLast = async (): Promise<void> => {
-      //     await this.onMessage([currentMsg], queueInfo)
-      //     // Mark last offset as cusomed
-      //     resolveOffset(lastOffset)
-      //     await heartbeat()
-      //   }
-
-      //   for (const v of batchMessages) {
-      //     const id = v.key?.toString() ?? ''
-      //     if (currentMsg.id !== id && currentMsg.value.length > 0) {
-      //       await sendLast() // Send last message
-      //       currentMsg.id = id
-      //       currentMsg.value = []
-      //     }
-      //     lastOffset = v.offset
-      //     currentMsg.value.push(JSON.parse(v.value?.toString() ?? '{}'))
-      //   }
-      //   await sendLast()
-      // }
     })
   }
 

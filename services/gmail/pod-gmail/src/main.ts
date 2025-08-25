@@ -199,6 +199,33 @@ export const main = async (): Promise<void> => {
           res.status(500).send({ error: err.message })
         }
       }
+    },
+    {
+      endpoint: '/start-sync',
+      type: 'post',
+      handler: async (req, res) => {
+        try {
+          const token = extractToken(req.headers)
+
+          if (token === undefined) {
+            res.status(401).send()
+            return
+          }
+
+          const { workspace } = decodeToken(token)
+          const socialId = req.query.socialId as PersonId | undefined
+          ctx.info('Sync request received', { workspace, socialId })
+          if (socialId == null || socialId === '') {
+            res.status(400).send({ error: 'Missing socialId param' })
+            return
+          }
+          await gmailController.startSyncForClient(workspace, socialId)
+          res.send({ success: true })
+        } catch (err: any) {
+          ctx.error('Failed to start sync for client', { message: err.message })
+          res.status(500).send({ error: err.message })
+        }
+      }
     }
   ]
 

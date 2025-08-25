@@ -23,7 +23,7 @@ import core, {
   TxOperations,
   WorkspaceUuid
 } from '@hcengineering/core'
-import gmail, { type NewMessage } from '@hcengineering/gmail'
+import gmail, { gmailIntegrationKind, type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
@@ -49,7 +49,7 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
 import { type ProjectCredentials, type Token, type User, type SyncState, GmailMessageType } from './types'
-import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery } from './utils'
+import { addFooter, isToken, serviceToken, getKvsClient, createGmailSearchQuery, getSpaceId } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
 import { createIntegrationIfNotExists, disableIntegration, removeIntegration } from './integrations'
@@ -113,7 +113,7 @@ export class GmailClient {
   private readonly messageManager: IMessageManager
   private readonly syncManager: SyncManager
   private readonly integrationToken: string
-  private integration: Integration | undefined = undefined
+  private integration: Integration | null | undefined = undefined
   private syncStarted: boolean = false
   private channel: Card | undefined = undefined
 
@@ -310,7 +310,19 @@ export class GmailClient {
     try {
       this.integration = await createIntegrationIfNotExists(this.socialId._id, this.user.workspace, this.email)
     } catch (err: any) {
-      this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
+      this.ctx.error('Failed to create integration', { socialId: this.socialId, workspace: this.workspace })
+    }
+  }
+
+  async refreshIntegration (): Promise<void> {
+    try {
+      this.integration = await this.accountClient.getIntegration({
+        socialId: this.socialId._id,
+        workspaceUuid: this.user.workspace,
+        kind: gmailIntegrationKind
+      })
+    } catch (err: any) {
+      this.ctx.error('Failed to refresh integration', { socialId: this.socialId, workspace: this.workspace })
     }
   }
 
@@ -366,6 +378,17 @@ export class GmailClient {
       const personId = message.socialId
       if (personId !== this.socialId._id && !this.allSocialIds.has(personId)) {
         return
+      }
+
+      if (!this.isConfigured()) {
+        return
+      }
+
+      if (message.date !== undefined) {
+        const messageDate = message.date instanceof Date ? message.date : new Date(message.date)
+        if (messageDate < config.OutgoingSyncStartDate) {
+          return
+        }
       }
       const email = await this.getEmail()
       const thread = await this.client.findOne<Card>(chat.masterTag.Thread, { _id: message.cardId })
@@ -483,7 +506,7 @@ export class GmailClient {
   }
 
   async disableIntegration (byError: boolean = false): Promise<void> {
-    if (this.integration !== undefined) {
+    if (this.integration != null) {
       if (byError) {
         await disableIntegration(this.integration)
       } else {
@@ -502,10 +525,25 @@ export class GmailClient {
       return
     }
 
+    // Check for spaceId requirement in v2 configurations
+    if (!this.isConfigured()) {
+      this.ctx.info('Cannot start sync: spaceId is required for v2 configuration', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        email: this.email,
+        integrationVersion: this.integration?.data?.integrationVersion
+      })
+      return
+    }
+
     try {
       this.syncStarted = true
       this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
-      await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
+      await this.syncManager.sync(
+        this.socialId._id,
+        { noNotify: true, spaceId: getSpaceId(this.integration) },
+        this.email
+      )
       await this.watch()
       // recall every 24 hours https://developers.google.com/gmail/api/guides/push
       if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
@@ -524,8 +562,15 @@ export class GmailClient {
   }
 
   async sync (options: SyncOptions): Promise<void> {
+    if (!this.isConfigured()) {
+      return
+    }
     this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.syncManager.sync(this.socialId._id, options, this.email)
+    const syncOptions = {
+      ...options,
+      spaceId: getSpaceId(this.integration)
+    }
+    await this.syncManager.sync(this.socialId._id, syncOptions, this.email)
   }
 
   async newChannel (value: string): Promise<void> {
@@ -683,6 +728,11 @@ export class GmailClient {
     }
   }
 
+  private isConfigured (): boolean {
+    if (this.integration?.data?.integrationVersion !== 'v2') return true
+    return getSpaceId(this.integration) !== undefined
+  }
+
   async getStateSummary (): Promise<SyncState> {
     let totalMessages: number | null | undefined
     try {
@@ -702,7 +752,8 @@ export class GmailClient {
       status: this.syncStarted ? 'active' : 'inactive',
       email: this.email,
       totalMessages,
-      syncInfo: syncStatus
+      syncInfo: syncStatus,
+      isConfigured: this.isConfigured()
     }
   }
 

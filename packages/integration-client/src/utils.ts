@@ -30,3 +30,7 @@ export function isSameIntegrationEvent (event: IntegrationEventData, integration
     event.integration?.workspaceUuid === integration.workspaceUuid
   )
 }
+
+export function getIntegrationConfig (integration: Integration): Record<string, any> | undefined {
+  return integration?.data?.config
+}

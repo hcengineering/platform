@@ -90,6 +90,7 @@ export interface GmailSyncState {
   totalMessages: number | null | undefined
   lastSynchronization?: Date | null
   error?: string
+  isConfigured?: boolean
 }
 
 /**
