@@ -108,6 +108,7 @@ function defineDirect (builder: Builder): void {
 
   builder.createDoc(core.class.Attribute, core.space.Model, {
     name: 'members',
+    readonly: true, // TODO: remove
     attributeOf: communication.type.Direct,
     type: ArrOf(TypeRef(contact.class.Person)),
     label: communication.string.Members
@@ -121,6 +122,10 @@ function defineDirect (builder: Builder): void {
     canCreate: communication.function.CanCreateDirect,
     disableTitle: true,
     hideSpace: true
+  })
+
+  builder.mixin(communication.type.Direct, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
   })
 }
 
