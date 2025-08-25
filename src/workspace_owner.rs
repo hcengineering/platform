@@ -20,7 +20,6 @@ use crate::{config::CONFIG, redis::deprecated_symbol};
 
 // common checker
 pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(), &'static str> {
-
     if deprecated_symbol(key) {
         return Err("Invalid key: deprecated symbols");
     }
@@ -46,12 +45,11 @@ pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(),
     if path_ws.is_empty() {
         return Err("Invalid key: missing workspace");
     }
-        
+
     let path_ws_uuid = Uuid::parse_str(path_ws).map_err(|_| "Invalid workspace UUID in key")?;
     if jwt_workspace != &path_ws_uuid {
         return Err("Workspace mismatch");
     }
-        
-    Ok(())
 
+    Ok(())
 }

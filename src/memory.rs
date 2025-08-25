@@ -1,4 +1,3 @@
-
 //
 // Copyright © 2025 Hardcore Engineering Inc.
 //
@@ -14,12 +13,19 @@
 // limitations under the License.
 //
 
-use std::{collections::HashMap, sync::Arc, time::{SystemTime, UNIX_EPOCH}};
-use tokio::{sync::RwLock, time::{self, Duration}};
 use crate::{
     config::CONFIG,
-    hub_service::{broadcast_event, HubState, RedisEvent, RedisEventAction},
-    redis::{deprecated_symbol_error, error, RedisArray, SaveMode, Ttl},
+    hub_service::{HubState, RedisEvent, RedisEventAction, broadcast_event},
+    redis::{RedisArray, SaveMode, Ttl, deprecated_symbol_error, error},
+};
+use std::{
+    collections::HashMap,
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
+use tokio::{
+    sync::RwLock,
+    time::{self, Duration},
 };
 
 #[derive(Debug, Clone)]
@@ -34,9 +40,10 @@ pub struct MemoryBackend {
 }
 
 impl MemoryBackend {
-
     pub fn new() -> Self {
-        Self { inner: Arc::new(RwLock::new(HashMap::new())) }
+        Self {
+            inner: Arc::new(RwLock::new(HashMap::new())),
+        }
     }
 
     pub fn spawn_ticker(&self, hub_state: Arc<RwLock<HubState>>) {
@@ -70,13 +77,20 @@ impl MemoryBackend {
                 }; // write-lock free
 
                 for k in expired_keys {
-                    broadcast_event(&hub_state,RedisEvent { message: RedisEventAction::Expired, key: k },None).await;
+                    broadcast_event(
+                        &hub_state,
+                        RedisEvent {
+                            message: RedisEventAction::Expired,
+                            key: k,
+                        },
+                        None,
+                    )
+                    .await;
                 }
             }
         });
     }
 }
-
 
 /// memory_list(&backend, "prefix/") → Vec<RedisArray>
 pub async fn memory_list(
@@ -96,7 +110,9 @@ pub async fn memory_list(
             continue;
         }
 
-        if k.strip_prefix(key_prefix).map_or(false, |s| s.contains('$')) {
+        if k.strip_prefix(key_prefix)
+            .map_or(false, |s| s.contains('$'))
+        {
             continue;
         }
 
@@ -113,6 +129,14 @@ pub async fn memory_list(
     }
 
     Ok(results)
+}
+
+/// memory_info(&backend)
+pub async fn memory_info(backend: &MemoryBackend) -> redis::RedisResult<String> {
+    let map = backend.inner.read().await;
+    let keys = map.len();
+    let memory: usize = map.values().map(|v| v.data.len()).sum();
+    Ok(format!("{} keys, {} bytes", keys, memory))
 }
 
 /// memory_read(&backend, "key")
@@ -145,11 +169,13 @@ pub async fn memory_read(
 
 /// TTL in sec
 fn compute_ttl_u8(ttl: Option<Ttl>) -> redis::RedisResult<u8> {
-
     let sec_usize = match ttl {
         Some(Ttl::Sec(secs)) => secs,
         Some(Ttl::At(timestamp)) => {
-            let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
             if timestamp <= now {
                 return error(400, "TTL timestamp exceeds MAX_TTL limit");
             }
@@ -178,7 +204,6 @@ pub async fn memory_save<V: AsRef<[u8]>>(
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
 ) -> redis::RedisResult<()> {
-
     // u8 - String
     let value = match std::str::from_utf8(bytes_value.as_ref()) {
         Ok(s) => s.to_string(),
@@ -188,7 +213,10 @@ pub async fn memory_save<V: AsRef<[u8]>>(
     // If max_size != 0 and value size > max_size, return error
     let max_size = CONFIG.max_size.unwrap_or(0);
     if max_size != 0 && value.len() > max_size {
-        return error(400, format!("Value in memory mode must be less than {} bytes", max_size));
+        return error(
+            400,
+            format!("Value in memory mode must be less than {} bytes", max_size),
+        );
     }
 
     deprecated_symbol_error(key)?;
@@ -205,19 +233,34 @@ pub async fn memory_save<V: AsRef<[u8]>>(
 
     match mode {
         SaveMode::Upsert => {
-            map.insert(key.to_string(), Entry { data: val, ttl: sec_u8 });
+            map.insert(
+                key.to_string(),
+                Entry {
+                    data: val,
+                    ttl: sec_u8,
+                },
+            );
         }
         SaveMode::Insert => {
             if map.contains_key(key) {
                 return error(412, "Insert: key already exists");
             }
-            map.insert(key.to_string(), Entry { data: val, ttl: sec_u8 });
+            map.insert(
+                key.to_string(),
+                Entry {
+                    data: val,
+                    ttl: sec_u8,
+                },
+            );
         }
         SaveMode::Update => {
             let Some(existing) = map.get_mut(key) else {
                 return error(404, "Update: key does not exist");
             };
-            *existing = Entry { data: val, ttl: sec_u8 };
+            *existing = Entry {
+                data: val,
+                ttl: sec_u8,
+            };
         }
         SaveMode::Equal(ref expected_md5) => {
             let Some(existing) = map.get_mut(key) else {
@@ -227,10 +270,16 @@ pub async fn memory_save<V: AsRef<[u8]>>(
             if &actual_md5 != expected_md5 {
                 return error(
                     412,
-                    format!("md5 mismatch, current: {}, expected: {}", actual_md5, expected_md5),
+                    format!(
+                        "md5 mismatch, current: {}, expected: {}",
+                        actual_md5, expected_md5
+                    ),
                 );
             }
-            *existing = Entry { data: val, ttl: sec_u8 };
+            *existing = Entry {
+                data: val,
+                ttl: sec_u8,
+            };
         }
     }
 
@@ -267,7 +316,10 @@ pub async fn memory_delete(
                     if &actual_md5 != expected_md5 {
                         return error(
                             412,
-                            format!("md5 mismatch, current: {}, expected: {}", actual_md5, expected_md5),
+                            format!(
+                                "md5 mismatch, current: {}, expected: {}",
+                                actual_md5, expected_md5
+                            ),
                         );
                     }
                 }

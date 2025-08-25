@@ -24,7 +24,7 @@ use actix_web::{
 
 use crate::{
     db::Db,
-    redis::{SaveMode, Ttl}
+    redis::{SaveMode, Ttl},
 };
 
 pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
@@ -102,7 +102,6 @@ pub async fn put(
     trace!(key, "put request");
 
     async move || -> anyhow::Result<HttpResponse> {
-
         // TTL logic
         let mut ttl = None;
         if let Some(x) = req.headers().get("HULY-TTL") {
@@ -163,7 +162,6 @@ pub async fn delete(
     trace!(key, "delete request");
 
     async move || -> anyhow::Result<HttpResponse> {
-
         // MODE logic
         let mut mode = Some(SaveMode::Upsert);
         if let Some(h) = req.headers().get("If-Match") {

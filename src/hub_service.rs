@@ -14,14 +14,14 @@
 //
 
 use std::collections::{HashMap, HashSet};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use actix::prelude::*;
 
 use redis::aio::MultiplexedConnection;
 use serde::Serialize;
-use tokio::sync::{RwLock};
+use tokio::sync::RwLock;
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -77,7 +77,10 @@ impl HubState {
     }
     pub fn disconnect(&mut self, session_id: SessionId) {
         self.sessions.remove(&session_id);
-        self.subs.retain(|_, ids| { ids.remove(&session_id); !ids.is_empty() });
+        self.subs.retain(|_, ids| {
+            ids.remove(&session_id);
+            !ids.is_empty()
+        });
     }
     pub fn subscribe(&mut self, session_id: SessionId, key: String) {
         self.subs.entry(key).or_default().insert(session_id);
@@ -97,7 +100,7 @@ impl HubState {
         });
     }
     pub fn subscribe_list(&self, session_id: SessionId) -> Vec<String> {
-        self.subs   
+        self.subs
             .iter()
             .filter_map(|(key, ids)| {
                 if ids.contains(&session_id) {
@@ -124,9 +127,7 @@ impl HubState {
         }
         out
     }
-
 }
-
 
 // Send messages about new db events
 pub async fn broadcast_event(
@@ -135,9 +136,8 @@ pub async fn broadcast_event(
     value: Option<String>,
 ) {
     // Collect
-    let recipients: Vec<Recipient<ServerMessage>> = {
-        hub_state.read().await.recipients_for_key(&ev.key)
-    };
+    let recipients: Vec<Recipient<ServerMessage>> =
+        { hub_state.read().await.recipients_for_key(&ev.key) };
     if recipients.is_empty() {
         return;
     }

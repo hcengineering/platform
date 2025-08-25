@@ -13,7 +13,10 @@
 // limitations under the License.
 //
 
-use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use ::redis::Msg;
 use tokio::sync::RwLock;
@@ -21,8 +24,8 @@ use tokio_stream::StreamExt;
 use tracing::*;
 
 use crate::{
-    config::{RedisMode, CONFIG},
-    hub_service::{push_event, HubState, RedisEvent, RedisEventAction},
+    config::{CONFIG, RedisMode},
+    hub_service::{HubState, RedisEvent, RedisEventAction, push_event},
 };
 
 #[derive(serde::Serialize)]
@@ -81,6 +84,50 @@ pub fn deprecated_symbol_error(s: &str) -> redis::RedisResult<()> {
         Ok(())
     }
 }
+
+
+                            // if CONFIG.memory_mode == Some(true) {
+
+                            //     // memory_status
+                            //     let map = hub_state.read().await;
+                            //     let memory_keys = format!("{} keys in memory", map.len());
+                            //     let memory_bytes = format!("{} bytes used", map.values().map(|v| v.data.len()).sum::<usize>());
+                            //     format!("{} keys, {} bytes", memory_keys, memory_bytes)
+                            // } else {
+                            //     let mut conn = db_backend.redis_connection.lock().await;
+                             // };
+
+/// redis_info(&connection)
+pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<String> {
+    let info: String = redis::cmd("INFO").query_async(conn).await?;
+
+    // Разбираем её построчно
+    let mut redis_keys: Option<usize> = None;
+    let mut redis_bytes: Option<usize> = None;
+
+    for line in info.lines() {
+        if line.starts_with("db0:") {
+            // db0:keys=152,expires=10,avg_ttl=456789
+            if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys=")) {
+                if let Some(val) = keys_part.strip_prefix("keys=") {
+                    redis_keys = val.parse::<usize>().ok();
+                }
+            }
+        }
+        if line.starts_with("used_memory:") {
+            if let Some(val) = line.strip_prefix("used_memory:") {
+                redis_bytes = val.parse::<usize>().ok();
+            }
+        }
+    }
+
+    Ok(format!(
+        "{} keys, {} bytes",
+        redis_keys.unwrap_or(0),
+        redis_bytes.unwrap_or(0)
+    ))
+}
+
 
 /// redis_list(&connection,prefix)
 pub async fn redis_list(
@@ -199,7 +246,10 @@ pub async fn redis_save<T: ToRedisArgs>(
     // If max_size != 0 and value size > max_size, return error
     let max_size = CONFIG.max_size.unwrap_or(0);
     if max_size != 0 && value.to_redis_args().iter().map(|a| a.len()).sum::<usize>() > max_size {
-        return error(400, format!("Value in memory mode must be less than {} bytes", max_size));
+        return error(
+            400,
+            format!("Value in memory mode must be less than {} bytes", max_size),
+        );
     }
 
     // TTL logic
@@ -366,7 +416,8 @@ impl TryFrom<Msg> for RedisEvent {
     }
 }
 
-pub async fn receiver(redis_client: Client,
+pub async fn receiver(
+    redis_client: Client,
     // hub: HubServiceHandle
     hub_state: Arc<RwLock<HubState>>,
 ) -> anyhow::Result<()> {
@@ -397,7 +448,6 @@ pub async fn receiver(redis_client: Client,
                 // debug!("redis event: {ev:#?}");
 
                 push_event(&hub_state, &mut redis, ev).await;
-
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

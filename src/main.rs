@@ -34,7 +34,7 @@ mod redis;
 mod workspace_owner;
 
 mod hub_service;
-use hub_service::{HubState};
+use hub_service::HubState;
 
 use config::CONFIG;
 
@@ -87,7 +87,6 @@ async fn check_workspace(
     mut request: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
-
     if CONFIG.no_authorization.unwrap_or(false) {
         return next.call(request).await;
     }
@@ -162,20 +161,40 @@ async fn main() -> anyhow::Result<()> {
                     .route("/{key:.+}", web::put().to(handlers_http::put))
                     .route("/{key:.+}", web::delete().to(handlers_http::delete)),
             )
-            .route("/ws",web::get().to(handlers_ws::handler)
+            .route(
+                "/ws",
+                web::get()
+                    .to(handlers_ws::handler)
                     .wrap(middleware::from_fn(extract_claims)),
             ) // WebSocket
-            .route("/status", web::get().to({
-                move |hub_state: web::Data<Arc<RwLock<HubState>>>| {
-                    let hub_state = hub_state.clone();
-                    async move {
-                        let count = hub_state.read().await.count();
-                        Ok::<_, actix_web::Error>(
-                            HttpResponse::Ok().json(json!({ "websockets": count, "status": "OK" })),
-                        )
+            .route(
+                "/status",
+                web::get().to({
+                    move |
+                        hub_state: web::Data<Arc<RwLock<HubState>>>,
+                        db_backend: web::Data<Db>,
+                    | {
+                        let hub_state = hub_state.clone();
+                        async move {
+                            let info = db_backend.info().await.unwrap_or_else(|_| "error".to_string());   
+                            let count = hub_state.read().await.count();
+                            Ok::<_, actix_web::Error>(
+                                HttpResponse::Ok()
+                                    .json(json!({
+                                        "memory_info": info,
+                                        "db_mode": if CONFIG.memory_mode == Some(true) {
+                                            "memory"
+                                        } else {
+                                            "redis"
+                                        },
+                                        "websockets": count,
+                                        "status": "OK",
+                                    })),
+                            )
+                        }
                     }
-                }
-            }))
+                }),
+            )
     })
     .bind(socket)?
     .run();

@@ -175,6 +175,11 @@ Size of data is limited to some reasonable size
 
 - Answer: `{"action":"list","result":["00000000-0000-0000-0000-000000000001/foo/bar1","00000000-0000-0000-0000-000000000001/foo/bar2"]}`
 
+```INFO```
+    - type: "info"
+
+- Answer: `{"db_mode":"memory","memory_info":"1231 keys, 80345 bytes","status":"OK","websockets":164}`
+
 
 ** Server to Client ** subscribed events:
 

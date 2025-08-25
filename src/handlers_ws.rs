@@ -15,15 +15,19 @@
 
 use std::sync::Arc;
 
-use tokio::sync::RwLock;
 use actix::{Actor, ActorContext, ActorFutureExt, AsyncContext, StreamHandler, fut};
 use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use tokio::sync::RwLock;
 
 use crate::{
-    config::CONFIG, db::Db, hub_service::{new_session_id, HubState, ServerMessage, SessionId}, redis::{ SaveMode, Ttl }, workspace_owner::check_workspace_core
+    config::CONFIG,
+    db::Db,
+    hub_service::{HubState, ServerMessage, SessionId, new_session_id},
+    redis::{SaveMode, Ttl},
+    workspace_owner::check_workspace_core,
 };
 
 #[derive(Serialize, Default)]
@@ -116,6 +120,11 @@ pub enum WsCommand {
         #[serde(default)]
         correlation: Option<String>,
     },
+
+    Info {
+        #[serde(default)]
+        correlation: Option<String>,
+    }
 }
 
 use hulyrs::services::jwt::Claims;
@@ -139,7 +148,8 @@ impl Actor for WsSession {
         ctx.spawn(
             actix::fut::wrap_future(async move {
                 hub_state.write().await.connect(id, recipient);
-            }).map(|_, _, _| ())
+            })
+            .map(|_, _, _| ()),
         );
         tracing::info!("WebSocket connected: {}", id);
     }
@@ -183,7 +193,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
 
 /// All logic
 impl WsSession {
-
     fn fut_send(
         &mut self,
         ctx: &mut ws::WebsocketContext<Self>,
@@ -211,9 +220,26 @@ impl WsSession {
 
     /// When valid JSON recieved for WsSession
     fn handle_command(&mut self, cmd: WsCommand, ctx: &mut ws::WebsocketContext<Self>) {
-        
-        // PUT
+
         match cmd {
+
+            // INFO
+            WsCommand::Info { correlation } => {
+                tracing::info!("INFO");
+                let base = serde_json::json!(ReturnBase {
+                    action: "info",
+                    correlation: correlation.as_deref(),
+                    ..Default::default()
+                });
+                let db = self.db.clone();
+                let fut = async move {
+                    let info = db.info().await.map_err(|e| e.to_string())?;
+                    Ok(serde_json::json!({ "result": info }))
+                };
+                self.fut_send(ctx, fut, base);
+            }
+
+            // PUT
             WsCommand::Put {
                 key,
                 data,
@@ -242,7 +268,9 @@ impl WsSession {
 
                 let fut = async move {
                     // Check workspace
-                    if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                    if let Err(e) = check_workspace_core(claims, &key) {
+                        return Err(e.into());
+                    }
 
                     // TTL logic
                     let real_ttl = if let Some(secs) = ttl {
@@ -304,7 +332,9 @@ impl WsSession {
 
                 let fut = async move {
                     // Check workspace
-                    if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                    if let Err(e) = check_workspace_core(claims, &key) {
+                        return Err(e.into());
+                    }
 
                     // MODE logic
                     let mut mode = Some(SaveMode::Upsert);
@@ -319,9 +349,7 @@ impl WsSession {
                     }
 
                     // Delete
-                    let deleted = db.delete(&key, mode)
-                        .await
-                        .map_err(|e| e.to_string())?;
+                    let deleted = db.delete(&key, mode).await.map_err(|e| e.to_string())?;
 
                     if deleted {
                         Ok(json!({"result": "OK"}))
@@ -348,13 +376,16 @@ impl WsSession {
 
                 let fut = async move {
                     // Check workspace
-                    if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                    if let Err(e) = check_workspace_core(claims, &key) {
+                        return Err(e.into());
+                    }
 
                     // Read
                     let data_opt = db.read(&key).await.map_err(|e| e.to_string())?;
                     match data_opt {
                         Some(data) => {
-                            let data_value = serde_json::to_value(&data).map_err(|e| e.to_string())?;
+                            let data_value =
+                                serde_json::to_value(&data).map_err(|e| e.to_string())?;
                             Ok(json!({"result": data_value}))
                         }
                         None => Err("not found".into()),
@@ -379,7 +410,9 @@ impl WsSession {
 
                 let fut = async move {
                     // Check workspace
-                    if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                    if let Err(e) = check_workspace_core(claims, &key) {
+                        return Err(e.into());
+                    }
                     // List
                     let data = db.list(&key).await.map_err(|e| e.to_string())?;
                     Ok(json!({ "result": data }))
@@ -393,10 +426,10 @@ impl WsSession {
                 tracing::info!("SUB {}", &key); //  correlation: {:?} , &correlation
 
                 let base = serde_json::json!(ReturnBase {
-                     action: "sub",
-                     // key: Some(key.as_str()),
-                     correlation: correlation.as_deref(),
-                     ..Default::default()
+                    action: "sub",
+                    // key: Some(key.as_str()),
+                    correlation: correlation.as_deref(),
+                    ..Default::default()
                 });
 
                 let hub_state = self.hub_state.clone();
@@ -405,7 +438,9 @@ impl WsSession {
 
                 let fut = async move {
                     // Check workspace
-                    if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                    if let Err(e) = check_workspace_core(claims, &key) {
+                        return Err(e.into());
+                    }
 
                     hub_state.write().await.subscribe(id, key);
                     Ok(json!({ "result": "OK" }))
@@ -435,7 +470,9 @@ impl WsSession {
                         Ok(json!({ "result": "OK" }))
                     } else {
                         // Check workspace
-                        if let Err(e) = check_workspace_core(claims, &key) { return Err(e.into()); }
+                        if let Err(e) = check_workspace_core(claims, &key) {
+                            return Err(e.into());
+                        }
 
                         hub_state.write().await.unsubscribe(id, key);
                         Ok(json!({ "result": "OK" }))
@@ -461,8 +498,7 @@ impl WsSession {
                     Ok(json!({ "result": keys }))
                 };
                 self.fut_send(ctx, fut, base);
-            }
-            // End of commands
+            } // End of commands
         }
     }
 }
@@ -473,11 +509,15 @@ pub async fn handler(
     db: web::Data<Db>,
     hub_state: web::Data<Arc<RwLock<HubState>>>,
 ) -> Result<HttpResponse, Error> {
-
     let claims = if CONFIG.no_authorization == Some(true) {
         None
     } else {
-        Some(req.extensions().get::<Claims>().expect("Missing claims").to_owned())
+        Some(
+            req.extensions()
+                .get::<Claims>()
+                .expect("Missing claims")
+                .to_owned(),
+        )
     };
 
     let session = WsSession {

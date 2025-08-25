@@ -1,9 +1,9 @@
-use std::sync::Arc;
+use std::{sync::Arc};
 
 use crate::{
-    hub_service::{broadcast_event, HubState, RedisEvent, RedisEventAction},
-    memory::{memory_delete, memory_list, memory_read, memory_save, MemoryBackend},
-    redis::{redis_delete, redis_list, redis_read, redis_save, RedisArray, SaveMode, Ttl}
+    hub_service::{HubState, RedisEvent, RedisEventAction, broadcast_event},
+    memory::{MemoryBackend, memory_delete, memory_list, memory_read, memory_save, memory_info},
+    redis::{RedisArray, SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save, redis_info},
 };
 use ::redis::aio::MultiplexedConnection;
 use tokio::sync::RwLock;
@@ -21,14 +21,31 @@ enum DbInner {
 }
 
 impl Db {
-
     pub fn new_memory(m: MemoryBackend, hub: Arc<RwLock<HubState>>) -> Self {
-        Self { inner: DbInner::Memory(m), hub }
+        Self {
+            inner: DbInner::Memory(m),
+            hub,
+        }
     }
     pub fn new_redis(c: MultiplexedConnection, hub: Arc<RwLock<HubState>>) -> Self {
-        Self { inner: DbInner::Redis(c), hub }
+        Self {
+            inner: DbInner::Redis(c),
+            hub,
+        }
     }
 
+    pub async fn info(&self) -> redis::RedisResult<String> { // String {
+        // let res = 
+        match &self.inner {
+            DbInner::Memory(m) => memory_info(m).await,
+            DbInner::Redis(conn) => {
+                let mut c = conn.clone();
+                redis_info(&mut c).await
+            }
+        }
+        // };
+        // res.unwrap_or_else(|_| "error".to_string())
+    }
 
     pub async fn list(&self, key: &str) -> redis::RedisResult<Vec<RedisArray>> {
         match &self.inner {
@@ -50,7 +67,6 @@ impl Db {
         }
     }
 
- 
     pub async fn save<V: AsRef<[u8]>>(
         &self,
         key: &str,
@@ -62,12 +78,18 @@ impl Db {
             DbInner::Memory(m) => {
                 memory_save(m, key, value.as_ref(), ttl, mode).await?;
                 // Send events
-                let value_str = std::str::from_utf8(value.as_ref()).ok().map(|s| s.to_string());
+                let value_str = std::str::from_utf8(value.as_ref())
+                    .ok()
+                    .map(|s| s.to_string());
                 broadcast_event(
                     &self.hub,
-                    RedisEvent { message: RedisEventAction::Set, key: key.to_string() },
+                    RedisEvent {
+                        message: RedisEventAction::Set,
+                        key: key.to_string(),
+                    },
                     value_str,
-                ).await;
+                )
+                .await;
                 Ok(())
             }
             DbInner::Redis(conn) => {
@@ -77,7 +99,6 @@ impl Db {
         }
     }
 
-
     pub async fn delete(&self, key: &str, mode: Option<SaveMode>) -> redis::RedisResult<bool> {
         match &self.inner {
             DbInner::Memory(m) => {
@@ -85,9 +106,13 @@ impl Db {
                 if deleted {
                     broadcast_event(
                         &self.hub,
-                        RedisEvent { message: RedisEventAction::Del, key: key.to_string() },
+                        RedisEvent {
+                            message: RedisEventAction::Del,
+                            key: key.to_string(),
+                        },
                         None,
-                    ).await;
+                    )
+                    .await;
                 }
                 Ok(deleted)
             }
@@ -97,5 +122,4 @@ impl Db {
             }
         }
     }
-
 }
