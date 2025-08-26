@@ -52,3 +52,8 @@ export async function refreshLiveQueries (): Promise<void> {
     await lq.refresh()
   }
 }
+export function closeLiveQueries (): void {
+  if (lq != null) {
+    lq.close()
+  }
+}
