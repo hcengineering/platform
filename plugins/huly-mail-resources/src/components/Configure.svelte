@@ -17,30 +17,35 @@
   import { fade } from 'svelte/transition'
 
   import presentation, { Card, getClient, getCurrentWorkspaceUuid, SpaceSelector } from '@hcengineering/presentation'
-  import { Icon, Label, Loading } from '@hcengineering/ui'
-  import type { Integration } from '@hcengineering/account-client'
+  import { DropdownLabels, Icon, Label, Loading } from '@hcengineering/ui'
+  import { type Integration } from '@hcengineering/account-client'
   import { isWorkspaceIntegration, getIntegrationConfig } from '@hcengineering/integration-client'
   import card from '@hcengineering/card'
   import contact from '@hcengineering/contact'
 
-  import { getIntegrationClient } from '../utils'
+  import { getIntegrationClient, getAccountClient } from '../utils'
   import hulyMail from '../plugin'
-  import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import core, { buildSocialIdString, getCurrentAccount, Ref, SocialIdType, Space, type PersonId } from '@hcengineering/core'
   import HulyMail from './icons/HulyMail.svelte'
-
+ 
   export let integration: Integration | undefined = undefined
 
   let isLoading = true
 
   let selectedSpace: Ref<Space> | undefined = undefined
   let personSpace: Ref<Space> | undefined = undefined
+  let mailboxItems: Array<{ id: string; label: string }> = []
+  let selectedMailbox: string | undefined = undefined
 
   const client = getClient()
 
   onMount(async () => {
     try {
+      const accountClient = await getAccountClient()
       const personSpaceObj = await client.findOne(contact.class.PersonSpace, { members: getCurrentAccount().uuid })
-      const integrationSpace = getIntegrationConfig(integration)?.spaceId as Ref<Space>
+      const integrationSpace = integration !== undefined ? getIntegrationConfig(integration)?.spaceId as Ref<Space> : undefined
+      const mailboxes = await accountClient.getMailboxes()
+      mailboxItems = mailboxes.map(mailbox => ({ id: mailbox.mailbox, label: mailbox.mailbox }))
       personSpace = personSpaceObj?._id
       selectedSpace = integrationSpace ?? personSpace
       isLoading = false
@@ -50,14 +55,34 @@
     }
   })
 
+  async function getSocialId (): Promise<PersonId | undefined> {
+    if (selectedMailbox === undefined) {
+      return undefined
+    }
+    const socialKey = buildSocialIdString({
+      type: SocialIdType.EMAIL,
+      value: selectedMailbox
+    })
+    const accountClient = await getAccountClient()
+    return await accountClient.findSocialIdBySocialKey(socialKey)
+  }
+
   async function apply (): Promise<void> {
     const integrationClient = await getIntegrationClient()
+    const socialId = await getSocialId()
+    if (socialId === undefined) {
+      return
+    }
     if (integration === undefined) {
-      integration = await integrationClient.connect()
+      integration = await integrationClient.connect(socialId, {
+        email: selectedMailbox
+      })
     }
     integration = isWorkspaceIntegration(integration)
       ? integration
-      : await integrationClient.integrate(integration, getCurrentWorkspaceUuid())
+      : await integrationClient.integrate(integration, getCurrentWorkspaceUuid(), {
+        email: selectedMailbox
+      })
     await integrationClient.updateConfig(integration, {
       spaceId: selectedSpace
     })
@@ -86,7 +111,7 @@
       </span>
     </div>
   </svelte:fragment>
-  <div class="flex-col min-w-100" transition:fade={{ duration: 300 }}>
+  <div class="flex-col min-w-100 flex-gap-4" transition:fade={{ duration: 300 }}>
     {#if isLoading}
       <div class="flex-center">
         <div class="p-5">
@@ -95,7 +120,14 @@
       </div>
     {:else}
       <div class="flex-between flex-gap-4">
-        <Label label={hulyMail.string.MailSpace} />
+        <Label label={hulyMail.string.Mailbox} />
+        <DropdownLabels
+          items={mailboxItems}
+          bind:selected={selectedMailbox}
+        />
+      </div>
+      <div class="flex-between flex-gap-4">
+        <Label label={hulyMail.string.ChannelSpace} />
         <SpaceSelector
           _class={core.class.Space}
           query={{

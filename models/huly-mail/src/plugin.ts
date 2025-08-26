@@ -15,10 +15,10 @@
 //
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { gmailId } from '@hcengineering/gmail'
-import gmail from '@hcengineering/gmail-resources/src/plugin'
+import { hulyMailId } from '@hcengineering/huly-mail'
+import hulyMail from '@hcengineering/huly-mail-resources/src/plugin'
 
-export default mergeIds(gmailId, gmail, {
+export default mergeIds(hulyMailId, hulyMail, {
   string: {
     IntegrationLabel: '' as IntlString,
     IntegrationDescription: '' as IntlString

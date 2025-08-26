@@ -14,39 +14,33 @@
 //
 
 import { type Domain } from '@hcengineering/core'
-import {
-  gmailIntegrationKind
-} from '@hcengineering/gmail'
-import {
-  type Builder
-} from '@hcengineering/model'
+import { hulyMailIntegrationKind } from '@hcengineering/huly-mail'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import setting from '@hcengineering/setting'
 
-import gmail from './plugin'
+import hulyMail from './plugin'
 
-export { gmailId } from '@hcengineering/gmail'
+export { hulyMailId } from '@hcengineering/huly-mail'
 export { default } from './plugin'
-
-export const DOMAIN_GMAIL = 'gmail' as Domain
 
 export function createModel (builder: Builder): void {
   builder.createDoc(
     setting.class.IntegrationType,
     core.space.Model,
     {
-      label: gmail.string.IntegrationLabel,
-      description: gmail.string.IntegrationDescription,
-      icon: gmail.component.IconGmail,
+      label: hulyMail.string.IntegrationLabel,
+      description: hulyMail.string.IntegrationDescription,
+      icon: hulyMail.component.IconHulyMail,
       allowMultiple: true,
-      createComponent: gmail.component.Connect,
-      onDisconnect: gmail.handler.DisconnectHandler,
-      onDisconnectAll: gmail.handler.DisconnectAllHandler,
-      reconnectComponent: gmail.component.Connect,
-      configureComponent: gmail.component.Configure,
-      stateComponent: gmail.component.IntegrationState,
-      kind: gmailIntegrationKind
+      createComponent: hulyMail.component.Connect,
+      onDisconnect: hulyMail.handler.DisconnectHandler,
+      onDisconnectAll: hulyMail.handler.DisconnectAllHandler,
+      reconnectComponent: hulyMail.component.Connect,
+      configureComponent: hulyMail.component.Configure,
+      stateComponent: hulyMail.component.IntegrationState,
+      kind: hulyMailIntegrationKind
     },
-    gmail.integrationType.Gmail
+    hulyMail.integrationType.HulyMail
   )
 }

@@ -20,6 +20,7 @@ import {
   getIntegrationClient as getIntegrationClientRaw,
   type IntegrationClient
 } from '@hcengineering/integration-client'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
 
 export async function getIntegrationClient (): Promise<IntegrationClient> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
@@ -28,4 +29,11 @@ export async function getIntegrationClient (): Promise<IntegrationClient> {
     throw new Error('Accounts URL or token is not defined')
   }
   return getIntegrationClientRaw(accountsUrl, token, hulyMailIntegrationKind, 'huly-mail')
+}
+
+export function getAccountClient (): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+
+  return getAccountClientRaw(accountsUrl, token)
 }

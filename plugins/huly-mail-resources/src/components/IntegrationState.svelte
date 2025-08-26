@@ -13,30 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
-
   import type { Integration } from '@hcengineering/account-client'
-  import { IntegrationEventData, onIntegrationEvent } from '@hcengineering/integration-client'
-  import { type GmailSyncState } from '@hcengineering/gmail'
-  import { BaseIntegrationState, IntegrationStateRow } from '@hcengineering/setting-resources'
-
-  import gmail from '../plugin'
-  import platform, { IntlString, OK, ERROR, Status, Severity } from '@hcengineering/platform'
+  import { BaseIntegrationState } from '@hcengineering/setting-resources'
+  import { CardPresenter } from '@hcengineering/card-resources'
 
   export let integration: Integration
-
-  let state: GmailSyncState | null | undefined
-
-  $: email = integration.data?.email
 </script>
 
-<BaseIntegrationState isLoading={false} {integration} value={email}>
+<BaseIntegrationState isLoading={false} {integration} value={integration.data?.email}>
   <svelte:fragment slot="content">
-    {#if state?.isConfigured === true && state?.totalMessages != null}
-      <IntegrationStateRow label={gmail.string.TotalMessages} value={state.totalMessages} />
-    {/if}
-    {#if state?.isConfigured !== true}
-      <IntegrationStateRow label={gmail.string.ConfigurationRequired} />
+    {#if integration?.data?.channelId !== undefined}
+      <CardPresenter value={integration?.data?.channelId} />
     {/if}
   </svelte:fragment>
 </BaseIntegrationState>

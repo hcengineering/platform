@@ -13,28 +13,23 @@
 // limitations under the License.
 //
 
-import { getMetadata, type Resources } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
-import Configure from './components/Configure.svelte'
-import Connect from './components/Connect.svelte'
-import IntegrationState from './components/IntegrationState.svelte'
-import gmail from '@hcengineering/gmail'
-import { getIntegrationClient } from './utils'
+import { type Resources } from '@hcengineering/platform'
 import type { Integration } from '@hcengineering/account-client'
+
+import Configure from './components/Configure.svelte'
+import IntegrationState from './components/IntegrationState.svelte'
+import IconHulyMail from './components/icons/HulyMail.svelte'
+import { getIntegrationClient } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
-    Connect,
+    Connect: Configure,
     Configure,
+    IconHulyMail,
     IntegrationState
   },
   handler: {
     DisconnectHandler: async (integration: Integration): Promise<void> => {
-      const url = getMetadata(gmail.metadata.GmailURL)
-      const token = getMetadata(presentation.metadata.Token)
-      if (url === undefined || token === undefined) {
-        console.error('Url or token is not defined in DisconnectHandler')
-      }
       if (integration == null) {
         console.error('Missing required argument integration in DisconnectHandler')
         return
@@ -43,11 +38,6 @@ export default async (): Promise<Resources> => ({
       await integrationClient.removeIntegration(integration.socialId, integration.workspaceUuid)
     },
     DisconnectAllHandler: async (integration: Integration): Promise<void> => {
-      const url = getMetadata(gmail.metadata.GmailURL)
-      const token = getMetadata(presentation.metadata.Token)
-      if (url === undefined || token === undefined) {
-        console.error('Url or token is not defined in DisconnectHandler')
-      }
       if (integration == null) {
         console.error('Missing required argument integration in DisconnectHandler')
         return

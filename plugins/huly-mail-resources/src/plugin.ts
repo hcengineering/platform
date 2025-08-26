@@ -24,9 +24,9 @@ export default mergeIds(hulyMailId, hulyMail, {
     Email: '' as IntlString,
     FailedToConnect: '' as IntlString,
     Configure: '' as IntlString,
-    HulyMailSpace: '' as IntlString,
+    ChannelSpace: '' as IntlString,
     PersonSpaceInfo: '' as IntlString,
     SharedSpaceInfo: '' as IntlString,
-    ConfigurationRequired: '' as IntlString
+    Mailbox: '' as IntlString
   }
 })
