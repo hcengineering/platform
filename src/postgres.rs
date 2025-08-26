@@ -2,8 +2,8 @@ use std::pin::Pin;
 
 use bb8_postgres::PostgresConnectionManager;
 use serde::de::DeserializeOwned;
+use tokio_postgres::NoTls;
 use tokio_postgres::{self as pg};
-use tokio_postgres::{NoTls, row};
 use tracing::*;
 
 use crate::config::CONFIG;
@@ -103,7 +103,6 @@ pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(
 
 #[derive(Debug)]
 pub struct Object<T: DeserializeOwned + std::fmt::Debug> {
-    pub part: u16,
     pub inline: Option<Vec<u8>>,
     pub data: T,
 }
@@ -125,12 +124,11 @@ pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     let mut parts = Vec::with_capacity(rows.len());
 
     for row in rows {
-        let part = row.get::<_, i16>("part") as u16;
         let data = row.get::<_, serde_json::Value>("data");
         let inline = row.get::<_, Option<Vec<u8>>>("inline");
 
         let data = serde_json::from_value(data)?;
-        parts.push(Object { part, inline, data })
+        parts.push(Object { inline, data })
     }
 
     Ok(parts)
@@ -142,7 +140,7 @@ pub async fn append_part<D: serde::Serialize>(
     key: &str,
     part: u32,
     inline: Option<Vec<u8>>,
-    data: D,
+    data: &D,
 ) -> anyhow::Result<()> {
     let connection = pool.get().await?;
 
@@ -163,7 +161,7 @@ pub async fn set_part<D: serde::Serialize>(
     workspace: uuid::Uuid,
     key: &str,
     inline: Option<Vec<u8>>,
-    data: D,
+    data: &D,
 ) -> anyhow::Result<()> {
     let mut connection = pool.get().await?;
 

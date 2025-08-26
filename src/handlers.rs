@@ -267,20 +267,20 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 
     let part_data = PartData {
         workspace: path.workspace,
-        key: path.key.clone(),
+        key: path.key,
         part: 0,
-        blob: uploaded.s3_key.clone(),
+        blob: uploaded.s3_key,
         size: uploaded.size,
-        hash: uploaded.hash.clone(),
+        hash: uploaded.hash,
         headers: Some(headers.clone().into_iter().collect()),
         meta: Some(meta.into_iter().collect()),
     };
 
-    postgres::set_part(&pool, path.workspace, &path.key, None, part_data).await?;
+    postgres::set_part(&pool, path.workspace, &part_data.key, None, &part_data).await?;
 
     let mut response = HttpResponse::Created();
-    response.insert_header((header::CONTENT_LOCATION, uploaded.s3_key));
-    response.insert_header((header::ETAG, uploaded.hash));
+    response.insert_header((header::CONTENT_LOCATION, part_data.key));
+    response.insert_header((header::ETAG, part_data.hash));
 
     for (key, value) in headers {
         response.insert_header((key.as_str(), value));
@@ -308,32 +308,32 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
 
     let part_data = PartData {
         workspace: path.workspace,
-        key: path.key.clone(),
+        key: path.key,
         part: parts.len() as u32,
         blob: uploaded.s3_key,
         size: uploaded.size,
-        hash: uploaded.hash.clone(),
+        hash: uploaded.hash,
         headers: None,
         meta: None,
     };
 
     if parts.is_empty() {
-        postgres::set_part(&pool, path.workspace, &path.key, None, part_data).await?;
+        postgres::set_part(&pool, path.workspace, &part_data.key, None, &part_data).await?;
     } else {
         // append
         postgres::append_part(
             &pool,
             path.workspace,
-            &path.key,
+            &part_data.key,
             part_data.part,
             None,
-            part_data,
+            &part_data,
         )
         .await?;
     }
 
     let mut response = HttpResponse::Created();
-    response.insert_header((header::ETAG, uploaded.hash));
+    response.insert_header((header::ETAG, part_data.hash));
 
     Ok(response.finish())
 }
