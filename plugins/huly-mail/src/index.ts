@@ -26,23 +26,10 @@ export const hulyMailIntegrationKind = 'huly-mail' as IntegrationKind
 /**
  * @public
  */
-export interface HulyMailSyncState {
-  status: string
-  email: string
-  totalMessages: number | null | undefined
-  lastSynchronization?: Date | null
-  error?: string
-  isConfigured?: boolean
-}
-
-/**
- * @public
- */
 export const hulyMailId = 'huly-mail' as Plugin
 
 export default plugin(hulyMailId, {
   component: {
-    Main: '' as AnyComponent,
     Connect: '' as AnyComponent,
     IconHulyMail: '' as AnyComponent,
     Configure: '' as AnyComponent,
