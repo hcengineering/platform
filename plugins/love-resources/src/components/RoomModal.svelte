@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { Modal } from '@hcengineering/ui'
+  import { ButtonIcon, IconDelete, Label, Modal } from '@hcengineering/ui'
   import love, { RoomType } from '@hcengineering/love'
 
   import { currentRoom } from '../stores'
@@ -31,13 +31,15 @@
 
 {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
   <Modal
-    label={love.string.Room}
     type="type-popup"
     okLabel={presentation.string.Create}
     hideFooter
     padding="0"
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="title">
+      {$currentRoom.name}
+    </svelte:fragment>
     <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} canMaximize={false} />
   </Modal>
 {/if}

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { MeetingMinutes, Room } from '@hcengineering/love'
 
-  import VideoPopup from '../VideoPopup.svelte'
+  import VideoPopup from '../../VideoPopup.svelte'
   import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
 
   export let room: Room

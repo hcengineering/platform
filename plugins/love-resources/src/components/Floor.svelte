@@ -21,8 +21,7 @@
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
 
   import lovePlg from '../plugin'
-  import { currentRoom, floors } from '../stores'
-  import ControlBar from './ControlBar.svelte'
+  import { floors } from '../stores'
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
@@ -63,7 +62,4 @@
       <Component is={viewlet.$lookup.descriptor.component} props={{ floor, rooms }} on:open />
     {/if}
   </div>
-  {#if $currentRoom}
-    <ControlBar room={$currentRoom} />
-  {/if}
 </div>

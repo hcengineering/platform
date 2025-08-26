@@ -18,12 +18,18 @@
   import { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
   import { Loading } from '@hcengineering/ui'
 
-  import love from '../../plugin'
+  import love from '../../../plugin'
   import VideoTab from './VideoTab.svelte'
-  import { currentMeetingMinutes, currentRoom } from '../../stores'
+  import { currentMeetingMinutes, currentRoom } from '../../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
-  import { lkSessionConnected } from '../../liveKitClient'
+  import { lkSessionConnected } from '../../../liveKitClient'
+  import LeaveRoomButton from '../controls/LeaveRoomButton.svelte'
+  import RoomAccessButton from '../controls/RoomAccessButton.svelte'
+  import RecordingButton from '../controls/RecordingButton.svelte'
+  import TranscriptionButton from '../controls/TranscriptionButton.svelte'
+  import ControlBarContainer from '../../ControlBarContainer.svelte'
+  import SendReactionButton from '../controls/SendReactionButton.svelte'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -86,4 +92,17 @@
       <TranscriptionTab {meetingMinutes} {room} {widgetState} {height} {width} on:close={handleClose} />
     {/if}
   {/if}
+  <ControlBarContainer>
+    <svelte:fragment slot="right">
+      <RoomAccessButton {room} size="small"/>
+    </svelte:fragment>
+    <svelte:fragment slot="center">
+      <SendReactionButton size="small"/>
+      <RecordingButton {room} size="small"/>
+      <TranscriptionButton {room} size="small"/>
+    </svelte:fragment>
+    <svelte:fragment slot="left">
+      <LeaveRoomButton noLabel={true} size="small" />
+    </svelte:fragment>
+  </ControlBarContainer>
 {/if}
