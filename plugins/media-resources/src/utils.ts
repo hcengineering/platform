@@ -19,10 +19,7 @@ import {
   type MediaState,
   type MediaSession,
   type MediaSessionEvents,
-  getSelectedCamId,
-  getSelectedMicId,
-  getSelectedSpeakerId,
-  enumerateDevices,
+  getMediaDevices,
   cleanupDeviceLabel
 } from '@hcengineering/media'
 import { type IntlString, getEmbeddedLabel } from '@hcengineering/platform'
@@ -31,37 +28,6 @@ import { onDestroy } from 'svelte'
 import type TypedEventEmitter from 'typed-emitter'
 import { registerSession, sessions, state, unregisterSession } from './stores'
 import { get } from 'svelte/store'
-
-/** @public */
-export async function getSelectedMic (): Promise<MediaDeviceInfo | undefined> {
-  const deviceId = getSelectedMicId()
-
-  const devices = await enumerateDevices('audioinput')
-  return deviceId !== undefined ? devices.find((it) => it.deviceId === deviceId) : devices[0]
-}
-
-/** @public */
-export async function getSelectedCam (): Promise<MediaDeviceInfo | null | undefined> {
-  const deviceId = getSelectedCamId()
-
-  const devices = await enumerateDevices('videoinput')
-  return deviceId !== undefined ? devices.find((it) => it.deviceId === deviceId) ?? null : devices[0] ?? undefined // default
-}
-
-/** @public */
-export async function getSelectedSpeaker (): Promise<MediaDeviceInfo | undefined> {
-  const deviceId = getSelectedSpeakerId()
-
-  const devices = await enumerateDevices('audiooutput')
-  return deviceId !== undefined ? devices.find((it) => it.deviceId === deviceId) : devices[0]
-}
-
-/** @public */
-export async function checkMediaAccess (kind: MediaDeviceKind): Promise<PermissionStatus['state']> {
-  const name = (kind === 'audioinput' ? 'microphone' : 'camera') as PermissionName
-  const status = await navigator.permissions.query({ name })
-  return status.state
-}
 
 /** @public */
 export function getDeviceLabel (device: MediaDeviceInfo): IntlString {
@@ -83,9 +49,26 @@ export interface UseMediaOptions {
   autoDestroy?: boolean
 }
 
-export function useMedia (options: UseMediaOptions): MediaSession {
+export async function useMedia (options: UseMediaOptions): Promise<MediaSession> {
   const session = new MediaSessionImpl(options.state)
   const autoDestroy = options.autoDestroy ?? true
+
+  const mediaDevices = await getMediaDevices(
+    options.state?.microphone?.enabled === true,
+    options.state?.camera?.enabled === true
+  )
+
+  session.setCamera({
+    enabled: session.state.camera?.enabled === true && mediaDevices.activeCamera !== undefined,
+    deviceId: mediaDevices.activeCamera?.deviceId
+  })
+
+  if (session.state.microphone?.enabled === true) {
+    session.setMicrophone({
+      enabled: mediaDevices.activeMicrophone !== undefined,
+      deviceId: mediaDevices.activeMicrophone?.deviceId
+    })
+  }
 
   if (autoDestroy) {
     onDestroy(() => {

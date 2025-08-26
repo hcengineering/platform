@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { requestMediaAccess } from '@hcengineering/media'
   import { IconMoreH, StatusBarButton, showPopup } from '@hcengineering/ui'
 
-  import { camAccess, micAccess, sessions } from '../stores'
+  import { sessions } from '../stores'
 
   import IconCamOn from './icons/CamOn.svelte'
   import MediaPopup from './MediaPopup.svelte'
@@ -26,23 +25,10 @@
 
   $: active = $sessions.length > 0
 
-  async function ensureMediaAccess (): Promise<void> {
-    await $camAccess.ready
-    await $micAccess.ready
-    const requestAudio = $camAccess.state === 'prompt'
-    const requestVideo = $micAccess.state === 'prompt'
-    if (requestAudio || requestVideo) {
-      const kind = requestAudio && requestVideo ? undefined : requestAudio ? 'audioinput' : 'videoinput'
-      await requestMediaAccess(kind)
-    }
-  }
-
   let pressed = false
 
   async function openPopup (): Promise<void> {
     pressed = true
-
-    await ensureMediaAccess()
     showPopup(MediaPopup, {}, anchor, () => {
       pressed = false
     })

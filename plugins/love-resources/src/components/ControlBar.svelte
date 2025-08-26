@@ -48,10 +48,10 @@
     leaveRoom,
     record,
     screenSharing,
-    setShare,
     startTranscription,
     stopTranscription,
-    lk
+    lk,
+    liveKitClient
   } from '../utils'
   import CamSettingPopup from './meeting/CamSettingPopup.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
@@ -80,7 +80,7 @@
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
     const audio = newValue && $isShareWithSound
-    await setShare(newValue, audio)
+    await liveKitClient.setScreenShareEnabled(newValue, audio)
   }
 
   async function leave (): Promise<void> {
