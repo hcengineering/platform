@@ -16,11 +16,12 @@
   import type { Integration } from '@hcengineering/account-client'
   import { BaseIntegrationState } from '@hcengineering/setting-resources'
   import { CardPresenter } from '@hcengineering/card-resources'
+  import { OK } from '@hcengineering/platform'
 
   export let integration: Integration
 </script>
 
-<BaseIntegrationState isLoading={false} {integration} value={integration.data?.email}>
+<BaseIntegrationState isLoading={false} {integration} value={integration.data?.email} status={OK}>
   <svelte:fragment slot="content">
     {#if integration?.data?.channelId !== undefined}
       <CardPresenter value={integration?.data?.channelId} />

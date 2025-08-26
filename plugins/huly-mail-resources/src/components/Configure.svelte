@@ -25,27 +25,35 @@
 
   import { getIntegrationClient, getAccountClient } from '../utils'
   import hulyMail from '../plugin'
-  import core, { buildSocialIdString, getCurrentAccount, Ref, SocialIdType, Space, type PersonId } from '@hcengineering/core'
+  import core, {
+    buildSocialIdString,
+    getCurrentAccount,
+    Ref,
+    SocialIdType,
+    Space,
+    type PersonId
+  } from '@hcengineering/core'
   import HulyMail from './icons/HulyMail.svelte'
- 
+
   export let integration: Integration | undefined = undefined
 
   let isLoading = true
 
   let selectedSpace: Ref<Space> | undefined = undefined
   let personSpace: Ref<Space> | undefined = undefined
-  let mailboxItems: Array<{ id: string; label: string }> = []
+  let mailboxItems: Array<{ id: string, label: string }> = []
   let selectedMailbox: string | undefined = undefined
 
   const client = getClient()
+  const accountClient = getAccountClient()
 
   onMount(async () => {
     try {
-      const accountClient = await getAccountClient()
       const personSpaceObj = await client.findOne(contact.class.PersonSpace, { members: getCurrentAccount().uuid })
-      const integrationSpace = integration !== undefined ? getIntegrationConfig(integration)?.spaceId as Ref<Space> : undefined
+      const integrationSpace =
+        integration !== undefined ? (getIntegrationConfig(integration)?.spaceId as Ref<Space>) : undefined
       const mailboxes = await accountClient.getMailboxes()
-      mailboxItems = mailboxes.map(mailbox => ({ id: mailbox.mailbox, label: mailbox.mailbox }))
+      mailboxItems = mailboxes.map((mailbox) => ({ id: mailbox.mailbox, label: mailbox.mailbox }))
       personSpace = personSpaceObj?._id
       selectedSpace = integrationSpace ?? personSpace
       isLoading = false
@@ -63,11 +71,13 @@
       type: SocialIdType.EMAIL,
       value: selectedMailbox
     })
-    const accountClient = await getAccountClient()
     return await accountClient.findSocialIdBySocialKey(socialKey)
   }
 
   async function apply (): Promise<void> {
+    if (selectedMailbox === undefined) {
+      return
+    }
     const integrationClient = await getIntegrationClient()
     const socialId = await getSocialId()
     if (socialId === undefined) {
@@ -118,12 +128,20 @@
           <Loading />
         </div>
       </div>
+    {:else if mailboxItems.length === 0}
+      <div class="flex-row-center">
+        <Label label={hulyMail.string.MailboxesNotConfigured} />
+      </div>
+      <div class="flex-row-center">
+        <Label label={hulyMail.string.ConfigureMailBoxes} />
+      </div>
     {:else}
       <div class="flex-between flex-gap-4">
         <Label label={hulyMail.string.Mailbox} />
         <DropdownLabels
           items={mailboxItems}
           bind:selected={selectedMailbox}
+          disabled={integration?.data?.email !== undefined}
         />
       </div>
       <div class="flex-between flex-gap-4">
@@ -148,7 +166,7 @@
   </div>
   <svelte:fragment slot="footer">
     <div class="flex-row-center max-w-80 pr-4">
-      {#if personSpace === selectedSpace}
+      {#if personSpace === selectedSpace && mailboxItems.length > 0}
         <Icon size={'small'} icon={contact.icon.Person} />
         <span class="text-sm ml-2">
           <Label label={hulyMail.string.PersonSpaceInfo} />

@@ -13,6 +13,8 @@
     "ChannelSpace": "Bereich für Nachrichtenkanal",
     "PersonSpaceInfo": "E-Mails sind nur für Sie verfügbar",
     "SharedSpaceInfo": "E-Mails sind für alle Bereichsteilnehmer verfügbar",
-    "Mailbox": "Postfach"
+    "Mailbox": "Postfach",
+    "MailboxesNotConfigured": "Keine Postfächer gefunden",
+    "ConfigureMailBoxes": "Bitte fügen Sie ein Postfach im Abschnitt Postfächer hinzu, um zu beginnen"
   }
 }

@@ -13,6 +13,8 @@
     "ChannelSpace": "Space for message channel",
     "PersonSpaceInfo": "Mail will be available to you",
     "SharedSpaceInfo": "Mail will be available to all space participants",
-    "Mailbox": "Mailbox"
+    "Mailbox": "Mailbox",
+    "MailboxesNotConfigured": "No mailboxes found",
+    "ConfigureMailBoxes": "Please add a mailbox in the `Mailboxes` section to get started"
   }
 }

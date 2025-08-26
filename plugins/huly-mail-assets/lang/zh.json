@@ -13,6 +13,8 @@
     "ChannelSpace": "消息频道空间",
     "PersonSpaceInfo": "邮件仅对您可用",
     "SharedSpaceInfo": "邮件对空间所有参与者可用",
-    "Mailbox": "邮箱"
+    "Mailbox": "邮箱",
+    "MailboxesNotConfigured": "未找到邮箱",
+    "ConfigureMailBoxes": "请在邮箱部分添加邮箱以开始"
   }
 }

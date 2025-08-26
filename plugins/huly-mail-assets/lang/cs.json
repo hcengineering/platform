@@ -13,6 +13,8 @@
     "ChannelSpace": "Prostor pro kanál zpráv",
     "PersonSpaceInfo": "Pošta bude dostupná pouze vám",
     "SharedSpaceInfo": "Pošta bude dostupná všem účastníkům prostoru",
-    "Mailbox": "Poštovní schránka"
+    "Mailbox": "Poštovní schránka",
+    "MailboxesNotConfigured": "Žádné poštovní schránky nenalezeny",
+    "ConfigureMailBoxes": "Přidejte prosím poštovní schránku v sekci Poštovní schránky, abyste mohli začít"
   }
 }

@@ -13,6 +13,8 @@
     "ChannelSpace": "メッセージチャンネルのスペース",
     "PersonSpaceInfo": "メールはあなたのみが利用できます",
     "SharedSpaceInfo": "メールはスペースの全参加者が利用できます",
-    "Mailbox": "メールボックス"
+    "Mailbox": "メールボックス",
+    "MailboxesNotConfigured": "メールボックスが見つかりません",
+    "ConfigureMailBoxes": "メールボックスのセクションでメールボックスを追加してください"
   }
 }

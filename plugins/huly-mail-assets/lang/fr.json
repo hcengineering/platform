@@ -13,6 +13,8 @@
     "ChannelSpace": "Espace pour le canal de messages",
     "PersonSpaceInfo": "Le courrier ne sera disponible que pour vous",
     "SharedSpaceInfo": "Le courrier sera disponible pour tous les participants de l'espace",
-    "Mailbox": "Boîte aux lettres"
+    "Mailbox": "Boîte aux lettres",
+    "MailboxesNotConfigured": "Aucune boîte aux lettres trouvée",
+    "ConfigureMailBoxes": "Veuillez ajouter une boîte aux lettres dans la section Boîtes aux lettres pour commencer"
   }
 }
