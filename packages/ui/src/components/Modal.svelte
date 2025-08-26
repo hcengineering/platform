@@ -26,6 +26,7 @@
   export let label: IntlString | undefined = undefined
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void = () => {}
+  export let okLoading: boolean = false
   export let okTooltip: LabelAndProps | undefined = undefined
   export let onCancel: (() => void) | undefined = undefined
   export let canSave: boolean = false
@@ -112,6 +113,7 @@
         size={type === 'type-aside' ? 'large' : 'medium'}
         tooltip={okTooltip}
         label={okLabel}
+        loading={okLoading}
         on:click={okAction}
         disabled={!canSave}
       />

@@ -47,6 +47,8 @@
   let description: Markup = EmptyMarkup
   let collaborators: Ref<Employee>[] = [me]
 
+  let creating = false
+
   async function addCollaborators (): Promise<void> {
     const accounts = collaborators
       .filter((it) => it !== me)
@@ -61,22 +63,28 @@
   async function okAction (): Promise<void> {
     if (_space === undefined) return
 
-    if (extension?.canCreate) {
-      const fn = await getResource(extension.canCreate)
-      const res = await fn(_space, data)
-      if (res === false) {
-        dispatch('close')
-        return
-      } else if (typeof res === 'string') {
-        dispatch('close', res)
-        return
+    try {
+      creating = true
+
+      if (extension?.canCreate) {
+        const fn = await getResource(extension.canCreate)
+        const res = await fn(_space, data)
+        if (res === false) {
+          dispatch('close')
+          return
+        } else if (typeof res === 'string') {
+          dispatch('close', res)
+          return
+        }
       }
+
+      await createCard(type, _space, data, description, _id)
+      await addCollaborators()
+
+      dispatch('close', _id)
+    } finally {
+      creating = false
     }
-
-    await createCard(type, _space, data, description, _id)
-    await addCollaborators()
-
-    dispatch('close', _id)
   }
 
   function handleCancel (): void {
@@ -132,6 +140,7 @@
   width="large"
   okLabel={presentation.string.Create}
   {okAction}
+  okLoading={creating}
   canSave={data.title != null && data.title.trim().length > 0 && _space != null}
   onCancel={handleCancel}
   on:close
