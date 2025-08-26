@@ -10,7 +10,7 @@ use actix_web::{
     },
     web::{Data, Header, Path, Payload},
 };
-use blake2::{Blake2s256, Digest};
+use blake3::Hasher;
 use bytes::{Bytes, BytesMut};
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
@@ -141,7 +141,7 @@ async fn upload(s3: &S3Client, pool: &Pool, mut payload: Payload) -> Result<Blob
     let mut buffer = BytesMut::with_capacity(1024 * 1024 * 6);
     let mut complete = CompletedMultipartUpload::builder();
     let mut part_number = 1;
-    let mut hash = Blake2s256::new();
+    let mut hash = Hasher::new();
     let mut total_in = 0;
     let mut total_uploaded = 0;
 
@@ -192,7 +192,7 @@ async fn upload(s3: &S3Client, pool: &Pool, mut payload: Payload) -> Result<Blob
         .send()
         .await?;
 
-    let hash = hex::encode(hash.finalize());
+    let hash = hash.finalize().to_hex().to_string();
 
     debug!(hash, "upload complete");
 
@@ -372,7 +372,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
     let response = if !parts.is_empty() {
         let mut content_length = 0;
-        let mut etag = Blake2s256::new();
+        let mut etag = Hasher::new();
 
         for part in parts.iter() {
             content_length += part.data.size;
@@ -382,7 +382,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
         let mut response = HttpResponse::Ok();
 
         response.insert_header((header::CONTENT_LENGTH, content_length));
-        response.insert_header((header::ETAG, hex::encode(etag.finalize())));
+        response.insert_header((header::ETAG, etag.finalize().to_hex().to_string()));
 
         let headers = parts[0].data.headers.as_ref();
         if let Some(headers) = headers {

@@ -22,7 +22,6 @@ bb8-postgres = { version = "0.9.0", features = ["with-uuid-1"] }
 md5 = "0.8.0"
 size = { version = "0.5.0", features = ["serde"] }
 uuid = { version = "1.18", features = ["v4", "serde"] }
-hex = "0.4.3"
 serde_json = "1.0"
 hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
     "actix",
@@ -39,9 +38,9 @@ reqwest = { version = "0.12.15", default-features = false, features = [
 futures-util = "0.3.31"
 tokio-stream = "0.1.17"
 thiserror = "2.0.16"
-blake2 = "0.10.6"
 bytes = "1.10.1"
 ksuid = "0.2.0"
 tracing-opentelemetry = "0.31.0"
 mime = "0.3.17"
 async-stream = "0.3.6"
+blake3 = "1.8.2"
