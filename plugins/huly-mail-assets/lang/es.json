@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Conecta tu buzón de Huly para enviar, recibir y gestionar correos electrónicos",
+    "Connect": "Conectar",
+    "ConnectHulyMail": "Conectar buzón de Huly",
+    "Cancel": "Cancelar",
+    "Email": "Correo electrónico",
+    "Status": "Estado",
+    "FailedToConnect": "El servicio de correo de Huly no está disponible",
+    "TotalMessages": "Total de mensajes:",
+    "Configure": "Configurar Huly Mail",
+    "ChannelSpace": "Espacio para canal de mensajes",
+    "PersonSpaceInfo": "El correo estará disponible solo para ti",
+    "SharedSpaceInfo": "El correo estará disponible para todos los participantes del espacio",
+    "Mailbox": "Buzón de correo",
+    "MailboxesNotConfigured": "No se encontraron buzones",
+    "ConfigureMailBoxes": "Por favor, añade un buzón en la sección de Buzones para comenzar"
+  }
+}
