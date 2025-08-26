@@ -222,17 +222,16 @@ async fn upload(s3: &S3Client, pool: &Pool, mut payload: Payload) -> Result<Blob
 
 #[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
 pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
+    let span = Span::current();
+
     let mut request = ServiceRequest::from_request(request);
 
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+    span.record("workspace", path.workspace.to_string());
+    span.record("huly_key", &path.key);
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
-
-    let span = Span::current();
-
-    span.record("workspace", path.workspace.to_string());
-    span.record("huly_key", &path.key);
 
     debug!("put request");
 
@@ -290,10 +289,16 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
     Ok(response.finish())
 }
 
+#[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
 pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
+    let span = Span::current();
+
     let mut request = ServiceRequest::from_request(request);
 
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+    span.record("workspace", path.workspace.to_string());
+    span.record("huly_key", &path.key);
+
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
@@ -333,10 +338,17 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
     Ok(response.finish())
 }
 
+#[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
 pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
+    let span = Span::current();
+
     let mut request = ServiceRequest::from_request(request);
 
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+
+    span.record("workspace", path.workspace.to_string());
+    span.record("huly_key", &path.key);
+
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request
         .app_data::<Data<S3Client>>()
