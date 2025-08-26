@@ -7,7 +7,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice, rooms, currentMeetingMinutes } from '../stores'
-  import { endMeeting, leaveRoom } from '../utils'
+  import { endMeeting, isSharingEnabled, leaveRoom, liveKitClient } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
 
   export let limit: number = 4
@@ -46,6 +46,10 @@
   }
 
   let now = Date.now()
+
+  async function stopShare (): Promise<void> {
+    await liveKitClient.setScreenShareEnabled(false)
+  }
 
   $: participants = $infos.filter((p) => p.room === $currentRoom?._id)
   $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
@@ -123,28 +127,41 @@
           </div>
         {/if}
 
-        <!-- Leave Button -->
-        {#if allowLeave || leaving}
-          <Button
-            icon={love.icon.LeaveRoom}
-            kind={'dangerous'}
-            size={'x-small'}
-            label={view.string.Leave}
-            showTooltip={{ label: love.string.LeaveRoom }}
-            padding={'0 .5rem'}
-            on:click={handleLeaveClick}
-          />
-        {:else if isMyOffice || ending}
-          <Button
-            icon={love.icon.LeaveRoom}
-            kind={'dangerous'}
-            size={'x-small'}
-            label={love.string.EndMeeting}
-            showTooltip={{ label: love.string.EndMeeting }}
-            padding={'0 .5rem'}
-            on:click={handleEndMeetingClick}
-          />
-        {/if}
+        <div class="flex-row-center flex-gap-3">
+          <!-- Leave Button -->
+          {#if allowLeave || leaving}
+            <Button
+              icon={love.icon.LeaveRoom}
+              kind={$isSharingEnabled ? 'regular' : 'dangerous'}
+              size={'x-small'}
+              label={view.string.Leave}
+              showTooltip={{ label: love.string.LeaveRoom }}
+              padding={'0 .5rem'}
+              on:click={handleLeaveClick}
+            />
+          {:else if isMyOffice || ending}
+            <Button
+              icon={love.icon.LeaveRoom}
+              kind={$isSharingEnabled ? 'regular' : 'dangerous'}
+              size={'x-small'}
+              label={love.string.EndMeeting}
+              showTooltip={{ label: love.string.EndMeeting }}
+              padding={'0 .5rem'}
+              on:click={handleEndMeetingClick}
+            />
+          {/if}
+          {#if $isSharingEnabled}
+            <Button
+              icon={love.icon.SharingEnabled}
+              kind="dangerous"
+              size={'x-small'}
+              label={love.string.StopShare}
+              showTooltip={{ label: love.string.StopShare }}
+              padding={'0 .5rem'}
+              on:click={stopShare}
+            />
+          {/if}
+        </div>
       </div>
     </div>
   </div>
