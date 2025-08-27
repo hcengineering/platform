@@ -91,7 +91,7 @@ describe('drawing module tests', () => {
     function prepareFakeCanvas (): void {
       HTMLCanvasElement.prototype.getContext = jest.fn(() => fakeCanvasContext) as any
 
-      (globalThis as any).ResizeObserver = jest.fn().mockImplementation(() => ({
+      ;(globalThis as any).ResizeObserver = jest.fn().mockImplementation(() => ({
         observe: jest.fn(),
         unobserve: jest.fn(),
         disconnect: jest.fn()
@@ -137,7 +137,8 @@ describe('drawing module tests', () => {
       const DefaultDrawingBoardWidth = 200
       const DefaultDrawingBoardHeight = 200
 
-      const createTextCommandStub = (overrides: Partial<DrawTextCmd> = {}
+      const createTextCommandStub = (
+        overrides: Partial<DrawTextCmd> = {}
       ): { textCommandUid: CommandUid, textCommand: DrawTextCmd } => {
         const textCommandUid = makeCommandUid()
         const textCommand: DrawTextCmd = {
@@ -157,10 +158,7 @@ describe('drawing module tests', () => {
         existingTextCommand: DrawTextCmd | undefined,
         overrides: Partial<Parameters<typeof drawing>[1]> = {}
       ): { drawingBoard: ReturnType<typeof drawing>, initialState: DrawingProps } => {
-        const commands =
-          existingTextCommand === undefined
-            ? []
-            : [existingTextCommand]
+        const commands = existingTextCommand === undefined ? [] : [existingTextCommand]
 
         const initialState = {
           readonly: false,
@@ -303,7 +301,7 @@ describe('drawing module tests', () => {
         expect(commandAddedSpy).toHaveBeenCalledTimes(1)
 
         // new command should have passed to the delegate
-        const newlyCreatedTextDrawCommand = commandAddedSpy.mock.calls[0][0] as (DrawingCmd | undefined)
+        const newlyCreatedTextDrawCommand = commandAddedSpy.mock.calls[0][0] as DrawingCmd | undefined
         expect(newlyCreatedTextDrawCommand).toBeDefined()
         expect(newlyCreatedTextDrawCommand?.type).toBe('text')
 
@@ -331,7 +329,12 @@ describe('drawing module tests', () => {
         // simulating: user selected text tool
         drawingBoard.update?.({ ...boardState, tool: 'text' })
         // simulating: user clicked on the existing text
-        drawingBoard.update?.({ ...boardState, tool: 'text', changingCmdId: textCommandUid, penColor: textCommand.color })
+        drawingBoard.update?.({
+          ...boardState,
+          tool: 'text',
+          changingCmdId: textCommandUid,
+          penColor: textCommand.color
+        })
 
         // editor should be present in the DOM
         expect(isLiveTextEditorPresent(drawingPlugInPoint)).toBe(true)
@@ -358,7 +361,7 @@ describe('drawing module tests', () => {
         expect(commandAddedSpy).toHaveBeenCalledTimes(0)
 
         // new command should have passed to the delegate
-        const changedCommand = commandChangedSpy.mock.calls[0][0] as (DrawTextCmd | undefined)
+        const changedCommand = commandChangedSpy.mock.calls[0][0] as DrawTextCmd | undefined
         expect(changedCommand).toBeDefined()
         expect(changedCommand?.type).toBe('text')
         expect(changedCommand?.text).toBe(newText)
@@ -398,11 +401,7 @@ describe('drawing module tests', () => {
         jest.runOnlyPendingTimers()
       }
 
-      const makePointerEvent = (
-        type: string,
-        offsetX: number,
-        offsetY: number
-      ): PointerEvent => {
+      const makePointerEvent = (type: string, offsetX: number, offsetY: number): PointerEvent => {
         const event = new PointerEvent(type, { pointerId: 1, button: 0, bubbles: true, cancelable: true })
         Object.defineProperty(event, 'offsetX', { value: offsetX, writable: false })
         Object.defineProperty(event, 'offsetY', { value: offsetY, writable: false })
@@ -434,7 +433,7 @@ describe('drawing module tests', () => {
         ;(globalThis as any).ResizeObserver = resizeObserverSpyType
 
         if (typeof PointerEvent === 'undefined') {
-          (globalThis as any).PointerEvent = class MockPointerEvent extends Event {
+          ;(globalThis as any).PointerEvent = class MockPointerEvent extends Event {
             pointerId: number
             button: number
             offsetX: number
@@ -508,10 +507,12 @@ describe('drawing module tests', () => {
         expect(resizeObserverSpy.observe.mock.calls[0][0]).toBe(canvas)
 
         // trigger the resize observer callback
-        actualResizeObserverCallback([{
-          target: canvas,
-          contentRect: { width: 100, height: 150 }
-        }])
+        actualResizeObserverCallback([
+          {
+            target: canvas,
+            contentRect: { width: 100, height: 150 }
+          }
+        ])
 
         // verify that CSS transform has been applied (should scale to fit aspect ratio)
         expect(canvas.style.transform).toContain('scale(1, 0.5)')

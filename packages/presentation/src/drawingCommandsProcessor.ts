@@ -17,8 +17,10 @@ import { makeCommandUid, type CommandUid, type DrawingCmd } from './drawing'
 import { type Array as YArray, type Doc as YDoc, UndoManager as YUndoManager } from 'yjs'
 
 export class UndoRedoAvailability {
-  constructor (private readonly disableUndo: boolean, private readonly disableRedo: boolean) {
-  }
+  constructor (
+    private readonly disableUndo: boolean,
+    private readonly disableRedo: boolean
+  ) {}
 
   get undoDisabled (): boolean {
     return this.disableUndo

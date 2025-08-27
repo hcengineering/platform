@@ -97,7 +97,7 @@ const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentCol
   <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
 </svg>`
 
-type PointStatus = 'last' | 'intermediate'
+type PointStatus = 'last-point' | 'intermediate-point'
 
 class DrawState {
   on = false
@@ -153,9 +153,9 @@ class DrawState {
     this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
   }
 
-  drawLive = (point: MouseScaledPoint, status: PointStatus): void => {
+  drawLine = (point: MouseScaledPoint, status: PointStatus): void => {
     window.requestAnimationFrame(() => {
-      if (status === 'intermediate' || this.points.length <= 1) {
+      if (status === 'intermediate-point' || this.points.length <= 1) {
         this.addPoint(point)
       }
       const erasing = this.tool === 'erase'
@@ -199,7 +199,7 @@ class DrawState {
       this.drawPoint(cmd.points[0], cmd.erasing)
     } else {
       for (let i = 1; i < cmd.points.length; i++) {
-        const pointStatus = i === cmd.points.length - 1 ? 'last' : 'intermediate'
+        const pointStatus: PointStatus = i === cmd.points.length - 1 ? 'last-point' : 'intermediate-point'
         this.drawSmoothSegment(cmd.points, i, pointStatus)
       }
       this.ctx.stroke()
@@ -259,7 +259,7 @@ class DrawState {
     const avg = middlePoint(prevPos, curPos)
     if (index === 1) {
       this.ctx.moveTo(prevPos.x, prevPos.y)
-      if (status === 'last') {
+      if (status === 'last-point') {
         this.ctx.lineTo(curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(curPos.x, curPos.y, avg.x, avg.y)
@@ -267,7 +267,7 @@ class DrawState {
     } else {
       const prevAvg = middlePoint(points[index - 2], prevPos)
       this.ctx.moveTo(prevAvg.x, prevAvg.y)
-      if (status === 'last') {
+      if (status === 'last-point') {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, avg.x, avg.y)
@@ -368,11 +368,16 @@ export function drawing (
         } else {
           const imageWidth = props.imageWidth ?? 1
           const imageHeight = props.imageHeight ?? 1
-          const scale = rescaleToFitAspectRatio(imageWidth, imageHeight, entry.contentRect.width, entry.contentRect.height)
+          const scale = rescaleToFitAspectRatio(
+            imageWidth,
+            imageHeight,
+            entry.contentRect.width,
+            entry.contentRect.height
+          )
           canvas.style.transform = `scale(${scale.x}, ${scale.y})`
           draw.scale = {
-            x: (canvas.width / entry.contentRect.width) / scale.x,
-            y: (canvas.height / entry.contentRect.height) / scale.y
+            x: canvas.width / entry.contentRect.width / scale.x,
+            y: canvas.height / entry.contentRect.height / scale.y
           }
           draw.cssTransformScale = scale
         }
@@ -394,17 +399,11 @@ export function drawing (
 
   function touchToNodePoint (touch: Touch, node: HTMLElement): NodePoint {
     const rect = node.getBoundingClientRect()
-    return makeNodePoint(
-      Math.round(touch.clientX - rect.left),
-      Math.round(touch.clientY - rect.top)
-    )
+    return makeNodePoint(Math.round(touch.clientX - rect.left), Math.round(touch.clientY - rect.top))
   }
 
   function pointerToNodePoint (e: PointerEvent): NodePoint {
-    return makeNodePoint(
-      Math.round(e.offsetX),
-      Math.round(e.offsetY)
-    )
+    return makeNodePoint(Math.round(e.offsetX), Math.round(e.offsetY))
   }
 
   canvas.ontouchstart = (e) => {
@@ -510,7 +509,7 @@ export function drawing (
 
       if (draw.on) {
         if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
-          draw.drawLive(scaledPoint, 'intermediate')
+          draw.drawLine(scaledPoint, 'intermediate-point')
           prevPos = scaledPoint
         }
       }
@@ -541,7 +540,7 @@ export function drawing (
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (draw.isDrawingTool()) {
-        draw.drawLive(scaledPoint, 'last')
+        draw.drawLine(scaledPoint, 'last-point')
         storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
@@ -550,7 +549,7 @@ export function drawing (
           commitTextEdit({ deferCommandStore: false })
         } else {
           const cmd = findTextCommand(prevPos)
-          props.cmdChanging?.(cmd?.id ?? '' as CommandUid)
+          props.cmdChanging?.(cmd?.id ?? ('' as CommandUid))
         }
       }
       draw.on = false

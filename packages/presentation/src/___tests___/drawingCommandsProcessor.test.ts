@@ -60,11 +60,14 @@ describe('DrawingCommandsProcessor Tests', () => {
       { undoDisabled: true, redoDisabled: true },
       { undoDisabled: false, redoDisabled: false },
       { undoDisabled: false, redoDisabled: true }
-    ])('construction test with undoDisabled = $undoDisabled, redoDisabled = $redoDisabled', ({ undoDisabled, redoDisabled }) => {
-      const availability = new UndoRedoAvailability(undoDisabled, redoDisabled)
-      expect(availability.undoDisabled).toBe(undoDisabled)
-      expect(availability.redoDisabled).toBe(redoDisabled)
-    })
+    ])(
+      'construction test with undoDisabled = $undoDisabled, redoDisabled = $redoDisabled',
+      ({ undoDisabled, redoDisabled }) => {
+        const availability = new UndoRedoAvailability(undoDisabled, redoDisabled)
+        expect(availability.undoDisabled).toBe(undoDisabled)
+        expect(availability.redoDisabled).toBe(redoDisabled)
+      }
+    )
   })
 
   describe('after construction', () => {
@@ -81,7 +84,7 @@ describe('DrawingCommandsProcessor Tests', () => {
 
   describe('after set', () => {
     it('undo/redo availability', () => {
-      const testCommands: DrawingCmd[] = [(makeTextCommand()), (makeLineCommand())]
+      const testCommands: DrawingCmd[] = [makeTextCommand(), makeLineCommand()]
 
       systemUnderTest.set(testCommands)
 
@@ -91,8 +94,8 @@ describe('DrawingCommandsProcessor Tests', () => {
     })
 
     it('snapshot', () => {
-      const initialCommands: DrawingCmd[] = [(makeTextCommand())]
-      const newCommands: DrawingCmd[] = [(makeLineCommand())]
+      const initialCommands: DrawingCmd[] = [makeTextCommand()]
+      const newCommands: DrawingCmd[] = [makeLineCommand()]
 
       systemUnderTest.set(initialCommands)
       systemUnderTest.set(newCommands)
@@ -344,7 +347,10 @@ describe('DrawingCommandsProcessor Tests', () => {
         lineWidth: 2,
         erasing: false,
         penColor: 'blue',
-        points: [{ x: 0, y: 0 }, { x: 20, y: 20 }]
+        points: [
+          { x: 0, y: 0 },
+          { x: 20, y: 20 }
+        ]
       } as any
 
       commands.push([commandWithUid, commandWithoutUid])

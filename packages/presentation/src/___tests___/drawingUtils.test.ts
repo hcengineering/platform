@@ -100,21 +100,18 @@ describe('drawingUtils module tests', () => {
       }
     ]
 
-    it.each(testCases)(
-      '$description',
-      ({ data: { referenceWidth, referenceHeight, actualWidth, actualHeight } }) => {
-        const scale = rescaleToFitAspectRatio(referenceWidth, referenceHeight, actualWidth, actualHeight)
+    it.each(testCases)('$description', ({ data: { referenceWidth, referenceHeight, actualWidth, actualHeight } }) => {
+      const scale = rescaleToFitAspectRatio(referenceWidth, referenceHeight, actualWidth, actualHeight)
 
-        const scaledWidth = actualWidth * scale.x
-        const scaledHeight = actualHeight * scale.y
+      const scaledWidth = actualWidth * scale.x
+      const scaledHeight = actualHeight * scale.y
 
-        const resultAspectRatio = scaledWidth / scaledHeight
-        const desiredAspectRatio = referenceWidth / referenceHeight
+      const resultAspectRatio = scaledWidth / scaledHeight
+      const desiredAspectRatio = referenceWidth / referenceHeight
 
-        expect(resultAspectRatio).toBeCloseTo(desiredAspectRatio, 6)
-        expect(scale.x === 1 || scale.y === 1).toBe(true)
-      }
-    )
+      expect(resultAspectRatio).toBeCloseTo(desiredAspectRatio, 6)
+      expect(scale.x === 1 || scale.y === 1).toBe(true)
+    })
   })
 
   describe('offsetPoint', () => {
@@ -152,13 +149,10 @@ describe('drawingUtils module tests', () => {
       }
     ]
 
-    it.each(testCases)(
-      '$description',
-      ({ victim, offset, expected }) => {
-        const result = offsetPoint(victim, offset)
-        expect(result).toEqual(expected)
-      }
-    )
+    it.each(testCases)('$description', ({ victim, offset, expected }) => {
+      const result = offsetPoint(victim, offset)
+      expect(result).toEqual(expected)
+    })
   })
 
   describe('offsetInParent', () => {
@@ -196,27 +190,24 @@ describe('drawingUtils module tests', () => {
       }
     ]
 
-    it.each(testCases)(
-      '$description',
-      ({ parentSize, childSize, expected }) => {
-        // Create mock HTML elements
-        const mockParent = {
-          getBoundingClientRect: jest.fn().mockReturnValue({
-            width: parentSize.width,
-            height: parentSize.height
-          })
-        } as unknown as HTMLElement
+    it.each(testCases)('$description', ({ parentSize, childSize, expected }) => {
+      // Create mock HTML elements
+      const mockParent = {
+        getBoundingClientRect: jest.fn().mockReturnValue({
+          width: parentSize.width,
+          height: parentSize.height
+        })
+      } as unknown as HTMLElement
 
-        const mockChild = {
-          getBoundingClientRect: jest.fn().mockReturnValue({
-            width: childSize.width,
-            height: childSize.height
-          })
-        } as unknown as HTMLElement
+      const mockChild = {
+        getBoundingClientRect: jest.fn().mockReturnValue({
+          width: childSize.width,
+          height: childSize.height
+        })
+      } as unknown as HTMLElement
 
-        const result = offsetInParent(mockParent, mockChild)
-        expect(result).toEqual(expected)
-      }
-    )
+      const result = offsetInParent(mockParent, mockChild)
+      expect(result).toEqual(expected)
+    })
   })
 })

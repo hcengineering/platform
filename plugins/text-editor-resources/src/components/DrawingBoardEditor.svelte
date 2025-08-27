@@ -19,16 +19,16 @@
     DrawingCmd,
     DrawingTool,
     DrawTextCmd,
-    Point,
     drawing,
-    CommandUid
+    CommandUid,
+    Point,
+    DrawingCommandsProcessor
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
   import { Loading, Component } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
-  import { DrawingCommandsProcessor } from '@hcengineering/presentation/src/drawingCommandsProcessor'
 
   export let boardId: string
   export let document: YDoc
@@ -272,8 +272,8 @@
           placeInside={true}
           showPanTool={true}
           {cmdEditor}
-          disableUndo={disableUndo}
-          disableRedo={disableRedo}
+          {disableUndo}
+          {disableRedo}
           bind:toolbar
           bind:tool
           bind:penColor

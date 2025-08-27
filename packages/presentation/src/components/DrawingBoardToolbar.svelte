@@ -311,12 +311,13 @@
       bind:value={penColor}
       on:change={addColorPreset}
     />
-  <Button
-    kind="icon"
-    icon={IconMoreH}
-    noFocus
-    showTooltip={{ label: presentation.string.PaletteManagementMenu }}
-    on:click={showPaletteManagementMenu} />
+    <Button
+      kind="icon"
+      icon={IconMoreH}
+      noFocus
+      showTooltip={{ label: presentation.string.PaletteManagementMenu }}
+      on:click={showPaletteManagementMenu}
+    />
   </div>
 </div>
 

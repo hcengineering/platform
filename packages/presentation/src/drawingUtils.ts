@@ -56,11 +56,13 @@ export function offsetPoint (victim: Point, offset: Point): Point {
   return { x: victim.x + offset.x, y: victim.y + offset.y }
 }
 
-export function offsetCanvasPoint (victim: CanvasPoint, offsetX: number, offsetY: number, offsetScale: number): CanvasPoint {
-  return makeCanvasPoint(
-    Math.round(victim.x + offsetX * offsetScale),
-    Math.round(victim.y + offsetY * offsetScale)
-  )
+export function offsetCanvasPoint (
+  victim: CanvasPoint,
+  offsetX: number,
+  offsetY: number,
+  offsetScale: number
+): CanvasPoint {
+  return makeCanvasPoint(Math.round(victim.x + offsetX * offsetScale), Math.round(victim.y + offsetY * offsetScale))
 }
 
 export function middlePoint (first: Point, second: Point): Point {
@@ -73,7 +75,7 @@ export function easeInOutCubic (x: number): number {
 
 export function offsetInParent (parent: HTMLElement, child: HTMLElement): Point {
   function evaluateOffset (parentSize: number, childSize: number): number {
-    return ((parentSize - childSize) * 0.5)
+    return (parentSize - childSize) * 0.5
   }
 
   const childWidth = child.getBoundingClientRect().width
