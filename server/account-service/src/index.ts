@@ -429,7 +429,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
         ctx.res.end(body)
       },
-      { ...request }
+      { method: request.method }
     )
   })
 

@@ -169,9 +169,17 @@ export class StorageExtension implements Extension {
     const { ctx, adapter } = this.configuration
 
     try {
-      return await ctx.with('load-document', {}, (ctx) => {
-        return adapter.loadDocument(ctx, documentName, context)
-      })
+      return await ctx.with(
+        'load-document',
+        {},
+        (ctx) => {
+          return adapter.loadDocument(ctx, documentName, context)
+        },
+        {
+          workspace: context.wsIds.uuid,
+          documentName
+        }
+      )
     } catch (err: any) {
       Analytics.handleError(err)
       ctx.error('failed to load document', { documentName, error: err })
@@ -220,11 +228,18 @@ export class StorageExtension implements Extension {
       const now = Date.now()
 
       try {
-        const currMarkup = await ctx.with('save-document', {}, (ctx) =>
-          adapter.saveDocument(ctx, documentName, document, context, {
-            prev: () => this.markups.get(documentName) ?? {},
-            curr: () => this.configuration.transformer.fromYdoc(document)
-          })
+        const currMarkup = await ctx.with(
+          'save-document',
+          {},
+          (ctx) =>
+            adapter.saveDocument(ctx, documentName, document, context, {
+              prev: () => this.markups.get(documentName) ?? {},
+              curr: () => this.configuration.transformer.fromYdoc(document)
+            }),
+          {
+            workspace: context.wsIds.uuid,
+            documentName
+          }
         )
 
         this.markups.set(documentName, currMarkup ?? {})

@@ -190,7 +190,7 @@ export class GmailClient {
     } else if (token !== undefined) {
       oAuth2Client.setCredentials(token)
     }
-    const email = user.email ?? (await getEmail(googleClient))
+    const email = await getEmail(googleClient)
     if (email === undefined) {
       throw new Error('Cannot retrieve user email')
     }
