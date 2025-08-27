@@ -507,22 +507,22 @@ pub async fn handler(
     db: web::Data<Db>,
     hub_state: web::Data<Arc<RwLock<HubState>>>,
 ) -> Result<HttpResponse, Error> {
-    let claims = if CONFIG.no_authorization == Some(true) {
-        None
-    } else {
+    let claims = if !CONFIG.no_authorization {
         Some(
             req.extensions()
                 .get::<Claims>()
                 .expect("Missing claims")
                 .to_owned(),
         )
+    } else {
+        None
     };
 
     let session = WsSession {
         db: db.get_ref().clone(),
         hub_state: hub_state.get_ref().clone(),
         id: new_session_id(),
-        claims: claims,
+        claims,
     };
 
     ws::start(session, &req, payload)

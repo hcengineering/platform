@@ -31,6 +31,7 @@ hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
 ] }
 secrecy = "0.10.3"
 tokio-stream = "0.1"
+strum = { version = "0.27.2", features = ["derive"] }
 
 [[bin]]
 name = "hulypulse"

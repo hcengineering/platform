@@ -24,7 +24,7 @@ pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(),
         return Err("Invalid key: deprecated symbols");
     }
 
-    if CONFIG.no_authorization == Some(true) {
+    if CONFIG.no_authorization {
         return Ok(());
     }
 

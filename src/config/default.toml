@@ -9,9 +9,8 @@ redis_mode = "direct"
 redis_service = "mymaster"
 
 max_ttl = 3600
+backend = "redis"
+no_authorization = false
 
 # optional settings
-
-# memory_mode = true
-# no_authorization = true
 # max_size = 100

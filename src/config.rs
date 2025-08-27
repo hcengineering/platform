@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
+use std::{path::Path, sync::LazyLock};
+
 use secrecy::SecretString;
 use serde::Deserialize;
 use serde_with::formats::CommaSeparator;
 use serde_with::{StringWithSeparator, serde_as};
-
 use url::Url;
-
-use std::{path::Path, sync::LazyLock};
 
 use config::FileFormat;
 
@@ -29,6 +28,13 @@ use config::FileFormat;
 pub enum RedisMode {
     Sentinel,
     Direct,
+}
+
+#[derive(Deserialize, Debug, PartialEq, strum::Display)]
+#[serde(rename_all = "lowercase")]
+pub enum BackendType {
+    Memory,
+    Redis,
 }
 
 #[serde_as]
@@ -48,8 +54,8 @@ pub struct Config {
     pub max_ttl: usize,
     pub max_size: Option<usize>,
 
-    pub memory_mode: Option<bool>,
-    pub no_authorization: Option<bool>,
+    pub backend: BackendType,
+    pub no_authorization: bool,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
