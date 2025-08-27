@@ -76,13 +76,13 @@ export function offsetInParent (parent: HTMLElement, child: HTMLElement): Point 
     return ((parentSize - childSize) * 0.5)
   }
 
-  const canvasWidth = child.getBoundingClientRect().width
+  const childWidth = child.getBoundingClientRect().width
   const parentWidth = parent.getBoundingClientRect().width
-  const offsetX = evaluateOffset(parentWidth, canvasWidth)
+  const offsetX = evaluateOffset(parentWidth, childWidth)
 
-  const canvasHeight = child.getBoundingClientRect().height
+  const childHeight = child.getBoundingClientRect().height
   const parentHeight = parent.getBoundingClientRect().height
-  const offsetY = evaluateOffset(parentHeight, canvasHeight)
+  const offsetY = evaluateOffset(parentHeight, childHeight)
 
   return { x: offsetX, y: offsetY }
 }
