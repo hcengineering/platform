@@ -41,16 +41,14 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
   }
 
   domainRequest (ctx: MeasureContext, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
-    return ctx.with('domain-request', { source: ctx.contextData.service, domain }, (ctx) => {
-      return ctx.with(
-        `${domain}-${Object.keys(params)[0]}`,
-        {},
-        async (ctx) => await this.provideDomainRequest(ctx, domain, params),
-        {
-          params
-        }
-      )
-    })
+    return ctx.with(
+      `${domain}-${Object.keys(params)[0]}`,
+      {},
+      (ctx) => this.provideDomainRequest(ctx, domain, params),
+      {
+        workspace: this.context.workspace.uuid
+      }
+    )
   }
 
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {

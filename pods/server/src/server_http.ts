@@ -357,7 +357,7 @@ export function startHttpServer (
             })
             res.end(JSON.stringify({ success: true }))
           },
-          { file: name, contentType, workspace: wsIds.uuid }
+          { contentType, workspace: wsIds.uuid }
         )
       } catch (err: any) {
         Analytics.handleError(err)

@@ -133,13 +133,23 @@ export async function startIndexer (
       const token = request.token ?? req.headers.authorization?.split(' ')[1]
       const decoded = decodeToken(token) // Just to be safe
 
-      ctx.info('search', { classes: request._classes, query: request.query, workspace: decoded.workspace })
-      await ctx.with('search', {}, async (ctx) => {
-        const docs = await ctx.with('search', { workspace: decoded.workspace }, (ctx) =>
-          manager.fulltextAdapter.search(ctx, decoded.workspace, request._classes, request.query, request.fullTextLimit)
-        )
-        req.body = docs
-      })
+      await ctx.with(
+        'search',
+        {},
+        async (ctx) => {
+          req.body = await manager.fulltextAdapter.search(
+            ctx,
+            decoded.workspace,
+            request._classes,
+            request.query,
+            request.fullTextLimit
+          )
+        },
+        {
+          workspace: decoded.workspace,
+          classes: request._classes
+        }
+      )
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -153,10 +163,11 @@ export async function startIndexer (
       const request = req.request.body as FulltextSearch
       const token = request.token ?? req.headers.authorization?.split(' ')[1]
       const decoded = decodeToken(token) // Just to be safe
-      ctx.info('fulltext-search', { ...request.query, workspace: decoded.workspace })
-      await ctx.with('full-text-search', {}, async (ctx) => {
-        const result = await ctx.with('searchFulltext', {}, (ctx) =>
-          searchFulltext(
+      await ctx.with(
+        'full-text-search',
+        {},
+        async (ctx) => {
+          const result = await searchFulltext(
             ctx,
             decoded.workspace,
             manager.sysHierarchy,
@@ -164,9 +175,12 @@ export async function startIndexer (
             request.query,
             request.options
           )
-        )
-        req.body = result
-      })
+          req.body = result
+        },
+        {
+          workspace: decoded.workspace
+        }
+      )
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
