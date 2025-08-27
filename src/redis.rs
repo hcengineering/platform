@@ -484,7 +484,7 @@ pub async fn client() -> anyhow::Result<Client> {
         )
         .unwrap()
         .set_client_to_redis_protocol(ProtocolVersion::RESP3)
-        .set_client_to_redis_db(0)
+        .set_client_to_redis_db(11)
         .set_client_to_redis_password(CONFIG.redis_password.clone())
         .set_client_to_sentinel_password(CONFIG.redis_password.clone())
         .build()?;
