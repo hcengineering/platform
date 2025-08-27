@@ -22,7 +22,7 @@
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import { isFullScreen, lk, tryConnect } from '../utils'
-  import ControlBar from './ControlBar.svelte'
+  import ControlBar from './meeting/ControlBar.svelte'
   import { lkSessionConnected } from '../liveKitClient'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'

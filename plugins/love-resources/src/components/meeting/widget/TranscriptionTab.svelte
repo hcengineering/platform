@@ -16,7 +16,6 @@
   import { MeetingMinutes, Room } from '@hcengineering/love'
   import { ChannelEmbeddedContent } from '@hcengineering/chunter-resources'
   import { WidgetState } from '@hcengineering/workbench-resources'
-  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
 
   export let widgetState: WidgetState
   export let meetingMinutes: MeetingMinutes
@@ -34,7 +33,4 @@
   collection="transcription"
   on:close
 >
-  <svelte:fragment slot="header">
-    <MeetingWidgetHeader doc={meetingMinutes} {room} on:close />
-  </svelte:fragment>
 </ChannelEmbeddedContent>

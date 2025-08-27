@@ -3,12 +3,12 @@
   import { isOffice } from '@hcengineering/love'
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, myInfo, myOffice, rooms, currentMeetingMinutes } from '../stores'
+  import { currentRoom, infos, myInfo, myOffice, rooms } from '../stores'
   import { endMeeting, isSharingEnabled, leaveRoom, liveKitClient } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
+  import MeetingHeader from './meeting/MeetingHeader.svelte'
 
   export let limit: number = 4
 
@@ -34,35 +34,12 @@
     dispatch('close')
   }
 
-  function formatElapsedTime (elapsed: number): string {
-    const seconds = Math.floor(elapsed / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-
-    const displaySeconds = (seconds % 60).toString().padStart(2, '0')
-    const displayMinutes = (minutes % 60).toString().padStart(2, '0')
-
-    return hours > 0 ? `${hours}:${displayMinutes}:${displaySeconds}` : `${displayMinutes}:${displaySeconds}`
-  }
-
-  let now = Date.now()
-
   async function stopShare (): Promise<void> {
     await liveKitClient.setScreenShareEnabled(false)
   }
 
   $: participants = $infos.filter((p) => p.room === $currentRoom?._id)
   $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
-
-  onMount(() => {
-    const interval = setInterval(() => {
-      now = Date.now()
-    }, 1000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  })
 </script>
 
 {#if $lkSessionConnected && $currentRoom != null}
@@ -70,34 +47,7 @@
 
   <div class="m-1 p-2">
     <div class="flex-col flex-grow flex-gap-0-5">
-      <!-- subtitle -->
-      {#if $currentMeetingMinutes !== undefined}
-        <div class="flex-between flex-gap-2">
-          <DocNavLink object={$currentRoom}>
-            <span class="font-medium-12 secondary-textColor overflow-label">{$currentRoom.name}</span>
-          </DocNavLink>
-
-          <!-- elapsed time from start -->
-          {#if $currentMeetingMinutes?.createdOn !== undefined}
-            {@const elapsed = now - $currentMeetingMinutes.createdOn}
-            <div class="font-medium-12 secondary-textColor">{formatElapsedTime(elapsed)}</div>
-          {/if}
-        </div>
-      {/if}
-
-      <div class="flex-between flex-gap-2">
-        <!-- title -->
-        {#if $currentMeetingMinutes !== undefined}
-          <DocNavLink object={$currentMeetingMinutes}>
-            <span class="font-medium overflow-label">{$currentMeetingMinutes.title}</span>
-          </DocNavLink>
-        {:else}
-          <DocNavLink object={$currentRoom}>
-            <span class="font-medium overflow-label">{$currentRoom.name}</span>
-          </DocNavLink>
-        {/if}
-      </div>
-
+      <MeetingHeader room={$currentRoom} />
       <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
         {#if overLimit}

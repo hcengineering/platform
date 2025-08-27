@@ -11,6 +11,7 @@
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
 </script>
 
+{#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}
   <ModernButton
     icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
     tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
@@ -19,3 +20,4 @@
     {size}
     on:click={() => record(room)}
   />
+{/if}

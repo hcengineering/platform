@@ -39,8 +39,8 @@
   import workbench from '@hcengineering/workbench'
   import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
 
-  import love from '../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
+  import love from '../../plugin'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../../stores'
   import {
     connectRoom,
     createMeetingVideoWidgetTab,
@@ -50,16 +50,16 @@
     getRoomName,
     leaveRoom,
     screenSharing
-  } from '../utils'
-  import ActiveInvitesPopup from './ActiveInvitesPopup.svelte'
-  import InvitePopup from './InvitePopup.svelte'
-  import PersonActionPopup from './PersonActionPopup.svelte'
-  import RequestPopup from './RequestPopup.svelte'
-  import RequestingPopup from './RequestingPopup.svelte'
-  import RoomPopup from './RoomPopup.svelte'
-  import RoomButton from './RoomButton.svelte'
+  } from '../../utils'
+  import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
+  import InvitePopup from '../InvitePopup.svelte'
+  import PersonActionPopup from '../PersonActionPopup.svelte'
+  import RequestPopup from '../RequestPopup.svelte'
+  import RequestingPopup from '../RequestingPopup.svelte'
+  import RoomPopup from '../RoomPopup.svelte'
+  import RoomButton from '../RoomButton.svelte'
   import { getPersonByPersonRef } from '@hcengineering/contact-resources'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
 

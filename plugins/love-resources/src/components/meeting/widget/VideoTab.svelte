@@ -22,7 +22,6 @@
   export let doc: MeetingMinutes | undefined = undefined
 </script>
 
-<MeetingWidgetHeader {doc} {room} on:close />
 <div class="root">
   <VideoPopup room={room._id} isDock />
 </div>
