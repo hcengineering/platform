@@ -14,6 +14,22 @@
 //
 
 import { generateId } from '@hcengineering/core'
+import {
+  type CanvasPoint,
+  easeInOutCubic,
+  middlePoint,
+  offsetInParent,
+  offsetPoint,
+  rescaleToFitAspectRatio,
+  scalePoint,
+  type Point,
+  makeCanvasPoint,
+  type NodePoint,
+  type MouseScaledPoint,
+  makeMouseScaledPoint,
+  makeNodePoint,
+  offsetCanvasPoint
+} from './drawingUtils'
 
 export interface DrawingData {
   content?: string
@@ -56,7 +72,7 @@ export interface DrawingCmd {
 
 export interface DrawTextCmd extends DrawingCmd {
   text: string
-  pos: Point
+  pos: CanvasPoint
   fontSize: number
   fontFace: string
   color: string
@@ -66,19 +82,10 @@ export interface DrawLineCmd extends DrawingCmd {
   lineWidth: number
   erasing: boolean
   penColor: string
-  points: Point[]
+  points: CanvasPoint[]
 }
 
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
-
-export interface Point {
-  x: number
-  y: number
-}
-
-function avgPoint (p1: Point, p2: Point): Point {
-  return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }
-}
 
 const maxTextLength = 500
 
@@ -86,13 +93,11 @@ export const makeCommandUid = (): CommandUid => {
   return (crypto?.randomUUID?.() ?? generateId()) as CommandUid
 }
 
-function easeInOutCubic (x: number): number {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
-}
-
 const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
 </svg>`
+
+type PointStatus = 'last' | 'intermediate'
 
 class DrawState {
   on = false
@@ -105,8 +110,9 @@ class DrawState {
   fontFace = '"IBM Plex Sans"'
   center: Point = { x: 0, y: 0 }
   offset: Point = { x: 0, y: 0 }
-  points: Point[] = []
+  points: CanvasPoint[] = []
   scale: Point = { x: 1, y: 1 }
+  cssTransformScale: Point = { x: 1, y: 1 }
   ctx: CanvasRenderingContext2D
 
   constructor (ctx: CanvasRenderingContext2D) {
@@ -121,22 +127,22 @@ class DrawState {
     return (this.scale.x + this.scale.y) / 2
   }
 
-  addPoint = (mouseX: number, mouseY: number): void => {
-    this.points.push(this.mouseToCanvasPoint({ x: mouseX, y: mouseY }))
+  addPoint = (target: MouseScaledPoint): void => {
+    this.points.push(this.mouseToCanvasPoint(target))
   }
 
-  mouseToCanvasPoint = (mouse: Point): Point => {
-    return {
-      x: Math.round(mouse.x * this.scale.x - this.offset.x - this.center.x),
-      y: Math.round(mouse.y * this.scale.y - this.offset.y - this.center.y)
-    }
+  mouseToCanvasPoint = (mouse: MouseScaledPoint): CanvasPoint => {
+    return makeCanvasPoint(
+      Math.round(mouse.x * this.scale.x - this.offset.x - this.center.x),
+      Math.round(mouse.y * this.scale.y - this.offset.y - this.center.y)
+    )
   }
 
-  canvasToMousePoint = (canvas: Point): Point => {
-    return {
-      x: Math.round(canvas.x / this.scale.x + this.offset.x + this.center.x),
-      y: Math.round(canvas.y / this.scale.y + this.offset.y + this.center.y)
-    }
+  canvasToMousePoint = (canvas: CanvasPoint): MouseScaledPoint => {
+    return makeMouseScaledPoint(
+      Math.round(canvas.x / this.scale.x + this.offset.x + this.center.x),
+      Math.round(canvas.y / this.scale.y + this.offset.y + this.center.y)
+    )
   }
 
   isDrawingTool = (): boolean => {
@@ -147,26 +153,29 @@ class DrawState {
     this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
   }
 
-  drawLive = (x: number, y: number, lastPoint = false): void => {
+  drawLive = (point: MouseScaledPoint, status: PointStatus): void => {
     window.requestAnimationFrame(() => {
-      if (!lastPoint || this.points.length > 1) {
-        this.addPoint(x, y)
+      if (status === 'intermediate' || this.points.length <= 1) {
+        this.addPoint(point)
       }
       const erasing = this.tool === 'erase'
       this.ctx.save()
-      this.translateCtx()
-      this.ctx.beginPath()
-      this.ctx.lineCap = 'round'
-      this.ctx.strokeStyle = this.penColor
-      this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
-      this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
-      if (this.points.length === 1) {
-        this.drawPoint(this.points[0], erasing)
-      } else {
-        this.drawSmoothSegment(this.points, this.points.length - 1, lastPoint)
-        this.ctx.stroke()
+      try {
+        this.translateCtx()
+        this.ctx.beginPath()
+        this.ctx.lineCap = 'round'
+        this.ctx.strokeStyle = this.penColor
+        this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
+        this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
+        if (this.points.length === 1) {
+          this.drawPoint(this.points[0], erasing)
+        } else {
+          this.drawSmoothSegment(this.points, this.points.length - 1, status)
+          this.ctx.stroke()
+        }
+      } finally {
+        this.ctx.restore()
       }
-      this.ctx.restore()
     })
   }
 
@@ -190,7 +199,8 @@ class DrawState {
       this.drawPoint(cmd.points[0], cmd.erasing)
     } else {
       for (let i = 1; i < cmd.points.length; i++) {
-        this.drawSmoothSegment(cmd.points, i, i === cmd.points.length - 1)
+        const pointStatus = i === cmd.points.length - 1 ? 'last' : 'intermediate'
+        this.drawSmoothSegment(cmd.points, i, pointStatus)
       }
       this.ctx.stroke()
     }
@@ -213,7 +223,7 @@ class DrawState {
     this.ctx.restore()
   }
 
-  isPointInText = (p: Point, cmd: DrawTextCmd): boolean => {
+  isPointInText = (p: CanvasPoint, cmd: DrawTextCmd): boolean => {
     this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
     const lines = cmd.text.split('\n').map((l) => l.trim())
     for (let i = 0; i < lines.length; i++) {
@@ -243,21 +253,21 @@ class DrawState {
     this.ctx.fill()
   }
 
-  drawSmoothSegment = (points: Point[], index: number, lastPoint: boolean): void => {
+  drawSmoothSegment = (points: Point[], index: number, status: PointStatus): void => {
     const curPos = points[index]
     const prevPos = points[index - 1]
-    const avg = avgPoint(prevPos, curPos)
+    const avg = middlePoint(prevPos, curPos)
     if (index === 1) {
       this.ctx.moveTo(prevPos.x, prevPos.y)
-      if (lastPoint) {
+      if (status === 'last') {
         this.ctx.lineTo(curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(curPos.x, curPos.y, avg.x, avg.y)
       }
     } else {
-      const prevAvg = avgPoint(points[index - 2], prevPos)
+      const prevAvg = middlePoint(points[index - 2], prevPos)
       this.ctx.moveTo(prevAvg.x, prevAvg.y)
-      if (lastPoint) {
+      if (status === 'last') {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, avg.x, avg.y)
@@ -304,8 +314,8 @@ export function drawing (
   node.appendChild(toolCursor)
 
   let readonly = props.readonly ?? false
-  let prevPos: Point = { x: 0, y: 0 }
-  let personCursorPos: Point = { x: 0, y: 0 }
+  let prevPos: MouseScaledPoint = makeMouseScaledPoint(0, 0)
+  let personCursorPos: CanvasPoint = makeCanvasPoint(0, 0)
   let isPersonCursorAnimating = false
 
   const draw = new DrawState(ctx)
@@ -321,7 +331,7 @@ export function drawing (
   updateCanvasTouchAction()
 
   interface LiveTextBox {
-    pos: Point
+    pos: MouseScaledPoint
     box: HTMLDivElement
     editor: HTMLDivElement
     cmdId: CommandUid
@@ -350,14 +360,21 @@ export function drawing (
           draw.scale = { x: 1, y: 1 }
           canvas.width = Math.floor(entry.contentRect.width)
           canvas.height = Math.floor(entry.contentRect.height)
-          draw.center.x = canvas.width / 2
-          draw.center.y = canvas.height / 2
+          draw.center = {
+            x: canvas.width / 2,
+            y: canvas.height / 2
+          }
           replayCommands(currentCommands)
         } else {
+          const imageWidth = props.imageWidth ?? 1
+          const imageHeight = props.imageHeight ?? 1
+          const scale = rescaleToFitAspectRatio(imageWidth, imageHeight, entry.contentRect.width, entry.contentRect.height)
+          canvas.style.transform = `scale(${scale.x}, ${scale.y})`
           draw.scale = {
-            x: canvas.width / entry.contentRect.width,
-            y: canvas.height / entry.contentRect.height
+            x: (canvas.width / entry.contentRect.width) / scale.x,
+            y: (canvas.height / entry.contentRect.height) / scale.y
           }
+          draw.cssTransformScale = scale
         }
       }
     }
@@ -375,19 +392,19 @@ export function drawing (
     }
   }
 
-  function touchToNodePoint (touch: Touch, node: HTMLElement): Point {
+  function touchToNodePoint (touch: Touch, node: HTMLElement): NodePoint {
     const rect = node.getBoundingClientRect()
-    return {
-      x: Math.round(touch.clientX - rect.left),
-      y: Math.round(touch.clientY - rect.top)
-    }
+    return makeNodePoint(
+      Math.round(touch.clientX - rect.left),
+      Math.round(touch.clientY - rect.top)
+    )
   }
 
-  function pointerToNodePoint (e: PointerEvent): Point {
-    return {
-      x: Math.round(e.offsetX),
-      y: Math.round(e.offsetY)
-    }
+  function pointerToNodePoint (e: PointerEvent): NodePoint {
+    return makeNodePoint(
+      Math.round(e.offsetX),
+      Math.round(e.offsetY)
+    )
   }
 
   canvas.ontouchstart = (e) => {
@@ -465,34 +482,46 @@ export function drawing (
     }
   }
 
-  function drawStart (p: Point): void {
+  function rescaleWithCss (target: NodePoint): MouseScaledPoint {
+    const scaled = scalePoint(target, draw.cssTransformScale)
+    return makeMouseScaledPoint(scaled.x, scaled.y)
+  }
+
+  function drawStart (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
     draw.on = true
     draw.points = []
-    prevPos = p
+    prevPos = scaledPoint
     if (draw.isDrawingTool()) {
-      draw.addPoint(p.x, p.y)
+      draw.addPoint(scaledPoint)
     }
   }
 
-  function drawContinue (p: Point): void {
+  function drawContinue (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
+
     if (draw.isDrawingTool()) {
-      const w = draw.cursorWidth()
-      toolCursor.style.left = `${p.x - w / 2}px`
-      toolCursor.style.top = `${p.y - w / 2}px`
+      const cursorSize = draw.cursorWidth()
+
+      const canvasOffsetInParent = offsetInParent(node, canvas)
+      const parentRelativeLocation = offsetPoint(scaledPoint, canvasOffsetInParent)
+      toolCursor.style.left = `${parentRelativeLocation.x - cursorSize / 2}px`
+      toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
+
       if (draw.on) {
-        if (Math.hypot(prevPos.x - p.x, prevPos.y - p.y) >= draw.minLineLength) {
-          draw.drawLive(p.x, p.y)
-          prevPos = p
+        if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
+          draw.drawLive(scaledPoint, 'intermediate')
+          prevPos = scaledPoint
         }
       }
     }
 
     if (draw.on && draw.tool === 'pan') {
       requestAnimationFrame(() => {
-        draw.offset.x += p.x - prevPos.x
-        draw.offset.y += p.y - prevPos.y
+        draw.offset.x += scaledPoint.x - prevPos.x
+        draw.offset.y += scaledPoint.y - prevPos.y
         replayCommands(currentCommands)
-        prevPos = p
+        prevPos = scaledPoint
         if (props.panning !== undefined) {
           props.panning(draw.offset)
         }
@@ -500,18 +529,19 @@ export function drawing (
     }
 
     if (draw.on && draw.tool === 'text') {
-      prevPos = p
+      prevPos = scaledPoint
     }
 
     if (props.pointerMoved !== undefined) {
-      props.pointerMoved(draw.mouseToCanvasPoint(p))
+      props.pointerMoved(draw.mouseToCanvasPoint(scaledPoint))
     }
   }
 
-  function drawEnd (p: Point): void {
+  function drawEnd (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (draw.isDrawingTool()) {
-        draw.drawLive(p.x, p.y, true)
+        draw.drawLive(scaledPoint, 'last')
         storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
@@ -527,7 +557,7 @@ export function drawing (
     }
   }
 
-  function findTextCommand (mousePos: Point): DrawTextCmd | undefined {
+  function findTextCommand (mousePos: MouseScaledPoint): DrawTextCmd | undefined {
     if (currentCommands === undefined) {
       return undefined
     }
@@ -563,10 +593,13 @@ export function drawing (
     const editor = document.createElement('div')
     box.appendChild(editor)
 
+    const canvasOffsetInParent = offsetInParent(node, canvas)
+    const parentRelativeLocation = offsetPoint(pos, canvasOffsetInParent)
+
     box.style.zIndex = '1'
     box.style.position = 'absolute'
-    box.style.left = `calc(${pos.x}px - ${padding}px)`
-    box.style.top = `calc(${pos.y}px - ${padding}px)`
+    box.style.left = `calc(${parentRelativeLocation.x}px - ${padding}px)`
+    box.style.top = `calc(${parentRelativeLocation.y}px - ${padding}px)`
     box.style.border = '1px solid var(--theme-editbox-focus-border)'
     box.style.borderRadius = 'var(--small-BorderRadius)'
     box.style.padding = `${padding}px`
@@ -676,25 +709,28 @@ export function drawing (
     }
 
     const moveTextBox = (dx: number, dy: number): void => {
-      let newX = box.offsetLeft + dx
-      let newY = box.offsetTop + dy
+      const canvasOffset = offsetInParent(node, canvas)
+      let actualNewX = box.offsetLeft + dx
+      let actualNewY = box.offsetTop + dy
       // For screenshots the canvas always has the same size as the underlying image
       // and we should not be able to drag the text box outside of the screenshot
       if (props.autoSize !== true) {
-        newX = Math.max(0, newX)
-        newY = Math.max(0, newY)
-        if (newX + box.offsetWidth > node.clientWidth) {
-          newX = node.clientWidth - box.offsetWidth
+        const canvasSize: Point = { x: canvas.getBoundingClientRect().width, y: canvas.getBoundingClientRect().height }
+        actualNewX = Math.max(canvasOffset.x, actualNewX)
+        actualNewY = Math.max(canvasOffset.y, actualNewY)
+
+        if (actualNewX > canvasOffset.x + canvasSize.x) {
+          actualNewX = canvasOffset.x + canvasSize.x
         }
-        if (newY + box.offsetHeight > node.clientHeight) {
-          newY = node.clientHeight - box.offsetHeight
+        if (actualNewY > canvasOffset.y + canvasSize.y) {
+          actualNewY = canvasOffset.y + canvasSize.y
         }
       }
-      box.style.left = `${newX}px`
-      box.style.top = `${newY}px`
+      box.style.left = `${actualNewX}px`
+      box.style.top = `${actualNewY}px`
       if (liveTextBox !== undefined) {
-        liveTextBox.pos.x = newX + padding
-        liveTextBox.pos.y = newY + padding
+        liveTextBox.pos.x = actualNewX - canvasOffset.x + padding
+        liveTextBox.pos.y = actualNewY - canvasOffset.y + padding
       }
     }
 
@@ -706,12 +742,12 @@ export function drawing (
       e.preventDefault()
       dragHandle.style.cursor = 'grabbing'
       dragHandle.setPointerCapture(e.pointerId)
-      let prevPos = { x: e.clientX, y: e.clientY }
+      let previousDragPosition = { x: e.clientX, y: e.clientY }
       const pointerMove = (e: PointerEvent): void => {
         e.preventDefault()
-        const p = { x: e.clientX, y: e.clientY }
-        moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
-        prevPos = p
+        const currentDragPosition = { x: e.clientX, y: e.clientY }
+        moveTextBox(currentDragPosition.x - previousDragPosition.x, currentDragPosition.y - previousDragPosition.y)
+        previousDragPosition = currentDragPosition
       }
       const pointerUp = (e: PointerEvent): void => {
         setTimeout(() => {
@@ -732,13 +768,13 @@ export function drawing (
       dragHandle.style.cursor = 'grabbing'
       const touch = e.changedTouches[0]
       const touchId = touch.identifier
-      let prevPos = touchToNodePoint(touch, dragHandle)
+      let prevPos: MouseScaledPoint = rescaleWithCss(touchToNodePoint(touch, dragHandle))
       const touchMove = (e: TouchEvent): void => {
         const touch = findTouch(e.changedTouches, touchId)
         if (touch !== undefined) {
-          const p = touchToNodePoint(touch, dragHandle)
-          moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
-          prevPos = p
+          const scaledPoint: MouseScaledPoint = rescaleWithCss(touchToNodePoint(touch, dragHandle))
+          moveTextBox(scaledPoint.x - prevPos.x, scaledPoint.y - prevPos.y)
+          prevPos = scaledPoint
         }
       }
       const touchEnd = (e: TouchEvent): void => {
@@ -920,10 +956,7 @@ export function drawing (
       if (deltaTime > frameInterval) {
         lastTime = currentTime - (deltaTime % frameInterval)
         const frac = Math.min((lastTime - startTime) / animDuration, 1)
-        personCursorPos = {
-          x: Math.round(oldPos.x + distanceX * frac),
-          y: Math.round(oldPos.y + distanceY * frac)
-        }
+        personCursorPos = offsetCanvasPoint(oldPos, distanceX, distanceY, frac)
         if (props.personCursorMoved !== undefined) {
           const p = draw.canvasToMousePoint(personCursorPos)
           const x = Math.max(0, Math.min(p.x, canvas.width))

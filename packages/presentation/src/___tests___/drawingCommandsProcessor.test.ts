@@ -16,12 +16,13 @@
 import { DrawingCommandsProcessor, UndoRedoAvailability } from '../drawingCommandsProcessor'
 import { makeCommandUid, type DrawingCmd, type DrawTextCmd, type DrawLineCmd } from '../drawing'
 import { type Array as YArray, Doc as YDoc } from 'yjs'
+import { makeCanvasPoint } from '../drawingUtils'
 
 const makeTextCommand = (overrides: Partial<DrawTextCmd> = {}): DrawTextCmd => ({
   id: makeCommandUid(),
   type: 'text',
   text: 'Default Text',
-  pos: { x: 13, y: 17 },
+  pos: makeCanvasPoint(13, 17),
   fontSize: 11,
   fontFace: 'Arial',
   color: 'red',
@@ -34,7 +35,7 @@ const makeLineCommand = (overrides: Partial<DrawLineCmd> = {}): DrawLineCmd => (
   lineWidth: 3,
   erasing: false,
   penColor: 'blue',
-  points: [{ x: 1, y: 3 }, { x: 11, y: 13 }],
+  points: [makeCanvasPoint(1, 3), makeCanvasPoint(11, 13)],
   ...overrides
 })
 
@@ -190,13 +191,13 @@ describe('DrawingCommandsProcessor Tests', () => {
 
       const second = makeTextCommand({
         text: 'Second',
-        pos: { x: 20, y: 20 },
+        pos: makeCanvasPoint(20, 20),
         color: 'blue'
       })
 
       const third = makeTextCommand({
         text: 'Third',
-        pos: { x: 30, y: 30 },
+        pos: makeCanvasPoint(30, 30),
         color: 'green'
       })
 
@@ -411,7 +412,7 @@ describe('DrawingCommandsProcessor Tests', () => {
       for (let i = 0; i < 10; i++) {
         const cmd = makeTextCommand({
           text: `Command ${i}`,
-          pos: { x: i * 10, y: i * 10 },
+          pos: makeCanvasPoint(i * 10, i * 10),
           color: 'black'
         })
         commands.push(cmd)

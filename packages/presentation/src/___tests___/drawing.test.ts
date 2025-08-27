@@ -17,6 +17,7 @@ import '@testing-library/jest-dom'
 
 import { makeCommandUid, drawing } from '../drawing'
 import type { DrawTextCmd, CommandUid, DrawingTool, DrawingProps, DrawingCmd } from '../drawing'
+import { makeCanvasPoint } from '../drawingUtils'
 
 const fakeCanvasContext = {
   clearRect: jest.fn(),
@@ -143,7 +144,7 @@ describe('drawing module tests', () => {
           id: textCommandUid,
           type: 'text',
           text: 'hello',
-          pos: { x: 10, y: 10 },
+          pos: makeCanvasPoint(10, 10),
           fontSize: 12,
           fontFace: '"IBM Plex Sans"',
           color: 'green',
@@ -383,6 +384,194 @@ describe('drawing module tests', () => {
 
         jest.runOnlyPendingTimers()
         expect(isLiveTextEditorPresent(drawingPlugInPoint)).toBe(false)
+      })
+    })
+
+    describe('canvas rescaling via ResizeObserver', () => {
+      const resizeObserverSpyType = jest.fn()
+      let resizeObserverSpy: any
+
+      const DefaultPointerEventOffsetX = 13
+      const DefaultPointerEventOffsetY = 17
+
+      function flushRequestAnimationFrameCallbacks (): void {
+        jest.runOnlyPendingTimers()
+      }
+
+      const makePointerEvent = (
+        type: string,
+        offsetX: number,
+        offsetY: number
+      ): PointerEvent => {
+        const event = new PointerEvent(type, { pointerId: 1, button: 0, bubbles: true, cancelable: true })
+        Object.defineProperty(event, 'offsetX', { value: offsetX, writable: false })
+        Object.defineProperty(event, 'offsetY', { value: offsetY, writable: false })
+        return event
+      }
+
+      function expectSingleLineCommand (
+        commandAddedSpy: jest.Mock,
+        expectedPoints: Array<{ x: number, y: number }>
+      ): void {
+        expect(commandAddedSpy).toHaveBeenCalledTimes(1)
+        const actualAddedCommand = commandAddedSpy.mock.calls[0][0]
+        expect(actualAddedCommand).toBeDefined()
+        expect(actualAddedCommand.type).toBe('line')
+        expect(actualAddedCommand.points).toBeDefined()
+        expect(actualAddedCommand.points.length).toBe(expectedPoints.length)
+        expectedPoints.forEach((expectedPoint, index) => {
+          expect(actualAddedCommand.points[index]).toStrictEqual(expectedPoint)
+        })
+      }
+
+      beforeEach(() => {
+        resizeObserverSpy = {
+          observe: jest.fn(),
+          unobserve: jest.fn(),
+          disconnect: jest.fn()
+        }
+        resizeObserverSpyType.mockImplementation(() => resizeObserverSpy)
+        ;(globalThis as any).ResizeObserver = resizeObserverSpyType
+
+        if (typeof PointerEvent === 'undefined') {
+          (globalThis as any).PointerEvent = class MockPointerEvent extends Event {
+            pointerId: number
+            button: number
+            offsetX: number
+            offsetY: number
+
+            constructor (type: string, options: any = {}) {
+              super(type, options)
+              this.pointerId = options.pointerId ?? 1
+              this.button = options.button ?? 0
+              this.offsetX = DefaultPointerEventOffsetX
+              this.offsetY = DefaultPointerEventOffsetY
+            }
+          }
+        }
+      })
+
+      it('basic pointer move', () => {
+        const pointerMovedSpy = jest.fn()
+
+        drawing(drawingPlugInPoint, {
+          readonly: false,
+          imageWidth: 400,
+          imageHeight: 300,
+          commands: [],
+          tool: 'pen',
+          pointerMoved: pointerMovedSpy
+        })
+
+        const canvas = drawingPlugInPoint.querySelector('canvas') as HTMLCanvasElement
+        canvas.setPointerCapture = jest.fn()
+        canvas.releasePointerCapture = jest.fn()
+        expect(canvas.onpointermove).toBeDefined()
+        expect(typeof canvas.onpointermove).toBe('function')
+
+        const expectedPointerX = 50
+        const expectedPointerY = 40
+        const dummyPointerMoveEvent = makePointerEvent('pointermove', expectedPointerX, expectedPointerY)
+
+        canvas.onpointermove?.(dummyPointerMoveEvent)
+
+        expect(pointerMovedSpy).toHaveBeenCalledTimes(1)
+        const actualPosition = pointerMovedSpy.mock.calls[0][0]
+        expect(actualPosition).toStrictEqual({ x: expectedPointerX, y: expectedPointerY })
+      })
+
+      it('canvas resize followed by pen drawing', () => {
+        const commandAddedSpy = jest.fn()
+        const pointerMovedSpy = jest.fn()
+
+        const backgroundImageWidth = 400
+        const backgroundImageHeight = 300
+        drawing(drawingPlugInPoint, {
+          readonly: false,
+          autoSize: false,
+          imageWidth: backgroundImageWidth,
+          imageHeight: backgroundImageHeight,
+          commands: [],
+          tool: 'pen',
+          penColor: 'red',
+          cmdAdded: commandAddedSpy,
+          pointerMoved: pointerMovedSpy
+        })
+
+        // ResizeObserver was created and canvas is being observed
+        expect(resizeObserverSpyType).toHaveBeenCalledTimes(1)
+        const actualResizeObserverCallback = resizeObserverSpyType.mock.calls[0][0]
+        const canvas = drawingPlugInPoint.querySelector('canvas') as HTMLCanvasElement
+        canvas.setPointerCapture = jest.fn()
+        canvas.releasePointerCapture = jest.fn()
+        expect(resizeObserverSpy.observe).toHaveBeenCalledTimes(1)
+        expect(resizeObserverSpy.observe.mock.calls[0][0]).toBe(canvas)
+
+        // trigger the resize observer callback
+        actualResizeObserverCallback([{
+          target: canvas,
+          contentRect: { width: 100, height: 150 }
+        }])
+
+        // verify that CSS transform has been applied (should scale to fit aspect ratio)
+        expect(canvas.style.transform).toContain('scale(1, 0.5)')
+
+        jest.clearAllMocks()
+
+        const drawStartPoint = { x: 50, y: 40 }
+        const drawContinuePoint = { x: drawStartPoint.x + 25, y: drawStartPoint.y + 25 }
+        const drawEndPoint = { x: drawContinuePoint.x + 25, y: drawContinuePoint.y + 25 }
+
+        // simulate pointerdown (drawStart) by calling the handler directly
+        canvas.onpointerdown?.(makePointerEvent('pointerdown', drawStartPoint.x, drawStartPoint.y))
+
+        // simulate pointermove (drawContinue) - this should trigger pointerMoved callback
+        canvas.onpointermove?.(makePointerEvent('pointermove', drawContinuePoint.x, drawContinuePoint.y))
+
+        flushRequestAnimationFrameCallbacks()
+
+        expect(pointerMovedSpy).toHaveBeenCalled()
+        const actualFirstPointerPosition = pointerMovedSpy.mock.calls[0][0]
+        expect(actualFirstPointerPosition).toStrictEqual({ x: 300, y: 130 })
+
+        // simulate another pointermove to create a line with sufficient distance for drawing
+        canvas.onpointermove?.(makePointerEvent('pointermove', drawEndPoint.x, drawEndPoint.y))
+
+        flushRequestAnimationFrameCallbacks()
+
+        // simulate pointerup (drawEnd)
+        canvas.onpointerup?.(makePointerEvent('pointerup', drawEndPoint.x, drawEndPoint.y))
+
+        flushRequestAnimationFrameCallbacks()
+
+        expectSingleLineCommand(commandAddedSpy, [
+          { x: 200, y: 80 },
+          { x: 300, y: 130 },
+          { x: 400, y: 180 }
+        ])
+
+        // test that subsequent resize events properly update the transform
+
+        jest.clearAllMocks()
+
+        // trigger another resize
+        actualResizeObserverCallback([{ target: canvas, contentRect: { width: 300, height: 600 } }])
+
+        expect(canvas.style.transform).toContain('scale(1, 0.375)')
+
+        // another drawing operation
+        canvas.onpointerdown?.(makePointerEvent('pointerdown', 80, 80))
+        canvas.onpointermove?.(makePointerEvent('pointermove', 110, 110))
+        flushRequestAnimationFrameCallbacks()
+        canvas.onpointerup?.(makePointerEvent('pointerup', 110, 110))
+        flushRequestAnimationFrameCallbacks()
+
+        expect(pointerMovedSpy).toHaveBeenCalledTimes(1)
+
+        expectSingleLineCommand(commandAddedSpy, [
+          { x: 107, y: 40 },
+          { x: 147, y: 55 }
+        ])
       })
     })
   })
