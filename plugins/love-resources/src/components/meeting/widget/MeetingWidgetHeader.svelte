@@ -64,7 +64,7 @@
 <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
-    {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
+    {#if $currentRoom !== undefined}
       <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
       <MeetingOptionsButton {room} kind="tertiary" size="small"/>
     {/if}

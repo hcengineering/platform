@@ -24,12 +24,12 @@
 
   const dispatch = createEventDispatcher()
 
-  $: if ($currentRoom === undefined || (!$screenSharing && $currentRoom.type !== RoomType.Video)) {
+  $: if ($currentRoom === undefined) {
     dispatch('close')
   }
 </script>
 
-{#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
+{#if $currentRoom !== undefined}
   <Modal
     type="type-popup"
     okLabel={presentation.string.Create}

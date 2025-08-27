@@ -252,7 +252,7 @@
 
   $: checkActiveVideo(
     $location,
-    $lkSessionConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
+    $lkSessionConnected,
     $currentRoom?._id
   )
 

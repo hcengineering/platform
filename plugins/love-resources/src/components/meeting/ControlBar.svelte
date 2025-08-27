@@ -93,7 +93,7 @@
         />
       {/if}
 
-      {#if ($screenSharing || room.type === RoomType.Video) && $lkSessionConnected && canMaximize}
+      {#if $lkSessionConnected && canMaximize}
         <ModernButton
           icon={IconMaximize}
           tooltip={{

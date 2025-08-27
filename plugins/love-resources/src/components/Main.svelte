@@ -48,8 +48,7 @@
 
     if (
       !$lkSessionConnected &&
-      (room.type === RoomType.Video || $screenSharing) &&
-      $myInfo?.sessionId &&
+      $myInfo?.sessionId !== undefined &&
       $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
