@@ -90,6 +90,9 @@
     "Sharing": "Sharing...",
     "Browser": "Browser",
     "Monitor": "Monitor",
-    "Window": "Window"
+    "Window": "Window",
+    "MeetingEmptyTitle": "Meeting ended?",
+    "MeetingEmptyMessage": "All participants have left. You'll be disconnected in 1 minute. Would you like to stay?",
+    "StayInRoom": "Stay in room"
   }
 }

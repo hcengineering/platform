@@ -34,13 +34,22 @@ export function getTypeOf (obj: any): string {
   return {}.toString.call(obj).slice(8, -1)
 }
 
-export function clone (obj: any, as?: (doc: any, m: any) => any, needAs?: (value: any) => any | undefined): any {
+export function clone (
+  obj: any,
+  as?: (doc: any, m: any) => any,
+  needAs?: (value: any) => any | undefined,
+  depth?: number
+): any {
   if (typeof obj === 'undefined') {
     return undefined
   }
   if (typeof obj === 'function') {
     return obj
   }
+  if (depth === 0) {
+    return obj
+  }
+  depth = depth === undefined ? depth : depth - 1
   const typeOf = getTypeOf(obj)
   if (typeOf === 'Date') {
     return new Date(obj.getTime())
@@ -52,9 +61,9 @@ export function clone (obj: any, as?: (doc: any, m: any) => any, needAs?: (value
       const value = obj[key]
       const type = getTypeOf(value)
       if (type === 'Array') {
-        result[key] = clone(value, as, needAs)
+        result[key] = clone(value, as, needAs, depth)
       } else if (type === 'Object') {
-        const valClone = clone(value, as, needAs)
+        const valClone = clone(value, as, needAs, depth)
         result[key] = valClone
       } else if (type === 'Date') {
         result[key] = new Date(value.getTime())

@@ -90,6 +90,9 @@
     "Sharing": "共享中...",
     "Browser": "浏览器",
     "Monitor": "监视器",
-    "Window": "窗口"
+    "Window": "窗口",
+    "MeetingEmptyTitle": "会议已结束？",
+    "MeetingEmptyMessage": "所有参与者已离开。您将在1分钟后断开连接。是否要留在会议中？",
+    "StayInRoom": "留在房间"
   }
 }

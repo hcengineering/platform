@@ -62,6 +62,7 @@
     "@hcengineering/retry": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view-resources": "^0.6.0",
+    "libphonenumber-js": "^1.9.46",
     "svelte": "^4.2.19"
   }
 }

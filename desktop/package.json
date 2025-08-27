@@ -258,6 +258,9 @@
     "@hcengineering/billing": "^0.6.0",
     "@hcengineering/billing-assets": "^0.6.0",
     "@hcengineering/billing-resources": "^0.6.0",
+    "@hcengineering/huly-mail": "^0.6.0",
+    "@hcengineering/huly-mail-assets": "^0.6.0",
+    "@hcengineering/huly-mail-resources": "^0.6.0",
     "electron-squirrel-startup": "~1.0.0",
     "dotenv": "~16.0.0",
     "electron-context-menu": "^4.0.4",
@@ -267,7 +270,7 @@
     "electron-store": "^8.2.0",
     "electron-log": "^5.1.7",
     "electron-updater": "^6.3.4",
-    "livekit-client": "^2.13.3",
+    "livekit-client": "^2.15.5",
     "@hcengineering/server-backup": "^0.6.0",
     "@hcengineering/communication-types": "^0.1.0",
     "ws": "^8.18.2"

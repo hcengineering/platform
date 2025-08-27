@@ -16,10 +16,11 @@
   import { tooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import love from '../plugin'
-  import { isConnected, isSharingEnabled, isShareWithSound, screenSharing, setShare } from '../utils'
+  import { isSharingEnabled, isShareWithSound, screenSharing, setShare } from '../utils'
 
   import SharingStatePopup from './SharingStatePopup.svelte'
   import IconShare from './icons/Share.svelte'
+  import { lkSessionConnected } from '../liveKitClient'
 
   let disabled: boolean = false
   let pressed: boolean = false
@@ -38,10 +39,10 @@
     void setShare(true, audio)
   }
 
-  $: disabled = !$screenSharing && !$isConnected
+  $: disabled = !$screenSharing && !$lkSessionConnected
 </script>
 
-{#if $isConnected}
+{#if $lkSessionConnected}
   {#if $isSharingEnabled}
     <button
       class="hulyStatusBarButton mini positive positiveContent"

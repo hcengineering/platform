@@ -29,13 +29,14 @@ import { getPlatformQueue } from '@hcengineering/kafka'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
 import chat from '@hcengineering/chat'
 import { Card } from '@hcengineering/card'
+import { LRUCache } from 'lru-cache'
 
 import config from './config'
 import { AccountClient, MailboxOptions } from '@hcengineering/account-client'
 import { getAccountClient } from './client'
 import { getClient as getWorkspaceClient, releaseClient } from './workspaceClient'
 import { sendEmail } from './send'
-import { HulyMessageType } from './types'
+import { HulyMessageType, MailMessage } from './types'
 
 export class MailWorker {
   private queue: PlatformQueue | undefined
@@ -43,12 +44,21 @@ export class MailWorker {
   private mailboxOptions: MailboxOptions | undefined
   private loadingPromise: Promise<void> | undefined
 
+  // LRU cache to track sent messages (messageId -> timestamp)
+  private readonly sentMessagesCache: LRUCache<string, number>
+
   protected static _instance: MailWorker
 
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly accountClient: AccountClient
-  ) {}
+  ) {
+    this.sentMessagesCache = new LRUCache<string, number>({
+      max: 1000, // Maximum number of message IDs to cache
+      ttl: 24 * 60 * 60 * 1000, // 24 hours TTL in milliseconds
+      allowStale: false
+    })
+  }
 
   static async create (ctx: MeasureContext): Promise<MailWorker> {
     if (MailWorker._instance !== undefined) {
@@ -123,21 +133,19 @@ export class MailWorker {
         this.ctx,
         QueueTopic.Tx,
         this.queue.getClientId(),
-        async (msgs) => {
-          for (const msg of msgs) {
-            const workspaceUuid = msg.workspace
-            for (const tx of msg.value) {
-              // Check for new channel creation
-              if (isNewChannelTx(tx)) {
-                await this.handleNewChannelTx(workspaceUuid, tx)
-                continue
-              }
-              // Check for message events
-              const messageEvent = toMessageEvent(tx)
-              if (messageEvent !== undefined) {
-                await this.handleNewMessage(workspaceUuid, messageEvent)
-              }
-            }
+        async (ctx, msg) => {
+          const workspaceUuid = msg.workspace
+          const tx = msg.value
+
+          // Check for new channel creation
+          if (isNewChannelTx(tx)) {
+            await this.handleNewChannelTx(workspaceUuid, tx)
+            return
+          }
+          // Check for message events
+          const messageEvent = toMessageEvent(tx)
+          if (messageEvent !== undefined) {
+            await this.handleNewMessage(workspaceUuid, messageEvent)
           }
         },
         {
@@ -175,6 +183,22 @@ export class MailWorker {
   async handleNewMessage (workspaceUuid: WorkspaceUuid, message: CreateMessageEvent): Promise<void> {
     try {
       if (isSyncedMessage(message)) {
+        return
+      }
+
+      if (message.date !== undefined) {
+        const messageDate = message.date instanceof Date ? message.date : new Date(message.date)
+        if (messageDate < config.outgoingSyncStartDate) {
+          return
+        }
+      }
+
+      if (message._id !== undefined && this.sentMessagesCache.has(message._id)) {
+        this.ctx.info('Message already sent, skipping', {
+          workspaceUuid,
+          messageId: message.messageId,
+          hulyMessageId: message._id
+        })
         return
       }
 
@@ -237,7 +261,10 @@ export class MailWorker {
         return
       }
       const recipients = await getRecipients(this.ctx, this.accountClient, thread, emailSocialId._id)
-      const html = markdownToHtml(message.content)
+      let html = markdownToHtml(message.content)
+      if (config.footerMessage != null && !html.includes(config.footerMessage)) {
+        html = html + config.footerMessage
+      }
       const text = markdownToText(message.content)
       const subject = getReplySubject(thread.title) ?? ''
       const to = [recipients?.to, ...(recipients?.copy ?? [])].filter(
@@ -250,19 +277,20 @@ export class MailWorker {
         this.ctx.error('Mailbox secret not found for email', { email })
         return
       }
+      const mailMessage: MailMessage = {
+        from: email,
+        to,
+        subject,
+        html,
+        text,
+        headers: getMailHeadersRecord(HulyMessageType, message._id, email)
+      }
 
-      await sendEmail(
-        this.ctx,
-        {
-          from: email,
-          to,
-          subject,
-          html,
-          text,
-          headers: getMailHeadersRecord(HulyMessageType, message._id)
-        },
-        secret
-      )
+      await sendEmail(this.ctx, mailMessage, secret)
+
+      if (message._id !== undefined) {
+        this.sentMessagesCache.set(message._id, Date.now())
+      }
     } catch (err: any) {
       this.ctx.error('Failed to send message as email', {
         messageId: message.messageId,

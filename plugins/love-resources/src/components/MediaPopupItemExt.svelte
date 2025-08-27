@@ -7,7 +7,8 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice, rooms, currentMeetingMinutes } from '../stores'
-  import { endMeeting, isCurrentInstanceConnected, leaveRoom } from '../utils'
+  import { endMeeting, leaveRoom } from '../utils'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let limit: number = 4
 
@@ -60,7 +61,7 @@
   })
 </script>
 
-{#if $isCurrentInstanceConnected && $currentRoom != null}
+{#if $lkSessionConnected && $currentRoom != null}
   {@const overLimit = participants.length > limit}
 
   <div class="m-1 p-2">

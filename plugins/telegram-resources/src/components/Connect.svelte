@@ -16,6 +16,9 @@
   import platform, { IntlString, PlatformError } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { isValidPhoneNumber } from 'libphonenumber-js'
+
+  import PhoneInput from './PhoneInput.svelte'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
   import { command, getState, type IntegrationState, connect } from '../api'
@@ -106,7 +109,7 @@
           primary: {
             label: ui.string.Next,
             handler: h(() => commandWithLoading(phone, 'start')),
-            disabled: phone.match(/^\+\d{9,15}$/) == null || isLoading
+            disabled: !isValidPhoneNumber(phone) || isLoading
           },
           secondary: { label: telegram.string.Cancel, handler: close }
         }
@@ -215,21 +218,25 @@
       <Label label={telegram.string.Loading} />
     {:else if state.mode === 'WantPhone'}
       <Label label={telegram.string.PhoneDescr} />
-
-      <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+      <div class="pt-2">
+        <PhoneInput label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+      </div>
     {:else if state.mode === 'WantCode'}
       <Label label={telegram.string.CodeDescr} />
-
-      <PinPad length={5} bind:value={code} bind:error />
+      <div class="pt-2">
+        <PinPad length={5} bind:value={code} bind:error />
+      </div>
     {:else if state.mode === 'WantPassword'}
       <Label label={telegram.string.PasswordDescr} />
 
-      <EditBox
-        label={telegram.string.Password}
-        format="password"
-        placeholder={telegram.string.Password}
-        bind:value={password}
-      />
+      <div class="pt-2">
+        <EditBox
+          label={telegram.string.Password}
+          format="password"
+          placeholder={telegram.string.Password}
+          bind:value={password}
+        />
+      </div>
     {:else if state.mode === 'Authorized'}
       <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
     {:else if state.mode === 'Error'}

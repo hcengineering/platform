@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
+import { closeLiveQueries, initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
 import {
   type AddAttachmentsOperation,
   type AddCollaboratorsEvent,
@@ -457,4 +457,9 @@ export function onCommunicationClient (fn: () => void): void {
 export async function refreshCommunicationClient (): Promise<void> {
   console.log('refreshCommunicationClient')
   await refreshLiveQueries()
+}
+
+export async function purgeCommunicationClient (): Promise<void> {
+  client.close()
+  closeLiveQueries()
 }

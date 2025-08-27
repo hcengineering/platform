@@ -138,7 +138,7 @@ describe('full-text-indexing', () => {
       const dataId = generateId()
 
       await queue.expectIndexingDoc(dataId, async () => {
-        await txProducer.send(wsId, [
+        await txProducer.send(toolCtx, wsId, [
           createDoc(test.class.TestDocument, {
             title: 'first doc',
             description: dataId
@@ -211,7 +211,7 @@ describe('full-text-indexing', () => {
         }
       })
 
-      await wsProcessor.send(wsIds.uuid, [workspaceEvents.fullReindex()])
+      await wsProcessor.send(toolCtx, wsIds.uuid, [workspaceEvents.fullReindex()])
 
       // Wait for reindex
       await reindexAllP

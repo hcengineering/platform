@@ -23,7 +23,7 @@
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
   import { ActivityMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
 
-  import AttachmentPreview from './AttachmentPreview.svelte'
+  import AttachmentsPreview from './AttachmentsPreview.svelte'
   import PreviewTemplate from './PreviewTemplate.svelte'
 
   export let card: Card
@@ -62,13 +62,15 @@
   fixHeight={message.type !== MessageType.Activity}
   tooltipLabel={getTooltipLabel(message)}
 >
-  {#if isActivityMessage(message)}
-    <ActivityMessageViewer {message} {card} author={person} />
-  {:else}
-    <LiteMessageViewer message={markdownToMarkup(message.content)} />
-  {/if}
+  <svelte:fragment slot="content">
+    {#if isActivityMessage(message)}
+      <ActivityMessageViewer {message} {card} author={person} />
+    {:else}
+      <LiteMessageViewer message={markdownToMarkup(message.content)} />
+    {/if}
+  </svelte:fragment>
 
   <svelte:fragment slot="after">
-    <AttachmentPreview {message} />
+    <AttachmentsPreview {message} />
   </svelte:fragment>
 </PreviewTemplate>

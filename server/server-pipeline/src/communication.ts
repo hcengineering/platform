@@ -129,9 +129,17 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
       const { params } = args.findLabels
       return await this.communicationApi.findLabels(ctx, params)
     }
+    if (args.findThreads !== undefined) {
+      const { params } = args.findThreads
+      return await this.communicationApi.findThreads(ctx, params)
+    }
     if (args.findCollaborators !== undefined) {
       const { params } = args.findCollaborators
       return await this.communicationApi.findCollaborators(ctx, params)
+    }
+    if (args.findPeers !== undefined) {
+      const { params } = args.findPeers
+      return await this.communicationApi.findPeers(ctx, params)
     }
     if (args.unsubscribeQuery !== undefined) {
       const { id } = args.unsubscribeQuery

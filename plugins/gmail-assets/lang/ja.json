@@ -40,6 +40,11 @@
     "GooglePrivacy": "Huly による Google API から受信した情報の他のアプリへの使用および転送は、<a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>（限定的な使用の要件を含む）に準拠します。",
     "EmailNotificationsDescription": "メールで個人通知を受け取る",
     "FailedToConnect": "Gmail サービスは利用できません",
-    "TotalMessages": "メッセージの総数:"
+    "TotalMessages": "メッセージの総数:",
+    "Configure": "Gmail 統合を設定",
+    "GmailSpace": "Gmail メッセージスペース",
+    "PersonSpaceInfo": "メールはあなたのみに利用可能になります",
+    "SharedSpaceInfo": "メールはすべてのスペース参加者が利用可能になります",
+    "ConfigurationRequired": "Gmail 統合を設定する必要があります"
   }
 }

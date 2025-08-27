@@ -15,27 +15,33 @@
   import { Message } from '@hcengineering/communication-types'
   import { Icon, Label, tooltip } from '@hcengineering/ui'
   import communication from '@hcengineering/communication'
-  import { isBlobAttachment } from '@hcengineering/communication-shared'
+  import { isAppletAttachment, isBlobAttachment } from '@hcengineering/communication-shared'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import AttachmentsTooltip from './AttachmentsTooltip.svelte'
+  import AttachmentName from './AttachmentName.svelte'
 
   export let message: Message
 
-  $: blobs = message.attachments.filter(isBlobAttachment) ?? []
-  $: showFiles = blobs.length > 0
+  $: attachments = message.attachments.filter((it) => isBlobAttachment(it) || isAppletAttachment(it)) ?? []
 </script>
 
-{#if showFiles}
+{#if attachments.length > 0}
   {#if message.content.trim().length > 0}
-    <span class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments: blobs } }}>
-      {blobs.length}
+    <span class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
+      {attachments.length}
       <Icon icon={communication.icon.File} size="small" />
     </span>
   {:else}
     <span class="attachments-text font-normal overflow-label">
-      <Label label={communication.string.Files} />:
-      <span class="ml-1 overflow-label" use:tooltip={{ component: AttachmentsTooltip, props: { attachments: blobs } }}>
-        {blobs.map((it) => it.params.fileName).join(', ')}
+      <Label label={getEmbeddedLabel('Attachments')} />:
+      <span class="ml-1 overflow-label" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
+        {#each attachments as att, i}
+          <AttachmentName attachment={att} lower={i > 0} />
+          {#if i < attachments.length - 1}
+            ,
+          {/if}
+        {/each}
       </span>
     </span>
   {/if}
@@ -61,5 +67,6 @@
     white-space: nowrap;
     min-width: 0;
     max-width: 100%;
+    margin-left: -0.25rem;
   }
 </style>

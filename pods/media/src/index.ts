@@ -63,21 +63,13 @@ async function main (): Promise<void> {
 
   const transcodeProducer = queue.getProducer<VideoTranscodeRequest>(ctx, topicTranscodeRequest)
 
-  queue.createConsumer<VideoTranscodeResult>(ctx, topicTranscodeResult, application, async (msgs) => {
-    for (const msg of msgs) {
-      for (const res of msg.value) {
-        await handleTranscodeResult(ctx, msg.workspace, res)
-      }
-    }
+  queue.createConsumer<VideoTranscodeResult>(ctx, topicTranscodeResult, application, async (ctx, msg) => {
+    await handleTranscodeResult(ctx, msg.workspace, msg.value)
   })
 
-  queue.createConsumer<TxCUD<Doc>>(ctx, QueueTopic.Tx, queue.getClientId(), async (msgs) => {
-    for (const msg of msgs) {
-      const workspaceUuid = msg.workspace
-      for (const tx of msg.value) {
-        await handleTx(ctx, workspaceUuid, tx, transcodeProducer)
-      }
-    }
+  queue.createConsumer<TxCUD<Doc>>(ctx, QueueTopic.Tx, queue.getClientId(), async (ctx, msg) => {
+    const workspaceUuid = msg.workspace
+    await handleTx(ctx, workspaceUuid, msg.value, transcodeProducer)
   })
 
   const shutdownAsync = async (): Promise<void> => {

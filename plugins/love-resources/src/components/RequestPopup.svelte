@@ -20,8 +20,9 @@
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
   import { myInfo, myOffice } from '../stores'
-  import { connectRoom, isConnected } from '../utils'
+  import { connectRoom } from '../utils'
   import { onDestroy, onMount } from 'svelte'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let request: JoinRequest
 
@@ -33,7 +34,7 @@
 
   async function accept (): Promise<void> {
     await client.update(request, { status: RequestStatus.Approved })
-    if (request.room === $myOffice?._id && !$isConnected) {
+    if (request.room === $myOffice?._id && !$lkSessionConnected) {
       const person = await getPersonByPersonRef(getCurrentEmployee())
       if (person == null) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)

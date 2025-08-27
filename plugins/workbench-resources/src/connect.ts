@@ -35,6 +35,7 @@ import platform, {
 import presentation, {
   loadServerConfig,
   purgeClient,
+  purgeCommunicationClient,
   refreshClient,
   refreshCommunicationClient,
   setClient,
@@ -175,6 +176,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     // We need to flush all data from memory
     await ctx.with('purge-client', {}, async () => {
       await purgeClient()
+      await purgeCommunicationClient()
     })
     await ctx.with('close previous client', {}, async () => {
       await _client?.close()

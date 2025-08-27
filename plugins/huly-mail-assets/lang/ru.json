@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Подключите свой почтовый ящик Huly для отправки, получения и управления электронной почтой",
+    "Connect": "Подключить",
+    "ConnectHulyMail": "Подключить почтовый ящик Huly",
+    "Cancel": "Отмена",
+    "Email": "Электронная почта",
+    "Status": "Статус",
+    "FailedToConnect": "Служба почты Huly недоступна",
+    "TotalMessages": "Всего сообщений:",
+    "Configure": "Настроить Huly Mail",
+    "ChannelSpace": "Пространство для канала сообщений",
+    "PersonSpaceInfo": "Почта будет доступна только вам",
+    "SharedSpaceInfo": "Почта будет доступна всем участникам пространства",
+    "Mailbox": "Почтовый ящик",
+    "MailboxesNotConfigured": "Не найдено почтовых ящиков",
+    "ConfigureMailBoxes": "Пожалуйста, добавьте почтовый ящик в разделе `Почтовые ящики`, чтобы начать"
+  }
+}

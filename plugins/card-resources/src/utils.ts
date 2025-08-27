@@ -19,7 +19,10 @@ import core, {
   type Doc,
   type DocumentQuery,
   fillDefaults,
+  generateId,
   type Hierarchy,
+  makeCollabId,
+  type Markup,
   type MarkupBlobRef,
   type Ref,
   type RelatedDocument,
@@ -28,7 +31,13 @@ import core, {
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
-import { getClient, IconWithEmoji, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import {
+  createMarkup,
+  getClient,
+  IconWithEmoji,
+  MessageBox,
+  type ObjectSearchResult
+} from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
@@ -45,6 +54,7 @@ import { translate } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 import { Analytics } from '@hcengineering/analytics'
 import { createWidgetTab } from '@hcengineering/workbench-resources'
+import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 
 import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
@@ -189,23 +199,35 @@ const toCardObjectSearchResult = (e: WithLookup<Card>): ObjectSearchResult => ({
   component: CardSearchItem
 })
 
-export async function createCard (type: Ref<MasterTag>, space: Ref<Space>): Promise<Ref<Card>> {
+export async function createCard (
+  type: Ref<MasterTag>,
+  space: Ref<Space>,
+  data: Partial<Data<Card>> = {},
+  contentMarkup: Markup = EmptyMarkup,
+  id?: Ref<Card>
+): Promise<Ref<Card>> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
-  const title = await translate(card.string.Card, {})
+  const title = data.title ?? (await translate(card.string.Card, {}))
 
-  const data: Data<Card> = {
+  const _id = id ?? generateId()
+  const content = isEmptyMarkup(contentMarkup)
+    ? ('' as MarkupBlobRef)
+    : await createMarkup(makeCollabId(type, _id, 'content'), contentMarkup)
+
+  const _data: Data<Card> = {
+    parentInfo: [],
+    blobs: {},
+    ...data,
     title,
     rank: makeRank(lastOne?.rank, undefined),
-    content: '' as MarkupBlobRef,
-    parentInfo: [],
-    blobs: {}
+    content
   }
 
-  const filledData = fillDefaults(hierarchy, data, type)
+  const filledData = fillDefaults(hierarchy, _data, type)
 
-  const _id = await client.createDoc(type, space, filledData)
+  await client.createDoc(type, space, filledData, _id)
 
   Analytics.handleEvent(CardEvents.CardCreated)
   return _id

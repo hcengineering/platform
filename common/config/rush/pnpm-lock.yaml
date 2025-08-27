@@ -48,10 +48,10 @@ importers:
         version: 5.0.0
       '@livekit/krisp-noise-filter':
         specifier: ^0.3.0
-        version: 0.3.0(livekit-client@2.13.3)
+        version: 0.3.0(livekit-client@2.15.5)
       '@livekit/track-processors':
         specifier: ^0.5.6
-        version: 0.5.6(livekit-client@2.13.3)
+        version: 0.5.6(livekit-client@2.15.5)
       '@octokit/types':
         specifier: ^12.0.0
         version: 12.6.0
@@ -445,6 +445,15 @@ importers:
       '@rush-temp/hr-resources':
         specifier: file:./projects/hr-resources.tgz
         version: file:projects/hr-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/huly-mail':
+        specifier: file:./projects/huly-mail.tgz
+        version: file:projects/huly-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/huly-mail-assets':
+        specifier: file:./projects/huly-mail-assets.tgz
+        version: file:projects/huly-mail-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/huly-mail-resources':
+        specifier: file:./projects/huly-mail-resources.tgz
+        version: file:projects/huly-mail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/image-cropper':
         specifier: file:./projects/image-cropper.tgz
         version: file:projects/image-cropper.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
@@ -628,6 +637,9 @@ importers:
       '@rush-temp/model-hr':
         specifier: file:./projects/model-hr.tgz
         version: file:projects/model-hr.tgz
+      '@rush-temp/model-huly-mail':
+        specifier: file:./projects/model-huly-mail.tgz
+        version: file:projects/model-huly-mail.tgz
       '@rush-temp/model-inbox':
         specifier: file:./projects/model-inbox.tgz
         version: file:projects/model-inbox.tgz
@@ -2066,8 +2078,8 @@ importers:
         specifier: ^1.9.46
         version: 1.10.56
       livekit-client:
-        specifier: ^2.13.3
-        version: 2.13.3
+        specifier: ^2.15.5
+        version: 2.15.5
       livekit-server-sdk:
         specifier: ^2.11.0
         version: 2.11.0
@@ -3482,8 +3494,8 @@ packages:
   '@livekit/protocol@1.36.1':
     resolution: {integrity: sha512-nN3QnITAQ5yXk7UKfotH7CRWIlEozNWeKVyFJ0/+dtSzvWP/ib+10l1DDnRYi3A1yICJOGAKFgJ5d6kmi1HCUA==}
 
-  '@livekit/protocol@1.38.0':
-    resolution: {integrity: sha512-XX6ulvsE1XCN18LVf3ydHN7Ri1Z1M1P5dQdjnm5nVDsSqUL12Vbo/4RKcRlCEXAg2qB62mKjcaVLXVwkfXggkg==}
+  '@livekit/protocol@1.39.3':
+    resolution: {integrity: sha512-hfOnbwPCeZBEvMRdRhU2sr46mjGXavQcrb3BFRfG+Gm0Z7WUSeFdy5WLstXJzEepz17Iwp/lkGwJ4ZgOOYfPuA==}
 
   '@livekit/track-processors@0.5.6':
     resolution: {integrity: sha512-TlzObrSlp2PKor4VXqg6iefLRFVEb2T1lXwddBFdkPod60XVgYoMOj7V5xJm+UTE2MEtlE0003vUli9PyQGB1g==}
@@ -4598,7 +4610,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-Sb8w7pX5RxmFjOGtXHVJJc1AAqeqMpJi7v1/SHEQXmcK+SDghXtatRyCynNNEYPmwQgRIxs2u35Jjga5LVo0/w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-4cnp4PcBSOLE4lMLAU3fjhTU3WviHDFCZk30KSDeCVM+uVNu20aMhOiMEgq9LOYG9vKkN2MZMHbTew5lCj4nkg==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4694,7 +4706,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-CtPpz9Jx7rGJXdAon9+eI5gUIvhFU/ztjHUUeBYsPA4pjBXZH5xPC0YWqxqbp6LWdnIwy9wL7BTAXRPlAR6eQA==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-EKZpfz2PfnScHr/V/N4N98pCsaSONbRBIvC/TkS2x9Ii2Kx4T59fv3KgeMtmGoGiXmKAYIL+aqbqZLyQkDqtKQ==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -4731,6 +4743,18 @@ packages:
 
   '@rush-temp/hr@file:projects/hr.tgz':
     resolution: {integrity: sha512-nmRigrc3aUuZc6EJ1Hyb87BYMHKEGiXvi3R5mNtx4hj8ax+0He/sbRCnzFdueCjepJD3HnxeWcrwY0aAPi2Akw==, tarball: file:projects/hr.tgz}
+    version: 0.0.0
+
+  '@rush-temp/huly-mail-assets@file:projects/huly-mail-assets.tgz':
+    resolution: {integrity: sha512-4uccXbz3k087PliUR1S6XcVKNL/rZWt6f70dlA/Ec4/NgqYkldw+tAeS/pNygEYLqy7NHEnEclOCVCCdehovBQ==, tarball: file:projects/huly-mail-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/huly-mail-resources@file:projects/huly-mail-resources.tgz':
+    resolution: {integrity: sha512-2Rswvr2aTFLagyy/b/hWuwRIr05Dklj0Xdnaxx3Lgk12o/M48UYVdO0qFouImn8+dFO7JguBDR/Wp6Ihw6oZWA==, tarball: file:projects/huly-mail-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/huly-mail@file:projects/huly-mail.tgz':
+    resolution: {integrity: sha512-gMpLPCEmi0tPlEjsE3OBYtpNVLu4Xx5BnegAamDxheXg78HQYfyZqzB6CEuOJXXTjoF0EgSHhN8wV03IW+51RQ==, tarball: file:projects/huly-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/image-cropper-resources@file:projects/image-cropper-resources.tgz':
@@ -4818,7 +4842,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-JvUNnH/8UE9J55UPQ2SEpgFmGh8ZONNcXaclH0SXev4EuQO7cMFtbnkL72ed7RE+XOjRw41aDZtH+LPgYYj5rg==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-KzBDtWbDzztfPmsNo9D7m7wf5tebLLMK1cDJP/o5MDJYsS7exjWimlGKAhKKb/iQ4CCjQLT9HwyEhhEPIlbi9g==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -4971,6 +4995,10 @@ packages:
 
   '@rush-temp/model-hr@file:projects/model-hr.tgz':
     resolution: {integrity: sha512-NCcPiQ+8GOuRyXDtH6hptGkNmvONSEwBRVV6aElaYVqEGGdyiRmLU44Kd03ErSjCEgE77R4BQt2q6mQuapvCjg==, tarball: file:projects/model-hr.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-huly-mail@file:projects/model-huly-mail.tgz':
+    resolution: {integrity: sha512-kmPJ8j1znoHWNdEg2AcCtobcTy9LnF7NZAFH3Ed1PoFYxp8f2bsNsdc7NrLAsNhTx67o1GmewPnlThHijoHc8w==, tarball: file:projects/model-huly-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/model-inbox@file:projects/model-inbox.tgz':
@@ -5342,7 +5370,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz':
-    resolution: {integrity: sha512-pGpDe2VXivzWayLm0pr99f+f5vD5eirwLnB1JTWUUTXtZtbDm6QOaAAEMlzWNwXTZfZGn74Qd7zl1AUCLp6O0A==, tarball: file:projects/pod-mail-worker.tgz}
+    resolution: {integrity: sha512-ylY6rf2LyYPqqXTmNiF2c7B+TrofA0cSlcp5YZWNZwF7zpg2fUR+a/EmN/B8ty+O4EItbE+J17jqrn0TtuikWg==, tarball: file:projects/pod-mail-worker.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
@@ -5418,7 +5446,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-j00+daHWZ+3GFc+1dXsCeABWAuTZbIG8mvvvPIiLGIfqVSmkH4trxbsP0appWm+/bkPfwtP0wJjhsQ4d7kgzMQ==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-3GXelK24zvVFtIfKALBxN76biAVNO6/Lql+VnntoYLPbd3fXoW+Or8YXfd8NkzCeCNPSv8peCCanLDn6+3KztA==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5922,7 +5950,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-as3ymnFZKdncDu43oVgi8P9nDH5dem7U3hKc4ll3U5m1gB/X/oIiDRA4ZZTH0Evm4a5YQyby/MA6VLKJVDPfcg==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-GLg9qwK9nQnCcHcs0Iy1Lm0u9gonYrQKuYfa9EoS2fXVo+PUDlu4hlFuRWdjVHY0UvSjDoUhMaAUu+flu2frAw==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -10993,8 +11021,8 @@ packages:
   linkifyjs@4.2.0:
     resolution: {integrity: sha512-pCj3PrQyATaoTYKHrgWRF3SJwsm61udVh+vuls/Rl6SptiDhgE7ziUIudAedRY9QEfynmM7/RmLEfPUyw1HPCw==}
 
-  livekit-client@2.13.3:
-    resolution: {integrity: sha512-5lX9bqN2ZKjt1RqJqO1Vz9uplrnCLIpbG3Y8h7z0ui2adk5oahohV0m1F2ZEaIJTfQgXhX1iVbSYrVNwTzwRDQ==}
+  livekit-client@2.15.5:
+    resolution: {integrity: sha512-zn36akmDlqZxlrTOUgYXtxtj35HQ44aJ+mgKat9BTSPiZru4RjEHOtp8RJE6jGoN2miJlWiOeEKHB2+ae3YrSw==}
     peerDependencies:
       '@types/dom-mediacapture-record': ^1
 
@@ -15974,10 +16002,10 @@ snapshots:
 
   '@lifeomic/attempt@3.0.3': {}
 
-  '@livekit/krisp-noise-filter@0.3.0(livekit-client@2.13.3)':
+  '@livekit/krisp-noise-filter@0.3.0(livekit-client@2.15.5)':
     dependencies:
       '@livekit/mutex': 1.1.1
-      livekit-client: 2.13.3
+      livekit-client: 2.15.5
 
   '@livekit/mutex@1.1.1': {}
 
@@ -15985,14 +16013,14 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/protocol@1.38.0':
+  '@livekit/protocol@1.39.3':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/track-processors@0.5.6(livekit-client@2.13.3)':
+  '@livekit/track-processors@0.5.6(livekit-client@2.15.5)':
     dependencies:
       '@mediapipe/tasks-vision': 0.10.14
-      livekit-client: 2.13.3
+      livekit-client: 2.15.5
 
   '@malept/cross-spawn-promise@2.0.0':
     dependencies:
@@ -19426,7 +19454,7 @@ snapshots:
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.8.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
-      livekit-client: 2.13.3
+      livekit-client: 2.15.5
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
       node-loader: 2.0.0(webpack@5.97.1)
       postcss: 8.5.3
@@ -20523,6 +20551,96 @@ snapshots:
       - supports-color
       - ts-node
 
+  '@rush-temp/huly-mail-assets@file:projects/huly-mail-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/huly-mail-resources@file:projects/huly-mail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.8.3)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/huly-mail@file:projects/huly-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
   '@rush-temp/image-cropper-resources@file:projects/image-cropper-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@types/jest': 29.5.12
@@ -21175,8 +21293,8 @@ snapshots:
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@livekit/krisp-noise-filter': 0.3.0(livekit-client@2.13.3)
-      '@livekit/track-processors': 0.5.6(livekit-client@2.13.3)
+      '@livekit/krisp-noise-filter': 0.3.0(livekit-client@2.15.5)
+      '@livekit/track-processors': 0.5.6(livekit-client@2.15.5)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -21187,7 +21305,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
-      livekit-client: 2.13.3
+      livekit-client: 2.15.5
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -21946,6 +22064,21 @@ snapshots:
       - supports-color
 
   '@rush-temp/model-hr@file:projects/model-hr.tgz':
+    dependencies:
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rush-temp/model-huly-mail@file:projects/model-huly-mail.tgz':
     dependencies:
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -23995,6 +24128,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      lru-cache: 11.1.0
       prettier: 3.2.5
       sanitize-html: 2.16.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
@@ -24674,7 +24808,6 @@ snapshots:
 
   '@rush-temp/presentation@file:projects/presentation.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@testing-library/jest-dom': 6.6.3
       '@types/jest': 29.5.12
       '@types/png-chunks-extract': 1.0.2
       '@types/uuid': 8.3.4
@@ -24700,7 +24833,6 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
       uuid: 8.3.2
-      yjs: 13.6.23
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -28156,6 +28288,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      libphonenumber-js: 1.10.56
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -35569,10 +35702,10 @@ snapshots:
 
   linkifyjs@4.2.0: {}
 
-  livekit-client@2.13.3:
+  livekit-client@2.15.5:
     dependencies:
       '@livekit/mutex': 1.1.1
-      '@livekit/protocol': 1.38.0
+      '@livekit/protocol': 1.39.3
       events: 3.3.0
       loglevel: 1.9.2
       sdp-transform: 2.15.0

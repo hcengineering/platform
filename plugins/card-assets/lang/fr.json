@@ -39,6 +39,7 @@
     "Labels": "Étiquettes",
     "Properties": "Propriétés",
     "NoChildren": "Pas d'enfants",
-    "ConfigDescription": "Extension pour la gestion des connaissances de style base de données."
+    "ConfigDescription": "Extension pour la gestion des connaissances de style base de données.",
+    "AddCollaborators": "Ajouter des collaborateurs"
   }
 }

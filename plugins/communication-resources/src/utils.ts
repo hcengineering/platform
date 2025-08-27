@@ -11,9 +11,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { canDisplayLinkPreview, fetchLinkPreviewDetails, getCommunicationClient } from '@hcengineering/presentation'
+import {
+  canDisplayLinkPreview,
+  fetchLinkPreviewDetails,
+  getClient,
+  getCommunicationClient
+} from '@hcengineering/presentation'
 import { type Card } from '@hcengineering/card'
-import { AccountRole, getCurrentAccount, type Markup } from '@hcengineering/core'
+import { AccountRole, type Data, getCurrentAccount, type Ref, type Space, type Markup } from '@hcengineering/core'
 import { getMetadata, translate } from '@hcengineering/platform'
 import { addNotification, languageStore, NotificationSeverity, showPopup } from '@hcengineering/ui'
 import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
@@ -28,6 +33,8 @@ import { type TextInputAction } from './types'
 import { guestCommunicationAllowedCards } from './stores'
 import { get } from 'svelte/store'
 import view from '@hcengineering/view'
+import { type Direct } from '@hcengineering/communication'
+import { type Employee } from '@hcengineering/contact'
 
 export async function unsubscribe (card: Card): Promise<void> {
   const client = getCommunicationClient()
@@ -159,4 +166,32 @@ export async function showForbidden (): Promise<void> {
     },
     NotificationSeverity.Info
   )
+}
+
+export async function canCreateDirect (space: Ref<Space>, data: Partial<Data<Direct>>): Promise<boolean | Ref<Card>> {
+  const members = data.members ?? []
+  if (members.length === 0) return false
+
+  const client = getClient()
+
+  if (members.length > 2) {
+    return true
+  }
+
+  const myDirects = await client.findAll<Direct>(communication.type.Direct, { space })
+  const direct = myDirects.find((it) => {
+    const directMembers = new Set(it.members)
+    const createMembers = new Set(members)
+    if (directMembers.size !== createMembers.size) return false
+    for (const item of directMembers) {
+      if (!createMembers.has(item as Ref<Employee>)) return false
+    }
+    return true
+  })
+
+  if (direct != null) {
+    return direct._id
+  }
+
+  return true
 }

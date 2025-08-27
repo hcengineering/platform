@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Verbinden Sie Ihr Huly-Postfach zum Senden, Empfangen und Verwalten von E-Mails",
+    "Connect": "Verbinden",
+    "ConnectHulyMail": "Huly-Postfach verbinden",
+    "Cancel": "Abbrechen",
+    "Email": "E-Mail",
+    "Status": "Status",
+    "FailedToConnect": "Huly Mail-Service ist nicht verfügbar",
+    "TotalMessages": "Nachrichten insgesamt:",
+    "Configure": "Huly Mail konfigurieren",
+    "ChannelSpace": "Bereich für Nachrichtenkanal",
+    "PersonSpaceInfo": "E-Mails sind nur für Sie verfügbar",
+    "SharedSpaceInfo": "E-Mails sind für alle Bereichsteilnehmer verfügbar",
+    "Mailbox": "Postfach",
+    "MailboxesNotConfigured": "Keine Postfächer gefunden",
+    "ConfigureMailBoxes": "Bitte fügen Sie ein Postfach im Abschnitt Postfächer hinzu, um zu beginnen"
+  }
+}
