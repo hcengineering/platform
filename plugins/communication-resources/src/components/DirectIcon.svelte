@@ -97,17 +97,17 @@
       </defs>
     </svg>
     <Avatar
-      person={persons[0]}
+      person={persons.find((it) => it._id !== me) ?? persons[0]}
       size={avatarSize}
       name={persons[0].name}
       showStatus={false}
       clipPath="url(#direct-count-marker)"
     />
     <span class="persons-count {avatarSize}">
-      {#if persons.length > 9}
+      {#if persons.length > 10}
         9+
       {:else}
-        {persons.length}
+        {persons.length - 1}
       {/if}
     </span>
   </span>

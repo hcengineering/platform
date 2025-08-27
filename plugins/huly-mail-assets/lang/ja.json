@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Hulyメールボックスに接続して、メールの送信、受信、管理を行います",
+    "Connect": "接続",
+    "ConnectHulyMail": "Hulyメールボックスに接続",
+    "Cancel": "キャンセル",
+    "Email": "メール",
+    "Status": "ステータス",
+    "FailedToConnect": "Hulyメールサービスは利用できません",
+    "TotalMessages": "総メッセージ数:",
+    "Configure": "Huly Mail設定",
+    "ChannelSpace": "メッセージチャンネルのスペース",
+    "PersonSpaceInfo": "メールはあなたのみが利用できます",
+    "SharedSpaceInfo": "メールはスペースの全参加者が利用できます",
+    "Mailbox": "メールボックス",
+    "MailboxesNotConfigured": "メールボックスが見つかりません",
+    "ConfigureMailBoxes": "メールボックスのセクションでメールボックスを追加してください"
+  }
+}

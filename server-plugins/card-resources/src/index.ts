@@ -50,7 +50,7 @@ import {
   MessageEventType
 } from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
-import contact, { Employee, Person } from '@hcengineering/contact'
+import contact, { Employee, formatName, Person } from '@hcengineering/contact'
 import communication, { Direct } from '@hcengineering/communication'
 import { CardPeer } from '@hcengineering/communication-types'
 
@@ -516,35 +516,45 @@ async function createThreadCardPeers (direct: Direct, doc: Card, control: Trigge
   return res
 }
 
+function getDirectTitle (employees: Employee[], me: Ref<Person>): string {
+  if (employees.length === 1) {
+    return employees.map((e) => formatName(e.name)).join(', ')
+  } else {
+    return employees
+      .filter((it) => it._id !== me)
+      .map((e) => formatName(e.name))
+      .join(', ')
+  }
+}
+
 async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
   if (members.length === 0) return []
 
-  const personSpaces = (await getPersonSpaces(control)).filter(
-    (it) => it._id !== doc.space && members.includes(it.person)
-  )
-  if (personSpaces.length === 0) return []
-  const accounts = (
-    await control.findAll(control.ctx, contact.mixin.Employee, {
-      _id: { $in: personSpaces.map((it) => it.person) as Ref<Employee>[] }
-    })
-  )
-    .map((it) => it.personUuid)
-    .filter(notEmpty)
+  const personSpaces = (await getPersonSpaces(control)).filter((it) => members.includes(it.person))
+  if (personSpaces.length <= 1) return []
+  const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
+    _id: { $in: personSpaces.map((it) => it.person) as Ref<Employee>[] }
+  })
+  const accounts = employees.map((it) => it.personUuid).filter(notEmpty)
   if (accounts.length === 0) return []
 
   // TODO: create directs in person_workspace
   for (const personSpace of personSpaces) {
+    if (personSpace._id === doc.space) continue
     const _id = generateId<Card>()
     const _class = doc._class
     cardIds.set(_id, personSpace._id)
+    const title = getDirectTitle(employees, personSpace.person)
+
     res.push(
       control.txFactory.createTxCreateDoc(
         _class,
         personSpace._id,
         {
-          ...doc
+          ...doc,
+          title
         },
         _id
       )

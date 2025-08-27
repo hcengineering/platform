@@ -107,6 +107,7 @@ import testManagement, {
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
+import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
 
 import {
   serverDocumentsId,
@@ -485,6 +486,7 @@ export default function buildModel (): Builder {
     [communicationModel, communicationId],
     [mailModel, mailId],
     [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
+    [hulyMailModel, hulyMailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

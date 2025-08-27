@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Připojte svou Huly schránku pro odesílání, přijímání a správu e-mailů",
+    "Connect": "Připojit",
+    "ConnectHulyMail": "Připojit Huly schránku",
+    "Cancel": "Zrušit",
+    "Email": "E-mail",
+    "Status": "Stav",
+    "FailedToConnect": "Služba Huly mail není dostupná",
+    "TotalMessages": "Celkem zpráv:",
+    "Configure": "Konfigurovat Huly mail",
+    "ChannelSpace": "Prostor pro kanál zpráv",
+    "PersonSpaceInfo": "Pošta bude dostupná pouze vám",
+    "SharedSpaceInfo": "Pošta bude dostupná všem účastníkům prostoru",
+    "Mailbox": "Poštovní schránka",
+    "MailboxesNotConfigured": "Žádné poštovní schránky nenalezeny",
+    "ConfigureMailBoxes": "Přidejte prosím poštovní schránku v sekci Poštovní schránky, abyste mohli začít"
+  }
+}

@@ -77,6 +77,7 @@ import {achievementId} from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import {emojiId} from '@hcengineering/emoji'
 import billingPlugin, {billingId} from '@hcengineering/billing'
+import { hulyMailId } from '@hcengineering/huly-mail'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -133,6 +134,7 @@ import '@hcengineering/achievement-assets'
 import '@hcengineering/communication-assets'
 import '@hcengineering/emoji-assets'
 import '@hcengineering/billing-assets'
+import '@hcengineering/huly-mail-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, {
@@ -373,6 +375,7 @@ function configureI18n(): void {
   addStringsLoader(communicationId, async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`))
   addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
+  addStringsLoader(hulyMailId, async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -581,6 +584,7 @@ export async function configurePlatform() {
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
   addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
   addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
+  addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
