@@ -129,6 +129,11 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+  redis:
+    image: redis:8.0.2-alpine3.21
+    ports:
+      - 6379:6379
+
   account:
     image: hardcoreeng/account
     extra_hosts:
