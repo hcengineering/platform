@@ -90,7 +90,6 @@ describe('drawing module tests', () => {
   describe('drawing factory function tests', () => {
     function prepareFakeCanvas (): void {
       HTMLCanvasElement.prototype.getContext = jest.fn(() => fakeCanvasContext) as any
-
       ;(globalThis as any).ResizeObserver = jest.fn().mockImplementation(() => ({
         observe: jest.fn(),
         unobserve: jest.fn(),

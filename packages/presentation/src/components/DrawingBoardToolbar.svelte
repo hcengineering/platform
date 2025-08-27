@@ -118,6 +118,8 @@
           break
         }
         default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _exhaustive: never = id
           console.error('Unknown command id', id)
         }
       }
