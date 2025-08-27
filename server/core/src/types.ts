@@ -754,6 +754,7 @@ export interface SessionManager {
   handleRPC: <S extends Session>(
     requestCtx: MeasureContext,
     service: S,
+    method: string,
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
   ) => Promise<RateLimitInfo | undefined>

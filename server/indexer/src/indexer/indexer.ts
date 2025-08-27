@@ -180,23 +180,33 @@ class ElasticPushQueue {
     await this.pushQueue.add(async () => {
       try {
         try {
-          await this.ctx.with('push-elastic', {}, () =>
-            this.fulltextAdapter.updateMany(this.ctx, this.workspace.uuid, docs)
+          await this.ctx.with(
+            'push-elastic',
+            {},
+            () => this.fulltextAdapter.updateMany(this.ctx, this.workspace.uuid, docs),
+            { workspace: this.workspace.uuid }
           )
 
           await this.control?.heartbeat()
         } catch (err: any) {
           Analytics.handleError(err)
           // Try to push one by one
-          await this.ctx.with('push-elastic-by-one', {}, async () => {
-            for (const d of docs) {
-              try {
-                await this.fulltextAdapter.update(this.ctx, this.workspace.uuid, d.id, d)
-              } catch (err2: any) {
-                Analytics.handleError(err2)
+          await this.ctx.with(
+            'push-elastic-by-one',
+            {},
+            async () => {
+              for (const d of docs) {
+                try {
+                  await this.fulltextAdapter.update(this.ctx, this.workspace.uuid, d.id, d)
+                } catch (err2: any) {
+                  Analytics.handleError(err2)
+                }
               }
+            },
+            {
+              workspace: this.workspace.uuid
             }
-          })
+          )
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -275,68 +285,81 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     let processed = 0
     let processedCommunication = 0
     let hasCards = false
-    await ctx.with('reindex domain', { domain }, async (ctx) => {
-      // Iterate over all domain documents and add appropriate entries
-      const allDocs = this.storage.rawFind(ctx, domain)
-      try {
-        let lastPrint = platformNow()
-        const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
-        while (true) {
-          await control?.heartbeat()
-          const docs = await allDocs.find(ctx)
-          if (docs.length === 0) {
-            break
-          }
-          const byClass = groupByArray<Doc, Ref<Class<Doc>>>(docs, (it) => it._class)
-
-          for (const [v, values] of byClass.entries()) {
-            if (!isClassIndexable(this.hierarchy, v, this.contexts)) {
-              // Skip non indexable classes
-              continue
-            }
-            if (!hasCards && this.hierarchy.isDerived(v, card.class.Card)) {
-              hasCards = true
-            }
-
-            await this.indexDocuments(ctx, v, values, pushQueue)
+    await ctx.with(
+      'reindex domain',
+      { domain },
+      async (ctx) => {
+        // Iterate over all domain documents and add appropriate entries
+        const allDocs = this.storage.rawFind(ctx, domain)
+        try {
+          let lastPrint = platformNow()
+          const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+          while (true) {
             await control?.heartbeat()
+            const docs = await allDocs.find(ctx)
+            if (docs.length === 0) {
+              break
+            }
+            const byClass = groupByArray<Doc, Ref<Class<Doc>>>(docs, (it) => it._class)
+
+            for (const [v, values] of byClass.entries()) {
+              if (!isClassIndexable(this.hierarchy, v, this.contexts)) {
+                // Skip non indexable classes
+                continue
+              }
+              if (!hasCards && this.hierarchy.isDerived(v, card.class.Card)) {
+                hasCards = true
+              }
+
+              await this.indexDocuments(ctx, v, values, pushQueue)
+              await control?.heartbeat()
+            }
+
+            processed += docs.length
+
+            // Define the thresholds for logging
+
+            // Find the next threshold to print
+
+            const now = platformNow()
+            if (now - lastPrint > printThresholdMs) {
+              ctx.info('processed', {
+                processed,
+                elapsed: Math.round(now - lastPrint),
+                domain,
+                workspace: this.workspace.uuid
+              })
+              lastPrint = now
+            }
           }
-
-          processed += docs.length
-
-          // Define the thresholds for logging
-
-          // Find the next threshold to print
-
-          const now = platformNow()
-          if (now - lastPrint > printThresholdMs) {
-            ctx.info('processed', {
-              processed,
-              elapsed: Math.round(now - lastPrint),
-              domain,
-              workspace: this.workspace.uuid
-            })
-            lastPrint = now
-          }
+          await pushQueue.waitProcessing()
+        } catch (err: any) {
+          ctx.error('failed to restore index state', { err })
+        } finally {
+          await allDocs.close()
         }
-        await pushQueue.waitProcessing()
-      } catch (err: any) {
-        ctx.error('failed to restore index state', { err })
-      } finally {
-        await allDocs.close()
+        if (hasCards) {
+          await ctx.with(
+            'reindex-communication',
+            {},
+            async (ctx) => {
+              try {
+                const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+                processedCommunication = await this.indexCommunication(ctx, control, pushQueue)
+                await pushQueue.waitProcessing()
+              } catch (err: any) {
+                ctx.error('failed to restore index state', { err })
+              }
+            },
+            { workspace: this.workspace.uuid }
+          )
+        }
+      },
+      {
+        domain,
+        workspace: this.workspace.uuid
       }
-      if (hasCards) {
-        await ctx.with('reindex-communication', {}, async (ctx) => {
-          try {
-            const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
-            processedCommunication = await this.indexCommunication(ctx, control, pushQueue)
-            await pushQueue.waitProcessing()
-          } catch (err: any) {
-            ctx.error('failed to restore index state', { err })
-          }
-        })
-      }
-    })
+    )
     ctx.info('reindex done', { domain, processed, processedCommunication })
   }
 
@@ -450,95 +473,100 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const indexedDoc = createIndexedDoc(doc, this.hierarchy.findAllMixins(doc), doc.space)
 
       await rateLimit.add(async () => {
-        await ctx.with('process-document', { _class: doc._class }, async (ctx) => {
-          try {
-            // Collect all indexable values
-            const attributes = getFullTextIndexableAttributes(this.hierarchy, doc._class)
-            const content = getContent(this.hierarchy, attributes, doc)
+        await ctx.with(
+          'process-document',
+          { _class: doc._class },
+          async (ctx) => {
+            try {
+              // Collect all indexable values
+              const attributes = getFullTextIndexableAttributes(this.hierarchy, doc._class)
+              const content = getContent(this.hierarchy, attributes, doc)
 
-            indexedDoc.fulltextSummary = ''
+              indexedDoc.fulltextSummary = ''
 
-            for (const [, v] of Object.entries(content)) {
-              if (v.attr.type._class === core.class.TypeBlob) {
-                await ctx.with('process-blob', {}, (ctx) => this.processBlob(ctx, v, doc, indexedDoc), {
-                  attr: v.attr.name,
-                  value: v.value
-                })
-                continue
-              }
-
-              if (v.attr.type._class === core.class.TypeCollaborativeDoc) {
-                await this.processCollaborativeDoc(ctx, v, indexedDoc)
-                continue
-              }
-              if ((isFullTextAttribute(v.attr) || v.attr.isCustom === true) && v.value !== undefined) {
-                if (v.attr.type._class === core.class.TypeMarkup) {
-                  ctx.withSync('markup-to-json-text', {}, () => {
-                    indexedDoc.fulltextSummary += '\n' + jsonToText(markupToJSON(v.value))
+              for (const [, v] of Object.entries(content)) {
+                if (v.attr.type._class === core.class.TypeBlob) {
+                  await ctx.with('process-blob', {}, (ctx) => this.processBlob(ctx, v, doc, indexedDoc), {
+                    attr: v.attr.name,
+                    value: v.value
                   })
-                } else {
-                  indexedDoc.fulltextSummary += '\n' + v.value
+                  continue
                 }
 
-                continue
-              }
-
-              if (isIndexedAttribute(v.attr)) {
-                // We need to put indexed attr in place
-
-                // Check for content changes and collect update
-                const dKey = docKey(v.attr.name, v.attr.attributeOf)
-                if (dKey !== '_class') {
-                  if (typeof v.value !== 'object') {
-                    indexedDoc[dKey] = v.value
+                if (v.attr.type._class === core.class.TypeCollaborativeDoc) {
+                  await this.processCollaborativeDoc(ctx, v, indexedDoc)
+                  continue
+                }
+                if ((isFullTextAttribute(v.attr) || v.attr.isCustom === true) && v.value !== undefined) {
+                  if (v.attr.type._class === core.class.TypeMarkup) {
+                    ctx.withSync('markup-to-json-text', {}, () => {
+                      indexedDoc.fulltextSummary += '\n' + jsonToText(markupToJSON(v.value))
+                    })
                   } else {
-                    // We need to extract only values
-                    indexedDoc[dKey] = extractValues(v.value)
+                    indexedDoc.fulltextSummary += '\n' + v.value
                   }
+
+                  continue
                 }
-                continue
+
+                if (isIndexedAttribute(v.attr)) {
+                  // We need to put indexed attr in place
+
+                  // Check for content changes and collect update
+                  const dKey = docKey(v.attr.name, v.attr.attributeOf)
+                  if (dKey !== '_class') {
+                    if (typeof v.value !== 'object') {
+                      indexedDoc[dKey] = v.value
+                    } else {
+                      // We need to extract only values
+                      indexedDoc[dKey] = extractValues(v.value)
+                    }
+                  }
+                  continue
+                }
               }
-            }
 
-            // trim to large content
-            if (indexedDoc.fulltextSummary.length > textLimit) {
-              indexedDoc.fulltextSummary = indexedDoc.fulltextSummary.slice(0, textLimit)
-            }
+              // trim to large content
+              if (indexedDoc.fulltextSummary.length > textLimit) {
+                indexedDoc.fulltextSummary = indexedDoc.fulltextSummary.slice(0, textLimit)
+              }
 
-            if (searchPresenter !== undefined) {
-              await ctx.with('update-search-presenter', { _class: doc._class }, async () => {
-                if (parentDocs === undefined) {
-                  parentDocs = this.hierarchy.isDerived(_class, core.class.AttachedDoc)
-                    ? await this.findParents(ctx, docs as unknown as AttachedDoc[])
-                    : undefined
-                }
-                const parentDoc = parentDocs?.get((doc as AttachedDoc).attachedTo)
-                if (spaceDocs === undefined) {
-                  await updateSpaces()
-                }
-                const spaceDoc = spaceDocs?.get(doc.space) // docState.$lookup?.space
-                await updateDocWithPresenter(this.hierarchy, doc, indexedDoc, parentDoc, spaceDoc, searchPresenter)
+              if (searchPresenter !== undefined) {
+                await ctx.with('update-search-presenter', { _class: doc._class }, async () => {
+                  if (parentDocs === undefined) {
+                    parentDocs = this.hierarchy.isDerived(_class, core.class.AttachedDoc)
+                      ? await this.findParents(ctx, docs as unknown as AttachedDoc[])
+                      : undefined
+                  }
+                  const parentDoc = parentDocs?.get((doc as AttachedDoc).attachedTo)
+                  if (spaceDocs === undefined) {
+                    await updateSpaces()
+                  }
+                  const spaceDoc = spaceDocs?.get(doc.space) // docState.$lookup?.space
+                  await updateDocWithPresenter(this.hierarchy, doc, indexedDoc, parentDoc, spaceDoc, searchPresenter)
+                })
+              }
+
+              indexedDoc.id = doc._id
+              indexedDoc.space = doc.space
+
+              if (this.listener?.onIndexing !== undefined) {
+                await this.listener.onIndexing(indexedDoc)
+              }
+              await pushQueue.push(indexedDoc)
+            } catch (err: any) {
+              ctx.error('failed to process document', {
+                id: doc._id,
+                class: doc._class,
+                workspace: this.workspace.uuid,
+                err: err.message,
+                stack: err.stack
               })
+              Analytics.handleError(err)
             }
-
-            indexedDoc.id = doc._id
-            indexedDoc.space = doc.space
-
-            if (this.listener?.onIndexing !== undefined) {
-              await this.listener.onIndexing(indexedDoc)
-            }
-            await pushQueue.push(indexedDoc)
-          } catch (err: any) {
-            ctx.error('failed to process document', {
-              id: doc._id,
-              class: doc._class,
-              workspace: this.workspace.uuid,
-              err: err.message,
-              stack: err.stack
-            })
-            Analytics.handleError(err)
-          }
-        })
+          },
+          { workspace: this.workspace.uuid }
+        )
       })
     }
     await rateLimit.waitProcessing()
