@@ -119,7 +119,8 @@ export class WorkspaceWorker {
     readonly operation: WorkspaceOperation,
     readonly brandings: BrandingMap,
     readonly fulltextUrl: string | undefined,
-    readonly accountsUrl: string
+    readonly accountsUrl: string,
+    readonly accountsDbUrl: string
   ) {}
 
   hasAvailableThread (): boolean {
@@ -605,12 +606,13 @@ export class WorkspaceWorker {
         workspace,
         opt.backup.backupStorage,
         {
+          AccountsURL: this.accountsUrl,
+          AccountsDbURL: this.accountsDbUrl,
           Token: token,
           BucketName: opt.backup.bucketName,
           CoolDown: 0,
           Timeout: 0,
           SkipWorkspaces: '',
-          AccountsURL: '',
           Interval: 0,
           Parallel: 1,
           KeepSnapshots: 7 * 12

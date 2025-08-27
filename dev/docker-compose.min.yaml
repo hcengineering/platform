@@ -143,6 +143,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
