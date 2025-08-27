@@ -85,17 +85,16 @@ pub fn deprecated_symbol_error(s: &str) -> redis::RedisResult<()> {
     }
 }
 
+// if CONFIG.memory_mode == Some(true) {
 
-                            // if CONFIG.memory_mode == Some(true) {
-
-                            //     // memory_status
-                            //     let map = hub_state.read().await;
-                            //     let memory_keys = format!("{} keys in memory", map.len());
-                            //     let memory_bytes = format!("{} bytes used", map.values().map(|v| v.data.len()).sum::<usize>());
-                            //     format!("{} keys, {} bytes", memory_keys, memory_bytes)
-                            // } else {
-                            //     let mut conn = db_backend.redis_connection.lock().await;
-                             // };
+//     // memory_status
+//     let map = hub_state.read().await;
+//     let memory_keys = format!("{} keys in memory", map.len());
+//     let memory_bytes = format!("{} bytes used", map.values().map(|v| v.data.len()).sum::<usize>());
+//     format!("{} keys, {} bytes", memory_keys, memory_bytes)
+// } else {
+//     let mut conn = db_backend.redis_connection.lock().await;
+// };
 
 /// redis_info(&connection)
 pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<String> {
@@ -127,7 +126,6 @@ pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<
         redis_bytes.unwrap_or(0)
     ))
 }
-
 
 /// redis_list(&connection,prefix)
 pub async fn redis_list(

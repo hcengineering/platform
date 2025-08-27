@@ -1,9 +1,11 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     hub_service::{HubState, RedisEvent, RedisEventAction, broadcast_event},
-    memory::{MemoryBackend, memory_delete, memory_list, memory_read, memory_save, memory_info},
-    redis::{RedisArray, SaveMode, Ttl, redis_delete, redis_list, redis_read, redis_save, redis_info},
+    memory::{MemoryBackend, memory_delete, memory_info, memory_list, memory_read, memory_save},
+    redis::{
+        RedisArray, SaveMode, Ttl, redis_delete, redis_info, redis_list, redis_read, redis_save,
+    },
 };
 use ::redis::aio::MultiplexedConnection;
 use tokio::sync::RwLock;
@@ -34,8 +36,9 @@ impl Db {
         }
     }
 
-    pub async fn info(&self) -> redis::RedisResult<String> { // String {
-        // let res = 
+    pub async fn info(&self) -> redis::RedisResult<String> {
+        // String {
+        // let res =
         match &self.inner {
             DbInner::Memory(m) => memory_info(m).await,
             DbInner::Redis(conn) => {

@@ -124,7 +124,7 @@ pub enum WsCommand {
     Info {
         #[serde(default)]
         correlation: Option<String>,
-    }
+    },
 }
 
 use hulyrs::services::jwt::Claims;
@@ -220,9 +220,7 @@ impl WsSession {
 
     /// When valid JSON recieved for WsSession
     fn handle_command(&mut self, cmd: WsCommand, ctx: &mut ws::WebsocketContext<Self>) {
-
         match cmd {
-
             // INFO
             WsCommand::Info { correlation } => {
                 tracing::info!("INFO");

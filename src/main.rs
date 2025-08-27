@@ -170,27 +170,24 @@ async fn main() -> anyhow::Result<()> {
             .route(
                 "/status",
                 web::get().to({
-                    move |
-                        hub_state: web::Data<Arc<RwLock<HubState>>>,
-                        db_backend: web::Data<Db>,
-                    | {
+                    move |hub_state: web::Data<Arc<RwLock<HubState>>>, db_backend: web::Data<Db>| {
                         let hub_state = hub_state.clone();
                         async move {
-                            let info = db_backend.info().await.unwrap_or_else(|_| "error".to_string());   
+                            let info = db_backend
+                                .info()
+                                .await
+                                .unwrap_or_else(|_| "error".to_string());
                             let count = hub_state.read().await.count();
-                            Ok::<_, actix_web::Error>(
-                                HttpResponse::Ok()
-                                    .json(json!({
-                                        "memory_info": info,
-                                        "db_mode": if CONFIG.memory_mode == Some(true) {
-                                            "memory"
-                                        } else {
-                                            "redis"
-                                        },
-                                        "websockets": count,
-                                        "status": "OK",
-                                    })),
-                            )
+                            Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({
+                                "memory_info": info,
+                                "db_mode": if CONFIG.memory_mode == Some(true) {
+                                    "memory"
+                                } else {
+                                    "redis"
+                                },
+                                "websockets": count,
+                                "status": "OK",
+                            })))
                         }
                     }
                 }),
