@@ -129,7 +129,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         }
     }
 
-    let uploaded = upload(&s3, &pool, payload).await?;
+    let uploaded = upload(&s3, &pool, &mut request, payload).await?;
 
     let part_data = PartData {
         workspace: path.workspace,
@@ -142,7 +142,14 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         meta: Some(meta.into_iter().collect()),
     };
 
-    postgres::set_part(&pool, path.workspace, &part_data.key, None, &part_data).await?;
+    postgres::set_part(
+        &pool,
+        path.workspace,
+        &part_data.key,
+        uploaded.inline,
+        &part_data,
+    )
+    .await?;
 
     let mut response = HttpResponse::Created();
     response.insert_header((header::CONTENT_LOCATION, part_data.key));
@@ -168,7 +175,7 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
-    let uploaded = upload(&s3, &pool, payload).await?;
+    let uploaded = upload(&s3, &pool, &mut request, payload).await?;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
@@ -199,7 +206,7 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
             path.workspace,
             &part_data.key,
             part_data.part,
-            None,
+            uploaded.inline,
             &part_data,
         )
         .await?;
