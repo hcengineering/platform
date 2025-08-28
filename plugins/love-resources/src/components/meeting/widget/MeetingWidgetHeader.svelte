@@ -22,21 +22,13 @@
     showPopup,
     PopupResult
   } from '@hcengineering/ui'
-  import { MeetingMinutes, Room, RoomType } from '@hcengineering/love'
+  import { MeetingMinutes, Room } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
 
   import love from '../../../plugin'
   import RoomModal from '../../RoomModal.svelte'
   import { currentRoom } from '../../../stores'
-  import { screenSharing } from '../../../utils'
-  import ControlBar from '../ControlBar.svelte'
   import MeetingOptionsButton from '../controls/MeetingOptionsButton.svelte'
-  import SendReactionButton from '../controls/SendReactionButton.svelte'
-  import ControlBarContainer from '../ControlBarContainer.svelte'
-  import RoomAccessButton from '../controls/RoomAccessButton.svelte'
-  import LeaveRoomButton from '../controls/LeaveRoomButton.svelte'
-  import RecordingButton from '../controls/RecordingButton.svelte'
-  import TranscriptionButton from '../controls/TranscriptionButton.svelte'
 
   export let room: Room
   export let doc: MeetingMinutes | undefined = undefined
@@ -66,7 +58,7 @@
   <svelte:fragment slot="actions">
     {#if $currentRoom !== undefined}
       <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
-      <MeetingOptionsButton {room} kind="tertiary" size="small"/>
+      <MeetingOptionsButton {room} kind="tertiary" size="small" />
     {/if}
   </svelte:fragment>
 </Header>

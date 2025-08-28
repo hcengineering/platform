@@ -16,12 +16,11 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { RoomType } from '@hcengineering/love'
 
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, screenSharing } from '../utils'
+  import { tryConnect } from '../utils'
   import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
 

@@ -14,20 +14,11 @@
 -->
 <script lang="ts">
   import { Room, RoomType } from '@hcengineering/love'
-  import {
-    IconMaximize,
-    ModernButton,
-    Popup,
-    showPopup,
-    TooltipInstance
-  } from '@hcengineering/ui'
+  import { IconMaximize, ModernButton, Popup, showPopup, TooltipInstance } from '@hcengineering/ui'
 
   import love from '../../plugin'
   import { myInfo, myOffice } from '../../stores'
-  import {
-    isFullScreen,
-    screenSharing,
-  } from '../../utils'
+  import { isFullScreen, screenSharing } from '../../utils'
   import ControlBarContainer from './ControlBarContainer.svelte'
   import RoomModal from '../RoomModal.svelte'
   import { lkSessionConnected } from '../../liveKitClient'
@@ -71,8 +62,8 @@
         <MicrophoneButton />
         <CameraButton />
         <ShareScreenButton />
-        <RecordingButton {room}/>
-        <TranscriptionButton {room}/>
+        <RecordingButton {room} />
+        <TranscriptionButton {room} />
       {:else}
         <RoomAccessButton {room} />
       {/if}

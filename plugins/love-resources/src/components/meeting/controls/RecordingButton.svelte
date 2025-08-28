@@ -1,5 +1,4 @@
 <script lang="ts">
-
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { ModernButton } from '@hcengineering/ui'
   import { isRecording, isRecordingAvailable, record } from '../../../utils'

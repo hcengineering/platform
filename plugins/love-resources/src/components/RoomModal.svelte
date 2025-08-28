@@ -15,12 +15,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { ButtonIcon, IconDelete, Label, Modal } from '@hcengineering/ui'
-  import love, { RoomType } from '@hcengineering/love'
+  import { Modal } from '@hcengineering/ui'
+  import { RoomType } from '@hcengineering/love'
 
   import { currentRoom } from '../stores'
   import RoomComponent from './Room.svelte'
-  import { screenSharing } from '../utils'
 
   const dispatch = createEventDispatcher()
 

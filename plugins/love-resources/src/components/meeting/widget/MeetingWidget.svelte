@@ -96,18 +96,25 @@
       {#if !isMeetingMinutesLoaded}
         <Loading />
       {:else if meetingMinutes}
-        <TranscriptionTab {meetingMinutes} {room} {widgetState} height={contentHeight + 'px'} {width} on:close={handleClose} />
+        <TranscriptionTab
+          {meetingMinutes}
+          {room}
+          {widgetState}
+          height={contentHeight + 'px'}
+          {width}
+          on:close={handleClose}
+        />
       {/if}
     {/if}
   </div>
   <ControlBarContainer>
     <svelte:fragment slot="right">
-      <RoomAccessButton {room} size="small"/>
+      <RoomAccessButton {room} size="small" />
     </svelte:fragment>
     <svelte:fragment slot="center">
-      <SendReactionButton size="small"/>
-      <RecordingButton {room} size="small"/>
-      <TranscriptionButton {room} size="small"/>
+      <SendReactionButton size="small" />
+      <RecordingButton {room} size="small" />
+      <TranscriptionButton {room} size="small" />
     </svelte:fragment>
     <svelte:fragment slot="left">
       <LeaveRoomButton {room} noLabel={true} size="small" />

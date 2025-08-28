@@ -32,5 +32,4 @@
   threadId={undefined}
   collection="transcription"
   on:close
->
-</ChannelEmbeddedContent>
+></ChannelEmbeddedContent>

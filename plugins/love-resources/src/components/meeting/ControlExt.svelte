@@ -15,16 +15,7 @@
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import {
-    Invite,
-    isOffice,
-    JoinRequest,
-    Office,
-    ParticipantInfo,
-    RequestStatus,
-    Room,
-    RoomType
-  } from '@hcengineering/love'
+  import { Invite, isOffice, JoinRequest, Office, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -48,8 +39,7 @@
     disconnect,
     endMeeting,
     getRoomName,
-    leaveRoom,
-    screenSharing
+    leaveRoom
   } from '../../utils'
   import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
   import InvitePopup from '../InvitePopup.svelte'
@@ -250,11 +240,7 @@
     }
   }
 
-  $: checkActiveVideo(
-    $location,
-    $lkSessionConnected,
-    $currentRoom?._id
-  )
+  $: checkActiveVideo($location, $lkSessionConnected, $currentRoom?._id)
 
   $: joined = activeRooms.filter((r) => $myInfo?.room === r._id)
 

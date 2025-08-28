@@ -13,65 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, getCurrentEmployee } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { UserInfo, getPersonByPersonRef } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
-  import {
-    IconArrowLeft,
-    IconUpOutline,
-    Label,
-    Location,
-    ModernButton,
-    Scroller,
-    SplitButton,
-    eventToHTMLElement,
-    location,
-    navigate,
-    panelstore,
-    showPopup
-  } from '@hcengineering/ui'
+  import { IconArrowLeft, Location, ModernButton, Scroller, location, navigate, panelstore } from '@hcengineering/ui'
 
-  import {
-    MeetingMinutes,
-    ParticipantInfo,
-    Room,
-    RoomType,
-    isOffice,
-    loveId,
-    roomAccessIcon,
-    roomAccessLabel
-  } from '@hcengineering/love'
+  import { MeetingMinutes, ParticipantInfo, Room, loveId } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
-  import { DocNavLink, getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { toggleCamState, toggleMicState, state } from '@hcengineering/media-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
-  import {
-    endMeeting,
-    getRoomName,
-    isShareWithSound,
-    isSharingEnabled,
-    leaveRoom,
-    liveKitClient,
-    screenSharing,
-    tryConnect
-  } from '../utils'
+  import { currentMeetingMinutes, infos, invites, myInfo, myRequests } from '../stores'
+  import { tryConnect } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
-  import CamSettingPopup from './meeting/CamSettingPopup.svelte'
-  import MicSettingPopup from './meeting/MicSettingPopup.svelte'
-  import RoomAccessPopup from './RoomAccessPopup.svelte'
-  import ShareSettingPopup from './ShareSettingPopup.svelte'
   import MicrophoneButton from './meeting/controls/MicrophoneButton.svelte'
   import CameraButton from './meeting/controls/CameraButton.svelte'
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
-  import TranscriptionButton from './meeting/controls/TranscriptionButton.svelte'
-  import RoomAccessButton from './meeting/controls/RoomAccessButton.svelte'
-  import ControlBarContainer from './meeting/ControlBarContainer.svelte'
-  import SendReactionButton from './meeting/controls/SendReactionButton.svelte'
-  import RecordingButton from './meeting/controls/RecordingButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
 
@@ -142,37 +101,37 @@
       </div>
     </Scroller>
   </div>
-    <div class="flex-between gap-2">
-      {#if joined && $lkSessionConnected}
-        <div class="flex-between gap-2">
-          <MicrophoneButton size="medium" />
-          <CameraButton size="medium" />
-          <ShareScreenButton size="medium" on:changeShare={() => dispatch('close')} />
-        </div>
-      {/if}
-      <div style="width: auto" />
-      {#if canGoBack(joined, $location, $currentMeetingMinutes)}
-        <ModernButton
-          icon={IconArrowLeft}
-          label={love.string.MeetingMinutes}
-          kind={'primary'}
-          size={'medium'}
-          on:click={back}
-        />
-      {/if}
-      {#if joined}
-        <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
-      {:else}
-        <ModernButton
-          icon={love.icon.EnterRoom}
-          label={love.string.EnterRoom}
-          size={'medium'}
-          kind={'primary'}
-          autoFocus
-          on:click={connect}
-        />
-      {/if}
-    </div>
+  <div class="flex-between gap-2">
+    {#if joined && $lkSessionConnected}
+      <div class="flex-between gap-2">
+        <MicrophoneButton size="medium" />
+        <CameraButton size="medium" />
+        <ShareScreenButton size="medium" on:changeShare={() => dispatch('close')} />
+      </div>
+    {/if}
+    <div style="width: auto" />
+    {#if canGoBack(joined, $location, $currentMeetingMinutes)}
+      <ModernButton
+        icon={IconArrowLeft}
+        label={love.string.MeetingMinutes}
+        kind={'primary'}
+        size={'medium'}
+        on:click={back}
+      />
+    {/if}
+    {#if joined}
+      <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
+    {:else}
+      <ModernButton
+        icon={love.icon.EnterRoom}
+        label={love.string.EnterRoom}
+        size={'medium'}
+        kind={'primary'}
+        autoFocus
+        on:click={connect}
+      />
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">

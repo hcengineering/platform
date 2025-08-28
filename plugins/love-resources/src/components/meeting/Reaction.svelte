@@ -2,7 +2,6 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { getBlobRef } from '@hcengineering/presentation'
   import { getEmojiByShortCode } from '@hcengineering/emoji-resources'
-  import { Blob, Ref } from '@hcengineering/core'
   import { isCustomEmoji } from '@hcengineering/emoji'
 
   export let emoji: string = ''

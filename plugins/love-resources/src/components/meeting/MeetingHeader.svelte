@@ -10,9 +10,15 @@
   const client = getClient()
   let currentMeetingMinutes: MeetingMinutes | undefined
 
-  $: void client.findOne(love.class.MeetingMinutes, { attachedTo: room._id, status: MeetingStatus.Active }, { sort: { createdOn: SortingOrder.Descending } }).then((res) => {
-    currentMeetingMinutes = res
-  })
+  $: void client
+    .findOne(
+      love.class.MeetingMinutes,
+      { attachedTo: room._id, status: MeetingStatus.Active },
+      { sort: { createdOn: SortingOrder.Descending } }
+    )
+    .then((res) => {
+      currentMeetingMinutes = res
+    })
 
   function formatElapsedTime (elapsed: number): string {
     const seconds = Math.floor(elapsed / 1000)

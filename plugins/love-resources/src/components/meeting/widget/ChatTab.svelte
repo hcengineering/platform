@@ -41,5 +41,4 @@
   on:channel={closeThread}
   onReply={replyToThread}
   on:close
->
-</ChannelEmbeddedContent>
+></ChannelEmbeddedContent>
