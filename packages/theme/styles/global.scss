@@ -44,7 +44,6 @@
     url('../fonts/complete/woff2/IBMPlexSans-Regular.woff2') format('woff2'),
     url('../fonts/complete/woff/IBMPlexSans-Regular.woff') format('woff');
 }
-
 @font-face {
   font-family: 'IBM Plex Sans';
   font-style: normal;
@@ -87,7 +86,7 @@
   --timing-rotate: cubic-bezier(.28,1.92,.39,.56);
   --timing-clock: cubic-bezier(.35,2.1,.79,.71);
   // transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
+  
   &::after,
   &::before { box-sizing: border-box; }
 }
