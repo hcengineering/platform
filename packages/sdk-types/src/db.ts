@@ -44,7 +44,14 @@ import {
   NotificationType,
   AttachmentData,
   AttachmentID,
-  AttachmentUpdateData, WithTotal, WorkspaceID, PeerKind, PeerExtra, FindPeersParams, Peer, FindThreadParams
+  AttachmentUpdateData,
+  WithTotal,
+  WorkspaceID,
+  PeerKind,
+  PeerExtra,
+  FindPeersParams,
+  Peer,
+  FindThreadParams
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {

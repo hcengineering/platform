@@ -45,8 +45,13 @@ import {
   type BlobID,
   type AttachmentData,
   type AttachmentID,
-  type AttachmentUpdateData, WithTotal, PeerKind, PeerExtra,
-  FindPeersParams, Peer, FindThreadParams
+  type AttachmentUpdateData,
+  WithTotal,
+  PeerKind,
+  PeerExtra,
+  FindPeersParams,
+  Peer,
+  FindThreadParams
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
@@ -379,10 +384,9 @@ export class CockroachAdapter implements DbAdapter {
   // TODO: remove later
   async getCardSpaceMembers (cardId: CardID): Promise<AccountID[]> {
     const sql = `SELECT s.members
-FROM public.space AS s
-JOIN public.card AS c ON c.space = s._id
-                 WHERE c."workspaceId" = $1::uuid
-                   AND c."_id" = $2::text
+                 FROM public.space AS s
+                 JOIN public.card AS c ON c."workspaceId" = s."workspaceId" AND c.space = s._id
+                 WHERE c."workspaceId" = $1::uuid AND c."_id" = $2::text
                  LIMIT 1`
 
     const result = await this.sql.execute(sql, [this.workspace, cardId])
