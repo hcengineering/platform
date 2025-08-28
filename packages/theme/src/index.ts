@@ -60,12 +60,18 @@ export const getCurrentLanguage = (): string => {
   Analytics.setTag('language', lang)
   return lang
 }
+/**
+ * @public
+ */
+export const getCurrentEmoji = (): string =>
+  localStorage.getItem('emoji') ?? getDefaultProps('emoji', 'emoji-system')
 
 export class ThemeOptions {
   constructor (
     readonly fontSize: number,
     readonly dark: boolean,
-    readonly language: string
+    readonly language: string,
+    readonly emoji: string
   ) {}
 }
 export const themeStore = writable<ThemeOptions>()
@@ -75,7 +81,8 @@ export function initThemeStore (): void {
     new ThemeOptions(
       getCurrentFontSize() === 'normal-font' ? 16 : 14,
       isThemeDark(getCurrentTheme()),
-      getCurrentLanguage()
+      getCurrentLanguage(),
+      getCurrentEmoji()
     )
   )
 }

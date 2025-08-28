@@ -100,6 +100,9 @@
     "WeeksWOValue": "{weeks, plural, =1 {周} other {周}}",
     "MonthsWOValue": "{months, plural, =1 {月} other {月}}",
     "Filter": "过滤",
-    "Clear": "清除"
+    "Clear": "清除",
+    "EmojiStyle": "表情样式",
+    "EmojiSystem": "系统默认",
+    "EmojiNoto": "Noto Color"
   }
 }

@@ -99,6 +99,9 @@
     "WeeksWOValue": "{weeks, plural, =1 {týden} other {týdny}}",
     "MonthsWOValue": "{months, plural, =1 {měsíc} other {měsíce}}",
     "Filter": "Filtr",
-    "Clear": "Vymazat"
+    "Clear": "Vymazat",
+    "EmojiStyle": "Styl emoji",
+    "EmojiSystem": "Výchozí systémové",
+    "EmojiNoto": "Noto Color"
   }
 }

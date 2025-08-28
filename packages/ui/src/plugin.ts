@@ -148,7 +148,11 @@ export const uis = plugin(uiId, {
     Filter: '' as IntlString,
     Clear: '' as IntlString,
 
-    ReadOnlyModeWarning: '' as IntlString
+    ReadOnlyModeWarning: '' as IntlString,
+
+    EmojiStyle: '' as IntlString,
+    EmojiSystem: '' as IntlString,
+    EmojiNoto: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

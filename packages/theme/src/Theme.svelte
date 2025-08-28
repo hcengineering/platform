@@ -24,15 +24,16 @@
     getCurrentTheme,
     isSystemThemeDark,
     isThemeDark,
-    themeStore as themeOptions
+    themeStore as themeOptions, getCurrentEmoji
   } from './'
 
   const currentTheme = writable<string>(getCurrentTheme())
   const currentFontSize = writable<string>(getCurrentFontSize())
   const currentLanguage = writable<string>(getCurrentLanguage())
+  const currentEmoji = writable<string>(getCurrentEmoji())
 
-  const setOptions = (currentFont: string, theme: string, language: string) => {
-    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language))
+  const setOptions = (currentFont: string, theme: string, language: string, emoji: string) => {
+    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language, emoji))
   }
 
   const getRealTheme = (theme: string): string => (isThemeDark(theme) ? 'theme-dark' : 'theme-light')
@@ -41,16 +42,16 @@
     if (set) {
       localStorage.setItem('theme', theme)
     }
-    document.documentElement.setAttribute('class', `${getRealTheme(theme)} ${getCurrentFontSize()}`)
-    setOptions(getCurrentFontSize(), theme, getCurrentLanguage())
+    document.documentElement.setAttribute('class', `${getRealTheme(theme)} ${getCurrentFontSize()} ${getCurrentEmoji()}`)
+    setOptions(getCurrentFontSize(), theme, getCurrentLanguage(), getCurrentEmoji())
   }
   const setRootFontSize = (fontsize: string, set = true) => {
     currentFontSize.set(fontsize)
     if (set) {
       localStorage.setItem('fontsize', fontsize)
     }
-    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${fontsize}`)
-    setOptions(fontsize, getCurrentTheme(), getCurrentLanguage())
+    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${fontsize} ${getCurrentEmoji()}`)
+    setOptions(fontsize, getCurrentTheme(), getCurrentLanguage(), getCurrentEmoji())
   }
   const setLanguage = async (language: string, set: boolean = true) => {
     currentLanguage.set(language)
@@ -60,7 +61,15 @@
     Analytics.setTag('language', language)
     setMetadata(platform.metadata.locale, $currentLanguage)
     await loadPluginStrings($currentLanguage, set)
-    setOptions(getCurrentFontSize(), getCurrentTheme(), language)
+    setOptions(getCurrentFontSize(), getCurrentTheme(), language, getCurrentEmoji())
+  }
+  const setEmoji = (emoji: string, set = true) => {
+    currentEmoji.set(emoji)
+    if (set) {
+      localStorage.setItem('emoji', emoji)
+    }
+    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${getCurrentFontSize()} ${emoji}`)
+    setOptions(getCurrentFontSize(), getCurrentTheme(), getCurrentLanguage(), emoji)
   }
 
   setContext('theme', {
@@ -74,6 +83,10 @@
   setContext('lang', {
     currentLanguage,
     setLanguage
+  })
+  setContext('emoji', {
+    currentEmoji,
+    setEmoji
   })
 
   let remove: any = null
