@@ -306,6 +306,13 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
+    let part = parts
+        .iter()
+        .map(|p| p.data.part)
+        .reduce(u32::max)
+        .map(|m| m + 1)
+        .unwrap_or(0);
+
     let part_data = PartData {
         workspace: path.workspace,
         key: path.key,
