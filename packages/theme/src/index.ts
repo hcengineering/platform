@@ -63,8 +63,7 @@ export const getCurrentLanguage = (): string => {
 /**
  * @public
  */
-export const getCurrentEmoji = (): string =>
-  localStorage.getItem('emoji') ?? getDefaultProps('emoji', 'emoji-system')
+export const getCurrentEmoji = (): string => localStorage.getItem('emoji') ?? getDefaultProps('emoji', 'emoji-system')
 
 export class ThemeOptions {
   constructor (

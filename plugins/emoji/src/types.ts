@@ -18,6 +18,13 @@ import type { Blob, Doc, Ref } from '@hcengineering/core'
 export { default as Emoji } from 'emojibase'
 export type ExtendedEmoji = Emoji | CustomEmoji
 export type EmojiWithGroup = ExtendedEmoji & { key: string }
+export type TextOrEmoji = string | { emoji: string } | { emoji: string, image: Ref<Blob> }
+
+/** @public */
+export interface ParsedTextWithEmojis {
+  nodes: TextOrEmoji[]
+  emojisOnly: boolean
+}
 
 /** @public */
 export interface CustomEmoji extends Doc {

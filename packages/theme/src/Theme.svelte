@@ -24,7 +24,8 @@
     getCurrentTheme,
     isSystemThemeDark,
     isThemeDark,
-    themeStore as themeOptions, getCurrentEmoji
+    themeStore as themeOptions,
+    getCurrentEmoji
   } from './'
 
   const currentTheme = writable<string>(getCurrentTheme())
@@ -42,7 +43,10 @@
     if (set) {
       localStorage.setItem('theme', theme)
     }
-    document.documentElement.setAttribute('class', `${getRealTheme(theme)} ${getCurrentFontSize()} ${getCurrentEmoji()}`)
+    document.documentElement.setAttribute(
+      'class',
+      `${getRealTheme(theme)} ${getCurrentFontSize()} ${getCurrentEmoji()}`
+    )
     setOptions(getCurrentFontSize(), theme, getCurrentLanguage(), getCurrentEmoji())
   }
   const setRootFontSize = (fontsize: string, set = true) => {
@@ -50,7 +54,10 @@
     if (set) {
       localStorage.setItem('fontsize', fontsize)
     }
-    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${fontsize} ${getCurrentEmoji()}`)
+    document.documentElement.setAttribute(
+      'class',
+      `${getRealTheme(getCurrentTheme())} ${fontsize} ${getCurrentEmoji()}`
+    )
     setOptions(fontsize, getCurrentTheme(), getCurrentLanguage(), getCurrentEmoji())
   }
   const setLanguage = async (language: string, set: boolean = true) => {
@@ -68,7 +75,10 @@
     if (set) {
       localStorage.setItem('emoji', emoji)
     }
-    document.documentElement.setAttribute('class', `${getRealTheme(getCurrentTheme())} ${getCurrentFontSize()} ${emoji}`)
+    document.documentElement.setAttribute(
+      'class',
+      `${getRealTheme(getCurrentTheme())} ${getCurrentFontSize()} ${emoji}`
+    )
     setOptions(getCurrentFontSize(), getCurrentTheme(), getCurrentLanguage(), emoji)
   }
 

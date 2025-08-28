@@ -21,7 +21,8 @@
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
   import { getBlobRef } from '../../preview'
-  import { emojiRegex } from '@hcengineering/emoji'
+  import emojiPlugin, { emojiRegex } from '@hcengineering/emoji'
+  import { getResource } from '@hcengineering/platform'
 
   export let node: MarkupNode
   export let single = true
@@ -73,7 +74,26 @@
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.text}
-    {node.text}
+    {#await getResource(emojiPlugin.functions.ParseTextWithEmojis) then parseFunction}
+      {@const parsedText = parseFunction(node.text ?? '')}
+      {#each parsedText.nodes as textOrEmoji}
+        {#if typeof textOrEmoji === 'string'}
+          {textOrEmoji}
+        {:else}
+          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedText.emojisOnly}>
+            {#if 'image' in textOrEmoji}
+              {@const blob = toRefBlob(textOrEmoji.image)}
+              {@const alt = toString(textOrEmoji.emoji)}
+              {#await getBlobRef(blob) then blobSrc}
+                <img src={blobSrc.src} {alt} />
+              {/await}
+            {:else}
+              {textOrEmoji.emoji}
+            {/if}
+          </span>
+        {/if}
+      {/each}
+    {/await}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji" class:emojiOnly={single}>
       {#if node.attrs?.kind === 'image'}
