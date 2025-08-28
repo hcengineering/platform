@@ -40,7 +40,6 @@ import {
   RoomType,
   TranscriptionStatus
 } from '@hcengineering/love'
-import { getSelectedCam, getSelectedMic, getSelectedSpeaker } from '@hcengineering/media-resources'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
   copyTextToClipboard,
@@ -57,7 +56,6 @@ import { openWidget, openWidgetTab, sidebarStore, updateWidgetState } from '@hce
 import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
-  type AudioCaptureOptions,
   LocalAudioTrack,
   type LocalTrack,
   type LocalTrackPublication,
@@ -67,9 +65,7 @@ import {
   type RemoteTrackPublication,
   type Room as LKRoom,
   RoomEvent,
-  type ScreenShareCaptureOptions,
-  Track,
-  type VideoCaptureOptions
+  Track
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 
@@ -334,47 +330,6 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
 })
 
 lk.on(RoomEvent.Connected, () => {
-  const session = liveKitClient.currentMediaSession
-
-  session?.on('camera', (enabled) => {
-    void setCam(enabled)
-  })
-
-  session?.on('microphone', (enabled) => {
-    void setMic(enabled)
-  })
-
-  session?.on('selected-camera', (deviceId) => {
-    if (deviceId === null) {
-      if (lk.localParticipant.isCameraEnabled) {
-        void setCam(false)
-      }
-    } else {
-      if (lk.localParticipant.isCameraEnabled) {
-        void lk.switchActiveDevice('videoinput', deviceId)
-      } else {
-        void setCam(true)
-      }
-    }
-  })
-
-  session?.on('selected-microphone', (deviceId) => {
-    if (lk.localParticipant.isMicrophoneEnabled) {
-      void lk.switchActiveDevice('audioinput', deviceId)
-    } else {
-      void setMic(true)
-    }
-  })
-
-  session?.on('selected-speaker', (deviceId) => {
-    void lk.switchActiveDevice('audiooutput', deviceId)
-  })
-
-  session?.on('feature', (feature, enabled) => {
-    if (feature === 'sharing') {
-      void setShare(enabled)
-    }
-  })
   isRecording.set(lk.isRecording)
   void initRoom()
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
@@ -485,58 +440,6 @@ function isRoomOpened (room: Room): boolean {
   return false
 }
 
-async function setCam (value: boolean): Promise<void> {
-  if (value && get(currentRoom)?.type !== RoomType.Video) return
-  try {
-    const opt: VideoCaptureOptions = {}
-    const selectedDevice = await getSelectedCam()
-    if (selectedDevice !== null && selectedDevice !== undefined) {
-      // We need to use exact device id to avoid issues with Firefox
-      // that can switch to another device when using just deviceId
-      opt.deviceId = { exact: selectedDevice.deviceId }
-      await lk.switchActiveDevice('videoinput', selectedDevice.deviceId)
-    }
-    await lk.localParticipant.setCameraEnabled(value, opt)
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-async function setMic (value: boolean): Promise<void> {
-  try {
-    const speaker = await getSelectedSpeaker()
-    if (speaker !== null && speaker !== undefined) {
-      await lk.switchActiveDevice('audiooutput', speaker.deviceId)
-    }
-  } catch (err) {
-    console.error(err)
-  }
-  try {
-    const opt: AudioCaptureOptions = {}
-    const selectedDevice = await getSelectedMic()
-    if (selectedDevice !== null && selectedDevice !== undefined) {
-      // We need to use exact device id to avoid issues with Firefox
-      // that can switch to another device when using just deviceId
-      opt.deviceId = { exact: selectedDevice.deviceId }
-    }
-    await lk.localParticipant.setMicrophoneEnabled(value, opt)
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-export async function setShare (value: boolean, withAudio: boolean = false): Promise<void> {
-  try {
-    const options: ScreenShareCaptureOptions = {}
-    if (withAudio) {
-      options.audio = true
-    }
-    await lk.localParticipant.setScreenShareEnabled(value, options)
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 export async function getRoomName (room: Room): Promise<string> {
   if (isOffice(room) && room.person !== null && room.name === '') {
     const employee = await getPersonByPersonRef(room.person)
@@ -590,10 +493,6 @@ async function moveToRoom (
 async function connectLK (token: string, room: Room): Promise<void> {
   const wsURL = getLiveKitEndpoint()
   await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
-  await Promise.all([
-    setMic($myPreferences?.micEnabled ?? lk.remoteParticipants.size < 16),
-    setCam(room.type === RoomType.Video && ($myPreferences?.camEnabled ?? true))
-  ])
 }
 
 async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {

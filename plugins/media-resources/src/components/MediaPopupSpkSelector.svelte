@@ -13,79 +13,56 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { enumerateDevices, updateSelectedSpeakerId } from '@hcengineering/media'
-  import { Loading } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
+  import { MediaInfo, updateSelectedSpeakerId } from '@hcengineering/media'
 
   import media from '../plugin'
   import { micAccess, sessions } from '../stores'
-  import { getDeviceLabel, getSelectedSpeaker } from '../utils'
+  import { getDeviceLabel } from '../utils'
 
   import MediaPopupItem from './MediaPopupItem.svelte'
   import IconSpkOn from './icons/Speaker.svelte'
   import IconSpkOff from './icons/Speaker.svelte'
 
+  export let mediaInfo: MediaInfo
   export let expanded: boolean = false
 
-  let access: 'granted' | 'denied' | 'prompt' = 'prompt'
-  let selected: MediaDeviceInfo | null | undefined = undefined
-  let devices: Promise<MediaDeviceInfo[]> | null = null
-
-  async function getDevices (): Promise<MediaDeviceInfo[]> {
-    if (devices === null) {
-      devices = enumerateDevices('audiooutput', access !== 'granted')
-    }
-
-    return await devices
-  }
+  $: access = $micAccess.state
+  $: devices = mediaInfo.devices.filter((device) => device.kind === 'audiooutput')
 
   async function handleSelectSpk (device: MediaDeviceInfo | null): Promise<void> {
-    if (selected?.deviceId === device?.deviceId) return
-
+    if (device == null) return
+    if (mediaInfo.activeSpeaker?.deviceId === device?.deviceId) return
     const deviceId = device?.deviceId
-
     updateSelectedSpeakerId(deviceId)
-    selected = device
+    mediaInfo.activeSpeaker = device
 
     $sessions.forEach((p) => {
       p.emit('selected-speaker', deviceId ?? 'default')
     })
   }
-
-  onMount(async () => {
-    selected = await getSelectedSpeaker()
-  })
-
-  $: access = $micAccess.state
 </script>
 
 <MediaPopupItem
-  label={selected == null ? media.string.DefaultSpeaker : getDeviceLabel(selected)}
-  icon={selected !== null ? IconSpkOn : IconSpkOff}
+  label={mediaInfo.activeSpeaker === undefined ? media.string.DefaultSpeaker : getDeviceLabel(mediaInfo.activeSpeaker)}
+  icon={mediaInfo.activeSpeaker !== undefined ? IconSpkOn : IconSpkOff}
   disabled={access === 'denied'}
   expandable={true}
   {expanded}
   on:expand
 >
   <div slot="content">
-    {#await getDevices()}
-      <div class="p-4">
-        <Loading />
-      </div>
-    {:then devices}
-      {#if devices.length > 0}
-        {#each devices as device}
-          <MediaPopupItem
-            label={getDeviceLabel(device)}
-            disabled={access === 'denied'}
-            selected={selected?.deviceId === device.deviceId}
-            selectable
-            on:select={() => handleSelectSpk(device)}
-          />
-        {/each}
-      {:else}
-        <MediaPopupItem label={media.string.DefaultSpeaker} icon={IconSpkOff} disabled />
-      {/if}
-    {/await}
+    {#if devices.length > 0}
+      {#each devices as device}
+        <MediaPopupItem
+          label={getDeviceLabel(device)}
+          disabled={access === 'denied'}
+          selected={mediaInfo.activeSpeaker === device}
+          selectable
+          on:select={() => handleSelectSpk(device)}
+        />
+      {/each}
+    {:else}
+      <MediaPopupItem label={media.string.DefaultSpeaker} icon={IconSpkOff} disabled />
+    {/if}
   </div>
 </MediaPopupItem>
