@@ -19,7 +19,7 @@ use crate::handlers::{ApiError, HandlerResult};
 
 pub struct Blob {
     pub s3_key: String,
-    pub size: u64,
+    pub length: u64,
     pub inline: Option<Vec<u8>>,
 }
 
@@ -74,7 +74,7 @@ async fn upload_regular(
         .await
         .map_err(|_| actix_web::error::ErrorPayloadTooLarge("payload too large"))??;
 
-    let size = payload.len() as u64;
+    let length = payload.len() as u64;
     let inline = if require_inline {
         Some(payload.to_vec())
     } else {
@@ -110,7 +110,7 @@ async fn upload_regular(
 
     Ok(Blob {
         s3_key,
-        size,
+        length,
         inline,
     })
 }
@@ -237,7 +237,7 @@ async fn upload_multipart(
 
     Ok(Blob {
         s3_key,
-        size: total_uploaded as u64,
+        length: total_uploaded as u64,
         inline: None,
     })
 }
