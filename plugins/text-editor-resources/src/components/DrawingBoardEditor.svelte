@@ -19,17 +19,19 @@
     DrawingCmd,
     DrawingTool,
     DrawTextCmd,
-    Point,
     drawing,
-    makeCommandId
+    CommandUid,
+    Point,
+    DrawingCommandsProcessor
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
   import { Loading, Component } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
-  import { Array as YArray, Map as YMap } from 'yjs'
+  import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
 
   export let boardId: string
+  export let document: YDoc
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
   export let grabFocus = false
@@ -45,9 +47,9 @@
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
-  let commands: DrawingCmd[] = []
+  let model: DrawingCmd[] = []
   let offset: { x: number, y: number } = { x: 0, y: 0 }
-  let changingCmdId: string | undefined
+  let changingCmdId: CommandUid | undefined
   let cmdEditor: HTMLDivElement | undefined
   let personCursorCanvasPos: Point | undefined
   let personCursorNodePos: Point | undefined
@@ -62,22 +64,32 @@
   const dataTopicOffset = 'drawing-board-offset'
   const dataTopicCursor = 'drawing-board-cursor'
 
+  let disableUndo = false
+  let disableRedo = false
+
+  const commandsProcessor = new DrawingCommandsProcessor(document, savedCmds)
+
   $: onSelectedChanged(selected)
   $: onReadonlyChanged(readonly)
   $: onOffsetChanged(offset)
 
-  function listenSavedCommands (): void {
-    commands = savedCmds.toArray()
+  function onSavedCommandsChanged (): void {
+    model = commandsProcessor.snapshot()
+    setTimeout(() => {
+      const status = commandsProcessor.getUndoRedoAvailability()
+      disableUndo = status.undoDisabled
+      disableRedo = status.redoDisabled
+    })
   }
 
-  function showCommandProps (id: string): void {
+  function showCommandProps (id: CommandUid): void {
     changingCmdId = id
-    for (const cmd of commands) {
-      if (cmd.id === id) {
-        if (cmd.type === 'text') {
-          const textCmd = cmd as DrawTextCmd
-          penColor = textCmd.color
-          fontSize = textCmd.fontSize
+    for (const command of model) {
+      if (command.id === id) {
+        if (command.type === 'text') {
+          const textWriting = command as DrawTextCmd
+          penColor = textWriting.color
+          fontSize = textWriting.fontSize
         }
         break
       }
@@ -85,61 +97,33 @@
   }
 
   function changeCommand (cmd: DrawingCmd): void {
-    let index = -1
-    for (let i = 0; i < savedCmds.length; i++) {
-      if (savedCmds.get(i).id === cmd.id) {
-        savedCmds.delete(i)
-        index = i
-        break
-      }
-    }
-    if (index >= 0) {
-      savedCmds.insert(index, [cmd])
-    } else {
-      savedCmds.push([cmd])
-    }
     changingCmdId = undefined
     cmdEditor = undefined
+    commandsProcessor.changeCommand(cmd)
   }
 
-  function deleteCommand (id: string): void {
-    for (let i = 0; i < savedCmds.length; i++) {
-      if (savedCmds.get(i).id === id) {
-        savedCmds.delete(i)
-        break
-      }
-    }
+  function deleteCommand (id: CommandUid): void {
     changingCmdId = undefined
     cmdEditor = undefined
+    commandsProcessor.deleteCommand(id)
   }
 
-  function onSelectedChanged (selected: boolean): void {
-    if (oldSelected !== selected) {
-      if (oldSelected && !selected && changingCmdId !== undefined) {
+  function onSelectedChanged (newSelected: boolean): void {
+    if (oldSelected !== newSelected) {
+      if (oldSelected && !newSelected && changingCmdId !== undefined) {
         changingCmdId = undefined
         cmdEditor = undefined
       }
-      oldSelected = selected
+      oldSelected = newSelected
     }
   }
 
-  function onReadonlyChanged (readonly: boolean): void {
-    if (oldReadonly !== readonly) {
-      if (!readonly) {
-        let allHaveIds = true
-        for (let i = 0; i < savedCmds.length; i++) {
-          if (savedCmds.get(i).id === undefined) {
-            allHaveIds = false
-            break
-          }
-        }
-        if (!allHaveIds) {
-          const cmds = savedCmds.toArray()
-          savedCmds.delete(0, savedCmds.length)
-          savedCmds.push(cmds.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandId() })))
-        }
+  function onReadonlyChanged (newReadonly: boolean): void {
+    if (oldReadonly !== newReadonly) {
+      if (!newReadonly) {
+        commandsProcessor.ensureAllCommandsWithUids()
       }
-      oldReadonly = readonly
+      oldReadonly = newReadonly
     }
   }
 
@@ -178,8 +162,8 @@
   }
 
   onMount(() => {
-    commands = savedCmds.toArray()
-    savedCmds.observe(listenSavedCommands)
+    onSavedCommandsChanged()
+    savedCmds.observe(onSavedCommandsChanged)
 
     getResource(presence.function.PublishData)
       .then((func) => {
@@ -206,7 +190,7 @@
   })
 
   onDestroy(() => {
-    savedCmds.unobserve(listenSavedCommands)
+    savedCmds.unobserve(onSavedCommandsChanged)
 
     getResource(presence.function.FolloweeDataUnsubscribe)
       .then((unsubscribe) => {
@@ -241,7 +225,7 @@
       use:drawing={{
         readonly,
         autoSize: true,
-        commands,
+        commands: model,
         offset,
         tool,
         penColor,
@@ -250,8 +234,8 @@
         fontSize,
         personCursorPos: personCursorCanvasPos,
         changingCmdId,
-        cmdAdded: (cmd) => {
-          savedCmds.push([cmd])
+        cmdAdded: (commandToAdd) => {
+          commandsProcessor.addCommand(commandToAdd)
           changingCmdId = undefined
         },
         cmdChanging: showCommandProps,
@@ -288,6 +272,8 @@
           placeInside={true}
           showPanTool={true}
           {cmdEditor}
+          {disableUndo}
+          {disableRedo}
           bind:toolbar
           bind:tool
           bind:penColor
@@ -295,8 +281,14 @@
           bind:eraserWidth
           bind:fontSize
           on:clear={() => {
-            savedCmds.delete(0, savedCmds.length)
+            commandsProcessor.clear()
             offset = { x: 0, y: 0 }
+          }}
+          on:undo={() => {
+            commandsProcessor.undo()
+          }}
+          on:redo={() => {
+            commandsProcessor.redo()
           }}
         />
       {/if}
@@ -328,7 +320,7 @@
   .board {
     position: relative;
     width: 100%;
-    background-color: var(--drawing-bg-color);
+    background-color: var(--theme-drawing-bg-color);
     border-radius: var(--small-BorderRadius);
     border: 1px solid var(--theme-navpanel-border);
 

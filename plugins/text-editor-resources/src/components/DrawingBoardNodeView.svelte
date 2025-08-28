@@ -137,6 +137,7 @@
   <NodeViewWrapper data-drag-handle="" data-type="drawingBoard" data-id={node.attrs.id}>
     <DrawingBoardEditor
       boardId={node.attrs.id}
+      document={savedBoard.document}
       savedCmds={savedBoard.commands}
       savedProps={savedBoard.props}
       resizeable={true}

@@ -65,11 +65,11 @@ const expose: IPCMainExposed = {
   minimizeWindow: () => {
     ipcRenderer.invoke('window-minimize')
   },
-  
+
   maximizeWindow: () => {
     ipcRenderer.invoke('window-maximize')
   },
-  
+
   closeWindow: () => {
     ipcRenderer.invoke('window-close')
   },
@@ -82,7 +82,7 @@ const expose: IPCMainExposed = {
     ipcRenderer.on('window-focus-loss', callback)
   },
 
-  isOsUsingDarkTheme: async ()  =>  { 
+  isOsUsingDarkTheme: async () => {
     return await ipcRenderer.invoke('get-is-os-using-dark-theme')
   },
 
@@ -181,6 +181,6 @@ const expose: IPCMainExposed = {
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
   startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) },
 
-  rebuildJumpList: (spares: JumpListSpares) => ipcRenderer.send('rebuild-user-jump-list', spares) 
+  rebuildJumpList: (spares: JumpListSpares) => { ipcRenderer.send('rebuild-user-jump-list', spares) }
 }
 contextBridge.exposeInMainWorld('electron', expose)

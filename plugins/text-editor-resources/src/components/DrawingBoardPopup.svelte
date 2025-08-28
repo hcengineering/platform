@@ -17,10 +17,11 @@
   import textEditor from '@hcengineering/text-editor'
   import { Dialog } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { Array as YArray, Map as YMap } from 'yjs'
+  import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
   import DrawingBoardEditor from './DrawingBoardEditor.svelte'
 
   export let boardId: string
+  export let document: YDoc
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
   export let readonly = false
@@ -43,6 +44,6 @@
       dispatch('close')
     }}
   >
-    <DrawingBoardEditor {boardId} {savedCmds} {savedProps} {readonly} selected fullSize grabFocus />
+    <DrawingBoardEditor {boardId} {document} {savedCmds} {savedProps} {readonly} selected fullSize grabFocus />
   </Dialog>
 {/if}
