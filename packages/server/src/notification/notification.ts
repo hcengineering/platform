@@ -163,6 +163,9 @@ async function notifyReaction (
   const messageAccount = await findAccount(ctx, message.creator)
   if (messageAccount == null) return result
 
+  const spaceMembers = await ctx.db.getCardSpaceMembers(cardId)
+  if (!spaceMembers.includes(messageAccount)) return []
+
   const reactionAccount = await findAccount(ctx, socialId)
   if (reactionAccount === messageAccount) return result
 
