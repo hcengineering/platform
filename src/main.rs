@@ -14,6 +14,7 @@ use uuid::Uuid;
 
 use hulyrs::services::jwt::actix::ServiceRequestExt;
 
+mod blob;
 mod config;
 mod handlers;
 mod postgres;
