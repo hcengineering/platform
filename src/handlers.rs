@@ -75,7 +75,6 @@ impl<E: Display + std::error::Error + 'static, B: std::fmt::Debug> From<SdkError
 
 struct Blob {
     s3_key: String,
-    hash: String,
     size: u64,
 }
 
@@ -86,7 +85,7 @@ struct PartData {
     part: u32,
     size: u64,
     blob: String,
-    hash: String,
+    etag: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     headers: Option<HashMap<String, String>>,
@@ -215,7 +214,6 @@ async fn upload(s3: &S3Client, pool: &Pool, mut payload: Payload) -> Result<Blob
 
     Ok(Blob {
         s3_key,
-        hash,
         size: total_uploaded as u64,
     })
 }
@@ -271,7 +269,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         part: 0,
         blob: uploaded.s3_key,
         size: uploaded.size,
-        hash: uploaded.hash,
+        etag: ksuid::Ksuid::generate().to_base62(),
         headers: Some(headers.clone().into_iter().collect()),
         meta: Some(meta.into_iter().collect()),
     };
@@ -280,7 +278,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 
     let mut response = HttpResponse::Created();
     response.insert_header((header::CONTENT_LOCATION, part_data.key));
-    response.insert_header((header::ETAG, part_data.hash));
+    response.insert_header((header::ETAG, part_data.etag));
 
     for (key, value) in headers {
         response.insert_header((key.as_str(), value));
@@ -316,10 +314,10 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
     let part_data = PartData {
         workspace: path.workspace,
         key: path.key,
-        part: parts.len() as u32,
+        part,
         blob: uploaded.s3_key,
         size: uploaded.size,
-        hash: uploaded.hash,
+        etag: ksuid::Ksuid::generate().to_base62(),
         headers: None,
         meta: None,
     };
@@ -340,7 +338,7 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
     }
 
     let mut response = HttpResponse::Created();
-    response.insert_header((header::ETAG, part_data.hash));
+    response.insert_header((header::ETAG, part_data.etag));
 
     Ok(response.finish())
 }
@@ -391,17 +389,17 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
     let response = if !parts.is_empty() {
         let mut content_length = 0;
-        let mut etag = Hasher::new();
 
         for part in parts.iter() {
             content_length += part.data.size;
-            etag.update(part.data.hash.as_bytes());
         }
 
         let mut response = HttpResponse::Ok();
 
+        let etag = parts.last().unwrap().data.etag.to_owned();
+
         response.insert_header((header::CONTENT_LENGTH, content_length));
-        response.insert_header((header::ETAG, etag.finalize().to_hex().to_string()));
+        response.insert_header((header::ETAG, etag));
 
         let headers = parts[0].data.headers.as_ref();
         if let Some(headers) = headers {
