@@ -239,7 +239,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
     fn stream(
-        parts: Vec<postgres::Object<PartData>>,
+        parts: Vec<postgres::ObjectPart<PartData>>,
         s3: Arc<S3Client>,
     ) -> impl Stream<Item = Result<Bytes, std::io::Error>> {
         use async_stream::stream;

@@ -102,7 +102,7 @@ pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(
 }
 
 #[derive(Debug)]
-pub struct Object<T: DeserializeOwned + std::fmt::Debug> {
+pub struct ObjectPart<T: DeserializeOwned + std::fmt::Debug> {
     pub inline: Option<Vec<u8>>,
     pub data: T,
 }
@@ -111,7 +111,7 @@ pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
-) -> anyhow::Result<Vec<Object<T>>> {
+) -> anyhow::Result<Vec<ObjectPart<T>>> {
     let connection = pool.get().await?;
 
     let rows = connection
@@ -128,7 +128,7 @@ pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
         let inline = row.get::<_, Option<Vec<u8>>>("inline");
 
         let data = serde_json::from_value(data)?;
-        parts.push(Object { inline, data })
+        parts.push(ObjectPart { inline, data })
     }
 
     Ok(parts)
