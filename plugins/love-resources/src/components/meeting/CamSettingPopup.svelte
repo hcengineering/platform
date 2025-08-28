@@ -1,15 +1,21 @@
 <script lang="ts">
-  import { Component, Label, Progress, Toggle } from '@hcengineering/ui'
+  import { Component, Label, Loading, Progress, Toggle } from '@hcengineering/ui'
   import love from '../../plugin'
   import { myPreferences } from '../../stores'
   import { blurProcessor, updateBlurRadius } from '../../utils'
-  import mediaPlugin from '@hcengineering/media'
+  import mediaPlugin, { getMediaDevices } from '@hcengineering/media'
 
   $: blurRadius = $myPreferences?.blurRadius ?? 0
 </script>
 
 <div class="antiPopup mediaPopup">
-  <Component is={mediaPlugin.component.MediaPopupCamSelector} />
+  {#await getMediaDevices(false, true)}
+    <div class="p-4">
+      <Loading />
+    </div>
+  {:then mediaInfo}
+    <Component is={mediaPlugin.component.MediaPopupCamSelector} props={{ mediaInfo }} />
+  {/await}
   {#if blurProcessor !== undefined}
     <div class="grid p-3">
       <Label label={love.string.Blur} />

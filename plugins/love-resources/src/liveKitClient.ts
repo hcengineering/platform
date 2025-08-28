@@ -1,6 +1,12 @@
-import { ConnectionState, type RemoteParticipant, Room as LKRoom, RoomEvent } from 'livekit-client'
+import {
+  ConnectionState,
+  type RemoteParticipant,
+  Room as LKRoom,
+  RoomEvent,
+  type VideoCaptureOptions
+} from 'livekit-client'
 import { getMetadata, translate } from '@hcengineering/platform'
-import { getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
+import { getMediaDevices, getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
 import { LoveEvents } from '@hcengineering/love'
 import { useMedia } from '@hcengineering/media-resources'
 import { get, writable } from 'svelte/store'
@@ -10,7 +16,7 @@ import { getCurrentLanguage } from '@hcengineering/theme'
 import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
 import love from './plugin'
 import { leaveRoom } from './utils'
-import { myInfo, myOffice } from './stores'
+import { $myPreferences, myInfo, myOffice } from './stores'
 
 export const lkSessionConnected = writable<boolean>(false)
 
@@ -20,6 +26,15 @@ const AUTO_DISCONNECT_DELAY_MS = 60 * 1000
 export function getLiveKitClient (): LiveKitClient {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   return new LiveKitClient(wsURL ?? '')
+}
+
+const defaultCaptureOptions: VideoCaptureOptions = {
+  facingMode: 'user',
+  resolution: {
+    width: 1280,
+    height: 720,
+    frameRate: 30
+  }
 }
 
 export class LiveKitClient {
@@ -50,14 +65,7 @@ export class LiveKitClient {
       audioOutput: {
         deviceId: getSelectedSpeakerId()
       },
-      videoCaptureDefaults: {
-        facingMode: 'user',
-        resolution: {
-          width: 1280,
-          height: 720,
-          frameRate: 30
-        }
-      }
+      videoCaptureDefaults: defaultCaptureOptions
     })
     void lkRoom.prepareConnection(wsUrl)
     lkRoom.on(RoomEvent.Connected, this.onConnected)
@@ -67,7 +75,45 @@ export class LiveKitClient {
 
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.currentSessionSupportsVideo = withVideo
-    await this.liveKitRoom.connect(wsURL, token)
+    try {
+      const [, session] = await Promise.all([
+        this.liveKitRoom.connect(wsURL, token, { maxRetries: 3 }),
+        useMedia({
+          state: {
+            camera: this.currentSessionSupportsVideo ? { enabled: $myPreferences?.camEnabled ?? true } : undefined,
+            microphone: { enabled: $myPreferences?.micEnabled ?? this.liveKitRoom.remoteParticipants.size < 16 }
+          },
+          autoDestroy: false
+        })
+      ])
+
+      this.currentMediaSession = session
+      session?.on('camera', (enabled) => {
+        void this.setCameraEnabled(enabled)
+      })
+      session?.on('microphone', (enabled) => {
+        void this.setMicrophoneEnabled(enabled)
+      })
+      session?.on('selected-camera', (deviceId) => {
+        void this.setActiveCamera(deviceId)
+      })
+      session?.on('selected-microphone', (deviceId) => {
+        void this.setActiveMicrophone(deviceId)
+      })
+      session?.on('selected-speaker', (deviceId) => {
+        void this.setActiveSpeaker(deviceId)
+      })
+      session?.on('feature', (feature, enabled) => {
+        if (feature !== 'sharing') return
+        void this.setScreenShareEnabled(enabled, true)
+      })
+
+      await this.updateActiveDevices()
+    } catch (error) {
+      this.currentMediaSession?.close()
+      this.currentMediaSession = undefined
+      throw error
+    }
   }
 
   async disconnect (): Promise<void> {
@@ -76,6 +122,9 @@ export class LiveKitClient {
     await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
     await this.liveKitRoom.disconnect()
     this.currentSessionSupportsVideo = false
+    this.currentMediaSession?.close()
+    this.currentMediaSession?.removeAllListeners()
+    this.currentMediaSession = undefined
   }
 
   async awaitConnect (): Promise<void> {
@@ -90,23 +139,12 @@ export class LiveKitClient {
   }
 
   onConnected = (): void => {
-    const session = useMedia({
-      state: {
-        camera: this.currentSessionSupportsVideo ? { enabled: false } : undefined,
-        microphone: { enabled: false }
-      },
-      autoDestroy: false
-    })
     lkSessionConnected.set(true)
-    this.currentMediaSession = session
     this.liveKitRoom.on(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.on(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
   }
 
   onDisconnected = (): void => {
-    this.currentMediaSession?.close()
-    this.currentMediaSession?.removeAllListeners()
-    this.currentMediaSession = undefined
     lkSessionConnected.set(false)
     this.liveKitRoom.off(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.off(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
@@ -140,5 +178,68 @@ export class LiveKitClient {
     this.lastParticipantDisconnectTimeout = window.setTimeout(() => {
       void leaveRoom(get(myInfo), get(myOffice))
     }, AUTO_DISCONNECT_DELAY_MS)
+  }
+
+  async updateActiveDevices (): Promise<void> {
+    await this.setActiveCamera(this.currentMediaSession?.state.camera?.deviceId)
+    await this.setActiveMicrophone(this.currentMediaSession?.state.microphone?.deviceId)
+    await this.setCameraEnabled(this.currentMediaSession?.state.camera?.enabled ?? false)
+    await this.setMicrophoneEnabled(this.currentMediaSession?.state.microphone?.enabled ?? false)
+  }
+
+  async setActiveCamera (deviceId: string | undefined): Promise<void> {
+    if (deviceId === undefined || deviceId === null) return
+    if (!this.currentSessionSupportsVideo) return
+    await this.liveKitRoom.switchActiveDevice('videoinput', deviceId, true)
+  }
+
+  async setActiveMicrophone (deviceId: string | undefined): Promise<void> {
+    if (deviceId === undefined || deviceId === null) return
+    await this.liveKitRoom.switchActiveDevice('audioinput', deviceId, true)
+  }
+
+  async setActiveSpeaker (deviceId: string | undefined): Promise<void> {
+    if (deviceId === undefined || deviceId === null) return
+    try {
+      await this.liveKitRoom.switchActiveDevice('audiooutput', deviceId, true)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async setCameraEnabled (value: boolean): Promise<void> {
+    try {
+      await this.liveKitRoom.localParticipant.setCameraEnabled(value)
+    } catch (e) {
+      if (value) {
+        const mediaDevices = await getMediaDevices(false, true)
+        if (mediaDevices.activeCamera !== undefined) {
+          await this.setActiveCamera(mediaDevices.activeCamera.deviceId)
+          await this.liveKitRoom.localParticipant.setCameraEnabled(true)
+        }
+      }
+    }
+  }
+
+  async setMicrophoneEnabled (value: boolean): Promise<void> {
+    try {
+      await this.liveKitRoom.localParticipant.setMicrophoneEnabled(value)
+    } catch (e) {
+      if (value) {
+        const mediaDevices = await getMediaDevices(true, false)
+        if (mediaDevices.activeMicrophone !== undefined) {
+          await this.setActiveMicrophone(mediaDevices.activeMicrophone.deviceId)
+          await this.liveKitRoom.localParticipant.setMicrophoneEnabled(true)
+        }
+      }
+    }
+  }
+
+  async setScreenShareEnabled (value: boolean, withAudio: boolean = false): Promise<void> {
+    try {
+      await this.liveKitRoom.localParticipant.setScreenShareEnabled(value, { audio: withAudio })
+    } catch (e) {
+      console.log(e)
+    }
   }
 }

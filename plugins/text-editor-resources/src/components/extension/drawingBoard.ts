@@ -17,7 +17,7 @@ import { type DrawingCmd } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { type Editor, mergeAttributes, Node } from '@tiptap/core'
 import { NodeSelection } from '@tiptap/pm/state'
-import type { Array as YArray, Map as YMap } from 'yjs'
+import type { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
 import DrawingBoardNodeView from '../DrawingBoardNodeView.svelte'
 import DrawingBoardPopup from '../DrawingBoardPopup.svelte'
 import { SvelteNodeViewRenderer } from '../node-view'
@@ -27,6 +27,7 @@ export interface DrawingBoardOptions {
 }
 
 export interface SavedBoard {
+  document: YDoc
   commands: YArray<DrawingCmd>
   props: YMap<any>
   loading: boolean
@@ -38,6 +39,7 @@ export function showBoardPopup (id: string, board: SavedBoard, editor: Editor): 
       DrawingBoardPopup,
       {
         boardId: id,
+        document: board.document,
         savedCmds: board.commands,
         savedProps: board.props,
         readonly: !editor.isEditable

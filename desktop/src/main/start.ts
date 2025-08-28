@@ -25,7 +25,7 @@ import * as path from 'path'
 import { Config, MenuBarAction, NotificationParams, JumpListSpares } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
-import { dipatchMenuBarAction } from './customMenu'
+import { dispatchMenuBarAction } from './customMenu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
@@ -455,7 +455,7 @@ ipcMain.handle('get-is-os-using-dark-theme', () => {
 })
 
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
-  dipatchMenuBarAction(mainWindow, action)
+  dispatchMenuBarAction(mainWindow, action)
 })
 
 if (isWindows) {

@@ -13,51 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { enumerateDevices, updateSelectedCamId } from '@hcengineering/media'
-  import { Label, Loading } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
+  import { MediaInfo, updateSelectedCamId } from '@hcengineering/media'
+  import { Label } from '@hcengineering/ui'
 
   import media from '../plugin'
   import { camAccess, state, sessions } from '../stores'
-  import { getDeviceLabel, getSelectedCam } from '../utils'
+  import { getDeviceLabel } from '../utils'
 
   import MediaPopupCamPreview from './MediaPopupCamPreview.svelte'
   import MediaPopupItem from './MediaPopupItem.svelte'
   import IconCamOn from './icons/CamOn.svelte'
   import IconCamOff from './icons/CamOff.svelte'
 
+  export let mediaInfo: MediaInfo
   export let expanded: boolean = false
 
   let access: 'granted' | 'denied' | 'prompt' = 'prompt'
-  let selected: MediaDeviceInfo | null | undefined = undefined
-  let devices: Promise<MediaDeviceInfo[]> | null = null
 
-  async function getDevices (): Promise<MediaDeviceInfo[]> {
-    if (devices === null) {
-      devices = enumerateDevices('videoinput', access !== 'granted')
-    }
-
-    return await devices
-  }
+  $: access = $camAccess.state
+  $: devices = mediaInfo.devices.filter((device) => device.kind === 'videoinput')
 
   async function handleSelectCam (device: MediaDeviceInfo | null): Promise<void> {
-    if (selected?.deviceId === device?.deviceId) return
-
+    if (device == null || mediaInfo === undefined) return
+    if (mediaInfo.activeCamera?.deviceId === device?.deviceId) return
     const deviceId = device?.deviceId
-
     updateSelectedCamId(deviceId)
-    selected = device
+    mediaInfo.activeCamera = device
 
     $sessions.forEach((p) => {
       p.emit('selected-camera', deviceId ?? 'default')
     })
   }
-
-  onMount(async () => {
-    selected = await getSelectedCam()
-  })
-
-  $: access = $camAccess.state
 </script>
 
 {#if access === 'denied'}
@@ -69,8 +55,8 @@
   />
 {:else}
   <MediaPopupItem
-    label={selected == null ? media.string.DefaultCam : getDeviceLabel(selected)}
-    icon={selected !== null ? IconCamOn : IconCamOff}
+    label={mediaInfo.activeCamera === undefined ? media.string.DefaultCam : getDeviceLabel(mediaInfo.activeCamera)}
+    icon={mediaInfo.activeCamera !== undefined ? IconCamOn : IconCamOff}
     expandable={true}
     {expanded}
     on:expand
@@ -85,33 +71,27 @@
     </div>
 
     <div slot="content">
-      {#await getDevices()}
-        <div class="p-4">
-          <Loading />
-        </div>
-      {:then devices}
-        {#if devices.length > 0}
-          {#each devices as device}
-            <MediaPopupItem
-              label={getDeviceLabel(device)}
-              selected={selected?.deviceId === device.deviceId}
-              selectable
-              on:select={() => handleSelectCam(device)}
-            />
-          {/each}
-
-          {#if selected}
-            <MediaPopupCamPreview {selected} />
-          {/if}
-        {:else}
+      {#if devices.length > 0}
+        {#each devices as device}
           <MediaPopupItem
-            label={media.string.NoCam}
-            icon={IconCamOff}
-            iconProps={{ fill: 'var(--theme-state-negative-color)' }}
-            disabled
+            label={getDeviceLabel(device)}
+            selected={mediaInfo.activeCamera === device}
+            selectable
+            on:select={() => handleSelectCam(device)}
           />
+        {/each}
+
+        {#if mediaInfo.activeCamera}
+          <MediaPopupCamPreview selected={mediaInfo.activeCamera} />
         {/if}
-      {/await}
+      {:else}
+        <MediaPopupItem
+          label={media.string.NoCam}
+          icon={IconCamOff}
+          iconProps={{ fill: 'var(--theme-state-negative-color)' }}
+          disabled
+        />
+      {/if}
     </div>
   </MediaPopupItem>
 {/if}

@@ -37,6 +37,8 @@ import { surveyId } from '@hcengineering/survey'
 import { chatId } from '@hcengineering/chat'
 import { cardId } from '@hcengineering/card'
 import { mailId } from '@hcengineering/mail'
+import { communicationId } from '@hcengineering/communication'
+
 import coreEng from '@hcengineering/core/lang/en.json'
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 import platformEng from '@hcengineering/platform/lang/en.json'
@@ -76,6 +78,7 @@ import surveyEn from '@hcengineering/survey-assets/lang/en.json'
 import chatEn from '@hcengineering/chat-assets/lang/en.json'
 import cardEn from '@hcengineering/card-assets/lang/en.json'
 import mailEn from '@hcengineering/mail-assets/lang/en.json'
+import communicationEn from '@hcengineering/communication-assets/lang/en.json'
 
 export function registerStringLoaders (): void {
   addStringsLoader(coreId, async (lang: string) => coreEng)
@@ -118,4 +121,5 @@ export function registerStringLoaders (): void {
   addStringsLoader(chatId, async (lang: string) => chatEn)
   addStringsLoader(cardId, async (lang: string) => cardEn)
   addStringsLoader(mailId, async (lang: string) => mailEn)
+  addStringsLoader(communicationId, async (lang: string) => communicationEn)
 }

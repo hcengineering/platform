@@ -15,10 +15,10 @@
 
 import { IPCMainExposed, MenuBarAction, MenuBarActions } from './types'
 
-export function ipcMainExposed(): IPCMainExposed {
+export function ipcMainExposed (): IPCMainExposed {
   return (window as any).electron as IPCMainExposed
 }
 
-export function isMenuBarAction(value: string): value is MenuBarAction {
-  return MenuBarActions.includes(value as MenuBarAction);
+export function isMenuBarAction (value: string): value is MenuBarAction {
+  return MenuBarActions.includes(value as MenuBarAction)
 }

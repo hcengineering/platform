@@ -105,6 +105,7 @@ export default plugin(presentationId, {
     Save: '' as IntlString,
     Saved: '' as IntlString,
     Download: '' as IntlString,
+    DownloadOriginal: '' as IntlString,
     Delete: '' as IntlString,
     Close: '' as IntlString,
     NotSelected: '' as IntlString,
@@ -145,7 +146,16 @@ export default plugin(presentationId, {
     DocumentUrlCopied: '' as IntlString,
     CopyLink: '' as IntlString,
     UnableToFollowMention: '' as IntlString,
-    AccessDenied: '' as IntlString
+    AccessDenied: '' as IntlString,
+    Undo: '' as IntlString,
+    Redo: '' as IntlString,
+    ClearCanvas: '' as IntlString,
+    PenTool: '' as IntlString,
+    EraserTool: '' as IntlString,
+    PanTool: '' as IntlString,
+    TextTool: '' as IntlString,
+    ColorTooltip: '' as IntlString,
+    PaletteManagementMenu: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

@@ -55,8 +55,8 @@
     isShareWithSound,
     isSharingEnabled,
     leaveRoom,
+    liveKitClient,
     screenSharing,
-    setShare,
     tryConnect
   } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
@@ -98,7 +98,7 @@
   async function changeShare (): Promise<void> {
     const newValue = !$isSharingEnabled
     const audio = newValue && $isShareWithSound
-    await setShare(newValue, audio)
+    await liveKitClient.setScreenShareEnabled(newValue, audio)
     dispatch('close')
   }
 

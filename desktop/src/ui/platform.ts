@@ -139,7 +139,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
 import { configureAnalyticsProviders } from '@hcengineering/analytics-providers'
-import { Branding, Config, } from './types'
+import { Branding, Config } from './types'
 import { ipcMainExposed } from './typesUtils'
 
 import github, { githubId } from '@hcengineering/github'
@@ -252,18 +252,20 @@ function configureI18n (): void {
 }
 
 export class PlatformBranding {
-  constructor(private title: string) {
+  constructor (private readonly title: string) {
   }
-  public getTitle(): string {
-    return this.title;
+
+  public getTitle (): string {
+    return this.title
   }
 }
 
 export class PlatformParameters {
-  constructor(private branding: PlatformBranding) {
+  constructor (private readonly branding: PlatformBranding) {
   }
-  public getBranding(): PlatformBranding {
-    return this.branding;
+
+  public getBranding (): PlatformBranding {
+    return this.branding
   }
 }
 

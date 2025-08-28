@@ -20,19 +20,27 @@
     IconEdit,
     IconMoreH,
     IconRedo,
+    IconUndo,
     SelectPopup,
     SelectPopupValueType,
     eventToHTMLElement,
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+
+  interface DrawingBoardToolbarEvents {
+    undo: undefined
+    redo: undefined
+    clear: undefined
+  }
+
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
   import IconText from './icons/Text.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
 
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher<DrawingBoardToolbarEvents>()
   const maxColors = 8
   const minColors = 0
   const defaultColor = '#0000ff'
@@ -54,20 +62,24 @@
   export let showPanTool = false
   export let toolbar: HTMLDivElement | undefined
   export let cmdEditor: HTMLDivElement | undefined
+  export let disableUndo: boolean = false
+  export let disableRedo: boolean = false
 
   let colorSelector: HTMLInputElement
-  let penColors: string[] = defaultColors
+  let colorsPalette: string[] = defaultColors
 
-  function showMenu (ev: MouseEvent): void {
-    const items: SelectPopupValueType[] = []
-    if (penColors.length < maxColors) {
+  type PaletteCommandId = 'add-color' | 'remove-color' | 'reset-colors'
+
+  function showPaletteManagementMenu (ev: MouseEvent): void {
+    const items: Array<Omit<SelectPopupValueType, 'id'> & { id: PaletteCommandId }> = []
+    if (colorsPalette.length < maxColors) {
       items.push({
         id: 'add-color',
         label: presentation.string.ColorAdd,
         icon: IconAdd
       })
     }
-    if (penColors.length > minColors) {
+    if (colorsPalette.length > minColors) {
       items.push({
         id: 'remove-color',
         label: presentation.string.ColorRemove,
@@ -79,7 +91,7 @@
       label: presentation.string.ColorReset,
       icon: IconRedo
     })
-    showPopup(SelectPopup, { value: items }, eventToHTMLElement(ev), (id) => {
+    showPopup(SelectPopup, { value: items }, eventToHTMLElement(ev), (id: PaletteCommandId | undefined) => {
       switch (id) {
         case 'add-color': {
           if (colorSelector !== undefined) {
@@ -89,16 +101,16 @@
           break
         }
         case 'remove-color': {
-          penColors = penColors.filter((c: string) => c !== penColor)
-          localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
-          selectColor(penColors[0])
+          colorsPalette = colorsPalette.filter((c: string) => c !== penColor)
+          localStorage.setItem(storageKey.colors, JSON.stringify(colorsPalette))
+          selectColor(colorsPalette[0])
           focusEditor()
           break
         }
         case 'reset-colors': {
-          penColors = defaultColors
+          colorsPalette = defaultColors
           localStorage.removeItem(storageKey.colors)
-          selectColor(penColors[0])
+          selectColor(colorsPalette[0])
           focusEditor()
           break
         }
@@ -106,6 +118,8 @@
           break
         }
         default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _exhaustive: never = id
           console.error('Unknown command id', id)
         }
       }
@@ -114,9 +128,9 @@
 
   function addColorPreset (): void {
     penColor = penColor.toLowerCase()
-    if (!penColors.includes(penColor)) {
-      penColors = [...penColors, penColor]
-      localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
+    if (!colorsPalette.includes(penColor)) {
+      colorsPalette = [...colorsPalette, penColor]
+      localStorage.setItem(storageKey.colors, JSON.stringify(colorsPalette))
     }
     focusEditor()
   }
@@ -129,13 +143,13 @@
   onMount(() => {
     try {
       const savedColors = localStorage.getItem(storageKey.colors)
-      penColors = savedColors !== null ? JSON.parse(savedColors.toLowerCase()) : defaultColors
+      colorsPalette = savedColors !== null ? JSON.parse(savedColors.toLowerCase()) : defaultColors
     } catch {
-      penColors = defaultColors
+      colorsPalette = defaultColors
     }
     penColor = (localStorage.getItem(storageKey.color) ?? penColor ?? defaultColor).toLowerCase()
-    if (!penColors.includes(penColor)) {
-      penColor = penColors[0] ?? defaultColor
+    if (!colorsPalette.includes(penColor)) {
+      penColor = colorsPalette[0] ?? defaultColor
     }
     penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
     eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '50')
@@ -166,8 +180,30 @@
 
 <div class="toolbar" class:inside={placeInside} bind:this={toolbar}>
   <Button
+    icon={IconUndo}
+    kind="icon"
+    showTooltip={{ label: presentation.string.Undo }}
+    noFocus
+    disabled={disableUndo}
+    on:click={() => {
+      dispatch('undo')
+    }}
+  />
+  <Button
+    icon={IconRedo}
+    kind="icon"
+    showTooltip={{ label: presentation.string.Redo }}
+    noFocus
+    disabled={disableRedo}
+    on:click={() => {
+      dispatch('redo')
+    }}
+  />
+  <div class="divider buttons-divider" />
+  <Button
     icon={IconDelete}
     kind="icon"
+    showTooltip={{ label: presentation.string.ClearCanvas }}
     noFocus
     on:click={() => {
       tool = 'pen'
@@ -178,6 +214,7 @@
   <Button
     icon={IconEdit}
     kind="icon"
+    showTooltip={{ label: presentation.string.PenTool }}
     noFocus
     selected={tool === 'pen'}
     on:click={() => {
@@ -187,6 +224,7 @@
   <Button
     icon={IconEraser}
     kind="icon"
+    showTooltip={{ label: presentation.string.EraserTool }}
     noFocus
     selected={tool === 'erase'}
     on:click={() => {
@@ -197,6 +235,7 @@
     <Button
       icon={IconMove}
       kind="icon"
+      showTooltip={{ label: presentation.string.PanTool }}
       noFocus
       selected={tool === 'pan'}
       on:click={() => {
@@ -207,6 +246,7 @@
   <Button
     icon={IconText}
     kind="icon"
+    showTooltip={{ label: presentation.string.TextTool }}
     noFocus
     selected={tool === 'text'}
     on:click={() => {
@@ -248,11 +288,12 @@
     />
     <div class="divider buttons-divider" />
   {/if}
-  {#each penColors as color}
+  {#each colorsPalette as color}
     <Button
       kind="icon"
       noFocus
       selected={penColor === color}
+      showTooltip={{ label: presentation.string.ColorTooltip, props: { color } }}
       on:click={() => {
         if (tool === 'erase') {
           tool = 'pen'
@@ -272,7 +313,13 @@
       bind:value={penColor}
       on:change={addColorPreset}
     />
-    <Button kind="icon" icon={IconMoreH} noFocus on:click={showMenu} />
+    <Button
+      kind="icon"
+      icon={IconMoreH}
+      noFocus
+      showTooltip={{ label: presentation.string.PaletteManagementMenu }}
+      on:click={showPaletteManagementMenu}
+    />
   </div>
 </div>
 

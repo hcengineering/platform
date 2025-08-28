@@ -13,50 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { enumerateDevices, updateSelectedMicId } from '@hcengineering/media'
-  import { Label, Loading } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
+  import { MediaInfo, updateSelectedMicId } from '@hcengineering/media'
+  import { Label } from '@hcengineering/ui'
 
   import media from '../plugin'
   import { micAccess, state, sessions } from '../stores'
-  import { getDeviceLabel, getSelectedMic } from '../utils'
+  import { getDeviceLabel } from '../utils'
 
   import MediaPopupItem from './MediaPopupItem.svelte'
   import IconMicOn from './icons/MicOn.svelte'
   import IconMicOff from './icons/MicOff.svelte'
 
+  export let mediaInfo: MediaInfo
   export let expanded: boolean = false
 
-  let access: 'granted' | 'denied' | 'prompt' = 'prompt'
-  let selected: MediaDeviceInfo | null | undefined = undefined
-  let devices: Promise<MediaDeviceInfo[]> | null = null
-
-  async function getDevices (): Promise<MediaDeviceInfo[]> {
-    if (devices === null) {
-      devices = enumerateDevices('audioinput', access !== 'granted')
-    }
-
-    return await devices
-  }
+  $: access = $micAccess.state
+  $: devices = mediaInfo.devices.filter((device) => device.kind === 'audioinput')
 
   async function handleSelectMic (device: MediaDeviceInfo | null): Promise<void> {
-    if (selected?.deviceId === device?.deviceId) return
-
+    if (device == null || mediaInfo === undefined) return
+    if (mediaInfo.activeMicrophone?.deviceId === device?.deviceId) return
     const deviceId = device?.deviceId
-
     updateSelectedMicId(deviceId)
-    selected = device
+    mediaInfo.activeMicrophone = device
 
     $sessions.forEach((p) => {
       p.emit('selected-microphone', deviceId ?? 'default')
     })
   }
-
-  onMount(async () => {
-    selected = await getSelectedMic()
-  })
-
-  $: access = $micAccess.state
 </script>
 
 {#if access === 'denied'}
@@ -68,8 +52,10 @@
   />
 {:else}
   <MediaPopupItem
-    label={selected == null ? media.string.DefaultMic : getDeviceLabel(selected)}
-    icon={selected !== null ? IconMicOn : IconMicOff}
+    label={mediaInfo.activeMicrophone === undefined
+      ? media.string.DefaultMic
+      : getDeviceLabel(mediaInfo.activeMicrophone)}
+    icon={mediaInfo.activeMicrophone !== undefined ? IconMicOn : IconMicOff}
     expandable={true}
     {expanded}
     on:expand
@@ -84,29 +70,23 @@
     </div>
 
     <div slot="content">
-      {#await getDevices()}
-        <div class="p-4">
-          <Loading />
-        </div>
-      {:then devices}
-        {#if devices.length > 0}
-          {#each devices as device}
-            <MediaPopupItem
-              label={getDeviceLabel(device)}
-              selected={selected?.deviceId === device.deviceId}
-              selectable
-              on:select={() => handleSelectMic(device)}
-            />
-          {/each}
-        {:else}
+      {#if devices.length > 0}
+        {#each devices as device}
           <MediaPopupItem
-            label={media.string.NoMic}
-            icon={IconMicOff}
-            iconProps={{ fill: 'var(--theme-state-negative-color)' }}
-            disabled
+            label={getDeviceLabel(device)}
+            selected={mediaInfo.activeMicrophone === device}
+            selectable
+            on:select={() => handleSelectMic(device)}
           />
-        {/if}
-      {/await}
+        {/each}
+      {:else}
+        <MediaPopupItem
+          label={media.string.NoMic}
+          icon={IconMicOff}
+          iconProps={{ fill: 'var(--theme-state-negative-color)' }}
+          disabled
+        />
+      {/if}
     </div>
   </MediaPopupItem>
 {/if}
