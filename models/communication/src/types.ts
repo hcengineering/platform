@@ -125,7 +125,7 @@ function defineDirect (builder: Builder): void {
   })
 
   builder.mixin(communication.type.Direct, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete]
+    actions: [view.action.Delete, card.action.PublicLink]
   })
 }
 

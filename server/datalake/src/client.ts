@@ -240,12 +240,18 @@ export class DatalakeClient {
     }
 
     if (size === undefined || size < 64 * 1024 * 1024) {
-      return await ctx.with('direct-upload', {}, (ctx) =>
-        this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
+      return await ctx.with(
+        'direct-upload',
+        {},
+        (ctx) => this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size }),
+        { workspace, objectName }
       )
     } else {
-      return await ctx.with('multipart-upload', {}, (ctx) =>
-        this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size })
+      return await ctx.with(
+        'multipart-upload',
+        {},
+        (ctx) => this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size }),
+        { workspace, objectName }
       )
     }
   }

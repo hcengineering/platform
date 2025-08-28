@@ -6,6 +6,7 @@
     "Save": "Guardar",
     "Saved": "Guardado...",
     "Download": "Transferir",
+    "DownloadOriginal": "Transferir original",
     "Delete": "Eliminar",
     "Close": "Fechar",
     "NotSelected": "Não selecionado",
@@ -44,7 +45,16 @@
     "DocumentUrlCopied": "Copiado!",
     "CopyLink": "Copiar link",
     "AccessDenied": "O objeto não existe ou você não tem permissão para acessá-lo.",
-    "UnableToFollowMention": "Não foi possível abrir o objeto mencionado"
+    "UnableToFollowMention": "Não foi possível abrir o objeto mencionado",
+    "Undo": "Desfazer",
+    "Redo": "Refazer",
+    "ClearCanvas": "Limpar tela",
+    "PenTool": "Ferramenta caneta",
+    "EraserTool": "Ferramenta borracha",
+    "PanTool": "Ferramenta mover",
+    "TextTool": "Ferramenta texto",
+    "ColorTooltip": "{color}",
+    "PaletteManagementMenu": "Gerenciar predefinições de cor"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

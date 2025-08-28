@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "连接您的 Huly 邮箱以发送、接收和管理邮件",
+    "Connect": "连接",
+    "ConnectHulyMail": "连接 Huly 邮箱",
+    "Cancel": "取消",
+    "Email": "邮件",
+    "Status": "状态",
+    "FailedToConnect": "Huly 邮件服务不可用",
+    "TotalMessages": "总消息数：",
+    "Configure": "配置 Huly Mail",
+    "ChannelSpace": "消息频道空间",
+    "PersonSpaceInfo": "邮件仅对您可用",
+    "SharedSpaceInfo": "邮件对空间所有参与者可用",
+    "Mailbox": "邮箱",
+    "MailboxesNotConfigured": "未找到邮箱",
+    "ConfigureMailBoxes": "请在邮箱部分添加邮箱以开始"
+  }
+}

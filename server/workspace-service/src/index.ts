@@ -95,6 +95,12 @@ export function serveWorkspaceAccount (
   }
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUri)
 
+  const accountDbUrl = process.env.ACCOUNTS_DB_URL
+  if (accountDbUrl === undefined) {
+    console.log('Please provide account db url')
+    process.exit(1)
+  }
+
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -135,7 +141,8 @@ export function serveWorkspaceAccount (
     wsOperation,
     brandings,
     fulltextUrl,
-    accountUri
+    accountUri,
+    accountDbUrl
   )
 
   void worker

@@ -228,7 +228,7 @@ export class LiveKitClient {
       if (value) {
         const mediaDevices = await getMediaDevices(true, false)
         if (mediaDevices.activeMicrophone !== undefined) {
-          await this.setActiveCamera(mediaDevices.activeMicrophone.deviceId)
+          await this.setActiveMicrophone(mediaDevices.activeMicrophone.deviceId)
           await this.liveKitRoom.localParticipant.setMicrophoneEnabled(true)
         }
       }

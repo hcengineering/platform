@@ -68,6 +68,7 @@ import { inboxId } from '@hcengineering/inbox'
 import { achievementId } from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
+import { hulyMailId } from '@hcengineering/huly-mail'
 import billingPlugin, { billingId } from '@hcengineering/billing'
 
 import '@hcengineering/activity-assets'
@@ -125,6 +126,7 @@ import '@hcengineering/emoji-assets'
 import '@hcengineering/media-assets'
 import '@hcengineering/communication-assets'
 import '@hcengineering/billing-assets'
+import '@hcengineering/huly-mail-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
@@ -137,7 +139,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
 import { configureAnalyticsProviders } from '@hcengineering/analytics-providers'
-import { Branding, Config, } from './types'
+import { Branding, Config } from './types'
 import { ipcMainExposed } from './typesUtils'
 
 import github, { githubId } from '@hcengineering/github'
@@ -246,21 +248,24 @@ function configureI18n (): void {
   addStringsLoader(communicationId, async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`))
   addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
+  addStringsLoader(hulyMailId, async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`))
 }
 
 export class PlatformBranding {
-  constructor(private title: string) {
+  constructor (private readonly title: string) {
   }
-  public getTitle(): string {
-    return this.title;
+
+  public getTitle (): string {
+    return this.title
   }
 }
 
 export class PlatformParameters {
-  constructor(private branding: PlatformBranding) {
+  constructor (private readonly branding: PlatformBranding) {
   }
-  public getBranding(): PlatformBranding {
-    return this.branding;
+
+  public getBranding (): PlatformBranding {
+    return this.branding
   }
 }
 
@@ -415,6 +420,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
   addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
   addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
+  addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

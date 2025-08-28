@@ -2667,6 +2667,26 @@
       "packageName": "@hcengineering/integration-client",
       "projectFolder": "packages/integration-client",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-huly-mail",
+      "projectFolder": "models/huly-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail",
+      "projectFolder": "plugins/huly-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail-assets",
+      "projectFolder": "plugins/huly-mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail-resources",
+      "projectFolder": "plugins/huly-mail-resources",
+      "shouldPublish": false
     }
   ]
 }
