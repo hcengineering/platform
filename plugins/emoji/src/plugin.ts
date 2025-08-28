@@ -15,7 +15,7 @@
 import { Asset, type IntlString, plugin, type Plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import type { Class, Ref, Doc } from '@hcengineering/core'
-import { CustomEmoji, ExtendedEmoji, TextOrEmoji } from './types'
+import { CustomEmoji, ExtendedEmoji, ParsedTextWithEmojis } from './types'
 
 /** @public */
 export const emojiId = 'emoji' as Plugin
@@ -91,7 +91,7 @@ export const emojiPlugin = plugin(emojiId, {
     (shortcode: string | undefined, skinTone?: number) => ExtendedEmoji | undefined
     >,
     GetCustomEmoji: '' as Resource<(shortcode: string | undefined, skinTone?: number) => CustomEmoji | undefined>,
-    ParseTextWithEmojis: '' as Resource<(text: string) => TextOrEmoji[]>
+    ParseTextWithEmojis: '' as Resource<(text: string) => ParsedTextWithEmojis>
   }
 })
 
