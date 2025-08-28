@@ -251,10 +251,16 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                         yield Ok(Bytes::from(inline));
                     },
                     None => {
-                        let mut response = s3.get_object().bucket(&CONFIG.s3_bucket).key(parts.data.blob).send().await.unwrap();
-
-                        while let Some(bytes) = response.body.next().await {
-                            yield Ok(bytes?);
+                        match s3.get_object().bucket(&CONFIG.s3_bucket).key(parts.data.blob).send().await {
+                            Ok(mut response) => {
+                                while let Some(bytes) = response.body.next().await {
+                                    yield Ok(bytes?);
+                                }
+                            },
+                            Err(error) => {
+                                yield Err(std::io::Error::new(std::io::ErrorKind::Other, error));
+                                break;
+                            }
                         }
                     }
                 }
