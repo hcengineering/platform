@@ -2310,6 +2310,7 @@ dependencies = [
  "blake3",
  "bytes",
  "config",
+ "futures",
  "futures-util",
  "hulyrs",
  "ksuid",
