@@ -92,9 +92,9 @@
     </div>
     <div class="card__parent" class:wrap={isComfortable2}>
       {#if isComfortable2}
-            <span class="card__tags mr-2">
-              <CardTagsColored value={card} />
-            </span>
+        <span class="card__tags mr-2">
+          <CardTagsColored value={card} />
+        </span>
       {/if}
       {#if card.parent != null && !isCompact}
         {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
