@@ -40,6 +40,12 @@
     "Properties": "Eigenschaften",
     "NoChildren": "Keine Kinder",
     "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement.",
-    "AddCollaborators": "Mitarbeiter hinzufügen"
+    "AddCollaborators": "Mitarbeiter hinzufügen",
+    "Home": "Startseite",
+    "WhatDoYouWantToShare": "Was möchten Sie teilen?",
+    "Share": "Teilen",
+    "Compact": "Kompakt",
+    "Comfortable": "Komfortabel",
+    "Comfortable2": "Komfortabel 2"
   }
 }

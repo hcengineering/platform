@@ -85,7 +85,12 @@
   }
 
   .icon {
-    color: var(--global-primary-TextColor);
-    fill: var(--global-primary-TextColor);
+    color: var(--global-secondary-TextColor);
+    fill: var(--global-secondary-TextColor);
+
+    &:hover {
+      color: var(--global-secondary-TextColor);
+      fill: var(--global-secondary-TextColor);
+    }
   }
 </style>

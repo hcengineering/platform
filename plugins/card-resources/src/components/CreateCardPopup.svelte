@@ -26,9 +26,12 @@
 
   import { createCard } from '../utils'
   import CardCollaborators from './CardCollaborators.svelte'
+  import { TypeSelector } from '../index'
 
-  export let type: Ref<MasterTag>
+  export let title: string = ''
+  export let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
   export let space: CardSpace | undefined = undefined
+  export let changeType: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -37,12 +40,14 @@
   const me = getCurrentEmployee()
   const _id = generateId<Card>()
 
-  const extension = client
-    .getModel()
-    .findAllSync(card.mixin.CreateCardExtension, {})
-    .find((it) => hierarchy.isDerived(type, it._id))
+  $: extension = type
+    ? client
+      .getModel()
+      .findAllSync(card.mixin.CreateCardExtension, {})
+      .find((it) => hierarchy.isDerived(type, it._id))
+    : undefined
 
-  let data: Partial<Data<Card>> = {}
+  let data: Partial<Data<Card>> = { title }
   let _space: Ref<CardSpace> | undefined = space?._id
   let description: Markup = EmptyMarkup
   let collaborators: Ref<Employee>[] = [me]
@@ -50,6 +55,7 @@
   let creating = false
 
   async function addCollaborators (): Promise<void> {
+    if (type == null) return
     const accounts = collaborators
       .filter((it) => it !== me)
       .map((it) => $employeeByIdStore.get(it)?.personUuid)
@@ -61,7 +67,7 @@
   }
 
   async function okAction (): Promise<void> {
-    if (_space === undefined) return
+    if (_space === undefined || type == null) return
 
     try {
       creating = true
@@ -171,6 +177,12 @@
   </div>
 
   <div class="hulyModal-content__settingsSet">
+    {#if changeType}
+      <div class="hulyModal-content__settingsSet-line">
+        <span class="label"><Label label={card.string.MasterTag} /></span>
+        <TypeSelector bind:value={type} />
+      </div>
+    {/if}
     {#if space == null && !(extension?.hideSpace ?? false)}
       <div class="hulyModal-content__settingsSet-line">
         <span class="label"><Label label={core.string.Space} /></span>

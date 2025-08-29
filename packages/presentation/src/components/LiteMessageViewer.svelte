@@ -18,10 +18,11 @@
   import LiteNode from './markup/lite/LiteNode.svelte'
 
   export let message: Markup | MarkupNode
+  export let colorInherit: boolean = false
 
   $: node = typeof message === 'string' ? markupToJSON(message) : message
 </script>
 
-<div class="text-markup-view">
-  <LiteNode {node} />
+<div class="text-markup-view" class:colorInherit>
+  <LiteNode {node} {colorInherit} />
 </div>

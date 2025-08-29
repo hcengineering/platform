@@ -40,6 +40,12 @@
     "Properties": "Propiedades",
     "NoChildren": "No hay hijos",
     "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos.",
-    "AddCollaborators": "Agregar colaboradores"
+    "AddCollaborators": "Agregar colaboradores",
+    "Home": "Inicio",
+    "WhatDoYouWantToShare": "¿Qué quieres compartir?",
+    "Share": "Compartir",
+    "Compact": "Compacto",
+    "Comfortable": "Confortable",
+    "Comfortable2": "Confortable 2"
   }
 }

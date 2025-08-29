@@ -1,0 +1,284 @@
+<!-- Copyright © 2025 Hardcore Engineering Inc. -->
+<!-- -->
+<!-- Licensed under the Eclipse Public License, Version 2.0 (the "License"); -->
+<!-- you may not use this file except in compliance with the License. You may -->
+<!-- obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0 -->
+<!-- -->
+<!-- Unless required by applicable law or agreed to in writing, software -->
+<!-- distributed under the License is distributed on an "AS IS" BASIS, -->
+<!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->
+<!-- -->
+<!-- See the License for the specific language governing permissions and -->
+<!-- limitations under the License. -->
+
+<script lang="ts">
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import { createMessagesQuery } from '@hcengineering/presentation'
+  import { PersonId, SortingOrder } from '@hcengineering/core'
+  import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
+  import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
+  import { MessagePresenter, labelsStore, MessagePreview } from '@hcengineering/communication-resources'
+  import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
+  import { showMenu } from '@hcengineering/view-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+
+  import { isHomeSettingEnabled, compactSettingId, homeSettingsStore, comfortableSettingId2 } from '../home'
+  import { openCardInSidebar } from '../utils'
+  import CardTagsColored from './CardTagsColored.svelte'
+  import CardIcon from './CardIcon.svelte'
+
+  export let card: Card
+
+  const messagesQuery = createMessagesQuery()
+
+  let message: Message | undefined = undefined
+
+  let socialId: PersonId | undefined = undefined
+  let person: Person | undefined = undefined
+
+  $: isCompact = isHomeSettingEnabled($homeSettingsStore, compactSettingId)
+  $: isComfortable2 = isHomeSettingEnabled($homeSettingsStore, comfortableSettingId2)
+
+  $: messagesQuery.query(
+    { card: card._id, strict: true, attachments: true, reactions: true, limit: 1, order: SortingOrder.Descending },
+    (res) => {
+      const msgs = res.getResult().reverse()
+      message = msgs[msgs.length - 1]
+    }
+  )
+
+  $: socialId = message?.creator ?? card.modifiedBy
+  $: personStore = getPersonByPersonIdStore([socialId])
+  $: person = $personStore.get(socialId)
+
+  function hasNewMessages (labels: CardLabel[], cardId: CardID): boolean {
+    return labels.some((it) => (it.labelId as string) === cardPlugin.label.NewMessages && it.cardId === cardId)
+  }
+  let isActionsOpened = false
+</script>
+
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
+  <div class="card__avatar">
+    <PersonPreviewProvider value={person}>
+      <Avatar name={person?.name} {person} size="medium" />
+    </PersonPreviewProvider>
+  </div>
+
+  <div class="card__body">
+    <div class="card__header">
+      {#if hasNewMessages($labelsStore, card._id)}
+        <span class="notifyMarker" />
+      {/if}
+      <span class="card__title overflow-label" use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}>
+        {card.title}
+      </span>
+      {#if !isComfortable2}
+        <span class="card__tags">
+          <CardTagsColored value={card} />
+        </span>
+      {/if}
+    </div>
+    <div class="card__message">
+      {#if message}
+        {#if isCompact}
+          <MessagePreview {card} {message} colorInherit />
+        {:else}
+          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" thread={false} />
+        {/if}
+      {/if}
+    </div>
+    <div class="card__parent" class:wrap={isComfortable2}>
+      {#if isComfortable2}
+            <span class="card__tags mr-2">
+              <CardTagsColored value={card} />
+            </span>
+      {/if}
+      {#if card.parent != null && !isCompact}
+        {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
+        {#if info}
+          <span
+            class="parent"
+            use:tooltip={{ label: getEmbeddedLabel(info.title), textAlign: 'left' }}
+            on:click|stopPropagation|preventDefault={() => openCardInSidebar(info._id)}
+          >
+            <CardIcon size="x-small" _id={info._id} editable={false} />
+            <span class="overflow-label max-w-100">
+              {info.title}
+            </span>
+          </span>
+        {/if}
+      {/if}
+    </div>
+  </div>
+
+  {#if card.parent && isCompact}
+    {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
+    {#if info}
+      <div class="card__parent column">
+        <span
+          class="parent"
+          use:tooltip={{ label: getEmbeddedLabel(info.title), textAlign: 'left' }}
+          on:click|stopPropagation|preventDefault={() => openCardInSidebar(info._id)}
+        >
+          <CardIcon size="x-small" _id={info._id} editable={false} />
+          <span class="overflow-label max-w-40">
+            {info.title}
+          </span>
+        </span>
+      </div>
+    {/if}
+  {/if}
+
+  {#if !isCompact}
+    <div class="card__actions" class:opened={isActionsOpened}>
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind="icon"
+        dataId="btnMoreActions"
+        on:click={(e) => {
+          isActionsOpened = true
+          showMenu(e, { object: card }, () => {
+            isActionsOpened = false
+          })
+        }}
+      />
+    </div>
+  {/if}
+</div>
+
+<style lang="scss">
+  .card {
+    display: flex;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    padding-top: 0.375rem;
+
+    gap: 0.75rem;
+    min-height: 4.75rem;
+    width: 100%;
+    height: fit-content;
+
+    &:hover {
+      background-color: var(--global-ui-hover-BackgroundColor);
+
+      .card__actions {
+        visibility: visible;
+      }
+    }
+
+    &__body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      overflow: hidden;
+    }
+
+    &__header {
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      align-items: center;
+      height: 2rem;
+      gap: 0.5rem;
+    }
+
+    &__tags {
+      display: flex;
+      flex-direction: row;
+      height: 2rem;
+    }
+
+    &__title {
+      color: var(--global-primary-TextColor);
+      font-weight: 500;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+
+    &__avatar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      margin-top: 0.625rem;
+    }
+
+    &__message {
+      display: flex;
+      min-height: 1.375rem;
+      color: var(--global-secondary-TextColor);
+    }
+
+    &__parent {
+      display: flex;
+      align-items: center;
+      margin-top: 0.5rem;
+
+      &.wrap {
+        flex-wrap: wrap;
+      }
+
+      &.column {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        padding-left: 0.5rem;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+      margin-left: auto;
+      padding-left: 0.5rem;
+      visibility: hidden;
+
+      &.opened {
+        visibility: visible;
+      }
+      &:hover {
+        visibility: visible;
+      }
+    }
+    .parent {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 0.5rem;
+      min-width: 2rem;
+      max-width: 25rem;
+      min-height: 1.5rem;
+      max-height: 1.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 1rem;
+      white-space: nowrap;
+      gap: 0.25rem;
+      background: var(--global-ui-hover-BackgroundColor);
+      border: var(--global-subtle-ui-BorderColor);
+      color: var(--global-secondary-TextColor);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--global-ui-active-BackgroundColor);
+      }
+    }
+
+    .notifyMarker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background-color: var(--global-higlight-Color);
+
+      min-width: 0.5rem;
+      height: 0.5rem;
+    }
+  }
+</style>

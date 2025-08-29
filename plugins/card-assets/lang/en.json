@@ -40,6 +40,12 @@
     "Properties": "Properties",
     "NoChildren": "No children",
     "ConfigDescription": "Extension for database-style knowledge management.",
-    "AddCollaborators": "Add collaborators"
+    "AddCollaborators": "Add collaborators",
+    "Home": "Home",
+    "WhatDoYouWantToShare": "What do you want to share?",
+    "Share": "Share",
+    "Compact": "Compact",
+    "Comfortable": "Comfortable",
+    "Comfortable2": "Comfortable 2"
   }
 }

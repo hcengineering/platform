@@ -22,6 +22,7 @@
   import { getBlobRef } from '../../../preview'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
 
   function toRefBlob (blobId: AttrValue): Ref<Blob> {
     return blobId as Ref<Blob>
@@ -48,15 +49,15 @@
   {@const nodes = node.content ?? []}
 
   {#if node.type === MarkupNodeType.doc}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {:else if node.type === MarkupNodeType.text}
     {node.text}
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={true} style:margin="0">
-      <LiteNodes {nodes} />
+    <p class="p-inline" class:overflow-label={true} style:margin="0" class:contrast={!colorInherit} class:colorInherit>
+      <LiteNodes {nodes} {colorInherit} />
     </p>
   {:else if node.type === MarkupNodeType.blockquote}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {:else if node.type === MarkupNodeType.horizontal_rule}
     <!--  nothing-->
   {:else if node.type === MarkupNodeType.code_block}
@@ -69,7 +70,7 @@
           }
         ]}
       >
-        <LiteNodes {nodes} />
+        <LiteNodes {nodes} {colorInherit} />
       </NodeMarks>
     </p>
   {:else if node.type === MarkupNodeType.reference}
@@ -80,7 +81,7 @@
     {#if objectClass !== undefined && objectId !== undefined}
       <ObjectNode _id={toRef(objectId)} _class={toClassRef(objectClass)} title={objectLabel} />
     {:else}
-      <LiteNodes {nodes} />
+      <LiteNodes {nodes} {colorInherit} />
     {/if}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji">
@@ -100,9 +101,15 @@
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.subLink}
     <sub>
-      <LiteNodes {nodes} />
+      <LiteNodes {nodes} {colorInherit} />
     </sub>
   {:else}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {/if}
 {/if}
+
+<style lang="scss">
+  .colorInherit {
+    color: inherit;
+  }
+</style>
