@@ -1,6 +1,6 @@
+mod auth;
 mod config;
 mod sanity;
-mod auth;
 
 use tanu::eyre;
 

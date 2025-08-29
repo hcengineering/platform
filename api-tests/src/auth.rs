@@ -1,5 +1,5 @@
+use crate::config::CONFIG;
 use tanu::{check, check_eq, eyre, http::Client};
-use crate::{config::CONFIG};
 
 #[tanu::test]
 async fn get_auth_without_token_returns_401() -> eyre::Result<()> {

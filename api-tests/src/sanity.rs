@@ -1,5 +1,5 @@
+use crate::config::CONFIG;
 use tanu::{check, check_eq, eyre, http::Client};
-use crate::{config::CONFIG};
 
 #[tanu::test]
 async fn status_is_ok() -> eyre::Result<()> {
