@@ -18,6 +18,7 @@ import { type Heading } from '@hcengineering/text-editor'
 
 interface BaseNavigatorConfig {
   types: Array<Ref<MasterTag>>
+  home?: boolean
   groupBySpace?: boolean
   savedViews?: boolean
   allowCreate?: boolean

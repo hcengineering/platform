@@ -18,10 +18,11 @@
   import LiteNode from './LiteNode.svelte'
 
   export let nodes: MarkupNode[]
+  export let colorInherit: boolean = false
 </script>
 
 {#if nodes}
   {#each nodes as node}
-    <LiteNode {node} />
+    <LiteNode {node} {colorInherit} />
   {/each}
 {/if}

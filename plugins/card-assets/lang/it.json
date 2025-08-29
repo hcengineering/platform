@@ -40,6 +40,12 @@
     "NoChildren": "Nessun figlio",
     "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
     "ConfigDescription": "Estensione per la gestione della conoscenza in stile database.",
-    "AddCollaborators": "Aggiungi collaboratori"
+    "AddCollaborators": "Aggiungi collaboratori",
+    "Home": "Home",
+    "WhatDoYouWantToShare": "Cosa vuoi condividere?",
+    "Share": "Condividi",
+    "Compact": "Compatto",
+    "Comfortable": "Confortabile",
+    "Comfortable2": "Confortabile 2"
   }
 }

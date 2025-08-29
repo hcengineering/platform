@@ -99,6 +99,10 @@
     "WeeksWOValue": "{weeks, plural, =1 {týden} other {týdny}}",
     "MonthsWOValue": "{months, plural, =1 {měsíc} other {měsíce}}",
     "Filter": "Filtr",
-    "Clear": "Vymazat"
+    "Clear": "Vymazat",
+    "Yesterday": "Včera",
+    "ThisWeek": "Tento týden",
+    "ThisMonth": "Tento měsíc",
+    "ThisYear": "Tento rok"
   }
 }

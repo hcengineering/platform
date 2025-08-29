@@ -15,22 +15,21 @@
   import { LiteMessageViewer } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { type WithLookup } from '@hcengineering/core'
-  import { Message, MessageType, SocialID } from '@hcengineering/communication-types'
+  import { Message, SocialID } from '@hcengineering/communication-types'
   import { Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { markdownToMarkup } from '@hcengineering/text-markdown'
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { ActivityMessageViewer, isActivityMessage, AttachmentsPreview } from '@hcengineering/communication-resources'
+  import { tooltip } from '@hcengineering/ui'
 
-  import PreviewTemplate from './PreviewTemplate.svelte'
+  import { isActivityMessage } from '../activity'
+  import ActivityMessageViewer from './message/ActivityMessageViewer.svelte'
+  import AttachmentsPreview from './AttachmentsPreview.svelte'
 
   export let card: Card
   export let message: Message
-  export let date: Date
-  export let color: 'primary' | 'secondary' = 'primary'
-  export let kind: 'default' | 'column' = 'default'
-  export let padding: string | undefined = undefined
+  export let colorInherit: boolean = false
 
   const tooltipLimit = 512
 
@@ -51,25 +50,11 @@
   }
 </script>
 
-<PreviewTemplate
-  {kind}
-  {color}
-  {person}
-  {padding}
-  socialId={message.creator}
-  {date}
-  fixHeight={message.type !== MessageType.Activity}
-  tooltipLabel={getTooltipLabel(message)}
->
-  <svelte:fragment slot="content">
-    {#if isActivityMessage(message)}
-      <ActivityMessageViewer {message} {card} author={person} />
-    {:else}
-      <LiteMessageViewer message={markdownToMarkup(message.content)} />
-    {/if}
-  </svelte:fragment>
-
-  <svelte:fragment slot="after">
-    <AttachmentsPreview {message} />
-  </svelte:fragment>
-</PreviewTemplate>
+<span class="message-preview overflow-label" use:tooltip={{ label: getTooltipLabel(message) }}>
+  {#if isActivityMessage(message)}
+    <ActivityMessageViewer {message} {card} author={person} />
+  {:else}
+    <LiteMessageViewer message={markdownToMarkup(message.content)} {colorInherit} />
+  {/if}
+  <AttachmentsPreview {message} />
+</span>

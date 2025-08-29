@@ -100,6 +100,10 @@
     "WeeksWOValue": "{weeks, plural, =1 {周} other {周}}",
     "MonthsWOValue": "{months, plural, =1 {月} other {月}}",
     "Filter": "过滤",
-    "Clear": "清除"
+    "Clear": "清除",
+    "Yesterday": "昨天",
+    "ThisWeek": "本周",
+    "ThisMonth": "本月",
+    "ThisYear": "今年"
   }
 }

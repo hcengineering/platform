@@ -27,6 +27,7 @@
   export let author: Person | undefined
   export let message: Message
   export let hideAvatar: boolean = false
+  export let hideHeader: boolean = false
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -51,7 +52,7 @@
       {/if}
     </div>
   {/if}
-  {#if !isDeleted}
+  {#if !isDeleted && !hideHeader}
     <div class="message__header">
       <PersonPreviewProvider value={author}>
         <div class="message__username">

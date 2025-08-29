@@ -62,7 +62,7 @@
   .divider {
     border: 1px solid var(--theme-content-color);
     width: 1px;
-    height: 100%;
+    height: 0.125rem;
     margin: 0 0.125rem;
   }
 </style>

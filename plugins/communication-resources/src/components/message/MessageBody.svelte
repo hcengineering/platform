@@ -33,6 +33,8 @@
   export let isEditing = false
   export let compact: boolean = false
   export let hideAvatar: boolean = false
+  export let hideHeader: boolean = false
+  export let thread: boolean = true
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -42,15 +44,17 @@
   }
 </script>
 
-{#if compact}
+{#if compact || hideHeader}
   <div class="message__body">
-    <div class="time-container">
-      <div class="message__time message--time_hoverable">
-        <div class="message__date">
-          {formatDate(message.created)}
+    {#if !hideHeader}
+      <div class="time-container">
+        <div class="message__time message--time_hoverable">
+          <div class="message__date">
+            {formatDate(message.created)}
+          </div>
         </div>
       </div>
-    </div>
+    {/if}
 
     <div class="message__content">
       {#if !isEditing && message.content !== ''}
@@ -70,7 +74,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} />
+        <MessageFooter {message} {thread} />
       {/if}
     </div>
   </div>
@@ -132,7 +136,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} />
+        <MessageFooter {message} {thread} />
       {/if}
     </div>
   </div>

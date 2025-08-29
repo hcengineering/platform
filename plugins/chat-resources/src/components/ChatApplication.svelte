@@ -30,7 +30,7 @@
   import { chatId } from '@hcengineering/chat'
   import { Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
-  import { Favorites } from '@hcengineering/card-resources'
+  import { Favorites, Home } from '@hcengineering/card-resources'
 
   import ChatNavigation from './ChatNavigation.svelte'
   import {
@@ -39,7 +39,9 @@
     navigateToType,
     getTypeIdFromLocation,
     isFavoritesLocation,
-    navigateToFavorites
+    navigateToFavorites,
+    navigateToHome,
+    isHomeLocation
   } from '../location'
   import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
 
@@ -55,6 +57,7 @@
       doc: MasterTag
     }
     | { type: 'favorites' }
+    | { type: 'home' }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -74,9 +77,15 @@
     const typeId = getTypeIdFromLocation(loc)
     const cardId = getCardIdFromLocation(loc)
     const isFavorites = isFavoritesLocation(loc)
+    const isHome = isHomeLocation(loc)
 
     if (isFavorites) {
       selection = { type: 'favorites' }
+      return
+    }
+
+    if (isHome) {
+      selection = { type: 'home' }
       return
     }
 
@@ -127,6 +136,13 @@
     navigateToFavorites()
   }
 
+  function selectHome (): void {
+    if (selection?.type === 'home') return
+    closePanel(false)
+    selection = { type: 'home' }
+    navigateToHome()
+  }
+
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
     if (selection?.type !== 'card') return undefined
     return selection.doc
@@ -164,10 +180,11 @@
         <ChatNavigation
           card={getSelectedCard(selection)}
           type={getSelectedType(selection)}
-          isFavorites={selection?.type === 'favorites'}
+          special={selection?.type}
           on:selectCard={selectCard}
           on:selectType={selectType}
           on:favorites={selectFavorites}
+          on:home={selectHome}
         />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
@@ -187,6 +204,10 @@
     {#if selection?.type === 'favorites'}
       {#key selection.type}
         <Favorites application={chatId} />
+      {/key}
+    {:else if selection?.type === 'home'}
+      {#key selection.type}
+        <Home on:selectCard={selectCard} />
       {/key}
     {:else if selectedCard}
       {@const panelComponent = hierarchy.classHierarchyMixin(selectedCard._class, view.mixin.ObjectPanel)}
