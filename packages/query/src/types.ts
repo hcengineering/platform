@@ -97,12 +97,14 @@ interface BaseMessageQueryParams {
 
 export interface ManyMessagesQueryParams extends BaseMessageQueryParams {
   from?: Date
+  strict?: boolean
 }
 
 export interface OneMessageQueryParams extends BaseMessageQueryParams {
   id: MessageID
   created: Date
   from?: never
+  strict?: never
 }
 
 export type MessageQueryParams = OneMessageQueryParams | ManyMessagesQueryParams

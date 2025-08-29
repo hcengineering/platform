@@ -21,20 +21,20 @@ import {
   type MessagesGroup,
   type ParsedFile,
   type Patch,
+  PatchType,
   SortingOrder,
-  type WorkspaceID,
-  PatchType
+  type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  CardEventType,
   type CreateMessageEvent,
   type CreateMessageResult,
+  type Event,
   type EventResult,
   type FindClient,
   MessageEventType,
   type PagedQueryCallback,
-  type Event,
   PatchEvent,
-  CardEventType,
   RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatches, MessageProcessor } from '@hcengineering/communication-shared'
@@ -195,6 +195,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   async onCreateMessageRequest (event: CreateMessageEvent, promise: Promise<CreateMessageResult>): Promise<void> {
     if (this.params.card !== event.cardId) return
+    if (this.params.strict === true) return
     const eventId = event._id
     if (eventId == null || event.socialId == null) return
 
@@ -701,6 +702,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private async find (params: FindMessagesParams): Promise<Message[]> {
     delete (params as any).from
+    delete (params as any).strict
     return await this.client.findMessages(params, this.id)
   }
 
@@ -736,6 +738,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private async onMessageCreatedEvent (event: CreateMessageEvent): Promise<void> {
     if (this.params.card !== event.cardId || event.messageId == null) return
     if (this.result instanceof Promise) this.result = await this.result
+
     let message = MessageProcessor.createFromEvent(event)
     const exists = this.result.get(message.id)
 
@@ -746,6 +749,24 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (!this.match(message)) return
 
     message = this.patchMessage(message)
+
+    if (this.params.strict === true && this.params.limit != null && this.result.length >= this.params.limit) {
+      this.result.unshift(message)
+      this.result.sort((a, b) =>
+        this.params.order === SortingOrder.Ascending
+          ? a.created.getTime() - b.created.getTime()
+          : b.created.getTime() - a.created.getTime()
+      )
+      if (this.params.order === SortingOrder.Descending && this.result.length > this.params.limit) {
+        this.result.pop()
+      } else if (this.params.order === SortingOrder.Ascending && this.result.length > this.params.limit) {
+        this.result.shift()
+      }
+
+      await this.notify()
+
+      return
+    }
 
     if (this.result.isTail()) {
       const eventId = event._id
