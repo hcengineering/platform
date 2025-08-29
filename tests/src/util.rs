@@ -1,7 +1,8 @@
+use crate::config::CONFIG;
+use rand::RngCore;
+use reqwest::Body;
 use secrecy::ExposeSecret;
 use tanu::http::{Client, Method, RequestBuilder};
-
-use crate::config::CONFIG;
 
 pub trait ClientExt {
     fn key_head(&self, key: &str) -> RequestBuilder;
@@ -51,4 +52,22 @@ impl ClientExt for Client {
         self.get(path(key))
             .bearer_auth(CONFIG.token_valid.expose_secret())
     }
+}
+
+pub fn random_body(size: usize) -> Body {
+    let mut rng = rand::rng();
+    let mut bytes = vec![0u8; size];
+
+    rng.fill_bytes(&mut bytes);
+
+    Body::from(bytes)
+}
+
+pub fn random_key() -> String {
+    let mut rng = rand::rng();
+    let mut bytes = vec![0u8; 16];
+
+    rng.fill_bytes(&mut bytes);
+
+    hex::encode(bytes)
 }
