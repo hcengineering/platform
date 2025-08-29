@@ -43,11 +43,9 @@
   let total = -1
   let isLoading = true
 
-  const ignoredMasterTags = [contact.class.UserProfile]
-
   $: cardsQuery.query(
     card.class.Card,
-    { _class: { $nin: ignoredMasterTags } },
+    {},
     (res) => {
       cards = res
       total = res.total
