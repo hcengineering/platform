@@ -71,12 +71,14 @@
     return value * multiplier
   }
 
-  $: if ((ids && ids.length > 0) || (config.labelFilter?.length ?? 0) === 0) {
+  $: cardIds = ids?.filter((it) => !favorites.some((fav) => fav.attachedTo === it))
+
+  $: if ((cardIds && cardIds.length > 0) || (config.labelFilter?.length ?? 0) === 0) {
     cardsQuery.query<Card>(
       type._id,
       {
         // TODO: Should be join instead of $in. But for now labels and cards in different api.
-        ...(ids === undefined ? {} : { _id: { $in: ids } }),
+        ...(cardIds === undefined ? {} : { _id: { $in: cardIds } }),
         ...(space !== undefined ? { space: space._id } : {}),
         ...(config.lookback !== undefined
           ? { modifiedOn: { $gte: Date.now() - parseLookbackDuration(config.lookback) } }

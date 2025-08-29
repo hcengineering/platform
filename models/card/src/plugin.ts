@@ -21,7 +21,7 @@ import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type LocationData } from '@hcengineering/workbench'
 import { type ActionCategory, type Action, type ViewAction } from '@hcengineering/view'
-import { type TagCategory, type TagElement } from '@hcengineering/tags'
+import { type TagCategory } from '@hcengineering/tags'
 
 export default mergeIds(cardId, card, {
   app: {
@@ -57,9 +57,5 @@ export default mergeIds(cardId, card, {
     CardCustomLinkMatch: '' as Resource<(doc: Doc) => boolean>,
     CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>,
     CheckRelationsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
-  },
-  label: {
-    Subscribed: '' as Ref<TagElement>,
-    NewMessages: '' as Ref<TagElement>
   }
 })

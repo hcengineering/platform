@@ -23,7 +23,7 @@
   import card from '../plugin'
   import { getCardIconInfo } from '../utils'
 
-  export let value: Card | undefined = undefined
+  export let value: Card | undefined | null = undefined
   export let _id: Ref<Card> | undefined = undefined
   export let size: IconSize = 'small'
   export let buttonSize: ButtonSize = 'medium'
@@ -33,14 +33,14 @@
   const hierarchy = client.getHierarchy()
   const query = createQuery()
 
-  let doc: Card | undefined = value
+  let doc: Card | undefined = value ?? undefined
 
-  $: if (_id !== undefined && doc === undefined) {
+  $: if (_id !== undefined && value == null) {
     query.query(card.class.Card, { _id }, (res) => {
       doc = res[0]
     })
   } else {
-    doc = value
+    doc = value ?? undefined
     query.unsubscribe()
   }
 

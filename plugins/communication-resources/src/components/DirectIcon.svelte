@@ -53,7 +53,9 @@
 
   let avatarSize = size
 
-  $: if (size === 'small') {
+  $: if (size === 'x-small') {
+    avatarSize = 'tiny'
+  } else if (size === 'small') {
     avatarSize = 'x-small'
   } else if (size === 'medium') {
     avatarSize = 'small'

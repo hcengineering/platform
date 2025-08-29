@@ -13,6 +13,10 @@
   color: var(--theme-text-primary-color);
   margin: 0.25rem 0;
 
+  &.colorInherit {
+    color: inherit;
+  }
+
   .suggestion {
     padding-left: 0.25rem;
     color: var(--theme-link-color);
@@ -544,7 +548,7 @@
     }
   }
 
-  &.embed-youtube {    
+  &.embed-youtube {
     iframe {
       margin: 0;
       padding: 0;

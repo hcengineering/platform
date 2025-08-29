@@ -100,6 +100,10 @@
     "WeeksWOValue": "{weeks, plural, one {неделя} few {недели} other {недель}}",
     "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}",
     "Filter": "Фильтр",
-    "Clear": "Очистить"
+    "Clear": "Очистить",
+    "Yesterday": "Вчера",
+    "ThisWeek": "Эта неделя",
+    "ThisMonth": "Этот месяц",
+    "ThisYear": "Этот год"
   }
 }

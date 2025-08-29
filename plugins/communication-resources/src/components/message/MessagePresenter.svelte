@@ -41,7 +41,9 @@
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
+  export let hideHeader: boolean = false
   export let readonly: boolean = false
+  export let thread: boolean = true
 
   let isEditing = false
   let isDeleted = false
@@ -151,9 +153,18 @@
   style:padding
 >
   {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
-    <OneRowMessageBody {message} {card} {author} {hideAvatar} />
+    <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
   {:else}
-    <MessageBody {message} {card} {author} {isEditing} compact={compact && !isThread} {hideAvatar} />
+    <MessageBody
+      {message}
+      {card}
+      {author}
+      {isEditing}
+      compact={compact && !isThread}
+      {hideAvatar}
+      {hideHeader}
+      {thread}
+    />
   {/if}
 
   {#if showActions}
