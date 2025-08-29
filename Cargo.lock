@@ -4962,9 +4962,9 @@ dependencies = [
 
 [[package]]
 name = "tanu"
-version = "0.8.2"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b73c0d0b3eb5fefc25843156ddedc7f1a9110f16577e79d5d983d237369fe836"
+checksum = "aa0a72002d2dd371f8e042c01cc132e90960960a9a032182f71a4f2bea9bbe66"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4992,9 +4992,9 @@ dependencies = [
 
 [[package]]
 name = "tanu-core"
-version = "0.8.2"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c39f67bde003082d43ae9663e0cc90a279f4ce77e148e4a794a1ceda8a8f5615"
+checksum = "9ca865e4ede20d65cdcea4979a3a4670d2372b0b618bcfa950c25c69ba59fadd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5026,9 +5026,9 @@ dependencies = [
 
 [[package]]
 name = "tanu-derive"
-version = "0.8.2"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "677e5f6a45d4933fb16bd7641d9ecc6237720bd6c134920cf170538efb387c52"
+checksum = "9d4fa711d3072ea6af7088742ea448ab9fcfed315df126f878cba114d208fd39"
 dependencies = [
  "eyre",
  "itertools 0.13.0",
@@ -5041,9 +5041,9 @@ dependencies = [
 
 [[package]]
 name = "tanu-tui"
-version = "0.8.2"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62a7ce2521a4f179199bb8ee5fb921393e34362e3c34a964f0165130ef73f050"
+checksum = "46ca2135608d3d5690f181a42293de7251e0b4385493d20c666d5e9fe66be79f"
 dependencies = [
  "ansi-to-tui",
  "async-trait",

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tanu = "0.8.2"
+tanu = "0.9.0"
 tokio = { version = "1.47.1", features = ["full"] }
 uuid = { version = "1.18.0" }
 hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
