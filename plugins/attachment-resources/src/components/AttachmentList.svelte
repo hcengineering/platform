@@ -59,8 +59,8 @@
 
 <style lang="scss">
   .gallery {
-    display: grid;
-    grid-gap: 0.75rem;
-    grid-template-columns: repeat(auto-fill, 25rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 </style>

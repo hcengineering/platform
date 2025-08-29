@@ -16,7 +16,6 @@
   import type { Attachment } from '@hcengineering/attachment'
   import type { BlobType, WithLookup } from '@hcengineering/core'
   import { Image } from '@hcengineering/presentation'
-  import { Loading } from '@hcengineering/ui'
 
   import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
@@ -47,8 +46,8 @@
 
     return getImageDimensions(
       {
-        width: metadata.originalWidth,
-        height: metadata.originalHeight
+        width: metadata.thumbnail?.width ?? metadata.originalWidth,
+        height: metadata.thumbnail?.height ?? metadata.originalHeight
       },
       { maxWidth: maxSizeRem, minWidth: minSizeRem, maxHeight: maxSizeRem, minHeight: minSizeRem }
     )
@@ -76,12 +75,6 @@
 </script>
 
 <div class="container" class:loading style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
-  {#if loading}
-    <div class="image-overlay">
-      <Loading />
-    </div>
-  {/if}
-
   {#if error}
     <div class="image-overlay">
       <BrokenImage size={'large'} />
@@ -95,6 +88,8 @@
     fit={dimensions.fit}
     width={dimensions.width}
     height={dimensions.height}
+    blurhash={value.metadata?.thumbnail?.blurhash}
+    showLoading={true}
     on:load={handleLoad}
     on:error={handleError}
     on:loadstart={handleLoadStart}

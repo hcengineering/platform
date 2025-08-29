@@ -243,8 +243,15 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
 
   @withContext('aggregator-getUrl', {})
   async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<string> {
-    // const { provider, stat } = await this.findProvider(ctx, wsIds, name)
-    // return await provider.getUrl(ctx, wsIds, stat.storageId)
+    const stat = await this.stat(ctx, wsIds, name)
+    if (stat !== undefined) {
+      for (const adapter of this.adapters) {
+        if (adapter.name === stat.provider) {
+          return await adapter.adapter.getUrl(ctx, wsIds, name)
+        }
+      }
+    }
+
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
     return filesUrl.replaceAll(':workspace', getDataId(wsIds)).replaceAll(':blobId', name)
   }

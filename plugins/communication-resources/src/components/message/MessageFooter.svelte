@@ -153,9 +153,9 @@
   }
 
   .message__files {
-    display: grid;
-    grid-gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, 25rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     min-height: 2.5rem;
     width: 100%;
     overflow: hidden;

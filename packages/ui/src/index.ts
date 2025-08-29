@@ -288,6 +288,7 @@ export { default as NestedMenu } from './components/NestedMenu.svelte'
 export { default as NestedDropdown } from './components/NestedDropdown.svelte'
 export { default as StatusBarButton } from './components/StatusBarButton.svelte'
 
+export { default as Blurhash } from './components/Blurhash.svelte'
 export { default as Dock } from './components/Dock.svelte'
 export { default as Image } from './components/Image.svelte'
 export { default as Video } from './components/Video.svelte'
