@@ -21,9 +21,11 @@
     ModernButton,
     ModernEditbox,
     Scroller,
+    Loading,
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import contact from '@hcengineering/contact'
 
   import HomeCardPresenter from './HomeCardPresenter.svelte'
   import HomeSettings from './HomeSettings.svelte'
@@ -39,13 +41,17 @@
   let limit = limitStep
   let cards: Card[] = []
   let total = -1
+  let isLoading = true
 
-  cardsQuery.query(
+  const ignoredMasterTags = [contact.class.UserProfile]
+
+  $: cardsQuery.query(
     card.class.Card,
-    {},
+    { _class: { $nin: ignoredMasterTags } },
     (res) => {
       cards = res
       total = res.total
+      isLoading = false
     },
     {
       sort: { modifiedOn: SortingOrder.Descending },
@@ -57,9 +63,10 @@
   $: hasNextPage = total > cards.length
 
   function onScroll (): void {
-    if (divScroll != null && hasNextPage) {
+    if (divScroll != null && hasNextPage && !isLoading) {
       const isAtBottom = divScroll.scrollTop + divScroll.clientHeight >= divScroll.scrollHeight - 400
       if (isAtBottom) {
+        isLoading = true
         limit += limitStep
       }
     }
@@ -170,6 +177,11 @@
         {/if}
         <HomeCardPresenter {card} />
       {/each}
+      {#if isLoading}
+        <div class="flex-center pb-2">
+          <Loading />
+        </div>
+      {/if}
     </div>
   </div>
 </Scroller>
