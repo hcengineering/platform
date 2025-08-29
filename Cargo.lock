@@ -5088,8 +5088,11 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
+ "hulyrs",
+ "secrecy",
  "tanu",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
