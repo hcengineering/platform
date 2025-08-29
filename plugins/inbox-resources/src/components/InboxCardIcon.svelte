@@ -26,7 +26,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $:size = hierarchy.isDerived(card._class, communication.type.Direct) ? 'large' : 'medium'
+  $: size = hierarchy.isDerived(card._class, communication.type.Direct) ? 'large' : 'medium'
 </script>
 
 <div class="card-icon">
