@@ -115,7 +115,7 @@ export class DocProvider implements PreviewProvider {
       const thumbnail = await getImageMetadata(ctx, path)
       return { thumbnail }
     } catch (err: any) {
-      throw new Error(`Failed to get metadata for PDF: ${err.message}`)
+      throw new Error(`Failed to get metadata: ${err.message}`)
     } finally {
       this.tempDir.rm(path)
     }
