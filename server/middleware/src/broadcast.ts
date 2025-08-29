@@ -78,7 +78,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     // Combine targets by sender
 
     const toSendTarget = new Map<AccountUuid | '', Tx[]>()
-    const excluded = new Map<AccountUuid, Tx[]>()
+    const txesWithExcludedAccounts = new Map<Tx, AccountUuid[]>()
 
     const getTxes = (key: AccountUuid | ''): Tx[] => {
       let txes = toSendTarget.get(key)
@@ -107,15 +107,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
         }
       } else {
         if (isExlcude(target)) {
-          for (const e of target.exclude) {
-            const txes = excluded.get(e)
-            if (txes === undefined) {
-              excluded.set(e, [txd])
-            } else {
-              txes.push(txd)
-            }
-          }
-          continue
+          txesWithExcludedAccounts.set(txd, target.exclude)
         } else {
           for (const t of target.target) {
             getTxes(t).push(txd)
@@ -150,8 +142,8 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       void handleSend(ctx, v, k as AccountUuid)
     }
 
-    for (const [k, v] of excluded.entries()) {
-      void handleSend(ctx, v, undefined, [k])
+    for (const [tx, txExcludedAccounts] of txesWithExcludedAccounts.entries()) {
+      void handleSend(ctx, [tx], undefined, txExcludedAccounts)
     }
 
     // Send all other except us.
