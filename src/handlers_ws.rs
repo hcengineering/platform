@@ -186,10 +186,19 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                 ctx.close(reason);
                 ctx.stop();
             }
+            Err(err) => {
+                tracing::warn!("WebSocket error: {:?}", err);
+                ctx.stop();
+            }
             _ => (),
         }
     }
 }
+
+// fn finished(&mut self, ctx: &mut Self::Context) {
+//     tracing::info!("Stream finished, stopping session");
+//     ctx.stop(); // 🔑 если стрим оборван → закрыть
+// }
 
 /// All logic
 impl WsSession {
