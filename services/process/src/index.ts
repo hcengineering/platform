@@ -19,13 +19,14 @@ import { newMetrics } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
-import { join } from 'path'
-import serverToken from '@hcengineering/server-token'
-import config from './config'
 import { ProcessMessage } from '@hcengineering/server-process'
-import { SERVICE_NAME } from './utils'
-import { messageHandler } from './main'
+import serverToken from '@hcengineering/server-token'
+import { join } from 'path'
+import config from './config'
 import { prepare } from './init'
+import { messageHandler } from './main'
+import { closeTemporal } from './temporal'
+import { SERVICE_NAME } from './utils'
 
 async function main (): Promise<void> {
   prepare()
@@ -62,6 +63,7 @@ async function main (): Promise<void> {
   )
 
   const shutdown = (): void => {
+    void closeTemporal()
     void Promise.all([consumer.close()]).then(() => {
       process.exit()
     })

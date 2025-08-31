@@ -209,11 +209,13 @@ export default plugin(processId, {
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
     OnExecutionStart: '' as Ref<Trigger>,
-    OnExecutionContinue: '' as Ref<Trigger>
+    OnExecutionContinue: '' as Ref<Trigger>,
+    OnTime: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
-    UpdateCheck: '' as Resource<CheckFunc>
+    UpdateCheck: '' as Resource<CheckFunc>,
+    Time: '' as Resource<CheckFunc>
   },
   string: {
     Method: '' as IntlString,
@@ -250,7 +252,8 @@ export default plugin(processId, {
     OnCardUpdate: '' as Asset,
     WaitSubprocesses: '' as Asset,
     ToDoRemove: '' as Asset,
-    Start: '' as Asset
+    Start: '' as Asset,
+    Time: '' as Asset
   },
   function: {
     FirstValue: '' as Ref<ProcessFunction>,

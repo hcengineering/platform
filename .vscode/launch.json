@@ -666,7 +666,8 @@
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
-        "QUEUE_REGION": "cockroach"
+        "QUEUE_REGION": "cockroach",
+        "TEMPORAL_ADDRESS": "localhost:7233"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
