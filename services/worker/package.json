@@ -56,9 +56,9 @@
   "dependencies": {
     "@temporalio/worker": "1.12.3",
     "@temporalio/workflow": "1.12.3",
-    "@hcengineering/kafka": "0.7.225",
-    "@hcengineering/process": "^0.7.225",
-    "@hcengineering/core": "^0.7.225",
-    "@hcengineering/server-core": "^0.7.225"
+    "@hcengineering/kafka": "0.6.0",
+    "@hcengineering/process": "^0.6.0",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/server-core": "^0.6.1"
   }
 }

@@ -9,6 +9,9 @@ RUN apt-get update \
 COPY . /app
 WORKDIR /app
 
+ARG TARGET_VERSION=0.7.255
+RUN sed -E -i "s/(\"@hcengineering\/[^\"]*\": )\"[^\"]*\"/\1\"$TARGET_VERSION\"/g" package.json
+
 # Alternatively, run npm ci, which installs only dependencies specified in the lock file and is generally faster.
 RUN npm install --only=production \
     && npm run build
