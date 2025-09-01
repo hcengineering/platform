@@ -99,7 +99,7 @@ export interface AccountClient {
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   createAccessLink: (
     role: AccountRole,
-    fisrtName?: string,
+    firstName?: string,
     lastName?: string,
     navigateUrl?: string,
     extra?: Record<string, any>
