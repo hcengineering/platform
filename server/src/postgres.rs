@@ -144,7 +144,7 @@ pub async fn append_part<D: serde::Serialize>(
     connection
         .execute(
             "insert into object (workspace, key, part, inline, data) values ($1, $2, $3, $4, $5)",
-            &[&workspace, &key, &part, &inline, &data],
+            &[&workspace, &key, &(part as i32), &inline, &data],
         )
         .await?;
 
