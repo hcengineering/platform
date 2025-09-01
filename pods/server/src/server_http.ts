@@ -160,8 +160,6 @@ export function startHttpServer (
 
   app.get('/api/v1/health', (req, res) => {
     try {
-      const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
-      decodeToken(token)
       const status = sessions.checkHealth()
       const code = status === 'unhealthy' ? 503 : 200
       res.status(code).send(status)
