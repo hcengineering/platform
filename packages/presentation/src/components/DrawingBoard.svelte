@@ -54,7 +54,7 @@
   const DrawingColorPalette: ColorsList = [
     ['alpha', new ThemeAwareColor('#000', '#000')],
     ['beta', new ThemeAwareColor('#FFF', '#FFF')],
-    ['gamma', new ThemeAwareColor('Fuschia', 'Fuschia')],
+    ['gamma', new ThemeAwareColor('Fuchsia', 'Fuchsia')],
     ['delta', new ThemeAwareColor('Houseplant', 'Houseplant')],
     ['epsilon', new ThemeAwareColor('Sky', 'Sky')],
     ['zeta', new ThemeAwareColor('Turquoise', 'Turquoise')],
