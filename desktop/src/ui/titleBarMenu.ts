@@ -374,7 +374,7 @@ class MenuBarManager {
       }
     })
 
-    if (this.state.FocusedTopLevelMenuIndex && this.state.isTopLevelMenuExpanded) {
+    if (this.state.FocusedTopLevelMenuIndex != null && this.state.isTopLevelMenuExpanded) {
       const candidates = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
       candidates.forEach((menu, index) => {
         if (index === this.state.FocusedChildMenuIndex) {
@@ -482,7 +482,7 @@ class MenuBarManager {
           return
         }
 
-        if (this.state.isTopLevelMenuExpanded && this.state.FocusedTopLevelMenuIndex) {
+        if (this.state.isTopLevelMenuExpanded && this.state.FocusedTopLevelMenuIndex != null) {
           const children = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
           for (let i = 0; i < children.length; i++) {
             if (children[i].dataset.accelerator === key) {
