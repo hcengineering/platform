@@ -18,6 +18,7 @@ use std::{path::Path, sync::LazyLock};
 use config::FileFormat;
 use secrecy::SecretString;
 use serde::Deserialize;
+use size::Size;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -30,6 +31,9 @@ pub struct Config {
     pub db_scheme: String,
 
     pub s3_bucket: String,
+
+    pub multipart_threshold: Size,
+    pub inline_threshold: Size,
 }
 
 pub mod hulyrs {
@@ -55,6 +59,9 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
         db_scheme = "hulylake"
 
         s3_bucket = "hulylake"
+
+        multipart_threshold = "4MB"
+        inline_threshold = "100KB"
     "#;
 
     let mut builder =

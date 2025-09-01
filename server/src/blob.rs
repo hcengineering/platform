@@ -21,9 +21,6 @@ pub struct Blob {
     pub inline: Option<Vec<u8>>,
 }
 
-const MULTIPART_THRESHOLD: usize = 4; // mb
-const INLINE_THRESHHOLD: usize = 100; // kb
-
 fn random_key() -> String {
     ksuid::Ksuid::generate().to_base62()
 }
@@ -32,7 +29,7 @@ fn random_key() -> String {
 pub async fn upload<S, E>(
     s3: &S3Client,
     pool: &Pool,
-    size: Option<Size>,
+    length: Size,
     mut source: S,
 ) -> Result<Blob, ApiError>
 where
@@ -44,13 +41,12 @@ where
     let s3_bucket = &CONFIG.s3_bucket;
     span.record("s3_bucket", &s3_bucket);
 
-    let blob = if let Some(length) = size
-        && length < Size::from_megabytes(MULTIPART_THRESHOLD)
-    {
+    let blob = if length < CONFIG.multipart_threshold {
         let mut hash = Hasher::new();
 
         let mut buffer = BytesMut::new();
 
+        // read in all chunks, but not more that length
         while let Some(Ok(chunk)) = source.next().await {
             buffer.extend_from_slice(&chunk);
 
@@ -65,7 +61,8 @@ where
 
         let hash = hash.update(&buffer).finalize().to_hex();
         let length = buffer.len();
-        let inline = if length < Size::from_kilobytes(INLINE_THRESHHOLD).bytes() as usize {
+
+        let inline = if length < CONFIG.inline_threshold.bytes() as usize {
             Some(buffer.to_vec())
         } else {
             None

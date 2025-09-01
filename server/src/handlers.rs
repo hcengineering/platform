@@ -14,11 +14,12 @@ use aws_sdk_s3::error::SdkError;
 use bytes::Bytes;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
+use serde_json::{Value, from_slice};
 use size::Size;
 use tracing::*;
 use uuid::Uuid;
 
-use crate::blob::upload;
+use crate::blob;
 use crate::s3::S3Client;
 use crate::{
     config::CONFIG,
@@ -54,7 +55,7 @@ impl actix_web::error::ResponseError for ApiError {
             ApiError::ActixError(error) => error.error_response(),
 
             _ => {
-                tracing::error!(error=%self, "Internal error in http handler");
+                tracing::error!(error=?self, "Internal error in http handler");
                 HttpResponse::InternalServerError().body("Internal Server Error")
             }
         }
@@ -72,19 +73,43 @@ impl<E: Display + std::error::Error + 'static, B: std::fmt::Debug> From<SdkError
 }
 
 trait ServiceRequestExt {
-    async fn content_length(&mut self) -> Option<Size>;
+    async fn content_length(&mut self) -> HandlerResult<Size>;
+    async fn content_type(&mut self) -> Option<String>;
+    async fn merge_strategy(&mut self) -> Option<MergeStrategy>;
 }
 
 impl ServiceRequestExt for ServiceRequest {
-    async fn content_length(&mut self) -> Option<Size> {
+    async fn content_length(&mut self) -> HandlerResult<Size> {
         self.extract::<Header<ContentLength>>()
             .await
             .map(|header| Size::from_bytes(*header.0))
+            .map_err(|_| actix_web::error::ErrorBadRequest("invalid content length").into())
+    }
+
+    async fn content_type(&mut self) -> Option<String> {
+        self.extract::<Header<ContentType>>()
+            .await
+            .map(|header| header.0.to_string())
             .ok()
+    }
+
+    async fn merge_strategy(&mut self) -> Option<MergeStrategy> {
+        self.headers()
+            .get("Huly-Merge-Strategy")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| serde_json::from_str::<MergeStrategy>(v).ok())
     }
 }
 
-#[derive(Serialize, serde::Deserialize, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+enum MergeStrategy {
+    JsonPatch,
+    #[default]
+    Concatenate,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct PartData {
     workspace: Uuid,
     key: String,
@@ -98,22 +123,44 @@ struct PartData {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     meta: Option<HashMap<String, String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    merge_strategy: Option<MergeStrategy>,
 }
 
 #[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
 pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
+    debug!("put request");
+
     let span = Span::current();
 
     let mut request = ServiceRequest::from_request(request);
 
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+
+    let content_length = request.content_length().await?;
+    let content_type = request.content_type().await;
+    let merge_strategy = request.merge_strategy().await.unwrap_or_default();
+
+    match (merge_strategy, &content_type) {
+        (MergeStrategy::JsonPatch, Some(ct))
+            if ct != "application/json" || content_length > CONFIG.inline_threshold =>
+        {
+            return Err(
+                actix_web::error::ErrorBadRequest("invalid content type and length").into(),
+            );
+        }
+
+        _ => {
+            //
+        }
+    }
+
     span.record("workspace", path.workspace.to_string());
     span.record("huly_key", &path.key);
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
-
-    debug!("put request");
 
     let mut headers = Vec::new();
     for (key, value) in request.headers().iter() {
@@ -124,15 +171,9 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         }
     }
 
-    let content_type = request
-        .extract::<Header<header::ContentType>>()
-        .await
-        .unwrap_or(Header(ContentType::octet_stream()))
-        .into_inner();
-    headers.push((
-        http::header::CONTENT_TYPE.as_str().to_owned(),
-        content_type.to_string(),
-    ));
+    if let Some(content_type) = content_type {
+        headers.push((http::header::CONTENT_TYPE.as_str().to_owned(), content_type));
+    }
 
     let mut meta = Vec::new();
     for (key, value) in request.headers().iter() {
@@ -143,9 +184,18 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         }
     }
 
-    let content_length = request.content_length().await;
+    let uploaded = blob::upload(&s3, &pool, content_length, payload).await?;
 
-    let uploaded = upload(&s3, &pool, content_length, payload).await?;
+    match merge_strategy {
+        MergeStrategy::JsonPatch => {
+            from_slice::<Value>(uploaded.inline.as_ref().unwrap())
+                .map_err(|x| actix_web::error::ErrorBadRequest(x.to_string()))?;
+        }
+
+        _ => {
+            //
+        }
+    }
 
     let part_data = PartData {
         workspace: path.workspace,
@@ -156,6 +206,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         etag: ksuid::Ksuid::generate().to_base62(),
         headers: Some(headers.clone().into_iter().collect()),
         meta: Some(meta.into_iter().collect()),
+        merge_strategy: Some(merge_strategy),
     };
 
     postgres::set_part(
@@ -191,9 +242,9 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
-    let content_length = request.content_length().await;
+    let content_length = request.content_length().await?;
 
-    let uploaded = upload(&s3, &pool, content_length, payload).await?;
+    let uploaded = blob::upload(&s3, &pool, content_length, payload).await?;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
@@ -211,8 +262,11 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
         blob: uploaded.s3_key,
         size: uploaded.length,
         etag: ksuid::Ksuid::generate().to_base62(),
+
+        // defined in the first part
         headers: None,
         meta: None,
+        merge_strategy: None,
     };
 
     let mut response = if parts.is_empty() {
