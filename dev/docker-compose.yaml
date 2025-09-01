@@ -321,7 +321,6 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
-      - MSG2FILE_URL=http://huly.local:9087
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
       - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
       - RATE_LIMIT_WINDOW=30000
@@ -440,21 +439,6 @@ services:
   #     - POSTHOG_HOST=${POSTHOG_HOST}
   #     - POSTHOG_API_KEY=${POSTHOG_API_KEY}
   #     - MAX_PAYLOAD_SIZE=10mb
-  msg2file:
-    image: hardcoreeng/msg2file
-    ports:
-      - 9087:9087
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    restart: unless-stopped
-    environment:
-      - ACCOUNTS_URL=http://huly.local:3000
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
-      - PORT=9087
-      - SECRET=secret
-      - SERVICE_ID=msg2file-service
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   export:
     image: hardcoreeng/export
     extra_hosts:

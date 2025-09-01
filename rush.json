@@ -2449,11 +2449,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-msg2file",
-      "projectFolder": "services/msg2file",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/process",
       "projectFolder": "plugins/process",
       "shouldPublish": false
