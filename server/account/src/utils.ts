@@ -578,9 +578,6 @@ export async function signUpByGrant (
   const existingPerson = await db.person.findOne({ uuid: accountUuid })
 
   if (existingPerson == null) {
-    // TODO: firstName and lastName can be empty in grant
-    // we can create an account with empty values
-    // which will then need to be updated by the user from the UI
     await db.person.insertOne({ uuid: accountUuid, firstName, lastName: lastName ?? '' })
   }
 
