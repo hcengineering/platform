@@ -12,18 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { MeetingMinutes } from '@hcengineering/love'
+  import { MeetingMinutes, Room } from '@hcengineering/love'
+  import { ChannelEmbeddedContent } from '@hcengineering/chunter-resources'
+  import { WidgetState } from '@hcengineering/workbench-resources'
 
-  import ControlBar from './ControlBar.svelte'
-  import { currentRoom, currentMeetingMinutes } from '../stores'
-
-  export let object: MeetingMinutes
+  export let widgetState: WidgetState
+  export let meetingMinutes: MeetingMinutes
+  export let room: Room
+  export let height: string
+  export let width: string
 </script>
 
-{#if $currentRoom && $currentMeetingMinutes?._id === object._id}
-  <div class="flex-grow flex-shrink">
-    <ControlBar room={$currentRoom} />
-  </div>
-{/if}
+<ChannelEmbeddedContent
+  {width}
+  {height}
+  readonly
+  object={meetingMinutes}
+  threadId={undefined}
+  collection="transcription"
+  on:close
+></ChannelEmbeddedContent>

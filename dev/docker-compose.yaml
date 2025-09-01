@@ -56,6 +56,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
+      - --memory 256M
     container_name: redpanda
     volumes:
       - redpanda:/var/lib/redpanda/data
@@ -69,6 +70,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
   redpanda_console:
     image: docker.redpanda.com/redpandadata/console:v2.8.3
     extra_hosts:
@@ -91,6 +93,7 @@ services:
       - 8000:8080
     depends_on:
       - redpanda
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -123,23 +126,27 @@ services:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - ES_JAVA_OPTS=-Xms256m -Xmx450m
     healthcheck:
       interval: 20s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512m
   redis:
     image: redis:8.0.2-alpine3.21
     ports:
       - 6379:6379
+    restart: unless-stopped
 
   account:
     image: hardcoreeng/account
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - minio
       - stats
     ports:
       - 3000:3000
@@ -233,10 +240,6 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - minio
-      - elastic
-      - transactor_cockroach
-      - collaborator
       - stats
     ports:
       - 8087:8080
@@ -457,6 +460,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
   datalake:
     image: hardcoreeng/datalake
     extra_hosts:
@@ -521,6 +525,7 @@ services:
     environment:
       - HULY_REDIS_URLS=redis://redis:6379
       - HULY_BIND_PORT=8095
+    restart: unless-stopped
 
   process-service:
     image: hardcoreeng/process

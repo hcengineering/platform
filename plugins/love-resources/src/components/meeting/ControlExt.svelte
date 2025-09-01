@@ -15,16 +15,7 @@
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import {
-    Invite,
-    isOffice,
-    JoinRequest,
-    Office,
-    ParticipantInfo,
-    RequestStatus,
-    Room,
-    RoomType
-  } from '@hcengineering/love'
+  import { Invite, isOffice, JoinRequest, Office, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -39,8 +30,8 @@
   import workbench from '@hcengineering/workbench'
   import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
 
-  import love from '../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
+  import love from '../../plugin'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../../stores'
   import {
     connectRoom,
     createMeetingVideoWidgetTab,
@@ -48,18 +39,17 @@
     disconnect,
     endMeeting,
     getRoomName,
-    leaveRoom,
-    screenSharing
-  } from '../utils'
-  import ActiveInvitesPopup from './ActiveInvitesPopup.svelte'
-  import InvitePopup from './InvitePopup.svelte'
-  import PersonActionPopup from './PersonActionPopup.svelte'
-  import RequestPopup from './RequestPopup.svelte'
-  import RequestingPopup from './RequestingPopup.svelte'
-  import RoomPopup from './RoomPopup.svelte'
-  import RoomButton from './RoomButton.svelte'
+    leaveRoom
+  } from '../../utils'
+  import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
+  import InvitePopup from '../InvitePopup.svelte'
+  import PersonActionPopup from '../PersonActionPopup.svelte'
+  import RequestPopup from '../RequestPopup.svelte'
+  import RequestingPopup from '../RequestingPopup.svelte'
+  import RoomPopup from '../RoomPopup.svelte'
+  import RoomButton from '../RoomButton.svelte'
   import { getPersonByPersonRef } from '@hcengineering/contact-resources'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
 
@@ -250,11 +240,7 @@
     }
   }
 
-  $: checkActiveVideo(
-    $location,
-    $lkSessionConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
-    $currentRoom?._id
-  )
+  $: checkActiveVideo($location, $lkSessionConnected, $currentRoom?._id)
 
   $: joined = activeRooms.filter((r) => $myInfo?.room === r._id)
 
