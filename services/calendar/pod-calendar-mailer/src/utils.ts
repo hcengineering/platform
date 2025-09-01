@@ -37,7 +37,7 @@ export async function getClient (
   }
 
   const wsInfo = await accountClient.getLoginInfoByToken()
-  if (!('endpoint' in wsInfo)) {
+  if (wsInfo == null || !('endpoint' in wsInfo)) {
     throw new Error('Invalid login info')
   }
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')

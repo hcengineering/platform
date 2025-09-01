@@ -13,10 +13,14 @@
 // limitations under the License.
 //
 
-import type { LoginInfo, WorkspaceLoginInfo } from './types'
+import type { LoginInfoByToken, LoginInfoRequest, WorkspaceLoginInfo } from './types'
 
-export function isWorkspaceLoginInfo (loginInfo: LoginInfo | WorkspaceLoginInfo): loginInfo is WorkspaceLoginInfo {
-  return (loginInfo as WorkspaceLoginInfo).workspace != null
+export function isWorkspaceLoginInfo (loginInfo: LoginInfoByToken): loginInfo is WorkspaceLoginInfo {
+  return !isLoginInfoRequest(loginInfo) && (loginInfo as WorkspaceLoginInfo)?.workspace != null
+}
+
+export function isLoginInfoRequest (info: LoginInfoByToken): info is LoginInfoRequest {
+  return (info as LoginInfoRequest)?.request
 }
 
 export function getClientTimezone (): string | undefined {
