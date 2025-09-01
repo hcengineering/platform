@@ -16,9 +16,6 @@
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import core, { PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
-import { Execution, parseContext, Transition } from '@hcengineering/process'
-import serverProcess, { ProcessControl } from '@hcengineering/server-process'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 
@@ -100,40 +97,4 @@ async function createClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId):
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token, true)
   return client
-}
-
-export async function pickTransition (
-  control: ProcessControl,
-  execution: Execution,
-  transitions: Transition[],
-  context: Record<string, any>
-): Promise<Transition | undefined> {
-  for (const tr of transitions) {
-    const trigger = control.client.getModel().findObject(tr.trigger)
-    if (trigger === undefined) continue
-    if (trigger.checkFunction === undefined) return tr
-    const impl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
-    if (impl?.serverCheckFunc === undefined) return tr
-    const filled = fillParams(tr.triggerParams, execution)
-    const checkFunc = await getResource(impl.serverCheckFunc)
-    if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, context, control.client.getHierarchy())
-    if (res) return tr
-  }
-}
-
-function fillParams (params: Record<string, any>, execution: Execution): Record<string, any> {
-  const res: Record<string, any> = {}
-  for (const key in params) {
-    const value = params[key]
-    const context = parseContext(value)
-    if (context === undefined) {
-      res[key] = value
-      continue
-    }
-    if (context.type === 'context') {
-      res[key] = execution.context[context.id]
-    }
-  }
-  return res
 }

@@ -101,7 +101,8 @@
     "Remove": "Remove",
     "RemoveFirst": "Remove first",
     "RemoveLast": "Remove last",
-    "Cancelled": "Cancelled"
+    "Cancelled": "Cancelled",
+    "WaitUntil": "Wait until"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

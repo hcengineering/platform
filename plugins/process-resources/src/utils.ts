@@ -574,6 +574,11 @@ export function todoTranstionCheck (params: Record<string, any>, doc: Doc): bool
   return doc._id === params._id
 }
 
+export function timeTransitionCheck (params: Record<string, any>): boolean {
+  if (params.value === undefined) return false
+  return params.value <= Date.now()
+}
+
 export function updateCardTranstionCheck (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy): boolean {
   const res = matchQuery([doc], params, doc._class, hierarchy, true)
   return res.length > 0

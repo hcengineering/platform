@@ -101,7 +101,8 @@
     "ArraySizeGte": "Tamanho maior ou igual a",
     "ArraySizeLt": "Tamanho menor que",
     "ArraySizeLte": "Tamanho menor ou igual a",
-    "Cancelled": "Cancelado"
+    "Cancelled": "Cancelado",
+    "WaitUntil": "Aguardar até"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

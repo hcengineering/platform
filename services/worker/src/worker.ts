@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { config as dotenvConfig } from 'dotenv'
 
-dotenvConfig()
+import { NativeConnection, Worker } from '@temporalio/worker'
+import * as activities from './activities'
 
-export interface Config {
-  Secret: string
-  QueueConfig: string
-  QueueRegion: string
-  AccountsUrl: string
-  TemporalAddress: string
-  TemporalNamespace: string
+export async function runWorker (): Promise<void> {
+  const connection = await NativeConnection.connect({
+    address: process.env.TEMPORAL_ADDRESS ?? 'localhost:7233'
+  })
+  try {
+    const worker = await Worker.create({
+      connection,
+      workflowsPath: require.resolve('./workflows'),
+      activities,
+      namespace: process.env.TEMPORAL_NAMESPACE ?? 'huly',
+      taskQueue: 'process'
+    })
+
+    await worker.run()
+  } finally {
+    await connection.close()
+  }
 }
-
-const config: Config = {
-  Secret: process.env.SECRET ?? 'secret',
-  QueueConfig: process.env.QUEUE_CONFIG ?? '',
-  QueueRegion: process.env.QUEUE_REGION ?? '',
-  AccountsUrl: process.env.ACCOUNTS_URL ?? '',
-  TemporalAddress: process.env.TEMPORAL_ADDRESS ?? 'localhost:7233',
-  TemporalNamespace: process.env.TEMPORAL_NAMESPACE ?? 'huly'
-}
-
-export default config

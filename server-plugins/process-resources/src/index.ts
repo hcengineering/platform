@@ -66,7 +66,8 @@ import {
   CreateCard,
   AddRelation,
   CheckToDo,
-  OnCardUpdateCheck
+  OnCardUpdateCheck,
+  CheckTime
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -334,7 +335,8 @@ export default async () => ({
     CreateCard,
     AddRelation,
     CheckToDo,
-    OnCardUpdateCheck
+    OnCardUpdateCheck,
+    CheckTime
   },
   transform: {
     FirstValue,

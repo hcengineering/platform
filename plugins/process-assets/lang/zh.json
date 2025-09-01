@@ -101,7 +101,8 @@
     "ArraySizeGte": "大小大于等于",
     "ArraySizeLt": "大小小于",
     "ArraySizeLte": "大小小于等于",
-    "Cancelled": "已取消"
+    "Cancelled": "已取消",
+    "WaitUntil": "等待直到"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

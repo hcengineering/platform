@@ -43,6 +43,11 @@ export function OnCardUpdateCheck (
   return res.length > 0
 }
 
+export function CheckTime (params: Record<string, any>): boolean {
+  if (params.value === undefined) return false
+  return params.value <= Date.now()
+}
+
 export async function AddRelation (
   params: MethodParams<Relation>,
   execution: Execution,

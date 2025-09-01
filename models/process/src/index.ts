@@ -1073,6 +1073,22 @@ export function createModel (builder: Builder): void {
     process.trigger.OnSubProcessesDone
   )
 
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.WaitUntil,
+      icon: process.icon.Time,
+      requiredParams: [],
+      init: false,
+      auto: true,
+      editor: process.component.TimeEditor,
+      presenter: process.component.TimePresenter,
+      checkFunction: process.triggerCheck.Time
+    },
+    process.trigger.OnTime
+  )
+
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
     id: 'processes',
     label: process.string.Processes,

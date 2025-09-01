@@ -63,6 +63,10 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.OnCardUpdateCheck
   })
 
+  builder.mixin(process.trigger.OnTime, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.CheckTime
+  })
+
   builder.mixin(process.trigger.OnSubProcessesDone, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
     preventRollback: true
   })

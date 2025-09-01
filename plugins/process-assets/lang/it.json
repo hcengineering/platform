@@ -101,7 +101,8 @@
     "ArraySizeGte": "Dimensione maggiore o uguale a",
     "ArraySizeLt": "Dimensione minore di",
     "ArraySizeLte": "Dimensione minore o uguale a",
-    "Cancelled": "Annullato"
+    "Cancelled": "Annullato",
+    "WaitUntil": "Aspetta fino a"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
