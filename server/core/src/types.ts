@@ -705,6 +705,8 @@ export type GetWorkspaceResponse =
 
 export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
 
+export type SessionHealth = 'healthy' | 'degraded' | 'unhealthy'
+
 /**
  * @public
  */
@@ -770,6 +772,8 @@ export interface SessionManager {
   ) => ClientSessionCtx
 
   getStatistics: () => WorkspaceStatistics[]
+
+  checkHealth: () => SessionHealth
 }
 
 export const pingConst = 'ping'

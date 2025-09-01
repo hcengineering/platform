@@ -76,6 +76,7 @@ import {
   QueueWorkspaceEvent,
   type QueueWorkspaceMessage,
   type Session,
+  type SessionHealth,
   type SessionManager,
   userEvents,
   type UserStatistics,
@@ -91,6 +92,9 @@ const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
 
 const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+
+const hangRequestTimeoutSeconds = 30
+const hangSessionTimeoutSeconds = 60
 
 /**
  * @public
@@ -123,6 +127,11 @@ export class TSessionManager implements SessionManager {
   now: number = Date.now()
 
   ticksContext: MeasureContext
+
+  hungSessionsWarnPercent = parseInt(process.env.HUNG_SESSIONS_WARN_PERCENT ?? '25')
+  hungSessionsFailPercent = parseInt(process.env.HUNG_SESSIONS_FAIL_PERCENT ?? '75')
+  hungRequestsFailPercent = parseInt(process.env.HUNG_REQUESTS_PERCENT ?? '50')
+
   constructor (
     readonly ctx: MeasureContext,
     readonly timeouts: Timeouts,
@@ -302,7 +311,7 @@ export class TSessionManager implements SessionManager {
         const wsId = s.session.workspace.uuid
         const lastRequestDiff = now - s.session.lastRequest
 
-        let timeout = 60000
+        let timeout = hangSessionTimeoutSeconds * 1000
         if (s.session.getUser() === systemAccountUuid) {
           timeout = timeout * 10
         }
@@ -331,7 +340,7 @@ export class TSessionManager implements SessionManager {
         }
         for (const r of s.session.requests.values()) {
           const sec = Math.round((now - r.start) / 1000)
-          if (sec > 0 && sec % 30 === 0) {
+          if (sec > 0 && sec % hangRequestTimeoutSeconds === 0) {
             this.ctx.warn('request hang found', {
               sec,
               wsId,
@@ -422,6 +431,60 @@ export class TSessionManager implements SessionManager {
     return Array.from(workspace.sessions.values())
       .filter((it) => it.session.getUser() === accountUuid)
       .reduce<number>((acc) => acc + 1, 0)
+  }
+
+  checkHealth (): SessionHealth {
+    const now = Date.now()
+
+    let totalSessions = 0
+    let hungSessions = 0
+
+    for (const [, { session }] of this.sessions) {
+      let totalRequests = 0
+      let hungRequests = 0
+
+      // Ignore system account sessions
+      if (session.getUser() === systemAccountUuid) {
+        continue
+      }
+
+      totalSessions += 1
+
+      // Check if the session is hung
+      const lastRequestDiff = now - session.lastRequest
+      if (lastRequestDiff > hangSessionTimeoutSeconds * 1000) {
+        hungSessions += 1
+        continue
+      }
+
+      // Check if requests are hung
+      for (const r of session.requests.values()) {
+        const sec = Math.round((now - r.start) / 1000)
+        if (sec > hangRequestTimeoutSeconds) {
+          hungRequests += 1
+        }
+        totalRequests += 1
+      }
+
+      const hungRequestsPercent = totalRequests > 0 ? (100 * hungRequests) / totalRequests : 0
+      if (hungRequestsPercent > this.hungRequestsFailPercent) {
+        hungSessions += 1
+      }
+    }
+
+    const hungSessionsPercent = totalSessions > 0 ? (100 * hungSessions) / totalSessions : 0
+
+    if (hungSessionsPercent > this.hungSessionsFailPercent) {
+      this.ctx.warn('high hung sessions', { hungSessionsPercent })
+      return 'unhealthy'
+    }
+
+    if (hungSessionsPercent > this.hungSessionsWarnPercent) {
+      this.ctx.warn('high degraded sessions', { hungSessionsPercent })
+      return 'degraded'
+    }
+
+    return 'healthy'
   }
 
   tickCounter = 0
