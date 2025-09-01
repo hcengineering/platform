@@ -1,6 +1,6 @@
 use std::error::Error as StdError;
 
-use aws_sdk_s3::primitives::ByteStream;
+use aws_sdk_s3::primitives::{ByteStream, SdkBody};
 use blake3::Hasher;
 use bytes::{Bytes, BytesMut};
 use futures::stream::StreamExt;
@@ -15,10 +15,13 @@ use crate::{
     postgres::{self, Pool},
 };
 
+#[derive(Debug)]
 pub struct Blob {
     pub s3_key: String,
     pub length: usize,
-    pub inline: Option<Vec<u8>>,
+    pub inline: Option<Bytes>,
+    pub parts_count: Option<usize>,
+    pub deduplicated: bool,
 }
 
 fn random_key() -> String {
@@ -59,40 +62,41 @@ where
             return Err(actix_web::error::ErrorBadRequest("payload size mismatch").into());
         }
 
+        let buffer = buffer.freeze();
+
         let hash = hash.update(&buffer).finalize().to_hex();
         let length = buffer.len();
 
-        let inline = if length < CONFIG.inline_threshold.bytes() as usize {
-            Some(buffer.to_vec())
-        } else {
-            None
-        };
+        let inline = Some(buffer.clone());
 
-        let s3_key = if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
-            span.record("s3_key", &s3_key_found);
-            debug!(s3_key_found, "blob deduplicated");
-            s3_key_found
-        } else {
-            let s3_key = random_key();
-            span.record("s3_key", &s3_key);
+        let (s3_key, deduplicated) =
+            if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
+                span.record("s3_key", &s3_key_found);
+                debug!(s3_key_found, "blob deduplicated");
+                (s3_key_found, true)
+            } else {
+                let s3_key = random_key();
+                span.record("s3_key", &s3_key);
 
-            s3.put_object()
-                .bucket(s3_bucket)
-                .key(&s3_key)
-                .body(ByteStream::from(buffer.freeze()))
-                .send()
-                .await?;
+                s3.put_object()
+                    .bucket(s3_bucket)
+                    .key(&s3_key)
+                    .body(ByteStream::from(buffer))
+                    .send()
+                    .await?;
 
-            postgres::insert_blob(&pool, &s3_key, &hash).await?;
+                postgres::insert_blob(&pool, &s3_key, &hash).await?;
 
-            debug!("blob created");
-            s3_key
-        };
+                debug!("blob created");
+                (s3_key, false)
+            };
 
         Blob {
             s3_key,
             length,
             inline,
+            parts_count: None,
+            deduplicated,
         }
     } else {
         let s3_key = random_key();
@@ -102,27 +106,30 @@ where
 
         let hash = upload.hash.to_hex().to_string();
 
-        let s3_key = if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
-            debug!(s3_key_found, "blob deduplicated");
+        let (s3_key, deduplicated) =
+            if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
+                debug!(s3_key_found, "blob deduplicated");
 
-            // delete uploaded
-            s3.delete_object()
-                .bucket(s3_bucket)
-                .key(s3_key)
-                .send()
-                .await?;
+                // delete uploaded
+                s3.delete_object()
+                    .bucket(s3_bucket)
+                    .key(s3_key)
+                    .send()
+                    .await?;
 
-            s3_key_found
-        } else {
-            debug!("blob created");
-            postgres::insert_blob(&pool, &s3_key, &hash).await?;
-            s3_key
-        };
+                (s3_key_found, true)
+            } else {
+                debug!("blob created");
+                postgres::insert_blob(&pool, &s3_key, &hash).await?;
+                (s3_key, false)
+            };
 
         Blob {
             s3_key,
             length: upload.length,
             inline: None,
+            parts_count: Some(upload.parts_count),
+            deduplicated,
         }
     };
 

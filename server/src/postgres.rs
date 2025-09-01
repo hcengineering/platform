@@ -1,6 +1,7 @@
 use std::pin::Pin;
 
 use bb8_postgres::PostgresConnectionManager;
+use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use tokio_postgres::NoTls;
 use tokio_postgres::{self as pg};
@@ -134,12 +135,13 @@ pub async fn append_part<D: serde::Serialize>(
     workspace: uuid::Uuid,
     key: &str,
     part: u32,
-    inline: Option<Vec<u8>>,
+    inline: Option<Bytes>,
     data: &D,
 ) -> anyhow::Result<()> {
     let connection = pool.get().await?;
 
     let data = serde_json::to_value(data)?;
+    let inline = inline.map(|b| b.to_vec());
 
     connection
         .execute(
@@ -155,7 +157,7 @@ pub async fn set_part<D: serde::Serialize>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
-    inline: Option<Vec<u8>>,
+    inline: Option<Bytes>,
     data: &D,
 ) -> anyhow::Result<()> {
     let mut connection = pool.get().await?;
@@ -170,13 +172,14 @@ pub async fn set_part<D: serde::Serialize>(
         .await?;
 
     let data = serde_json::to_value(data)?;
+    let inline = inline.map(|b| b.to_vec());
 
     transaction
         .execute(
             r#"
             insert into object (workspace, key, part, inline, data) values ($1, $2, 0, $3, $4)
             on conflict (workspace, key, part) do update set
-                inline = $3,
+                inline = $3, 
                 data = $4
             "#,
             &[&workspace, &key, &inline, &data],

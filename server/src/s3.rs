@@ -32,6 +32,7 @@ pub async fn client() -> S3Client {
 pub struct Upload {
     pub hash: Hash,
     pub length: usize,
+    pub parts_count: usize,
 }
 
 async fn multipart_upload_stream<S, E>(
@@ -110,7 +111,17 @@ where
 
     let hash = hash.finalize();
 
-    Ok((complete.build(), Upload { hash, length }))
+    let complete = complete.build();
+    let parts_count = complete.parts().len();
+
+    Ok((
+        complete,
+        Upload {
+            hash,
+            length,
+            parts_count,
+        },
+    ))
 }
 
 #[tracing::instrument(level = "debug", skip_all)]

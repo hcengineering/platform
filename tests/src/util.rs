@@ -55,6 +55,16 @@ impl ClientExt for Client {
     }
 }
 
+pub trait ResponseExt {
+    fn header(&self, key: &str) -> Option<&str>;
+}
+
+impl ResponseExt for tanu::http::Response {
+    fn header(&self, key: &str) -> Option<&str> {
+        self.headers().get(key).and_then(|v| v.to_str().ok())
+    }
+}
+
 pub fn random_text(length: usize) -> String {
     let mut rng = rand::rng();
     let charset: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";

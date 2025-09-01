@@ -32,7 +32,10 @@ pub struct Config {
 
     pub s3_bucket: String,
 
+    // use multipart upload if blob size is greater than this
     pub multipart_threshold: Size,
+
+    // store blobs inline if size is less than this
     pub inline_threshold: Size,
 }
 
