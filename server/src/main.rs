@@ -49,6 +49,13 @@ async fn main() -> anyhow::Result<()> {
     let postgres = postgres::pool().await?;
     let s3 = s3::client().await;
 
+    match s3.head_bucket().bucket(&CONFIG.s3_bucket).send().await {
+        Ok(_) => info!("s3 bucket {} OK", &CONFIG.s3_bucket),
+        Err(e) => {
+            warn!("s3 bucket {} not available: {}", &CONFIG.s3_bucket, e);
+        }
+    }
+
     let bind_to = SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
     async fn auth(

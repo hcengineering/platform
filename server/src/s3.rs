@@ -1,5 +1,5 @@
 use anyhow::Result;
-use aws_config::BehaviorVersion;
+use aws_config::{BehaviorVersion, Region, default_provider::region};
 use aws_sdk_s3::{
     Config,
     types::{CompletedMultipartUpload, CompletedPart},
@@ -18,6 +18,10 @@ pub async fn client() -> S3Client {
         .await
         .into_builder()
         .build();
+
+    let endpoint = sdk_config.endpoint_url().unwrap();
+    let region = sdk_config.region().unwrap();
+    tracing::debug!(endpoint, ?region, "s3 connection");
 
     let s3_config = Config::from(sdk_config)
         .to_builder()

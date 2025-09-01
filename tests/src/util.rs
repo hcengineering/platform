@@ -1,5 +1,5 @@
 use crate::config::CONFIG;
-use rand::RngCore;
+use rand::{Rng, RngCore};
 use reqwest::Body;
 use secrecy::ExposeSecret;
 use tanu::http::{Client, Method, RequestBuilder};
@@ -13,13 +13,14 @@ pub trait ClientExt {
     fn request(&self, method: &Method, path: &str) -> RequestBuilder;
 }
 
-fn path(key: &str) -> String {
+pub fn path(key: &str) -> String {
     format!("{}/api/{}/{key}", CONFIG.base_url, CONFIG.workspace)
 }
 
 impl ClientExt for Client {
     fn request(&self, method: &Method, path: &str) -> RequestBuilder {
         match *method {
+            Method::HEAD => self.head(path),
             Method::GET => self.get(path),
             Method::PUT => self.put(path),
             Method::POST => self.post(path),
@@ -52,6 +53,20 @@ impl ClientExt for Client {
         self.get(path(key))
             .bearer_auth(CONFIG.token_valid.expose_secret())
     }
+}
+
+pub fn random_text(length: usize) -> String {
+    let mut rng = rand::rng();
+    let charset: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+
+    let text: String = (0..length)
+        .map(|_| {
+            let idx = rng.random_range(0..charset.len());
+            charset[idx] as char
+        })
+        .collect();
+
+    text
 }
 
 pub fn random_body(size: usize) -> Body {
