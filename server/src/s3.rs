@@ -1,3 +1,5 @@
+use std::error::Error as StdError;
+
 use anyhow::Result;
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::{
@@ -32,13 +34,17 @@ pub struct Upload {
     pub length: usize,
 }
 
-async fn multipart_upload_stream(
+async fn multipart_upload_stream<S, E>(
     s3: &S3Client,
     bucket: &str,
     key: &str,
     upload_id: &str,
-    mut source: impl Stream<Item = Result<Bytes, std::io::Error>> + Unpin,
-) -> Result<(CompletedMultipartUpload, Upload)> {
+    mut source: S,
+) -> Result<(CompletedMultipartUpload, Upload)>
+where
+    S: Stream<Item = Result<Bytes, E>> + Unpin,
+    E: StdError + Send + Sync + 'static,
+{
     debug!("upload start");
 
     let upload_part = async |number, buffer: Bytes| -> Result<CompletedPart> {
@@ -68,7 +74,7 @@ async fn multipart_upload_stream(
     let mut length = 0;
 
     while let Some(part) = source.next().await {
-        let part = part?;
+        let part = part.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
         hash.update(&part);
 
@@ -108,12 +114,16 @@ async fn multipart_upload_stream(
 }
 
 #[tracing::instrument(level = "debug", skip_all)]
-pub async fn multipart_upload<S>(
+pub async fn multipart_upload<S, E>(
     s3: &S3Client,
     bucket: &str,
     key: &str,
-    source: impl Stream<Item = Result<Bytes, std::io::Error>> + Unpin,
-) -> Result<Upload> {
+    source: S,
+) -> Result<Upload>
+where
+    S: Stream<Item = Result<Bytes, E>> + Unpin,
+    E: StdError + Send + Sync + 'static,
+{
     let span = Span::current();
 
     let create_multipart = s3

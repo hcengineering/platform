@@ -6,7 +6,7 @@ use actix_web::{
     dev::ServiceRequest,
     http::{
         self,
-        header::{self, ContentType},
+        header::{self, ContentLength, ContentType},
     },
     web::{Data, Header, Path, Payload},
 };
@@ -14,6 +14,7 @@ use aws_sdk_s3::error::SdkError;
 use bytes::Bytes;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
+use size::Size;
 use tracing::*;
 use uuid::Uuid;
 
@@ -70,12 +71,25 @@ impl<E: Display + std::error::Error + 'static, B: std::fmt::Debug> From<SdkError
     }
 }
 
+trait ServiceRequestExt {
+    async fn content_length(&mut self) -> Option<Size>;
+}
+
+impl ServiceRequestExt for ServiceRequest {
+    async fn content_length(&mut self) -> Option<Size> {
+        self.extract::<Header<ContentLength>>()
+            .await
+            .map(|header| Size::from_bytes(*header.0))
+            .ok()
+    }
+}
+
 #[derive(Serialize, serde::Deserialize, Debug)]
 struct PartData {
     workspace: Uuid,
     key: String,
     part: u32,
-    size: u64,
+    size: usize,
     blob: String,
     etag: String,
 
@@ -129,7 +143,9 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         }
     }
 
-    let uploaded = upload(&s3, &pool, &mut request, payload).await?;
+    let content_length = request.content_length().await;
+
+    let uploaded = upload(&s3, &pool, content_length, payload).await?;
 
     let part_data = PartData {
         workspace: path.workspace,
@@ -175,7 +191,9 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
-    let uploaded = upload(&s3, &pool, &mut request, payload).await?;
+    let content_length = request.content_length().await;
+
+    let uploaded = upload(&s3, &pool, content_length, payload).await?;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
@@ -291,7 +309,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
             }
         }
 
-        response.body(SizedStream::new(content_length, stream(parts, s3)))
+        response.body(SizedStream::new(content_length as u64, stream(parts, s3)))
     } else {
         HttpResponse::NotFound().finish()
     };
