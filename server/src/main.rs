@@ -1,3 +1,4 @@
+use core::panic;
 use std::net::SocketAddr;
 
 use actix_cors::Cors;
@@ -46,13 +47,20 @@ async fn main() -> anyhow::Result<()> {
         env!("CARGO_PKG_VERSION")
     );
 
+    tracing::debug!(
+        db_connection = &CONFIG.db_connection,
+        db_scheme = &CONFIG.db_scheme,
+        s3_bucket = &CONFIG.s3_bucket,
+        "configuration"
+    );
+
     let postgres = postgres::pool().await?;
     let s3 = s3::client().await;
 
     match s3.head_bucket().bucket(&CONFIG.s3_bucket).send().await {
         Ok(_) => info!("s3 bucket {} OK", &CONFIG.s3_bucket),
         Err(e) => {
-            warn!("s3 bucket {} not available: {}", &CONFIG.s3_bucket, e);
+            panic!("s3 bucket {} not available: {}", &CONFIG.s3_bucket, e);
         }
     }
 

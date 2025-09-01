@@ -11,11 +11,6 @@ use crate::config::CONFIG;
 pub type Pool = bb8::Pool<PostgresConnectionManager<NoTls>>;
 
 pub async fn pool() -> anyhow::Result<Pool> {
-    tracing::debug!(
-        connection = CONFIG.db_connection,
-        "database connection string"
-    );
-
     let manager = bb8_postgres::PostgresConnectionManager::new_from_stringlike(
         &CONFIG.db_connection,
         tokio_postgres::NoTls,
