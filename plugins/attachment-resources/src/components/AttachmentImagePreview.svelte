@@ -101,6 +101,7 @@
     display: inline-flex;
     background-color: var(--theme-link-preview-bg-color);
     border-radius: 0.75rem;
+    overflow: hidden;
 
     .image-overlay {
       position: absolute;

@@ -81,6 +81,7 @@
     border-radius: inherit;
   }
   .overlay {
+    border-radius: inherit;
     position: absolute;
     top: 0;
     left: 0;
