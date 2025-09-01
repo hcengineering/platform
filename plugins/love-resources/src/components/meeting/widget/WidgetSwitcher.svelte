@@ -17,11 +17,11 @@
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AppItem } from '@hcengineering/workbench-resources'
   import { RoomType } from '@hcengineering/love'
-  import { currentRoom } from '../../stores'
-  import { isSharingEnabled } from '../../utils'
+  import { currentRoom } from '../../../stores'
+  import { isSharingEnabled } from '../../../utils'
   import { state } from '@hcengineering/media-resources'
-  import love from '../../plugin'
-  import { lkSessionConnected } from '../../liveKitClient'
+  import love from '../../../plugin'
+  import { lkSessionConnected } from '../../../liveKitClient'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent

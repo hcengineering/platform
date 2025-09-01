@@ -15,14 +15,12 @@
 <script lang="ts">
   import { MeetingMinutes, Room } from '@hcengineering/love'
 
-  import VideoPopup from '../VideoPopup.svelte'
-  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
+  import VideoPopup from '../../VideoPopup.svelte'
 
   export let room: Room
   export let doc: MeetingMinutes | undefined = undefined
 </script>
 
-<MeetingWidgetHeader {doc} {room} on:close />
 <div class="root">
   <VideoPopup room={room._id} isDock />
 </div>

@@ -22,13 +22,13 @@
     showPopup,
     PopupResult
   } from '@hcengineering/ui'
-  import { MeetingMinutes, Room, RoomType } from '@hcengineering/love'
+  import { MeetingMinutes, Room } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
 
-  import love from '../../plugin'
-  import RoomModal from '../RoomModal.svelte'
-  import { currentRoom } from '../../stores'
-  import { screenSharing } from '../../utils'
+  import love from '../../../plugin'
+  import RoomModal from '../../RoomModal.svelte'
+  import { currentRoom } from '../../../stores'
+  import MeetingOptionsButton from '../controls/MeetingOptionsButton.svelte'
 
   export let room: Room
   export let doc: MeetingMinutes | undefined = undefined
@@ -56,8 +56,9 @@
 <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
-    {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
+    {#if $currentRoom !== undefined}
       <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
+      <MeetingOptionsButton {room} kind="tertiary" size="small" />
     {/if}
   </svelte:fragment>
 </Header>

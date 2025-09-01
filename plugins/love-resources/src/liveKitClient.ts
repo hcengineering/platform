@@ -208,6 +208,7 @@ export class LiveKitClient {
   }
 
   async setCameraEnabled (value: boolean): Promise<void> {
+    if (!this.currentSessionSupportsVideo) return
     try {
       await this.liveKitRoom.localParticipant.setCameraEnabled(value)
     } catch (e) {
