@@ -25,6 +25,8 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
     }
   }
 
+  data.health = sessions.checkHealth()
+
   const memU = process.memoryUsage()
   data.statistics.memoryUsed = Math.round(((memU.heapUsed + memU.rss) / 1024 / 1024) * 100) / 100
   data.statistics.memoryTotal = Math.round((memU.heapTotal / 1024 / 1024) * 100) / 100
