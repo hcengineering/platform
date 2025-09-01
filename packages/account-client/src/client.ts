@@ -39,6 +39,8 @@ import type {
   IntegrationSecret,
   IntegrationSecretKey,
   LoginInfo,
+  LoginInfoByToken,
+  LoginInfoRequestData,
   LoginInfoWithWorkspaces,
   MailboxInfo,
   MailboxOptions,
@@ -66,7 +68,7 @@ export interface AccountClient {
   ) => Promise<WorkspaceLoginInfo>
   validateOtp: (email: string, code: string, password?: string, action?: 'verify') => Promise<LoginInfo>
   loginOtp: (email: string) => Promise<OtpInfo>
-  getLoginInfoByToken: () => Promise<LoginInfo | WorkspaceLoginInfo>
+  getLoginInfoByToken: (data?: LoginInfoRequestData) => Promise<LoginInfoByToken>
   getLoginWithWorkspaceInfo: () => Promise<LoginInfoWithWorkspaces>
   restorePassword: (password: string) => Promise<LoginInfo>
   confirm: () => Promise<LoginInfo>
@@ -95,6 +97,13 @@ export interface AccountClient {
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  createAccessLink: (
+    role: AccountRole,
+    firstName?: string,
+    lastName?: string,
+    navigateUrl?: string,
+    extra?: Record<string, any>
+  ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
@@ -335,10 +344,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async getLoginInfoByToken (): Promise<LoginInfo | WorkspaceLoginInfo> {
+  async getLoginInfoByToken (data?: LoginInfoRequestData): Promise<LoginInfoByToken> {
     const request = {
       method: 'getLoginInfoByToken' as const,
-      params: {}
+      params: data ?? {}
     }
 
     return await this.rpc(request)
@@ -410,6 +419,26 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'createInviteLink' as const,
       params: { email, role, autoJoin, firstName, lastName, navigateUrl, expHours }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async createAccessLink (
+    role: AccountRole,
+    firstName?: string,
+    lastName?: string,
+    navigateUrl?: string,
+    extra?: Record<string, any>
+  ): Promise<string> {
+    const params: any = { role, firstName, lastName, navigateUrl }
+    if (extra != null) {
+      params.extra = JSON.stringify(extra)
+    }
+
+    const request = {
+      method: 'createAccessLink' as const,
+      params
     }
 
     return await this.rpc(request)

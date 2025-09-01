@@ -21,7 +21,8 @@ import {
   type MeasureContext,
   type PersonUuid,
   type WorkspaceUuid,
-  type AccountUuid
+  type AccountUuid,
+  systemAccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
@@ -46,7 +47,8 @@ import {
   requestPasswordReset,
   changePassword,
   getPerson,
-  getSocialIds
+  getSocialIds,
+  createAccessLink
 } from '../operations'
 import { accountPlugin } from '../plugin'
 
@@ -64,15 +66,22 @@ jest.mock('@hcengineering/platform', () => {
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
   decodeTokenVerbose: jest.fn(),
-  generateToken: jest
-    .fn()
-    .mockImplementation(
-      (account, workspace, extra) =>
-        `mocked-token-${account}${workspace != null ? `-${workspace}` : ''}${extra != null ? `-${JSON.stringify(extra)}` : ''}`
-    )
+  generateToken: jest.fn().mockImplementation((account, workspace, extra, _, grant) => {
+    let token = `mocked-token-${account}`
+    if (workspace != null) {
+      token += `-${workspace}`
+    }
+    if (grant != null) {
+      token += `-${JSON.stringify(grant)}`
+    }
+    if (extra != null) {
+      token += `-${JSON.stringify(extra)}`
+    }
+    return token
+  })
 }))
 
-describe('invite operations', () => {
+describe('account operations', () => {
   const mockCtx = {
     error: jest.fn(),
     info: jest.fn()
@@ -95,7 +104,8 @@ describe('invite operations', () => {
     getWorkspaceRole: jest.fn(),
     person: {
       findOne: jest.fn()
-    }
+    },
+    generatePersonUuid: jest.fn().mockResolvedValue('generated-person-uuid' as PersonUuid)
   } as unknown as AccountDB
 
   const mockToken = 'test-token'
@@ -499,7 +509,11 @@ describe('invite operations', () => {
 
     const mockDb = {
       account: {
-        findOne: jest.fn()
+        findOne: jest.fn(),
+        insertOne: jest.fn()
+      },
+      accountEvent: {
+        insertOne: jest.fn()
       },
       workspace: {
         findOne: jest.fn()
@@ -508,9 +522,14 @@ describe('invite operations', () => {
         findOne: jest.fn()
       },
       socialId: {
-        find: jest.fn()
+        findOne: jest.fn(),
+        find: jest.fn(),
+        insertOne: jest.fn(),
+        update: jest.fn()
       },
-      getWorkspaceRole: jest.fn()
+      getWorkspaceRole: jest.fn(),
+      assignWorkspace: jest.fn(),
+      updateWorkspaceRole: jest.fn()
     } as unknown as AccountDB
 
     beforeEach(() => {
@@ -567,8 +586,9 @@ describe('invite operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: mockToken,
+          token: 'mocked-token-test-person-id-workspace-uuid-{}',
           workspace: mockWorkspaceEu.uuid,
+          workspaceUrl: 'test-workspace',
           endpoint: 'ws://external:3000',
           role: AccountRole.User
         })
@@ -596,8 +616,9 @@ describe('invite operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: mockToken,
+          token: 'mocked-token-test-person-id-workspace-uuid-{}',
           workspace: mockWorkspaceUs.uuid,
+          workspaceUrl: 'test-workspace',
           endpoint: 'ws://internal:3000',
           role: AccountRole.User
         })
@@ -612,8 +633,9 @@ describe('invite operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: mockToken,
+          token: 'mocked-token-test-person-id-workspace-uuid-{}',
           workspace: mockWorkspaceEu.uuid,
+          workspaceUrl: 'test-workspace',
           endpoint: 'ws://external:3000',
           role: AccountRole.User
         })
@@ -641,7 +663,7 @@ describe('invite operations', () => {
         account: mockPersonId,
         name: 'John Doe',
         socialId: 'social-id-1',
-        token: mockToken
+        token: 'mocked-token-test-person-id-{}'
       })
     })
 
@@ -668,6 +690,151 @@ describe('invite operations', () => {
           new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: mockWorkspace.uuid })
         )
       )
+    })
+
+    describe('with grants', () => {
+      const grantWorkspace = {
+        uuid: 'grant-workspace-uuid' as WorkspaceUuid,
+        name: 'Grant Workspace',
+        url: 'grant-workspace-url',
+        region: 'us'
+      }
+
+      const grantRole = AccountRole.User
+      const grantAccount = 'grant-account' as AccountUuid
+      const grantFirstName = 'Grant'
+      const grantLastName = 'User'
+      const mockTokenObj = {
+        account: grantAccount,
+        workspace: undefined,
+        extra: {},
+        grant: {
+          workspace: grantWorkspace.uuid,
+          role: grantRole,
+          firstName: grantFirstName,
+          lastName: grantLastName
+        }
+      }
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(grantWorkspace)
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue(mockTokenObj)
+      })
+
+      test('should create automatic account when grant for new account', async () => {
+        // Mock account doesn't exist yet
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: grantAccount,
+          firstName: grantFirstName,
+          lastName: grantLastName
+        })
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(mockDb.assignWorkspace).toHaveBeenCalledWith(grantAccount, grantWorkspace.uuid, grantRole)
+        expect(result).toEqual({
+          account: grantAccount,
+          name: `${grantFirstName} ${grantLastName}`,
+          token: expect.stringContaining(grantAccount),
+          workspace: grantWorkspace.uuid,
+          workspaceUrl: grantWorkspace.url,
+          endpoint: expect.any(String),
+          socialId: 'social-id-1',
+          role: grantRole
+        })
+      })
+
+      test('should request firstName/lastName if not provided for new account', async () => {
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+        delete (mockTokenObj.grant as any).firstName
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(result).toEqual({
+          request: true,
+          lastName: grantLastName
+        })
+      })
+
+      test('should use existing automatic account with grant', async () => {
+        const existingAutomaticAccount = {
+          uuid: grantAccount,
+          automatic: true
+        }
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(existingAutomaticAccount)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: grantAccount,
+          firstName: grantFirstName,
+          lastName: grantLastName
+        })
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Guest)
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(mockDb.updateWorkspaceRole).toHaveBeenCalledWith(grantAccount, grantWorkspace.uuid, grantRole)
+        expect(result).toEqual({
+          account: grantAccount,
+          name: `${grantFirstName} ${grantLastName}`,
+          token: expect.stringContaining(grantAccount),
+          socialId: 'social-id-1',
+          workspace: grantWorkspace.uuid,
+          workspaceUrl: grantWorkspace.url,
+          endpoint: expect.any(String),
+          role: AccountRole.Guest
+        })
+      })
+
+      test('should return null for grant with existing non-automatic account', async () => {
+        const existingAccount = {
+          uuid: grantAccount,
+          automatic: false
+        }
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(existingAccount)
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(result).toBeNull()
+        expect(mockDb.assignWorkspace).not.toHaveBeenCalled()
+      })
+
+      test('should throw error for grant with system account', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: systemAccountUuid,
+          extra: {},
+          grant: { workspace: grantWorkspace.uuid, role: grantRole }
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        )
+      })
+
+      test('should throw error for grant with admin account', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: grantAccount,
+          extra: { admin: 'true' },
+          grant: { workspace: grantWorkspace.uuid, role: grantRole }
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        )
+      })
+
+      test('should throw error for grant in workspace-specific token', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: grantAccount,
+          workspace: 'some-workspace-uuid',
+          grant: { workspace: grantWorkspace.uuid, role: grantRole }
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        )
+      })
     })
   })
 
@@ -763,6 +930,129 @@ describe('invite operations', () => {
       }
 
       expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createAccessLink', () => {
+    const frontUrl = 'https://app.example.com'
+
+    beforeEach(() => {
+      ;(getMetadata as jest.Mock).mockImplementation((key) => {
+        if (key === accountPlugin.metadata.FrontURL) return frontUrl
+        return undefined
+      })
+      // Reset the mock for each test
+      ;(mockDb.generatePersonUuid as jest.Mock).mockResolvedValue('generated-person-uuid' as PersonUuid)
+    })
+
+    test('should create basic access link', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      const result = await createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+        role: AccountRole.User
+      })
+
+      expect(mockDb.generatePersonUuid).toHaveBeenCalled()
+      expect(result).toBe(
+        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
+          workspace: 'workspace-uuid',
+          role: 'USER'
+        })}`
+      )
+    })
+
+    test('should create link with person info', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      const result = await createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+        role: AccountRole.User,
+        firstName: 'John',
+        lastName: 'Doe'
+      })
+
+      expect(mockDb.generatePersonUuid).toHaveBeenCalled()
+      expect(result).toBe(
+        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
+          workspace: mockWorkspace.uuid,
+          role: AccountRole.User,
+          firstName: 'John',
+          lastName: 'Doe'
+        })}`
+      )
+    })
+
+    test('should create link with extra parameters', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      const extraParams = JSON.stringify({ param1: 'value1', param2: 'value2' })
+      const result = await createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+        role: AccountRole.User,
+        extra: extraParams
+      })
+
+      expect(mockDb.generatePersonUuid).toHaveBeenCalled()
+      expect(result).toBe(
+        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
+          workspace: mockWorkspace.uuid,
+          role: AccountRole.User,
+          extra: { param1: 'value1', param2: 'value2' }
+        })}`
+      )
+    })
+
+    test('should create link with navigation URL', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      const navigateUrl = '/workspace/calendar'
+      const result = await createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+        role: AccountRole.User,
+        navigateUrl
+      })
+
+      expect(mockDb.generatePersonUuid).toHaveBeenCalled()
+      expect(result).toBe(
+        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
+          workspace: 'workspace-uuid',
+          role: 'USER'
+        })}&navigateUrl=${encodeURIComponent(navigateUrl)}`
+      )
+    })
+
+    test('should throw error for insufficient role', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Guest)
+
+      await expect(
+        createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+          role: AccountRole.User
+        })
+      ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+      expect(mockDb.generatePersonUuid).not.toHaveBeenCalled()
+    })
+
+    test('should throw error for invalid extra parameter', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await expect(
+        createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+          role: AccountRole.User,
+          extra: 'invalid-json'
+        })
+      ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+
+      expect(mockDb.generatePersonUuid).not.toHaveBeenCalled()
     })
   })
 
@@ -1309,8 +1599,9 @@ describe('invite operations', () => {
       })
 
       test('should validate OTP and create account for signup', async () => {
+        const personId = 'social-id' as PersonId
         const mockSocialId: SocialId = {
-          _id: 'social-id' as PersonId,
+          _id: personId,
           personUuid: mockPersonId,
           type: SocialIdType.EMAIL,
           value: mockEmail,
@@ -1319,7 +1610,7 @@ describe('invite operations', () => {
 
         jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
         jest.spyOn(utils, 'isOtpValid').mockResolvedValue(true)
-        jest.spyOn(utils, 'createAccount').mockResolvedValue()
+        jest.spyOn(utils, 'createAccount').mockResolvedValue(personId)
 
         const mockPerson = {
           uuid: mockPersonId,

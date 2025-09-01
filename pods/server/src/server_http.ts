@@ -158,6 +158,19 @@ export function startHttpServer (
     )
   })
 
+  app.get('/api/v1/health', (req, res) => {
+    try {
+      const status = sessions.checkHealth()
+      const code = status === 'unhealthy' ? 503 : 200
+      res.status(code).send(status)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('error', { err })
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+
   app.get('/api/v1/statistics', (req, res) => {
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]

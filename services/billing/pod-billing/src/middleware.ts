@@ -60,6 +60,10 @@ const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFun
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
     const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
     const loginInfo = await accountClient.getLoginInfoByToken()
+    if (loginInfo == null) {
+      res.status(403).json({ message: 'Missing auth info' }).end()
+      return
+    }
     if (!('role' in loginInfo)) {
       res.status(401).json({ message: 'Missing workspace role' }).end()
       return

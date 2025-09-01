@@ -15,15 +15,15 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
-  import { logIn, workbenchId } from '@hcengineering/workbench'
+  import { logIn } from '@hcengineering/workbench'
   import { setMetadata, translate } from '@hcengineering/platform'
-  import { Location, Loading, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { Loading, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { type LoginInfo } from '@hcengineering/account-client'
   import { loginId } from '@hcengineering/login'
   import { themeStore } from '@hcengineering/theme'
   import presentation from '@hcengineering/presentation'
 
-  import { setLoginInfo, checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
+  import { checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
   import login from '../plugin'
   import LoginForm from './LoginForm.svelte'
 
