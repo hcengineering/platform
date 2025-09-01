@@ -297,7 +297,7 @@ class MenuBarManager {
     return this.view
   }
 
-  private topLevelMenus () {
+  private topLevelMenus (): NodeListOf<HTMLButtonElement> {
     return this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
   }
 
@@ -331,7 +331,7 @@ class MenuBarManager {
     document.addEventListener('click', (e) => { this.handleDocumentClick(e) })
 
     document.querySelectorAll<HTMLButtonElement>(this.DropdownItemStyle + '[data-action]').forEach(item => {
-      item.addEventListener('click', async () => { await this.handleMenuButtonClick(ipcMain, item) })
+      item.addEventListener('click', () => { this.handleMenuButtonClick(ipcMain, item) })
     })
 
     ipcMain.onWindowFocusLoss(() => {
@@ -342,7 +342,7 @@ class MenuBarManager {
     })
   }
 
-  private renderState () {
+  private renderState (): void {
     if (this.state.isAltModeActive) {
       this.root.classList.add(this.StateStyleAltModeActive)
     } else {
@@ -374,7 +374,7 @@ class MenuBarManager {
       }
     })
 
-    if (this.state.FocusedTopLevelMenuIndex != null && this.state.isTopLevelMenuExpanded) {
+    if (this.state.FocusedTopLevelMenuIndex && this.state.isTopLevelMenuExpanded) {
       const candidates = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
       candidates.forEach((menu, index) => {
         if (index === this.state.FocusedChildMenuIndex) {
@@ -397,9 +397,9 @@ class MenuBarManager {
     return document.createDocumentFragment().querySelectorAll<HTMLElement>('*')
   }
 
-  private async executeMenuAction (ipcMain: IPCMainExposed, action: MenuBarAction): Promise<void> {
+  private executeMenuAction (ipcMain: IPCMainExposed, action: MenuBarAction): void {
     try {
-      await ipcMain.executeMenuBarAction(action)
+      ipcMain.executeMenuBarAction(action)
     } catch (error) {
       console.error('error executing action:', error)
     }
@@ -476,13 +476,13 @@ class MenuBarManager {
         }
         break
 
-      default:
+      default: {
         const key = e.key.toLowerCase()
         if (!this.state.isAltModeActive) {
           return
         }
 
-        if (this.state.isTopLevelMenuExpanded && this.state.FocusedTopLevelMenuIndex != null) {
+        if (this.state.isTopLevelMenuExpanded && this.state.FocusedTopLevelMenuIndex) {
           const children = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
           for (let i = 0; i < children.length; i++) {
             if (children[i].dataset.accelerator === key) {
@@ -509,6 +509,7 @@ class MenuBarManager {
           }
         }
         break
+      }
     }
   }
 
@@ -528,11 +529,11 @@ class MenuBarManager {
     }
   }
 
-  private async handleMenuButtonClick (ipcMain: IPCMainExposed, item: HTMLButtonElement): Promise<void> {
+  private handleMenuButtonClick (ipcMain: IPCMainExposed, item: HTMLButtonElement): void {
     const action = item.dataset.action
     if (action) {
       if (isMenuBarAction(action)) {
-        await this.executeMenuAction(ipcMain, action)
+        this.executeMenuAction(ipcMain, action)
       }
       this.state.closeAll()
       this.renderState()
