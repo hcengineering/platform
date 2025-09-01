@@ -336,7 +336,7 @@ export function drawing (
 
   props.subscribeOnThemeChange(() => {
     updateToolCursor()
-    replayCommands(currentCommands) // FIXME: unsubscribe
+    replayCommands(currentCommands)
   })
 
   const resizeObserver = new ResizeObserver((entries) => {

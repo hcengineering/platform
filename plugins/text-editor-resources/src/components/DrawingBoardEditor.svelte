@@ -209,6 +209,11 @@
   })
 
   onDestroy(() => {
+    themeChangeUnsubscribe.forEach((unsubscribe) => {
+      unsubscribe()
+    })
+    themeChangeUnsubscribe.length = 0
+
     savedCmds.unobserve(onSavedCommandsChanged)
 
     getResource(presence.function.FolloweeDataUnsubscribe)

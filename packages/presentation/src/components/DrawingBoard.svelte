@@ -200,7 +200,10 @@
     themeChangeUnsubscribe.forEach((unsubscribe) => {
       unsubscribe()
     })
+    themeChangeUnsubscribe.length = 0
+
     undoableCommands.unobserve(onSavedCommandsChanged)
+
     saveDrawing()
   })
 </script>
