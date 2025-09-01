@@ -13,6 +13,38 @@
 // limitations under the License.
 //
 
+export type ColorMetaName =
+  | 'alpha'
+  | 'beta'
+  | 'gamma'
+  | 'delta'
+  | 'epsilon'
+  | 'zeta'
+  | 'eta'
+  | 'theta'
+  | 'iota'
+  | 'kappa'
+  // | 'lambda'
+  // | 'mu'
+  // | 'nu'
+  // | 'xi'
+  // | 'omicron'
+  // | 'pi'
+  // | 'rho'
+  // | 'sigma'
+  // | 'tau'
+  // | 'upsilon'
+  // | 'phi'
+  // | 'chi'
+  // | 'psi'
+  // | 'omega'
+
+/*
+We need to be backward compatible with user data, that already contains arbitrarily colors.
+First version of the drawing board allowed selection of any RGB color.
+*/
+export type ColorMetaNameOrHex = (string & { readonly __brand: 'ColorMetaNameOrHex' }) | ColorMetaName
+
 export interface Point {
   x: number
   y: number

@@ -53,7 +53,6 @@
     "EraserTool": "Инструмент ластик",
     "PanTool": "Инструмент перемещения",
     "TextTool": "Инструмент текст",
-    "ColorTooltip": "{color}",
     "PaletteManagementMenu": "Управление цветовыми пресетами"
   },
   "status": {

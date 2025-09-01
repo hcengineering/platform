@@ -272,8 +272,45 @@ export function getPlatformAvatarColorForTextDef (text: string, darkTheme: boole
  * @public
  */
 export function getPlatformAvatarColorByName (name: string, darkTheme: boolean): ColorDefinition {
-  const palette = darkTheme ? avatarDarkColors : avatarWhiteColors
-  return palette.find((col) => col.name === name) ?? palette[0]
+  const defaultIndex = 0
+  return getColorByName(name, darkTheme, avatarWhiteColors, avatarDarkColors, defaultIndex)
+}
+
+/**
+ * @public
+ */
+export function getPlatformColorByName (name: string, darkTheme: boolean): ColorDefinition | undefined {
+  const defaultIndex: number | undefined = undefined
+  return getColorByName(name, darkTheme, whitePalette, darkPalette, defaultIndex)
+}
+
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: number
+): ColorDefinition
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: undefined
+): ColorDefinition | undefined
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: number | undefined
+): ColorDefinition | undefined {
+  const targetPalette = darkTheme ? paletteDark : paletteLight
+  const found = targetPalette.find((col) => col.name === name)
+  if (found != null) {
+    return found
+  }
+  return defaultIndex != null ? targetPalette[defaultIndex] : undefined
 }
 
 /**

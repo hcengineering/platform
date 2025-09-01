@@ -16,17 +16,14 @@
   import { Analytics } from '@hcengineering/analytics'
   import { resizeObserver } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
-  import {
-    CommandUid,
-    drawing,
-    type DrawingCmd,
-    type DrawingData,
-    type DrawingTool,
-    type DrawTextCmd
-  } from '../drawing'
+  import { drawing, type DrawingData, type DrawingTool } from '../drawing'
   import DrawingBoardToolbar from './DrawingBoardToolbar.svelte'
   import { DrawingCommandsProcessor } from '../drawingCommandsProcessor'
   import { Doc as YDoc } from 'yjs'
+  import { ColorMetaNameOrHex } from '../drawingUtils'
+  import { themeStore } from '@hcengineering/theme'
+  import { ColorsList, ThemeAwareColor } from '../drawingColors'
+  import { DrawingCmd, CommandUid, DrawTextCmd } from '../drawingCommand'
 
   export let active = false
   export let readonly = true
@@ -36,7 +33,7 @@
   export let createDrawing: (data: any) => Promise<void>
 
   let tool: DrawingTool
-  let penColor: string
+  let penColor: ColorMetaNameOrHex
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
@@ -51,6 +48,21 @@
   let cmdEditor: HTMLDivElement | undefined
   let disableUndo: boolean = false
   let disableRedo: boolean = false
+
+  const themeChangeUnsubscribe: Array<() => void> = []
+
+  const DrawingColorPalette: ColorsList = [
+    ['alpha', new ThemeAwareColor('#000', '#000')],
+    ['beta', new ThemeAwareColor('#FFF', '#FFF')],
+    ['gamma', new ThemeAwareColor('Fuschia', 'Fuschia')],
+    ['delta', new ThemeAwareColor('Houseplant', 'Houseplant')],
+    ['epsilon', new ThemeAwareColor('Sky', 'Sky')],
+    ['zeta', new ThemeAwareColor('Turquoise', 'Turquoise')],
+    ['eta', new ThemeAwareColor('Pink', 'Pink')],
+    ['theta', new ThemeAwareColor('Cloud', 'Cloud')],
+    ['iota', new ThemeAwareColor('#FFC114', '#FFC114')],
+    ['kappa', new ThemeAwareColor('Mauve', 'Mauve')]
+  ]
 
   const document: YDoc = new YDoc()
   const undoableCommands = document.getArray<DrawingCmd>('drawing-commands')
@@ -185,6 +197,9 @@
   })
 
   onDestroy(() => {
+    themeChangeUnsubscribe.forEach((unsubscribe) => {
+      unsubscribe()
+    })
     undoableCommands.unobserve(onSavedCommandsChanged)
     saveDrawing()
   })
@@ -200,6 +215,11 @@
     }}
     use:drawing={{
       autoSize: imageWidth === undefined || imageHeight === undefined,
+      colorsList: DrawingColorPalette,
+      getCurrentTheme: () => $themeStore.variant,
+      subscribeOnThemeChange: (callback) => {
+        themeChangeUnsubscribe.push(themeStore.subscribe(callback))
+      },
       readonly,
       imageWidth,
       imageHeight,
@@ -225,6 +245,7 @@
     {#if !readonly}
       <DrawingBoardToolbar
         placeInside={toolbarInside}
+        colorsList={DrawingColorPalette}
         {cmdEditor}
         bind:toolbar
         bind:tool
