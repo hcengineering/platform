@@ -1,6 +1,6 @@
 mod auth;
 mod config;
-mod post;
+mod patch;
 mod put;
 mod sanity;
 mod util;

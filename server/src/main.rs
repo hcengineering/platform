@@ -112,7 +112,7 @@ async fn main() -> anyhow::Result<()> {
                     .wrap(from_fn(auth))
                     .route(KEY_PATH, web::get().to(handlers::get))
                     .route(KEY_PATH, web::put().to(handlers::put))
-                    .route(KEY_PATH, web::post().to(handlers::post))
+                    .route(KEY_PATH, web::patch().to(handlers::patch))
                     .route(KEY_PATH, web::delete().to(handlers::delete)),
             )
             .route("/status", web::get().to(async || "ok"))

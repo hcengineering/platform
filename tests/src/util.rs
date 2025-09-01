@@ -8,7 +8,7 @@ pub trait ClientExt {
     fn key_head(&self, key: &str) -> RequestBuilder;
     fn key_get(&self, key: &str) -> RequestBuilder;
     fn key_put(&self, key: &str) -> RequestBuilder;
-    fn key_post(&self, key: &str) -> RequestBuilder;
+    fn key_patch(&self, key: &str) -> RequestBuilder;
     fn key_delete(&self, key: &str) -> RequestBuilder;
     fn request(&self, method: &Method, path: &str) -> RequestBuilder;
 }
@@ -44,8 +44,8 @@ impl ClientExt for Client {
             .bearer_auth(CONFIG.token_valid.expose_secret())
     }
 
-    fn key_post(&self, key: &str) -> RequestBuilder {
-        self.post(path(key))
+    fn key_patch(&self, key: &str) -> RequestBuilder {
+        self.patch(path(key))
             .bearer_auth(CONFIG.token_valid.expose_secret())
     }
 

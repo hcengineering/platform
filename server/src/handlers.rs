@@ -163,7 +163,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 }
 
 #[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
-pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
+pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
     let span = Span::current();
 
     let mut request = ServiceRequest::from_request(request);
@@ -197,8 +197,8 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
         meta: None,
     };
 
-    if parts.is_empty() {
-        postgres::set_part(&pool, path.workspace, &part_data.key, None, &part_data).await?;
+    let mut response = if parts.is_empty() {
+        HttpResponse::NotFound()
     } else {
         // append
         postgres::append_part(
@@ -210,10 +210,12 @@ pub async fn post(request: HttpRequest, payload: Payload) -> HandlerResult<HttpR
             &part_data,
         )
         .await?;
-    }
 
-    let mut response = HttpResponse::Created();
-    response.insert_header((header::ETAG, part_data.etag));
+        let mut response = HttpResponse::Created();
+        response.insert_header((header::ETAG, part_data.etag));
+
+        response
+    };
 
     Ok(response.finish())
 }
