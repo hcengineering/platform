@@ -83,7 +83,7 @@
   <div>
     <MeetingWidgetHeader doc={meetingMinutes} {room} on:close={handleClose} />
   </div>
-  <div style="height: 100%;" bind:clientHeight={contentHeight}>
+  <div style="height: 100%; overflow: scroll" bind:clientHeight={contentHeight}>
     {#if widgetState.tab === 'video'}
       <VideoTab {room} doc={meetingMinutes} on:close={handleClose} />
     {:else if widgetState.tab === 'chat'}
