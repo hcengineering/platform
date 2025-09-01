@@ -48,6 +48,8 @@ export interface LoginInfoWithWorkspaces extends LoginInfo {
   socialIds: SocialId[]
 }
 
+export type LoginInfoByToken = LoginInfo | WorkspaceLoginInfo | LoginInfoRequest | null
+
 /**
  * @public
  */
@@ -60,6 +62,15 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   role: AccountRole
   allowGuestSignUp?: boolean
 }
+
+export interface LoginInfoRequestData {
+  firstName?: string
+  lastName?: string
+}
+
+export type LoginInfoRequest = {
+  request: true
+} & LoginInfoRequestData
 
 export interface WorkspaceInviteInfo {
   workspace: WorkspaceUuid

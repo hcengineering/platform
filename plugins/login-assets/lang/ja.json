@@ -73,6 +73,7 @@
     "SetPasswordLater": "後でパスワードを設定します",
     "SetPasswordNow": "今すぐパスワードを設定します",
     "LoginAsGuest": "ゲストとして続行",
-    "SignUpToCreateWorkspace": "ゲストアクセス可能なワークスペースはありません。登録して独自のワークスペースを作成してください。"
+    "SignUpToCreateWorkspace": "ゲストアクセス可能なワークスペースはありません。登録して独自のワークスペースを作成してください。",
+    "WhatIsYourName": "お名前は何ですか？"
   }
 }

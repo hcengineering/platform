@@ -20,7 +20,10 @@ import type {
   RegionInfo,
   WorkspaceLoginInfo,
   WorkspaceInviteInfo,
-  ProviderInfo
+  ProviderInfo,
+  LoginInfoRequest,
+  LoginInfoByToken,
+  LoginInfoRequestData
 } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
@@ -328,7 +331,13 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 
   try {
     // even if "token" is null here it still might be supplied from the cookie
-    return await getAccountClient(token).getLoginInfoByToken()
+    const result = await getAccountClient(token).getLoginInfoByToken()
+
+    if (isLoginInfoRequest(result)) {
+      throw new Error('Not supported')
+    }
+
+    return result
   } catch (err: any) {
     if (err instanceof PlatformError) {
       await handleStatusError('Get account error', err.status)
@@ -834,7 +843,13 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
 
 export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
   try {
-    return await getAccountClient().getLoginInfoByToken()
+    const result = await getAccountClient().getLoginInfoByToken()
+
+    if (isLoginInfoRequest(result)) {
+      throw new Error('Not supported')
+    }
+
+    return result
   } catch (err: any) {
     if (err instanceof PlatformError) {
       if (err.status.code === platform.status.Unauthorized) {
@@ -864,7 +879,7 @@ export function getAutoJoinInfo (): any {
   return { token, autoJoin, inviteId, navigateUrl }
 }
 
-export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
+export async function getLoginInfoFromQuery (data?: LoginInfoRequestData): Promise<LoginInfoByToken> {
   const token = getCurrentLocation().query?.token
 
   if (token == null) {
@@ -872,7 +887,7 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLog
   }
 
   try {
-    return await getAccountClient(token).getLoginInfoByToken()
+    return await getAccountClient(token).getLoginInfoByToken(data)
   } catch (err: any) {
     if (!(err instanceof PlatformError)) {
       Analytics.handleError(err)
@@ -989,9 +1004,15 @@ export async function doLoginNavigate (
 }
 
 export function isWorkspaceLoginInfo (
-  info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | null
+  info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
 ): info is WorkspaceLoginInfo {
-  return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
+  return !isLoginInfoRequest(info) && (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
+}
+
+export function isLoginInfoRequest (
+  info: LoginInfo | WorkspaceLoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
+): info is LoginInfoRequest {
+  return (info as LoginInfoRequest)?.request
 }
 
 export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined): string {

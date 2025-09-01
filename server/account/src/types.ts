@@ -231,6 +231,7 @@ export interface AccountDB {
   resetPassword: (accountId: AccountUuid) => Promise<void>
   deleteAccount: (accountId: AccountUuid) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  generatePersonUuid: () => Promise<PersonUuid>
 }
 
 export interface DbCollection<T> {
@@ -302,6 +303,15 @@ export interface LoginInfo {
   socialId?: PersonId
   token?: string
 }
+
+export interface LoginInfoRequestData {
+  firstName?: string
+  lastName?: string
+}
+
+export type LoginInfoRequest = {
+  request: true
+} & LoginInfoRequestData
 
 export interface LoginInfoWorkspace {
   url: string
