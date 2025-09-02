@@ -13,7 +13,7 @@
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
-  import { SortingOrder } from '@hcengineering/core'
+  import core, { SortingOrder } from '@hcengineering/core'
   import ui, {
     eventToHTMLElement,
     IconSettings,
@@ -53,7 +53,10 @@
     {
       sort: { modifiedOn: SortingOrder.Descending },
       limit,
-      total: true
+      total: true,
+      lookup: {
+        space: core.class.Space
+      }
     }
   )
 
