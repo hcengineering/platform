@@ -5572,7 +5572,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
-    resolution: {integrity: sha512-PwYhrnkUcC8ARikmCRlvQoSyOBvqbdR23y+258RfkJkZRQKFXeWSwAjZi14YB6VOnF1l0ieVYCw2X1IcqEP60A==, tarball: file:projects/pod-preview.tgz}
+    resolution: {integrity: sha512-APb+wu9FGvuc2FCTz9nGyrGZwA4+o5uL6WWPdRhg1zeC9UniDdSA2InqNP03CxK8fayAwTMkTN9BF3C2g3w2lQ==, tarball: file:projects/pod-preview.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
@@ -24765,7 +24765,7 @@ snapshots:
       morgan: 1.10.0
       node-poppler: 8.0.4
       prettier: 3.2.5
-      sharp: 0.32.6
+      sharp: 0.34.3
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
       typescript: 5.8.3

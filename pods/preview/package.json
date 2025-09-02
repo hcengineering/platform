@@ -62,7 +62,7 @@
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
-    "sharp": "~0.32.0",
+    "sharp": "~0.34.3",
     "blurhash": "^2.0.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",
