@@ -13,7 +13,83 @@
 // limitations under the License.
 //
 
-import { rescaleToFitAspectRatio, scalePoint, offsetPoint, offsetInParent, type Point } from '../drawingUtils'
+import { ThemeAwareColor, type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from '../drawingColors'
+import {
+  rescaleToFitAspectRatio,
+  scalePoint,
+  offsetPoint,
+  offsetInParent,
+  type Point,
+  type ColorMetaName,
+  type ColorMetaNameOrHex
+} from '../drawingUtils'
+import { ThemeVariant, type ThemeVariantType } from '@hcengineering/theme'
+
+jest.mock('@hcengineering/theme', () => ({
+  ThemeVariant: {
+    Dark: 'dark',
+    Light: 'light'
+  }
+}))
+
+const StubPlatformColors: Record<string, { light: any, dark: any }> = {
+  Firework: {
+    light: {
+      name: 'Firework',
+      color: '#D15045',
+      title: '#C03B2F',
+      icon: '#D15045',
+      number: '#C03B2F',
+      background: '#C03B2F'
+    },
+    dark: {
+      name: 'Firework',
+      color: '#D15045',
+      title: '#FFFFFF',
+      icon: '#D15045',
+      number: '#FFFFFF',
+      background: '#C03B2F'
+    }
+  },
+  Sky: {
+    light: {
+      name: 'Sky',
+      color: '#4CA6EE',
+      title: '#1F90EA',
+      icon: '#4CA6EE',
+      number: '#1F90EA',
+      background: '#1F90EA'
+    },
+    dark: { name: 'Sky', color: '#4CA6EE', title: '#FFFFFF', icon: '#4CA6EE', number: '#FFFFFF', background: '#1F90EA' }
+  },
+  Grass: {
+    light: {
+      name: 'Grass',
+      color: '#83AF12',
+      title: '#60810E',
+      icon: '#83AF12',
+      number: '#60810E',
+      background: '#60810E'
+    },
+    dark: {
+      name: 'Grass',
+      color: '#83AF12',
+      title: '#FFFFFF',
+      icon: '#83AF12',
+      number: '#FFFFFF',
+      background: '#83AF12'
+    }
+  }
+}
+jest.mock('@hcengineering/ui', () => ({
+  getPlatformColorByName: jest.fn().mockImplementation((name: string, darkTheme: boolean) => {
+    const colorDefinition = StubPlatformColors[name]
+    if (colorDefinition == null) {
+      return undefined
+    }
+    return darkTheme ? colorDefinition.dark : colorDefinition.light
+  })
+}))
 
 describe('drawingUtils module tests', () => {
   describe('scalePoint', () => {
@@ -208,6 +284,130 @@ describe('drawingUtils module tests', () => {
 
       const result = offsetInParent(mockParent, mockChild)
       expect(result).toEqual(expected)
+    })
+  })
+
+  describe('ThemeAwareColor', () => {
+    interface ThemeTestCase {
+      theme: ThemeVariantType
+      expected: string
+    }
+    const themeUnknownColorsTestCases: ThemeTestCase[] = [
+      { theme: ThemeVariant.Dark, expected: 'DarkColor' },
+      { theme: ThemeVariant.Light, expected: 'LightColor' }
+    ]
+    it.each(themeUnknownColorsTestCases)("materialize unknown color for '$theme' theme", ({ theme, expected }) => {
+      const systemUnderTest = new ThemeAwareColor('DarkColor', 'LightColor')
+      const result = systemUnderTest.materialize(theme)
+      expect(result).toBe(expected)
+    })
+    const themeKnownColorsTestCases: ThemeTestCase[] = [
+      { theme: ThemeVariant.Dark, expected: StubPlatformColors.Firework.dark.color },
+      { theme: ThemeVariant.Light, expected: StubPlatformColors.Firework.light.color }
+    ]
+    it.each(themeKnownColorsTestCases)("materialize known color for '$theme' theme", ({ theme, expected }) => {
+      const systemUnderTest = new ThemeAwareColor(
+        StubPlatformColors.Firework.dark.name,
+        StubPlatformColors.Firework.light.name
+      )
+      const result = systemUnderTest.materialize(theme)
+      expect(result).toBe(expected)
+    })
+
+    it('materialize hex colors', () => {
+      const expectedDarkColor = '#000000'
+      const expectedLightColor = '#FFFFFF'
+      const systemUnderTest = new ThemeAwareColor(expectedDarkColor, expectedLightColor)
+
+      expect(systemUnderTest.materialize(ThemeVariant.Dark)).toBe(expectedDarkColor)
+      expect(systemUnderTest.materialize(ThemeVariant.Light)).toBe(expectedLightColor)
+    })
+  })
+
+  describe('DrawingBoardColoringSetup', () => {
+    const stubColorsList: ColorsList = [
+      ['alpha', new ThemeAwareColor('#000000', '#FFFFFF')],
+      ['beta', new ThemeAwareColor('#FF0000', '#00FF00')],
+      ['gamma', new ThemeAwareColor('#0000FF', '#FFFF00')]
+    ]
+
+    it('construction', () => {
+      const systemUnderTest = new DrawingBoardColoringSetup(stubColorsList)
+      expect(systemUnderTest.allColors).toBe(stubColorsList)
+    })
+
+    it('colorByName, known color', () => {
+      const systemUnderTest = new DrawingBoardColoringSetup(stubColorsList)
+
+      const actualColor = systemUnderTest.colorByName('alpha')
+
+      const expectedColor = stubColorsList[0][1]
+      expect(actualColor).toBe(expectedColor)
+    })
+
+    it('colorByName, unknown color', () => {
+      const systemUnderTest = new DrawingBoardColoringSetup(stubColorsList)
+
+      const actualColor = systemUnderTest.colorByName('unknown' as ColorMetaName)
+
+      expect(actualColor).toBeUndefined()
+    })
+
+    it('construction with empty list', () => {
+      const systemUnderTest = new DrawingBoardColoringSetup([])
+
+      expect(systemUnderTest.allColors).toEqual([])
+      expect(systemUnderTest.colorByName('alpha')).toBeUndefined()
+    })
+  })
+
+  describe('metaColorNameToHex', () => {
+    const AlphaDarkColor = '#000000'
+    const AlphaLightColor = '#FFFFFF'
+    const testColorsList: ColorsList = [
+      ['alpha', new ThemeAwareColor(AlphaDarkColor, AlphaLightColor)],
+      ['beta', new ThemeAwareColor('Firework', 'Sky')],
+      ['gamma', new ThemeAwareColor('Grass', 'Grass')]
+    ]
+    const colorsSetupStub = new DrawingBoardColoringSetup(testColorsList)
+
+    it('hex color, 7 characters', () => {
+      const hexColor = '#FF5733' as ColorMetaNameOrHex
+      const actualColor = metaColorNameToHex(hexColor, ThemeVariant.Dark, colorsSetupStub)
+      expect(actualColor).toBe(hexColor)
+    })
+
+    it('hex color, 4 characters', () => {
+      const hexColor = '#F53' as ColorMetaNameOrHex
+      const actualColor = metaColorNameToHex(hexColor, ThemeVariant.Dark, colorsSetupStub)
+      expect(actualColor).toBe(hexColor)
+    })
+
+    it('meta color name, dark theme', () => {
+      const colorName = 'alpha' as ColorMetaNameOrHex
+      const actualColor = metaColorNameToHex(colorName, ThemeVariant.Dark, colorsSetupStub)
+      expect(actualColor).toBe(AlphaDarkColor)
+    })
+
+    it('meta color name, light theme', () => {
+      const colorName = 'alpha' as ColorMetaNameOrHex
+      const actualColor = metaColorNameToHex(colorName, ThemeVariant.Light, colorsSetupStub)
+      expect(actualColor).toBe(AlphaLightColor)
+    })
+
+    it('unknown color name', () => {
+      const unknownColor = 'unknown' as ColorMetaNameOrHex
+      const actualColor = metaColorNameToHex(unknownColor, ThemeVariant.Dark, colorsSetupStub)
+      expect(actualColor).toBe(unknownColor)
+    })
+
+    it('should handle platform colors with same name for both themes', () => {
+      const gammaColor = 'gamma' as ColorMetaNameOrHex
+      const darkResult = metaColorNameToHex(gammaColor, ThemeVariant.Dark, colorsSetupStub)
+      const lightResult = metaColorNameToHex(gammaColor, ThemeVariant.Light, colorsSetupStub)
+
+      expect(darkResult).toBe('#83AF12')
+      expect(lightResult).toBe('#83AF12')
     })
   })
 })

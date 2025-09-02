@@ -53,7 +53,6 @@
     "EraserTool": "Nástroj guma",
     "PanTool": "Nástroj posun",
     "TextTool": "Nástroj text",
-    "ColorTooltip": "{color}",
     "PaletteManagementMenu": "Spravovat barevné předvolby"
   },
   "status": {

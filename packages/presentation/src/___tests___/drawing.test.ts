@@ -15,9 +15,10 @@
 
 import '@testing-library/jest-dom'
 
-import { makeCommandUid, drawing } from '../drawing'
-import type { DrawTextCmd, CommandUid, DrawingTool, DrawingProps, DrawingCmd } from '../drawing'
-import { makeCanvasPoint } from '../drawingUtils'
+import { makeCommandUid, type CommandUid, type DrawTextCmd, type DrawingCmd } from '../drawingCommand'
+import { ThemeAwareColor, type ColorsList } from '../drawingColors'
+import { drawing, type DrawingTool, type DrawingProps } from '../drawing'
+import { type ColorMetaNameOrHex, makeCanvasPoint } from '../drawingUtils'
 
 const fakeCanvasContext = {
   clearRect: jest.fn(),
@@ -120,7 +121,10 @@ describe('drawing module tests', () => {
 
     it('create a drawing board', () => {
       const drawingBoard = drawing(drawingPlugInPoint, {
+        colorsList: [['alpha', new ThemeAwareColor('red', 'yellow')]],
         readonly: false,
+        getCurrentTheme: () => 'theme-light',
+        subscribeOnThemeChange: () => {},
         imageWidth: 40,
         imageHeight: 40,
         commands: []
@@ -130,7 +134,7 @@ describe('drawing module tests', () => {
     })
 
     describe('text editing', () => {
-      const DefaultPenColor: string = 'red'
+      const DefaultPenColor: ColorMetaNameOrHex = 'red' as ColorMetaNameOrHex
       const DefaultTool: DrawingTool = 'pen'
       const EmptyCommandUid = '' as CommandUid
       const DefaultDrawingBoardWidth = 200
@@ -147,7 +151,7 @@ describe('drawing module tests', () => {
           pos: makeCanvasPoint(10, 10),
           fontSize: 12,
           fontFace: '"IBM Plex Sans"',
-          color: 'green',
+          color: 'green' as ColorMetaNameOrHex,
           ...overrides
         }
         return { textCommandUid, textCommand }
@@ -159,7 +163,11 @@ describe('drawing module tests', () => {
       ): { drawingBoard: ReturnType<typeof drawing>, initialState: DrawingProps } => {
         const commands = existingTextCommand === undefined ? [] : [existingTextCommand]
 
-        const initialState = {
+        const colorsList: ColorsList = [['alpha', new ThemeAwareColor('red', 'yellow')]]
+        const initialState: any = {
+          colorsList,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
           readonly: false,
           imageWidth: DefaultDrawingBoardWidth,
           imageHeight: DefaultDrawingBoardHeight,
@@ -222,7 +230,7 @@ describe('drawing module tests', () => {
         const { drawingBoard, initialState: boardState } = createDrawingBoard(undefined, { cmdAdded: commandAddedSpy })
 
         {
-          const colorToSet = 'blue'
+          const colorToSet = 'blue' as ColorMetaNameOrHex
           // simulating: user selected text tool
           drawingBoard.update?.({ ...boardState, tool: 'text' })
           // simulating: user selected a color
@@ -235,12 +243,12 @@ describe('drawing module tests', () => {
 
         // change color to something else
         {
-          const colorToSet = 'blue'
+          const colorToSet = 'blue' as ColorMetaNameOrHex
           drawingBoard.update?.({ ...boardState, tool: 'text', penColor: colorToSet, changingCmdId: EmptyCommandUid })
           expect(getTextEditorColor(drawingPlugInPoint)).toBe(colorToSet)
         }
 
-        const lastSetColor = 'red'
+        const lastSetColor = 'red' as ColorMetaNameOrHex
         drawingBoard.update?.({ ...boardState, tool: 'text', penColor: lastSetColor, changingCmdId: EmptyCommandUid })
         expect(getTextEditorColor(drawingPlugInPoint)).toBe(lastSetColor)
 
@@ -250,7 +258,12 @@ describe('drawing module tests', () => {
         // new tool selection - editor should have been closed
         drawingBoard.update?.({ ...boardState, tool: 'pen', penColor: lastSetColor, changingCmdId: EmptyCommandUid })
         // changing color for the pen
-        drawingBoard.update?.({ ...boardState, tool: 'pen', penColor: 'magenta', changingCmdId: undefined })
+        drawingBoard.update?.({
+          ...boardState,
+          tool: 'pen',
+          penColor: 'magenta' as ColorMetaNameOrHex,
+          changingCmdId: undefined
+        })
 
         setTextEditorText(drawingPlugInPoint, setTextContent + setTextContent)
 
@@ -342,7 +355,7 @@ describe('drawing module tests', () => {
         const newText = 'New Text'
         setTextEditorText(drawingPlugInPoint, newText)
 
-        const newColor = 'yellow'
+        const newColor = 'yellow' as ColorMetaNameOrHex
         drawingBoard.update?.({ ...boardState, tool: 'text', changingCmdId: textCommandUid, penColor: newColor })
 
         // commit text editing
@@ -453,7 +466,10 @@ describe('drawing module tests', () => {
         const pointerMovedSpy = jest.fn()
 
         drawing(drawingPlugInPoint, {
+          colorsList: [['alpha', new ThemeAwareColor('red', 'yellow')]],
           readonly: false,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
           imageWidth: 400,
           imageHeight: 300,
           commands: [],
@@ -485,13 +501,16 @@ describe('drawing module tests', () => {
         const backgroundImageWidth = 400
         const backgroundImageHeight = 300
         drawing(drawingPlugInPoint, {
+          colorsList: [['alpha', new ThemeAwareColor('red', 'yellow')]],
           readonly: false,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
           autoSize: false,
           imageWidth: backgroundImageWidth,
           imageHeight: backgroundImageHeight,
           commands: [],
           tool: 'pen',
-          penColor: 'red',
+          penColor: 'red' as ColorMetaNameOrHex,
           cmdAdded: commandAddedSpy,
           pointerMoved: pointerMovedSpy
         })
