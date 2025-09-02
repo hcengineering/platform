@@ -73,9 +73,12 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
+
   function isImage (contentType: string): boolean {
     return getType(contentType) === 'image'
   }
+
+  $: canShowImage = value?.type?.startsWith('image/') === true || value?.metadata?.thumbnail !== undefined
 
   let canPreview = false
   let useDefaultIcon = false
@@ -188,14 +191,13 @@
             on:mousedown={middleClickHandler}
             on:dragstart={dragStart}
           >
-            {#if showPreview && isImage(value.type)}
+            {#if showPreview && canShowImage}
               <img
                 src={valueRef.src}
                 data-id={value.file}
                 srcset={valueRef.srcset}
-                class="flex-center icon"
+                class="flex-center icon image"
                 class:svg={value.type === 'image/svg+xml'}
-                class:image={isImage(value.type)}
                 alt={value.name}
               />
             {:else}

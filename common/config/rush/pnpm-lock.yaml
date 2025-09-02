@@ -928,6 +928,9 @@ importers:
       '@rush-temp/pod-notification':
         specifier: file:./projects/pod-notification.tgz
         version: file:projects/pod-notification.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
+      '@rush-temp/pod-preview':
+        specifier: file:./projects/pod-preview.tgz
+        version: file:projects/pod-preview.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-print':
         specifier: file:./projects/pod-print.tgz
         version: file:projects/pod-print.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -1810,6 +1813,9 @@ importers:
       big-integer:
         specifier: ^1.6.51
         version: 1.6.52
+      blurhash:
+        specifier: ^2.0.5
+        version: 2.0.5
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
@@ -2146,6 +2152,9 @@ importers:
       node-loader:
         specifier: ~2.0.0
         version: 2.0.0(webpack@5.97.1)
+      node-poppler:
+        specifier: ^8.0.4
+        version: 8.0.4
       nodemailer:
         specifier: ^6.10.0
         version: 6.10.0
@@ -5562,6 +5571,10 @@ packages:
     resolution: {integrity: sha512-0niSiaoYcTSTPS35rJb9UkCUfYq4j9Bovia2g/6rTqBU8mjaGattwDKxXptIC8CUGRoNtwxeXrQHpQzmFIqjBg==, tarball: file:projects/pod-notification.tgz}
     version: 0.0.0
 
+  '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
+    resolution: {integrity: sha512-APb+wu9FGvuc2FCTz9nGyrGZwA4+o5uL6WWPdRhg1zeC9UniDdSA2InqNP03CxK8fayAwTMkTN9BF3C2g3w2lQ==, tarball: file:projects/pod-preview.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
     resolution: {integrity: sha512-8tndpe/4V1VSqIisntC9lxmfP8oJd+6z3gd06BQHBertjGBezb/FE4+Qmxuj8CVVK/2Wqr4EZe3zYWB/YbErOA==, tarball: file:projects/pod-print.tgz}
     version: 0.0.0
@@ -5623,7 +5636,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-j00+daHWZ+3GFc+1dXsCeABWAuTZbIG8mvvvPIiLGIfqVSmkH4trxbsP0appWm+/bkPfwtP0wJjhsQ4d7kgzMQ==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-64kvJ00DZEan7BMLQD44sU6vdctIqLG560Vd5eBzrV8ulkZ6i0/Dv2AHOOmJAJVVl7Bu6CZ03Rsbzb4xMbbeNw==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -6243,7 +6256,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-iGJVYhTpkK5rTm+K+Qlnwg/6A+spZqjxNIDODNpmdUPjMO8lIvnYj4BaX2dvUZuLmXy4L2VErS4mgok+cjNrbw==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-3ynpo7rTSlzh7CnYosyNUuGKd+FyQ2AQdFKiGst51IdBo+9qxGY1D/t4r6Zf8hYcNGPPTWLaLrQH5a8+5C90bA==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -8069,6 +8082,9 @@ packages:
 
   bluebird@3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
+
+  blurhash@2.0.5:
+    resolution: {integrity: sha512-cRygWd7kGBQO3VEhPiTgq4Wc43ctsM+o46urrmPOiuAe+07fzlSB9OJVdpgDL0jPqXUVQ9ht7aq7kxOeJHRK+w==}
 
   bmp-js@0.1.0:
     resolution: {integrity: sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==}
@@ -11950,6 +11966,10 @@ packages:
   node-localstorage@2.2.1:
     resolution: {integrity: sha512-vv8fJuOUCCvSPjDjBLlMqYMHob4aGjkmrkaE42/mZr0VT+ZAU10jRF8oTnX9+pgU9/vYJ8P7YT3Vd6ajkmzSCw==}
     engines: {node: '>=0.12'}
+
+  node-poppler@8.0.4:
+    resolution: {integrity: sha512-8bp200rELOX72mHv0cfnuDs7LWmd3jr3Y9pxgaysjeSxnUiZxhTA0Pg+SaXkTplIK+r4CfIVAfrla4omNq6UtA==}
+    engines: {node: '>=20'}
 
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
@@ -24719,6 +24739,46 @@ snapshots:
       - node-notifier
       - supports-color
 
+  '@rush-temp/pod-preview@file:projects/pod-preview.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))':
+    dependencies:
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      blurhash: 2.0.5
+      cors: 2.8.5
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.21.2
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      lru-cache: 11.1.0
+      morgan: 1.10.0
+      node-poppler: 8.0.4
+      prettier: 3.2.5
+      sharp: 0.34.3
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+
   '@rush-temp/pod-print@file:projects/pod-print.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@tsconfig/node16': 1.0.4
@@ -29741,6 +29801,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       autolinker: 4.0.0
+      blurhash: 2.0.5
       date-fns: 2.30.0
       date-fns-tz: 2.0.0(date-fns@2.30.0)
       dompurify: 3.1.6
@@ -32291,6 +32352,8 @@ snapshots:
   bluebird@3.4.7: {}
 
   bluebird@3.7.2: {}
+
+  blurhash@2.0.5: {}
 
   bmp-js@0.1.0: {}
 
@@ -36950,6 +37013,11 @@ snapshots:
   node-localstorage@2.2.1:
     dependencies:
       write-file-atomic: 1.3.4
+
+  node-poppler@8.0.4:
+    dependencies:
+      camelcase: 6.3.0
+      semver: 7.7.2
 
   node-releases@2.0.19: {}
 

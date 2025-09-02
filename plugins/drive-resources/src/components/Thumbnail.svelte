@@ -39,16 +39,18 @@
   $: previewRef = version?.file
   $: isImage = version?.type?.startsWith('image/') ?? false
   $: isFolder = hierarchy.isDerived(object._class, drive.class.Folder)
+  $: canShowThumbnail = isImage || version?.metadata?.thumbnail !== undefined
 </script>
 
 {#if isFolder}
   <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--global-no-priority-PriorityColor)'} />
-{:else if previewRef != null && isImage && !isError}
+{:else if previewRef != null && canShowThumbnail && !isError}
   <Image
     blob={previewRef}
     alt={object.title}
     width={size}
     height={size}
+    blurhash={version?.metadata?.thumbnail?.blurhash}
     responsive
     fit={'cover'}
     on:error={() => {

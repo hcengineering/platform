@@ -15,11 +15,12 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { type BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 import plugin from './plugin'
+import { getPreviewMetadata } from './preview'
 import type { FileOrBlob, FilePreviewExtension } from './types'
 import { createQuery } from './utils'
 
@@ -27,23 +28,29 @@ import { createQuery } from './utils'
  * @public
  */
 export async function getFileMetadata (file: FileOrBlob, uuid: Ref<Blob>): Promise<BlobMetadata | undefined> {
+  const workspace = getMetadata(plugin.metadata.WorkspaceUuid) ?? ''
+
+  const metadata = await getPreviewMetadata(workspace, uuid)
+
   const previewType = await getPreviewType(file.type, $previewTypes)
   if (previewType?.metadataProvider === undefined) {
-    return undefined
+    return metadata
   }
 
   const metadataProvider = await getResource(previewType.metadataProvider)
   if (metadataProvider === undefined) {
-    return undefined
+    return metadata
   }
 
   try {
-    return await metadataProvider(file, uuid)
+    const customMetadata = await metadataProvider(file, uuid)
+    return { ...metadata, ...customMetadata }
   } catch (err) {
     console.error(err)
     Analytics.handleError(err as Error)
-    return undefined
   }
+
+  return metadata
 }
 
 /**
