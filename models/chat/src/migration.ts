@@ -13,10 +13,16 @@
 // limitations under the License.
 //
 
-import card, { cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
-import core, { type Client, type Ref, TxOperations } from '@hcengineering/core'
-import { tryMigrate, tryUpgrade } from '@hcengineering/model'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import card, { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import type { Doc, Ref } from '@hcengineering/core'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
+  tryMigrate
+} from '@hcengineering/model'
 import chat from './plugin'
 
 const channelMasterTag = 'chat:masterTag:Channel' as Ref<MasterTag>
@@ -28,18 +34,15 @@ export const chatOperation: MigrateOperation = {
         state: 'migrate-channels',
         mode: 'upgrade',
         func: migrateChannelsToThreads
-      }
-    ])
-  },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
-    await tryUpgrade(mode, state, client, cardId, [
+      },
       {
         state: 'migrate-parent-info',
         mode: 'upgrade',
         func: migrateParentInfo
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {}
 }
 
 async function migrateChannelsToThreads (client: MigrationClient): Promise<void> {
@@ -54,26 +57,47 @@ async function migrateChannelsToThreads (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateParentInfo (client: Client): Promise<void> {
-  const txOp = new TxOperations(client, core.account.System)
-  const cards = await client.findAll(card.class.Card, { parentInfo: { $exists: true } })
-  for (const card of cards) {
-    if (card.parentInfo == null || card.parentInfo.length === 0) {
-      continue
-    }
-    const needUpdate = card.parentInfo.some((info) => info._class === channelMasterTag)
-    if (!needUpdate) {
-      continue
-    }
-    const parents = card.parentInfo.map((info) => {
-      if (info._class !== channelMasterTag) {
-        return info
+async function migrateParentInfo (client: MigrationClient): Promise<void> {
+  let processedCards = 0
+  const iterator = await client.traverse<Card>(DOMAIN_CARD, { _class: card.class.Card })
+  try {
+    while (true) {
+      const cards = await iterator.next(1000)
+      if (cards === null || cards.length === 0) {
+        break
       }
-      return {
-        ...info,
-        _class: chat.masterTag.Thread
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+      for (const card of cards) {
+        if (card.parentInfo == null || card.parentInfo.length === 0) {
+          continue
+        }
+        const needUpdate = card.parentInfo.some((info) => info._class === channelMasterTag)
+        if (!needUpdate) {
+          continue
+        }
+        const parents = card.parentInfo.map((info) => {
+          if (info._class !== channelMasterTag) {
+            return info
+          }
+          return {
+            ...info,
+            _class: chat.masterTag.Thread
+          }
+        })
+        operations.push({
+          filter: { _id: card._id },
+          update: {
+            parentInfo: parents
+          }
+        })
       }
-    })
-    await txOp.update(card, { parentInfo: parents })
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_CARD, operations)
+      }
+      processedCards += cards.length
+      client.logger.log('Migrated cards', { count: processedCards })
+    }
+  } finally {
+    await iterator.close()
   }
 }
