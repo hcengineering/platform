@@ -14,15 +14,10 @@
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
   import { createMessagesQuery } from '@hcengineering/presentation'
-  import { PersonId, SortingOrder } from '@hcengineering/core'
+  import core, { PersonId, SortingOrder } from '@hcengineering/core'
   import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
-  import {
-    Avatar,
-    getPersonByPersonIdStore,
-    getPersonByPersonRefStore,
-    PersonPreviewProvider
-  } from '@hcengineering/contact-resources'
-  import contact, { Person, UserProfile } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
   import { MessagePresenter, labelsStore, MessagePreview } from '@hcengineering/communication-resources'
   import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
@@ -32,6 +27,7 @@
   import { openCardInSidebar } from '../utils'
   import CardTagsColored from './CardTagsColored.svelte'
   import CardIcon from './CardIcon.svelte'
+  import SystemAvatar from '@hcengineering/contact-resources/src/components/SystemAvatar.svelte'
 
   export let card: Card
 
@@ -55,9 +51,7 @@
 
   $: socialId = message?.creator ?? card.modifiedBy
   $: personStore = getPersonByPersonIdStore([socialId])
-  $: personRef = card._class === contact.class.UserProfile ? (card as UserProfile).person : undefined
-  $: personByRefStore = personRef != null ? getPersonByPersonRefStore([personRef]) : undefined
-  $: person = $personStore.get(socialId) ?? (personRef !== undefined ? $personByRefStore?.get(personRef) : undefined)
+  $: person = $personStore.get(socialId)
 
   function hasNewMessages (labels: CardLabel[], cardId: CardID): boolean {
     return labels.some((it) => (it.labelId as string) === cardPlugin.label.NewMessages && it.cardId === cardId)
@@ -69,9 +63,13 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
   <div class="card__avatar">
-    <PersonPreviewProvider value={person}>
-      <Avatar name={person?.name} {person} size="medium" />
-    </PersonPreviewProvider>
+    {#if socialId !== core.account.System}
+      <PersonPreviewProvider value={person}>
+        <Avatar name={person?.name} {person} size="medium" />
+      </PersonPreviewProvider>
+    {:else}
+      <SystemAvatar size="medium" />
+    {/if}
   </div>
 
   <div class="card__body">
