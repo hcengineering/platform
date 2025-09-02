@@ -10,5 +10,6 @@ ENV NODE_ENV=production
 RUN npm install --ignore-scripts=false --verbose @temporalio/worker @temporalio/workflow --unsafe-perm
 
 COPY bundle/bundle.js ./
+COPY bundle/workflows.js ./
 
 CMD [ "node", "bundle.js" ]
