@@ -75,39 +75,12 @@ import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
 import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
 import { getLiveKitClient } from './liveKitClient'
-
-export async function getToken (
-  roomName: string,
-  roomId: Ref<Room>,
-  userId: string,
-  participantName: string
-): Promise<string> {
-  const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
-  if (endpoint === undefined) {
-    throw new Error('Love service endpoint not found')
-  }
-  const token = getPlatformToken()
-  const res = await fetch(concatLink(endpoint, '/getToken'), {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ roomName: getTokenRoomName(roomName, roomId), _id: userId, participantName })
-  })
-  return await res.text()
-}
-
-function getTokenRoomName (roomName: string, roomId: Ref<Room>): string {
-  const currentWorkspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
-  if (currentWorkspaceUuid === undefined) {
-    throw new Error('Current workspace not found')
-  }
-  return `${currentWorkspaceUuid}_${roomName}_${roomId}`
-}
+import { getLoveClient } from './loveClient'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
+
+const loveClient = getLoveClient()
 
 export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTrack<Track.Kind>>>): void {
   lk.localParticipant.createScreenTracks = value
@@ -357,7 +330,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
   }
 
   if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true && !get(isRecording)) {
-    await record(room)
+    await loveClient.record(room)
   }
 }
 
@@ -534,7 +507,7 @@ export async function connectRoom (
     return
   }
   await disconnect()
-  const token = await getToken(room.name, room._id, currentPerson._id, currentPerson.name)
+  const token = await loveClient.getRoomToken(room)
   try {
     await withRetries(
       async () => {
@@ -700,36 +673,6 @@ export async function invite (person: Ref<Person>, room: Ref<Room> | undefined):
   })
 }
 
-export async function record (room: Room): Promise<void> {
-  try {
-    const endpoint = getLoveEndpoint()
-    const token = getPlatformToken()
-    const roomName = getTokenRoomName(room.name, room._id)
-    if (lk.isRecording) {
-      await fetch(concatLink(endpoint, '/stopRecord'), {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ roomName, room: room.name })
-      })
-    } else {
-      await fetch(concatLink(endpoint, '/startRecord'), {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ roomName, room: room.name, meetingMinutes: get(currentMeetingMinutes)?._id })
-      })
-    }
-  } catch (err: any) {
-    Analytics.handleError(err)
-    console.error(err)
-  }
-}
-
 async function checkRecordAvailable (): Promise<void> {
   try {
     const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
@@ -810,15 +753,6 @@ export function getLiveKitEndpoint (): string {
   return endpoint
 }
 
-export function getLoveEndpoint (): string {
-  const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
-  if (endpoint === undefined) {
-    throw new Error('Love service endpoint not found')
-  }
-
-  return endpoint
-}
-
 export function getPlatformToken (): string {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
@@ -840,29 +774,6 @@ export async function stopTranscription (room: Room): Promise<void> {
   if (current === undefined || room._id !== current._id) return
 
   await disconnectMeeting(room._id)
-}
-
-export async function updateSessionLanguage (room: Room): Promise<void> {
-  const current = get(currentRoom)
-  if (current === undefined || room._id !== current._id || !get(isTranscription)) return
-
-  try {
-    const endpoint = getLoveEndpoint()
-    const token = getPlatformToken()
-    const roomName = getTokenRoomName(room.name, room._id)
-
-    await fetch(concatLink(endpoint, '/language'), {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ roomName, room: room.name, language: room.language })
-    })
-  } catch (err: any) {
-    Analytics.handleError(err)
-    console.error(err)
-  }
 }
 
 export async function showRoomSettings (room?: Room): Promise<void> {
