@@ -567,6 +567,8 @@ services:
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - WORKSPACE_STORAGE=${STORAGE_CONFIG}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - TEMPORAL_ADDRESS=localhost:7233
     restart: unless-stopped
   backup-api:
     image: hardcoreeng/backup-api

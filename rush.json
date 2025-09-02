@@ -2687,6 +2687,11 @@
       "packageName": "@hcengineering/huly-mail-resources",
       "projectFolder": "plugins/huly-mail-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-worker",
+      "projectFolder": "services/worker",
+      "shouldPublish": false
     }
   ]
 }

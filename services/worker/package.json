@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/pod-process",
+  "name": "@hcengineering/pod-worker",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -14,15 +14,15 @@
     "build": "compile",
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent",
+    "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --sourcemap=external --minify --external=@temporalio/*",
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "node ../../common/scripts/esbuild.js",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/process .",
-    "docker:tbuild": "docker build -t hardcoreeng/process . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/process",
-    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/process staging",
-    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/process",
-    "run-local": "cross-env ts-node src/index.ts",
+    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/worker .",
+    "docker:tbuild": "docker build -t hardcoreeng/worker . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/worker",
+    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/worker staging",
+    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/worker",
+    "run-local": "cross-env QUEUE_CONFIG='localhost:19092' REGION='cockroach' ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.4",
+    "cross-env": "~7.0.3",
     "@types/node": "^22.15.29",
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -49,23 +50,15 @@
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@hcengineering/server-process": "^0.6.0"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0",
-    "@hcengineering/api-client": "^0.6.0",
-    "@hcengineering/core": "^0.6.32",
+    "@temporalio/worker": "1.12.3",
+    "@temporalio/workflow": "1.12.3",
     "@hcengineering/kafka": "^0.6.0",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/card": "^0.6.0",
     "@hcengineering/process": "^0.6.0",
-    "@hcengineering/server-process": "^0.6.0",
-    "@hcengineering/server-process-resources": "^0.6.0",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/account-client": "^0.6.0",
-    "@temporalio/client": "1.12.3",
-    "dotenv": "~16.0.0"
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/server-core": "^0.6.1"
   }
 }

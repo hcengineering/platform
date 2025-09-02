@@ -154,11 +154,37 @@ function generateMonthlyValues (rule: RecurringRule, currentDate: Date, from: Ti
     const end = new Date(new Date(currentDate).setMonth(currentDate.getMonth() + 1, 1))
     let date = currentDate
     const candidates: Date[] = []
-    while (date < end) {
-      if ((byDay == null || matchesByDay(date, byDay)) && (byMonthDay == null || byMonthDay.includes(date.getDate()))) {
-        candidates.push(new Date(date))
+
+    // If no specific rules are set except byMonthDay (simple monthly recurrence)
+    if (byDay == null && bySetPos == null && byMonthDay != null) {
+      for (const day of byMonthDay) {
+        const originalDate = new Date(currentDate.getTime())
+        const sameDate = new Date(
+          Date.UTC(
+            currentDate.getUTCFullYear(),
+            currentDate.getUTCMonth(),
+            day,
+            originalDate.getUTCHours(),
+            originalDate.getUTCMinutes(),
+            originalDate.getUTCSeconds(),
+            originalDate.getUTCMilliseconds()
+          )
+        )
+        if (sameDate.getUTCMonth() === currentDate.getUTCMonth()) {
+          // Valid day for this month
+          candidates.push(sameDate)
+        }
       }
-      date = new Date(date.setDate(date.getDate() + 1))
+    } else {
+      while (date < end) {
+        if (
+          (byDay == null || matchesByDay(date, byDay)) &&
+          (byMonthDay == null || byMonthDay.includes(date.getDate()))
+        ) {
+          candidates.push(new Date(date))
+        }
+        date = new Date(date.setDate(date.getDate() + 1))
+      }
     }
 
     let filtered: Date[] = candidates
@@ -197,21 +223,46 @@ function generateYearlyValues (rule: RecurringRule, currentDate: Date, from: Tim
     const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1, 0, 1))
     let date = currentDate
     const candidates: Date[] = []
-    while (date < end) {
-      if (
-        (byDay == null || matchesByDay(date, byDay)) &&
-        (byMonthDay == null || byMonthDay.includes(date.getDate())) &&
-        (byYearDay == null || byYearDay.includes(getYearDay(date))) &&
-        (byWeekNo == null || byWeekNo.includes(getWeekNumber(date))) &&
-        (byMonth == null || byMonth.includes(date.getMonth()))
-      ) {
-        const res = date.getTime()
-        if (res >= from && res <= to) {
-          candidates.push(new Date(res))
+
+    // If no specific rules are set, only generate an event for the same month/day each year
+    if (
+      byDay == null &&
+      byMonthDay == null &&
+      byYearDay == null &&
+      byWeekNo == null &&
+      byMonth == null &&
+      bySetPos == null
+    ) {
+      const originalDate = new Date(currentDate.getTime())
+      const sameDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          originalDate.getUTCMonth(),
+          originalDate.getUTCDate(),
+          originalDate.getUTCHours(),
+          originalDate.getUTCMinutes(),
+          originalDate.getUTCSeconds(),
+          originalDate.getUTCMilliseconds()
+        )
+      )
+      candidates.push(sameDate)
+    } else {
+      while (date < end) {
+        if (
+          (byDay == null || matchesByDay(date, byDay)) &&
+          (byMonthDay == null || byMonthDay.includes(date.getDate())) &&
+          (byYearDay == null || byYearDay.includes(getYearDay(date))) &&
+          (byWeekNo == null || byWeekNo.includes(getWeekNumber(date))) &&
+          (byMonth == null || byMonth.includes(date.getMonth()))
+        ) {
+          const res = date.getTime()
+          if (res >= from && res <= to) {
+            candidates.push(new Date(res))
+          }
+          i++
         }
-        i++
+        date = new Date(date.setDate(date.getDate() + 1))
       }
-      date = new Date(date.setDate(date.getDate() + 1))
     }
 
     let filtered: Date[] = candidates
@@ -235,7 +286,7 @@ function generateYearlyValues (rule: RecurringRule, currentDate: Date, from: Tim
     }
     if (endDate != null && next > endDate) return values
     if (next >= to) return values
-    currentDate = new Date(next)
+    currentDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + (interval ?? 1)))
   }
 }
 

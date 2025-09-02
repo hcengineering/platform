@@ -100,7 +100,8 @@
     "ArraySizeGte": "サイズが以上",
     "ArraySizeLt": "サイズがより小さい",
     "ArraySizeLte": "サイズが以下",
-    "Cancelled": "キャンセル済み"
+    "Cancelled": "キャンセル済み",
+    "WaitUntil": "待機する"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
