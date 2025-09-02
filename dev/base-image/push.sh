@@ -7,3 +7,4 @@ docker push hardcoreeng/base:${VERSION}
 docker push hardcoreeng/rekoni-base:${VERSION}
 docker push hardcoreeng/print-base:${VERSION}
 docker push hardcoreeng/front-base:${VERSION}
+docker push hardcoreeng/preview-base:${VERSION}
