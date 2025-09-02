@@ -16,8 +16,13 @@
   import { createMessagesQuery } from '@hcengineering/presentation'
   import { PersonId, SortingOrder } from '@hcengineering/core'
   import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
-  import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
-  import { Person } from '@hcengineering/contact'
+  import {
+    Avatar,
+    getPersonByPersonIdStore,
+    getPersonByPersonRefStore,
+    PersonPreviewProvider
+  } from '@hcengineering/contact-resources'
+  import contact, { Person, UserProfile } from '@hcengineering/contact'
   import { MessagePresenter, labelsStore, MessagePreview } from '@hcengineering/communication-resources'
   import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
@@ -50,7 +55,9 @@
 
   $: socialId = message?.creator ?? card.modifiedBy
   $: personStore = getPersonByPersonIdStore([socialId])
-  $: person = $personStore.get(socialId)
+  $: personRef = card._class === contact.class.UserProfile ? (card as UserProfile).person : undefined
+  $: personByRefStore = personRef != null ? getPersonByPersonRefStore([personRef]) : undefined
+  $: person = $personStore.get(socialId) ?? (personRef !== undefined ? $personByRefStore?.get(personRef) : undefined)
 
   function hasNewMessages (labels: CardLabel[], cardId: CardID): boolean {
     return labels.some((it) => (it.labelId as string) === cardPlugin.label.NewMessages && it.cardId === cardId)
