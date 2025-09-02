@@ -370,22 +370,6 @@ function parseMetadata (metadata: string | undefined): RoomMetadata {
   }
 }
 
-async function withRetries (fn: () => Promise<void>, retries: number, delay: number): Promise<void> {
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      await fn()
-      return
-    } catch (error) {
-      if (attempt >= retries - 1) {
-        throw error
-      }
-      console.error(error)
-      console.log(`Attempt ${attempt} failed. Retrying in ${delay}ms...`)
-      await new Promise((resolve) => setTimeout(resolve, delay))
-    }
-  }
-}
-
 export async function disconnect (): Promise<void> {
   await liveKitClient.disconnect()
   screenSharing.set(false)
@@ -536,13 +520,7 @@ export async function connectRoom (
   await disconnect()
   const token = await getToken(room.name, room._id, currentPerson._id, currentPerson.name)
   try {
-    await withRetries(
-      async () => {
-        await connectLK(token, room)
-      },
-      3,
-      1000
-    )
+    await connectLK(token, room)
   } catch (err) {
     console.error(err)
     await leaveRoom(currentInfo, get(myOffice))
