@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import { cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
-import { type Ref } from '@hcengineering/core'
-import { tryMigrate } from '@hcengineering/model'
+import card, { cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import core, { type Client, type Ref, TxOperations } from '@hcengineering/core'
+import { tryMigrate, tryUpgrade } from '@hcengineering/model'
 import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import chat from './plugin'
+
+const channelMasterTag = 'chat:masterTag:Channel' as Ref<MasterTag>
 
 export const chatOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
@@ -29,17 +31,49 @@ export const chatOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, cardId, [
+      {
+        state: 'migrate-parent-info',
+        mode: 'upgrade',
+        func: migrateParentInfo
+      }
+    ])
+  }
 }
 
 async function migrateChannelsToThreads (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CARD,
     {
-      _class: 'chat:masterTag:Channel' as Ref<MasterTag>
+      _class: channelMasterTag
     },
     {
       _class: chat.masterTag.Thread
     }
   )
+}
+
+async function migrateParentInfo (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const cards = await client.findAll(card.class.Card, { parentInfo: { $exists: true } })
+  for (const card of cards) {
+    if (card.parentInfo == null || card.parentInfo.length === 0) {
+      continue
+    }
+    const needUpdate = card.parentInfo.some((info) => info._class === channelMasterTag)
+    if (!needUpdate) {
+      continue
+    }
+    const parents = card.parentInfo.map((info) => {
+      if (info._class !== channelMasterTag) {
+        return info
+      }
+      return {
+        ...info,
+        _class: chat.masterTag.Thread
+      }
+    })
+    await txOp.update(card, { parentInfo: parents })
+  }
 }
