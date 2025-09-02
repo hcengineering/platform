@@ -13,8 +13,8 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { createMessagesQuery } from '@hcengineering/presentation'
-  import { PersonId, SortingOrder } from '@hcengineering/core'
+  import { createMessagesQuery, IconForward } from '@hcengineering/presentation'
+  import { PersonId, SortingOrder, WithLookup } from '@hcengineering/core'
   import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
   import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
@@ -26,9 +26,10 @@
   import { isHomeSettingEnabled, compactSettingId, homeSettingsStore, comfortableSettingId2 } from '../home'
   import { openCardInSidebar } from '../utils'
   import CardTagsColored from './CardTagsColored.svelte'
-  import CardIcon from './CardIcon.svelte'
+  import CardPathPresenter from './CardPathPresenter.svelte'
+  import CardTimestamp from './CardTimestamp.svelte'
 
-  export let card: Card
+  export let card: WithLookup<Card>
 
   const messagesQuery = createMessagesQuery()
 
@@ -75,10 +76,15 @@
       <span class="card__title overflow-label" use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}>
         {card.title}
       </span>
+      <CardTimestamp date={card.modifiedOn} />
       {#if !isComfortable2}
-        <span class="card__tags">
-          <CardTagsColored value={card} />
-        </span>
+        <div class="flex-presenter flex-gap-0-5">
+          <CardPathPresenter {card} />
+          <IconForward size={'small'} />
+          <div class="card__tags">
+            <CardTagsColored value={card} />
+          </div>
+        </div>
       {/if}
     </div>
     <div class="card__message">
@@ -92,45 +98,16 @@
     </div>
     <div class="card__parent" class:wrap={isComfortable2}>
       {#if isComfortable2}
-        <span class="card__tags mr-2">
-          <CardTagsColored value={card} />
-        </span>
-      {/if}
-      {#if card.parent != null && !isCompact}
-        {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
-        {#if info}
-          <span
-            class="parent"
-            use:tooltip={{ label: getEmbeddedLabel(info.title), textAlign: 'left' }}
-            on:click|stopPropagation|preventDefault={() => openCardInSidebar(info._id)}
-          >
-            <CardIcon size="x-small" _id={info._id} editable={false} />
-            <span class="overflow-label max-w-100">
-              {info.title}
-            </span>
-          </span>
-        {/if}
+        <div class="flex-presenter flex-gap-0-5">
+          <CardPathPresenter {card} />
+          <IconForward size={'small'} />
+          <div class="card__tags mr-2">
+            <CardTagsColored value={card} />
+          </div>
+        </div>
       {/if}
     </div>
   </div>
-
-  {#if card.parent && isCompact}
-    {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
-    {#if info}
-      <div class="card__parent column">
-        <span
-          class="parent"
-          use:tooltip={{ label: getEmbeddedLabel(info.title), textAlign: 'left' }}
-          on:click|stopPropagation|preventDefault={() => openCardInSidebar(info._id)}
-        >
-          <CardIcon size="x-small" _id={info._id} editable={false} />
-          <span class="overflow-label max-w-40">
-            {info.title}
-          </span>
-        </span>
-      </div>
-    {/if}
-  {/if}
 
   {#if !isCompact}
     <div class="card__actions" class:opened={isActionsOpened}>
@@ -155,8 +132,7 @@
     display: flex;
     cursor: pointer;
     border-radius: 0.5rem;
-    padding: 1rem;
-    padding-top: 0.375rem;
+    padding: 0.375rem 1rem;
 
     gap: 0.75rem;
     min-height: 4.75rem;
@@ -191,6 +167,7 @@
       display: flex;
       flex-direction: row;
       height: 2rem;
+      min-width: 0;
     }
 
     &__title {
@@ -221,14 +198,6 @@
       &.wrap {
         flex-wrap: wrap;
       }
-
-      &.column {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin-left: auto;
-        padding-left: 0.5rem;
-      }
     }
 
     &__actions {
@@ -243,29 +212,6 @@
       }
       &:hover {
         visibility: visible;
-      }
-    }
-    .parent {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0 0.5rem;
-      min-width: 2rem;
-      max-width: 25rem;
-      min-height: 1.5rem;
-      max-height: 1.5rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      border-radius: 1rem;
-      white-space: nowrap;
-      gap: 0.25rem;
-      background: var(--global-ui-hover-BackgroundColor);
-      border: var(--global-subtle-ui-BorderColor);
-      color: var(--global-secondary-TextColor);
-      cursor: pointer;
-
-      &:hover {
-        background: var(--global-ui-active-BackgroundColor);
       }
     }
 
