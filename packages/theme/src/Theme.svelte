@@ -17,6 +17,7 @@
   import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
   import { onMount, setContext } from 'svelte'
   import { writable } from 'svelte/store'
+  import { ThemeVariant } from './variants'
   import {
     ThemeOptions,
     getCurrentFontSize,
@@ -35,7 +36,7 @@
     themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language))
   }
 
-  const getRealTheme = (theme: string): string => (isThemeDark(theme) ? 'theme-dark' : 'theme-light')
+  const getRealTheme = (theme: string): string => (isThemeDark(theme) ? ThemeVariant.Dark : ThemeVariant.Light)
   const setRootColors = (theme: string, set = true) => {
     currentTheme.set(theme)
     if (set) {

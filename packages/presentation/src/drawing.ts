@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { type ThemeVariantType } from '@hcengineering/theme'
 import {
   type CanvasPoint,
   easeInOutCubic,
@@ -28,8 +28,11 @@ import {
   type MouseScaledPoint,
   makeMouseScaledPoint,
   makeNodePoint,
-  offsetCanvasPoint
+  offsetCanvasPoint,
+  type ColorMetaNameOrHex
 } from './drawingUtils'
+import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, makeCommandUid } from './drawingCommand'
+import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
   content?: string
@@ -37,13 +40,16 @@ export interface DrawingData {
 
 export interface DrawingProps {
   readonly: boolean
+  colorsList: ColorsList
+  getCurrentTheme: () => ThemeVariantType
+  subscribeOnThemeChange: (callback: () => void) => void
   autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
   commands?: DrawingCmd[]
   offset?: Point
   tool?: DrawingTool
-  penColor?: string
+  penColor?: ColorMetaNameOrHex
   penWidth?: number
   eraserWidth?: number
   fontSize?: number
@@ -63,35 +69,9 @@ export interface DrawingProps {
   panned?: (offset: Point) => void
 }
 
-export type CommandUid = string & { readonly __brand: 'CommandUid' }
-
-export interface DrawingCmd {
-  id: CommandUid
-  type: 'line' | 'text'
-}
-
-export interface DrawTextCmd extends DrawingCmd {
-  text: string
-  pos: CanvasPoint
-  fontSize: number
-  fontFace: string
-  color: string
-}
-
-export interface DrawLineCmd extends DrawingCmd {
-  lineWidth: number
-  erasing: boolean
-  penColor: string
-  points: CanvasPoint[]
-}
-
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
 
 const maxTextLength = 500
-
-export const makeCommandUid = (): CommandUid => {
-  return (crypto?.randomUUID?.() ?? generateId()) as CommandUid
-}
 
 const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
@@ -102,7 +82,7 @@ type PointStatus = 'last-point' | 'intermediate-point'
 class DrawState {
   on = false
   tool: DrawingTool = 'pen'
-  penColor = 'blue'
+  penColor: ColorMetaNameOrHex = 'alpha'
   penWidth = 4
   eraserWidth = 30
   minLineLength = 6
@@ -113,11 +93,11 @@ class DrawState {
   points: CanvasPoint[] = []
   scale: Point = { x: 1, y: 1 }
   cssTransformScale: Point = { x: 1, y: 1 }
-  ctx: CanvasRenderingContext2D
 
-  constructor (ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx
-  }
+  constructor (
+    readonly ctx: CanvasRenderingContext2D,
+    readonly colors: DrawingBoardColoringSetup
+  ) {}
 
   cursorWidth = (): number => {
     return Math.max(8, this.tool === 'erase' ? this.eraserWidth : this.penWidth)
@@ -153,7 +133,7 @@ class DrawState {
     this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
   }
 
-  drawLine = (point: MouseScaledPoint, status: PointStatus): void => {
+  drawLine = (point: MouseScaledPoint, status: PointStatus, currentTheme: ThemeVariantType): void => {
     window.requestAnimationFrame(() => {
       if (status === 'intermediate-point' || this.points.length <= 1) {
         this.addPoint(point)
@@ -164,7 +144,7 @@ class DrawState {
         this.translateCtx()
         this.ctx.beginPath()
         this.ctx.lineCap = 'round'
-        this.ctx.strokeStyle = this.penColor
+        this.ctx.strokeStyle = metaColorNameToHex(this.penColor, currentTheme, this.colors)
         this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
         this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
         if (this.points.length === 1) {
@@ -179,20 +159,20 @@ class DrawState {
     })
   }
 
-  drawCommand = (cmd: DrawingCmd): void => {
+  drawCommand = (cmd: DrawingCmd, currentTheme: ThemeVariantType): void => {
     if (cmd.type === 'text') {
-      this.drawTextCommand(cmd as DrawTextCmd)
+      this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
     } else {
-      this.drawLineCommand(cmd as DrawLineCmd)
+      this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
   }
 
-  drawLineCommand = (cmd: DrawLineCmd): void => {
+  drawLineCommand = (cmd: DrawLineCmd, currentTheme: ThemeVariantType): void => {
     this.ctx.save()
     this.translateCtx()
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
-    this.ctx.strokeStyle = cmd.penColor
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
     this.ctx.lineWidth = cmd.lineWidth
     this.ctx.globalCompositeOperation = cmd.erasing ? 'destination-out' : 'source-over'
     if (cmd.points.length === 1) {
@@ -207,12 +187,12 @@ class DrawState {
     this.ctx.restore()
   }
 
-  drawTextCommand = (cmd: DrawTextCmd): void => {
+  drawTextCommand = (cmd: DrawTextCmd, currentTheme: ThemeVariantType): void => {
     const p = { ...cmd.pos }
     this.ctx.save()
     this.translateCtx()
     this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
-    this.ctx.fillStyle = cmd.color
+    this.ctx.fillStyle = metaColorNameToHex(cmd.color, currentTheme, this.colors)
     this.ctx.textBaseline = 'top'
     const lines = cmd.text.split('\n').map((l) => l.trim())
     for (let i = 0; i < lines.length; i++) {
@@ -318,7 +298,8 @@ export function drawing (
   let personCursorPos: CanvasPoint = makeCanvasPoint(0, 0)
   let isPersonCursorAnimating = false
 
-  const draw = new DrawState(ctx)
+  const colorsSetup = new DrawingBoardColoringSetup(props.colorsList)
+  const draw = new DrawState(ctx, colorsSetup)
   draw.tool = props.tool ?? draw.tool
   draw.penColor = props.penColor ?? draw.penColor
   draw.penWidth = props.penWidth ?? draw.penWidth
@@ -352,6 +333,11 @@ export function drawing (
   }
 
   replayCommands(currentCommands)
+
+  props.subscribeOnThemeChange(() => {
+    updateToolCursor()
+    replayCommands(currentCommands)
+  })
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -509,7 +495,7 @@ export function drawing (
 
       if (draw.on) {
         if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
-          draw.drawLine(scaledPoint, 'intermediate-point')
+          draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
           prevPos = scaledPoint
         }
       }
@@ -540,7 +526,7 @@ export function drawing (
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (draw.isDrawingTool()) {
-        draw.drawLine(scaledPoint, 'last-point')
+        draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
         storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
@@ -816,7 +802,7 @@ export function drawing (
 
   function updateLiveTextBox (): void {
     if (liveTextBox !== undefined) {
-      liveTextBox.editor.style.color = draw.penColor
+      liveTextBox.editor.style.color = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
       liveTextBox.editor.style.lineHeight = `${draw.fontSize / draw.lineScale()}px`
       liveTextBox.editor.style.fontSize = `${draw.fontSize / draw.lineScale()}px`
       liveTextBox.editor.style.fontFamily = draw.fontFace
@@ -891,7 +877,9 @@ export function drawing (
       toolCursor.style.visibility = 'visible'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
-      toolCursor.style.background = erasing ? 'none' : draw.penColor
+      toolCursor.style.background = erasing
+        ? 'none'
+        : metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
       toolCursor.style.boxShadow = erasing
         ? '0px 0px 1px 1px white inset, 0px 0px 2px 1px black'
         : '0px 0px 3px 0px var(--theme-button-contrast-enabled)'
@@ -996,9 +984,11 @@ export function drawing (
     */
     draw.ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+    const currentTheme: ThemeVariantType = props.getCurrentTheme()
+
     traverseCommands(drawing, (command) => {
       if (command.id === undefined || liveTextBox?.cmdId !== command.id) {
-        draw.drawCommand(command)
+        draw.drawCommand(command, currentTheme)
       }
       return false
     })

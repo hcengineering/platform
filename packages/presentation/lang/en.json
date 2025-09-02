@@ -53,7 +53,6 @@
     "EraserTool": "Eraser tool",
     "PanTool": "Pan tool",
     "TextTool": "Text tool",
-    "ColorTooltip": "{color}",
     "PaletteManagementMenu": "Manage color presets"
   },
   "status": {

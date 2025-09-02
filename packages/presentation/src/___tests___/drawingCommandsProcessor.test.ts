@@ -14,9 +14,9 @@
 //
 
 import { DrawingCommandsProcessor, UndoRedoAvailability } from '../drawingCommandsProcessor'
-import { makeCommandUid, type DrawingCmd, type DrawTextCmd, type DrawLineCmd } from '../drawing'
+import { makeCommandUid, type DrawingCmd, type DrawTextCmd, type DrawLineCmd } from '../drawingCommand'
 import { type Array as YArray, Doc as YDoc } from 'yjs'
-import { makeCanvasPoint } from '../drawingUtils'
+import { type ColorMetaNameOrHex, makeCanvasPoint } from '../drawingUtils'
 
 const makeTextCommand = (overrides: Partial<DrawTextCmd> = {}): DrawTextCmd => ({
   id: makeCommandUid(),
@@ -25,7 +25,7 @@ const makeTextCommand = (overrides: Partial<DrawTextCmd> = {}): DrawTextCmd => (
   pos: makeCanvasPoint(13, 17),
   fontSize: 11,
   fontFace: 'Arial',
-  color: 'red',
+  color: 'red' as ColorMetaNameOrHex,
   ...overrides
 })
 
@@ -34,7 +34,7 @@ const makeLineCommand = (overrides: Partial<DrawLineCmd> = {}): DrawLineCmd => (
   type: 'line',
   lineWidth: 3,
   erasing: false,
-  penColor: 'blue',
+  penColor: 'blue' as ColorMetaNameOrHex,
   points: [makeCanvasPoint(1, 3), makeCanvasPoint(11, 13)],
   ...overrides
 })
@@ -163,13 +163,13 @@ describe('DrawingCommandsProcessor Tests', () => {
     it('existing command change', () => {
       const originalCommand = makeTextCommand({
         text: 'Original',
-        color: 'red'
+        color: 'red' as ColorMetaNameOrHex
       })
 
       const changedCommand: DrawTextCmd = {
         ...originalCommand,
         text: 'Changed',
-        color: 'blue'
+        color: 'blue' as ColorMetaNameOrHex
       }
 
       systemUnderTest.addCommand(originalCommand)
@@ -189,19 +189,19 @@ describe('DrawingCommandsProcessor Tests', () => {
     it('order preservation', () => {
       const first = makeTextCommand({
         text: 'First',
-        color: 'red'
+        color: 'red' as ColorMetaNameOrHex
       })
 
       const second = makeTextCommand({
         text: 'Second',
         pos: makeCanvasPoint(20, 20),
-        color: 'blue'
+        color: 'blue' as ColorMetaNameOrHex
       })
 
       const third = makeTextCommand({
         text: 'Third',
         pos: makeCanvasPoint(30, 30),
-        color: 'green'
+        color: 'green' as ColorMetaNameOrHex
       })
 
       systemUnderTest.addCommand(first)
@@ -391,7 +391,7 @@ describe('DrawingCommandsProcessor Tests', () => {
       const changedTextCommand: DrawTextCmd = {
         ...textCommand,
         text: 'Changed Text',
-        color: 'green'
+        color: 'green' as ColorMetaNameOrHex
       }
       systemUnderTest.changeCommand(changedTextCommand)
       expect(systemUnderTest.snapshot()).toEqual([changedTextCommand, lineCommand])
@@ -419,7 +419,7 @@ describe('DrawingCommandsProcessor Tests', () => {
         const cmd = makeTextCommand({
           text: `Command ${i}`,
           pos: makeCanvasPoint(i * 10, i * 10),
-          color: 'black'
+          color: 'black' as ColorMetaNameOrHex
         })
         commands.push(cmd)
         systemUnderTest.addCommand(cmd)

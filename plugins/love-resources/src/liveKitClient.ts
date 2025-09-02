@@ -76,34 +76,40 @@ export class LiveKitClient {
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.currentSessionSupportsVideo = withVideo
     try {
-      const [, session] = await Promise.all([
-        this.liveKitRoom.connect(wsURL, token, { maxRetries: 3 }),
-        useMedia({
+      const setupMediaSession = async (): Promise<void> => {
+        this.currentMediaSession = await useMedia({
           state: {
             camera: this.currentSessionSupportsVideo ? { enabled: $myPreferences?.camEnabled ?? true } : undefined,
             microphone: { enabled: $myPreferences?.micEnabled ?? this.liveKitRoom.remoteParticipants.size < 16 }
           },
           autoDestroy: false
         })
+      }
+      await Promise.all([
+        this.liveKitRoom.connect(wsURL, token, {
+          maxRetries: 1,
+          websocketTimeout: 10000,
+          peerConnectionTimeout: 10000
+        }),
+        setupMediaSession()
       ])
 
-      this.currentMediaSession = session
-      session?.on('camera', (enabled) => {
+      this.currentMediaSession?.on('camera', (enabled) => {
         void this.setCameraEnabled(enabled)
       })
-      session?.on('microphone', (enabled) => {
+      this.currentMediaSession?.on('microphone', (enabled) => {
         void this.setMicrophoneEnabled(enabled)
       })
-      session?.on('selected-camera', (deviceId) => {
+      this.currentMediaSession?.on('selected-camera', (deviceId) => {
         void this.setActiveCamera(deviceId)
       })
-      session?.on('selected-microphone', (deviceId) => {
+      this.currentMediaSession?.on('selected-microphone', (deviceId) => {
         void this.setActiveMicrophone(deviceId)
       })
-      session?.on('selected-speaker', (deviceId) => {
+      this.currentMediaSession?.on('selected-speaker', (deviceId) => {
         void this.setActiveSpeaker(deviceId)
       })
-      session?.on('feature', (feature, enabled) => {
+      this.currentMediaSession?.on('feature', (feature, enabled) => {
         if (feature !== 'sharing') return
         void this.setScreenShareEnabled(enabled, true)
       })
@@ -111,6 +117,7 @@ export class LiveKitClient {
       await this.updateActiveDevices()
     } catch (error) {
       this.currentMediaSession?.close()
+      this.currentMediaSession?.removeAllListeners()
       this.currentMediaSession = undefined
       throw error
     }

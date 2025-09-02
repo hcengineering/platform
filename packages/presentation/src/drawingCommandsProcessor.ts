@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { makeCommandUid, type CommandUid, type DrawingCmd } from './drawing'
+import { makeCommandUid, type CommandUid, type DrawingCmd } from './drawingCommand'
 import { type Array as YArray, type Doc as YDoc, UndoManager as YUndoManager } from 'yjs'
 
 export class UndoRedoAvailability {

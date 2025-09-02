@@ -22,13 +22,17 @@
     drawing,
     CommandUid,
     Point,
-    DrawingCommandsProcessor
+    DrawingCommandsProcessor,
+    ThemeAwareColor,
+    ColorsList,
+    ColorMetaNameOrHex
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
-  import { Loading, Component } from '@hcengineering/ui'
+  import { Loading, Component, themeStore } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
+  import { get } from 'svelte/store'
 
   export let boardId: string
   export let document: YDoc
@@ -43,7 +47,7 @@
   export let fullSize = false
 
   let tool: DrawingTool
-  let penColor: string
+  let penColor: ColorMetaNameOrHex
   let penWidth: number
   let eraserWidth: number
   let fontSize: number
@@ -61,6 +65,21 @@
   let getFollowee: (() => Promise<Person | undefined>) | undefined
   let panning = false
   let followee: Person | undefined
+
+  const themeChangeUnsubscribe: Array<() => void> = []
+
+  const DrawingColorPalette: ColorsList = [
+    ['alpha', new ThemeAwareColor('#FFF', '#000')],
+    ['gamma', new ThemeAwareColor('Fuchsia', 'Fuchsia')],
+    ['delta', new ThemeAwareColor('Houseplant', 'Houseplant')],
+    ['epsilon', new ThemeAwareColor('Sky', 'Waterway')],
+    ['zeta', new ThemeAwareColor('Turquoise', 'Ocean')],
+    ['eta', new ThemeAwareColor('Pink', 'Firework')],
+    ['theta', new ThemeAwareColor('Cloud', 'Porpoise')],
+    ['iota', new ThemeAwareColor('#705201', '#FFC114')],
+    ['kappa', new ThemeAwareColor('Lavander', 'Mauve')]
+  ]
+
   const dataTopicOffset = 'drawing-board-offset'
   const dataTopicCursor = 'drawing-board-cursor'
 
@@ -190,6 +209,11 @@
   })
 
   onDestroy(() => {
+    themeChangeUnsubscribe.forEach((unsubscribe) => {
+      unsubscribe()
+    })
+    themeChangeUnsubscribe.length = 0
+
     savedCmds.unobserve(onSavedCommandsChanged)
 
     getResource(presence.function.FolloweeDataUnsubscribe)
@@ -223,7 +247,12 @@
       style:flex-grow={resizeable ? undefined : '1'}
       style:height={resizeable ? `${height}px` : undefined}
       use:drawing={{
+        colorsList: DrawingColorPalette,
         readonly,
+        getCurrentTheme: () => $themeStore.variant,
+        subscribeOnThemeChange: (callback) => {
+          themeChangeUnsubscribe.push(themeStore.subscribe(callback))
+        },
         autoSize: true,
         commands: model,
         offset,
@@ -271,6 +300,7 @@
         <DrawingBoardToolbar
           placeInside={true}
           showPanTool={true}
+          colorsList={DrawingColorPalette}
           {cmdEditor}
           {disableUndo}
           {disableRedo}
