@@ -29,7 +29,7 @@ import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
 import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams } from './types'
 import { ipcMainExposed } from './typesUtils'
-import { themeStore } from '@hcengineering/theme'
+import { themeStore, ThemeVariant } from '@hcengineering/theme'
 import type { Application } from '@hcengineering/workbench'
 import { isAllowedToRole } from '@hcengineering/workbench-resources'
 
@@ -50,15 +50,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
       themeStore.subscribe((themeOptions) => {
         if (themeOptions != null) {
-          const isDarkTheme = themeOptions.dark
-          menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+          menuBar.setTheme(themeOptions.variant)
         }
       })
 
       void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
-        menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+        menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
       }).catch(() => {
-        menuBar.setTheme('light') // fallback
+        menuBar.setTheme(ThemeVariant.Light) // fallback
       })
     }
   }
