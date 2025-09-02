@@ -6,7 +6,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.24.2",
-    "sharp": "~0.32.0"
+    "sharp": "~0.34.3"
   },
   "private": true
 }
