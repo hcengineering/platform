@@ -71,7 +71,7 @@
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "postgres": "^3.4.7",
-    "sharp": "~0.32.0",
+    "sharp": "~0.34.3",
     "@aws-sdk/client-s3": "^3.738.0",
     "@aws-sdk/s3-request-presigner": "^3.738.0",
     "@aws-sdk/lib-storage": "^3.738.0",
