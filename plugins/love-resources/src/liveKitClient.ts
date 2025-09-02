@@ -24,8 +24,7 @@ const LAST_PARTICIPANT_NOTIFICATION_DELAY_MS = 2 * 60 * 1000
 const AUTO_DISCONNECT_DELAY_MS = 60 * 1000
 
 export function getLiveKitClient (): LiveKitClient {
-  const wsURL = getMetadata(love.metadata.WebSocketURL)
-  return new LiveKitClient(wsURL ?? '')
+  return new LiveKitClient()
 }
 
 const defaultCaptureOptions: VideoCaptureOptions = {
@@ -45,7 +44,7 @@ export class LiveKitClient {
   private lastParticipantNotificationTimeout: number = -1
   private lastParticipantDisconnectTimeout: number = -1
 
-  constructor (wsUrl: string) {
+  constructor () {
     const lkRoom = new LKRoom({
       adaptiveStream: true,
       dynacast: true,
@@ -67,10 +66,13 @@ export class LiveKitClient {
       },
       videoCaptureDefaults: defaultCaptureOptions
     })
-    void lkRoom.prepareConnection(wsUrl)
     lkRoom.on(RoomEvent.Connected, this.onConnected)
     lkRoom.on(RoomEvent.Disconnected, this.onDisconnected)
     this.liveKitRoom = lkRoom
+  }
+
+  async prepareConnection (wsUrl: string, token:string): Promise<void> {
+    await this.liveKitRoom.prepareConnection(wsUrl, token)
   }
 
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {

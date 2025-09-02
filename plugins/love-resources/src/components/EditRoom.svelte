@@ -19,7 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect } from '../utils'
+  import { getRoomName, prepareRoomConnection, tryConnect } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
 
@@ -35,6 +35,7 @@
   let connecting = false
 
   onMount(() => {
+    prepareRoomConnection(object)
     dispatch('open', { ignoreKeys: ['name'] })
   })
 

@@ -449,7 +449,9 @@ async function moveToRoom (
 
 async function connectLK (token: string, room: Room): Promise<void> {
   const wsURL = getLiveKitEndpoint()
-  await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
+  // await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
+  liveKitClient.liveKitRoom.simulateParticipants( { publish: {audio: true, video: true, useRealTracks: true}, participants: {count: 20, audio: true, video: true}}
+  )
 }
 
 async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
@@ -476,6 +478,11 @@ async function initMeetingMinutes (room: Room): Promise<void> {
       await navigateToOfficeDoc(client.getHierarchy(), doc)
     }
   }
+}
+
+export async function prepareRoomConnection(room: Room): Promise<void> {
+  const roomToken = await loveClient.getRoomToken(room)
+  liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
 }
 
 export async function connectRoom (
