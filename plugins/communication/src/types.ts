@@ -11,13 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  AppletAttachment,
-  AppletParams,
-  AppletType,
-  Message,
-  MessageID
-} from '@hcengineering/communication-types'
+import { AppletAttachment, AppletParams, AppletType, Message, MessageID } from '@hcengineering/communication-types'
 import { AttachedDoc, Configuration, Doc, Ref, AccountUuid } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card, MasterTag } from '@hcengineering/card'
