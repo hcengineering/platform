@@ -682,7 +682,9 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -v
+        run: |
+          node common/scripts/install-run-rush.js docker:build -v
+          docker builder prune -a -f
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
