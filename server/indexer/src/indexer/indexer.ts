@@ -89,7 +89,7 @@ import {
   type MessageID
 } from '@hcengineering/communication-types'
 import { parseYaml } from '@hcengineering/communication-yaml'
-import { applyPatches, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+import { isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
@@ -611,21 +611,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
             const messagesFile = Buffer.concat(blob as any).toString()
             const messagesParsedFile = parseYaml(messagesFile)
-            let patchedMessages
-            if (group.patches !== undefined && group.patches.length > 0) {
-              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
-              patchedMessages = messagesParsedFile.messages.map((message) => {
-                const patches = patchesByMessage.get(message.id) ?? []
-                if (patches.length === 0) {
-                  return message
-                } else {
-                  return applyPatches(message, patches)
-                }
-              })
-            } else {
-              patchedMessages = messagesParsedFile.messages
-            }
-            for (const message of patchedMessages) {
+            const messages = messagesParsedFile.messages
+
+            for (const message of messages) {
               if (message.removed) {
                 continue
               }
@@ -673,7 +661,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
     await ctx.with('process-messages', {}, async (ctx) => {
       let messages = await communicationApi.findMessages(this.communicationSession, {
-        attachments: true,
         limit: messagesLimit,
         order: SortingOrder.Ascending
       })
@@ -724,7 +711,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           }
         }
         messages = await communicationApi.findMessages(this.communicationSession, {
-          attachments: true,
           limit: messagesLimit,
           order: SortingOrder.Ascending,
           created: {
@@ -843,15 +829,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
     const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
       const messages = await communicationApi.findMessages(this.communicationSession, {
-        card: cardId,
-        id: msgId,
-        attachments: true
+        cardId,
+        id: msgId
       })
       if (messages.length === 1) {
         return messages[0]
       }
       const messagesGroups = await communicationApi.findMessagesGroups(this.communicationSession, {
-        card: cardId,
+        cardId,
         messageId: msgId
       })
       if (messagesGroups.length !== 1) {
@@ -861,16 +846,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
       const messagesFile = Buffer.concat(blob as any).toString()
       const messagesParsedFile = parseYaml(messagesFile)
-      const message = messagesParsedFile.messages.find((m) => m.id === msgId)
-      if (group.patches === undefined || message === undefined) {
-        return message
-      }
-      const relevantPatches = group.patches.filter((p) => p.messageId === msgId)
-      if (relevantPatches.length === 0) {
-        return message
-      } else {
-        return applyPatches(message, relevantPatches)
-      }
+      return messagesParsedFile.messages.find((m) => m.id === msgId)
     }
     const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
     // If message was already fully replaced, other transactions can skip the message

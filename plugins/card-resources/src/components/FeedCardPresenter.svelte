@@ -42,7 +42,7 @@
   let person: Person | undefined = undefined
 
   $: messagesQuery.query(
-    { card: card._id, strict: true, attachments: true, reactions: true, limit: 1, order: SortingOrder.Descending },
+    { cardId: card._id, strict: true, attachments: true, reactions: true, limit: 1, order: SortingOrder.Descending },
     (res) => {
       const msgs = res.getResult().reverse()
       message = msgs[msgs.length - 1]

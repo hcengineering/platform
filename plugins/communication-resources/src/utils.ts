@@ -26,11 +26,11 @@ import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
 
+import { isCardSubscribed, guestCommunicationAllowedCards } from './stores'
 import IconAt from './components/icons/At.svelte'
 
 import communication from './plugin'
 import { type TextInputAction } from './types'
-import { guestCommunicationAllowedCards } from './stores'
 import { get } from 'svelte/store'
 import view from '@hcengineering/view'
 import { type Direct } from '@hcengineering/communication'
@@ -51,19 +51,14 @@ export async function subscribe (card: Card): Promise<void> {
 export async function canSubscribe (card: Card): Promise<boolean> {
   const isEnabled = getMetadata(communication.metadata.Enabled) === true
   if (!isEnabled) return false
-  const client = getCommunicationClient()
-  const me = getCurrentAccount()
-  const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]
-  return collaborator === undefined
+
+  return !isCardSubscribed(card._id)
 }
 
 export async function canUnsubscribe (card: Card): Promise<boolean> {
   const isEnabled = getMetadata(communication.metadata.Enabled) === true
   if (!isEnabled) return false
-  const client = getCommunicationClient()
-  const me = getCurrentAccount()
-  const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]
-  return collaborator !== undefined
+  return isCardSubscribed(card._id)
 }
 
 export const defaultMessageInputActions: TextInputAction[] = [

@@ -28,7 +28,7 @@
   let collaborators: Collaborator[] = []
   let persons: Person[] = []
 
-  $: collaboratorsQuery.query({ card: threadId }, (res) => {
+  $: collaboratorsQuery.query({ cardId: threadId }, (res) => {
     collaborators = res
   })
 

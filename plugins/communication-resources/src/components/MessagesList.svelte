@@ -121,7 +121,7 @@
   $: if (context !== undefined) {
     void notificationsQuery.query(
       {
-        context: context.id,
+        contextId: context.id,
         read: false
       },
       (res) => {
@@ -193,7 +193,7 @@
   function getBaseQuery (): MessageQueryParams {
     if (position === MessagesNavigationAnchors.ConversationStart) {
       return {
-        card: card._id,
+        cardId: card._id,
         replies: true,
         attachments: true,
         reactions: true,
@@ -206,7 +206,7 @@
     const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
     const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
-      card: card._id,
+      cardId: card._id,
       replies: true,
       attachments: true,
       reactions: true,

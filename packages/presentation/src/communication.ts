@@ -33,7 +33,7 @@ import {
   type UpdateAttachmentsOperation,
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
-  type UpdateNotificationQuery,
+  type NotificationQuery,
   type UpdatePatchEvent
 } from '@hcengineering/communication-sdk-types'
 import {
@@ -61,7 +61,8 @@ import {
   type AttachmentData,
   type AttachmentParams,
   type AttachmentUpdateData,
-  type WithTotal
+  type WithTotal,
+  type NotificationID
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -329,7 +330,11 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async updateNotifications (contextId: ContextID, query: UpdateNotificationQuery, read: boolean): Promise<void> {
+  async updateNotifications (
+    contextId: ContextID,
+    query: Pick<NotificationQuery, 'type' | 'untilDate'> & { id?: NotificationID },
+    read: boolean
+  ): Promise<void> {
     const event: UpdateNotificationEvent = {
       type: NotificationEventType.UpdateNotification,
       contextId,
