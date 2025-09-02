@@ -76,7 +76,7 @@ export class LiveKitClient {
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.currentSessionSupportsVideo = withVideo
     try {
-      const setupMediaSession = async () => {
+      const setupMediaSession = async (): Promise<void> => {
         this.currentMediaSession = await useMedia({
           state: {
             camera: this.currentSessionSupportsVideo ? { enabled: $myPreferences?.camEnabled ?? true } : undefined,
@@ -91,7 +91,7 @@ export class LiveKitClient {
           websocketTimeout: 10000,
           peerConnectionTimeout: 10000
         }),
-        setupMediaSession() 
+        setupMediaSession()
       ])
 
       this.currentMediaSession?.on('camera', (enabled) => {
