@@ -36,7 +36,7 @@
   "dependencies": {
     "@deepgram/sdk": "^3.12.1",
     "@livekit/agents": "^0.7.4",
-    "@livekit/rtc-node": "^0.13.11",
+    "@livekit/rtc-node": "^0.13.18",
     "dotenv": "^16.4.5",
     "ws": "^8.18.2"
   }

@@ -66,7 +66,7 @@
     "@hcengineering/theme": "^0.6.5",
     "@livekit/krisp-noise-filter": "^0.3.0",
     "@livekit/track-processors": "^0.5.6",
-    "livekit-client": "^2.15.5",
+    "livekit-client": "^2.15.6",
     "svelte": "^4.2.19"
   }
 }
