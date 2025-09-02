@@ -15,10 +15,10 @@
 
 import { type MeasureContext } from '@hcengineering/core'
 
-import { existsSync, mkdirSync, statSync } from 'fs'
-import { rm, rename, mkdir } from 'fs/promises'
+import { existsSync, mkdirSync } from 'fs'
+import { rm, rename, mkdir, stat } from 'fs/promises'
 import { LRUCache } from 'lru-cache'
-import { dirname, join, normalize } from 'path'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'path'
 import { Readable } from 'stream'
 
 import { type CacheConfig } from './config'
@@ -55,9 +55,11 @@ class NoopCache implements Cache {
   }
 }
 
+type DiskCacheEntry = PreviewFile & { size: number }
+
 class DiskCache implements Cache {
-  private readonly disposed: Set<PreviewFile> = new Set<PreviewFile>()
-  private readonly cache: LRUCache<string, PreviewFile>
+  private readonly disposed: Set<DiskCacheEntry> = new Set<DiskCacheEntry>()
+  private readonly cache: LRUCache<string, DiskCacheEntry>
   private readonly cachePath: string
   private readonly gcInterval: NodeJS.Timeout | undefined
   private gcPromise: Promise<void> = Promise.resolve()
@@ -67,16 +69,14 @@ class DiskCache implements Cache {
     options: CacheConfig & { cachePath: string }
   ) {
     this.cachePath = normalize(options.cachePath)
+
     if (!existsSync(this.cachePath)) {
       mkdirSync(this.cachePath, { recursive: true })
     }
 
     this.cache = new LRUCache({
       maxSize: options.cacheSize,
-      sizeCalculation: (value) => {
-        const stat = statSync(value.filePath)
-        return stat.size
-      },
+      sizeCalculation: (value) => value.size,
       dispose: (value, key, reason) => {
         this.ctx.info('dispose', { key, filePath: value.filePath, reason })
         this.disposed.add(value)
@@ -141,6 +141,8 @@ class DiskCache implements Cache {
       throw new Error('Invalid key')
     }
 
+    const { size } = await stat(value.filePath)
+
     if (!filePath.startsWith(this.cachePath)) {
       try {
         filePath = this.getFilePath(key)
@@ -152,10 +154,10 @@ class DiskCache implements Cache {
       }
     }
 
-    value = { ...value, filePath }
-    this.cache.set(key, value)
+    const entry = { ...value, filePath, size }
+    this.cache.set(key, entry)
 
-    return value
+    return entry
   }
 
   async delete (key: string): Promise<void> {
@@ -163,8 +165,30 @@ class DiskCache implements Cache {
   }
 
   private getFilePath (key: string): string {
+    if (key.length === 0) {
+      throw new Error('Key cannot be empty')
+    }
+
+    if (key.includes('..') || key.includes('./') || key.includes('/.')) {
+      throw new Error('Key contains invalid path sequences')
+    }
+
     key = key.replace(/[^a-zA-Z0-9-_/]/g, '_')
-    return join(this.cachePath, key)
+    const path = join(this.cachePath, key)
+
+    if (!this.isPathWithinCache(path)) {
+      throw new Error('Cache path is outside of cache directory')
+    }
+
+    return path
+  }
+
+  private isPathWithinCache (filePath: string): boolean {
+    const normalizedPath = resolve(normalize(filePath))
+    const relativePath = relative(this.cachePath, normalizedPath)
+
+    // If the relative path starts with '..', it's outside the cache directory
+    return !relativePath.startsWith('..') && !isAbsolute(relativePath)
   }
 }
 
@@ -187,10 +211,16 @@ export async function streamToBuffer (data: Buffer | Readable): Promise<Buffer> 
 export function createCache (ctx: MeasureContext, options: CacheConfig): Cache {
   if (options.enabled && options.cachePath !== undefined) {
     try {
-      ctx.info('using disk cache', { cachePath: options.cachePath })
-      return new DiskCache(ctx, { ...options, cachePath: options.cachePath })
+      const cachePath = resolve(normalize(options.cachePath))
+
+      if (cachePath.includes('..') || !isAbsolute(cachePath)) {
+        throw new Error('Invalid cache path')
+      }
+
+      ctx.info('using disk cache', { cachePath })
+      return new DiskCache(ctx, { ...options, cachePath })
     } catch (err: any) {
-      ctx.error('Failed to create cache directory', { path: options.cachePath, error: err })
+      ctx.error('Failed to create cache', { path: options.cachePath, error: err })
     }
   }
 
