@@ -12,14 +12,13 @@
 // limitations under the License.
 
 import {
-  AccountID,
   AppletAttachment,
   AppletParams,
   AppletType,
   Message,
   MessageID
 } from '@hcengineering/communication-types'
-import { AttachedDoc, Configuration, Doc, Ref } from '@hcengineering/core'
+import { AttachedDoc, Configuration, Doc, Ref, AccountUuid } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card, MasterTag } from '@hcengineering/card'
 import { AnyComponent } from '@hcengineering/ui'
@@ -85,7 +84,7 @@ export interface PollAnswer extends AttachedDoc<Poll> {
 }
 
 export interface UserVote {
-  account: AccountID
+  account: AccountUuid
   options: { id: string, label: string, votedAt: Date }[]
 }
 

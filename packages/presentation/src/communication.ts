@@ -37,7 +37,7 @@ import {
   type UpdatePatchEvent
 } from '@hcengineering/communication-sdk-types'
 import {
-  type AccountID,
+  type AccountUuid,
   type CardID,
   type CardType,
   type Collaborator,
@@ -287,7 +287,7 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async addCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
+  async addCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountUuid[]): Promise<void> {
     const event: AddCollaboratorsEvent = {
       type: NotificationEventType.AddCollaborators,
       cardId,
@@ -298,7 +298,7 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async removeCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
+  async removeCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountUuid[]): Promise<void> {
     const event: RemoveCollaboratorsEvent = {
       type: NotificationEventType.RemoveCollaborators,
       cardId,
@@ -443,7 +443,7 @@ class Client {
     return id
   }
 
-  private getAccount (): AccountID {
+  private getAccount (): AccountUuid {
     return getCurrentAccount().uuid
   }
 }
