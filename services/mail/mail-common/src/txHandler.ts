@@ -56,12 +56,12 @@ export function isNewChannelTx (tx: Tx): boolean {
     return false
   }
   const createTx = tx as TxCreateDoc<any>
-  return createTx.objectClass === chat.masterTag.Channel
+  return createTx.objectClass === chat.masterTag.Thread
 }
 
 export async function getChannel (client: TxOperations, email: string): Promise<Card | undefined> {
   const normalizedEmail = normalizeEmail(email)
-  return await client.findOne<Card>(mail.tag.MailChannel, { title: normalizedEmail })
+  return await client.findOne<Card>(mail.tag.MailThread, { title: normalizedEmail })
 }
 
 export async function getRecipients (

@@ -13,9 +13,33 @@
 // limitations under the License.
 //
 
+import { cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import { type Ref } from '@hcengineering/core'
+import { tryMigrate } from '@hcengineering/model'
 import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import chat from './plugin'
 
 export const chatOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, mode): Promise<void> {},
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, cardId, [
+      {
+        state: 'migrate-channels',
+        mode: 'upgrade',
+        func: migrateChannelsToThreads
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {}
+}
+
+async function migrateChannelsToThreads (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CARD,
+    {
+      _class: 'chat:masterTag:Channel' as Ref<MasterTag>
+    },
+    {
+      _class: chat.masterTag.Thread
+    }
+  )
 }
