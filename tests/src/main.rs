@@ -1,5 +1,7 @@
 mod auth;
 mod config;
+mod get;
+mod head;
 mod patch;
 mod put;
 mod sanity;

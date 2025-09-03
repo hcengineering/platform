@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, str::FromStr, sync::Arc};
+use std::{collections::HashMap, fmt::Display, io, str::FromStr};
 
 use actix_web::{
     HttpRequest, HttpResponse,
@@ -11,8 +11,7 @@ use actix_web::{
     web::{Data, Header, Path, Payload},
 };
 use aws_sdk_s3::error::SdkError;
-use bytes::Bytes;
-use futures_util::Stream;
+use futures::{StreamExt, stream};
 use serde::{Deserialize, Serialize};
 use size::Size;
 use tracing::*;
@@ -329,9 +328,42 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
     let response = if !parts.is_empty() {
         let mut response = HttpResponse::Ok();
 
+        let headers = parts[0].data.headers.as_ref();
+        if let Some(headers) = headers {
+            for (header, value) in headers.iter() {
+                response.insert_header((header.as_str(), value.to_owned()));
+            }
+        }
+
         let etag = parts.last().unwrap().data.etag.to_owned();
 
         response.insert_header((header::ETAG, etag));
+
+        response.body(merge::stream(s3, parts).await?)
+    } else {
+        HttpResponse::NotFound().finish()
+    };
+
+    Ok(response)
+}
+
+#[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
+pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
+    let span = Span::current();
+
+    let mut request = ServiceRequest::from_request(request);
+
+    let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+
+    span.record("workspace", path.workspace.to_string());
+    span.record("huly_key", &path.key);
+
+    let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
+
+    let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
+
+    let response = if !parts.is_empty() {
+        let mut response = HttpResponse::Ok();
 
         let headers = parts[0].data.headers.as_ref();
         if let Some(headers) = headers {
@@ -340,7 +372,16 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
             }
         }
 
-        response.body(merge::stream(s3, parts).await?)
+        let etag = parts.last().unwrap().data.etag.to_owned();
+
+        response.insert_header((header::ETAG, etag));
+
+        // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
+        let content_length = merge::content_length(parts);
+        response.body(SizedStream::new(
+            content_length as u64,
+            stream::empty::<Result<_, io::Error>>().boxed_local(),
+        ))
     } else {
         HttpResponse::NotFound().finish()
     };

@@ -63,8 +63,8 @@ pub async fn put_new_sized_no_multipart(size: usize) -> eyre::Result<()> {
         res.headers().get(http::header::CONTENT_TYPE).unwrap()
     );
     check_eq!(
-        res.header("content-length"),
-        Some(size.to_string().as_str())
+        Some(size.to_string().as_str()),
+        res.header("content-length")
     );
     check_eq!(text, res.text().await?);
 
@@ -87,8 +87,8 @@ pub async fn put_new_sized_multipart() -> eyre::Result<()> {
     let res = http.key_get(&key1).send().await?;
     check!(res.status().is_success());
     check_eq!(
-        res.header("content-length"),
-        Some(text.len().to_string().as_str())
+        Some(text.len().to_string().as_str()),
+        res.header("content-length")
     );
     check_eq!(text, res.text().await?);
 
@@ -102,8 +102,8 @@ pub async fn put_new_sized_multipart() -> eyre::Result<()> {
     let res = http.key_get(&key2).send().await?;
     check!(res.status().is_success());
     check_eq!(
-        res.header("content-length"),
-        Some(text.len().to_string().as_str())
+        Some(text.len().to_string().as_str()),
+        res.header("content-length")
     );
     check_eq!(text, res.text().await?);
 
