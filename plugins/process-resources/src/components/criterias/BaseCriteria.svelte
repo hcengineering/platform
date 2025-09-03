@@ -176,7 +176,6 @@
 
     &.context {
       background: #3575de33;
-      padding-left: 0.75rem;
       border-color: var(--primary-button-default);
     }
   }

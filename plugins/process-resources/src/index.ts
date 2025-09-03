@@ -68,6 +68,7 @@ import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
+import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
 import { ProcessMiddleware } from './middleware'
 import {
   continueExecution,
@@ -134,6 +135,9 @@ export default async (): Promise<Resources> => ({
     RefCriteria,
     EnumCriteria,
     ArrayCriteria
+  },
+  transformPresenter: {
+    NumberPresenter
   },
   transformEditor: {
     ArrayElementEditor,
