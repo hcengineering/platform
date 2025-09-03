@@ -47,3 +47,4 @@ async-stream = "0.3.6"
 blake3 = "1.8.2"
 futures = "0.3.31"
 strum = { version = "0.27.2", features = ["derive"] }
+json-patch = "4.0.0"

@@ -7,6 +7,7 @@ use bytes::Bytes;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, from_slice};
+use tracing::*;
 
 use crate::handlers::PartData;
 use crate::handlers::{HandlerResult, Headers};
@@ -56,8 +57,6 @@ pub fn validate_patch_request(
     merge_strategy: MergeStrategy,
     headers: &Headers,
 ) -> HandlerResult<()> {
-    dbg!(&headers);
-
     match merge_strategy {
         MergeStrategy::JsonPatch
             if headers.content_type != Some("application/json-patch+json".to_string())
@@ -83,10 +82,10 @@ pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> Handle
     }
 }
 
-pub fn stream(
+pub async fn stream(
     s3: Arc<S3Client>,
     parts: Vec<ObjectPart<PartData>>,
-) -> SizedStream<Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>> {
+) -> anyhow::Result<SizedStream<Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>>> {
     let first = parts.first().unwrap();
     let merge_strategy = first.data.merge_strategy.unwrap();
 
@@ -122,15 +121,56 @@ pub fn stream(
                 }
             };
 
-            SizedStream::new(content_length as u64, Box::pin(stream))
+            Ok(SizedStream::new(content_length as u64, Box::pin(stream)))
         }
 
         MergeStrategy::JsonPatch => {
+            let mut acc = None;
+
+            for part in parts {
+                let part_data = part_data(&s3, part).await?;
+
+                use json_patch::PatchOperation;
+                use serde_json::from_slice;
+
+                if let Some(acc) = &mut acc {
+                    let ops = from_slice::<Vec<PatchOperation>>(&part_data)?;
+
+                    if let Err(error) = json_patch::patch(acc, &ops) {
+                        error!("json patch error: {error}");
+                    }
+                } else {
+                    acc = Some(serde_json::from_slice::<Value>(&part_data)?);
+                }
+            }
+
+            let bytes = serde_json::to_vec(&acc.unwrap())?;
+            let content_length = bytes.len() as u64;
+
             let stream = stream! {
-                yield Result::<Bytes, IoError>::Ok(Bytes::from(r#"{}"#));
+                yield Result::<Bytes, IoError>::Ok(Bytes::from(bytes));
             };
 
-            SizedStream::new(2, Box::pin(stream))
+            Ok(SizedStream::new(content_length, Box::pin(stream)))
+        }
+    }
+}
+
+async fn part_data(s3: &S3Client, part: ObjectPart<PartData>) -> anyhow::Result<Vec<u8>> {
+    match part.inline {
+        Some(inline) => Ok(inline),
+
+        None => {
+            let response = s3
+                .get_object()
+                .bucket(&CONFIG.s3_bucket)
+                .key(&part.data.blob)
+                .send()
+                .await?;
+
+            let bytes = response.body().bytes().unwrap_or_default().to_vec();
+
+            Ok(bytes)
         }
     }
 }

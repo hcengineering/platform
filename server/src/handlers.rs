@@ -340,7 +340,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
             }
         }
 
-        response.body(merge::stream(s3, parts))
+        response.body(merge::stream(s3, parts).await?)
     } else {
         HttpResponse::NotFound().finish()
     };
