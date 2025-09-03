@@ -35,15 +35,4 @@ export function createModel (builder: Builder): void {
     },
     mail.tag.MailThread
   )
-  builder.createDoc(
-    card.class.Tag,
-    core.space.Model,
-    {
-      extends: chat.masterTag.Channel,
-      label: mail.string.MailTag,
-      kind: ClassifierKind.MIXIN,
-      icon: mail.icon.Mail
-    },
-    mail.tag.MailChannel
-  )
 }

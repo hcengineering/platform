@@ -82,7 +82,7 @@ export class ChannelCache {
     const normalizedEmail = normalizeEmail(email)
     try {
       // First try to find existing channel
-      const channel = await this.client.findOne(mail.tag.MailChannel, { title: normalizedEmail })
+      const channel = await this.client.findOne(mail.tag.MailThread, { title: normalizedEmail })
 
       if (channel != null) {
         this.ctx.info('Using existing channel', { me: normalizedEmail, space, channel: channel._id })
@@ -119,7 +119,7 @@ export class ChannelCache {
 
     try {
       // Double-check that channel doesn't exist after acquiring lock
-      const existingChannel = await this.client.findOne(mail.tag.MailChannel, { title: normalizedEmail })
+      const existingChannel = await this.client.findOne(mail.tag.MailThread, { title: normalizedEmail })
       if (existingChannel != null) {
         this.ctx.info('Using existing channel (found after mutex lock)', {
           me: normalizedEmail,
@@ -132,7 +132,7 @@ export class ChannelCache {
       // Create new channel if it doesn't exist
       this.ctx.info('Creating new channel', { me: normalizedEmail, space, personId })
       const channelId = await this.client.createDoc(
-        chat.masterTag.Channel,
+        chat.masterTag.Thread,
         space,
         {
           title: normalizedEmail,
@@ -150,9 +150,9 @@ export class ChannelCache {
       this.ctx.info('Creating mixin', { me: normalizedEmail, space, personId, channelId })
       await this.client.createMixin(
         channelId,
-        chat.masterTag.Channel,
+        chat.masterTag.Thread,
         space,
-        mail.tag.MailChannel,
+        mail.tag.MailThread,
         {},
         Date.now() + MessageTimeShift.MailTag,
         personId

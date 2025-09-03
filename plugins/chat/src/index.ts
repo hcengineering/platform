@@ -32,12 +32,10 @@ const chat = plugin(chatId, {
     Title: '' as IntlString
   },
   icon: {
-    Channel: '' as Asset,
     ChatBubble: '' as Asset,
     Thread: '' as Asset
   },
   masterTag: {
-    Channel: '' as Ref<MasterTag>,
     Thread: '' as Ref<MasterTag>
   }
 })
