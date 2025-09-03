@@ -144,7 +144,7 @@ async function writeToResponse (
 export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const tempDir = new TemporaryDir(ctx, 'preview')
+  const tempDir = new TemporaryDir(ctx, 'preview-')
 
   const cache = createCache(ctx, config.Cache)
   const service = createPreviewService(storageAdapter, cache, tempDir)
