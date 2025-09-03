@@ -85,6 +85,9 @@ export default mergeIds(processId, process, {
     SplitEditor: '' as AnyComponent,
     CutEditor: '' as AnyComponent
   },
+  transformPresenter: {
+    NumberPresenter: '' as AnyComponent
+  },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
     CreateMiddleware: '' as Resource<PresentationMiddlewareCreator>

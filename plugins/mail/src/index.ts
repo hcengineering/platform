@@ -24,7 +24,6 @@ export const mailId = 'mail' as Plugin
 
 export default plugin(mailId, {
   tag: {
-    MailChannel: '' as Ref<Tag>,
     MailThread: '' as Ref<Tag>
   },
   string: {

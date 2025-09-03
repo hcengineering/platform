@@ -28,7 +28,7 @@
 {#if func !== undefined}
   <div class="container">
     {#if func.presenter !== undefined}
-      <Component is={func.presenter} props={{ props: value.props, context, process }} />
+      <Component is={func.presenter} props={{ value, context, process }} />
     {:else}
       <Label label={func.label} />
     {/if}

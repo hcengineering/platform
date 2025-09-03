@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'

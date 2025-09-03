@@ -17,13 +17,15 @@ import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 
 import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from '../types'
 
-export class NoopProvider implements PreviewProvider {
+export class FallbackProvider implements PreviewProvider {
+  constructor (private readonly target: PreviewProvider) {}
+
   supports (contentType: string): boolean {
     return true
   }
 
   async image (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, contentType: string): Promise<PreviewFile> {
-    throw new Error('Not supported')
+    return await this.target.image(ctx, workspace, name, contentType)
   }
 
   async metadata (
@@ -32,6 +34,6 @@ export class NoopProvider implements PreviewProvider {
     name: string,
     contentType: string
   ): Promise<PreviewMetadata> {
-    return {}
+    return await this.target.metadata(ctx, workspace, name, contentType)
   }
 }
