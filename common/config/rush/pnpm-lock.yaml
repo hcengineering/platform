@@ -591,7 +591,7 @@ importers:
         version: file:projects/model-card.tgz
       '@rush-temp/model-chat':
         specifier: file:./projects/model-chat.tgz
-        version: file:projects/model-chat.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+        version: file:projects/model-chat.tgz
       '@rush-temp/model-chunter':
         specifier: file:./projects/model-chunter.tgz
         version: file:projects/model-chunter.tgz
@@ -1678,6 +1678,9 @@ importers:
       '@types/htmlparser2':
         specifier: ^3.10.7
         version: 3.10.7
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.12
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
@@ -2299,6 +2302,9 @@ importers:
       toposort:
         specifier: ^2.0.2
         version: 2.0.2
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-loader:
         specifier: ^9.2.5
         version: 9.5.1(typescript@5.8.3)(webpack@5.97.1)
@@ -4884,7 +4890,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-FOzneXg+JMRX2/EeEWd4w/lPJMBkSbDespBkMM479bLjcOwCrjswt/hI2uGHO7Pi0gvVVczrWwzp2eVVpCU81A==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-KzBDtWbDzztfPmsNo9D7m7wf5tebLLMK1cDJP/o5MDJYsS7exjWimlGKAhKKb/iQ4CCjQLT9HwyEhhEPIlbi9g==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -4976,7 +4982,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-chat@file:projects/model-chat.tgz':
-    resolution: {integrity: sha512-dVgwzzmaQjHprWR3mEu1EO5J5azTvzNOyOYBI+AYRtqGHaPLAUGOVFKrebcCdbyJgUhq7wp7aDzq3+r75/fQ+w==, tarball: file:projects/model-chat.tgz}
+    resolution: {integrity: sha512-64oSh/Vi61UW9byPXcxGfeV1lPT0GtZ9FSlu2p+FdkLqptO4tUmlHE7GMveKoL+OjM64njjOJjqkR0zvRNgy0w==, tarball: file:projects/model-chat.tgz}
     version: 0.0.0
 
   '@rush-temp/model-chunter@file:projects/model-chunter.tgz':
@@ -22087,9 +22093,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rush-temp/model-chat@file:projects/model-chat.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+  '@rush-temp/model-chat@file:projects/model-chat.tgz':
     dependencies:
-      '@types/jest': 29.5.12
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -22098,19 +22103,10 @@ snapshots:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
       - supports-color
-      - ts-node
 
   '@rush-temp/model-chunter@file:projects/model-chunter.tgz':
     dependencies:

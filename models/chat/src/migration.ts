@@ -21,7 +21,6 @@ import {
   type MigrationUpgradeClient,
   type MigrateUpdate,
   type MigrationDocumentQuery,
-  type MigrateMode,
   tryMigrate
 } from '@hcengineering/model'
 import chat from './plugin'
@@ -58,16 +57,12 @@ async function migrateChannelsToThreads (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateParentInfo (client: MigrationClient, mode: MigrateMode): Promise<void> {
-  await performParentInfoMigration(client, 1000)
-}
-
-export async function performParentInfoMigration (client: MigrationClient, bulkSize: number = 1000): Promise<void> {
+async function migrateParentInfo (client: MigrationClient): Promise<void> {
   let processedCards = 0
   const iterator = await client.traverse<Card>(DOMAIN_CARD, { _class: card.class.Card })
   try {
     while (true) {
-      const cards = await iterator.next(bulkSize)
+      const cards = await iterator.next(1000)
       if (cards === null || cards.length === 0) {
         break
       }
