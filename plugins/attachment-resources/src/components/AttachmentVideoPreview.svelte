@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import type { BlobType, WithLookup } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import { getFileUrl, getVideoMeta, getPreviewThumbnail } from '@hcengineering/presentation'
   import { HlsVideo } from '@hcengineering/hls'
   import { Video } from '@hcengineering/ui'
 
@@ -66,11 +66,12 @@
 <div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
   {#await getVideoMeta(file, name) then meta}
     {@const src = getFileUrl(file, '')}
+    {@const poster = getPreviewThumbnail(file, dimensions.width, dimensions.height)}
 
     {#if meta?.hls?.source !== undefined}
       <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} />
     {:else}
-      <Video {src} {name} preload />
+      <Video {src} {name} {poster} preload={poster === ''} />
     {/if}
   {/await}
 </div>

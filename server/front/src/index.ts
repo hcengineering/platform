@@ -268,6 +268,7 @@ export function start (
     collaborator?: string
     collaboratorUrl: string
     brandingUrl?: string
+    previewUrl?: string
     previewConfig: string
     uploadConfig: string
     linkPreviewUrl?: string
@@ -346,6 +347,7 @@ export function start (
       STREAM_URL: config.streamUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
+      PREVIEW_URL: config.previewUrl,
       PREVIEW_CONFIG: config.previewConfig,
       UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,

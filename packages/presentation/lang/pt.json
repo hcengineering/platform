@@ -53,7 +53,6 @@
     "EraserTool": "Ferramenta borracha",
     "PanTool": "Ferramenta mover",
     "TextTool": "Ferramenta texto",
-    "ColorTooltip": "{color}",
     "PaletteManagementMenu": "Gerenciar predefinições de cor"
   },
   "status": {

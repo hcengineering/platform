@@ -290,6 +290,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
+  setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)

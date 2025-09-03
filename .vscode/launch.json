@@ -855,6 +855,22 @@
       "cwd": "${workspaceRoot}/pods/media"
     },
     {
+      "name": "Debug preview",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://huly.local:3000",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030",
+        "SECRET": "secret",
+        "CACHE_PATH": "/tmp/preview"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/preview"
+    },
+    {
       "type": "chrome",
       "name": "Attach to Browser",
       "request": "attach",

@@ -154,7 +154,6 @@ export default plugin(presentationId, {
     EraserTool: '' as IntlString,
     PanTool: '' as IntlString,
     TextTool: '' as IntlString,
-    ColorTooltip: '' as IntlString,
     PaletteManagementMenu: '' as IntlString
   },
   extension: {
@@ -179,7 +178,8 @@ export default plugin(presentationId, {
     ClientHook: '' as Metadata<ClientHook>,
     SessionId: '' as Metadata<string>,
     StatsUrl: '' as Metadata<string>,
-    MailUrl: '' as Metadata<string>
+    MailUrl: '' as Metadata<string>,
+    PreviewUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode
