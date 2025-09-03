@@ -18,6 +18,7 @@
 
   export let src: string
   export let name: string | undefined = undefined
+  export let poster: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement
@@ -40,7 +41,15 @@
   })
 </script>
 
-<video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} disablepictureinpicture>
+<video
+  bind:this={video}
+  {src}
+  data-poster={poster}
+  width="100%"
+  height="100%"
+  preload={preload ? 'auto' : 'none'}
+  disablepictureinpicture
+>
   <track kind="captions" label={name ?? ''} />
 </video>
 
@@ -64,6 +73,8 @@
     flex: 1;
     min-width: 10rem;
     border-radius: 0.75rem;
+    width: 100%;
+    height: 100%;
     --plyr-control-spacing: 0.5rem;
     --plyr-control-icon-size: 1rem;
     --plyr-video-background: transparent;

@@ -29,6 +29,7 @@
   export let attachment: WithLookup<Attachment> | BlobType
   export let isSaved = false
   export let removable = false
+  export let hovered = false
 
   let download: HTMLAnchorElement
 
@@ -110,12 +111,17 @@
         })
       }
     }
+
+    hovered = true
     showPopup(
       Menu,
       {
         actions
       },
-      ev.target as HTMLElement
+      ev.target as HTMLElement,
+      () => {
+        hovered = false
+      }
     )
   }
 </script>

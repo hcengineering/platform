@@ -25,13 +25,13 @@ import drive, {
   DriveEvents
 } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, getFileMetadata } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
+  type FileUploadOptions,
   getDataTransferFiles,
   showFilesUploadPopup,
-  type FileUploadOptions,
   uploadFiles
 } from '@hcengineering/uploader'
 import { openDoc } from '@hcengineering/view-resources'
@@ -263,7 +263,10 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata }) => {
+  const callback: FileUploadCallback = async ({ uuid, name, file, path }) => {
+    // TODO this should be done in the upload service
+    const metadata = await getFileMetadata(file, uuid)
+
     const folder = await findParent(path)
     try {
       const data = {
