@@ -150,12 +150,12 @@ async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<(Headers
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct PartData {
+pub struct PartData {
     workspace: Uuid,
     key: String,
     part: u32,
-    size: usize,
-    blob: String,
+    pub size: usize,
+    pub blob: String,
     etag: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -165,7 +165,7 @@ struct PartData {
     meta: Option<HashMap<String, String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    merge_strategy: Option<MergeStrategy>,
+    pub merge_strategy: Option<MergeStrategy>,
 }
 
 #[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
@@ -326,49 +326,11 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
-    fn stream(
-        parts: Vec<postgres::ObjectPart<PartData>>,
-        s3: Arc<S3Client>,
-    ) -> impl Stream<Item = Result<Bytes, std::io::Error>> {
-        use async_stream::stream;
-
-        stream! {
-            for parts in parts {
-                match parts.inline {
-                    Some(inline) => {
-                        yield Ok(Bytes::from(inline));
-                    },
-                    None => {
-                        match s3.get_object().bucket(&CONFIG.s3_bucket).key(parts.data.blob).send().await {
-
-                            Ok(mut response) => {
-                                while let Some(bytes) = response.body.next().await {
-                                    yield Ok(bytes?);
-                                }
-                            },
-                            Err(error) => {
-                                yield Err(std::io::Error::new(std::io::ErrorKind::Other, error));
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     let response = if !parts.is_empty() {
-        let mut content_length = 0;
-
-        for part in parts.iter() {
-            content_length += part.data.size;
-        }
-
         let mut response = HttpResponse::Ok();
 
         let etag = parts.last().unwrap().data.etag.to_owned();
 
-        response.insert_header((header::CONTENT_LENGTH, content_length));
         response.insert_header((header::ETAG, etag));
 
         let headers = parts[0].data.headers.as_ref();
@@ -378,7 +340,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
             }
         }
 
-        response.body(SizedStream::new(content_length as u64, stream(parts, s3)))
+        response.body(merge::stream(s3, parts))
     } else {
         HttpResponse::NotFound().finish()
     };
