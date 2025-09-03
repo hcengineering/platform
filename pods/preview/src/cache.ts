@@ -77,8 +77,7 @@ class DiskCache implements Cache {
     this.cache = new LRUCache({
       maxSize: options.cacheSize,
       sizeCalculation: (value) => value.size,
-      dispose: (value, key, reason) => {
-        this.ctx.info('dispose', { key, filePath: value.filePath, reason })
+      dispose: (value) => {
         this.disposed.add(value)
       },
       ttl: 0,
@@ -226,4 +225,25 @@ export function createCache (ctx: MeasureContext, options: CacheConfig): Cache {
 
   ctx.info('using no cache')
   return new NoopCache()
+}
+
+export async function withCache (
+  ctx: MeasureContext,
+  cache: Cache,
+  key: string,
+  fn: () => Promise<PreviewFile>
+): Promise<PreviewFile> {
+  const cached = cache.get(key)
+  if (cached !== undefined) {
+    try {
+      await stat(cached.filePath)
+      return cached
+    } catch {
+      ctx.warn('cached file not found', { cached })
+      cache.delete(key)
+    }
+  }
+
+  const value = await fn()
+  return await cache.put(key, value)
 }

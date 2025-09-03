@@ -15,6 +15,6 @@
 
 export { DocProvider } from './doc'
 export { ImageProvider } from './image'
-export { NoopProvider } from './noop'
+export { FallbackProvider } from './fallback'
 export { PdfProvider } from './pdf'
 export { VideoProvider } from './video'
