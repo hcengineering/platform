@@ -74,7 +74,7 @@ describe('ChannelCache', () => {
       const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBe(mockChannel._id)
-      expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailChannel, { title: emailAccount })
+      expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailThread, { title: emailAccount })
       expect(mockClient.createDoc).not.toHaveBeenCalled()
       expect(mockCtx.info).toHaveBeenCalledWith('Using existing channel', {
         me: emailAccount,
@@ -95,7 +95,7 @@ describe('ChannelCache', () => {
       expect(result).toBe(generatedId)
       expect(mockClient.findOne).toHaveBeenCalledTimes(2)
       expect(mockClient.createDoc).toHaveBeenCalledWith(
-        chat.masterTag.Channel,
+        chat.masterTag.Thread,
         spaceId,
         {
           title: emailAccount,
@@ -111,9 +111,9 @@ describe('ChannelCache', () => {
       )
       expect(mockClient.createMixin).toHaveBeenCalledWith(
         expect.any(String),
-        chat.masterTag.Channel,
+        chat.masterTag.Thread,
         spaceId,
-        mail.tag.MailChannel,
+        mail.tag.MailThread,
         {},
         expect.any(Number),
         personId
@@ -184,8 +184,8 @@ describe('ChannelCache', () => {
       const channelId2 = await channelCache.getOrCreateChannel(spaceId, participants, upperCaseEmail, personId)
 
       // Assert
-      expect(mockClient.findOne).toHaveBeenNthCalledWith(1, mail.tag.MailChannel, { title: lowerCaseEmail })
-      expect(mockClient.findOne).toHaveBeenNthCalledWith(2, mail.tag.MailChannel, { title: lowerCaseEmail })
+      expect(mockClient.findOne).toHaveBeenNthCalledWith(1, mail.tag.MailThread, { title: lowerCaseEmail })
+      expect(mockClient.findOne).toHaveBeenNthCalledWith(2, mail.tag.MailThread, { title: lowerCaseEmail })
 
       // Should only create doc once
       expect(mockClient.createDoc).toHaveBeenCalledTimes(1)
@@ -227,7 +227,7 @@ describe('ChannelCache', () => {
       await channelCache.getOrCreateChannel(spaceId, participants, mixedCaseEmail, personId)
 
       // Assert - If email normalization is implemented, this would pass
-      expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailChannel, {
+      expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailThread, {
         title: expect.stringMatching(/mixed@example\.com/i)
       })
     })

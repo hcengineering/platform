@@ -14,7 +14,7 @@
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
   import { createMessagesQuery, IconForward } from '@hcengineering/presentation'
-  import { PersonId, SortingOrder, WithLookup } from '@hcengineering/core'
+  import core, { PersonId, SortingOrder, WithLookup } from '@hcengineering/core'
   import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
   import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
@@ -28,6 +28,7 @@
   import CardTagsColored from './CardTagsColored.svelte'
   import CardPathPresenter from './CardPathPresenter.svelte'
   import CardTimestamp from './CardTimestamp.svelte'
+  import SystemAvatar from '@hcengineering/contact-resources/src/components/SystemAvatar.svelte'
 
   export let card: WithLookup<Card>
 
@@ -63,9 +64,13 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
   <div class="card__avatar">
-    <PersonPreviewProvider value={person}>
-      <Avatar name={person?.name} {person} size="medium" />
-    </PersonPreviewProvider>
+    {#if socialId !== core.account.System}
+      <PersonPreviewProvider value={person}>
+        <Avatar name={person?.name} {person} size="medium" />
+      </PersonPreviewProvider>
+    {:else}
+      <SystemAvatar size="medium" />
+    {/if}
   </div>
 
   <div class="card__body">

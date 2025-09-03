@@ -33,6 +33,7 @@ export interface Config {
   LOVE_ENDPOINT?: string
   MODEL_VERSION: string
   PRESENCE_URL?: string
+  PREVIEW_URL?: string
   PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string

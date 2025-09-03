@@ -213,7 +213,7 @@ export class MailWorker {
         if (thread?.parent == null) {
           return
         }
-        const channel = await workspaceClient.findOne<Card>(chat.masterTag.Channel, { _id: thread.parent })
+        const channel = await workspaceClient.findOne<Card>(chat.masterTag.Thread, { _id: thread.parent })
         if (channel === undefined || !this.isHulyMailChannel(channel)) {
           return
         }

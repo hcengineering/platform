@@ -60,22 +60,6 @@ export function createModel (builder: Builder): void {
     },
     PaletteColorIndexes.Houseplant
   )
-  createSystemType(
-    builder,
-    chat.masterTag.Channel,
-    chat.icon.Channel,
-    chat.string.Channel,
-    chat.string.Channels,
-    {
-      defaultSection: communication.ids.CardMessagesSection,
-      defaultNavigation: MessagesNavigationAnchors.LatestMessages
-    },
-    PaletteColorIndexes.Blueberry
-  )
-
-  builder.mixin(chat.masterTag.Channel, core.class.Class, core.mixin.TxAccessLevel, {
-    updateAccessLevel: AccountRole.Guest
-  })
 
   builder.mixin(chat.masterTag.Thread, core.class.Class, core.mixin.TxAccessLevel, {
     updateAccessLevel: AccountRole.Guest

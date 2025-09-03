@@ -99,6 +99,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
 
+  let previewUrl = process.env.PREVIEW_URL
+  if (previewUrl === undefined) {
+    previewUrl = ''
+  }
+
   let filesUrl = process.env.FILES_URL
   if (filesUrl === undefined) {
     filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
@@ -141,6 +146,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaboratorUrl,
     collaborator,
     brandingUrl,
+    previewUrl,
     previewConfig,
     uploadConfig,
     pushPublicKey,

@@ -353,7 +353,7 @@
             <Component
               is={card.component.CardArrayEditor}
               props={{
-                _class: chat.masterTag.Channel,
+                _class: chat.masterTag.Thread,
                 value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
                 label: settingsRes.string.GuestChannelsArrayLabel,
                 onChange: onAllowedCardsChange

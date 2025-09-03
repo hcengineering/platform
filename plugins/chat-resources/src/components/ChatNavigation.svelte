@@ -48,10 +48,9 @@
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
-      { type: chat.masterTag.Channel, order: 2 },
-      { type: communication.type.Direct, order: 3 }
+      { type: communication.type.Direct, order: 2 }
     ],
-    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel, communication.type.Direct],
+    fixedTypes: [chat.masterTag.Thread, communication.type.Direct],
     specialSorting: {
       [communication.type.Direct]: 'alphabetical'
     },

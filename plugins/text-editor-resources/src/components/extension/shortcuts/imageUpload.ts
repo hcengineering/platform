@@ -29,14 +29,6 @@ export interface ImageUploadExtensionOptions {
   getFileUrl: (fileId: Ref<Blob>) => string
 }
 
-function getType (type: string): 'image' | 'other' {
-  if (type.startsWith('image/')) {
-    return 'image'
-  }
-
-  return 'other'
-}
-
 /**
  * @public
  */
@@ -71,9 +63,7 @@ export const ImageUploadExtension = Extension.create<ImageUploadExtensionOptions
           }
 
           const ctype = dataTransfer.getData('application/contentType')
-          const type = getType(ctype ?? 'other')
-
-          if (type === 'image') {
+          if (ctype.startsWith('image/')) {
             const node = view.state.schema.nodes.image.create({
               'file-id': _file,
               src: getFileUrl(_file as Ref<Blob>)

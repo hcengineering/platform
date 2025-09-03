@@ -21,6 +21,7 @@ rush docker:build -p 20 \
 --to @hcengineering/pod-export \
 --to @hcengineering/pod-msg2file \
 --to @hcengineering/pod-media \
+--to @hcengineering/pod-preview \
 --to @hcengineering/pod-external \
 --to @hcengineering/pod-backup \
 --to @hcengineering/backup-api-pod \
