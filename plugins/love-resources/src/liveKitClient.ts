@@ -40,6 +40,7 @@ const defaultCaptureOptions: VideoCaptureOptions = {
 export class LiveKitClient {
   public readonly liveKitRoom: LKRoom
 
+  public isConnecting: boolean = false
   public currentMediaSession: MediaSession | undefined = undefined
   private currentSessionSupportsVideo: boolean = false
   private lastParticipantNotificationTimeout: number = -1
@@ -74,6 +75,7 @@ export class LiveKitClient {
   }
 
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
+    this.isConnecting = true
     this.currentSessionSupportsVideo = withVideo
     try {
       const setupMediaSession = async (): Promise<void> => {
@@ -116,6 +118,7 @@ export class LiveKitClient {
 
       await this.updateActiveDevices()
     } catch (error) {
+      this.isConnecting = false
       this.currentMediaSession?.close()
       this.currentMediaSession?.removeAllListeners()
       this.currentMediaSession = undefined
@@ -146,6 +149,7 @@ export class LiveKitClient {
   }
 
   onConnected = (): void => {
+    this.isConnecting = false
     lkSessionConnected.set(true)
     this.liveKitRoom.on(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.on(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)

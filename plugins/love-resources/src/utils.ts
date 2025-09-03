@@ -512,6 +512,7 @@ export async function connectRoom (
   currentPerson: Person,
   room: Room
 ): Promise<void> {
+  liveKitClient.isConnecting = true
   await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   selectedRoomPlace.set(undefined)
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
@@ -580,6 +581,7 @@ export async function tryConnect (
   currentInvites: Invite[],
   place?: { x: number, y: number }
 ): Promise<void> {
+  if (liveKitClient.isConnecting) return
   const me = getCurrentEmployee()
   const currentPerson = await getPersonByPersonRef(me)
   if (currentPerson == null) return
