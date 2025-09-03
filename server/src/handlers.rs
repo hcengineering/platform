@@ -80,12 +80,11 @@ fn random_etag() -> String {
 pub struct Headers {
     pub content_length: Size,
     pub content_type: Option<String>,
-    pub merge_strategy: MergeStrategy,
     pub huly_headers: Vec<(String, String)>,
     pub meta: Vec<(String, String)>,
 }
 
-async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<Headers> {
+async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<(Headers, MergeStrategy)> {
     let content_length = request
         .extract::<Header<ContentLength>>()
         .await
@@ -108,7 +107,7 @@ async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<Headers>
             })
         })
         .transpose()?
-        .unwrap_or(MergeStrategy::Concatenate);
+        .unwrap_or_default();
 
     let mut huly_headers = Vec::new();
     for (key, value) in request.headers().iter() {
@@ -139,13 +138,15 @@ async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<Headers>
         serde_json::to_string(&merge_strategy).unwrap(),
     ));
 
-    Ok(Headers {
-        content_length,
-        content_type,
+    Ok((
+        Headers {
+            content_length,
+            content_type,
+            huly_headers,
+            meta,
+        },
         merge_strategy,
-        huly_headers,
-        meta,
-    })
+    ))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -169,17 +170,14 @@ struct PartData {
 
 #[instrument(level = "debug", skip_all, fields(workspace, huly_key))]
 pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpResponse> {
+    let span = Span::current();
     debug!("put request");
 
-    let span = Span::current();
-
     let mut request = ServiceRequest::from_request(request);
-
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+    let (headers, merge_strategy) = extract_headers(&mut request).await?;
 
-    let headers = extract_headers(&mut request).await?;
-
-    merge::validate_put_request(&headers)?;
+    merge::validate_put_request(merge_strategy, &headers)?;
 
     span.record("workspace", path.workspace.to_string());
     span.record("huly_key", &path.key);
@@ -189,7 +187,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 
     let uploaded = blob::upload(&s3, &pool, headers.content_length, payload).await?;
 
-    merge::validate_put_body(&headers, &uploaded)?;
+    merge::validate_put_body(merge_strategy, &uploaded)?;
 
     let part_data = PartData {
         workspace: path.workspace,
@@ -201,7 +199,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 
         headers: Some(headers.huly_headers.clone().into_iter().collect()),
         meta: Some(headers.meta.into_iter().collect()),
-        merge_strategy: Some(headers.merge_strategy),
+        merge_strategy: Some(merge_strategy),
     };
 
     let inline = uploaded.inline.and_then(|inline| {
@@ -239,43 +237,47 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
     let mut request = ServiceRequest::from_request(request);
 
     let path = request.extract::<Path<ObjectPath>>().await?.into_inner();
+    let (headers, _) = extract_headers(&mut request).await?;
+
     span.record("workspace", path.workspace.to_string());
     span.record("huly_key", &path.key);
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
-    let headers = extract_headers(&mut request).await?;
-
-    let uploaded = blob::upload(&s3, &pool, headers.content_length, payload).await?;
-
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
-    let part = parts
-        .iter()
-        .map(|p| p.data.part)
-        .reduce(u32::max)
-        .map(|m| m + 1)
-        .unwrap_or(0);
+    let mut response = if !parts.is_empty() {
+        let first = parts.first().unwrap();
+        let merge_strategy = first.data.merge_strategy.unwrap();
 
-    let part_data = PartData {
-        workspace: path.workspace,
-        key: path.key,
-        part,
-        blob: uploaded.s3_key,
-        size: uploaded.length,
-        etag: random_etag(),
+        merge::validate_patch_request(merge_strategy, &headers)?;
 
-        // defined in the first part
-        headers: None,
-        meta: None,
-        merge_strategy: None,
-    };
+        let uploaded = blob::upload(&s3, &pool, headers.content_length, payload).await?;
 
-    let mut response = if parts.is_empty() {
-        HttpResponse::NotFound()
-    } else {
-        // append
+        merge::validate_patch_body(merge_strategy, &uploaded)?;
+
+        let part = parts
+            .iter()
+            .map(|p| p.data.part)
+            .reduce(u32::max)
+            .map(|m| m + 1)
+            .unwrap_or(0);
+
+        let part_data = PartData {
+            workspace: path.workspace,
+            key: path.key,
+            part,
+            blob: uploaded.s3_key,
+            size: uploaded.length,
+            etag: random_etag(),
+
+            // defined in the first part
+            headers: None,
+            meta: None,
+            merge_strategy: None,
+        };
+
         postgres::append_part(
             &pool,
             path.workspace,
@@ -287,9 +289,18 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
         .await?;
 
         let mut response = HttpResponse::Created();
-        response.insert_header((header::ETAG, part_data.etag));
+
+        if uploaded.deduplicated {
+            response.insert_header(("Huly-Deduplicated", "true"));
+        } else {
+            if let Some(parts_count) = uploaded.parts_count {
+                response.insert_header(("Huly-S3-Parts-Count", parts_count.to_string()));
+            }
+        }
 
         response
+    } else {
+        HttpResponse::NotFound()
     };
 
     Ok(response.finish())
@@ -329,6 +340,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                     },
                     None => {
                         match s3.get_object().bucket(&CONFIG.s3_bucket).key(parts.data.blob).send().await {
+
                             Ok(mut response) => {
                                 while let Some(bytes) = response.body.next().await {
                                     yield Ok(bytes?);

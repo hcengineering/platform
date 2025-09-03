@@ -1,3 +1,4 @@
+use actix_web::error::ErrorBadRequest;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, from_slice};
 
@@ -16,42 +17,59 @@ pub enum MergeStrategy {
     Concatenate,
 }
 
-pub fn validate_put_request(headers: &Headers) -> HandlerResult<()> {
-    dbg!(&headers);
-
-    match headers.merge_strategy {
-        MergeStrategy::JsonPatch => {
+pub fn validate_put_request(merge_strategy: MergeStrategy, headers: &Headers) -> HandlerResult<()> {
+    match merge_strategy {
+        MergeStrategy::JsonPatch
             if headers.content_type != Some("application/json".to_string())
-                || headers.content_length > CONFIG.inline_threshold
-            {
-                return Err(
-                    actix_web::error::ErrorBadRequest("invalid content type and length").into(),
-                );
-            }
+                || headers.content_length > CONFIG.inline_threshold =>
+        {
+            Err(ErrorBadRequest("invalid content type and length").into())
         }
 
-        _ => {
-            //
-        }
+        _ => Ok(()),
     }
-
-    Ok(())
 }
 
-pub fn validate_put_body(headers: &Headers, blob: &Blob) -> HandlerResult<()> {
-    dbg!(&headers);
-    dbg!(&blob);
+pub fn validate_put_body(merge_strategy: MergeStrategy, blob: &Blob) -> HandlerResult<()> {
+    match merge_strategy {
+        MergeStrategy::JsonPatch => {
+            from_slice::<Value>(blob.inline.as_ref().unwrap())
+                .map_err(|e| ErrorBadRequest(e.to_string()))?;
 
-    match headers.merge_strategy {
+            Ok(())
+        }
+
+        _ => Ok(()),
+    }
+}
+
+pub fn validate_patch_request(
+    merge_strategy: MergeStrategy,
+    headers: &Headers,
+) -> HandlerResult<()> {
+    dbg!(&headers);
+
+    match merge_strategy {
+        MergeStrategy::JsonPatch
+            if headers.content_type != Some("application/json-patch+json".to_string())
+                || headers.content_length > CONFIG.inline_threshold =>
+        {
+            Err(ErrorBadRequest("invalid content type and length").into())
+        }
+
+        _ => Ok(()),
+    }
+}
+
+pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> HandlerResult<()> {
+    match merge_strategy {
         MergeStrategy::JsonPatch => {
             from_slice::<Value>(blob.inline.as_ref().unwrap())
                 .map_err(|x| actix_web::error::ErrorBadRequest(x.to_string()))?;
+
+            Ok(())
         }
 
-        _ => {
-            //
-        }
+        _ => Ok(()),
     }
-
-    Ok(())
 }
