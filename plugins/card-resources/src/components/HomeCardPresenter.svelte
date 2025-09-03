@@ -75,19 +75,24 @@
 
   <div class="card__body">
     <div class="card__header">
-      {#if hasNewMessages($labelsStore, card._id)}
-        <span class="notifyMarker" />
-      {/if}
-      <span class="card__title overflow-label" use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}>
-        {card.title}
-      </span>
+      <div class="flex-presenter">
+        {#if hasNewMessages($labelsStore, card._id)}
+          <span class="notifyMarker" />
+        {/if}
+        <span
+          class="card__title overflow-label"
+          use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}
+        >
+          {card.title}
+        </span>
+      </div>
       <CardTimestamp date={card.modifiedOn} />
       {#if !isComfortable2}
-        <div class="flex-presenter flex-gap-0-5">
+        <div class="flex-presenter flex-gap-0-5 tags-container">
           <CardPathPresenter {card} />
           <IconForward size={'small'} />
           <div class="card__tags">
-            <CardTagsColored value={card} />
+            <CardTagsColored value={card} collapsable fullWidth />
           </div>
         </div>
       {/if}
@@ -103,11 +108,11 @@
     </div>
     <div class="card__parent" class:wrap={isComfortable2}>
       {#if isComfortable2}
-        <div class="flex-presenter flex-gap-0-5">
+        <div class="flex-presenter flex-gap-0-5 tags-container">
           <CardPathPresenter {card} />
           <IconForward size={'small'} />
           <div class="card__tags mr-2">
-            <CardTagsColored value={card} />
+            <CardTagsColored value={card} collapsable fullWidth />
           </div>
         </div>
       {/if}
@@ -157,6 +162,7 @@
       flex-direction: column;
       gap: 0.25rem;
       overflow: hidden;
+      width: 100%;
     }
 
     &__header {
@@ -166,6 +172,7 @@
       align-items: center;
       height: 2rem;
       gap: 0.5rem;
+      width: 100%;
     }
 
     &__tags {
@@ -173,6 +180,7 @@
       flex-direction: row;
       height: 2rem;
       min-width: 0;
+      flex-grow: 1;
     }
 
     &__title {
@@ -230,6 +238,11 @@
 
       min-width: 0.5rem;
       height: 0.5rem;
+    }
+    .tags-container {
+      min-width: 14rem;
+      max-width: none;
+      flex-grow: 1;
     }
   }
 </style>
