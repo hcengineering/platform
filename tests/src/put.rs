@@ -53,7 +53,6 @@ pub async fn put_new_sized_no_multipart(size: usize) -> eyre::Result<()> {
 
     check!(res.status().is_success());
     check!(res.headers().get(http::header::ETAG).is_some());
-    check!(res.headers().get(http::header::CONTENT_LOCATION).is_some());
     check_eq!(None, res.header("huly-parts-count"));
 
     // check content
@@ -127,7 +126,6 @@ pub async fn put_existing() -> eyre::Result<()> {
     let res = http.key_put(&key).body(text2.clone()).send().await?;
     check!(res.status().is_success());
     check!(res.headers().get(http::header::ETAG).is_some());
-    check!(res.headers().get(http::header::CONTENT_LOCATION).is_some());
 
     // check content
     let res = http.key_get(&key).send().await?;

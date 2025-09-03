@@ -215,7 +215,6 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
     postgres::set_part(&pool, path.workspace, &part_data.key, inline, &part_data).await?;
 
     let mut response = HttpResponse::Created();
-    response.insert_header((header::CONTENT_LOCATION, part_data.key));
     response.insert_header((header::ETAG, part_data.etag));
 
     if uploaded.deduplicated {
