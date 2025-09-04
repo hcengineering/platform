@@ -21,7 +21,7 @@
     Process,
     ProcessToDo,
     SelectedContext,
-    SelectedExecutonContext
+    SelectedExecutionContext
   } from '@hcengineering/process'
   import ui, {
     Button,
@@ -52,14 +52,14 @@
 
   const client = getClient()
 
-  function getContext (value: string): SelectedExecutonContext | undefined {
+  function getContext (value: string): SelectedExecutionContext | undefined {
     const context = parseContext(value)
     if (context !== undefined && isExecutionContext(context)) {
       return context
     }
   }
 
-  function isExecutionContext (context: SelectedContext): context is SelectedExecutonContext {
+  function isExecutionContext (context: SelectedContext): context is SelectedExecutionContext {
     return context.type === 'context'
   }
 
