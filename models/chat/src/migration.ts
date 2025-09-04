@@ -13,8 +13,15 @@
 // limitations under the License.
 //
 
-import card, { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
-import core, { type Doc, type Ref, type Class, DOMAIN_MODEL_TX, type TxCreateDoc } from '@hcengineering/core'
+import card, { type Card, cardId, type CardSpace, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import core, {
+  type Doc,
+  type Ref,
+  type Class,
+  DOMAIN_MODEL_TX,
+  type TxCreateDoc,
+  DOMAIN_SPACE
+} from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -45,6 +52,11 @@ export const chatOperation: MigrateOperation = {
         state: 'migrate-channel-tags',
         mode: 'upgrade',
         func: migrateChannelTags
+      },
+      {
+        state: 'migrate-card-spaces',
+        mode: 'upgrade',
+        func: migrateCardSpaces
       }
     ])
   },
@@ -138,4 +150,30 @@ export async function performParentInfoMigration (client: MigrationClient, bulkS
   } finally {
     await iterator.close()
   }
+}
+
+async function migrateCardSpaces (client: MigrationClient): Promise<void> {
+  const cardSpaces = await client.find<CardSpace>(DOMAIN_SPACE, {
+    _class: card.class.CardSpace
+  })
+  const updates: {
+    filter: MigrationDocumentQuery<CardSpace>
+    update: MigrateUpdate<CardSpace>
+  }[] = []
+  for (const cs of cardSpaces) {
+    if (cs.types == null || !cs.types.includes(channelMasterTag)) {
+      continue
+    }
+    const types = cs.types.filter((t) => t !== channelMasterTag)
+    if (!types.includes(chat.masterTag.Thread)) {
+      types.push(chat.masterTag.Thread)
+    }
+    updates.push({
+      filter: { _id: cs._id },
+      update: { types }
+    })
+  }
+
+  await client.bulk(DOMAIN_SPACE, updates)
+  client.logger.log('Migrated card spaces', { allSpaces: cardSpaces.length, updatedSpaces: updates.length })
 }
