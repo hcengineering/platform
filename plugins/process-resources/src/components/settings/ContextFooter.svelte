@@ -16,30 +16,20 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { Process, Step } from '@hcengineering/process'
-  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
   import { Label } from '@hcengineering/ui'
   import processPlugin from '../../plugin'
+  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
 
   export let process: Process
   export let step: Step<Doc>
 
   $: currentContext = step.context ? process.context[step.context._id] : undefined
-
-  $: currentResultContext = step.result ? process.context[step.result._id] : undefined
 </script>
 
-{#if currentContext || currentResultContext}
-  <Label label={processPlugin.string.Result} />
-{/if}
 {#if currentContext}
+  <Label label={processPlugin.string.Result} />
   <div class="container">
     <ProcessContextPresenter context={currentContext} />
-  </div>
-{/if}
-
-{#if currentResultContext}
-  <div class="container">
-    <ProcessContextPresenter context={currentResultContext} />
   </div>
 {/if}
 

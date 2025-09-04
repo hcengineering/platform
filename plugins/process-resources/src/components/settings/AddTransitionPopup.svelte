@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, State, Trigger } from '@hcengineering/process'
+  import { Process, State, Trigger, TriggerResult } from '@hcengineering/process'
   import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
@@ -25,6 +25,7 @@
   const dispatch = createEventDispatcher()
   let to: Ref<State> | undefined = undefined
   let states: State[] = []
+  let result: TriggerResult | null = null
 
   const query = createQuery()
   query.query(plugin.class.State, { process: process._id }, (res) => {
@@ -66,13 +67,19 @@
       trigger,
       triggerParams: params,
       process: process._id,
+      result,
       actions: []
     })
     dispatch('close')
   }
 
   function change (e: CustomEvent<Record<string, any>>): void {
-    params = e.detail
+    if (e.detail?.params !== undefined) {
+      params = e.detail.params
+    }
+    if (e.detail?.result !== undefined) {
+      result = e.detail.result
+    }
   }
 </script>
 
@@ -111,13 +118,17 @@
       items={triggersItems}
       bind:selected={trigger}
       label={plugin.string.Trigger}
+      on:selected={() => {
+        params = {}
+        result = null
+      }}
       justify={'left'}
       width={'100%'}
       kind={'no-border'}
     />
   </div>
   {#if triggerValue?.editor}
-    <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
+    <Component is={triggerValue.editor} props={{ process, params, result }} on:change={change} />
   {/if}
 </Card>
 

@@ -60,6 +60,7 @@ import {
   type Step,
   type Transition,
   type Trigger,
+  type TriggerResult,
   type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
@@ -131,6 +132,8 @@ export class TTransition extends TDoc implements Transition {
     trigger!: Ref<Trigger>
 
   triggerParams!: Record<string, any>
+
+  result?: TriggerResult | null
 }
 
 @Model(process.class.ExecutionLog, core.class.Doc, DOMAIN_PROCESS_LOG)

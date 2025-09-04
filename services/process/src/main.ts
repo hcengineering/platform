@@ -40,7 +40,7 @@ import process, {
   ProcessError,
   SelectedContext,
   SelectedContextFunc,
-  SelectedExecutonContext,
+  SelectedExecutionContext,
   SelectedNested,
   SelectedRelation,
   SelectedUserRequest,
@@ -621,7 +621,7 @@ async function getContextValue (value: any, control: ProcessControl, execution: 
       } else if (context.type === 'function') {
         value = await getFunctionValue(control, execution, context)
       } else if (context.type === 'context') {
-        value = getExecutionContextValue(control, execution, context)
+        value = await getExecutionContextValue(control, execution, context)
       }
       return await fillValue(value, context, control, execution)
     } catch (err: any) {
@@ -684,18 +684,25 @@ function getUserRequestValue (control: ProcessControl, execution: Execution, con
   )
 }
 
-function getExecutionContextValue (
+async function getExecutionContextValue (
   control: ProcessControl,
   execution: Execution,
-  context: SelectedExecutonContext
-): any {
+  context: SelectedExecutionContext
+): Promise<any> {
   const userContext = execution.context[context.id]
-  if (userContext !== undefined) return userContext
   const _process = control.client.getModel().findObject(execution.process)
-  if (_process === undefined) return
-  const ctx = _process.context[context.id]
-  if (ctx === undefined) return
-  throw processError(process.error.ContextValueNotProvided, { name: ctx.name })
+  const processContext = _process?.context?.[context.id]
+  if (userContext !== undefined) {
+    if (context.key === '' || context.key === '_id') return userContext
+    if (processContext !== undefined) {
+      const contextVal = await control.client.findOne(processContext?._class, { _id: userContext })
+      if (contextVal !== undefined) {
+        const val = getObjectValue(context.key, contextVal)
+        return val
+      }
+    }
+  }
+  throw processError(process.error.ContextValueNotProvided, { name: processContext?.name ?? context.id })
 }
 
 async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {

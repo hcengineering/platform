@@ -16,7 +16,6 @@
   import { getClient } from '@hcengineering/presentation'
   import { ProcessContext } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
-  import process from '../../plugin'
 
   export let context: ProcessContext
 
