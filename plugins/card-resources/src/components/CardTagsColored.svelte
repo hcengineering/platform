@@ -144,7 +144,6 @@
     overflow: hidden;
     align-items: center;
     gap: 0.25rem;
-    width: 100%;
   }
 
   .divider {
