@@ -533,10 +533,10 @@ services:
       redis:
         condition: service_started
     ports:
-      - 8095:8095
+      - 8099:8099
     environment:
       - HULY_REDIS_URLS=redis://redis:6379
-      - HULY_BIND_PORT=8095
+      - HULY_BIND_PORT=8099
     restart: unless-stopped
 
   process-service:

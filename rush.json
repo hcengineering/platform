@@ -2544,6 +2544,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/hulypulse-client",
+      "projectFolder": "packages/hulypulse-client",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/communication",
       "projectFolder": "plugins/communication",
       "shouldPublish": false

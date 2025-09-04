@@ -17,17 +17,14 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
+  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace } from '@hcengineering/activity-resources'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { presenceByObjectId, updateMyPresence } from '@hcengineering/presence-resources'
-
-  import { type PresenceTyping } from '../../types'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getChannelSpace } from '../../utils'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
@@ -40,6 +37,8 @@
   export let collection: string = 'comments'
   export let autofocus = false
   export let withTypingInfo = false
+
+  import { setTyping, clearTyping } from '@hcengineering/presence-resources'
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
@@ -77,9 +76,7 @@
     createdMessageQuery.unsubscribe()
   }
 
-  let typingInfo: PresenceTyping[] = []
-  $: presence = $presenceByObjectId.get(object._id) ?? []
-  $: typingInfo = presence.map((p) => p.presence.typing).filter((p) => p !== undefined)
+  let typingInfo: Ref<Person>[] = []
 
   function clear (): void {
     currentMessage = getDefault()
@@ -107,21 +104,19 @@
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    const room = { objectId: object._id, objectClass: object._class }
-    updateMyPresence(room, { typing: undefined })
+    clearTyping(me)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
 
     throttle.call(() => {
-      const room = { objectId: object._id, objectClass: object._class }
-      const typing = { person: me, lastTyping: Date.now() }
-      updateMyPresence(room, { typing })
+      setTyping(me)
     })
   }
 
   function onUpdate (event: CustomEvent): void {
+
     if (!isEmptyMarkup(event.detail.message)) {
       void updateTypingInfo()
     }
