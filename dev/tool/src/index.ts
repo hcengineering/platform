@@ -2778,15 +2778,15 @@ export function devTool (
       const v6InvitesFile = 'account.invites.json'
 
       if (!(await backupAccsStorage.exists(v6AccountsFile))) {
-        toolCtx.error('file not pressent', { file: v6AccountsFile })
+        toolCtx.error('file not present', { file: v6AccountsFile })
         throw new Error(`${v6AccountsFile} should be present to restore`)
       }
       if (!(await backupAccsStorage.exists(v6WorkspacesFile))) {
-        toolCtx.error('file not pressent', { file: v6WorkspacesFile })
+        toolCtx.error('file not present', { file: v6WorkspacesFile })
         throw new Error(`${v6WorkspacesFile} should be present to restore`)
       }
       if (!(await backupAccsStorage.exists(v6InvitesFile))) {
-        toolCtx.error('file not pressent', { file: v6InvitesFile })
+        toolCtx.error('file not present', { file: v6InvitesFile })
         throw new Error(`${v6InvitesFile} should be present to restore`)
       }
 
