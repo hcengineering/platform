@@ -21,6 +21,7 @@
     ModernButton,
     ModernEditbox,
     Scroller,
+    SearchInput,
     Loading,
     showPopup
   } from '@hcengineering/ui'
@@ -41,10 +42,12 @@
   let cards: Card[] = []
   let total = -1
   let isLoading = true
+  let searchQuery: string = ''
 
+  $: query = searchQuery != null && searchQuery.trim() !== '' ? { $search: searchQuery } : {}
   $: cardsQuery.query(
     card.class.Card,
-    {},
+    query,
     (res) => {
       cards = res
       total = res.total
@@ -127,7 +130,10 @@
       <div class="header__title">
         <Label label={card.string.Home} />
       </div>
-      <ModernButton icon={IconSettings} on:click={onSettings} size="small" iconSize="small" kind="tertiary" />
+      <div class="flex flex-gap-2">
+        <SearchInput bind:value={searchQuery} collapsed />
+        <ModernButton icon={IconSettings} on:click={onSettings} size="small" iconSize="small" kind="tertiary" />
+      </div>
     </div>
     <div class="create-card">
       <ModernEditbox
