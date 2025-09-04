@@ -587,7 +587,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     sessionContext: SessionData
   ): string | undefined {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
-      if (sessionContext.admin !== true && sessionContext.account !== undefined) {
+      if (sessionContext.account?.role !== AccountRole.Admin && sessionContext.account !== undefined) {
         const acc = sessionContext.account
         if (acc.role === AccountRole.DocGuest || acc.uuid === systemAccountUuid) {
           return

@@ -19,11 +19,12 @@
   import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let nodes: MarkupNode[]
+  export let colorInherit: boolean = false
   export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 </script>
 
 {#if nodes}
   {#each nodes as node}
-    <LiteNode {parseEmojisFunction} {node} />
+    <LiteNode {node} {parseEmojisFunction} {colorInherit} />
   {/each}
 {/if}

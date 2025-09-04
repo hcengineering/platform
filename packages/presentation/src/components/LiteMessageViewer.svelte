@@ -21,6 +21,7 @@
   import { getResource } from '@hcengineering/platform'
 
   export let message: Markup | MarkupNode
+  export let colorInherit: boolean = false
 
   $: node = typeof message === 'string' ? markupToJSON(message) : message
 
@@ -35,6 +36,6 @@
   })
 </script>
 
-<div class="text-markup-view">
-  <LiteNode {parseEmojisFunction} {node} />
+<div class="text-markup-view" class:colorInherit>
+  <LiteNode {node} {parseEmojisFunction} {colorInherit} />
 </div>

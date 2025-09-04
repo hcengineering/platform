@@ -97,7 +97,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.173",
+        "MODEL_VERSION": "0.7.186",
         // "VERSION": "0.6.289",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
@@ -666,7 +666,8 @@
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
-        "QUEUE_REGION": "cockroach"
+        "QUEUE_REGION": "cockroach",
+        "TEMPORAL_ADDRESS": "localhost:7233"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -852,6 +853,22 @@
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/media"
+    },
+    {
+      "name": "Debug preview",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://huly.local:3000",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030",
+        "SECRET": "secret",
+        "CACHE_PATH": "/tmp/preview"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/preview"
     },
     {
       "type": "chrome",

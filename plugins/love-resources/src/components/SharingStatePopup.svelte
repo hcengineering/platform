@@ -19,7 +19,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import love from '../plugin'
-  import { lk, setShare } from '../utils'
+  import { liveKitClient, lk } from '../utils'
 
   import IconShare from './icons/Share.svelte'
 
@@ -54,7 +54,7 @@
   }
 
   function handleStop (): void {
-    void setShare(false)
+    void liveKitClient.setScreenShareEnabled(false)
     dispatch('close')
   }
 </script>

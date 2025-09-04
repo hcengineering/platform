@@ -183,7 +183,9 @@ const view = plugin(viewId, {
     PersonIdFilter: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     ReadOnlyNotification: '' as AnyComponent,
-    ForbiddenNotification: '' as AnyComponent
+    ForbiddenNotification: '' as AnyComponent,
+    DatePresenter: '' as AnyComponent,
+    DateEditor: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

@@ -65,6 +65,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/account-client": "^0.6.0",
+    "@temporalio/client": "1.12.3",
     "dotenv": "~16.0.0"
   }
 }

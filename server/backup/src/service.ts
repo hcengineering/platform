@@ -28,6 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
+import { getAccountDB } from '@hcengineering/account'
 import { getAccountClient } from '@hcengineering/server-client'
 import {
   type DbConfiguration,
@@ -43,6 +44,8 @@ import { restore } from './restore'
 
 export interface BackupConfig {
   AccountsURL: string
+  AccountsDbURL: string
+  AccountsDbNS?: string
   Token: string
 
   Interval: number // Timeout in seconds
@@ -320,27 +323,33 @@ class BackupWorker {
       if (pipeline === undefined) {
         throw new Error('Pipeline is undefined, cannot proceed with backup')
       }
+      const [accountDB, closeAccountDB] = await getAccountDB(this.config.AccountsDbURL, this.config.AccountsDbNS)
       const result = await ctx.with(
         'backup',
         {},
-        (ctx) =>
-          backup(ctx, pipeline as Pipeline, wsIds, storage, {
-            skipDomains: this.skipDomains,
-            force: true,
-            timeout: this.config.Timeout * 1000,
-            connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-            keepSnapshots: this.config.KeepSnapshots,
-            blobDownloadLimit: this.downloadLimit,
-            skipBlobContentTypes: ['video/', 'audio/', 'image/'],
-            fullVerify: this.fullCheck,
-            progress: (progress) => {
-              return notify?.(progress) ?? Promise.resolve()
-            },
-            msg: {
-              workspaceUrl: ws.url,
-              workspaceUuid: ws.uuid
-            }
-          }),
+        async (ctx) => {
+          try {
+            return await backup(ctx, pipeline as Pipeline, wsIds, storage, accountDB, {
+              skipDomains: this.skipDomains,
+              force: true,
+              timeout: this.config.Timeout * 1000,
+              connectTimeout: 5 * 60 * 1000, // 5 minutes to,
+              keepSnapshots: this.config.KeepSnapshots,
+              blobDownloadLimit: this.downloadLimit,
+              skipBlobContentTypes: ['video/', 'audio/', 'image/'],
+              fullVerify: this.fullCheck,
+              progress: (progress) => {
+                return notify?.(progress) ?? Promise.resolve()
+              },
+              msg: {
+                workspaceUrl: ws.url,
+                workspaceUuid: ws.uuid
+              }
+            })
+          } finally {
+            closeAccountDB()
+          }
+        },
         { workspace: ws.uuid, url: ws.url }
       )
 

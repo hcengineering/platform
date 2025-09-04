@@ -74,6 +74,7 @@ export { default as Favorites } from './components/Favorites.svelte'
 export { default as CardPresenter } from './components/CardPresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
 export { default as AssociationsSelect } from './components/settings/view/AssociationsSelect.svelte'
+export { default as Home } from './components/Home.svelte'
 
 export * from './types'
 export { getCardIconInfo } from './utils'

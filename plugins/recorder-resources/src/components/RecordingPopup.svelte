@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { type Blob, type Ref } from '@hcengineering/core'
   import drive, { createFile } from '@hcengineering/drive'
-  import { enumerateDevices } from '@hcengineering/media'
+  import { getMediaDevices } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { FilePreview, getClient, MessageBox, SpaceSelector } from '@hcengineering/presentation'
@@ -194,7 +194,8 @@
   }
 
   async function handleCamSetting (e: MouseEvent): Promise<void> {
-    const devices = await enumerateDevices('videoinput')
+    const mediaDevices = await getMediaDevices(false, true)
+    const devices = mediaDevices.devices.filter((d) => d.kind === 'videoinput')
 
     if (devices.length === 0) {
       return
@@ -214,7 +215,8 @@
   }
 
   async function handleMicSetting (e: MouseEvent): Promise<void> {
-    const devices = await enumerateDevices('audioinput')
+    const mediaDevices = await getMediaDevices(true, false)
+    const devices = mediaDevices.devices.filter((d) => d.kind === 'audioinput')
 
     if (devices.length === 0) {
       return

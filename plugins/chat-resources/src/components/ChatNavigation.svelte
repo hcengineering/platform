@@ -23,7 +23,17 @@
 
   export let card: Card | undefined = undefined
   export let type: Ref<MasterTag> | undefined = undefined
-  export let isFavorites: boolean = false
+  export let special: 'home' | 'favorites' | string | undefined = undefined
+
+  function getSpecial (special: 'home' | 'favorites' | string | undefined): string | undefined {
+    if (special === 'favorites') {
+      return 'favorites'
+    }
+    if (special === 'home') {
+      return 'home'
+    }
+    return undefined
+  }
 </script>
 
 <Navigator
@@ -34,13 +44,13 @@
     groupBySpace: false,
     hideEmpty: true,
     limit: 5,
+    home: true,
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
-      { type: chat.masterTag.Channel, order: 2 },
-      { type: communication.type.Direct, order: 3 }
+      { type: communication.type.Direct, order: 2 }
     ],
-    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel, communication.type.Direct],
+    fixedTypes: [chat.masterTag.Thread, communication.type.Direct],
     specialSorting: {
       [communication.type.Direct]: 'alphabetical'
     },
@@ -53,8 +63,9 @@
   applicationId={chatId}
   selectedType={type}
   selectedCard={card?._id}
-  selectedSpecial={isFavorites ? 'favorites' : undefined}
+  selectedSpecial={getSpecial(special)}
   on:selectType
   on:selectCard
   on:favorites
+  on:home
 />

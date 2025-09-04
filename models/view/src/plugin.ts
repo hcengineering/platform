@@ -66,8 +66,6 @@ export default mergeIds(viewId, view, {
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
-    DateEditor: '' as AnyComponent,
-    DatePresenter: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,

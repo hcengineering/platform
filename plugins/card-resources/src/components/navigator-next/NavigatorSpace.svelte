@@ -39,7 +39,7 @@
 
 <TreeNode
   _id={space._id}
-  icon={cardPlugin.icon.Card}
+  icon={cardPlugin.icon.Space}
   title={space.name}
   type={'nested'}
   on:dragstart={(evt) => {

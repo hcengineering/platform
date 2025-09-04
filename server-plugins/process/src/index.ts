@@ -47,7 +47,8 @@ export default plugin(serverProcessId, {
     AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
     CheckToDo: '' as Resource<CheckFunc>,
-    OnCardUpdateCheck: '' as Resource<CheckFunc>
+    OnCardUpdateCheck: '' as Resource<CheckFunc>,
+    CheckTime: '' as Resource<CheckFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,

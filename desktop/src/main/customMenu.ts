@@ -16,77 +16,77 @@
 import { app, BrowserWindow } from 'electron'
 import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
 
-export function dipatchMenuBarAction(mainWindow: BrowserWindow | undefined, action: MenuBarAction) {
-    if (mainWindow == null) {
-        return
-    }
-    
-    function performZoom(increment: number): void {
-        if  (mainWindow == null) {
-        return
-        }
-        const currentZoom = mainWindow.webContents.getZoomFactor();
-        mainWindow.webContents.setZoomFactor(currentZoom + increment);
-    }
+export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction): void {
+  if (mainWindow == null) {
+    return
+  }
 
-    const zoomStep = 0.1;
-    
-    switch (action) {
-        case 'settings':
-            mainWindow.webContents.send(CommandOpenSettings)
-            break;
-        case 'select-workspace':
-            mainWindow.webContents.send(CommandSelectWorkspace)
-            break;
-        case 'logout':
-            mainWindow.webContents.send(CommandLogout)
-            break;
-        case 'exit':
-            app.quit();
-            break;
-        case 'undo':
-            mainWindow.webContents.undo();
-            break;
-        case 'redo':
-            mainWindow.webContents.redo();
-            break;
-        case 'cut':
-            mainWindow.webContents.cut();
-            break;
-        case 'copy':
-            mainWindow.webContents.copy();
-            break;
-        case 'paste':
-            mainWindow.webContents.paste();
-            break;
-        case 'delete':
-            mainWindow.webContents.delete();
-            break;
-        case 'select-all':
-            mainWindow.webContents.selectAll();
-            break;
-        case 'reload':
-            mainWindow?.reload();
-            break;
-        case 'force-reload':
-            mainWindow.webContents.reloadIgnoringCache();
-            break;
-        case 'toggle-devtools':
-            mainWindow.webContents.toggleDevTools();
-            break;
-        case 'zoom-in':
-            performZoom(+zoomStep);
-            break;
-        case 'zoom-out':
-            performZoom(-zoomStep);
-            break;
-        case 'restore-size':
-            mainWindow.webContents.setZoomFactor(1.0);
-            break;
-        case 'toggle-fullscreen':
-            mainWindow.setFullScreen(!mainWindow.isFullScreen()); 
-            break;
-        default:
-            console.log('unknown menu action:', action);
+  function performZoom (increment: number): void {
+    if (mainWindow == null) {
+      return
     }
+    const currentZoom = mainWindow.webContents.getZoomFactor()
+    mainWindow.webContents.setZoomFactor(currentZoom + increment)
+  }
+
+  const zoomStep = 0.1
+
+  switch (action) {
+    case 'settings':
+      mainWindow.webContents.send(CommandOpenSettings)
+      break
+    case 'select-workspace':
+      mainWindow.webContents.send(CommandSelectWorkspace)
+      break
+    case 'logout':
+      mainWindow.webContents.send(CommandLogout)
+      break
+    case 'exit':
+      app.quit()
+      break
+    case 'undo':
+      mainWindow.webContents.undo()
+      break
+    case 'redo':
+      mainWindow.webContents.redo()
+      break
+    case 'cut':
+      mainWindow.webContents.cut()
+      break
+    case 'copy':
+      mainWindow.webContents.copy()
+      break
+    case 'paste':
+      mainWindow.webContents.paste()
+      break
+    case 'delete':
+      mainWindow.webContents.delete()
+      break
+    case 'select-all':
+      mainWindow.webContents.selectAll()
+      break
+    case 'reload':
+      mainWindow?.reload()
+      break
+    case 'force-reload':
+      mainWindow.webContents.reloadIgnoringCache()
+      break
+    case 'toggle-devtools':
+      mainWindow.webContents.toggleDevTools()
+      break
+    case 'zoom-in':
+      performZoom(+zoomStep)
+      break
+    case 'zoom-out':
+      performZoom(-zoomStep)
+      break
+    case 'restore-size':
+      mainWindow.webContents.setZoomFactor(1.0)
+      break
+    case 'toggle-fullscreen':
+      mainWindow.setFullScreen(!mainWindow.isFullScreen())
+      break
+    default:
+      console.log('unknown menu action:', action)
+  }
 }

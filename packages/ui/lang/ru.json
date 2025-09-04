@@ -101,6 +101,10 @@
     "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}",
     "Filter": "Фильтр",
     "Clear": "Очистить",
+    "Yesterday": "Вчера",
+    "ThisWeek": "Эта неделя",
+    "ThisMonth": "Этот месяц",
+    "ThisYear": "Этот год",
     "EmojiStyle": "Стиль эмодзи",
     "EmojiSystem": "Системный по умолчанию",
     "EmojiNoto": "Noto Color"

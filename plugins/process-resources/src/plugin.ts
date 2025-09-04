@@ -63,7 +63,9 @@ export default mergeIds(processId, process, {
     AddRelationPresenter: '' as AnyComponent,
     CardUpdateEditor: '' as AnyComponent,
     CardUpdatePresenter: '' as AnyComponent,
-    ToDoSettingPresenter: '' as AnyComponent
+    ToDoSettingPresenter: '' as AnyComponent,
+    TimeEditor: '' as AnyComponent,
+    TimePresenter: '' as AnyComponent
   },
   criteriaEditor: {
     StringCriteria: '' as AnyComponent,
@@ -82,6 +84,9 @@ export default mergeIds(processId, process, {
     ReplaceEditor: '' as AnyComponent,
     SplitEditor: '' as AnyComponent,
     CutEditor: '' as AnyComponent
+  },
+  transformPresenter: {
+    NumberPresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -153,6 +158,7 @@ export default mergeIds(processId, process, {
     EnterValue: '' as IntlString,
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
+    WaitUntil: '' as IntlString,
     OnCardUpdate: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,

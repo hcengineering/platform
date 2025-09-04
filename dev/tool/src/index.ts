@@ -51,7 +51,11 @@ import {
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
-import { getMongoAccountDB } from '@hcengineering/account-service'
+import {
+  getMongoAccountDB,
+  type Account as OldAccount,
+  type Workspace as OldWorkspace
+} from '@hcengineering/account-service'
 
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -113,7 +117,8 @@ import {
   migrateMergedAccounts,
   migrateTrustedV6Accounts,
   moveAccountDbFromMongoToPG,
-  restoreFromv6All
+  restoreFromv6All,
+  restoreTrustedV6Workspace
 } from './db'
 import { performGithubAccountMigrations } from './github'
 import { performGmailAccountMigrations } from './gmail'
@@ -916,7 +921,7 @@ export function devTool (
 
   program
     .command('backup <dirName> <workspace>')
-    .description('dump workspace transactions and minio resources')
+    .description('dump workspace transactions, blobs and accounts')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--full', 'Full recheck', false)
@@ -929,6 +934,7 @@ export function devTool (
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
+    .option('-fv, --fullVerify', 'Full verification', false)
     .action(
       async (
         dirName: string,
@@ -942,6 +948,7 @@ export function devTool (
           contentTypes: string
           full: boolean
           keepSnapshots: string
+          fullVerify: boolean
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
@@ -980,7 +987,7 @@ export function devTool (
               return
             }
 
-            await backup(toolCtx, pipeline, wsIds, storage, {
+            await backup(toolCtx, pipeline, wsIds, storage, db, {
               force: cmd.force,
               include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
               skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
@@ -991,7 +998,8 @@ export function devTool (
                 .split(';')
                 .map((it) => it.trim())
                 .filter((it) => it.length > 0),
-              keepSnapshots: parseInt(cmd.keepSnapshots)
+              keepSnapshots: parseInt(cmd.keepSnapshots),
+              fullVerify: cmd.fullVerify
             })
           } catch (err: any) {
             toolCtx.error('Failed to backup workspace', { err, workspace })
@@ -2744,6 +2752,96 @@ export function devTool (
 
       await withAccountDatabase(async (pgDb) => {
         await restoreFromv6All(toolCtx, pgDb, dirName, txes, dbUrl)
+      }, dbUrl)
+    })
+
+  program
+    .command('restore-v6-from-storage <workspace> <accsRoot>')
+    .description('Restore a workspace from v6 backup storage with accounts info')
+    .option('-r, --region <region>', 'Region to restore workspace to')
+    .option('-b, --branding <branding>', 'Branding to restore workspace with', 'huly')
+    .option('-s, --suffix <suffix>', 'Url suffix if conflicting', 'bold')
+    .option('-f, --force', 'Force restore if the same uuid', false)
+    .action(async (workspace, accsRoot, cmd: { suffix: string, region: string, branding: string, force: boolean }) => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide bucket name env')
+        process.exit(1)
+      }
+
+      const backupStorageConfig = storageConfigFromEnv(process.env.BACKUP_STORAGE)
+      const backupStorageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
+      const backupAccsStorage = await createStorageBackupStorage(toolCtx, backupStorageAdapter, backupIds, accsRoot)
+      const v6AccountsFile = 'account.accounts.json'
+      const v6WorkspacesFile = 'account.workspaces.json'
+      const v6InvitesFile = 'account.invites.json'
+
+      if (!(await backupAccsStorage.exists(v6AccountsFile))) {
+        toolCtx.error('file not present', { file: v6AccountsFile })
+        throw new Error(`${v6AccountsFile} should be present to restore`)
+      }
+      if (!(await backupAccsStorage.exists(v6WorkspacesFile))) {
+        toolCtx.error('file not present', { file: v6WorkspacesFile })
+        throw new Error(`${v6WorkspacesFile} should be present to restore`)
+      }
+      if (!(await backupAccsStorage.exists(v6InvitesFile))) {
+        toolCtx.error('file not present', { file: v6InvitesFile })
+        throw new Error(`${v6InvitesFile} should be present to restore`)
+      }
+
+      const v6Workspaces = JSON.parse((await backupAccsStorage.loadFile(v6WorkspacesFile)).toString()) as OldWorkspace[]
+      const v6Workspace = v6Workspaces.find((it) => it.workspace === workspace)
+
+      if (v6Workspace == null) {
+        toolCtx.error('workspace not found in the accounts backup', { workspace })
+        throw new Error(`workspace ${workspace} not found in the accounts backup`)
+      }
+
+      const uniqueWorkspaceAccounts = new Set((v6Workspace.accounts ?? []).map((it) => it.toString()))
+      const v6AccountsRaw = JSON.parse((await backupAccsStorage.loadFile(v6AccountsFile)).toString()) as any[]
+      const v6WorkspaceAccountsRaw = v6AccountsRaw.filter((acc) => uniqueWorkspaceAccounts.has(acc._id.toString()))
+
+      const v6WorkspaceAccounts: OldAccount[] = []
+      for (const rawAccount of v6WorkspaceAccountsRaw) {
+        const hashTypedArray = rawAccount.hash != null ? new Uint8Array(rawAccount.hash.data) : null
+        const saltTypedArray = new Uint8Array(rawAccount.salt.data)
+
+        v6WorkspaceAccounts.push({
+          ...rawAccount,
+          hash: hashTypedArray != null ? Buffer.from(hashTypedArray.buffer) : null,
+          salt: Buffer.from(saltTypedArray.buffer)
+        })
+      }
+
+      let v6Invites = JSON.parse((await backupAccsStorage.loadFile(v6InvitesFile)).toString()) as any[]
+      v6Invites = v6Invites.filter((invite: any) => invite.workspace.name === v6Workspace.workspace)
+
+      const { txes, dbUrl } = prepareTools()
+      const backupWsStorage = await createStorageBackupStorage(
+        toolCtx,
+        backupStorageAdapter,
+        backupIds,
+        v6Workspace.uuid ?? v6Workspace.workspace
+      )
+
+      const storageConfig = storageConfigFromEnv()
+      const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
+      const { suffix, region, branding, force } = cmd
+
+      await withAccountDatabase(async (pgDb) => {
+        await restoreTrustedV6Workspace(
+          toolCtx,
+          pgDb,
+          v6Workspace,
+          v6WorkspaceAccounts,
+          v6Invites,
+          backupWsStorage,
+          workspaceStorage,
+          txes,
+          dbUrl,
+          { conflictSuffix: suffix, region, branding, force }
+        )
       }, dbUrl)
     })
 

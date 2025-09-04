@@ -21,9 +21,8 @@
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { markdownToMarkup } from '@hcengineering/text-markdown'
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { ActivityMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
+  import { ActivityMessageViewer, isActivityMessage, AttachmentsPreview } from '@hcengineering/communication-resources'
 
-  import AttachmentsPreview from './AttachmentsPreview.svelte'
   import PreviewTemplate from './PreviewTemplate.svelte'
 
   export let card: Card

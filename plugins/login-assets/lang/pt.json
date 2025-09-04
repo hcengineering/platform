@@ -73,6 +73,7 @@
     "SetPasswordLater": "Vou definir uma senha mais tarde",
     "SetPasswordNow": "Vou definir uma senha agora",
     "LoginAsGuest": "Continuar como convidado",
-    "SignUpToCreateWorkspace": "Não há espaços de trabalho com acesso de convidado. Por favor, cadastre-se para criar o seu."
+    "SignUpToCreateWorkspace": "Não há espaços de trabalho com acesso de convidado. Por favor, cadastre-se para criar o seu.",
+    "WhatIsYourName": "Qual é o seu nome?"
   }
 }

@@ -101,7 +101,8 @@
     "ArraySizeGte": "Количество больше или равно",
     "ArraySizeLt": "Количество меньше",
     "ArraySizeLte": "Количество меньше или равно",
-    "Cancelled": "Отменено"
+    "Cancelled": "Отменено",
+    "WaitUntil": "Ждать до"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

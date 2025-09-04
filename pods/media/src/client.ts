@@ -131,16 +131,16 @@ export class WorkspaceClient {
     const txOps = new TxOperations(this.client, core.account.System)
     await txOps.domainRequest('communication' as OperationDomain, {
       event: {
-        type: MessageEventType.BlobPatch,
+        type: MessageEventType.AttachmentPatch,
         cardId: result.source.cardId,
         messageId: result.source.messageId,
         operations: [
           {
             opcode: 'update',
-            blobs: [
+            attachments: [
               {
-                blobId: result.blobId,
-                metadata
+                id: result.blobId,
+                params: { metadata }
               }
             ]
           }

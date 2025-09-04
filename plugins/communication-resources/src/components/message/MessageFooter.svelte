@@ -29,6 +29,7 @@
   import communication from '../../plugin'
 
   export let message: Message
+  export let thread: boolean = true
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
@@ -130,7 +131,7 @@
     <ReactionsList reactions={message.reactions} on:click={handleReaction} />
   </div>
 {/if}
-{#if message.thread && message.thread.threadId}
+{#if thread && message.thread && message.thread.threadId}
   <div class="message__replies overflow-label">
     <MessageThread thread={message.thread} on:click={handleReply} />
   </div>
@@ -152,9 +153,9 @@
   }
 
   .message__files {
-    display: grid;
-    grid-gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, 25rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     min-height: 2.5rem;
     width: 100%;
     overflow: hidden;

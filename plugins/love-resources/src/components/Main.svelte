@@ -16,12 +16,11 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { RoomType } from '@hcengineering/love'
 
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, screenSharing } from '../utils'
+  import { tryConnect } from '../utils'
   import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
 
@@ -48,8 +47,7 @@
 
     if (
       !$lkSessionConnected &&
-      (room.type === RoomType.Video || $screenSharing) &&
-      $myInfo?.sessionId &&
+      $myInfo?.sessionId !== undefined &&
       $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)

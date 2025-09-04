@@ -99,12 +99,12 @@
 
   --theme-clockface-sec-arrow: conic-gradient(at 50% -10px, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0) 49%, #F47758 50%, rgba(255, 0, 0, 0) 51%, rgba(255, 0, 0, 0) 100%);
   --theme-clockface-sec-holder: #F47758;
-
-  --drawing-bg-color: #EEEEEE;
 }
 
 /* Dark Theme */
 .theme-dark {
+  --theme-drawing-bg-color: #282834;
+
   --theme-text-primary-color: rgba(255, 255, 255, .8);
   --theme-text-placeholder-color: rgba(255, 255, 255, .4);
 
@@ -409,6 +409,8 @@
 
 /* Light Theme */
 .theme-light {
+  --theme-drawing-bg-color: #EEEEEE;
+  
   --theme-text-primary-color: rgba(0, 0, 0, .8);
   --theme-text-placeholder-color: rgba(0, 0, 0, .4);
 
@@ -716,5 +718,5 @@
 
   --theme-label-gray-color: rgba(0, 0, 0, .6);
   --theme-label-gray-bg-color: rgba(0, 0, 0, .02);
-  --theme-label-gray-border-color: rgba(0, 0, 0, .09)
+  --theme-label-gray-border-color: rgba(0, 0, 0, .09);
 }

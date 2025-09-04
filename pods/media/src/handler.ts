@@ -15,6 +15,7 @@
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import { Event, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { BlobAttachment } from '@hcengineering/communication-types'
 import drive, { type FileVersion } from '@hcengineering/drive'
 import core, {
   type Blob,
@@ -94,22 +95,26 @@ async function handleCommunicationTx (
   tx: TxDomainEvent<Event>,
   producer: PlatformQueueProducer<VideoTranscodeRequest>
 ): Promise<void> {
-  if (tx.domain === COMMUNICATION && tx.event.type === MessageEventType.BlobPatch) {
+  if (tx.domain === COMMUNICATION && tx.event.type === MessageEventType.AttachmentPatch) {
     const event = tx.event
     const source: BlobSource = {
       source: BlobSourceType.Message,
       cardId: event.cardId,
       messageId: event.messageId
     }
-    const blobs = event.operations
-      .filter((it) => it.opcode === 'attach' || it.opcode === 'set')
-      .flatMap((it) => it.blobs)
-    const messages: VideoTranscodeRequest[] = blobs.map(({ blobId, mimeType }) => ({
+
+    const attachments = event.operations
+      .filter((it) => it.opcode === 'add' || it.opcode === 'set')
+      .flatMap((it) => it.attachments)
+      .filter((it): it is BlobAttachment => 'blobId' in it.params)
+
+    const messages: VideoTranscodeRequest[] = attachments.map(({ params }) => ({
       workspaceUuid,
-      blobId,
-      contentType: mimeType,
+      blobId: params.blobId,
+      contentType: params.mimeType,
       source
     }))
+
     if (messages.length > 0) {
       await producer.send(ctx, workspaceUuid, messages)
     }

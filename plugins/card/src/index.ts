@@ -149,7 +149,9 @@ const cardPlugin = plugin(cardId, {
     Card: '' as Asset,
     File: '' as Asset,
     View: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    Home: '' as Asset,
+    Space: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -184,6 +186,10 @@ const cardPlugin = plugin(cardId, {
   },
   function: {
     OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
+  },
+  label: {
+    Subscribed: '' as Ref<Doc>,
+    NewMessages: '' as Ref<Doc>
   }
 })
 

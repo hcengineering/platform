@@ -101,6 +101,10 @@
     "MonthsWOValue": "{months, plural, =1 {month} other {months}}",
     "Filter": "Filter",
     "Clear": "Clear",
+    "Yesterday": "Yesterday",
+    "ThisWeek": "This week",
+    "ThisMonth": "This month",
+    "ThisYear": "This year",
     "EmojiStyle": "Emoji Style",
     "EmojiSystem": "System Default",
     "EmojiNoto": "Noto Color"

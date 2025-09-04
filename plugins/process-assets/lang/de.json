@@ -96,8 +96,9 @@
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",
     "RemoveLast": "Letztes entfernen",
-    "Cancelled": "Abgebrochen"
-  },  
+    "Cancelled": "Abgebrochen",
+    "WaitUntil": "Warten bis"
+  },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
     "AttributeNotExists": "Attribut existiert nicht: {key}",

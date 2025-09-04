@@ -96,7 +96,8 @@
     "Remove": "Odstranit",
     "RemoveFirst": "Odstranit první",
     "RemoveLast": "Odstranit poslední",
-    "Cancelled": "Zrušeno"
+    "Cancelled": "Zrušeno",
+    "WaitUntil": "Čekat do"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

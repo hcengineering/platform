@@ -40,6 +40,12 @@
     "Properties": "Propriétés",
     "NoChildren": "Pas d'enfants",
     "ConfigDescription": "Extension pour la gestion des connaissances de style base de données.",
-    "AddCollaborators": "Ajouter des collaborateurs"
+    "AddCollaborators": "Ajouter des collaborateurs",
+    "Home": "Accueil",
+    "WhatDoYouWantToShare": "Que voulez-vous partager ?",
+    "Share": "Partager",
+    "Compact": "Compact",
+    "Comfortable": "Confortable",
+    "Comfortable2": "Confortable 2"
   }
 }

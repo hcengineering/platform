@@ -56,7 +56,10 @@ import serverProcess, {
   TriggerImpl
 } from '@hcengineering/server-process'
 import { isError } from './errors'
-import { getClient, pickTransition, releaseClient } from './utils'
+import { getClient, releaseClient } from './utils'
+import { getTemporalClient } from './temporal'
+import { Client as TemporalClient } from '@temporalio/client'
+import config from './config'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -64,7 +67,7 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
   try {
     const client = await getClient(ws, record.account)
     try {
-      const control = {
+      const control: ProcessControl = {
         ctx,
         client,
         cache: new Map<string, any>(),
@@ -114,14 +117,20 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
       states.add(transition.from)
     }
   }
-  if (states.size === 0) return
-  const executions = await control.client.findAll(process.class.Execution, {
-    card: record.card,
-    status: ExecutionStatus.Active,
-    currentState: { $in: Array.from(states) }
-  })
-  for (const execution of executions) {
-    await processExecution(control, record, execution)
+  if (states.size > 0) {
+    const executions = await control.client.findAll(process.class.Execution, {
+      card: record.card,
+      status: ExecutionStatus.Active,
+      currentState: { $in: Array.from(states) }
+    })
+    for (const execution of executions) {
+      await processExecution(control, record, execution)
+    }
+  }
+
+  // we should update timers, probably context value changed
+  if (record.event === process.trigger.OnCardUpdate) {
+    await updateTimers(control, record)
   }
 }
 
@@ -264,6 +273,7 @@ async function executeTransition (execution: Execution, transition: Transition, 
     status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active,
     error: null
   })
+  executionUpdate.context = execution.context
   res.push(client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, executionUpdate))
   res.push(
     client.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
@@ -286,9 +296,124 @@ async function executeTransition (execution: Execution, transition: Transition, 
       await checkParent(execution, control)
     }
     TxProcessor.applyUpdate(execution, executionUpdate)
-    await checkNext(control, execution)
+    const next = await checkNext(control, execution)
+    if (!next) {
+      await setNextTimers(control, execution)
+    }
   } else {
     await client.update(execution, { error: errors })
+  }
+}
+
+async function updateTimers (control: ProcessControl, record: ProcessMessage): Promise<void> {
+  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+    trigger: process.trigger.OnTime
+  })
+  const states = new Set<Ref<State>>()
+  for (const transition of transitions) {
+    const isContext = parseContext(transition.triggerParams?.value)
+    // we shouldn't update timers for non-context values
+    if (isContext !== undefined) {
+      if (transition.from !== null) {
+        states.add(transition.from)
+      }
+    }
+  }
+  if (states.size === 0) return
+  const executions = await control.client.findAll(process.class.Execution, {
+    card: record.card,
+    status: ExecutionStatus.Active,
+    currentState: { $in: Array.from(states) }
+  })
+  if (executions.length === 0) return
+  if (record.card !== undefined && !control.cache.has(record.card)) {
+    const card = await control.client.findOne(cardPlugin.class.Card, { _id: record.card })
+    if (card !== undefined) {
+      control.cache.set(record.card, card)
+    }
+  }
+  for (const execution of executions) {
+    try {
+      await updateExecutionTimers(control, execution)
+    } catch (err) {
+      console.error('Error updating execution timers:', err)
+    }
+  }
+}
+
+async function updateExecutionTimers (control: ProcessControl, execution: Execution): Promise<void> {
+  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+    from: execution.currentState,
+    process: execution.process,
+    trigger: process.trigger.OnTime
+  })
+  if (transitions.length === 0) return
+  const temporalClient = await getTemporalClient()
+  for (const transition of transitions) {
+    await setTimer(control, execution, transition, temporalClient)
+  }
+}
+
+async function setNextTimers (control: ProcessControl, execution: Execution): Promise<void> {
+  const temporalClient = await getTemporalClient()
+  await cleanTimers(execution, temporalClient)
+  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+    from: execution.currentState,
+    process: execution.process,
+    trigger: process.trigger.OnTime
+  })
+  for (const transition of transitions) {
+    await setTimer(control, execution, transition, temporalClient)
+  }
+}
+
+async function cleanTimers (execution: Execution, temporalClient: TemporalClient): Promise<void> {
+  try {
+    const res = await temporalClient.workflowService.listWorkflowExecutions({
+      namespace: config.TemporalNamespace,
+      query: `WorkflowType="processTimeWorkflow" AND ExecutionStatus="Running" AND ProcessExecution="${execution._id}"`
+    })
+
+    for (const ex of res.executions) {
+      try {
+        await temporalClient.workflowService.terminateWorkflowExecution({
+          workflowExecution: {
+            workflowId: ex.execution?.workflowId,
+            runId: ex.execution?.runId
+          },
+          reason: 'Outdated'
+        })
+      } catch (err) {
+        console.error('Error terminating workflow execution:', err)
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning timers:', err)
+  }
+}
+
+async function setTimer (
+  control: ProcessControl,
+  execution: Execution,
+  transition: Transition,
+  temporalClient: TemporalClient
+): Promise<void> {
+  const filled = await fillParams(transition.triggerParams, execution, control)
+  const targetDate: number = filled.value
+  if (targetDate === undefined || typeof targetDate !== 'number' || targetDate === 0 || Number.isNaN(targetDate)) return
+  try {
+    await temporalClient.workflow.signalWithStart('processTimeWorkflow', {
+      taskQueue: 'process',
+      signal: 'setDate',
+      args: [targetDate, 'workspace', execution._id],
+      signalArgs: [targetDate],
+      workflowId: `${execution._id}_${transition._id}`,
+      searchAttributes: {
+        ProcessExecution: [execution._id]
+      }
+    })
+  } catch (e) {
+    console.error('Error setting timer:', e)
   }
 }
 
@@ -455,7 +580,7 @@ async function fillParams<T extends Doc> (
 ): Promise<MethodParams<T>> {
   const res: MethodParams<T> = {}
   for (const key in params) {
-    const value = (params as any)[key]
+    const value = control.client.getHierarchy().clone((params as any)[key])
     const valueResult = await getContextValue(value, control, execution)
     ;(res as any)[key] = valueResult
   }
@@ -486,7 +611,7 @@ async function getContextValue (value: any, control: ProcessControl, execution: 
     let value: any | undefined
     try {
       if (context.type === 'attribute') {
-        value = await getAttributeValue(control, execution, context)
+        value = getAttributeValue(control, execution, context)
       } else if (context.type === 'relation') {
         value = await getRelationValue(control, execution, context)
       } else if (context.type === 'nested') {
@@ -505,6 +630,11 @@ async function getContextValue (value: any, control: ProcessControl, execution: 
       }
       throw err
     }
+  } else if (typeof value === 'object' && !Array.isArray(value)) {
+    for (const key in value) {
+      value[key] = await getContextValue(value[key], control, execution)
+    }
+    return value
   } else {
     return value
   }
@@ -590,7 +720,7 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
   await executeTransition(parent, transition, control)
 }
 
-async function checkNext (control: ProcessControl, execution: Execution): Promise<void> {
+async function checkNext (control: ProcessControl, execution: Execution): Promise<boolean> {
   const autoTriggers = control.client.getModel().findAllSync(process.class.Trigger, { auto: true })
   const transitions = control.client.getModel().findAllSync(process.class.Transition, {
     from: execution.currentState,
@@ -600,13 +730,35 @@ async function checkNext (control: ProcessControl, execution: Execution): Promis
   if (transitions.length > 0) {
     const doc = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
     if (doc !== undefined) {
+      control.cache.set(execution.card, doc)
       const transition = await pickTransition(control, execution, transitions, {
         card: doc
       })
       if (transition !== undefined) {
-        control.cache.set(execution.card, doc)
         await executeTransition(execution, transition, control)
+        return true
       }
     }
+  }
+  return false
+}
+
+export async function pickTransition (
+  control: ProcessControl,
+  execution: Execution,
+  transitions: Transition[],
+  context: Record<string, any>
+): Promise<Transition | undefined> {
+  for (const tr of transitions) {
+    const trigger = control.client.getModel().findObject(tr.trigger)
+    if (trigger === undefined) continue
+    if (trigger.checkFunction === undefined) return tr
+    const impl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
+    if (impl?.serverCheckFunc === undefined) return tr
+    const filled = await fillParams(tr.triggerParams, execution, control)
+    const checkFunc = await getResource(impl.serverCheckFunc)
+    if (checkFunc === undefined) continue
+    const res = await checkFunc(filled, context, control.client.getHierarchy())
+    if (res) return tr
   }
 }

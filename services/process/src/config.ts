@@ -21,13 +21,17 @@ export interface Config {
   QueueConfig: string
   QueueRegion: string
   AccountsUrl: string
+  TemporalAddress: string
+  TemporalNamespace: string
 }
 
 const config: Config = {
   Secret: process.env.SECRET ?? 'secret',
   QueueConfig: process.env.QUEUE_CONFIG ?? '',
   QueueRegion: process.env.QUEUE_REGION ?? '',
-  AccountsUrl: process.env.ACCOUNTS_URL ?? ''
+  AccountsUrl: process.env.ACCOUNTS_URL ?? '',
+  TemporalAddress: process.env.TEMPORAL_ADDRESS ?? 'localhost:7233',
+  TemporalNamespace: process.env.TEMPORAL_NAMESPACE ?? 'huly'
 }
 
 export default config

@@ -33,6 +33,7 @@ export interface Config {
   LOVE_ENDPOINT?: string
   MODEL_VERSION: string
   PRESENCE_URL?: string
+  PREVIEW_URL?: string
   PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
@@ -83,12 +84,12 @@ export const CommandSelectWorkspace = 'select-workspace' as const
 export const CommandLogout = 'logout' as const
 export const CommandOpenApplication = 'open-application' as const
 
-export type Command = 
-  typeof CommandOpenSettings | 
-  typeof CommandOpenInbox | 
-  typeof CommandOpenOffice | 
-  typeof CommandOpenPlanner | 
-  typeof CommandSelectWorkspace | 
+export type Command =
+  typeof CommandOpenSettings |
+  typeof CommandOpenInbox |
+  typeof CommandOpenOffice |
+  typeof CommandOpenPlanner |
+  typeof CommandSelectWorkspace |
   typeof CommandLogout |
   typeof CommandOpenApplication
 
@@ -102,15 +103,15 @@ export interface NotificationParams {
   objectClass?: Ref<Class<Doc>>
 }
 
-export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
-  , 'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const;
+export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools',
+  'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const
 
-export type MenuBarAction = typeof MenuBarActions[number];
+export type MenuBarAction = typeof MenuBarActions[number]
 
 export interface JumpListSpares {
-  applications: LaunchApplication[],
-  settingsLabel: string,
-  inboxLabel: string,
+  applications: LaunchApplication[]
+  settingsLabel: string
+  inboxLabel: string
 }
 
 export interface LaunchApplication {
@@ -144,7 +145,7 @@ export interface IPCMainExposed {
   closeWindow: () => void
   onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
   onWindowFocusLoss: (callback: () => void) => void
-  
+
   isOsUsingDarkTheme: () => Promise<boolean>
   executeMenuBarAction: (action: MenuBarAction) => void
 

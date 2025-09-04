@@ -705,6 +705,8 @@ export type GetWorkspaceResponse =
 
 export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
 
+export type SessionHealth = 'healthy' | 'degraded' | 'unhealthy'
+
 /**
  * @public
  */
@@ -754,6 +756,7 @@ export interface SessionManager {
   handleRPC: <S extends Session>(
     requestCtx: MeasureContext,
     service: S,
+    method: string,
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
   ) => Promise<RateLimitInfo | undefined>
@@ -769,6 +772,8 @@ export interface SessionManager {
   ) => ClientSessionCtx
 
   getStatistics: () => WorkspaceStatistics[]
+
+  checkHealth: () => SessionHealth
 }
 
 export const pingConst = 'ping'

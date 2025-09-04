@@ -20,6 +20,8 @@
   import MediaPopupCamSelector from './MediaPopupCamSelector.svelte'
   import MediaPopupMicSelector from './MediaPopupMicSelector.svelte'
   import MediaPopupSpkSelector from './MediaPopupSpkSelector.svelte'
+  import { getMediaDevices } from '@hcengineering/media'
+  import { Loading } from '@hcengineering/ui'
 
   let micOpened = false
   let camOpened = false
@@ -52,16 +54,21 @@
 
 <div class="antiPopup mediaPopup">
   <ComponentExtensions extension={media.extension.StateContext} on:close />
-
-  <div class="ap-scroll">
-    <div class="ap-box">
-      <MediaPopupMicSelector bind:expanded={micOpened} on:expand={handleMicExpanded} />
-      <div class="separator" />
-      <MediaPopupSpkSelector bind:expanded={spkOpened} on:expand={handleSpkExpanded} />
-      <div class="separator" />
-      <MediaPopupCamSelector bind:expanded={camOpened} on:expand={handleCamExpanded} />
+  {#await getMediaDevices(true, true)}
+    <div class="p-4">
+      <Loading />
     </div>
-  </div>
+  {:then mediaInfo}
+    <div class="ap-scroll">
+      <div class="ap-box">
+        <MediaPopupMicSelector {mediaInfo} bind:expanded={micOpened} on:expand={handleMicExpanded} />
+        <div class="separator" />
+        <MediaPopupSpkSelector {mediaInfo} bind:expanded={spkOpened} on:expand={handleSpkExpanded} />
+        <div class="separator" />
+        <MediaPopupCamSelector {mediaInfo} bind:expanded={camOpened} on:expand={handleCamExpanded} />
+      </div>
+    </div>
+  {/await}
 </div>
 
 <style lang="scss">

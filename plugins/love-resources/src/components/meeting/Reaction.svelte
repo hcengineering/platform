@@ -1,5 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
+  import { getBlobRef } from '@hcengineering/presentation'
+  import { getEmojiByShortCode } from '@hcengineering/emoji-resources'
+  import { isCustomEmoji } from '@hcengineering/emoji'
 
   export let emoji: string = ''
   export let width: number = 0
@@ -12,6 +15,8 @@
   let isVisible: boolean = false
   let x: number = 0
   let size: number = 0
+
+  $: customEmoji = getEmojiByShortCode(emoji)
 
   onMount(() => {
     offsetX = (Math.random() * width) / 4 - width / 8
@@ -35,7 +40,15 @@
       --duration: {duration}ms;
     "
   >
-    {emoji}
+    {#if customEmoji !== undefined && isCustomEmoji(customEmoji)}
+      <span class="emoji">
+        {#await getBlobRef(customEmoji.image) then blobSrc}
+          <img src={blobSrc.src} alt={emoji} />
+        {/await}
+      </span>
+    {:else}
+      {emoji}
+    {/if}
   </div>
 {/if}
 

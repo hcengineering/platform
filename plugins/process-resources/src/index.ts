@@ -41,33 +41,42 @@ import ToDoRemoveParamsEditor from './components/settings/ToDoRemoveParamsEditor
 import TransitionEditor from './components/settings/TransitionEditor.svelte'
 import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
+import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
-import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
 
+import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
+import BooleanCriteria from './components/criterias/BooleanCriteria.svelte'
+import DateCriteria from './components/criterias/DateCriteria.svelte'
+import EnumCriteria from './components/criterias/EnumCriteria.svelte'
+import NumberCriteria from './components/criterias/NumberCriteria.svelte'
+import RefCriteria from './components/criterias/RefCriteria.svelte'
+import StringCriteria from './components/criterias/StringCriteria.svelte'
 import LogActionPresenter from './components/LogActionPresenter.svelte'
 import NotifierExtension from './components/NotifierExtension.svelte'
 import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
 import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
 import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
-import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
 import CardUpdateEditor from './components/settings/CardUpdateEditor.svelte'
+import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
+import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import TimeEditor from './components/settings/TimeEditor.svelte'
+import TimePresenter from './components/settings/TimePresenter.svelte'
+import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
-import DateCriteria from './components/criterias/DateCriteria.svelte'
-import BooleanCriteria from './components/criterias/BooleanCriteria.svelte'
-import NumberCriteria from './components/criterias/NumberCriteria.svelte'
-import StringCriteria from './components/criterias/StringCriteria.svelte'
-import RefCriteria from './components/criterias/RefCriteria.svelte'
-import EnumCriteria from './components/criterias/EnumCriteria.svelte'
-import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
-import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
-import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
+import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
 import { ProcessMiddleware } from './middleware'
-import { continueExecution, showDoneQuery, todoTranstionCheck, updateCardTranstionCheck } from './utils'
+import {
+  continueExecution,
+  showDoneQuery,
+  timeTransitionCheck,
+  todoTranstionCheck,
+  updateCardTranstionCheck
+} from './utils'
 
 export * from './query'
 
@@ -114,7 +123,9 @@ export default async (): Promise<Resources> => ({
     AddRelationEditor,
     AddRelationPresenter,
     CardUpdatePresenter,
-    ToDoSettingPresenter
+    ToDoSettingPresenter,
+    TimeEditor,
+    TimePresenter
   },
   criteriaEditor: {
     DateCriteria,
@@ -124,6 +135,9 @@ export default async (): Promise<Resources> => ({
     RefCriteria,
     EnumCriteria,
     ArrayCriteria
+  },
+  transformPresenter: {
+    NumberPresenter
   },
   transformEditor: {
     ArrayElementEditor,
@@ -136,7 +150,8 @@ export default async (): Promise<Resources> => ({
   },
   triggerCheck: {
     UpdateCheck: updateCardTranstionCheck,
-    ToDo: todoTranstionCheck
+    ToDo: todoTranstionCheck,
+    Time: timeTransitionCheck
   },
   function: {
     ShowDoneQuery: showDoneQuery,

@@ -13,9 +13,96 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import card, { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import type { Doc, Ref } from '@hcengineering/core'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
+  type MigrateMode,
+  tryMigrate
+} from '@hcengineering/model'
+import chat from './plugin'
+
+const channelMasterTag = 'chat:masterTag:Channel' as Ref<MasterTag>
 
 export const chatOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, mode): Promise<void> {},
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, cardId, [
+      {
+        state: 'migrate-channels',
+        mode: 'upgrade',
+        func: migrateChannelsToThreads
+      },
+      {
+        state: 'migrate-parent-info',
+        mode: 'upgrade',
+        func: migrateParentInfo
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {}
+}
+
+async function migrateChannelsToThreads (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CARD,
+    {
+      _class: channelMasterTag
+    },
+    {
+      _class: chat.masterTag.Thread
+    }
+  )
+}
+
+async function migrateParentInfo (client: MigrationClient, mode: MigrateMode): Promise<void> {
+  await performParentInfoMigration(client, 1000)
+}
+
+export async function performParentInfoMigration (client: MigrationClient, bulkSize: number = 1000): Promise<void> {
+  let processedCards = 0
+  const iterator = await client.traverse<Card>(DOMAIN_CARD, { _class: card.class.Card })
+  try {
+    while (true) {
+      const cards = await iterator.next(bulkSize)
+      if (cards === null || cards.length === 0) {
+        break
+      }
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+      for (const card of cards) {
+        if (card.parentInfo == null || card.parentInfo.length === 0) {
+          continue
+        }
+        const needUpdate = card.parentInfo.some((info) => info._class === channelMasterTag)
+        if (!needUpdate) {
+          continue
+        }
+        const parents = card.parentInfo.map((info) => {
+          if (info._class !== channelMasterTag) {
+            return info
+          }
+          return {
+            ...info,
+            _class: chat.masterTag.Thread
+          }
+        })
+        operations.push({
+          filter: { _id: card._id },
+          update: {
+            parentInfo: parents
+          }
+        })
+      }
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_CARD, operations)
+      }
+      processedCards += cards.length
+      client.logger.log('Migrated cards', { count: processedCards })
+    }
+  } finally {
+    await iterator.close()
+  }
 }

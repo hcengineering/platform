@@ -40,6 +40,12 @@
     "Properties": "Vlastnosti",
     "NoChildren": "Žádné děti",
     "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
-    "AddCollaborators": "Přidat spolupracovníky"
+    "AddCollaborators": "Přidat spolupracovníky",
+    "Home": "Domů",
+    "WhatDoYouWantToShare": "Čím chcete sdílet?",
+    "Share": "Sdílet",
+    "Compact": "Kompaktní",
+    "Comfortable": "Komfortní",
+    "Comfortable2": "Komfortní 2"
   }
 }

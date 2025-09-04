@@ -1,4 +1,4 @@
-import { AccountUuid, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, AccountUuid, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { decode, encode } from 'jwt-simple'
 import { validate } from 'uuid'
@@ -10,6 +10,18 @@ import serverPlugin from './plugin'
 export interface Token {
   account: AccountUuid
   workspace: WorkspaceUuid
+  extra?: Record<string, any>
+  grant?: PermissionsGrant
+}
+
+// Permissions grant provides the token presenter access to a specific workspace
+export interface PermissionsGrant {
+  workspace: WorkspaceUuid
+  role: AccountRole
+
+  firstName?: string
+  lastName?: string
+
   extra?: Record<string, any>
 }
 
@@ -34,7 +46,8 @@ export function generateToken (
   accountUuid: PersonUuid,
   workspaceUuid?: WorkspaceUuid,
   extra?: Record<string, string>,
-  secret?: string
+  secret?: string,
+  grant?: PermissionsGrant
 ): string {
   if (!validate(accountUuid)) {
     throw new TokenError(`Invalid account uuid: "${accountUuid}"`)
@@ -42,14 +55,33 @@ export function generateToken (
   if (workspaceUuid !== undefined && !validate(workspaceUuid)) {
     throw new TokenError(`Invalid workspace uuid: "${workspaceUuid}"`)
   }
+  if (grant?.workspace !== undefined && !validate(grant?.workspace)) {
+    throw new TokenError(`Invalid grant workspace uuid: "${grant?.workspace}"`)
+  }
 
   const service = getMetadata(serverPlugin.metadata.Service)
   if (service !== undefined) {
     extra = { service, ...extra }
   }
 
+  const sanitizedGrant: PermissionsGrant | undefined =
+    grant !== undefined
+      ? {
+          workspace: grant.workspace,
+          role: grant.role,
+          firstName: grant.firstName,
+          lastName: grant.lastName,
+          extra: grant.extra
+        }
+      : undefined
+
   return encode(
-    { ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid },
+    {
+      ...(extra !== undefined ? { extra } : {}),
+      account: accountUuid,
+      workspace: workspaceUuid,
+      grant: sanitizedGrant
+    },
     secret ?? getSecret()
   )
 }

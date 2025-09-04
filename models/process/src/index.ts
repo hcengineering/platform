@@ -502,6 +502,7 @@ export function createModel (builder: Builder): void {
       type: 'transform',
       category: 'attribute',
       label: process.string.Add,
+      presenter: process.transformPresenter.NumberPresenter,
       allowMany: true,
       editor: process.transformEditor.NumberEditor
     },
@@ -515,6 +516,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeNumber,
       category: 'attribute',
       label: process.string.Subtract,
+      presenter: process.transformPresenter.NumberPresenter,
       allowMany: true,
       editor: process.transformEditor.NumberEditor,
       type: 'transform'
@@ -529,6 +531,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeNumber,
       category: 'attribute',
       label: process.string.Multiply,
+      presenter: process.transformPresenter.NumberPresenter,
       type: 'transform',
       allowMany: true,
       editor: process.transformEditor.NumberEditor
@@ -543,6 +546,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeNumber,
       category: 'attribute',
       label: process.string.Divide,
+      presenter: process.transformPresenter.NumberPresenter,
       type: 'transform',
       allowMany: true,
       editor: process.transformEditor.NumberEditor
@@ -557,6 +561,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeNumber,
       category: 'attribute',
       label: process.string.Modulo,
+      presenter: process.transformPresenter.NumberPresenter,
       type: 'transform',
       allowMany: true,
       editor: process.transformEditor.NumberEditor
@@ -571,6 +576,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeNumber,
       category: 'attribute',
       label: process.string.Power,
+      presenter: process.transformPresenter.NumberPresenter,
       type: 'transform',
       allowMany: true,
       editor: process.transformEditor.NumberEditor
@@ -1071,6 +1077,22 @@ export function createModel (builder: Builder): void {
       auto: true
     },
     process.trigger.OnSubProcessesDone
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.WaitUntil,
+      icon: process.icon.Time,
+      requiredParams: [],
+      init: false,
+      auto: true,
+      editor: process.component.TimeEditor,
+      presenter: process.component.TimePresenter,
+      checkFunction: process.triggerCheck.Time
+    },
+    process.trigger.OnTime
   )
 
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {

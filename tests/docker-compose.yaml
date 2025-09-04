@@ -151,6 +151,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REGION=
       - ACCOUNTS_URL=http://account:3003
+      - ACCOUNTS_DB_URL=${MONGO_URL}
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
     restart: unless-stopped

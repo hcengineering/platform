@@ -14,13 +14,19 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { Component, IconSize } from '@hcengineering/ui'
+  import { Component } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import communication from '@hcengineering/communication'
 
   import NotifyMarker from './NotifyMarker.svelte'
 
-  export let size: IconSize = 'medium'
   export let card: Card
   export let count: number = 0
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: size = hierarchy.isDerived(card._class, communication.type.Direct) ? 'large' : 'medium'
 </script>
 
 <div class="card-icon">

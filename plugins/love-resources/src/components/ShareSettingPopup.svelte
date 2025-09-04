@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Label, Toggle } from '@hcengineering/ui'
   import love from '../plugin'
-  import { setShare, isShareWithSound, isSharingEnabled } from '../utils'
+  import { isShareWithSound, isSharingEnabled, liveKitClient } from '../utils'
 </script>
 
 <div class="antiPopup p-4 grid">
@@ -12,7 +12,7 @@
     on:change={(e) => {
       $isShareWithSound = e.detail
       if ($isSharingEnabled) {
-        setShare($isSharingEnabled, e.detail)
+        void liveKitClient.setScreenShareEnabled($isSharingEnabled, e.detail)
       }
     }}
   />

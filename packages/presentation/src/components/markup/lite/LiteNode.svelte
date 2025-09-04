@@ -20,6 +20,7 @@
   import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
   export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 </script>
 
@@ -27,6 +28,6 @@
   {@const marks = node.marks ?? []}
 
   <NodeMarks {marks}>
-    <LiteNodeContent {parseEmojisFunction} {node} />
+    <LiteNodeContent {node} {parseEmojisFunction} {colorInherit} />
   </NodeMarks>
 {/if}

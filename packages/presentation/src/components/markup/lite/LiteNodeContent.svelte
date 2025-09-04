@@ -23,6 +23,7 @@
   import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
   export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 
   let parsedTextWithEmojis: ParsedTextWithEmojis | undefined = undefined
@@ -56,7 +57,7 @@
   {@const nodes = node.content ?? []}
 
   {#if node.type === MarkupNodeType.doc}
-    <LiteNodes {parseEmojisFunction} {nodes} />
+    <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
   {:else if node.type === MarkupNodeType.text}
     {#if parsedTextWithEmojis === undefined}
       {node.text}
@@ -80,11 +81,11 @@
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={true} style:margin="0">
-      <LiteNodes {parseEmojisFunction} {nodes} />
+    <p class="p-inline" class:overflow-label={true} style:margin="0" class:contrast={!colorInherit} class:colorInherit>
+      <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
     </p>
   {:else if node.type === MarkupNodeType.blockquote}
-    <LiteNodes {parseEmojisFunction} {nodes} />
+    <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
   {:else if node.type === MarkupNodeType.horizontal_rule}
     <!--  nothing-->
   {:else if node.type === MarkupNodeType.code_block}
@@ -97,7 +98,7 @@
           }
         ]}
       >
-        <LiteNodes {parseEmojisFunction} {nodes} />
+        <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
       </NodeMarks>
     </p>
   {:else if node.type === MarkupNodeType.reference}
@@ -108,7 +109,7 @@
     {#if objectClass !== undefined && objectId !== undefined}
       <ObjectNode _id={toRef(objectId)} _class={toClassRef(objectClass)} title={objectLabel} />
     {:else}
-      <LiteNodes {parseEmojisFunction} {nodes} />
+      <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
     {/if}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji">
@@ -128,9 +129,15 @@
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.subLink}
     <sub>
-      <LiteNodes {parseEmojisFunction} {nodes} />
+      <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
     </sub>
   {:else}
-    <LiteNodes {parseEmojisFunction} {nodes} />
+    <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
   {/if}
 {/if}
+
+<style lang="scss">
+  .colorInherit {
+    color: inherit;
+  }
+</style>

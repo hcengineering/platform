@@ -139,7 +139,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
 import { configureAnalyticsProviders } from '@hcengineering/analytics-providers'
-import { Branding, Config, } from './types'
+import { Branding, Config } from './types'
 import { ipcMainExposed } from './typesUtils'
 
 import github, { githubId } from '@hcengineering/github'
@@ -252,18 +252,20 @@ function configureI18n (): void {
 }
 
 export class PlatformBranding {
-  constructor(private title: string) {
+  constructor (private readonly title: string) {
   }
-  public getTitle(): string {
-    return this.title;
+
+  public getTitle (): string {
+    return this.title
   }
 }
 
 export class PlatformParameters {
-  constructor(private branding: PlatformBranding) {
+  constructor (private readonly branding: PlatformBranding) {
   }
-  public getBranding(): PlatformBranding {
-    return this.branding;
+
+  public getBranding (): PlatformBranding {
+    return this.branding
   }
 }
 
@@ -288,6 +290,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
+  setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)

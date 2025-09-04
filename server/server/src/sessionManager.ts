@@ -76,6 +76,7 @@ import {
   QueueWorkspaceEvent,
   type QueueWorkspaceMessage,
   type Session,
+  type SessionHealth,
   type SessionManager,
   userEvents,
   type UserStatistics,
@@ -91,6 +92,9 @@ const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
 
 const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+
+const hangRequestTimeoutSeconds = 30
+const hangSessionTimeoutSeconds = 60
 
 /**
  * @public
@@ -123,6 +127,11 @@ export class TSessionManager implements SessionManager {
   now: number = Date.now()
 
   ticksContext: MeasureContext
+
+  hungSessionsWarnPercent = parseInt(process.env.HUNG_SESSIONS_WARN_PERCENT ?? '25')
+  hungSessionsFailPercent = parseInt(process.env.HUNG_SESSIONS_FAIL_PERCENT ?? '75')
+  hungRequestsFailPercent = parseInt(process.env.HUNG_REQUESTS_PERCENT ?? '50')
+
   constructor (
     readonly ctx: MeasureContext,
     readonly timeouts: Timeouts,
@@ -302,7 +311,7 @@ export class TSessionManager implements SessionManager {
         const wsId = s.session.workspace.uuid
         const lastRequestDiff = now - s.session.lastRequest
 
-        let timeout = 60000
+        let timeout = hangSessionTimeoutSeconds * 1000
         if (s.session.getUser() === systemAccountUuid) {
           timeout = timeout * 10
         }
@@ -331,7 +340,7 @@ export class TSessionManager implements SessionManager {
         }
         for (const r of s.session.requests.values()) {
           const sec = Math.round((now - r.start) / 1000)
-          if (sec > 0 && sec % 30 === 0) {
+          if (sec > 0 && sec % hangRequestTimeoutSeconds === 0) {
             this.ctx.warn('request hang found', {
               sec,
               wsId,
@@ -422,6 +431,60 @@ export class TSessionManager implements SessionManager {
     return Array.from(workspace.sessions.values())
       .filter((it) => it.session.getUser() === accountUuid)
       .reduce<number>((acc) => acc + 1, 0)
+  }
+
+  checkHealth (): SessionHealth {
+    const now = Date.now()
+
+    let totalSessions = 0
+    let hungSessions = 0
+
+    for (const [, { session }] of this.sessions) {
+      let totalRequests = 0
+      let hungRequests = 0
+
+      // Ignore system account sessions
+      if (session.getUser() === systemAccountUuid) {
+        continue
+      }
+
+      totalSessions += 1
+
+      // Check if the session is hung
+      const lastRequestDiff = now - session.lastRequest
+      if (lastRequestDiff > hangSessionTimeoutSeconds * 1000) {
+        hungSessions += 1
+        continue
+      }
+
+      // Check if requests are hung
+      for (const r of session.requests.values()) {
+        const sec = Math.round((now - r.start) / 1000)
+        if (sec > hangRequestTimeoutSeconds) {
+          hungRequests += 1
+        }
+        totalRequests += 1
+      }
+
+      const hungRequestsPercent = totalRequests > 0 ? (100 * hungRequests) / totalRequests : 0
+      if (hungRequestsPercent > this.hungRequestsFailPercent) {
+        hungSessions += 1
+      }
+    }
+
+    const hungSessionsPercent = totalSessions > 0 ? (100 * hungSessions) / totalSessions : 0
+
+    if (hungSessionsPercent > this.hungSessionsFailPercent) {
+      this.ctx.warn('high hung sessions', { hungSessionsPercent })
+      return 'unhealthy'
+    }
+
+    if (hungSessionsPercent > this.hungSessionsWarnPercent) {
+      this.ctx.warn('high degraded sessions', { hungSessionsPercent })
+      return 'degraded'
+    }
+
+    return 'healthy'
   }
 
   tickCounter = 0
@@ -952,7 +1015,7 @@ export class TSessionManager implements SessionManager {
                     // await communicationApi.closeSession(sessionRef.session.sessionId)
                     if (user !== guestAccount && user !== systemAccountUuid) {
                       await this.trySetStatus(
-                        workspace.context,
+                        workspace.context.newChild('status', {}),
                         pipeline,
                         sessionRef.session,
                         false,
@@ -1214,7 +1277,6 @@ export class TSessionManager implements SessionManager {
   ): Promise<void> {
     // Calculate total number of clients
     const reqId = generateId()
-    const mode = 'request'
     const source = service.token.extra?.service ?? '🤦‍♂️user'
 
     const st = Date.now()
@@ -1237,7 +1299,7 @@ export class TSessionManager implements SessionManager {
         return
       }
       if (request.id === -1 && request.method === 'hello') {
-        await requestCtx.with('handleHello', { mode, source }, (ctx) =>
+        await requestCtx.with('🧨 handleHello', { source }, (ctx) =>
           this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
         )
         return
@@ -1300,16 +1362,18 @@ export class TSessionManager implements SessionManager {
         await workspace.with(async (pipeline) => {
           await requestCtx.with(
             '🧨' + request.method,
-            { mode, source },
+            { source, mode: 'websocket' },
             (callTx) =>
               f.apply(service, [
                 this.createOpContext(callTx, requestCtx, pipeline, request.id, service, ws, rateLimit),
                 ...params
               ]),
-            { ...request, user: service.getUser, socialId: service.getRawAccount().primarySocialId },
             {
-              meta: request.meta
-            }
+              user: service.getUser(),
+              socialId: service.getRawAccount().primarySocialId,
+              workspace: workspace.wsId.uuid
+            },
+            { meta: request.meta }
           )
         })
       } catch (err: any) {
@@ -1336,6 +1400,7 @@ export class TSessionManager implements SessionManager {
   async handleRPC<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
+    method: string,
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
@@ -1345,7 +1410,6 @@ export class TSessionManager implements SessionManager {
       return await Promise.resolve(rateLimitStatus)
     }
 
-    const mode = 'rpc'
     const source = service.token.extra?.service ?? '🤦‍♂️user'
 
     // Calculate total number of clients
@@ -1366,7 +1430,7 @@ export class TSessionManager implements SessionManager {
 
       try {
         await workspace.with(async (pipeline) => {
-          await requestCtx.with('🧨 handleRequest', { mode, source }, (callTx) =>
+          await requestCtx.with('🧨 ' + method, { source, mode: 'rpc' }, (callTx) =>
             operation(
               this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
               rateLimitStatus
@@ -1470,8 +1534,8 @@ export class TSessionManager implements SessionManager {
       if (account.uuid !== guestAccount && account.uuid !== systemAccountUuid) {
         void workspace.with(async (pipeline) => {
           // We do not need to wait for set-status, just return session to client
-          await ctx
-            .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, service.workspace.uuid))
+          await workspace.context
+            .with('🧨 status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, service.workspace.uuid))
             .catch(() => {})
         })
       }

@@ -6,6 +6,7 @@
     "Save": "Speichern",
     "Saved": "Gespeichert...",
     "Download": "Herunterladen",
+    "DownloadOriginal": "Original herunterladen",
     "Delete": "Löschen",
     "Close": "Schließen",
     "NotSelected": "Nicht ausgewählt",
@@ -44,7 +45,15 @@
     "DocumentUrlCopied": "Kopiert!",
     "CopyLink": "Link kopieren",
     "AccessDenied": "Das Objekt existiert nicht oder Sie haben keinen Zugriff darauf.",
-    "UnableToFollowMention": "Das erwähnte Objekt kann nicht geöffnet werden"
+    "UnableToFollowMention": "Das erwähnte Objekt kann nicht geöffnet werden",
+    "Undo": "Rückgängig",
+    "Redo": "Wiederholen",
+    "ClearCanvas": "Leinwand löschen",
+    "PenTool": "Stift-Werkzeug",
+    "EraserTool": "Radiergummi-Werkzeug",
+    "PanTool": "Verschieben-Werkzeug",
+    "TextTool": "Text-Werkzeug",
+    "PaletteManagementMenu": "Farbpresets verwalten"
   },
   "status": {
     "FileTooLarge": "Datei zu groß"

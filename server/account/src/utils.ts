@@ -41,7 +41,7 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
 import { Analytics } from '@hcengineering/analytics'
-import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
+import { decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'
@@ -52,6 +52,7 @@ import {
   type AccountMethodHandler,
   type Integration,
   type LoginInfo,
+  type LoginInfoRequestData,
   type Meta,
   type Operations,
   type OtpInfo,
@@ -475,15 +476,19 @@ export async function isOtpValid (db: AccountDB, socialId: PersonId, code: strin
   return (otpData?.expiresOn ?? 0) > Date.now()
 }
 
+/**
+ * Creates an account and a Huly social id for the specified person.
+ * Returns the _id of the newly created Huly social id.
+ */
 export async function createAccount (
   db: AccountDB,
   personUuid: PersonUuid,
   confirmed = false,
   automatic = false,
   createdOn = Date.now()
-): Promise<void> {
+): Promise<PersonId> {
   // Create Huly social id and account
-  await db.socialId.insertOne({
+  const socialId = await db.socialId.insertOne({
     type: SocialIdType.HULY,
     value: personUuid,
     personUuid,
@@ -495,6 +500,8 @@ export async function createAccount (
     eventType: AccountEventType.ACCOUNT_CREATED,
     time: createdOn
   })
+
+  return socialId
 }
 
 export async function signUpByEmail (
@@ -543,6 +550,44 @@ export async function signUpByEmail (
   }
 
   return { account, socialId }
+}
+
+export async function signUpByGrant (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  accountUuid: AccountUuid,
+  grant: PermissionsGrant,
+  info?: LoginInfoRequestData
+): Promise<{ account: AccountUuid, socialId: PersonId }> {
+  const firstName = grant.firstName ?? info?.firstName
+  const lastName = grant.lastName ?? info?.lastName
+
+  if (firstName == null || firstName === '') {
+    ctx.error('First name is required for grant sign up', { grant, info })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const existingAccount = await db.account.findOne({ uuid: accountUuid })
+
+  if (existingAccount != null) {
+    ctx.error('An account with the provided uuid already exists', { accountUuid })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
+  }
+
+  const existingPerson = await db.person.findOne({ uuid: accountUuid })
+
+  if (existingPerson == null) {
+    await db.person.insertOne({ uuid: accountUuid, firstName, lastName: lastName ?? '' })
+  }
+
+  // If there's no account there should be no Huly social id associated with the person if it existed
+  // also, there should be no confirmed social ids associated
+  // so we can safely proceed to account creation
+
+  const socialId = await createAccount(db, accountUuid, true, true)
+
+  return { account: accountUuid, socialId }
 }
 
 export async function selectWorkspace (
@@ -1483,12 +1528,12 @@ export function verifyAllowedServices (services: string[], extra: any, shouldThr
 }
 
 export function verifyAllowedRole (
-  targetRole: AccountRole | null,
+  callerRole: AccountRole | null,
   minRole: AccountRole,
   extra: any,
   shouldThrow = true
 ): boolean {
-  const ok = extra?.admin === 'true' || (targetRole != null && getRolePower(targetRole) >= getRolePower(minRole))
+  const ok = extra?.admin === 'true' || (callerRole != null && getRolePower(callerRole) >= getRolePower(minRole))
 
   if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
