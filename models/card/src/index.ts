@@ -452,7 +452,7 @@ export function createModel (builder: Builder): void {
             label: core.string.Spaces,
             spaceClass: card.class.CardSpace,
             addSpaceLabel: core.string.Space,
-            icon: card.icon.Card,
+            icon: card.icon.Space,
             // intentionally left empty in order to make space presenter working
             specials: []
           }
