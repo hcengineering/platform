@@ -30,7 +30,7 @@
 <div class="flex-presenter flex-gap-0-5">
   {#if displaySpace && card.$lookup?.space !== undefined}
     <div class="card-presenter">
-      <Icon icon={cardPlugin.icon.Card} size="small" />
+      <Icon icon={cardPlugin.icon.Space} size="small" />
       <span class="overflow-label max-w-40">
         {card.$lookup?.space.name}
       </span>
