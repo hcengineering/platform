@@ -16,12 +16,14 @@
   import { MarkupNode } from '@hcengineering/text'
 
   import LiteNode from './LiteNode.svelte'
+  import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let nodes: MarkupNode[]
+  export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 </script>
 
 {#if nodes}
   {#each nodes as node}
-    <LiteNode {node} />
+    <LiteNode {parseEmojisFunction} {node} />
   {/each}
 {/if}

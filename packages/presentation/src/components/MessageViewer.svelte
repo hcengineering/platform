@@ -16,6 +16,9 @@
 <script lang="ts">
   import { isEmptyMarkup, markupToJSON } from '@hcengineering/text'
   import Node from './markup/Node.svelte'
+  import emojiPlugin, { ParsedTextWithEmojis } from '@hcengineering/emoji'
+  import { onMount } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
 
   export let message: string
   export let preview = false
@@ -23,11 +26,21 @@
   $: node = markupToJSON(message)
   $: empty = isEmptyMarkup(message)
 
+  let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
+
+  onMount(async () => {
+    try {
+      parseEmojisFunction = await getResource(emojiPlugin.functions.ParseTextWithEmojis)
+    } catch (e) {
+      console.log('Cannot locate emoji parsing function')
+    }
+  })
+
   export function isEmpty (): boolean {
     return empty
   }
 </script>
 
 <div class="text-markup-view">
-  <Node {node} {preview} />
+  <Node {parseEmojisFunction} {node} {preview} />
 </div>

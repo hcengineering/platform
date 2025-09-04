@@ -21,12 +21,14 @@
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
   import { getBlobRef } from '../../preview'
-  import emojiPlugin, { emojiRegex } from '@hcengineering/emoji'
-  import { getResource } from '@hcengineering/platform'
+  import { emojiRegex, ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
   export let single = true
   export let preview = false
+  export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
+
+  let parsedTextWithEmojis: ParsedTextWithEmojis | undefined = undefined
 
   function toRefBlob (blobId: AttrValue): Ref<Blob> {
     return blobId as Ref<Blob>
@@ -61,6 +63,10 @@
     if (match == null) return false
     return match[0] === nodes[0].text
   }
+
+  $: if (node.type === MarkupNodeType.text && parseEmojisFunction) {
+    parsedTextWithEmojis = parseEmojisFunction(node.text ?? '')
+  }
 </script>
 
 {#if node}
@@ -70,17 +76,18 @@
   {#if node.type === MarkupNodeType.doc}
     {#if nodes.length > 0}
       {#each nodes as node}
-        <Node {node} {preview} />
+        <Node {parseEmojisFunction} {node} {preview} />
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.text}
-    {#await getResource(emojiPlugin.functions.ParseTextWithEmojis) then parseFunction}
-      {@const parsedText = parseFunction(node.text ?? '')}
-      {#each parsedText.nodes as textOrEmoji}
+    {#if parsedTextWithEmojis === undefined}
+      {node.text}
+    {:else}
+      {#each parsedTextWithEmojis.nodes as textOrEmoji}
         {#if typeof textOrEmoji === 'string'}
           {textOrEmoji}
         {:else}
-          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedText.emojisOnly}>
+          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedTextWithEmojis.emojisOnly}>
             {#if 'image' in textOrEmoji}
               {@const blob = toRefBlob(textOrEmoji.image)}
               {@const alt = toString(textOrEmoji.emoji)}
@@ -93,7 +100,7 @@
           </span>
         {/if}
       {/each}
-    {/await}
+    {/if}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji" class:emojiOnly={single}>
       {#if node.attrs?.kind === 'image'}
@@ -110,7 +117,7 @@
     <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} single={nodes.length === 1} />
+          <Node {parseEmojisFunction} {node} {preview} single={nodes.length === 1} />
         {/each}
       {/if}
     </p>
@@ -118,7 +125,7 @@
     <blockquote class="proseBlockQuote" style:margin={preview ? '0' : null}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </blockquote>
@@ -153,7 +160,7 @@
       <ObjectNode _id={toRef(objectId)} _class={toClassRef(objectClass)} title={objectLabel} />
     {:else if nodes.length > 0}
       {#each nodes as node}
-        <Node {node} {preview} />
+        <Node {parseEmojisFunction} {node} {preview} />
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.hard_break}
@@ -163,7 +170,7 @@
     <ol style:margin={preview ? '0' : null} {start}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </ol>
@@ -171,7 +178,7 @@
     <ul style:margin={preview ? '0' : null}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </ul>
@@ -179,7 +186,7 @@
     <li>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </li>
@@ -191,7 +198,7 @@
     <sub>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </sub>
@@ -200,7 +207,7 @@
       <tbody>
         {#if nodes.length > 0}
           {#each nodes as node}
-            <Node {node} {preview} />
+            <Node {parseEmojisFunction} {node} {preview} />
           {/each}
         {/if}
       </tbody>
@@ -209,7 +216,7 @@
     <tr>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </tr>
@@ -219,7 +226,7 @@
     <td {colspan} {rowspan}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </td>
@@ -229,7 +236,7 @@
     <th {colspan} {rowspan}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {parseEmojisFunction} {node} {preview} />
         {/each}
       {/if}
     </th>
@@ -243,7 +250,7 @@
     unknown node: "{node.type}"
     {#if nodes.length > 0}
       {#each nodes as node}
-        <Node {node} {preview} />
+        <Node {parseEmojisFunction} {node} {preview} />
       {/each}
     {/if}
   {/if}

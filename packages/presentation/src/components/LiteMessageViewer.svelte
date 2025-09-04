@@ -16,12 +16,25 @@
   import { MarkupNode, markupToJSON } from '@hcengineering/text'
   import { Markup } from '@hcengineering/core'
   import LiteNode from './markup/lite/LiteNode.svelte'
+  import emojiPlugin, { ParsedTextWithEmojis } from '@hcengineering/emoji'
+  import { onMount } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
 
   export let message: Markup | MarkupNode
 
   $: node = typeof message === 'string' ? markupToJSON(message) : message
+
+  let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
+
+  onMount(async () => {
+    try {
+      parseEmojisFunction = await getResource(emojiPlugin.functions.ParseTextWithEmojis)
+    } catch (e) {
+      console.log('Cannot locate emoji parsing function')
+    }
+  })
 </script>
 
 <div class="text-markup-view">
-  <LiteNode {node} />
+  <LiteNode {parseEmojisFunction} {node} />
 </div>

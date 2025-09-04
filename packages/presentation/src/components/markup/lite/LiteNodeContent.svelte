@@ -20,8 +20,12 @@
   import ObjectNode from '../ObjectNode.svelte'
   import NodeMarks from '../NodeMarks.svelte'
   import { getBlobRef } from '../../../preview'
+  import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
+  export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
+
+  let parsedTextWithEmojis: ParsedTextWithEmojis | undefined = undefined
 
   function toRefBlob (blobId: AttrValue): Ref<Blob> {
     return blobId as Ref<Blob>
@@ -41,6 +45,10 @@
   function toString (value: AttrValue | undefined): string | undefined {
     return value != null ? `${value}` : undefined
   }
+
+  $: if (node.type === MarkupNodeType.text && parseEmojisFunction) {
+    parsedTextWithEmojis = parseEmojisFunction(node.text ?? '')
+  }
 </script>
 
 {#if node}
@@ -48,15 +56,35 @@
   {@const nodes = node.content ?? []}
 
   {#if node.type === MarkupNodeType.doc}
-    <LiteNodes {nodes} />
+    <LiteNodes {parseEmojisFunction} {nodes} />
   {:else if node.type === MarkupNodeType.text}
-    {node.text}
+    {#if parsedTextWithEmojis === undefined}
+      {node.text}
+    {:else}
+      {#each parsedTextWithEmojis.nodes as textOrEmoji}
+        {#if typeof textOrEmoji === 'string'}
+          {textOrEmoji}
+        {:else}
+          <span class="emoji" style="display: inline-block">
+            {#if 'image' in textOrEmoji}
+              {@const blob = toRefBlob(textOrEmoji.image)}
+              {@const alt = toString(textOrEmoji.emoji)}
+              {#await getBlobRef(blob) then blobSrc}
+                <img src={blobSrc.src} {alt} />
+              {/await}
+            {:else}
+              {textOrEmoji.emoji}
+            {/if}
+          </span>
+        {/if}
+      {/each}
+    {/if}
   {:else if node.type === MarkupNodeType.paragraph}
     <p class="p-inline contrast" class:overflow-label={true} style:margin="0">
-      <LiteNodes {nodes} />
+      <LiteNodes {parseEmojisFunction} {nodes} />
     </p>
   {:else if node.type === MarkupNodeType.blockquote}
-    <LiteNodes {nodes} />
+    <LiteNodes {parseEmojisFunction} {nodes} />
   {:else if node.type === MarkupNodeType.horizontal_rule}
     <!--  nothing-->
   {:else if node.type === MarkupNodeType.code_block}
@@ -69,7 +97,7 @@
           }
         ]}
       >
-        <LiteNodes {nodes} />
+        <LiteNodes {parseEmojisFunction} {nodes} />
       </NodeMarks>
     </p>
   {:else if node.type === MarkupNodeType.reference}
@@ -80,7 +108,7 @@
     {#if objectClass !== undefined && objectId !== undefined}
       <ObjectNode _id={toRef(objectId)} _class={toClassRef(objectClass)} title={objectLabel} />
     {:else}
-      <LiteNodes {nodes} />
+      <LiteNodes {parseEmojisFunction} {nodes} />
     {/if}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji">
@@ -100,9 +128,9 @@
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.subLink}
     <sub>
-      <LiteNodes {nodes} />
+      <LiteNodes {parseEmojisFunction} {nodes} />
     </sub>
   {:else}
-    <LiteNodes {nodes} />
+    <LiteNodes {parseEmojisFunction} {nodes} />
   {/if}
 {/if}
