@@ -14,7 +14,7 @@
 //
 
 import card, { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
-import type { Doc, Ref } from '@hcengineering/core'
+import core, { type Doc, type Ref, type Class, DOMAIN_MODEL_TX, type TxCreateDoc } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -40,6 +40,11 @@ export const chatOperation: MigrateOperation = {
         state: 'migrate-parent-info',
         mode: 'upgrade',
         func: migrateParentInfo
+      },
+      {
+        state: 'migrate-channel-tags',
+        mode: 'upgrade',
+        func: migrateChannelTags
       }
     ])
   },
@@ -56,6 +61,34 @@ async function migrateChannelsToThreads (client: MigrationClient): Promise<void>
       _class: chat.masterTag.Thread
     }
   )
+}
+
+async function migrateChannelTags (client: MigrationClient): Promise<void> {
+  const tagTxes = await client.find<TxCreateDoc<Class<Card>>>(DOMAIN_MODEL_TX, {
+    _class: core.class.TxCreateDoc,
+    objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+  })
+  const updates: {
+    filter: MigrationDocumentQuery<TxCreateDoc<Class<Card>>>
+    update: MigrateUpdate<TxCreateDoc<Class<Card>>>
+  }[] = []
+  for (const tagTx of tagTxes) {
+    if (tagTx.attributes.extends !== channelMasterTag) {
+      continue
+    }
+
+    updates.push({
+      filter: { _id: tagTx._id },
+      update: {
+        attributes: {
+          ...tagTx.attributes,
+          extends: chat.masterTag.Thread
+        }
+      }
+    })
+  }
+  await client.bulk(DOMAIN_MODEL_TX, updates)
+  client.logger.log('Migrated channel tags', { allTags: tagTxes.length, updatedTags: updates.length })
 }
 
 async function migrateParentInfo (client: MigrationClient, mode: MigrateMode): Promise<void> {
