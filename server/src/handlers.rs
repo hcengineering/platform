@@ -378,10 +378,13 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
         // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
         let content_length = merge::content_length(parts);
-        response.body(SizedStream::new(
-            content_length as u64,
-            stream::empty::<Result<_, io::Error>>().boxed_local(),
-        ))
+        match content_length {
+            Some(content_length) => response.body(SizedStream::new(
+                content_length as u64,
+                stream::empty::<Result<_, io::Error>>().boxed_local(),
+            )),
+            None => response.finish(),
+        }
     } else {
         HttpResponse::NotFound().finish()
     };
