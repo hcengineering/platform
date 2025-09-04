@@ -156,6 +156,24 @@ pub async fn stream(
     }
 }
 
+pub fn content_length(parts: Vec<ObjectPart<PartData>>) -> usize {
+    let first = parts.first().unwrap();
+    let merge_strategy = first.data.merge_strategy.unwrap();
+
+    let mut content_length: usize = 0;
+    match merge_strategy {
+        MergeStrategy::Concatenate => {
+            for part in parts {
+                content_length += part.data.size;
+            }
+        }
+
+        MergeStrategy::JsonPatch => return 0,
+    }
+
+    content_length
+}
+
 async fn part_data(s3: &S3Client, part: ObjectPart<PartData>) -> anyhow::Result<Vec<u8>> {
     match part.inline {
         Some(inline) => Ok(inline),
