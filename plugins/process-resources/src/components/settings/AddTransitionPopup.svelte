@@ -118,6 +118,10 @@
       items={triggersItems}
       bind:selected={trigger}
       label={plugin.string.Trigger}
+      on:selected={() => {
+        params = {}
+        result = null
+      }}
       justify={'left'}
       width={'100%'}
       kind={'no-border'}
