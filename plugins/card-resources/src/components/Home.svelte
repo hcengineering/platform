@@ -25,6 +25,7 @@
     Loading,
     showPopup
   } from '@hcengineering/ui'
+  import { FilterBar, FilterButton } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import HomeCardPresenter from './HomeCardPresenter.svelte'
@@ -42,12 +43,13 @@
   let cards: Card[] = []
   let total = -1
   let isLoading = true
-  let searchQuery: string = ''
+  let search: string = ''
 
-  $: query = searchQuery != null && searchQuery.trim() !== '' ? { $search: searchQuery } : {}
+  $: searchQuery = search != null && search.trim() !== '' ? { $search: search } : {}
+  $: resultQuery = { ...searchQuery }
   $: cardsQuery.query(
     card.class.Card,
-    query,
+    resultQuery,
     (res) => {
       cards = res
       total = res.total
@@ -131,10 +133,18 @@
         <Label label={card.string.Home} />
       </div>
       <div class="flex flex-gap-2">
-        <SearchInput bind:value={searchQuery} collapsed />
+        <SearchInput bind:value={search} collapsed />
+        <FilterButton _class={card.class.Card} />
+        <div class="hulyHeader-divider" />
         <ModernButton icon={IconSettings} on:click={onSettings} size="small" iconSize="small" kind="tertiary" />
       </div>
     </div>
+    <FilterBar
+      _class={card.class.Card}
+      query={searchQuery}
+      space={undefined}
+      on:change={({ detail }) => (resultQuery = detail)}
+    />
     <div class="create-card">
       <ModernEditbox
         bind:value={title}
