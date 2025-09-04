@@ -21,10 +21,10 @@
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
   import { getBlobRef } from '../../preview'
-  import { emojiRegex, ParsedTextWithEmojis } from '@hcengineering/emoji'
+  import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
-  export let single = true
+  export let singleTextNode = false
   export let preview = false
   export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 
@@ -57,13 +57,6 @@
     return value != null ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
 
-  const checkEmoji = (nodes: MarkupNode[]): boolean => {
-    if (nodes.length !== 1) return false
-    const match = nodes[0].text?.match(emojiRegex)
-    if (match == null) return false
-    return match[0] === nodes[0].text
-  }
-
   $: if (node.type === MarkupNodeType.text && parseEmojisFunction) {
     parsedTextWithEmojis = parseEmojisFunction(node.text ?? '')
   }
@@ -76,7 +69,7 @@
   {#if node.type === MarkupNodeType.doc}
     {#if nodes.length > 0}
       {#each nodes as node}
-        <Node {parseEmojisFunction} {node} {preview} />
+        <Node {parseEmojisFunction} {node} {preview} singleTextNode={nodes.length === 1} />
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.text}
@@ -87,7 +80,7 @@
         {#if typeof textOrEmoji === 'string'}
           {textOrEmoji}
         {:else}
-          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedTextWithEmojis.emojisOnly}>
+          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedTextWithEmojis.emojisOnly && singleTextNode}>
             {#if 'image' in textOrEmoji}
               {@const blob = toRefBlob(textOrEmoji.image)}
               {@const alt = toString(textOrEmoji.emoji)}
@@ -102,7 +95,7 @@
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.emoji}
-    <span class="emoji" class:emojiOnly={single}>
+    <span class="emoji" class:emojiOnly={singleTextNode}>
       {#if node.attrs?.kind === 'image'}
         {@const blob = toRefBlob(attrs.image)}
         {@const alt = toString(attrs.emoji)}
@@ -114,10 +107,10 @@
       {/if}
     </span>
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
+    <p class="p-inline contrast" class:overflow-label={preview}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {parseEmojisFunction} {node} {preview} single={nodes.length === 1} />
+          <Node {parseEmojisFunction} {node} {preview} singleTextNode={singleTextNode && nodes.length === 1} />
         {/each}
       {/if}
     </p>

@@ -20,7 +20,7 @@
   import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
-  export let single = true
+  export let singleTextNode = false
   export let preview = false
   export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 </script>
@@ -30,9 +30,9 @@
 
   {#if marks.length > 0}
     <NodeMarks {marks}>
-      <NodeContent {parseEmojisFunction} {node} {single} {preview} />
+      <NodeContent {parseEmojisFunction} {node} {preview} />
     </NodeMarks>
   {:else}
-    <NodeContent {parseEmojisFunction} {node} {single} {preview} />
+    <NodeContent {parseEmojisFunction} {node} {singleTextNode} {preview} />
   {/if}
 {/if}
