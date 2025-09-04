@@ -85,7 +85,7 @@
 
 <Card
   okAction={save}
-  canSave={to !== undefined && trigger !== undefined && to !== from}
+  canSave={to !== undefined && trigger !== undefined}
   label={plugin.string.AddTransition}
   width={'medium'}
   on:close
