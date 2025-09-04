@@ -80,7 +80,11 @@
         {#if typeof textOrEmoji === 'string'}
           {textOrEmoji}
         {:else}
-          <span class="emoji" style="display: inline-block" class:emojiOnly={parsedTextWithEmojis.emojisOnly && singleTextNode}>
+          <span
+            class="emoji"
+            style="display: inline-block"
+            class:emojiOnly={parsedTextWithEmojis.emojisOnly && singleTextNode}
+          >
             {#if 'image' in textOrEmoji}
               {@const blob = toRefBlob(textOrEmoji.image)}
               {@const alt = toString(textOrEmoji.emoji)}
