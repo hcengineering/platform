@@ -106,6 +106,7 @@ export default mergeIds(cardId, card, {
     Post: '' as IntlString,
     Compact: '' as IntlString,
     Comfortable: '' as IntlString,
-    Comfortable2: '' as IntlString
+    Comfortable2: '' as IntlString,
+    AdvancedCreateCard: '' as IntlString
   }
 })

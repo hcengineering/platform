@@ -78,7 +78,14 @@
 
 <div class="create-card rounded-form">
   <div class="corner-container">
-    <ButtonIcon icon={card.icon.Expand} size="extra-small" on:click={onExtend} kind="tertiary" disabled={creating} />
+    <ButtonIcon
+      icon={card.icon.Expand}
+      size="extra-small"
+      on:click={onExtend}
+      kind="tertiary"
+      disabled={creating}
+      tooltip={{ label: card.string.AdvancedCreateCard }}
+    />
   </div>
   <div class="form-row">
     <ModernEditbox
