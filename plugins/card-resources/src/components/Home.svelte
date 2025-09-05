@@ -31,6 +31,7 @@
   import HomeCardPresenter from './HomeCardPresenter.svelte'
   import HomeSettings from './HomeSettings.svelte'
   import CreateCardPopup from './CreateCardPopup.svelte'
+  import CardInput from './CardInput.svelte'
   import card from '../plugin'
 
   const cardsQuery = createQuery()
@@ -145,28 +146,7 @@
       space={undefined}
       on:change={({ detail }) => (resultQuery = detail)}
     />
-    <div class="create-card">
-      <ModernEditbox
-        bind:value={title}
-        label={card.string.WhatDoYouWantToShare}
-        size="large"
-        kind="secondary"
-        width="100%"
-        disabled={false}
-        autoFocus={true}
-      >
-        <svelte:fragment slot="after">
-          <ModernButton
-            label={card.string.Share}
-            size="small"
-            kind="primary"
-            disabled={title.trim() === ''}
-            on:click={onShare}
-          />
-        </svelte:fragment>
-      </ModernEditbox>
-    </div>
-
+    <CardInput />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}

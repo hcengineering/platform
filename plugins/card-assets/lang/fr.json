@@ -42,8 +42,8 @@
     "ConfigDescription": "Extension pour la gestion des connaissances de style base de données.",
     "AddCollaborators": "Ajouter des collaborateurs",
     "Home": "Accueil",
-    "WhatDoYouWantToShare": "Que voulez-vous partager ?",
-    "Share": "Partager",
+    "CardTitle": "Entrez un titre de carte...",
+    "Post": "Publier",
     "Compact": "Compact",
     "Comfortable": "Confortable",
     "Comfortable2": "Confortable 2"

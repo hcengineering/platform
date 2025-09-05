@@ -42,8 +42,8 @@
     "ConfigDescription": "データベーススタイルのナレッジマネジメント用の拡張機能。",
     "AddCollaborators": "コラボレーターを追加",
     "Home": "ホーム",
-    "WhatDoYouWantToShare": "どうしますかを共有しますか？",
-    "Share": "共有",
+    "CardTitle": "カードのタイトルを入力...",
+    "Post": "投稿",
     "Compact": "コンパクト",
     "Comfortable": "コンファンティブ",
     "Comfortable2": "コンファンティブ 2"
