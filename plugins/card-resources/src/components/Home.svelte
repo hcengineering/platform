@@ -11,7 +11,7 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import core, { SortingOrder } from '@hcengineering/core'
   import ui, {
@@ -19,25 +19,20 @@
     IconSettings,
     Label,
     ModernButton,
-    ModernEditbox,
     Scroller,
     SearchInput,
     Loading,
     showPopup
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
 
   import HomeCardPresenter from './HomeCardPresenter.svelte'
   import HomeSettings from './HomeSettings.svelte'
-  import CreateCardPopup from './CreateCardPopup.svelte'
-  import CardInput from './CardInput.svelte'
+  import NewCardForm from './NewCardForm.svelte'
   import card from '../plugin'
 
   const cardsQuery = createQuery()
   const limitStep = 50
-
-  const dispatch = createEventDispatcher()
 
   let divScroll: HTMLDivElement
   let limit = limitStep
@@ -112,19 +107,6 @@
   function onSettings (e: MouseEvent): void {
     showPopup(HomeSettings, {}, eventToHTMLElement(e))
   }
-
-  function onShare (): void {
-    showPopup(CreateCardPopup, { title, changeType: true }, 'center', async (result) => {
-      if (result !== undefined) {
-        const doc = await getClient().findOne(card.class.Card, { _id: result })
-        if (doc === undefined) return
-        dispatch('selectCard', doc)
-      }
-    })
-    title = ''
-  }
-
-  let title: string = ''
 </script>
 
 <Scroller bind:divScroll {onScroll} padding="2rem 4rem">
@@ -146,7 +128,7 @@
       space={undefined}
       on:change={({ detail }) => (resultQuery = detail)}
     />
-    <CardInput />
+    <NewCardForm />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}
@@ -189,12 +171,6 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-  }
-
-  .create-card {
-    display: flex;
-    width: 100%;
-    margin: 1rem 0;
   }
 
   .header {
