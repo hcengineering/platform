@@ -86,100 +86,11 @@ export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTra
   lk.localParticipant.createScreenTracks = value
 }
 
-export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
 export const isTranscription = writable<boolean>(false)
 export const isRecordingAvailable = writable<boolean>(false)
-export const isSharingEnabled = writable<boolean>(false)
 export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
-
-function handleTrackSubscribed (
-  track: RemoteTrack,
-  publication: RemoteTrackPublication,
-  participant: RemoteParticipant
-): void {
-  if (track.kind === Track.Kind.Video && track.source === Track.Source.ScreenShare) {
-    screenSharing.set(true)
-  }
-}
-
-function handleTrackUnsubscribed (
-  track: RemoteTrack,
-  publication: RemoteTrackPublication,
-  participant: RemoteParticipant
-): void {
-  if (track.kind === Track.Kind.Video && track.source === Track.Source.ScreenShare) {
-    screenSharing.set(false)
-  }
-}
-
-lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
-lk.on(RoomEvent.LocalTrackPublished, (pub, part) => {
-  const session = liveKitClient.currentMediaSession
-  const track = pub.track?.mediaStreamTrack
-  const deviceId = track?.getSettings().deviceId
-  if (pub.track?.kind === Track.Kind.Video) {
-    if (pub.track.source === Track.Source.ScreenShare) {
-      session?.setFeature('sharing', { enabled: true, track, deviceId })
-      screenSharing.set(true)
-      isSharingEnabled.set(true)
-    } else {
-      session?.setCamera({ enabled: true, track, deviceId })
-    }
-  } else if (pub.track?.kind === Track.Kind.Audio) {
-    session?.setMicrophone({ enabled: true, track, deviceId })
-  }
-})
-lk.on(RoomEvent.LocalTrackUnpublished, (pub, part) => {
-  const session = liveKitClient.currentMediaSession
-  if (pub.track?.kind === Track.Kind.Video) {
-    if (pub.track.source === Track.Source.ScreenShare) {
-      session?.setFeature('sharing', { enabled: false })
-      screenSharing.set(false)
-      isSharingEnabled.set(false)
-    } else {
-      session?.setCamera({ enabled: false })
-    }
-  } else if (pub.track?.kind === Track.Kind.Audio) {
-    session?.setMicrophone({ enabled: false })
-  }
-})
-lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
-lk.on(RoomEvent.TrackMuted, (pub, participant) => {
-  if (participant.isLocal) {
-    const session = liveKitClient.currentMediaSession
-    if (pub.track?.kind === Track.Kind.Video) {
-      if (pub.track.source === Track.Source.ScreenShare) {
-        session?.setFeature('sharing', { enabled: false })
-        screenSharing.set(false)
-        isSharingEnabled.set(false)
-      } else {
-        session?.setCamera({ enabled: false })
-      }
-    } else if (pub.track?.kind === Track.Kind.Audio) {
-      session?.setMicrophone({ enabled: false })
-    }
-  }
-})
-lk.on(RoomEvent.TrackUnmuted, (pub, participant) => {
-  if (participant.isLocal) {
-    const session = liveKitClient.currentMediaSession
-    const track = pub.track?.mediaStreamTrack
-    const deviceId = track?.getSettings().deviceId
-    if (pub.track?.kind === Track.Kind.Video) {
-      if (pub.track.source === Track.Source.ScreenShare) {
-        session?.setFeature('sharing', { enabled: true })
-        screenSharing.set(true)
-        isSharingEnabled.set(true)
-      } else {
-        session?.setCamera({ enabled: true, track, deviceId })
-      }
-    } else if (pub.track?.kind === Track.Kind.Audio) {
-      session?.setMicrophone({ enabled: true, track, deviceId })
-    }
-  }
-})
 
 export const krispProcessor = KrispNoiseFilter()
 export let blurProcessor: ProcessorWrapper<BackgroundOptions> | undefined
@@ -264,11 +175,6 @@ export async function updateBlurRadius (value: number): Promise<void> {
 }
 
 lk.on(RoomEvent.LocalTrackPublished, (pub) => {
-  if (pub.track?.kind === Track.Kind.Video && pub.track.source === Track.Source.ScreenShare) {
-    screenSharing.set(true)
-    isSharingEnabled.set(true)
-  }
-
   if (pub.source === Track.Source.Microphone) {
     void setKrispProcessor(pub)
   }
@@ -278,14 +184,9 @@ lk.on(RoomEvent.LocalTrackPublished, (pub) => {
   }
 })
 lk.on(RoomEvent.LocalTrackUnpublished, (pub) => {
-  if (pub.track?.kind === Track.Kind.Video) {
-    if (pub.track.source === Track.Source.ScreenShare) {
-      screenSharing.set(false)
-      isSharingEnabled.set(false)
-    } else if (pub.track.source === Track.Source.Camera) {
-      if (localVideo !== undefined) {
-        localVideo = undefined
-      }
+  if (pub.track?.kind === Track.Kind.Video && pub.track.source === Track.Source.Camera) {
+    if (localVideo !== undefined) {
+      localVideo = undefined
     }
   }
 })
@@ -345,8 +246,6 @@ function parseMetadata (metadata: string | undefined): RoomMetadata {
 
 export async function disconnect (): Promise<void> {
   await liveKitClient.disconnect()
-  screenSharing.set(false)
-  isSharingEnabled.set(false)
 }
 
 export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {
@@ -449,9 +348,7 @@ async function moveToRoom (
 
 async function connectLK (token: string, room: Room): Promise<void> {
   const wsURL = getLiveKitEndpoint()
-  // await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
-  liveKitClient.liveKitRoom.simulateParticipants( { publish: {audio: true, video: true, useRealTracks: true}, participants: {count: 20, audio: true, video: true}}
-  )
+  await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
 }
 
 async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
@@ -480,7 +377,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
   }
 }
 
-export async function prepareRoomConnection(room: Room): Promise<void> {
+export async function prepareRoomConnection (room: Room): Promise<void> {
   const roomToken = await loveClient.getRoomToken(room)
   liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
 }

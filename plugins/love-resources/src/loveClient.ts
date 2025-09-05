@@ -1,28 +1,27 @@
-import { concatLink, type Ref } from "@hcengineering/core"
-import love, { type Room } from "@hcengineering/love"
-import { getMetadata } from "@hcengineering/platform"
-import presentation from "@hcengineering/presentation"
-import { getPlatformToken, lk } from "./utils"
-import { getCurrentEmployee } from "@hcengineering/contact"
-import { getPersonByPersonRef } from "@hcengineering/contact-resources"
-import { Analytics } from "@hcengineering/analytics"
-import { currentMeetingMinutes } from "./stores"
-import { get } from "svelte/store"
+import { concatLink, type Ref } from '@hcengineering/core'
+import love, { type Room } from '@hcengineering/love'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+import { getPlatformToken, lk } from './utils'
+import { getCurrentEmployee } from '@hcengineering/contact'
+import { getPersonByPersonRef } from '@hcengineering/contact-resources'
+import { Analytics } from '@hcengineering/analytics'
+import { currentMeetingMinutes } from './stores'
+import { get } from 'svelte/store'
 
 interface RoomToken {
   issuedOn: number
   token: string
 }
-export function getLoveClient() {
+export function getLoveClient () {
   return new LoveClient()
 }
 
 export class LoveClient {
-  private tokens: Map<Ref<Room>, RoomToken>
+  private readonly tokens: Map<Ref<Room>, RoomToken>
 
-  constructor() {
+  constructor () {
     this.tokens = new Map<Ref<Room>, RoomToken>()
-
   }
 
   async getRoomToken (room: Room): Promise<string> {
@@ -95,7 +94,7 @@ export class LoveClient {
     return endpoint
   }
 
-  private async refreshRoomToken(room: Room): Promise<string> {
+  private async refreshRoomToken (room: Room): Promise<string> {
     const sessionName = this.getTokenRoomName(room)
     const endpoint = this.getLoveEndpoint()
     if (endpoint === undefined) {

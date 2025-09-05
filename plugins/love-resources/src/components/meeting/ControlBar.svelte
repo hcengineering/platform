@@ -18,7 +18,7 @@
 
   import love from '../../plugin'
   import { myInfo, myOffice } from '../../stores'
-  import { isFullScreen, screenSharing } from '../../utils'
+  import { isFullScreen } from '../../utils'
   import ControlBarContainer from './ControlBarContainer.svelte'
   import RoomModal from '../RoomModal.svelte'
   import { lkSessionConnected } from '../../liveKitClient'
@@ -41,8 +41,6 @@
   let noLabel: boolean = false
 
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
-
-  $: withVideo = $screenSharing || room.type === RoomType.Video
 
   function maximize (): void {
     showPopup(RoomModal, { room }, 'full-centered')
@@ -69,7 +67,7 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="left">
-      {#if $lkSessionConnected && withVideo && onFullScreen}
+      {#if $lkSessionConnected && onFullScreen}
         <ModernButton
           icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
           tooltip={{
