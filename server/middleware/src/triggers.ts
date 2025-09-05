@@ -234,7 +234,8 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       sctx.contextCache,
       this.context.modelDb,
       sctx.socialStringsToUsers,
-      sctx.service
+      sctx.service,
+      sctx.grant
     )
     ctx.contextData = asyncContextData
     const aresult = await this.triggers.apply(

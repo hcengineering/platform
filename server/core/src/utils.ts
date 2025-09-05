@@ -31,7 +31,8 @@ import core, {
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type PermissionsGrant
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -180,7 +181,8 @@ export class SessionDataImpl implements SessionData {
       role: AccountRole
     }
     >,
-    readonly service: string
+    readonly service: string,
+    readonly grant?: PermissionsGrant
   ) {
     this._removedMap = _removedMap
     this._contextCache = _contextCache

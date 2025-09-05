@@ -16,6 +16,7 @@
 import type { LoginInfoWithWorkspaces } from '@hcengineering/account-client'
 import {
   generateId,
+  type PermissionsGrant,
   TxProcessor,
   type Account,
   type AccountUuid,
@@ -141,6 +142,16 @@ export class ClientSession implements Session {
     return await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
   }
 
+  private getPermissionsGrant (): PermissionsGrant | undefined {
+    if (this.token.grant == null) {
+      return
+    }
+
+    return {
+      spaces: this.token.grant?.spaces
+    }
+  }
+
   includeSessionContext (ctx: ClientSessionCtx): void {
     const dataId = this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
     const contextData = new SessionDataImpl(
@@ -157,7 +168,8 @@ export class ClientSession implements Session {
       undefined,
       ctx.pipeline.context.modelDb,
       ctx.socialStringsToUsers,
-      this.token.extra?.service ?? '🤦‍♂️user'
+      this.token.extra?.service ?? '🤦‍♂️user',
+      this.getPermissionsGrant()
     )
     ctx.ctx.contextData = contextData
   }
