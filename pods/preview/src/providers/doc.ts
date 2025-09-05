@@ -39,6 +39,9 @@ const ODP_MIME_TYPE = 'application/vnd.oasis.opendocument.presentation'
 // RTF
 const RTF_MIME_TYPE_1 = 'application/rtf'
 const RTF_MIME_TYPE_2 = 'text/rtf'
+// JSON
+const JSON_MIME_TYPE = 'application/json'
+const YAML_MIME_TYPE = 'application/yaml'
 
 const extensions: Record<string, string> = {
   [DOCX_MIME_TYPE]: '.docx',
@@ -51,7 +54,9 @@ const extensions: Record<string, string> = {
   [RTF_MIME_TYPE_2]: '.rtf',
   [ODT_MIME_TYPE]: '.odt',
   [ODS_MIME_TYPE]: '.ods',
-  [ODP_MIME_TYPE]: '.odp'
+  [ODP_MIME_TYPE]: '.odp',
+  [JSON_MIME_TYPE]: '.json',
+  [YAML_MIME_TYPE]: '.yaml'
 }
 
 function getFileExtension (contentType: string): string {
@@ -67,7 +72,7 @@ export class DocProvider implements PreviewProvider {
 
   supports (contentType: string): boolean {
     const mimeType = contentType.split(';')[0].trim().toLowerCase()
-    return extensions[mimeType] !== undefined
+    return extensions[mimeType] !== undefined || contentType.startsWith('text/')
   }
 
   async image (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, contentType: string): Promise<PreviewFile> {

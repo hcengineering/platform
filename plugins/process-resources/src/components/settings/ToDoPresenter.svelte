@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { parseContext, Process, SelectedContext, SelectedExecutonContext } from '@hcengineering/process'
+  import { parseContext, Process, SelectedContext, SelectedExecutionContext } from '@hcengineering/process'
   import ui, { Label } from '@hcengineering/ui'
   import ExecutionContextPresenter from '../attributeEditors/ExecutionContextPresenter.svelte'
 
@@ -23,7 +23,7 @@
 
   $: context = getContext(params._id)
 
-  function getContext (value: string | undefined): SelectedExecutonContext | undefined {
+  function getContext (value: string | undefined): SelectedExecutionContext | undefined {
     if (value === undefined) return
     const context = parseContext(value)
     if (context !== undefined && isExecutionContext(context)) {
@@ -31,7 +31,7 @@
     }
   }
 
-  function isExecutionContext (context: SelectedContext): context is SelectedExecutonContext {
+  function isExecutionContext (context: SelectedContext): context is SelectedExecutionContext {
     return context.type === 'context'
   }
 </script>

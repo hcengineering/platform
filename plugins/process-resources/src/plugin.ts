@@ -38,6 +38,7 @@ export default mergeIds(processId, process, {
     ProcessPresenter: '' as AnyComponent,
     ExecutonPresenter: '' as AnyComponent,
     ExecutonProgressPresenter: '' as AnyComponent,
+    ExecutionContextSelector: '' as AnyComponent,
     NestedContextSelector: '' as AnyComponent,
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,

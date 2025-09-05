@@ -13,9 +13,6 @@
 
 import { type Card, type MasterTag } from '@hcengineering/card'
 import core, {
-  generateId,
-  type Hierarchy,
-  matchQuery,
   type AnyAttribute,
   type ArrOf,
   type Association,
@@ -23,6 +20,9 @@ import core, {
   type Client,
   type Doc,
   type DocumentQuery,
+  generateId,
+  type Hierarchy,
+  matchQuery,
   type ModelDb,
   type Ref,
   type RefTo,
@@ -33,16 +33,16 @@ import core, {
 import { getResource, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
-  ExecutionStatus,
-  parseContext,
   type Context,
   type ContextId,
   type Execution,
   type ExecutionContext,
+  ExecutionStatus,
   type Method,
   type NestedContext,
+  parseContext,
   type Process,
-  type ProcessContext,
+  type ProcessExecutionContext,
   type ProcessFunction,
   type RelatedContext,
   type SelectedContext,
@@ -174,7 +174,7 @@ export function getContext (
   const functions = getContextFunctions(client, process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
-  const executionContext: Record<string, ProcessContext> = {}
+  const executionContext: Record<string, ProcessExecutionContext> = {}
 
   const refs = getClassAttributes(client, process.masterTag, core.class.RefTo, 'attribute')
   for (const ref of refs) {
@@ -241,11 +241,25 @@ export function getContext (
     }
   }
 
-  if (category === 'object') {
-    for (const key in process.context) {
-      const value = process.context[key as ContextId]
-      if (client.getHierarchy().isDerived(value._class, target)) {
-        executionContext[key] = value
+  for (const key in process.context) {
+    const contextId = key as ContextId
+    const value = process.context[contextId]
+    if (client.getHierarchy().isDerived(value._class, target)) {
+      executionContext[key] = {
+        attributes: [],
+        name: value.name,
+        context: contextId,
+        value: value.value
+      }
+    } else {
+      const contextAttributes = getClassAttributes(client, value._class, target, category)
+      if (contextAttributes.length > 0) {
+        executionContext[key] = {
+          name: value.name,
+          context: contextId,
+          value: value.value,
+          attributes: contextAttributes
+        }
       }
     }
   }
@@ -404,11 +418,13 @@ export async function continueExecution (value: Execution): Promise<void> {
   let context = value.context
   const transition = value.error[0].transition
   if (transition == null) {
-    context = await newExecutionUserInput(value.process, context)
+    const res = await newExecutionUserInput(value.process, context)
+    context = res ?? context
   } else {
     const _transition = client.getModel().findObject(transition)
     if (_transition === undefined) return
-    context = await getNextStateUserInput(value, _transition, value.context)
+    const res = await getNextStateUserInput(value, _transition, context)
+    context = res ?? context
   }
   await client.update(value, { status: ExecutionStatus.Active, context })
 }
@@ -417,17 +433,24 @@ export async function requestUserInput (
   processId: Ref<Process>,
   target: Transition,
   userContext: ExecutionContext
-): Promise<ExecutionContext> {
-  userContext = await getTransitionUserInput(processId, target, userContext)
-  userContext = await getSubProcessesUserInput(target, userContext)
-  return userContext
+): Promise<ExecutionContext | undefined> {
+  const tr = await getTransitionUserInput(processId, target, userContext)
+  if (tr !== undefined) {
+    userContext = { ...userContext, ...tr }
+  }
+  const sub = await getSubProcessesUserInput(target, userContext)
+  if (sub !== undefined) {
+    userContext = { ...userContext, ...sub }
+  }
+  return sub !== undefined || tr !== undefined ? userContext : undefined
 }
 
 export async function getTransitionUserInput (
   processId: Ref<Process>,
   transition: Transition,
   userContext: ExecutionContext
-): Promise<ExecutionContext> {
+): Promise<ExecutionContext | undefined> {
+  const changed = false
   for (const action of transition.actions) {
     if (action == null) continue
     for (const key in action.params) {
@@ -451,43 +474,45 @@ export async function getTransitionUserInput (
       }
     }
   }
-  return userContext
+  return changed ? userContext : undefined
 }
 
 export async function getSubProcessesUserInput (
   transition: Transition,
   userContext: ExecutionContext
-): Promise<ExecutionContext> {
+): Promise<ExecutionContext | undefined> {
+  const changed = false
   for (const action of transition.actions) {
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const res = await newExecutionUserInput(processId, {} as ExecutionContext)
-    if (action.context == null) continue
+    const res = await newExecutionUserInput(processId)
+    if (action.context == null || res === undefined) continue
     userContext[action.context._id] = res
   }
-  return userContext
+  return changed ? userContext : undefined
 }
 
 export async function newExecutionUserInput (
   _id: Ref<Process>,
-  userContext: ExecutionContext
-): Promise<ExecutionContext> {
+  userContext?: ExecutionContext
+): Promise<ExecutionContext | undefined> {
   const client = getClient()
   const initTransition = client.getModel().findAllSync(process.class.Transition, {
     process: _id,
     from: null
   })[0]
   if (initTransition === undefined) return userContext
-  return await requestUserInput(_id, initTransition, userContext)
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const emptyContext: ExecutionContext = {} as ExecutionContext
+  return await requestUserInput(_id, initTransition, userContext ?? emptyContext)
 }
 
 export async function getNextStateUserInput (
   execution: Execution,
   transition: Transition,
   userContext: ExecutionContext
-): Promise<ExecutionContext> {
+): Promise<ExecutionContext | undefined> {
   const client = getClient()
   const process = client.getModel().findObject(execution.process)
   if (process === undefined) return userContext
@@ -497,7 +522,7 @@ export async function getNextStateUserInput (
 export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
   const client = getClient()
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const context = await newExecutionUserInput(_id, {} as ExecutionContext)
+  const context = await newExecutionUserInput(_id)
   const _process = client.getModel().findObject(_id)
   if (_process === undefined) return
   const initTransition = client.getModel().findAllSync(process.class.Transition, {
@@ -505,12 +530,14 @@ export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space
     from: null
   })[0]
   if (initTransition === undefined) return
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const emptyContext: ExecutionContext = {} as ExecutionContext
   await client.createDoc(process.class.Execution, space, {
     process: _id,
     currentState: initTransition.to,
     card,
     rollback: [],
-    context,
+    context: context ?? emptyContext,
     status: ExecutionStatus.Active
   })
 }
@@ -544,29 +571,27 @@ export async function requestResult (
   transition: Transition,
   context: ExecutionContext
 ): Promise<void> {
-  for (const action of transition.actions) {
-    if (action.result == null) continue
-    const promise = new Promise<void>((resolve, reject) => {
-      showPopup(
-        process.component.ResultInput,
-        { type: action.result?.type, name: action.result?.name },
-        undefined,
-        (res) => {
-          if (action.result?._id === undefined) return
-          if (res?.value !== undefined) {
-            context[action.result._id] = res.value
-            resolve()
-          } else {
-            reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
-          }
+  if (transition.result == null) return
+  const promise = new Promise<void>((resolve, reject) => {
+    showPopup(
+      process.component.ResultInput,
+      { type: transition.result?.type, name: transition.result?.name },
+      undefined,
+      (res) => {
+        if (transition.result?._id === undefined) return
+        if (res?.value !== undefined) {
+          context[transition.result._id] = res.value
+          resolve()
+        } else {
+          reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
         }
-      )
-    })
-    await promise
-    await txop.update(execution, {
-      context
-    })
-  }
+      }
+    )
+  })
+  await promise
+  await txop.update(execution, {
+    context
+  })
 }
 
 export function todoTranstionCheck (params: Record<string, any>, doc: Doc): boolean {

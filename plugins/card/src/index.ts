@@ -150,7 +150,8 @@ const cardPlugin = plugin(cardId, {
     File: '' as Asset,
     View: '' as Asset,
     Document: '' as Asset,
-    Home: '' as Asset
+    Home: '' as Asset,
+    Space: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
