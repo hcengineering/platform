@@ -611,6 +611,7 @@ export async function selectWorkspace (
 
   let accountUuid: AccountUuid
   let extra: Record<string, any> | undefined
+  let grant: PermissionsGrant | undefined
   try {
     const decodedToken = decodeTokenVerbose(ctx, token ?? '')
     accountUuid = decodedToken.account
@@ -618,6 +619,7 @@ export async function selectWorkspace (
       workspace = await getWorkspaceById(db, decodedToken.workspace)
     }
     extra = decodedToken.extra
+    grant = decodedToken.grant
   } catch (e) {
     if (workspace?.allowReadOnlyGuest === true) {
       accountUuid = readOnlyGuestAccountUuid
@@ -666,7 +668,7 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra),
+      token: generateToken(accountUuid, workspace.uuid, extra, undefined, grant),
       endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
@@ -723,7 +725,7 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra),
+    token: generateToken(accountUuid, workspace.uuid, extra, undefined, grant),
     endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,

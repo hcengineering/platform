@@ -17,7 +17,7 @@ import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } fr
 import { type MeasureContext } from '@hcengineering/measurements'
 import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
-import { type WorkspaceIds } from './utils'
+import { PermissionsGrant, type WorkspaceIds } from './utils'
 
 /**
  * @public
@@ -72,6 +72,7 @@ export interface SessionData {
     role: AccountRole
   }
   >
+  grant?: PermissionsGrant
 
   asyncRequests?: ((ctx: MeasureContext, id?: string) => Promise<void>)[]
 }
