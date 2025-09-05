@@ -38,6 +38,7 @@
   import { NotificationContext } from '@hcengineering/communication-types'
 
   import card from '../plugin'
+  import CardIcon from './CardIcon.svelte'
   import TagsEditor from './TagsEditor.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
   import { openCardInSidebar } from '../utils'
@@ -164,6 +165,10 @@
     <div class="main-content clear-mins">
       <EditCardNewContent {_id} {doc} readonly={_readonly} {context} {isContextLoaded} />
     </div>
+
+    <svelte:fragment slot="beforeTitle">
+      <CardIcon value={doc} />
+    </svelte:fragment>
 
     <svelte:fragment slot="title">
       {#if showParents}
