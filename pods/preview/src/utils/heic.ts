@@ -21,9 +21,14 @@ import sharp from 'sharp'
 export async function heicToPng (ctx: MeasureContext, heicFile: string): Promise<string> {
   const pngFile: string = heicFile + '.png'
 
-  const buffer = (await readFile(heicFile)) as any as ArrayBufferLike
+  const buffer = await readFile(heicFile)
 
-  const { data, width, height } = await ctx.with('heic-decode', {}, () => decodeHeic({ buffer }))
+  const { data, width, height } = await ctx.with('heic-decode', {}, () =>
+    decodeHeic({
+      // @ts-expect-error wrong types
+      buffer: new Uint8Array(buffer)
+    })
+  )
 
   await ctx.with('sharp', {}, async () => {
     await sharp(data, {
