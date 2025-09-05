@@ -1,3 +1,4 @@
+use serde_json::{self as json, json};
 use tanu::{
     check, check_eq, eyre,
     http::{self, Client},
@@ -34,6 +35,32 @@ pub async fn head_known() -> eyre::Result<()> {
     );
     check!(res.header("etag").is_some());
     check_eq!("", res.text().await?);
+
+    Ok(())
+}
+
+#[tanu::test]
+pub async fn head_known_with_jsonpatch() -> eyre::Result<()> {
+    let key = random_key();
+    let payload = json!({ "foo": "bar" });
+
+    let http = Client::new();
+
+    // create new blob
+    let res = http
+        .key_put(&key)
+        .body(json::to_string(&payload)?)
+        .header("huly-merge-strategy", "jsonpatch")
+        .header("content-type", "application/json")
+        .send()
+        .await?;
+    check!(res.status().is_success());
+
+    let res = http.key_head(&key).send().await?;
+    check!(res.status().is_success());
+    // despite the fact we are not setting content-length
+    // actix forces it to be returned as 0
+    check_eq!(Some("0"), res.header("content-length"));
 
     Ok(())
 }
