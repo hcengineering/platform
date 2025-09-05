@@ -51,7 +51,8 @@
     "typescript": "^5.8.3",
     "@types/express": "^4.17.13",
     "@types/cors": "^2.8.12",
-    "@types/morgan": "~1.9.9"
+    "@types/morgan": "~1.9.9",
+    "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
@@ -69,6 +70,8 @@
     "cors": "^2.8.5",
     "morgan": "^1.10.0",
     "node-poppler": "^8.0.4",
-    "lru-cache": "^11.1.0"
+    "lru-cache": "^11.1.0",
+    "heic-decode": "^2.1.0",
+    "bmp-ts": "^1.0.9"
   }
 }
