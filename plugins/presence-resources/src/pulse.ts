@@ -1,4 +1,4 @@
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -30,9 +30,14 @@ export function getPulseClient(): HulypulseClient | undefined {
 
 export async function createPulseClient(): Promise<HulypulseClient> {
   if(!pulseclient) {
+    /*
+
+    TODO: get from presentation metadata
+
+    */
+    const ws_pulse_url = /*getMetadata(presentation.metadata.PulseUrl) ||*/ "ws://localhost:8099/ws"
     const token = getMetadata(presentation.metadata.Token)
-    // pulseclient = await HulypulseClient.connect("wss://hulypulse_mem.lleo.me/ws?token=" + token)
-    pulseclient = await HulypulseClient.connect("ws://localhost:8099/ws?token=" + token)
+    pulseclient = await HulypulseClient.connect(`${ws_pulse_url}?token=${token}`)
   }
   return pulseclient
 }

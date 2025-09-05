@@ -44,18 +44,17 @@
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  function handleTypingInfo(msg: any, key: String, index: number): void {
+  function handleTypingInfo(key: string, value: string): void {
     try {
-      const id: Ref<Person> = msg.key.split('/').pop() as Ref<Person>
-
-      if (msg.message === "Set") {
-        if(id === me) {
-          return
-        }
+      const id: Ref<Person> = key.split('/').pop() as Ref<Person>
+      if(id === me) {
+        return
+      }
+      if (value !== undefined) {
         if (!typingInfo.includes(id)) {
           typingInfo.push(id)
         }
-      } else if (msg.message === "Del" || msg.message === "Unlink" || msg.message === "Expired") {
+      } else {
         typingInfo = typingInfo.filter((x) => x !== id)
       }
       void updateTypingPersons()
