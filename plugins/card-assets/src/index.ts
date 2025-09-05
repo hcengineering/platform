@@ -24,5 +24,6 @@ loadMetadata(card.icon, {
   File: `${icons}#file`,
   View: `${icons}#view`,
   Document: `${icons}#document`,
-  Home: `${icons}#home`
+  Home: `${icons}#home`,
+  Space: `${icons}#space`
 })

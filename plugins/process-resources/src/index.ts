@@ -15,6 +15,7 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
+import ExecutionContextSelector from './components/attributeEditors/ExecutionContextSelector.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
 import RoleEditor from './components/contextEditors/RoleEditor.svelte'
@@ -68,6 +69,7 @@ import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
+import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
 import { ProcessMiddleware } from './middleware'
 import {
   continueExecution,
@@ -99,6 +101,7 @@ export default async (): Promise<Resources> => ({
     ProcessPresenter,
     NestedContextSelector,
     RelatedContextSelector,
+    ExecutionContextSelector,
     FunctionSelector,
     Main,
     RunProcessCardPopup,
@@ -134,6 +137,9 @@ export default async (): Promise<Resources> => ({
     RefCriteria,
     EnumCriteria,
     ArrayCriteria
+  },
+  transformPresenter: {
+    NumberPresenter
   },
   transformEditor: {
     ArrayElementEditor,

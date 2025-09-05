@@ -13,18 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Process, SelectedExecutonContext } from '@hcengineering/process'
+  import { Context, Process, SelectedExecutionContext } from '@hcengineering/process'
   import ui, { Label } from '@hcengineering/ui'
   import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
-  export let contextValue: SelectedExecutonContext
+  export let contextValue: SelectedExecutionContext
   export let process: Process
 
+  const client = getClient()
+
   $: ctx = process.context[contextValue.id]
+
+  $: attr = contextValue.key !== '' ? client.getHierarchy().findAttribute(ctx._class, contextValue.key) : undefined
 </script>
 
 {#if ctx !== undefined}
   <ProcessContextPresenter context={ctx} />
+  {#if attr !== undefined}
+    <span class="attr">
+      <Label label={attr.label} />
+    </span>
+  {/if}
 {:else}
   <Label label={ui.string.NotSelected} />
 {/if}

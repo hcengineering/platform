@@ -18,7 +18,7 @@
   import process from '../../plugin'
   import ui, { DropdownIntlItem, DropdownLabelsIntl, NumberInput } from '@hcengineering/ui'
 
-  export const props: Record<string, any> = {}
+  export let props: Record<string, any>
 
   let offset = props?.offset
   let offsetType = props?.offsetType ?? 'days'

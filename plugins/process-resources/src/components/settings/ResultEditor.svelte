@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, PropertyType, Ref, Type } from '@hcengineering/core'
+  import core, { Class, PropertyType, Ref, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Step } from '@hcengineering/process'
+  import { TriggerResult } from '@hcengineering/process'
   import setting from '@hcengineering/setting-resources/src/plugin'
   import {
     AnyComponent,
@@ -32,10 +32,10 @@
   import plugin from '../../plugin'
   import { generateContextId } from '../../utils'
 
-  export let step: Step<Doc>
+  export let result: TriggerResult | null
 
-  let type: Type<any> | undefined | null = step.result?.type
-  let name: string = step.result?.name ?? ''
+  let type: Type<any> | undefined | null = result?.type
+  let name: string = result?.name ?? ''
   let is: AnyComponent | undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -43,15 +43,15 @@
 
   function update (): void {
     if (type == null) {
-      step.result = undefined
+      result = null
     } else {
-      step.result = {
+      result = {
         _id: generateContextId(),
         name,
         type
       }
     }
-    dispatch('change', step)
+    dispatch('change', result)
   }
 
   function getTypes (): DropdownIntlItem[] {
@@ -91,9 +91,9 @@
   }
 
   function handleNameChange (e: any): void {
-    if (step.result != null) {
-      step.result.name = name
-      dispatch('change', step)
+    if (result != null) {
+      result.name = name
+      dispatch('change', result)
     }
   }
 
@@ -110,7 +110,7 @@
 <div class="grid">
   <Label label={plugin.string.Result} />
   <Toggle
-    on={step.result !== undefined}
+    on={result != null}
     on:change={(e) => {
       changeRequired(e.detail)
     }}
@@ -150,14 +150,12 @@
 <style lang="scss">
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1fr 3fr;
     grid-auto-rows: minmax(2rem, max-content);
     justify-content: start;
     align-items: center;
     row-gap: 0.5rem;
     column-gap: 1rem;
-    margin: 0.25rem 2rem 0;
-    width: calc(100% - 4rem);
     height: min-content;
   }
 </style>

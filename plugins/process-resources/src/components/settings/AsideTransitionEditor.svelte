@@ -20,11 +20,12 @@
   export let transition: Transition
 
   let params = transition.triggerParams ?? {}
+  let result = transition.result ?? null
 
   const client = getClient()
 
   async function save (): Promise<void> {
-    await client.update(transition, { triggerParams: params, trigger: selectedTrigger })
+    await client.update(transition, { triggerParams: params, trigger: selectedTrigger, result })
     clearSettingsStore()
   }
 
@@ -34,7 +35,12 @@
   }
 
   function change (e: CustomEvent<Record<string, any>>): void {
-    params = e.detail
+    if (e.detail?.params !== undefined) {
+      params = e.detail.params
+    }
+    if (e.detail?.result !== undefined) {
+      result = e.detail.result
+    }
   }
 
   let selectedTrigger: Ref<Trigger> = transition.trigger
@@ -79,7 +85,7 @@
       </div>
       {#if trigger.editor !== undefined}
         <div class="editor">
-          <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
+          <Component is={trigger.editor} props={{ process, params, result, readonly }} on:change={change} />
         </div>
       {/if}
     {/if}

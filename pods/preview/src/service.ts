@@ -16,12 +16,13 @@
 import { type Blob, type MeasureContext, type WorkspaceUuid, RateLimiter, withContext } from '@hcengineering/core'
 import { type StorageAdapter } from '@hcengineering/server-core'
 
-import { type Cache } from './cache'
+import { type Cache, withCache } from './cache'
 import { BadRequestError, NotFoundError } from './error'
-import { DocProvider, ImageProvider, NoopProvider, PdfProvider, VideoProvider } from './providers'
+import { DocProvider, ImageProvider, FallbackProvider, PdfProvider, VideoProvider } from './providers'
 import { TemporaryDir } from './tempdir'
 import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from './types'
 import { transformImage } from './utils/sharp'
+import { SingleFlight } from './singleflight'
 
 export interface ThumbnailParams {
   fit: 'cover' | 'contain'
@@ -46,20 +47,21 @@ export function createPreviewService (
   tempDir: TemporaryDir,
   concurrency: number = 10
 ): PreviewService {
+  const imageProvider = new ImageProvider(storage, tempDir)
   const providers: PreviewProvider[] = [
-    new ImageProvider(storage, tempDir),
+    imageProvider,
     new DocProvider(storage, tempDir),
     new PdfProvider(storage, tempDir),
     new VideoProvider(storage, tempDir),
-    // The last one is a fallback provider
-    // that supports all mime types and returns no preview
-    new NoopProvider()
+    new FallbackProvider(imageProvider)
   ]
   return new PreviewServiceImpl(storage, cache, tempDir, providers, concurrency)
 }
 
 class PreviewServiceImpl implements PreviewService {
   private readonly limiter: RateLimiter
+  private readonly single: SingleFlight<PreviewFile>
+
   constructor (
     private readonly storage: StorageAdapter,
     private readonly cache: Cache,
@@ -67,6 +69,7 @@ class PreviewServiceImpl implements PreviewService {
     private readonly providers: PreviewProvider[],
     concurrency: number = 10
   ) {
+    this.single = new SingleFlight<PreviewFile>()
     this.limiter = new RateLimiter(concurrency)
   }
 
@@ -94,29 +97,27 @@ class PreviewServiceImpl implements PreviewService {
     const imageKey = this.imageKey(workspace, name)
     const thumbKey = this.thumbnailKey(workspace, name, params)
 
-    return await withCache(this.cache, thumbKey, async () => {
-      const stat = await this.statBlob(ctx, workspace, name)
-      const provider = this.findProvider(ctx, stat.contentType)
+    return await this.single.execute(thumbKey, () => {
+      return withCache(ctx, this.cache, thumbKey, async () => {
+        const stat = await this.statBlob(ctx, workspace, name)
+        const provider = this.findProvider(ctx, stat.contentType)
 
-      const image = await withCache(this.cache, imageKey, () => {
-        return ctx.with(
-          'thumbnail',
-          { contentType: stat.contentType },
-          (ctx) => this.limiter.exec(() => provider.image(ctx, workspace, name, stat.contentType)),
-          { workspace }
-        )
-      })
+        const image = await withCache(ctx, this.cache, imageKey, () => {
+          return ctx.with(
+            'thumbnail',
+            { contentType: stat.contentType },
+            (ctx) => this.limiter.exec(() => provider.image(ctx, workspace, name, stat.contentType)),
+            { workspace }
+          )
+        })
 
-      const thumbnailPath = this.tempDir.tmpFile()
-      try {
-        const { contentType } = await transformImage(image.filePath, thumbnailPath, params)
+        const thumbPath = this.tempDir.tmpFile()
+        const { contentType } = await transformImage(image.filePath, thumbPath, params)
         return {
-          filePath: thumbnailPath,
+          filePath: thumbPath,
           mimeType: contentType
         }
-      } finally {
-        this.tempDir.rm(thumbnailPath)
-      }
+      })
     })
   }
 
@@ -148,14 +149,4 @@ class PreviewServiceImpl implements PreviewService {
   private thumbnailKey (workspaceId: string, name: string, params: ThumbnailParams): string {
     return `thumbnail/${workspaceId}/${name}-${params.width}-${params.height}-${params.format}`
   }
-}
-
-async function withCache (cache: Cache, key: string, fn: () => Promise<PreviewFile>): Promise<PreviewFile> {
-  const cached = cache.get(key)
-  if (cached !== undefined) {
-    return cached
-  }
-
-  const value = await fn()
-  return await cache.put(key, value)
 }

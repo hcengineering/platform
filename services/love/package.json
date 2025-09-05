@@ -69,7 +69,7 @@
     "@hcengineering/s3": "^0.6.0",
     "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/billing-client": "^0.6.0",
-    "livekit-server-sdk": "^2.11.0",
+    "livekit-server-sdk": "^2.13.3",
     "jwt-simple": "^0.5.6",
     "uuid": "^8.3.2",
     "dotenv": "~16.0.0",
