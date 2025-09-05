@@ -17,7 +17,9 @@
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined
   let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
+
   let creating = false
+  $: applyDisabled = title.trim() === '' || space == null || type == null || creating
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -60,15 +62,16 @@
         const fn = await getResource(extension.canCreate)
         const res = await fn(space, data)
         if (res === false) {
-          dispatch('close')
           return
         } else if (typeof res === 'string') {
-          dispatch('close', res)
           return
         }
       }
 
-      await createCard(type, space, data, EmptyMarkup)
+      const createdCard = await createCard(type, space, data, EmptyMarkup)
+      if (createdCard != null) {
+        dispatch('selectCard', createdCard)
+      }
       title = ''
     } finally {
       creating = false
@@ -123,7 +126,7 @@
       iconSize="small"
       size="small"
       kind="primary"
-      disabled={title.trim() === '' || space == null || type == null || creating}
+      disabled={applyDisabled}
       loading={creating}
       on:click={okAction}
     />
