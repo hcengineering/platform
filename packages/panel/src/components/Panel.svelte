@@ -155,6 +155,10 @@
 >
   <Component is={presence.component.Presence} props={{ object }} />
 
+  <svelte:fragment slot="beforeTitle">
+    <slot name="beforeTitle" />
+  </svelte:fragment>
+
   <svelte:fragment slot="title">
     {#if !withoutTitle}
       {#if $$slots.title}
