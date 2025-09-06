@@ -14,14 +14,15 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
+  import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
+  import { inboxId } from '@hcengineering/inbox'
+  import { getMetadata } from '@hcengineering/platform'
 
-  import { isAppAllowed } from '../utils'
   import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
@@ -32,6 +33,8 @@
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
+  let excludedApps: string[] = []
+
   const hiddenAppsIdsQuery = createQuery()
   hiddenAppsIdsQuery.query(
     workbench.class.HiddenApplication,
@@ -44,10 +47,38 @@
     }
   )
 
-  const me = getCurrentAccount()
+  let hasNewInboxNotifications = false
+  const notificationCountQuery = createNotificationsQuery()
 
-  $: topApps = apps.filter((it) => it.position === 'top')
-  $: bottomdApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top')
+  notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
+    hasNewInboxNotifications = res.getResult().length > 0
+  })
+
+  function updateExcludedApps (): void {
+    const me = getCurrentAccount()
+
+    if (me.role === AccountRole.ReadOnlyGuest || me.role === AccountRole.Guest) {
+      excludedApps = getMetadata(workbench.metadata.ExcludedApplicationsForAnonymous) ?? []
+    } else {
+      excludedApps = []
+    }
+  }
+
+  updateExcludedApps()
+
+  $: topApps = apps
+    .filter((it) => it.position === 'top' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias))
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+  $: midApps = apps.filter(
+    (it) =>
+      !hiddenAppsIds.includes(it._id) &&
+      !excludedApps.includes(it.alias) &&
+      it.position !== 'top' &&
+      it.position !== 'bottom'
+  )
+  $: bottomApps = apps.filter(
+    (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
+  )
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -68,14 +99,17 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
+            notify={app.alias === inboxId && hasNewInboxNotifications}
             on:click={() => {
               if (app._id === active) dispatch('toggleNav')
             }}
           />
         </NavLink>
       {/each}
-      <div class="divider" />
-      {#each bottomdApps as app}
+      {#if topApps.length > 0}
+        <div class="divider" />
+      {/if}
+      {#each midApps as app}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
@@ -88,6 +122,23 @@
           />
         </NavLink>
       {/each}
+      {#if bottomApps.length > 0}
+        <div class="divider" />
+        {#each bottomApps as app}
+          <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
+            <AppItem
+              selected={app._id === active}
+              icon={app.icon}
+              label={app.label}
+              navigator={app._id === active && $deviceInfo.navigator.visible}
+              notify={app.alias === inboxId && hasNewInboxNotifications}
+              on:click={() => {
+                if (app._id === active) dispatch('toggleNav')
+              }}
+            />
+          </NavLink>
+        {/each}
+      {/if}
       <div class="apps-space-{direction}" />
     </Scroller>
   {/if}

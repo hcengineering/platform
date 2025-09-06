@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { FindOptions, Lookup, ToClassRefT, WithLookup } from '.'
+import { type FindOptions, type Lookup, type ToClassRefT, type WithLookup } from '.'
 import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
 import { clone as deepClone } from './clone'
@@ -66,7 +66,7 @@ export class Hierarchy {
   }
 
   asIfArray<D extends Doc, M extends D>(docs: D[], mixin: Ref<Mixin<M>>): M[] {
-    return docs.map((it) => this.asIf(it, mixin)).filter((it) => it !== undefined) as M[]
+    return docs.map((it) => this.asIf(it, mixin)).filter((it) => it !== undefined)
   }
 
   static toDoc<D extends Doc>(doc: D): D {
@@ -376,7 +376,16 @@ export class Hierarchy {
   }
 
   private updateDescendant (_class: Ref<Classifier>, add = true): void {
-    const hierarchy = this.getAncestors(_class)
+    let hierarchy: Ref<Classifier>[] = []
+
+    try {
+      hierarchy = this.getAncestors(_class)
+    } catch (err) {
+      if (add) {
+        throw err
+      }
+    }
+
     for (const cls of hierarchy) {
       const list = this.descendants.get(cls)
       if (list === undefined) {
@@ -607,9 +616,10 @@ export class Hierarchy {
     const classes = Array.from(this.classifiers.values()).filter(
       (it) => this.isClass(it) || this._isMixin(it)
     ) as Class<Doc>[]
-    return (classes.map((it) => it.domain).filter((it) => it !== undefined) as Domain[]).filter(
-      (it, idx, array) => array.findIndex((pt) => pt === it) === idx
-    )
+    return classes
+      .map((it) => it.domain)
+      .filter((it) => it !== undefined)
+      .filter((it, idx, array) => array.findIndex((pt) => pt === it) === idx)
   }
 
   getClassifierProp (cl: Ref<Class<Doc>>, prop: string): any | undefined {

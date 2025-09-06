@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Connectez votre boîte aux lettres Huly pour envoyer, recevoir et gérer les e-mails",
+    "Connect": "Se connecter",
+    "ConnectHulyMail": "Connecter la boîte aux lettres Huly",
+    "Cancel": "Annuler",
+    "Email": "E-mail",
+    "Status": "Statut",
+    "FailedToConnect": "Le service de messagerie Huly n'est pas disponible",
+    "TotalMessages": "Total des messages :",
+    "Configure": "Configurer Huly Mail",
+    "ChannelSpace": "Espace pour le canal de messages",
+    "PersonSpaceInfo": "Le courrier ne sera disponible que pour vous",
+    "SharedSpaceInfo": "Le courrier sera disponible pour tous les participants de l'espace",
+    "Mailbox": "Boîte aux lettres",
+    "MailboxesNotConfigured": "Aucune boîte aux lettres trouvée",
+    "ConfigureMailBoxes": "Veuillez ajouter une boîte aux lettres dans la section Boîtes aux lettres pour commencer"
+  }
+}

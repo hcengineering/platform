@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Zrušit",
+    "Pause": "Pozastavit",
+    "Stop": "Zastavit",
+    "Resume": "Pokračovat",
+    "Record": "Nahrávat",
+    "Done": "Hotovo",
+    "CancelRecording": "Zrušit nahrávání",
+    "CancelRecordingConfirm": "Opravdu chcete zrušit nahrávání?",
+    "RestartRecording": "Restart nahrávání",
+    "RestartRecordingConfirm": "Opravdu chcete restartovat nahrávání?",
+    "ScreenRecordingName": "Nahrávání obrazovky {date}",
+    "CameraRecordingName": "Nahrávání kamery {date}",
+    "ClickToSkip": "Kliknutím přeskočíte",
+    "RecordVideo": "Nahrát video",
+    "ShareWithAudio": "Sdílet se zvukem",
+    "ShareScreen": "Sdílet obrazovku",
+    "StopSharing": "Zastavit sdílení",
+    "SelectVideoToRecord": "Povolit kameru nebo sdílet obrazovku pro nahrávání",
+    "CameraSize": "Velikost kamery",
+    "CameraPos": "Pozice kamery",
+    "Small": "Malá",
+    "Medium": "Střední",
+    "Large": "Velká",
+    "TopLeft": "Vlevo nahoře",
+    "TopRight": "Vpravo nahoře",
+    "BottomLeft": "Vlevo dole",
+    "BottomRight": "Vpravo dole",
+    "Resolution": "Rozlišení",
+    "Original": "Původní"
+  }
+}

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Ref } from '@hcengineering/core'
+import type { AccountUuid, Doc, SocialId, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 import type { Channel as PlatformChannel } from '@hcengineering/contact'
@@ -26,21 +26,15 @@ export type History = User & {
 }
 
 export interface User {
-  userId: Ref<Account>
-  workspace: string
+  userId: AccountUuid
+  email?: string
+  socialId: SocialId
+  workspace: WorkspaceUuid
   token: string
 }
 
 export type State = User & {
   redirectURL: string
-}
-
-export interface AttachedFile {
-  size?: number
-  file: string
-  type?: string
-  lastModified: number
-  name: string
 }
 
 export type Channel = Pick<PlatformChannel, 'value' | keyof Doc>
@@ -68,3 +62,36 @@ export interface ProjectCredentialsData {
   client_secret: string
   redirect_uris: string[]
 }
+
+export enum SecretType {
+  TOKEN = 'token'
+}
+
+export enum IntegrationVersion {
+  V1 = 'v1', // Save messages in legacy format using gmail.class.Message
+  V2 = 'v2' // Save messages as thread cards and communication messages
+}
+
+export interface WorkspaceStateInfo {
+  needSync: boolean
+  needRecheck: boolean
+  archived?: boolean
+  inactive?: boolean
+}
+
+export interface SyncState {
+  status: string
+  email: string
+  totalMessages: number | null | undefined
+  lastSynchronization?: Date | null
+  error?: string
+  isConfigured?: boolean
+  syncInfo?: {
+    type: 'full' | 'partial' | null
+    processedMessages: number
+    startTime: Date | null
+    isActive: boolean
+  }
+}
+
+export const GmailMessageType = 'gmail-message'

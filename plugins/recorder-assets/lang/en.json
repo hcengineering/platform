@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Cancel",
+    "Pause": "Pause",
+    "Stop": "Stop",
+    "Resume": "Resume",
+    "Record": "Record",
+    "Done": "Done",
+    "CancelRecording": "Cancel recording",
+    "CancelRecordingConfirm": "Are you sure you want to cancel recording?",
+    "RestartRecording": "Restart recording",
+    "RestartRecordingConfirm": "Are you sure you want to restart recording?",
+    "ScreenRecordingName": "Screen Recording {date}",
+    "CameraRecordingName": "Camera Recording {date}",
+    "ClickToSkip": "Click to skip",
+    "RecordVideo": "Record video",
+    "ShareWithAudio": "Share with audio",
+    "ShareScreen": "Share screen",
+    "StopSharing": "Stop sharing",
+    "SelectVideoToRecord": "Enable video camera or share screen to record",
+    "CameraSize": "Camera size",
+    "CameraPos": "Camera position",
+    "Small": "Small",
+    "Medium": "Medium",
+    "Large": "Large",
+    "TopLeft": "Top left",
+    "TopRight": "Top right",
+    "BottomLeft": "Bottom left",
+    "BottomRight": "Bottom right",
+    "Resolution": "Resolution",
+    "Original": "Original"
+  }
+}

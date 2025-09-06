@@ -15,25 +15,27 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
-  import { Breadcrumb, Button, Expandable, Header, Label, Link, Loading } from '@hcengineering/ui'
+  import presentation, { getFileUrl } from '@hcengineering/presentation'
+  import { Breadcrumb, Button, Expandable, Header, Label, Loading } from '@hcengineering/ui'
   import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
   import view from '@hcengineering/view'
   import { onMount } from 'svelte'
   import setting from '../plugin'
   import { BackupInfo, BackupSnapshot } from '../types'
-  import Expand from '@hcengineering/ui/src/components/icons/Expand.svelte'
 
   let loading = true
 
   const backupUrl = getMetadata(setting.metadata.BackupUrl) ?? ''
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const owner = hasAccountRole(getCurrentAccount(), AccountRole.Owner)
-  const workspaceId = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
 
   let backupInfo:
   | {
     files: { name: string, size: number }[]
+    extraBlobs: { name: string, size: number, contentType: string }[]
+    extraBlobsTotal?: number
     error?: string
     info?: BackupInfo
   }
@@ -82,7 +84,7 @@
   async function updateBackupInfo (): Promise<void> {
     if (owner && backupUrl !== '') {
       try {
-        const response = await fetch(`${backupUrl}/${workspaceId}/index.json`, {
+        const response = await fetch(`${backupUrl}/${workspaceDataId ?? workspaceUuid}/index.json`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`
@@ -116,14 +118,14 @@
 
     return ''
   }
-  function getFileUrl (filename: string): string {
-    return `${backupUrl}/${workspaceId}/${filename}`
+  function getBackupFileUrl (filename: string): string {
+    return `${backupUrl}/${workspaceUuid}/${filename}`
   }
 
-  async function downloadFile (filename: string): Promise<void> {
+  async function doDownload (downloadUrl: string, filename?: string): Promise<void> {
     const a = document.createElement('a')
     try {
-      const response = await fetch(getFileUrl(filename), {
+      const response = await fetch(downloadUrl, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -132,7 +134,9 @@
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       a.href = url
-      a.download = filename
+      if (filename !== undefined) {
+        a.download = filename
+      }
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -142,18 +146,31 @@
       document.body.removeChild(a)
     }
   }
+
+  async function downloadFile (filename: string): Promise<void> {
+    const url = getBackupFileUrl(filename)
+    await doDownload(url, filename)
+  }
+  async function downloadBlobFile (filename: string): Promise<void> {
+    const url = getFileUrl(filename)
+    await doDownload(url, filename)
+  }
   let copied = false
   let copied2 = false
 
   $: snapshots = backupInfo?.info?.snapshots ?? []
+
+  $: snapshorsr = [...(backupInfo?.info?.snapshots ?? [])].reverse()
+
+  $: blobs = (backupInfo?.extraBlobs ?? []).sort((a, b) => b.size - a.size).slice(0, 100)
 </script>
 
-<div class="hulyComponent p-2 flex-no-shrink">
+<div class="hulyComponent flex-no-shrink">
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.Backup} size={'large'} isCurrent />
   </Header>
 
-  <Scroller noStretch>
+  <Scroller padding={'1.5rem'} noStretch>
     {#if loading}
       <Loading size={'small'} />
     {:else if backupInfo == null}
@@ -206,13 +223,25 @@
               </div>
             </div>
           </div>
+          <div class="file-item">
+            <div class="file-name">{'blob-info.json.gz'}</div>
+            <div class="file-info">
+              <span class="file-size">
+                {getSize(fileSizes.get('blob-info.json.gz') ?? 0)}
+              </span>
+              <div class="file-actions">
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('blob-info.json.gz')} />
+              </div>
+            </div>
+          </div>
         </div>
 
         {#if backupInfo?.info?.snapshots}
-          {@const snLen = backupInfo.info.snapshots.length}
-          {#each backupInfo.info.snapshots.reverse() as snapshot, i}
+          {@const snLen = snapshorsr.length}
+          {#each snapshorsr as snapshot, i}
+            {@const hasSnapshots = Object.keys(snapshot.domains).length > 0}
             <div class="flex-no-shrink">
-              <Expandable expandable bordered>
+              <Expandable expandable={hasSnapshots} bordered showChevron={hasSnapshots}>
                 <svelte:fragment slot="title">
                   <div class="flex-row-center ml-1">
                     #{snLen - i}
@@ -221,8 +250,8 @@
                     {getSnapshotSummary(snapshot)}
                   </div>
                 </svelte:fragment>
-                <div class="p-2">
-                  {#if snapshot.domains}
+                {#if hasSnapshots}
+                  <div class="p-2">
                     {#each Object.entries(snapshot.domains) as [domain, data]}
                       {#if data.storage?.length}
                         <div class="domain-files">
@@ -264,8 +293,8 @@
                         </div>
                       {/if}
                     {/each}
-                  {/if}
-                </div>
+                  </div>
+                {/if}
               </Expandable>
             </div>
           {/each}
@@ -278,7 +307,6 @@
           <div class="error">{backupInfo.error}</div>
         {/if}
       </Expandable>
-
       <Expandable expanded={true} bordered>
         <svelte:fragment slot="title">
           <div class="p-1">
@@ -309,13 +337,32 @@
             <div class="wrap">
               <Label label={setting.string.BackupLinkInfo} />
               <div class="select-text anti-component p-3 border-b-1 border-divider-color">
-                {getFileUrl('index.html')}
+                {getBackupFileUrl('index.html')}
               </div>
             </div>
             <Button
               label={copied ? view.string.Copied : view.string.CopyToClipboard}
               on:click={() => {
-                void navigator.clipboard.writeText(getFileUrl('index.html')).then(() => {
+                void navigator.clipboard.writeText(getBackupFileUrl('index.html')).then(() => {
+                  copied = true
+                  setTimeout(() => {
+                    copied = false
+                  }, 2500)
+                })
+              }}
+            />
+          </div>
+          <div class="flex-row-center mt-2 flex-between">
+            <div class="wrap">
+              <Label label={setting.string.BackupLinkInfo} />
+              <div class="select-text anti-component p-3 border-b-1 border-divider-color">
+                {getFileUrl('blob.uuid', 'filename.blob')}
+              </div>
+            </div>
+            <Button
+              label={copied ? view.string.Copied : view.string.CopyToClipboard}
+              on:click={() => {
+                void navigator.clipboard.writeText(getFileUrl('blob.uuid', 'filename.blob')).then(() => {
                   copied = true
                   setTimeout(() => {
                     copied = false
@@ -339,6 +386,39 @@
               }}
             />
           </div>
+        </div>
+      </Expandable>
+      <Expandable expanded={false} bordered>
+        <svelte:fragment slot="title">
+          <div class="p-1">
+            <Label label={setting.string.NonBackupedBlobs} />
+            {blobs.length}/{backupInfo?.extraBlobsTotal ?? blobs.length}
+          </div>
+        </svelte:fragment>
+        <div class="p-1">
+          {#each blobs as file}
+            <div class="file-item">
+              <div class="file-name select-text">{file.name}</div>
+              <div class="file-info">
+                <span class="file-size">{getSize(file.size)}</span>
+                <span class="file-content-type">{file.contentType}</span>
+                <div class="file-actions">
+                  <Button label={setting.string.BackupFileDownload} on:click={() => downloadBlobFile(file.name)} />
+                  <Button
+                    label={copied2 ? view.string.Copied : view.string.CopyToClipboard}
+                    on:click={() => {
+                      void navigator.clipboard.writeText(file.name).then(() => {
+                        copied2 = true
+                        setTimeout(() => {
+                          copied2 = false
+                        }, 2500)
+                      })
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          {/each}
         </div>
       </Expandable>
     {/if}

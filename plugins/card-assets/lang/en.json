@@ -29,10 +29,23 @@
     "EditView": "Edit View",
     "SelectViewType": "Select View Type",
     "Document": "Document",
+    "Documents": "Documents",
     "ChangeType": "Change type",
     "ChangeTypeWarning": "Warning: Changing the Type of a Card will remove all data for any attributes that do not exist on the target Type. Previous attribute data can be restored by changing the Card back to a previous Type. Card content will not be affected.",
+    "MasterDetailViews": "Master Detail Views",
+    "SelectType": "Select Type",
     "CreateSpace": "Create space",
     "NumberTypes": "{count, plural, one {# type} other {# types}}",
-    "ConfigDescription": "Extension for database-style knowledge management."
+    "Labels": "Labels",
+    "Properties": "Properties",
+    "NoChildren": "No children",
+    "ConfigDescription": "Extension for database-style knowledge management.",
+    "AddCollaborators": "Add collaborators",
+    "Home": "Home",
+    "WhatDoYouWantToShare": "What do you want to share?",
+    "Share": "Share",
+    "Compact": "Compact",
+    "Comfortable": "Comfortable",
+    "Comfortable2": "Comfortable 2"
   }
 }

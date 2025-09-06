@@ -151,7 +151,7 @@ export class Triggers {
               ctx.error('error during async processing', { err })
             }
           },
-          { count: matches.length }
+          { count: matches.length, workspace: ctrl.workspace.uuid }
         )
       }
     }

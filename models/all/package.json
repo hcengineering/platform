@@ -16,7 +16,9 @@
     "_phase:validate": "compile validate",
     "show-model": "node ./bundle/bundle.js",
     "_phase:bundle": "rushx bundle",
-    "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --entry=src/show.ts --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION && node ./bundle/bundle.js > ./bundle/model.json"
+    "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --entry=src/show.ts --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION && node ./bundle/bundle.js > ./bundle/model.json",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -25,13 +27,16 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "ts-node": "^10.8.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3",
-    "esbuild": "^0.24.2"
+    "typescript": "^5.8.3",
+    "esbuild": "^0.24.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.5",
+    "ts-jest": "^29.1.1"
   },
   "dependencies": {
     "@hcengineering/model": "^0.6.11",
@@ -81,6 +86,7 @@
     "@hcengineering/model-time": "^0.6.0",
     "@hcengineering/model-server-time": "^0.6.0",
     "@hcengineering/model-desktop-preferences": "^0.6.0",
+    "@hcengineering/model-desktop-downloads": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/model-hr": "^0.6.0",
     "@hcengineering/model-server-hr": "^0.6.0",
@@ -112,10 +118,21 @@
     "@hcengineering/model-analytics-collector": "^0.6.0",
     "@hcengineering/model-server-ai-bot": "^0.6.0",
     "@hcengineering/model-ai-bot": "^0.6.0",
-    "@hcengineering/model-server-fulltext": "^0.6.0",
+    "@hcengineering/model-media": "^0.6.0",
+    "@hcengineering/model-recorder": "^0.6.0",
     "@hcengineering/model-test-management": "^0.6.0",
     "@hcengineering/model-survey": "^0.6.0",
     "@hcengineering/model-presence": "^0.6.0",
-    "@hcengineering/model-card": "^0.6.0"
+    "@hcengineering/model-card": "^0.6.0",
+    "@hcengineering/model-mail": "^0.6.0",
+    "@hcengineering/model-chat": "^0.6.0",
+    "@hcengineering/model-process": "^0.6.0",
+    "@hcengineering/model-server-process": "^0.6.0",
+    "@hcengineering/model-inbox": "^0.6.0",
+    "@hcengineering/model-achievement": "^0.6.0",
+    "@hcengineering/model-communication": "^0.6.0",
+    "@hcengineering/model-emoji": "^0.6.0",
+    "@hcengineering/model-billing": "^0.6.0",
+    "@hcengineering/model-huly-mail": "^0.6.0"
   }
 }

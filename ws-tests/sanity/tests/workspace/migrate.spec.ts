@@ -27,7 +27,8 @@ test.describe('Workspace Migration tests', () => {
 
   test('New workspace migrate to europe', async ({ page, browser, request }) => {
     const api: ApiEndpoint = new ApiEndpoint(request)
-    const workspaceInfo = await api.createWorkspaceWithLogin(generateId(), 'user1', '1234')
+    const workspaceName = generateId()
+    const workspaceInfo = await api.createWorkspaceWithLogin(workspaceName, 'user1', '1234')
 
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
@@ -45,7 +46,7 @@ test.describe('Workspace Migration tests', () => {
       await loginPage.goto()
       await loginPage.login('user1', '1234')
 
-      await selectWorkspacePage.selectWorkspace(workspaceInfo.workspaceName)
+      await selectWorkspacePage.selectWorkspace(workspaceName)
 
       await trackerNavigationMenuPage.openIssuesForProject('Default')
       await issuesPage.clickModelSelectorAll()
@@ -60,10 +61,14 @@ test.describe('Workspace Migration tests', () => {
     const page2 = adminSecondPage.page
 
     await test.step('Migrate workspace', async () => {
+      const page = adminSecondPage.page
       // login as admin
       const loginPage2 = new LoginPage(adminSecondPage.page)
       await loginPage2.goto()
       await loginPage2.login('admin', '1234')
+      await page.waitForURL((url) => {
+        return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
+      })
 
       await loginPage2.page.waitForURL((url) => {
         return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
@@ -77,13 +82,13 @@ test.describe('Workspace Migration tests', () => {
       await page2.locator('div:nth-child(4) > .checkbox-container > .checkSVG').click()
 
       await page2.getByRole('button', { name: 'America', exact: true }).first().click()
-      await page2.getByRole('button', { name: 'europe (hidden)' }).first().click()
-      await page2.getByPlaceholder('Search').click()
-      await page2.getByPlaceholder('Search').fill(workspaceInfo.workspaceId)
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByRole('button', { name: 'Migrate' }).click()
+      await page2.getByRole('button', { name: 'europe' }).first().click()
+      await page2.locator('[data-testid="workspace-search-container"] input').click()
+      await page2.locator('[data-testid="workspace-search-container"] input').fill(workspaceInfo.workspace)
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Migrate' }).click()
 
       await page2.getByRole('button', { name: 'Ok' }).click()
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByText('europe').waitFor()
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByText('europe').waitFor()
     })
     await test.step('Check workspace is active again', async () => {
       await page.reload()

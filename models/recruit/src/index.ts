@@ -14,9 +14,8 @@
 //
 
 import activity from '@hcengineering/activity'
-import { AccountRole, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
@@ -31,14 +30,13 @@ import view, { createAction, showColorsViewOption, actionTemplates as viewTempla
 import workbench, { createNavigateAction, type Application } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type IntlString } from '@hcengineering/platform'
-import { recruitId, type Applicant, RecruitEvents } from '@hcengineering/recruit'
+import { recruitId, type Applicant, RecruitEvents, type Vacancy } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { defineSpaceType } from './spaceType'
-import { definePermissions } from './permissions'
 import { TApplicant, TApplicantMatch, TCandidate, TOpinion, TReview, TVacancy, TVacancyList } from './types'
 
 export { recruitId } from '@hcengineering/recruit'
@@ -86,7 +84,8 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.VacancyList
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Vacancy>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: recruit.class.Vacancy,
     fields: ['createdBy']
   })
 
@@ -98,7 +97,8 @@ export function createModel (builder: Builder): void {
     inlineEditor: view.component.ArrayEditor
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Applicant>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: recruit.class.Applicant,
     fields: ['createdBy', 'assignee']
   })
 
@@ -1019,28 +1019,24 @@ export function createModel (builder: Builder): void {
     },
     override: [recruit.action.CreateGlobalApplication]
   })
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: recruit.component.CreateCandidate,
-        element: 'top'
-      },
-      label: recruit.string.CreateTalent,
-      icon: recruit.icon.Create,
-      keyBinding: ['keyC'],
-      input: 'none',
-      category: recruit.category.Recruit,
-      target: core.class.Doc,
-      context: {
-        mode: ['workbench', 'browser'],
-        application: recruit.app.Recruit,
-        group: 'create'
-      }
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateCandidate,
+      element: 'top'
     },
-    recruit.action.CreateTalent
-  )
+    label: recruit.string.CreateTalent,
+    icon: recruit.icon.Create,
+    keyBinding: ['keyC'],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit,
+      group: 'create'
+    }
+  })
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
@@ -1290,7 +1286,8 @@ export function createModel (builder: Builder): void {
         mode: ['context', 'browser'],
         application: recruit.app.Recruit,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     recruit.action.CopyApplicationLink
   )
@@ -1310,7 +1307,8 @@ export function createModel (builder: Builder): void {
         mode: ['context', 'browser'],
         application: recruit.app.Recruit,
         group: 'copy'
-      }
+      },
+      override: [view.action.CopyLink]
     },
     recruit.action.CopyCandidateLink
   )
@@ -1389,7 +1387,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: false,
       templates: {
         textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
         subjectTemplate: '{title}'
       }
     },
@@ -1485,31 +1483,19 @@ export function createModel (builder: Builder): void {
   // Allow to use fuzzy search for mixins
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.class.Vacancy,
-    fullTextSummary: true,
-    childProcessingAllowed: true,
-    propagate: []
+    fullTextSummary: true
   })
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.mixin.Candidate,
-    fullTextSummary: true,
-    propagate: [recruit.class.Applicant],
-    childProcessingAllowed: true,
-    propagateClasses: [
-      tags.class.TagReference,
-      chunter.class.ChatMessage,
-      attachment.class.Attachment,
-      contact.class.Channel
-    ]
+    fullTextSummary: true
   })
 
   // Allow to use fuzzy search for mixins
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.class.Applicant,
     fullTextSummary: true,
-    forceIndex: true,
-    childProcessingAllowed: true,
-    propagate: []
+    forceIndex: true
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
@@ -1610,5 +1596,4 @@ export function createModel (builder: Builder): void {
   )
 
   defineSpaceType(builder)
-  definePermissions(builder)
 }

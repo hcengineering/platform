@@ -26,6 +26,7 @@ import core, {
   groupByArray,
   isOperator,
   matchQuery,
+  platformNow,
   toFindResult,
   withContext,
   type AssociationQuery,
@@ -61,13 +62,14 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WithLookup,
-  type WorkspaceId
+  type WorkspaceIds
 } from '@hcengineering/core'
 import {
   calcHashHash,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
+  type RawFindIterator,
   type ServerFindOptions,
   type StorageAdapter,
   type TxAdapter
@@ -541,13 +543,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     lookup: Lookup<T> | undefined,
     object: any,
     parent?: string,
-    parentObject?: any,
-    domainLookup?: {
-      field: string
-      domain: Domain
-    }
+    parentObject?: any
   ): void {
-    if (lookup === undefined && domainLookup === undefined) return
+    if (lookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
         this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
@@ -564,14 +562,6 @@ abstract class MongoAdapterBase implements DbAdapter {
       } else {
         this.fillLookup(value, object, key, fullKey, targetObject)
       }
-    }
-    if (domainLookup !== undefined) {
-      if (object.$lookup === undefined) {
-        object.$lookup = {}
-      }
-      object.$lookup._id = object['dl_' + domainLookup.field + '_lookup'][0]
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete object['dl_' + domainLookup.field + '_lookup']
     }
   }
 
@@ -648,21 +638,12 @@ abstract class MongoAdapterBase implements DbAdapter {
     options: ServerFindOptions<T>,
     stTime: number
   ): Promise<FindResult<T>> {
-    const st = Date.now()
+    const st = platformNow()
     const pipeline: any[] = []
     const tquery = this.translateQuery(clazz, query, options)
 
-    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort) || options.domainLookup !== undefined
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
     const steps = this.getLookups(clazz, options?.lookup)
-
-    if (options.domainLookup !== undefined) {
-      steps.push({
-        from: options.domainLookup.domain,
-        localField: options.domainLookup.field,
-        foreignField: '_id',
-        as: 'dl_' + options.domainLookup.field + '_lookup'
-      })
-    }
 
     if (options.associations !== undefined && options.associations.length > 0) {
       const assoc = this.getAssociations(options.associations)
@@ -729,7 +710,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     for (const row of result) {
       ctx.withSync('fill-lookup', {}, (ctx) => {
-        this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
+        this.fillLookupValue(ctx, clazz, options?.lookup, row)
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
@@ -761,7 +742,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       )
       total = arr?.[0]?.total ?? 0
     }
-    const edTime = Date.now()
+    const edTime = platformNow()
     if (edTime - stTime > 1000 || st - stTime > 1000) {
       ctx.error('aggregate', {
         time: edTime - stTime,
@@ -893,19 +874,18 @@ abstract class MongoAdapterBase implements DbAdapter {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    const stTime = Date.now()
+    const stTime = platformNow()
     const mongoQuery = this.translateQuery(_class, query, options)
     const fQuery = { ...mongoQuery.base, ...mongoQuery.lookup }
     return addOperation(ctx, 'find-all', {}, async () => {
-      const st = Date.now()
+      const st = platformNow()
       let result: FindResult<T>
-      const domain = options?.domain ?? this.hierarchy.getDomain(_class)
+      const domain = this.hierarchy.getDomain(_class)
       if (
         options?.lookup != null ||
         options?.associations != null ||
         this.isEnumSort(_class, options) ||
-        this.isRulesSort(options) ||
-        options?.domainLookup !== undefined
+        this.isRulesSort(options)
       ) {
         return await this.findWithPipeline(ctx, domain, _class, query, options ?? {}, stTime)
       }
@@ -995,7 +975,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         throw e
       }
 
-      const edTime = Date.now()
+      const edTime = platformNow()
       if (edTime - st > 1000 || st - stTime > 1000) {
         ctx.error('FindAll', {
           time: edTime - st,
@@ -1145,6 +1125,33 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  rawFind (_ctx: MeasureContext, domain: Domain): RawFindIterator {
+    const ctx = _ctx.newChild('findRaw', { domain })
+    const coll = this.db.collection<Doc>(domain)
+    let iterator: FindCursor<Doc>
+
+    return {
+      find: async () => {
+        if (iterator === undefined) {
+          iterator = coll.find({})
+        }
+        const d = await ctx.with('next', {}, () => iterator.next())
+        const result: Doc[] = []
+        if (d != null) {
+          result.push(this.stripHash(d) as Doc)
+        }
+        if (iterator.bufferedCount() > 0) {
+          result.push(...(this.stripHash(iterator.readBufferedDocuments()) as Doc[]))
+        }
+        return result ?? []
+      },
+      close: async () => {
+        await ctx.with('close', {}, () => iterator.close())
+        ctx.end()
+      }
+    }
+  }
+
   load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return ctx.with('load', { domain }, async () => {
       if (docs.length === 0) {
@@ -1161,61 +1168,6 @@ abstract class MongoAdapterBase implements DbAdapter {
       const coll = this.collection(domain)
 
       return uploadDocuments(ctx, docs, coll, this.curHash())
-    })
-  }
-
-  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, Partial<Doc>>): Promise<void> {
-    return ctx.with('update', { domain }, async () => {
-      const coll = this.collection(domain)
-
-      // remove old and insert new ones
-      const ops = Array.from(operations.entries())
-      let skip = 500
-      while (ops.length > 0) {
-        const part = ops.splice(0, skip)
-        try {
-          await ctx.with(
-            'bulk-update',
-            {},
-            () => {
-              return coll.bulkWrite(
-                part.map((it) => {
-                  const { $unset, ...set } = it[1] as any
-                  if ($unset !== undefined) {
-                    for (const k of Object.keys(set)) {
-                      if ($unset[k] === '') {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete $unset[k]
-                      }
-                    }
-                  }
-                  return {
-                    updateOne: {
-                      filter: { _id: it[0] },
-                      update: {
-                        $set: { ...set, '%hash%': this.curHash() },
-                        ...($unset !== undefined ? { $unset } : {})
-                      }
-                    }
-                  }
-                }),
-                {
-                  ordered: false
-                }
-              )
-            },
-            {
-              updates: part.length
-            }
-          )
-        } catch (err: any) {
-          ctx.error('failed on bulk write', { error: err, skip })
-          if (skip !== 1) {
-            ops.push(...part)
-            skip = 1 // Let's update one by one, to loose only one failed variant.
-          }
-        }
-      }
     })
   }
 
@@ -1278,8 +1230,8 @@ class MongoAdapter extends MongoAdapterBase {
       return undefined
     })
 
-    const stTime = Date.now()
-    const st = Date.now()
+    const stTime = platformNow()
+    const st = stTime
     let promises: Promise<any>[] = []
     for (const [domain, txs] of byDomain) {
       if (domain === undefined) {
@@ -1375,7 +1327,7 @@ class MongoAdapter extends MongoAdapterBase {
           'find-result',
           {},
           async (ctx) => {
-            const st = Date.now()
+            const st = platformNow()
             const docs = await addOperation(
               ctx,
               'find-result',
@@ -1681,7 +1633,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const systemTx: Tx[] = []
     const userTx: Tx[] = []
 
-    // Ignore Employee accounts.
+    // Ignore old Employee accounts.
     function isPersonAccount (tx: Tx): boolean {
       return (
         (tx._class === core.class.TxCreateDoc ||
@@ -1815,16 +1767,15 @@ function translateLikeQuery (pattern: string): { $regex: string, $options: strin
  */
 export async function createMongoAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb,
   storage?: StorageAdapter,
   options?: DbAdapterOptions
 ): Promise<DbAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
@@ -1834,14 +1785,13 @@ export async function createMongoAdapter (
  */
 export async function createMongoTxAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

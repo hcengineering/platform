@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import calendar from '@hcengineering/calendar'
+  import { ScheduleNavSection } from '@hcengineering/calendar-resources'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Asset, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import tagsPlugin, { TagElement as TagElementType } from '@hcengineering/tags'
@@ -14,7 +16,13 @@
     Month,
     getPlatformColorDef,
     themeStore,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    ButtonIcon,
+    showPopup,
+    Menu,
+    IconMoreV,
+    IconLink,
+    Action
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
@@ -23,8 +31,8 @@
   export let tag: Ref<TagElementType> | undefined
   export let currentDate: Date
 
-  const acc = getCurrentAccount() as PersonAccount
-  const user = acc.person
+  const currentAccount = getCurrentAccount()
+  const currentUser = getCurrentEmployee()
 
   interface IMode {
     label: IntlString
@@ -71,7 +79,7 @@
   $: myTagsQuery.query(
     tagsPlugin.class.TagReference,
     {
-      createdBy: acc._id,
+      createdBy: currentAccount.primarySocialId,
       tag: { $in: allTags.map((p) => p._id) }
     },
     (result) => {
@@ -86,7 +94,7 @@
   unplannedQuery.query(
     time.class.ToDo,
     {
-      user,
+      user: currentUser,
       doneOn: null,
       workslots: 0
     },
@@ -101,6 +109,33 @@
 
   const counters: Record<string, number> = {}
   const today: Date = new Date()
+
+  let pressed: boolean = false
+
+  $: actions = getHeaderMenuActions()
+
+  function getHeaderMenuActions (): Action[] {
+    const actions: Action[] = []
+    if (getMetadata(calendar.metadata.CalDavServerURL)) {
+      actions.push({
+        label: calendar.string.CalDavAccess,
+        icon: IconLink,
+        action: async (): Promise<void> => {
+          await (
+            await getResource(calendar.function.ConfigureCalDavAccess)
+          )()
+        }
+      })
+    }
+    return actions
+  }
+
+  function menuButtonClicked (ev: MouseEvent): void {
+    pressed = true
+    showPopup(Menu, { actions }, ev.target as HTMLElement, () => {
+      pressed = false
+    })
+  }
 </script>
 
 <div
@@ -110,6 +145,9 @@
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <div class="hulyNavPanel-header">
       <Label label={time.string.Planner} />
+      {#if actions.length > 0}
+        <ButtonIcon icon={IconMoreV} hasMenu {pressed} kind="tertiary" size="small" on:click={menuButtonClicked} />
+      {/if}
     </div>
 
     <Scroller shrink>
@@ -165,6 +203,8 @@
           </svelte:fragment>
         </Month>
       </div>
+
+      <ScheduleNavSection />
 
       {#if tags.length > 0}
         <NavGroup

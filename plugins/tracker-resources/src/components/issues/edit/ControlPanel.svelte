@@ -13,15 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeBox, getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
-
+  import { Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr, ObjectBox, restrictionStore } from '@hcengineering/view-resources'
+  import {
+    getDocMixins,
+    getFiltredKeys,
+    isCollectionAttr,
+    ObjectBox,
+    restrictionStore
+  } from '@hcengineering/view-resources'
+
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -30,6 +36,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import notification from '@hcengineering/notification'
 
   export let issue: Issue
   export let showAllMixins: boolean = false
@@ -69,18 +76,13 @@
 
   let mixins: Mixin<Doc>[] = []
 
-  $: getMixins(issue, showAllMixins)
+  $: _mixins = getDocMixins(issue, showAllMixins)
 
-  function getMixins (object: Issue, showAllMixins: boolean): void {
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
+  $: mixins = _mixins.find((p) => p._id === notification.mixin.Collaborators)
+    ? _mixins
+    : [..._mixins, hierarchy.getClass(notification.mixin.Collaborators)]
 
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins && hierarchy.isDerived(tracker.class.Issue, hierarchy.getBaseClass(m._id))))
-    )
-  }
+  const allowedCollections = ['collaborators']
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     const mixinClass = hierarchy.getClass(mixin)
@@ -90,15 +92,18 @@
       [],
       hierarchy.isMixin(mixinClass.extends as Ref<Class<Doc>>) ? mixinClass.extends : issue._class
     )
-    return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key) || allowedCollections.includes(key.key))
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-
-  let account: PersonAccount | undefined
-
-  $: account = $personAccountByIdStore.get(issue.createdBy as Ref<PersonAccount>)
-  $: employee = account && $personByIdStore.get(account.person)
+  let creatorPersonRef: Ref<Person> | undefined
+  $: if (issue.createdBy !== undefined) {
+    getPersonRefByPersonIdCb(issue.createdBy, (ref) => {
+      creatorPersonRef = ref ?? undefined
+    })
+  } else {
+    creatorPersonRef = undefined
+  }
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -162,7 +167,7 @@
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={employee?._id}
+    value={creatorPersonRef}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}

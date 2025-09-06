@@ -1,41 +1,37 @@
+import { type AccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Class,
-  Client,
+  type Class,
+  type Client,
   DOMAIN_MIGRATION,
   DOMAIN_TX,
-  Data,
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  Hierarchy,
-  IncOptions,
-  MigrationState,
-  ModelDb,
-  ObjQueryType,
-  PushOptions,
-  Rank,
-  Ref,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type Hierarchy,
+  type MeasureContext,
+  type MigrationState,
+  type ModelDb,
+  type ObjQueryType,
+  type Rank,
+  type Ref,
   SortingOrder,
-  Space,
+  type Space,
   TxOperations,
-  UnsetOptions,
-  WorkspaceId,
+  type UnsetOptions,
+  type WorkspaceIds,
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
-import { StorageAdapter } from '@hcengineering/storage'
-import { ModelLogger } from './utils'
+import { type StorageAdapter } from '@hcengineering/storage'
+import { type ModelLogger } from './utils'
 
 /**
  * @public
  */
-export type MigrateUpdate<T extends Doc> = Partial<T> &
-PushOptions<T> &
-IncOptions<T> &
-UnsetOptions &
-Record<string, any>
+export type MigrateUpdate<T extends Doc> = Partial<T> & UnsetOptions & Record<string, any>
 
 /**
  * @public
@@ -79,6 +75,9 @@ export interface MigrationClient {
     options?: Omit<FindOptions<T>, 'lookup'>
   ) => Promise<T[]>
 
+  // Raw group by, allow to group documents inside domain.
+  groupBy: <T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>) => Promise<Map<T, number>>
+
   // Traverse documents
   traverse: <T extends Doc>(
     domain: Domain,
@@ -115,8 +114,14 @@ export interface MigrationClient {
 
   migrateState: Map<string, Set<string>>
   storageAdapter: StorageAdapter
+  accountClient: AccountClient
 
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
+
+  fullReindex: () => Promise<void>
+  reindex: (domain: Domain, classes: Ref<Class<Doc>>[]) => Promise<void>
+  readonly logger: ModelLogger
+  readonly ctx: MeasureContext
 }
 
 /**
@@ -173,10 +178,10 @@ export async function tryMigrate (
     if (states.has(migration.state)) continue
     if (migration.mode == null || migration.mode === mode) {
       try {
-        console.log('running migration', plugin, migration.state)
+        client.logger.log('running migration', { plugin, state: migration.state })
         await migration.func(client, mode)
       } catch (err: any) {
-        console.error(err)
+        client.logger.error('Failed to run migration', { plugin, state: migration.state, err })
         Analytics.handleError(err)
         continue
       }

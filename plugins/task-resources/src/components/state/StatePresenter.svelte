@@ -16,13 +16,12 @@
 <script lang="ts">
   import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { getClient, reduceCalls } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient, reduceCalls } from '@hcengineering/presentation'
   import task, { Project, ProjectType, TaskType } from '@hcengineering/task'
   import {
     ColorDefinition,
     Icon,
     IconSize,
-    IconWithEmoji,
     getColorNumberByText,
     getPlatformColorDef,
     themeStore
@@ -86,7 +85,9 @@
   $: projectState = type?.statuses.find((p) => p._id === value?._id)
 
   $: color = getPlatformColorDef(
-    projectState?.color ?? category?.color ?? getColorNumberByText(value?.name ?? ''),
+    projectState?.color !== undefined && typeof projectState?.color !== 'string'
+      ? projectState?.color
+      : category?.color ?? getColorNumberByText(value?.name ?? ''),
     $themeStore.dark
   )
   $: void updateCategory(value)
@@ -114,7 +115,11 @@
   )
 
   $: index = sameCategory.findIndex((it) => it._id === value?._id) + 1
-  $: icon = projectState?.icon === view.ids.IconWithEmoji ? IconWithEmoji : projectState?.icon
+  $: emojiIcon = projectState?.icon === view.ids.IconWithEmoji
+  $: icon = emojiIcon ? IconWithEmoji : projectState?.icon
+  $: iconProps = emojiIcon
+    ? { icon: projectState?.color ?? value?.color ?? category?.color }
+    : { fill: projectState?.color ?? value?.color ?? category?.color ?? 0 }
 
   const dispatchAccentColor = (color?: ColorDefinition, icon?: Asset | typeof IconWithEmoji): void => {
     if (icon == null) {
@@ -135,7 +140,7 @@
   {#if kind === 'table-attrs'}
     <button class="hulyTableAttr-content__row-icon-wrapper" on:click>
       {#if icon != null}
-        <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? value?.color ?? category?.color }} />
+        <Icon {icon} {size} {iconProps} />
       {:else if category?._id === task.statusCategory.Active}
         <Icon
           icon={categoryIcons[category._id]}
@@ -143,21 +148,14 @@
           iconProps={{
             index,
             count: sameCategory.length + 1,
-            fill: projectState?.color ?? value?.color ?? category?.color
+            ...iconProps
           }}
         />
       {:else}
-        <Icon
-          icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
-          {size}
-          iconProps={{ fill: projectState?.color ?? value?.color ?? category?.color }}
-        />
+        <Icon icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]} {size} {iconProps} />
       {/if}
     </button>
-    <span
-      class="hulyTableAttr-content__row-label font-medium-12 uppercase grow overflow-label"
-      style:color={projectState?.color ?? category?.color ?? 'var(--global-primary-TextColor)'}
-    >
+    <span class="hulyTableAttr-content__row-label font-medium-12 uppercase grow overflow-label">
       {value.name}
     </span>
   {:else}
@@ -187,15 +185,11 @@
               iconProps={{
                 index,
                 count: sameCategory.length + 1,
-                fill: projectState?.color ?? value?.color ?? category?.color
+                ...iconProps
               }}
             />
           {:else}
-            <Icon
-              icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
-              {size}
-              iconProps={{ fill: projectState?.color ?? value?.color ?? category?.color }}
-            />
+            <Icon icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]} {size} {iconProps} />
           {/if}
         </div>
       {/if}

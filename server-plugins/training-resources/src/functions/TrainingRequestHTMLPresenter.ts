@@ -28,7 +28,7 @@ export const TrainingRequestHTMLPresenter: Presenter<TrainingRequest> = async (
 ) => {
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   // TODO: Don't hardcode URLs, find a way to share routes info between front and server resources, and DRY
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trainingId}/requests/${request._id}`
+  const path = `${workbenchId}/${control.workspace.url}/${trainingId}/requests/${request._id}`
   const link = concatLink(front, path)
   const name = await TrainingRequestTextPresenter(request, control)
   return `<a href='${link}'>${name}</a>`

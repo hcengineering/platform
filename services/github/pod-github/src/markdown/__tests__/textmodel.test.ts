@@ -19,10 +19,10 @@ import {
   MarkupNode,
   MarkupNodeType,
   jsonToMarkup,
-  MarkdownState,
   traverseAllMarks,
-  traverseMarkupNode
+  traverseNode
 } from '@hcengineering/text'
+import { MarkdownState } from '@hcengineering/text-markdown'
 import { markdownToMarkup, markupToMarkdown, parseMessageMarkdown, serializeMessage } from '..'
 
 describe('server', () => {
@@ -551,7 +551,7 @@ A list of closed updated issues`
 
     const md = serializeMessage(msg, 'ref://', 'http://')
 
-    expect(md).toEqual(t1)
+    expect(md).toEqual('Hello\n---\n\nSome text')
   })
 
   it('Check horizontal line', () => {
@@ -788,8 +788,9 @@ A list of closed updated issues`
     const msg = parseMessageMarkdown(t1, 'ref://', 'http://', 'http://')
 
     const nodes = []
-    traverseMarkupNode(msg, (node) => {
+    traverseNode(msg, (node) => {
       nodes.push(node)
+      return true
     })
     expect(nodes.length).toEqual(5)
     const marks = []

@@ -14,35 +14,69 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Component } from '@hcengineering/ui'
+  import { Component, Icon, Label, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import contact from '@hcengineering/contact'
 
-  import { createQuery } from '../../utils'
+  import { createQuery, getClient } from '../../utils'
+  import MessageBox from '../MessageBox.svelte'
+  import presentation from '../../plugin'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let title: string = ''
+  export let transparent: boolean = false
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const docQuery = createQuery()
 
   let doc: Doc | undefined = undefined
+  let broken: boolean = false
+  const withoutDoc: Ref<Doc>[] = [contact.mention.Here, contact.mention.Everyone]
 
-  $: if (_class != null && _id != null) {
+  $: icon =
+    _class !== undefined &&
+    hierarchy.hasClass(_class) &&
+    !withoutDoc.includes(_id as any) &&
+    !hierarchy.isDerived(_class, contact.class.Contact)
+      ? hierarchy.getClass(_class).icon
+      : null
+
+  $: if (_class != null && _id != null && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)) {
     docQuery.query(_class, { _id }, (r) => {
       doc = r.shift()
+      broken = doc === undefined
+    })
+  }
+
+  function onBrokenLinkClick (event: MouseEvent): void {
+    if (_id !== undefined && withoutDoc.includes(_id)) return
+    showPopup(MessageBox, {
+      label: presentation.string.UnableToFollowMention,
+      message: presentation.string.AccessDenied,
+      canSubmit: false
     })
   }
 </script>
 
-{#if !doc}
-  <span class="antiMention">@{title}</span>
-{:else}
+{#if !doc && title}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <span class="antiMention" class:transparent class:broken on:click={onBrokenLinkClick}>
+    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{#if _id === contact.mention.Here}<span class="lower"
+        ><Label label={contact.string.Here} /></span
+      >{:else if _id === contact.mention.Everyone}<span class="lower"><Label label={contact.string.Everyone} /></span
+      >{:else}{title}{/if}
+  </span>
+{:else if doc}
   <Component
     is={view.component.ObjectMention}
     showLoading={false}
     props={{
       object: doc,
-      title
+      title,
+      transparent
     }}
   />
 {/if}

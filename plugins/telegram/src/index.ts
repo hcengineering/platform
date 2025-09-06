@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
-import { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
-import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { AttachedDoc, Class, Doc, IntegrationKind, Ref, Timestamp } from '@hcengineering/core'
+import { NotificationProvider, NotificationType } from '@hcengineering/notification'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
@@ -59,18 +58,10 @@ export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
 }
 
-export interface TelegramNotificationRequest {
-  notificationId: Ref<InboxNotification>
-  messageId?: Ref<ActivityMessage>
-  attachments: boolean
-  workspace: string
-  account: Ref<Account>
-  title: string
-  quote?: string
-  body: string
-  sender: string
-  link: string
-}
+/**
+ * @public
+ */
+export const telegramIntegrationKind = 'hulygram' as IntegrationKind
 
 /**
  * @public
@@ -82,14 +73,17 @@ export default plugin(telegramId, {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
     Reconnect: '' as AnyComponent,
+    Configure: '' as AnyComponent,
     IconTelegram: '' as AnyComponent,
-    SharedMessages: '' as AnyComponent
+    SharedMessages: '' as AnyComponent,
+    StateComponent: '' as AnyComponent
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>
   },
   handler: {
-    DisconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler,
+    DisconnectAllHandler: '' as Handler
   },
   ids: {
     NewMessageNotification: '' as Ref<NotificationType>
@@ -137,5 +131,12 @@ export default plugin(telegramId, {
     TelegramIntegrationDesc2: '' as IntlString,
     ToSetupNotification: '' as IntlString,
     TelegramNotificationPath: '' as IntlString
+  },
+  icon: {
+    Shared: '' as Asset,
+    Locked: '' as Asset,
+    User: '' as Asset,
+    Channel: '' as Asset,
+    Group: '' as Asset
   }
 })

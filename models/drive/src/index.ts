@@ -24,10 +24,10 @@ import core, {
   type Ref,
   type Role,
   type RolesAssignment,
-  Account,
   AccountRole,
   IndexKind,
-  SortingOrder
+  SortingOrder,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   type Drive,
@@ -63,7 +63,6 @@ import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import drive from './plugin'
-import { definePermissions } from './permissions'
 
 export { driveId } from '@hcengineering/drive'
 export { driveOperation } from './migration'
@@ -82,7 +81,7 @@ export class TDrive extends TTypedSpace implements Drive {}
 @Mixin(drive.mixin.DefaultDriveTypeData, drive.class.Drive)
 @UX(getEmbeddedLabel('Default drive type'))
 export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 @Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)
@@ -112,7 +111,7 @@ export class TResource extends TDoc implements Resource {
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
-@UX(drive.string.Folder)
+@UX(drive.string.Folder, drive.icon.Folder)
 export class TFolder extends TResource implements Folder {
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -127,7 +126,7 @@ export class TFolder extends TResource implements Folder {
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
-@UX(drive.string.File)
+@UX(drive.string.File, drive.icon.File)
 export class TFile extends TResource implements File {
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -791,5 +790,4 @@ export function createModel (builder: Builder): void {
   defineFile(builder)
   defineFileVersion(builder)
   defineApplication(builder)
-  definePermissions(builder)
 }

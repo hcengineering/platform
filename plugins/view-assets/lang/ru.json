@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "содержит",
+    "NotContains": "не содержит",
     "MoveClass": "Переместить {class}",
     "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
@@ -46,6 +47,8 @@
     "CustomizeView": "Настроить отображение",
     "Filter": "Фильтр",
     "ClearFilters": "Очистить",
+    "FilterLessThan": "Меньше чем",
+    "FilterGreaterThan": "Больше чем",
     "FilterIsNot": "не равен",
     "FilterIsEither": "равен",
     "FilterIsEitherPlural": "{value, plural, =1 {равен} other {один из}}",
@@ -100,8 +103,8 @@
     "Between": "между",
     "ShowColors": "Использовать цвета",
     "Show": "Отображение",
-    "FilterArrayAll": "содержит все",
-    "FilterArrayAny": "содержит любое из",
+    "FilterArrayAll": "все",
+    "FilterArrayAny": "любое из",
     "Or": "Или",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Скопировать в буфер обмена",
@@ -125,7 +128,22 @@
     "Copied": "Скопировано",
     "Title": "Заголовок",
     "HideArchived": "Скрыть архивные",
-    "RemoveRelation": "Удалить связь",  
-    "RemoveRelationConfirmation": "Вы хотите удалить связь?"  
+    "RemoveRelation": "Удалить связь",
+    "RemoveRelationConfirmation": "Вы хотите удалить связь?",
+    "MasterDetail": "Мастер-деталь",
+    "Tree": "Дерево",
+    "Document": "Документ",
+    "Loading": "Загрузка...",
+    "NoRelations": "Нет связей",
+    "ReadOnlyWarningTitle": "✨ Анонимное гостевое демо",
+    "ReadOnlyWarningMessage": "Вы в режиме просмотра. Выберите путь: Присоединитесь к этому пространству для совместной работы (как гость) или создайте свое пространство для полного управления проектами — задачи, сроки, команда!",
+    "ReadOnlyJoinWorkspace": "Присоединиться к пространству",
+    "ReadOnlySignUp": "Создать пространство",
+    "PermissionWarningTitle": "✨ Повысьте свой уровень доступа!",
+    "PermissionWarningMessage": "Ваша текущая роль имеет ограниченные права. Чтобы разблокировать эту и другие продвинутые функции, попросите администратора вашего пространства повысить ваш уровень доступа!",
+    "Icon": "Иконка",
+    "Color": "Цвет",
+    "AutomationOnly": "Только автоматизация",
+    "CopyLink": "Скопировать ссылку"
   }
 }

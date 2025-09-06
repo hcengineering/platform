@@ -64,7 +64,7 @@ export function checkMobile (): boolean {
  * @public
  */
 export function isSafari (): boolean {
-  return navigator.userAgent.toLowerCase().includes('safari/')
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent.toLowerCase())
 }
 
 /**
@@ -347,7 +347,7 @@ export async function formatDuration (duration: number, language: string): Promi
     text += await translate(ui.string.HoursShort, { value: hours }, language)
   }
   const minutes = Math.floor((duration % HOUR) / MINUTE)
-  if (minutes > 0) {
+  if (minutes >= 0) {
     text += ' '
     text += await translate(ui.string.MinutesShort, { value: minutes }, language)
   }

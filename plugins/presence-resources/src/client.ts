@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,36 +13,55 @@
 // limitations under the License.
 //
 
-import { type Ref, concatLink, getCurrentAccount } from '@hcengineering/core'
-import { type Person, type PersonAccount } from '@hcengineering/contact'
+import { type Ref, concatLink } from '@hcengineering/core'
+import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getMetadata } from '@hcengineering/platform'
 import presence from '@hcengineering/presence'
 import presentation from '@hcengineering/presentation'
 import { type Unsubscriber, get } from 'svelte/store'
 
-import { myPresence, onPersonUpdate, onPersonLeave } from './store'
-import { type RoomPresence } from './types'
+import { myPresence, myData, isAnybodyInMyRoom, onPersonUpdate, onPersonLeave, onPersonData } from './store'
+import type { RoomPresence, MyDataItem } from './types'
 
-interface Message {
+interface PresenceMessage {
   id: Ref<Person>
   type: 'update' | 'remove'
   presence?: RoomPresence[]
   lastUpdate?: number
 }
 
+interface DataMessage {
+  type: 'data'
+  sender: Ref<Person>
+  topic: string
+  data: any
+}
+
+type IncomingMessage = PresenceMessage | DataMessage
+
 export class PresenceClient implements Disposable {
   private ws: WebSocket | null = null
   private closed = false
   private reconnectTimeout: number | undefined
-  private readonly reconnectInterval = 1000
+  private pingTimeout: number | undefined
+  private pingInterval: number | undefined
+  private readonly RECONNECT_INTERVAL = 1000
+  private readonly PING_INTERVAL = 30 * 1000
+  private readonly PING_TIMEOUT = 5 * 60 * 1000
+  private readonly myDataThrottleInterval = 100
 
   private presence: RoomPresence[]
+  private readonly myDataTimestamps = new Map<string, number>()
   private readonly myPresenceUnsub: Unsubscriber
+  private readonly myDataUnsub: Unsubscriber
 
   constructor (private readonly url: string | URL) {
     this.presence = get(myPresence)
     this.myPresenceUnsub = myPresence.subscribe((presence) => {
       this.handlePresenceChanged(presence)
+    })
+    this.myDataUnsub = myData.subscribe((data) => {
+      this.handleMyDataChanged(data, false)
     })
 
     this.connect()
@@ -51,8 +70,10 @@ export class PresenceClient implements Disposable {
   close (): void {
     this.closed = true
     clearTimeout(this.reconnectTimeout)
+    this.stopPing()
 
     this.myPresenceUnsub()
+    this.myDataUnsub()
 
     if (this.ws !== null) {
       this.ws.close()
@@ -102,28 +123,62 @@ export class PresenceClient implements Disposable {
     }
   }
 
+  private startPing (): void {
+    clearInterval(this.pingInterval)
+    this.pingInterval = window.setInterval(() => {
+      if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send('ping')
+      }
+      clearTimeout(this.pingTimeout)
+      this.pingTimeout = window.setTimeout(() => {
+        if (this.ws !== null) {
+          console.log('no response from server')
+          clearInterval(this.pingInterval)
+          this.ws.close(1000)
+        }
+      }, this.PING_TIMEOUT)
+    }, this.PING_INTERVAL)
+  }
+
+  private stopPing (): void {
+    clearInterval(this.pingInterval)
+    this.pingInterval = undefined
+
+    clearTimeout(this.pingTimeout)
+    this.pingTimeout = undefined
+  }
+
   private reconnect (): void {
     clearTimeout(this.reconnectTimeout)
+    this.stopPing()
 
     if (!this.closed) {
       this.reconnectTimeout = window.setTimeout(() => {
         this.connect()
-      }, this.reconnectInterval)
+      }, this.RECONNECT_INTERVAL)
     }
   }
 
   private handleConnect (): void {
-    const me = getCurrentAccount() as PersonAccount
-    this.sendPresence(me.person, this.presence)
+    this.sendPresence(getCurrentEmployee(), this.presence)
+    this.startPing()
+    this.handleMyDataChanged(get(myData), true)
   }
 
   private handleMessage (data: string): void {
+    if (data === 'pong') {
+      clearTimeout(this.pingTimeout)
+      return
+    }
+
     try {
-      const message = JSON.parse(data) as Message
+      const message = JSON.parse(data) as IncomingMessage
       if (message.type === 'update' && message.presence !== undefined) {
         onPersonUpdate(message.id, message.presence ?? [])
       } else if (message.type === 'remove') {
         onPersonLeave(message.id)
+      } else if (message.type === 'data') {
+        onPersonData(message.sender, message.topic, message.data)
       } else {
         console.warn('Unknown message type', message)
       }
@@ -133,15 +188,36 @@ export class PresenceClient implements Disposable {
   }
 
   private handlePresenceChanged (presence: RoomPresence[]): void {
-    const me = getCurrentAccount() as PersonAccount
     this.presence = presence
-    this.sendPresence(me.person, this.presence)
+    this.sendPresence(getCurrentEmployee(), this.presence)
+    this.handleMyDataChanged(get(myData), true)
   }
 
   private sendPresence (person: Ref<Person>, presence: RoomPresence[]): void {
     if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
-      const message: Message = { id: person, type: 'update', presence }
+      const message: PresenceMessage = { id: person, type: 'update', presence }
       this.ws.send(JSON.stringify(message))
+    }
+  }
+
+  private handleMyDataChanged (data: Map<string, MyDataItem>, forceSend: boolean): void {
+    if (!isAnybodyInMyRoom()) {
+      return
+    }
+    if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      for (const [topic, value] of data) {
+        const lastSend = this.myDataTimestamps.get(topic) ?? 0
+        if (value.lastUpdated >= lastSend + this.myDataThrottleInterval || forceSend) {
+          this.myDataTimestamps.set(topic, value.lastUpdated)
+          const message: DataMessage = {
+            sender: getCurrentEmployee(),
+            type: 'data',
+            topic,
+            data: value.data
+          }
+          this.ws.send(JSON.stringify(message))
+        }
+      }
     }
   }
 
@@ -151,9 +227,9 @@ export class PresenceClient implements Disposable {
 }
 
 export function connect (): PresenceClient | undefined {
-  const workspaceId = getMetadata(presentation.metadata.WorkspaceId)
-  if (workspaceId === undefined) {
-    console.warn('Workspace ID is not defined')
+  const wsUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (wsUuid === undefined) {
+    console.warn('Workspace uuid is not defined')
     return undefined
   }
 
@@ -165,7 +241,7 @@ export function connect (): PresenceClient | undefined {
     return undefined
   }
 
-  const url = new URL(concatLink(presenceUrl, workspaceId))
+  const url = new URL(concatLink(presenceUrl, wsUuid))
   if (token !== undefined) {
     url.searchParams.set('token', token)
   }

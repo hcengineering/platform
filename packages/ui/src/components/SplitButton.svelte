@@ -25,7 +25,7 @@
   export let labelParams: Record<string, any> = {}
   export let title: string | undefined = undefined
   export let secondTitle: string | undefined = undefined
-  export let kind: 'secondary' | 'primary' = 'secondary'
+  export let kind: 'secondary' | 'primary' | 'regular' = 'secondary'
   export let size: ButtonBaseSize = 'medium'
   export let disabled: boolean = false
   export let loading: boolean = false
@@ -43,6 +43,7 @@
   export let secondAction: (e: MouseEvent) => void = () => {}
   export let noFocus: boolean = false
   export let separate: boolean = false
+  export let accent: boolean = true
 
   $: iconSize = iconProps?.size !== undefined ? iconProps.size : 'full'
   $: secondIconSize = secondIconProps?.size !== undefined ? secondIconProps.size : 'full'
@@ -62,6 +63,8 @@
     <button
       use:tooltip={showTooltip}
       class="hulySplitButton-main"
+      class:no-focus={noFocus}
+      class:accent
       class:pressed
       {disabled}
       {title}
@@ -70,7 +73,7 @@
     >
       {#if icon || $$slots.icon}
         <div class="btn-icon pointer-events-none">
-          {#if icon}<Icon bind:icon size={iconSize} {iconProps} />{/if}
+          {#if icon}<Icon {icon} size={iconSize} {iconProps} />{/if}
           {#if $$slots.icon}<slot name="icon" />{/if}
         </div>
       {/if}
@@ -85,13 +88,14 @@
       use:tooltip={secondShowTooltip}
       class="hulySplitButton-second"
       class:pressed={secondPressed}
+      class:no-focus={noFocus}
       {disabled}
       title={secondTitle}
       on:click|stopPropagation={secondAction}
     >
       {#if secondIcon || $$slots.secondIcon}
         <div class="btn-icon pointer-events-none">
-          {#if secondIcon}<Icon bind:icon={secondIcon} size={secondIconSize} iconProps={secondIconProps} />{/if}
+          {#if secondIcon}<Icon icon={secondIcon} size={secondIconSize} iconProps={secondIconProps} />{/if}
           {#if $$slots.secondIcon}<slot name="secondIcon" />{/if}
         </div>
       {/if}

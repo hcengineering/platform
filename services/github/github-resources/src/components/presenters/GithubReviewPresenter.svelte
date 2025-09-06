@@ -3,17 +3,17 @@
 //
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
+  import { WithLookup } from '@hcengineering/core'
   import { GithubPullRequestReviewState, GithubReview } from '@hcengineering/github'
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
   import { MessageViewer } from '@hcengineering/presentation'
   import { isEmptyMarkup } from '@hcengineering/text'
   import { PaletteColorIndexes, getPlatformColor, themeStore } from '@hcengineering/ui'
   import github from '../../plugin'
+  import { Person } from '@hcengineering/contact'
 
   export let value: WithLookup<GithubReview>
   export let showNotify: boolean = false
@@ -23,9 +23,15 @@
   export let embedded: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: personAccount = $personAccountByIdStore.get((value?.createdBy ?? value?.modifiedBy) as Ref<PersonAccount>)
-
-  $: person = $personByIdStore.get(personAccount?.person as Ref<Person>)
+  $: personId = value?.createdBy ?? value?.modifiedBy
+  let person: Person | undefined
+  $: if (personId !== undefined) {
+    getPersonByPersonIdCb(personId, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   function getCommentFromState (value?: GithubPullRequestReviewState): {
     label: IntlString

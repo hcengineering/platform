@@ -13,30 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import login from '@hcengineering/login'
-  import { createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
+  import contact, { formatName, getCurrentEmployee } from '@hcengineering/contact'
+  import { myEmployeeStore } from '@hcengineering/contact-resources'
+  import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import login, { loginId } from '@hcengineering/login'
+  import { createQuery, getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
-    Component,
-    Menu,
     closePopup,
+    Component,
     deviceOptionsStore as deviceInfo,
     getCurrentResolvedLocation,
     locationToUrl,
+    Menu,
     navigate,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import workbench from '../plugin'
-  import { signOut } from '../utils'
+  import { logOut } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { allowGuestSignUpStore } from '@hcengineering/view-resources'
 
   let items: SettingsCategory[] = []
 
+  const account = getCurrentAccount()
   const settingsQuery = createQuery()
   settingsQuery.query(
     setting.class.SettingsCategory,
@@ -47,8 +50,7 @@
     { sort: { order: 1 } }
   )
 
-  const account = getCurrentAccount() as PersonAccount
-  $: person = $personByIdStore.get(account.person)
+  $: person = $myEmployeeStore
 
   function selectCategory (sp?: SettingsCategory): void {
     closePopup()
@@ -112,15 +114,17 @@
   let actions: Action[] = []
   $: {
     actions = []
-    actions.push({
-      icon: view.icon.Setting,
-      label: setting.string.Settings,
-      action: async () => {
-        selectCategory()
-      }
-    })
+    if (hasAccountRole(account, AccountRole.DocGuest)) {
+      actions.push({
+        icon: view.icon.Setting,
+        label: setting.string.Settings,
+        action: async () => {
+          selectCategory()
+        }
+      })
+    }
     actions.push(...getMenu(items, ['main']))
-    if (hasAccountRole(account, AccountRole.Maintainer)) {
+    if (hasAccountRole(account, AccountRole.User)) {
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
@@ -130,24 +134,66 @@
         group: 'end'
       })
     }
-    actions.push(
-      {
-        icon: setting.icon.Support,
-        label: workbench.string.HelpAndSupport,
-        action: async () => {
-          helpAndSupport()
-        },
-        group: 'end'
-      },
-      {
+
+    if (hasAccountRole(account, AccountRole.User)) {
+      actions.push({
         icon: setting.icon.Signout,
-        label: setting.string.Signout,
+        label: setting.string.SelectWorkspace,
         action: async () => {
-          signOut()
+          closePopup()
+          const loc = getCurrentResolvedLocation()
+          loc.fragment = undefined
+          loc.query = undefined
+          loc.path[0] = loginId
+          loc.path[1] = 'selectWorkspace'
+          loc.path.length = 2
+          navigate(loc)
         },
         group: 'end'
+      })
+    }
+
+    actions.push({
+      icon: setting.icon.Support,
+      label: workbench.string.HelpAndSupport,
+      action: async () => {
+        helpAndSupport()
+      },
+      group: 'end'
+    })
+
+    if (account.role === AccountRole.ReadOnlyGuest) {
+      if ($allowGuestSignUpStore) {
+        actions.push({
+          icon: setting.icon.InviteWorkspace,
+          label: view.string.ReadOnlyJoinWorkspace,
+          action: async () => {
+            navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
+          },
+          group: 'end'
+        })
       }
-    )
+      actions.push({
+        icon: setting.icon.InviteWorkspace,
+        label: view.string.ReadOnlySignUp,
+        action: async () => {
+          open('https://huly.io/signup')
+        },
+        group: 'end'
+      })
+    }
+
+    actions.push({
+      icon: setting.icon.Signout,
+      label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
+      action: async () => {
+        await logOut()
+        navigate({ path: [loginId] })
+        Analytics.handleEvent('workbench.SignOut')
+        Analytics.logout()
+      },
+      group: 'end'
+    })
   }
   let menu: Menu
   $: addClass = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'self-end' : undefined
@@ -166,17 +212,24 @@
         editProfile(items)
       }}
     >
-      {#if person}
-        <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
-      {/if}
-      <div class="ml-2 flex-col">
-        {#if account}
-          <div class="overflow-label fs-bold caption-color">
-            {person !== undefined ? formatName(person.name) : ''}
-          </div>
-          <div class="overflow-label text-sm content-dark-color">{account.email}</div>
+      {#if getCurrentEmployee() === core.employee.System}
+        <div class="ml-2 flex-col">
+          <div class="overflow-label fs-bold">System</div>
+        </div>
+      {:else}
+        {#if person}
+          <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
         {/if}
-      </div>
+        <div class="ml-2 flex-col">
+          {#if person}
+            <div class="overflow-label fs-bold caption-color">
+              {formatName(person.name)}
+            </div>
+            <!-- TODO: Show current primary social id? -->
+            <!-- <div class="overflow-label text-sm content-dark-color">{account.email}</div> -->
+          {/if}
+        </div>
+      {/if}
     </div>
     <div class="ap-menuItem separator" />
   </svelte:fragment>

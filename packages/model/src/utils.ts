@@ -1,4 +1,13 @@
-import { Class, Data, Doc, DocumentUpdate, Ref, Space, TxOperations, type IdMap } from '@hcengineering/core'
+import {
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentUpdate,
+  type Ref,
+  type Space,
+  type TxOperations,
+  type IdMap
+} from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 function toUndef (value: any): any {

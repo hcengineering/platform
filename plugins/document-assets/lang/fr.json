@@ -37,6 +37,7 @@
     "Untitled": "Sans titre",
     "Description": "Description",
     "CopyDocumentUrl": "Copier l'URL du document dans le presse-papiers",
+    "DocumentUrlCopied": "Copié !",
     "ViewMode": "Visualiser",
     "EditMode": "Éditer",
     "SuggestMode": "Suggérer",
@@ -50,8 +51,6 @@
     "ConfigDescription": "Extension pour l'édition collaborative de documents",
     "Icon": "Icône",
     "Color": "Couleur",
-    "RoleLabel": "Rôle : {role}",
-    "ForbidCreateTeamspacePermission": "Interdire la création d'espace d'équipe",
-    "ForbidCreateTeamspacePermissionDescription": "Interdit aux utilisateurs de créer de nouveaux espaces d'équipe"
+    "RoleLabel": "Rôle : {role}"
   }
 }

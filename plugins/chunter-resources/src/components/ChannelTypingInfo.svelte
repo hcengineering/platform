@@ -15,9 +15,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import chunter from '@hcengineering/chunter'
-  import { getName, Person } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, IdMap } from '@hcengineering/core'
+  import { getName, getCurrentEmployee } from '@hcengineering/contact'
+  import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { PresenceTyping } from '../types'
@@ -26,25 +25,22 @@
 
   const typingDelay = 2000
   const maxTypingPersons = 3
-  const me = getCurrentAccount()
+  const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
   let typingPersonsLabel: string = ''
   let typingPersonsCount = 0
   let moreCount: number = 0
 
-  $: updateTypingPersons($personByIdStore, typingInfo)
+  $: void updateTypingPersons(typingInfo)
 
-  function updateTypingPersons (personById: IdMap<Person>, typingInfo: PresenceTyping[]): void {
+  async function updateTypingPersons (typingInfo: PresenceTyping[]): Promise<void> {
     const now = Date.now()
     const personIds = new Set(
-      typingInfo
-        .filter((info) => info.person !== me.person && now - info.lastTyping < typingDelay)
-        .map((info) => info.person)
+      typingInfo.filter((info) => info.person !== me && now - info.lastTyping < typingDelay).map((info) => info.person)
     )
-    const names = Array.from(personIds)
-      .map((personId) => personById.get(personId))
-      .filter((person): person is Person => person !== undefined)
+    const persons = await getPersonsByPersonRefs(Array.from(personIds))
+    const names = Array.from(persons.values())
       .map((person) => getName(hierarchy, person))
       .sort((name1, name2) => name1.localeCompare(name2))
 
@@ -55,7 +51,7 @@
 
   onMount(() => {
     const interval = setInterval(() => {
-      updateTypingPersons($personByIdStore, typingInfo)
+      void updateTypingPersons(typingInfo)
     }, typingDelay)
     return () => {
       clearInterval(interval)

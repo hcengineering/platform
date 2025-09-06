@@ -156,12 +156,11 @@
       const category = _status.category !== undefined ? categoriesMap.get(_status.category) : undefined
       const projectStatus = getProjectStatus(type, _status)
       const color = getProjectStatus(type, _status)?.color ?? _status.color ?? category?.color
-      const sameCategory = (
-        taskType.statuses
-          .map((it) => $statusStore.byId.get(it))
-          .filter((it) => it !== undefined)
-          .filter((it) => it?.category === _status.category) as Status[]
-      ).filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
+      const sameCategory = taskType.statuses
+        .map((it) => $statusStore.byId.get(it))
+        .filter((it) => it !== undefined)
+        .filter((it) => it?.category === _status.category)
+        .filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
 
       $settingsStore = {
         id: opened,
@@ -237,7 +236,7 @@
             _class={state._class}
             objectId={state._id}
             value={state}
-            props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs' }}
+            props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs', size: 'medium' }}
           />
           <div class="hulyTableAttr-content__row-arrow">
             <IconOpenedArrow size={'small'} />

@@ -25,6 +25,7 @@ export enum MarkupNodeType {
   image = 'image',
   file = 'file',
   reference = 'reference',
+  emoji = 'emoji',
   hard_break = 'hardBreak',
   ordered_list = 'orderedList',
   bullet_list = 'bulletList',
@@ -40,7 +41,8 @@ export enum MarkupNodeType {
   table_header = 'tableHeader',
   mermaid = 'mermaid',
   comment = 'comment',
-  markdown = 'markdown'
+  markdown = 'markdown',
+  embed = 'embed'
 }
 
 /** @public */
@@ -56,10 +58,10 @@ export enum MarkupMarkType {
 /** @public */
 export interface MarkupMark {
   type: MarkupMarkType
-  attrs: Record<string, any> // A map of attributes
+  attrs?: Record<string, any> // A map of attributes
 }
 
-export type AttrValue = string | number | boolean
+export type AttrValue = string | number | boolean | null | undefined
 export type Attrs = Record<string, AttrValue>
 
 /** @public */

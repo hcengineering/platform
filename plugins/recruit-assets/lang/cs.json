@@ -122,9 +122,7 @@
     "HideArchivedVacancies": "Skrýt archivované pozice",
     "HideApplicantsFromArchivedVacancies": "Skrýt z archivovaných pozic",
     "CreateNewSkills": "Vytvořit nové dovednosti, pokud neexistují",
-    "SwapFirstAndLastNames": "Vyměňte jméno a příjmení",
-    "ForbidCreateVacancyPermission": "Zakázat vytvoření pozice",
-    "ForbidCreateVacancyPermissionDescription": "Zakazuje uživatelům vytvářet nové volné pozice"
+    "SwapFirstAndLastNames": "Vyměňte jméno a příjmení"
   },
   "status": {
     "ApplicationExists": "Přihláška již existuje",

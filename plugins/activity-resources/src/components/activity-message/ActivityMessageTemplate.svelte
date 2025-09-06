@@ -14,29 +14,29 @@
 -->
 <script lang="ts">
   import activity, {
+    ActivityMessage,
     ActivityMessageViewlet,
-    DisplayActivityMessage,
     ActivityMessageViewType,
-    ActivityMessage
+    DisplayActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Ref, type SocialId } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Asset } from '@hcengineering/platform'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
-  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
-  import { Asset } from '@hcengineering/platform'
   import { Action as ViewAction } from '@hcengineering/view'
-  import notification from '@hcengineering/notification'
+  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
-  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
-  import ActivityMessageActions from '../ActivityMessageActions.svelte'
-  import { isReactionMessage } from '../../activityMessagesUtils'
   import { savedMessagesStore } from '../../activity'
-  import MessageTimestamp from '../MessageTimestamp.svelte'
-  import Replies from '../Replies.svelte'
+  import { isReactionMessage } from '../../activityMessagesUtils'
   import { MessageInlineAction } from '../../types'
+  import ActivityMessageActions from '../ActivityMessageActions.svelte'
+  import MessageTimestamp from '../MessageTimestamp.svelte'
+  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
+  import Replies from '../Replies.svelte'
+  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import InlineAction from './InlineAction.svelte'
 
   export let message: DisplayActivityMessage
@@ -44,6 +44,7 @@
 
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
+  export let socialId: SocialId | undefined = undefined
   export let actions: Action[] = []
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
@@ -57,7 +58,7 @@
   export let hoverable = true
   export let pending = false
   export let stale = false
-  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
+  export let hoverStyles: 'filledHover' | 'none' = 'filledHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
   export let inlineActions: MessageInlineAction[] = []
@@ -134,7 +135,7 @@
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
 
-      if (node.nodeType !== Node.TEXT_NODE) continue
+      if (node.nodeType !== Node.TEXT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue
 
       range.selectNodeContents(node)
 
@@ -176,7 +177,6 @@
       class:hoverable
       class:embedded
       class:actionsOpened={isActionsOpened}
-      class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
       class:stale
       on:click={onClick}
@@ -196,7 +196,7 @@
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
-            <Avatar size="medium" {person} name={person.name} />
+            <Avatar size="medium" {person} name={person.name} showPreview />
           {:else}
             <SystemAvatar size="medium" />
           {/if}
@@ -212,13 +212,16 @@
           {/if}
         </div>
       {/if}
-      <div class="flex-col ml-2 w-full clear-mins message-content">
+      <div class="flex-col w-full clear-mins message-content">
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
               <div class="username">
                 <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
               </div>
+              {#if socialId !== undefined}
+                ({socialId.type})
+              {/if}
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />
@@ -298,7 +301,7 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    padding: 0.5rem 1rem;
     gap: 1rem;
     //overflow: hidden;
     border: 1px solid transparent;
@@ -363,10 +366,6 @@
     }
 
     &.actionsOpened {
-      &.borderedHover {
-        border: 1px solid var(--global-ui-BackgroundColor);
-      }
-
       &.filledHover {
         background-color: var(--global-ui-BackgroundColor);
       }
@@ -374,10 +373,6 @@
 
     &.hoverable {
       &:hover:not(.embedded) {
-        &.borderedHover {
-          border: 1px solid var(--global-ui-BackgroundColor);
-        }
-
         &.filledHover {
           background-color: var(--global-ui-BackgroundColor);
         }

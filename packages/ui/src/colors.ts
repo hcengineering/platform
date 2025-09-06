@@ -74,7 +74,7 @@ export enum PaletteColorIndexes {
   Firework,
   Watermelon,
   Pink,
-  Fuschia,
+  Fuchsia,
   Lavander,
   Mauve,
   Heather,
@@ -104,7 +104,7 @@ export const whitePalette = Object.freeze<ColorDefinition[]>([
   define('Firework', 'D15045', 'D15045', 'C03B2F', 'C03B2F', 'C03B2F', [60, 20]),
   define('Watermelon', 'DB877D', 'DB877D', 'D2685B', 'D2685B', 'D2685B', [60, 20]),
   define('Pink', 'EF86AA', 'EF86AA', 'E9588A', 'E9588A', 'E9588A', [60, 20]),
-  define('Fuschia', 'EB5181', 'EB5181', 'E62360', 'E62360', 'E62360', [60, 20]),
+  define('Fuchsia', 'EB5181', 'EB5181', 'E62360', 'E62360', 'E62360', [60, 20]),
   define('Lavander', 'DC85F5', 'DC85F5', 'CE55F1', 'CE55F1', 'CE55F1', [60, 20]),
   define('Mauve', '925CB1', '925CB1', '784794', '784794', '784794', [60, 20]),
   define('Heather', '7B86C6', '7B86C6', '5866B7', '5866B7', '5866B7', [60, 20]),
@@ -134,7 +134,7 @@ export const darkPalette = Object.freeze<ColorDefinition[]>([
   define('Firework', 'D15045', 'D15045', 'FFFFFF', 'FFFFFF', 'C03B2F', [60, 15, 0], true),
   define('Watermelon', 'DB877D', 'DB877D', 'FFFFFF', 'FFFFFF', 'D2685B', [60, 15, 0], true),
   define('Pink', 'EF86AA', 'EF86AA', 'FFFFFF', 'FFFFFF', 'E9588A', [60, 15, 0], true),
-  define('Fuschia', 'EB5181', 'EB5181', 'FFFFFF', 'FFFFFF', 'E62360', [60, 15, 0], true),
+  define('Fuchsia', 'EB5181', 'EB5181', 'FFFFFF', 'FFFFFF', 'E62360', [60, 15, 0], true),
   define('Lavander', 'DC85F5', 'DC85F5', 'FFFFFF', 'FFFFFF', 'CE55F1', [60, 15, 0], true),
   define('Mauve', '925CB1', '925CB1', 'FFFFFF', 'FFFFFF', '784794', [60, 15, 0], true),
   define('Heather', '7B86C6', '7B86C6', 'FFFFFF', 'FFFFFF', '5866B7', [60, 15, 0], true),
@@ -240,17 +240,17 @@ export const CadetGreyColor = '#95A2B3'
 /**
  * @public
  */
-export function getPlatformColor (hash: number, darkTheme: boolean): string {
+export function getPlatformColor (hash: number | number[], darkTheme: boolean): string {
   const palette = darkTheme ? darkPalette : whitePalette
-  return (palette[Math.abs(hash) % palette.length] ?? palette[0]).color
+  return (palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]).color
 }
 
 /**
  * @public
  */
-export function getPlatformColorDef (hash: number, darkTheme: boolean): ColorDefinition {
+export function getPlatformColorDef (hash: number | number[], darkTheme: boolean): ColorDefinition {
   const palette = darkTheme ? darkPalette : whitePalette
-  return palette[Math.abs(hash) % palette.length] ?? palette[0]
+  return palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]
 }
 
 /**
@@ -272,8 +272,45 @@ export function getPlatformAvatarColorForTextDef (text: string, darkTheme: boole
  * @public
  */
 export function getPlatformAvatarColorByName (name: string, darkTheme: boolean): ColorDefinition {
-  const palette = darkTheme ? avatarDarkColors : avatarWhiteColors
-  return palette.find((col) => col.name === name) ?? palette[0]
+  const defaultIndex = 0
+  return getColorByName(name, darkTheme, avatarWhiteColors, avatarDarkColors, defaultIndex)
+}
+
+/**
+ * @public
+ */
+export function getPlatformColorByName (name: string, darkTheme: boolean): ColorDefinition | undefined {
+  const defaultIndex: number | undefined = undefined
+  return getColorByName(name, darkTheme, whitePalette, darkPalette, defaultIndex)
+}
+
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: number
+): ColorDefinition
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: undefined
+): ColorDefinition | undefined
+function getColorByName (
+  name: string,
+  darkTheme: boolean,
+  paletteLight: readonly ColorDefinition[],
+  paletteDark: readonly ColorDefinition[],
+  defaultIndex: number | undefined
+): ColorDefinition | undefined {
+  const targetPalette = darkTheme ? paletteDark : paletteLight
+  const found = targetPalette.find((col) => col.name === name)
+  if (found != null) {
+    return found
+  }
+  return defaultIndex != null ? targetPalette[defaultIndex] : undefined
 }
 
 /**

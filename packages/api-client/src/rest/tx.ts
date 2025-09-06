@@ -19,10 +19,14 @@ import {
   type Client,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   Hierarchy,
   ModelDb,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -38,14 +42,15 @@ import { RestClientImpl } from './rest'
 export async function createRestTxOperations (
   endpoint: string,
   workspaceId: string,
-  token: string
+  token: string,
+  fullModel: boolean = false
 ): Promise<TxOperations> {
   const restClient = new RestClientImpl(endpoint, workspaceId, token)
 
   const account = await restClient.getAccount()
-  const { hierarchy, model } = await restClient.getModel()
+  const { hierarchy, model } = await restClient.getModel(fullModel)
 
-  return new TxOperations(new RestTxClient(restClient, hierarchy, model, account), account._id)
+  return new TxOperations(new RestTxClient(restClient, hierarchy, model, account), account.socialIds[0])
 }
 
 class RestTxClient implements Client {
@@ -70,6 +75,14 @@ class RestTxClient implements Client {
       return this.hierarchy.updateLookupMixin(_class, v, options)
     })
     return toFindResult(result, data.total)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    throw new Error('Domain request operation not supported')
   }
 
   async findOne<T extends Doc>(

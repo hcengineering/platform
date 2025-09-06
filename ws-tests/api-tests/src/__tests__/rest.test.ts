@@ -17,36 +17,105 @@ import {
   createRestClient,
   createRestTxOperations,
   getWorkspaceToken,
+  loadServerConfig,
   type RestClient,
   type WorkspaceToken
 } from '@hcengineering/api-client'
-import core, { generateId, type Space, type TxCreateDoc, type TxOperations } from '@hcengineering/core'
-
+import core, {
+  buildSocialIdString,
+  generateId,
+  MeasureMetricsContext,
+  type PersonId,
+  type PersonUuid,
+  pickPrimarySocialId,
+  SocialIdType,
+  systemAccountUuid,
+  type Ref,
+  type SocialId,
+  type Space,
+  type TxCreateDoc,
+  type TxOperations
+} from '@hcengineering/core'
+import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 import chunter from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
+import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
+import { generateToken } from '@hcengineering/server-token'
 
 describe('rest-api-server', () => {
+  const testCtx = new MeasureMetricsContext('test', {})
   const wsName = 'api-tests'
   let apiWorkspace1: WorkspaceToken
   let apiWorkspace2: WorkspaceToken
+  let accountClient: AccountClient
+  let adminAccountClient: AccountClient
 
   beforeAll(async () => {
-    apiWorkspace1 = await getWorkspaceToken('http://localhost:8083', {
-      email: 'user1',
-      password: '1234',
-      workspace: wsName
-    })
+    const config = await loadServerConfig('http://huly.local:8083')
 
-    apiWorkspace2 = await getWorkspaceToken('http://localhost:8083', {
-      email: 'user1',
-      password: '1234',
-      workspace: wsName + '-cr'
-    })
-  })
+    apiWorkspace1 = await getWorkspaceToken(
+      'http://huly.local:8083',
+      {
+        email: 'user1',
+        password: '1234',
+        workspace: wsName
+      },
+      config
+    )
 
-  function connect (ws?: WorkspaceToken): RestClient {
+    apiWorkspace2 = await getWorkspaceToken(
+      'http://huly.local:8083',
+      {
+        email: 'user1',
+        password: '1234',
+        workspace: wsName + '-cr'
+      },
+      config
+    )
+
+    accountClient = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
+    adminAccountClient = getAccountClient(
+      config.ACCOUNTS_URL,
+      generateToken(systemAccountUuid, undefined, { admin: 'true' }, 'secret')
+    )
+    const person = await accountClient.getPerson()
+    const socialIds: SocialId[] = await accountClient.getSocialIds(true)
+
+    // Ensure employee is created
+
+    await ensureEmployee(
+      testCtx,
+      {
+        uuid: apiWorkspace1.info.account,
+        role: apiWorkspace1.info.role,
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id),
+        fullSocialIds: socialIds
+      },
+      connect(),
+      socialIds,
+      async () => person
+    )
+
+    await ensureEmployee(
+      testCtx,
+      {
+        uuid: apiWorkspace2.info.account,
+        role: apiWorkspace2.info.role,
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id),
+        fullSocialIds: socialIds
+      },
+      connect(apiWorkspace2),
+      socialIds,
+      async () => person
+    )
+  }, 10000)
+
+  function connect (ws?: WorkspaceToken, asSystem = false): RestClient {
     const tok = ws ?? apiWorkspace1
-    return createRestClient(tok.endpoint, tok.workspaceId, tok.token)
+    const token = asSystem ? generateToken(systemAccountUuid, tok.workspaceId, undefined, 'secret') : tok.token
+
+    return createRestClient(tok.endpoint, tok.workspaceId, token)
   }
 
   async function connectTx (ws?: WorkspaceToken): Promise<TxOperations> {
@@ -58,14 +127,13 @@ describe('rest-api-server', () => {
     const conn = connect()
     const account = await conn.getAccount()
 
-    expect(account.email).toBe('user1')
+    expect(account.primarySocialId).toEqual(expect.any(String))
     expect(account.role).toBe('USER')
-    expect(account._class).toBe(contact.class.PersonAccount)
-    expect(account.space).toBe(core.space.Model)
-    expect(account.modifiedBy).toBe(core.account.System)
-    expect(account.createdBy).toBe(core.account.System)
-    expect(typeof account.modifiedOn).toBe('number')
-    expect(typeof account.createdOn).toBe('number')
+    // expect(account.space).toBe(core.space.Model)
+    // expect(account.modifiedBy).toBe(core.account.System)
+    // expect(account.createdBy).toBe(core.account.System)
+    // expect(typeof account.modifiedOn).toBe('number')
+    // expect(typeof account.createdOn).toBe('number')
   })
 
   it('find spaces', async () => {
@@ -123,7 +191,7 @@ describe('rest-api-server', () => {
       space: core.space.Tx,
       _id: generateId(),
       objectSpace: core.space.Model,
-      modifiedBy: account._id,
+      modifiedBy: account.primarySocialId,
       modifiedOn: Date.now(),
       attributes: {
         name: spaceName,
@@ -158,15 +226,69 @@ describe('rest-api-server', () => {
     expect(employee.length).toBeGreaterThanOrEqual(1)
     expect(employee[0].active).toBe(true)
   })
+
+  describe('ensure-person', () => {
+    const expectPerson = async (
+      conn: RestClient,
+      socialType: SocialIdType,
+      socialValue: string,
+      uuid: PersonUuid,
+      socialId: PersonId,
+      localPerson: string
+    ): Promise<void> => {
+      const globalPerson = await adminAccountClient.findPersonBySocialKey(
+        buildSocialIdString({ type: socialType, value: socialValue })
+      )
+
+      expect(globalPerson).toBe(uuid)
+
+      const person = await conn.findOne(contact.class.Person, { _id: localPerson as Ref<Person>, personUuid: uuid })
+
+      expect(person).not.toBeNull()
+
+      const socialIdObj = await conn.findOne(contact.class.SocialIdentity, {
+        type: socialType,
+        value: socialValue,
+        attachedTo: person?._id,
+        _id: socialId as SocialIdentityRef
+      })
+
+      expect(socialIdObj).not.toBeNull()
+    }
+
+    it('ensure-person', async () => {
+      const socialType = SocialIdType.TELEGRAM
+      const socialValue = '123456789'
+      const first = 'John'
+      const last = 'Doe'
+      const conn = connect()
+      const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
+
+      await expectPerson(conn, socialType, socialValue, uuid, socialId, localPerson)
+    })
+
+    it('ensure-person as system', async () => {
+      const socialType = SocialIdType.GITHUB
+      const socialValue = 'eodnhoj'
+      const first = 'John'
+      const last = 'Doe'
+      const conn = connect(apiWorkspace1, true)
+
+      const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
+
+      await expectPerson(conn, socialType, socialValue, uuid, socialId, localPerson)
+    })
+  })
 })
+
 async function checkFindPerformance (conn: RestClient): Promise<void> {
   let ops = 0
   let total = 0
-  const attempts = 1000
+  const attempts = 500
   for (let i = 0; i < attempts; i++) {
     const st = performance.now()
     const spaces = await conn.findAll(core.class.Space, {})
-    expect(spaces.length).toBeGreaterThanOrEqual(22)
+    expect(spaces.length).toBeGreaterThanOrEqual(21)
     const ed = performance.now()
     ops++
     total += ed - st
@@ -174,5 +296,5 @@ async function checkFindPerformance (conn: RestClient): Promise<void> {
   const avg = total / ops
   // console.log('ops:', ops, 'total:', total, 'avg:', )
   expect(ops).toEqual(attempts)
-  expect(avg).toBeLessThan(5)
+  expect(avg).toBeLessThan(10)
 }

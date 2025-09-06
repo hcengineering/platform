@@ -15,8 +15,8 @@
 <script lang="ts">
   import cardPlugin, { MasterTag } from '@hcengineering/card'
   import core, { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Icon, IconWithEmoji, Label } from '@hcengineering/ui'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
+  import { Icon, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 

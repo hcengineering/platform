@@ -46,7 +46,6 @@ export default mergeIds(settingId, setting, {
     CreateMixin: '' as AnyComponent,
     InviteSetting: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,
-    IntegrationPanel: '' as AnyComponent,
     Configure: '' as AnyComponent,
     SettingsWidget: '' as AnyComponent
   },

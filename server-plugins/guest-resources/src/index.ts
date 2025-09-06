@@ -22,11 +22,11 @@ import core, {
   TxCreateDoc,
   TxOperations,
   TxProcessor,
-  WorkspaceIdWithUrl,
+  WorkspaceIds,
   concatLink,
   generateId
 } from '@hcengineering/core'
-import guest, { PublicLink, guestAccountEmail, guestId } from '@hcengineering/guest'
+import guest, { PublicLink, guestAccount, guestId } from '@hcengineering/guest'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
@@ -56,21 +56,21 @@ export async function OnPublicLinkCreate (txes: Tx[], control: TriggerControl): 
   return result
 }
 
-export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
+export function getPublicLinkUrl (workspace: WorkspaceIds, brandedFront?: string): string {
   const front = brandedFront ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${guestId}/${workspace.workspaceUrl}`
+  const path = `${guestId}/${workspace.url}`
   return concatLink(front, path)
 }
 
-function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
-  const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
+function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIds, brandedFront?: string): string {
+  const token = generateToken(guestAccount, workspace.uuid, { linkId, guest: 'true' })
   return `${getPublicLinkUrl(workspace, brandedFront)}?token=${token}`
 }
 
 export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   revokable: boolean = true,
   branding: Branding | null
 ): Promise<string> {

@@ -1,6 +1,7 @@
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
+import { showPopup } from '@hcengineering/ui'
+import emojiPlugin from '@hcengineering/emoji'
 import textEditor, { type RefAction } from '@hcengineering/text-editor'
 
 import RiMention from '../icons/RIMention.svelte'
@@ -17,18 +18,17 @@ export const defaultRefActions: RefAction[] = [
   },
   {
     label: textEditor.string.Emoji,
-    icon: IconEmoji,
+    icon: emojiPlugin.icon.Emoji,
     action: (element, editorHandler) => {
       showPopup(
-        EmojiPopup,
+        emojiPlugin.component.EmojiPopup,
         {},
         element,
         (emoji) => {
           if (emoji === null || emoji === undefined) {
             return
           }
-
-          editorHandler.insertText(emoji)
+          editorHandler.insertEmoji(emoji.text, emoji.image)
           editorHandler.focus()
         },
         () => {}

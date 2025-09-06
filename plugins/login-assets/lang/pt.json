@@ -42,7 +42,6 @@
     "AlreadyJoined": "Já participou?",
     "ConfirmationSent": "Foi enviada uma mensagem para o seu email contendo um link para confirmar o seu endereço.",
     "ConfirmationSent2": "Por favor, siga o link para concluir o seu registo.",
-    "Slogan": "Um local único para gerir todo o seu trabalho\nBem-vindo à Plataforma",
     "ContinueWith": "Continuar com {provider}",
     "HaventReceivedCode": "Não recebeu o código?",
     "ResendCode": "Reenviar código",
@@ -52,6 +51,8 @@
     "CanFindCode": "Não encontra o seu código? Verifique a sua pasta de spam.",
     "LoginWithPassword": "Iniciar sessão com palavra-passe",
     "LoginWithCode": "Iniciar sessão com código",
+    "SignUpWithPassword": "Registar com palavra-passe",
+    "SignUpWithCode": "Registar com código",
     "FillInProfile": "Preencha o seu perfil",
     "SetUpPassword": "Definir a sua palavra-passe",
     "Next": "Seguinte",
@@ -64,6 +65,15 @@
     "PasswordMinUpperChars": "{count, plural, =1 {A senha deve conter pelo menos # letra maiúscula} other {A senha deve conter pelo menos # letras maiúsculas}}",
     "PasswordMinLowerChars": "{count, plural, =1 {A senha deve conter pelo menos # letra minúscula} other {A senha deve conter pelo menos # letras minúsculas}}",
     "WorkspaceArchivedDesc": "O espaço de trabalho está arquivado por estar inativo.",
-    "RestoreArchivedWorkspace": "Restaurar"
+    "RestoreArchivedWorkspace": "Restaurar",
+    "Hello": "Olá {name},",
+    "ProcessingInvite": "Processando convite, aguarde...",
+    "SignToProceed": "Por favor, inicie sessão para continuar",
+    "Proceed": "Continuar",
+    "SetPasswordLater": "Vou definir uma senha mais tarde",
+    "SetPasswordNow": "Vou definir uma senha agora",
+    "LoginAsGuest": "Continuar como convidado",
+    "SignUpToCreateWorkspace": "Não há espaços de trabalho com acesso de convidado. Por favor, cadastre-se para criar o seu.",
+    "WhatIsYourName": "Qual é o seu nome?"
   }
 }

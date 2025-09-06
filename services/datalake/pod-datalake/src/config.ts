@@ -22,14 +22,21 @@ export interface BucketConfig {
   region?: string
 }
 
+export interface CacheConfig {
+  enabled: boolean
+  blobSize: number
+  blobCount: number
+}
+
 export interface Config {
   Port: number
   Secret: string
   AccountsUrl: string
-  StreamUrl?: string
   DbUrl: string
   Buckets: BucketConfig[]
   CleanupInterval: number
+  Readonly: boolean
+  Cache: CacheConfig
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -78,8 +85,13 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,
-    StreamUrl: process.env.STREAM_URL,
-    Buckets: parseBucketsConfig(process.env.BUCKETS)
+    Buckets: parseBucketsConfig(process.env.BUCKETS),
+    Readonly: process.env.READONLY === 'true',
+    Cache: {
+      enabled: process.env.CACHE_ENABLED !== 'false',
+      blobSize: (parseNumber(process.env.CACHE_BLOB_SIZE) ?? 64) * 1024, // Default 64KB
+      blobCount: parseNumber(process.env.CACHE_BLOB_COUNT) ?? 1000
+    }
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

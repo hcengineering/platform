@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import type { Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { type Timestamp, type Domain, type Ref, type Tx } from '@hcengineering/core'
+import { type Timestamp, type Domain, type Ref, type Tx, type ClassCollaborators } from '@hcengineering/core'
 import {
   ArrOf,
   type Builder,
@@ -108,7 +108,8 @@ export function createModel (builder: Builder): void {
     presenter: request.component.RequestView
   })
 
-  builder.mixin(request.class.Request, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Request>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: request.class.Request,
     fields: ['requested', 'createdBy']
   })
 
@@ -133,24 +134,56 @@ export function createModel (builder: Builder): void {
       field: 'requested',
       generated: false,
       group: request.ids.RequestNotificationGroup,
-      label: request.string.Request,
+      label: request.string.NewRequest,
       allowedForAuthor: true,
       defaultEnabled: true,
       templates: {
-        textTemplate: '{sender} sent you a {doc}',
-        htmlTemplate: '<p><b>{sender}</b> sent you a {doc}</p>',
+        textTemplate: '{sender} sent you a request for the {doc}',
+        htmlTemplate: '<p><b>{sender}</b> sent you a request for the {doc}</p>',
         subjectTemplate: '{doc}'
       }
     },
     request.ids.CreateRequestNotification
   )
 
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      objectClass: request.class.Request,
+      txClasses: [core.class.TxUpdateDoc],
+      field: 'requested',
+      generated: false,
+      group: request.ids.RequestNotificationGroup,
+      label: request.string.CancelRequest,
+      allowedForAuthor: true,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{sender} canceled the request for the {doc}',
+        htmlTemplate: '<p><b>{sender}</b> canceled the request for the {doc}</p>',
+        subjectTemplate: '{doc}'
+      }
+    },
+    request.ids.RemoveRequestNotification
+  )
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: request.class.Request,
+      action: 'update',
+      'attributeUpdates.attrKey': 'requested'
+    },
+    presenter: request.component.RequestedChangedNotification
+  })
+
   generateClassNotificationTypes(
     builder,
     request.class.Request,
     request.ids.RequestNotificationGroup,
     ['requested'],
-    ['comments', 'approved', 'rejected', 'status']
+    ['comments']
   )
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

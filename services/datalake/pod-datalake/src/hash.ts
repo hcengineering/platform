@@ -13,27 +13,23 @@
 // limitations under the License.
 //
 
-import crypto from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { createReadStream } from 'fs'
 import { Readable } from 'stream'
 
 export async function getBufferSha256 (buffer: Buffer): Promise<string> {
-  const hash = crypto.createHash('sha256')
+  const hash = createHash('sha256')
   hash.write(buffer)
   return hash.digest('hex')
 }
 
 export async function getStreamSha256 (stream: Readable): Promise<string> {
-  const hasher = crypto.createHash('sha256')
+  const hasher = createHash('sha256')
   stream.pipe(hasher)
 
-  await new Promise<void>((resolve, reject) => {
-    stream.on('error', (err) => {
-      reject(err)
-    })
-    stream.on('end', () => {
-      resolve()
-    })
+  await new Promise((resolve, reject) => {
+    stream.on('end', resolve)
+    stream.on('error', reject)
   })
 
   return hasher.digest('hex')

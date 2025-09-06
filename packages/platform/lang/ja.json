@@ -5,11 +5,13 @@
     "InvalidId": "無効なID: {id}",
     "BadRequest": "不正なリクエスト",
     "Forbidden": "アクセスが禁止されています",
+    "Conflict": "競合",
     "ExpiredLink": "この招待リンクは期限切れです",
     "Unauthorized": "認証されていません",
     "UnknownMethod": "不明なメソッド: {method}",
     "InternalServerError": "サーバー内部エラー",
-    "MaintenanceWarning": "{time, plural, =1 {1分以内に} other {#分後に}}メンテナンスが予定されています",
+    "MaintenanceWarning": "メンテナンスが予定されています",
+    "MaintenanceWarningTime": "{time, plural, =1 {1分以内に} other {#分後に}}",
     "AccountNotFound": "アカウントが見つからないか、認証情報が間違っています",
     "AccountNotConfirmed": "アカウントが確認されていません",
     "WorkspaceNotFound": "ワークスペースが見つかりません",
@@ -19,6 +21,9 @@
     "WorkspaceAlreadyExists": "ワークスペースはすでに存在します",
     "InvalidOtp": "無効なコードです",
     "InviteNotFound": "メールアドレス {email} に対する招待が見つかりませんでした",
-    "WorkspaceLimitReached": "作成可能なワークスペースの上限に達しました。お問い合わせください"
+    "WorkspaceLimitReached": "作成可能なワークスペースの上限に達しました。お問い合わせください",
+    "ReadOnlyAccount": "匿名ゲストデモ",
+    "SystemAccount": "システムアカウント",
+    "SocialIdAlreadyExists": "ソーシャルIDは既に存在します"
   }
 }

@@ -24,7 +24,8 @@ import core, {
   Enum,
   generateId,
   Ref,
-  Relation
+  Relation,
+  Space
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -33,7 +34,7 @@ import * as path from 'path'
 import { IntlString } from '../../../platform/types'
 import { Logger } from '../importer/logger'
 import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin, UnifiedUpdate } from '../types'
-import { readMarkdownContent, readYamlHeader } from './parsing'
+import { UnifiedFormatParser } from './parser'
 import { AssociationMetadata, MetadataRegistry } from './registry'
 import {
   AssociationSchema,
@@ -61,6 +62,7 @@ export interface UnifiedDocProcessResult {
 export class CardsProcessor {
   constructor (
     private readonly metadataRegistry: MetadataRegistry,
+    private readonly parser: UnifiedFormatParser,
     private readonly logger: Logger
   ) {}
 
@@ -198,7 +200,7 @@ export class CardsProcessor {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
         const cardPath = path.join(currentPath, entry.name)
-        const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+        const { class: cardType, ...cardProps } = this.parser.readYamlHeader(cardPath)
 
         if (masterTagId !== undefined) {
           await this.processCard(result, cardPath, cardProps, masterTagId, masterTagAssociaions, masterTagAttributes)
@@ -230,7 +232,7 @@ export class CardsProcessor {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
         const cardPath = path.join(currentDir, entry.name)
-        const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+        const { class: cardType, ...cardProps } = this.parser.readYamlHeader(cardPath)
 
         if (cardType !== undefined && cardType.startsWith('card:types:') === false) {
           throw new Error('Unsupported card type: ' + cardType + ' in ' + cardPath)
@@ -309,7 +311,7 @@ export class CardsProcessor {
 
     for (const entry of entries) {
       const childCardPath = path.join(cardDir, entry.name)
-      const { class: cardClass, ...cardProps } = await readYamlHeader(childCardPath)
+      const { class: cardClass, ...cardProps } = this.parser.readYamlHeader(childCardPath)
       await this.processCard(
         result,
         childCardPath,
@@ -526,7 +528,7 @@ export class CardsProcessor {
     const cardId = this.metadataRegistry.getRef(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
       _id: cardId,
-      space: card.space.Default,
+      space: 'card:space:Default' as Ref<Space>,
       title,
       parent: parentCardId
     }
@@ -544,13 +546,14 @@ export class CardsProcessor {
           file: blobFile._id,
           type: blobFile.type,
           name: blobFile.name,
+          size: blobFile.size,
           metadata: {} // todo: blobFile.metadata
         }
       }
       cardProps.blobs = blobProps
     }
 
-    const relations: UnifiedDoc<Relation>[] = []
+    const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
       if (masterTagAttributes.has(key)) {
         const attr = masterTagAttributes.get(key)
@@ -583,10 +586,8 @@ export class CardsProcessor {
         for (const val of values) {
           const otherCardPath = path.resolve(path.dirname(cardPath), val)
           const otherCardId = this.metadataRegistry.getRef(otherCardPath) as Ref<Card>
-          const relation = this.createRelation(metadata, cardId, otherCardId, relations)
-          if (relation !== undefined) {
-            relations.push(relation)
-          }
+          const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
+          relations.push(relation)
         }
       }
     }
@@ -595,7 +596,7 @@ export class CardsProcessor {
       {
         _class: masterTagId,
         collabField: 'content',
-        contentProvider: () => readMarkdownContent(cardPath),
+        contentProvider: () => Promise.resolve(this.parser.readMarkdownContent(cardPath)),
         props: cardProps as Props<Card>
       },
       ...relations
@@ -605,26 +606,18 @@ export class CardsProcessor {
   private createRelation (
     metadata: AssociationMetadata,
     cardId: Ref<Card>,
-    otherCardId: Ref<Card>,
-    relations: UnifiedDoc<Relation>[]
-  ): UnifiedDoc<Relation> | undefined {
-    const association = metadata.association
-    const docA = metadata.field === 'docA' ? cardId : otherCardId
-    const docB = metadata.field === 'docB' ? cardId : otherCardId
-
-    const exists = relations.find(
-      (p) => p.props.docA === docA && p.props.docB === docB && p.props.association === association
-    )
-    if (exists !== undefined) return
+    otherCardId: Ref<Card>
+  ): UnifiedDoc<Relation> {
+    const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
     const relation: UnifiedDoc<Relation> = {
       _class: core.class.Relation,
       props: {
         _id: generateId<Relation>(),
         space: core.space.Model,
-        docA,
-        docB,
-        association
-      }
+        [metadata.field]: cardId,
+        [otherCardField]: otherCardId,
+        association: metadata.association
+      } as unknown as Props<Relation>
     }
     return relation
   }

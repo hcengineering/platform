@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
   import { getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, isAdminUser } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
@@ -36,8 +35,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as PersonAccount
-
+  const account = getCurrentAccount()
   const admin = isAdminUser()
 
   const settingsQuery = createQuery()

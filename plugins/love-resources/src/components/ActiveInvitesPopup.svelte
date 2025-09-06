@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person } from '@hcengineering/contact'
-  import { Avatar, CombineAvatars, personByIdStore } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact'
+  import { CombineAvatars } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { Invite, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
-  import { Ref } from '@hcengineering/core'
 
   export let invites: Invite[]
 

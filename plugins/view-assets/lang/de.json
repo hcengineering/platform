@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "enthält",
+    "NotContains": "enthält nicht",
     "MoveClass": "{class} verschieben",
     "SelectToMove": "Wählen Sie {classLabel} aus, wohin Sie {class} verschieben möchten.",
     "Delete": "Löschen",
@@ -49,6 +50,8 @@
     "CustomizeView": "Ansicht anpassen",
     "Filter": "Filter",
     "ClearFilters": "Filter löschen",
+    "FilterLessThan": "Weniger als",
+    "FilterGreaterThan": "Mehr als",
     "FilterIsNot": "ist nicht",
     "FilterIsEither": "ist",
     "FilterIsEitherPlural": "ist",
@@ -104,8 +107,8 @@
     "Between": "ist zwischen",
     "ShowColors": "Farben verwenden",
     "Show": "Anzeigen",
-    "FilterArrayAll": "enthält alle",
-    "FilterArrayAny": "enthält beliebige",
+    "FilterArrayAll": "alle",
+    "FilterArrayAny": "beliebige",
     "Or": "Oder",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "In die Zwischenablage kopieren",
@@ -128,7 +131,22 @@
     "Copied": "Kopiert",
     "Title": "Titel",
     "HideArchived": "Archivierte ausblenden",
-    "RemoveRelation": "Beziehung entfernen",  
-    "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?"  
+    "RemoveRelation": "Beziehung entfernen",
+    "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?",
+    "MasterDetail": "Master-detail",
+    "Tree": "Baum",
+    "Document": "Dokument",
+    "Loading": "Laden...",
+    "NoRelations": "Keine Beziehungen",
+    "ReadOnlyWarningTitle": "✨ Anonymer Gast-Demo",
+    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Wählen Sie Ihren Weg: Treten Sie diesem Arbeitsbereich bei, um zusammenzuarbeiten (als Gast) oder erstellen Sie Ihren eigenen Bereich, um Projekte vollständig zu verwalten — Aufgaben, Fristen, Team!",
+    "ReadOnlyJoinWorkspace": "Arbeitsbereich beitreten",
+    "ReadOnlySignUp": "Arbeitsbereich erstellen",
+    "PermissionWarningTitle": "✨ Erweitern Sie Ihren Zugriff!",
+    "PermissionWarningMessage": "Ihre aktuelle Rolle hat eingeschränkte Berechtigungen. Um diese und andere erweiterte Funktionen freizuschalten, bitten Sie Ihren Arbeitsbereich-Administrator, Ihr Zugriffslevel zu erhöhen!",
+    "Icon": "Symbol",
+    "Color": "Farbe",
+    "AutomationOnly": "Nur Automatisierung",
+    "CopyLink": "Link kopieren"
   }
 }

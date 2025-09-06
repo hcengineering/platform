@@ -20,17 +20,18 @@
   import { getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
-  import { navigate } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+
   import ContentEditor from './ContentEditor.svelte'
 
   export let doc: Card
   export let readonly: boolean = false
   export let content: HTMLElement
-  export let minHeight: '15vh' | '25vh' = '25vh'
+  export let minHeight: '15vh' | '25vh' | string = '25vh'
+  export let showToc: boolean = true
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   let editor: ContentEditor
 
@@ -70,18 +71,20 @@
 </script>
 
 <div class="content select-text mt-4">
-  <div class="toc-container">
-    <div class="toc">
-      <TableOfContents
-        items={headings}
-        on:select={(evt) => {
-          const heading = evt.detail
-          const element = window.document.getElementById(heading.id)
-          element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }}
-      />
+  {#if showToc}
+    <div class="toc-container">
+      <div class="toc">
+        <TableOfContents
+          items={headings}
+          on:select={(evt) => {
+            const heading = evt.detail
+            const element = window.document.getElementById(heading.id)
+            element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
+        />
+      </div>
     </div>
-  </div>
+  {/if}
 
   {#key doc._id}
     <ContentEditor
@@ -96,15 +99,10 @@
       }}
       on:headings={(evt) => {
         headings = evt.detail
-      }}
-      on:open-document={async (event) => {
-        const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-        if (doc != null) {
-          const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-          navigate(location)
-        }
+        dispatch('headings', headings)
       }}
       bind:this={editor}
+      on:loaded
     />
   {/key}
 </div>

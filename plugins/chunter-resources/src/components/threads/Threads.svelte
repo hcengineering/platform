@@ -13,23 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Scroller, Loading, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { PersonAccount } from '@hcengineering/contact'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
-  import notification from '@hcengineering/notification'
   import attachment from '@hcengineering/attachment'
+  import core, { Collaborator, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Lazy, Loading, Scroller } from '@hcengineering/ui'
 
-  import chunter from '../../plugin'
-  import Header from '../Header.svelte'
   import { openMessageFromSpecial } from '../../navigation'
+  import chunter from '../../plugin'
   import BlankView from '../BlankView.svelte'
+  import Header from '../Header.svelte'
   import LoadingHistory from '../LoadingHistory.svelte'
 
   const threadsQuery = createQuery()
-  const me = getCurrentAccount() as PersonAccount
+  const client = getClient()
+  const h = client.getHierarchy()
 
   let threads: ActivityMessage[] = []
   let isLoading = true
@@ -39,11 +38,25 @@
   let limit = 100
   let hasNextPage = true
 
+  let collabs: Collaborator[] = []
+
+  const query = createQuery()
+  query.query(
+    core.class.Collaborator,
+    {
+      collaborator: getCurrentAccount().uuid,
+      attachedToClass: { $in: h.getDescendants(activity.class.ActivityMessage) }
+    },
+    (res) => {
+      collabs = res
+    }
+  )
+
   $: threadsQuery.query(
     activity.class.ActivityMessage,
     {
       replies: { $gte: 1 },
-      [`${notification.mixin.Collaborators}.collaborators`]: me._id
+      _id: { $in: collabs.map((c) => c.attachedTo as Ref<ActivityMessage>) }
     },
     (res) => {
       if (res.length <= limit) {

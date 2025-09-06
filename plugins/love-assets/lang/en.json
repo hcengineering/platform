@@ -85,9 +85,14 @@
     "WithAudio": "Include system audio",
     "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes.",
     "MicPermission": "Microphone not found, check browser permissions",
-    "CamPermission": "Camera not found, check browser permissions"
-  },
-  "status": {
-    "RoomRequired": "Room is required"
+    "CamPermission": "Camera not found, check browser permissions",
+    "SearchMeetingMinutes": "Search meeting minutes...",
+    "Sharing": "Sharing...",
+    "Browser": "Browser",
+    "Monitor": "Monitor",
+    "Window": "Window",
+    "MeetingEmptyTitle": "Meeting ended?",
+    "MeetingEmptyMessage": "All participants have left. You'll be disconnected in 1 minute. Would you like to stay?",
+    "StayInRoom": "Stay in room"
   }
 }

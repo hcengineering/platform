@@ -73,9 +73,11 @@
     values = values
     newValue = ''
   }
+
   function remove (value: string): void {
     values = values.filter((p) => p !== value)
   }
+
   const handleKeydown = (evt: KeyboardEvent): void => {
     if (evt.key === 'Enter') {
       add()
@@ -147,7 +149,6 @@
   }
 
   let dragover = false
-
   const items: (DropdownIntlItem & { action: () => void })[] = [
     {
       id: 'import',

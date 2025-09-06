@@ -24,7 +24,9 @@ import {
   type Timestamp,
   DOMAIN_TRANSIENT,
   DateRangeMode,
-  IndexKind
+  IndexKind,
+  type ClassCollaborators,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -35,6 +37,7 @@ import {
   type Meeting,
   type MeetingMinutes,
   type MeetingStatus,
+  type MeetingSchedule,
   type Office,
   type ParticipantInfo,
   type RequestStatus,
@@ -59,13 +62,15 @@ import {
   TypeRef,
   TypeString,
   UX,
-  TypeBoolean
+  TypeBoolean,
+  Hidden
 } from '@hcengineering/model'
-import calendar, { TEvent } from '@hcengineering/model-calendar'
+import calendar, { TEvent, TSchedule } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction, createAttributePresenter } from '@hcengineering/model-view'
+import media from '@hcengineering/media'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -108,6 +113,7 @@ export class TRoom extends TDoc implements Room {
   y!: number
 
   @Prop(TypeString(), love.string.Language, { editor: love.component.RoomLanguageEditor })
+  @Hidden()
     language!: RoomLanguage
 
   @Prop(TypeBoolean(), love.string.StartWithTranscription)
@@ -153,6 +159,8 @@ export class TParticipantInfo extends TDoc implements ParticipantInfo {
   y!: number
 
   sessionId!: string | null
+
+  account!: AccountUuid | null
 }
 
 @Model(love.class.JoinRequest, core.class.Doc, DOMAIN_TRANSIENT)
@@ -201,7 +209,14 @@ export class TMeeting extends TEvent implements Meeting {
 }
 
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
-@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, 'createdOn', undefined, love.string.MeetingsMinutes)
+@UX(
+  love.string.MeetingMinutes,
+  love.icon.MeetingMinutes,
+  undefined,
+  'createdOn',
+  undefined,
+  love.string.MeetingsMinutes
+)
 export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Todoable {
   @Prop(TypeRef(core.class.Doc), love.string.Room, { editor: love.component.MeetingMinutesDocEditor })
   @Index(IndexKind.Indexed)
@@ -244,6 +259,11 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
     todos?: CollectionSize<ToDo>
 }
 
+@Mixin(love.mixin.MeetingSchedule, calendar.class.Schedule)
+export class TMeetingSchedule extends TSchedule implements MeetingSchedule {
+  room!: Ref<Room>
+}
+
 export default love
 
 export function createModel (builder: Builder): void {
@@ -257,7 +277,8 @@ export function createModel (builder: Builder): void {
     TRoomInfo,
     TInvite,
     TMeeting,
-    TMeetingMinutes
+    TMeetingMinutes,
+    TMeetingSchedule
   )
 
   builder.createDoc(
@@ -269,7 +290,8 @@ export function createModel (builder: Builder): void {
       alias: loveId,
       hidden: false,
       position: 'top',
-      component: love.component.Main
+      component: love.component.Main,
+      order: 400
     },
     love.app.Love
   )
@@ -281,7 +303,8 @@ export function createModel (builder: Builder): void {
       label: love.string.Office,
       type: WidgetType.Fixed,
       icon: love.icon.Love,
-      component: love.component.LoveWidget
+      component: love.component.LoveWidget,
+      accessLevel: AccountRole.DocGuest
     },
     love.ids.LoveWidget
   )
@@ -315,6 +338,29 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: calendar.extensions.EditEventExtensions,
     component: love.component.EditMeetingData
+  })
+
+  builder.createDoc(presentation.class.DocCreateExtension, core.space.Model, {
+    ofClass: calendar.class.Schedule,
+    apply: love.function.CreateMeetingSchedule,
+    components: {
+      body: love.component.MeetingScheduleData
+    }
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: calendar.extensions.EditScheduleExtensions,
+    component: love.component.EditMeetingScheduleData
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: media.extension.StateContext,
+    component: love.component.MediaPopupItemExt
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: media.extension.StateIndicator,
+    component: love.component.SharingStateIndicator
   })
 
   builder.createDoc(
@@ -466,6 +512,16 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.MeetingMinutes,
     components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
+  })
+
+  builder.mixin(love.class.JoinRequest, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    removeAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(love.class.ParticipantInfo, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    updateAccessLevel: AccountRole.Guest
   })
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -621,8 +677,10 @@ export function createModel (builder: Builder): void {
     enabledTypes: [love.ids.MeetingMinutesChatNotification]
   })
 
-  builder.mixin(love.class.MeetingMinutes, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy']
+  builder.createDoc<ClassCollaborators<MeetingMinutes>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: love.class.MeetingMinutes,
+    fields: ['createdBy'],
+    provideSecurity: true
   })
 
   builder.mixin(love.class.Room, core.class.Class, core.mixin.IndexConfiguration, {
@@ -640,9 +698,26 @@ export function createModel (builder: Builder): void {
     searchDisabled: true
   })
 
-  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
-    editor: love.component.PanelControlBar
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: love.class.MeetingMinutes,
+    fullTextSummary: true,
+    forceIndex: true
   })
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: love.icon.MeetingMinutes,
+      label: love.string.SearchMeetingMinutes,
+      title: love.string.MeetingMinutes,
+      query: love.completion.MeetingMinutesQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: love.class.MeetingMinutes,
+      priority: 600
+    },
+    love.completion.MeetingMinutesCategory
+  )
 
   createAttributePresenter(
     builder,

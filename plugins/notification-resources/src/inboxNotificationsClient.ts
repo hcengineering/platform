@@ -13,26 +13,28 @@
 // limitations under the License.
 //
 import activity from '@hcengineering/activity'
-import {
-  SortingOrder,
-  getCurrentAccount,
-  toIdMap,
-  type Class,
+import core, {
+  type Account,
+  AccountRole,
+  type Client,
   type Doc,
+  getCurrentAccount,
   type IdMap,
   type Ref,
+  SortingOrder,
+  toIdMap,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
-  type Collaborators,
   type DocNotifyContext,
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -88,14 +90,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
-    void this.init()
+    onClient(this.init.bind(this))
   }
 
-  private async init (): Promise<void> {
+  private async init (client: Client, account: Account): Promise<void> {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id
+        user: account.uuid
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
@@ -107,7 +109,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.CommonInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: account.uuid
       },
       (result: InboxNotification[]) => {
         result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
@@ -119,7 +121,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.ActivityInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: account.uuid
       },
       (result: ActivityInboxNotification[]) => {
         this.activityInboxNotifications.set(result)
@@ -151,7 +153,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   async readDoc (_id: Ref<Doc>): Promise<void> {
     const docNotifyContext = this._contextByDoc.get(_id)
 
-    if (docNotifyContext === undefined) {
+    if (docNotifyContext === undefined || getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
       return
     }
 
@@ -170,46 +172,25 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     await op.commit()
   }
 
-  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const context = this._contextByDoc.get(_id)
+  async forceReadDoc (doc: Doc): Promise<void> {
+    const context = this._contextByDoc.get(doc._id)
 
     if (context !== undefined) {
-      await this.readDoc(_id)
+      await this.readDoc(doc._id)
       return
     }
 
     const client = getClient()
-    const doc = await client.findOne(_class, { _id })
 
-    if (doc === undefined) {
-      return
-    }
+    const current = await client.findOne(core.class.Collaborator, {
+      attachedTo: doc._id,
+      collaborator: getCurrentAccount().uuid
+    })
 
-    const hierarchy = client.getHierarchy()
-    const collaboratorsMixin = hierarchy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
-
-    if (collaboratorsMixin.collaborators === undefined) {
-      await client.createMixin<Doc, Collaborators>(
-        collaboratorsMixin._id,
-        collaboratorsMixin._class,
-        collaboratorsMixin.space,
-        notification.mixin.Collaborators,
-        {
-          collaborators: [getCurrentAccount()._id]
-        }
-      )
-    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount()._id)) {
-      await client.updateMixin(
-        collaboratorsMixin._id,
-        collaboratorsMixin._class,
-        collaboratorsMixin.space,
-        notification.mixin.Collaborators,
-        {
-          $push: {
-            collaborators: getCurrentAccount()._id
-          }
-        }
-      )
+    if (current === undefined) {
+      await client.addCollection(core.class.Collaborator, doc.space, doc._id, doc._class, 'collaborators', {
+        collaborator: getCurrentAccount().uuid
+      })
     }
   }
 
@@ -245,7 +226,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
@@ -273,7 +254,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           isViewed: false,
           archived: false
         },
@@ -298,7 +279,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           isViewed: true,
           archived: false
         },

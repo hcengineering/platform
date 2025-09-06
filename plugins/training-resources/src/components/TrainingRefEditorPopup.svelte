@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { ObjectPopup } from '@hcengineering/presentation'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { TrainingState } from '@hcengineering/training'
   import type { ComponentProps } from 'svelte'
   import training from '../plugin'

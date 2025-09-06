@@ -13,30 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount, formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient, playSound } from '@hcengineering/presentation'
+  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRef, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
   import { myInfo, myOffice } from '../stores'
-  import { connectRoom, isConnected } from '../utils'
+  import { connectRoom } from '../utils'
   import { onDestroy, onMount } from 'svelte'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let request: JoinRequest
 
-  $: person = $personByIdStore.get(request.person)
+  $: personByRefStore = getPersonByPersonRefStore([request.person])
+  $: person = $personByRefStore.get(request.person)
 
   const client = getClient()
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
     await client.update(request, { status: RequestStatus.Approved })
-    if (request.room === $myOffice?._id && !$isConnected) {
-      const me = (getCurrentAccount() as PersonAccount).person
-      const person = $personByIdStore.get(me)
-      if (person === undefined) return
+    if (request.room === $myOffice?._id && !$lkSessionConnected) {
+      const person = await getPersonByPersonRef(getCurrentEmployee())
+      if (person == null) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
     }
   }
@@ -46,7 +46,7 @@
   }
 
   onMount(async () => {
-    stopSound = await playSound(love.sound.Knock, love.class.JoinRequest, true)
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.JoinRequest, true)
   })
 
   onDestroy(() => {

@@ -6,6 +6,7 @@
     "Save": "Save",
     "Saved": "Saved...",
     "Download": "Download",
+    "DownloadOriginal": "Download original",
     "Delete": "Delete",
     "Close": "Close",
     "NotSelected": "Not selected",
@@ -29,6 +30,7 @@
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
     "Created": "Created",
+    "Selected": "Selected",
     "NoResults": "No results to show",
     "Next": "Next",
     "FailedToPreview": "Failed to preview",
@@ -38,7 +40,20 @@
     "DrawingHistory": "Scribble history",
     "ColorAdd": "Add color preset",
     "ColorRemove": "Remove color preset",
-    "ColorReset": "Reset color presets"
+    "ColorReset": "Reset color presets",
+    "Copy": "Copy",
+    "DocumentUrlCopied": "Copied!",
+    "CopyLink": "Copy link",
+    "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
+    "UnableToFollowMention": "Unable to open mentioned object",
+    "Undo": "Undo",
+    "Redo": "Redo",
+    "ClearCanvas": "Clear canvas",
+    "PenTool": "Pen tool",
+    "EraserTool": "Eraser tool",
+    "PanTool": "Pan tool",
+    "TextTool": "Text tool",
+    "PaletteManagementMenu": "Manage color presets"
   },
   "status": {
     "FileTooLarge": "File too large"

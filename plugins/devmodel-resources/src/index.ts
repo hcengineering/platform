@@ -16,12 +16,18 @@
 import core, {
   DOMAIN_MODEL,
   cutObjectArray,
+  platformNow,
+  platformNowDiff,
   type Class,
   type Client,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -86,7 +92,7 @@ export class PresentationClientHook implements ClientHook {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    const startTime = Date.now()
+    const startTime = platformNow()
     const isModel = client.getHierarchy().findDomain(_class) === DOMAIN_MODEL
     const result = await client.findOne(_class, query, options)
     if (this.notifyEnabled && !isModel) {
@@ -100,7 +106,7 @@ export class PresentationClientHook implements ClientHook {
         ' =>model',
         client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime,
+        platformNowDiff(startTime),
         this.stackLine()
       )
     }
@@ -113,7 +119,7 @@ export class PresentationClientHook implements ClientHook {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const startTime = Date.now()
+    const startTime = platformNow()
     const isModel = client.getHierarchy().findDomain(_class) === DOMAIN_MODEL
     const result = await client.findAll(_class, query, options)
     if (this.notifyEnabled && !isModel) {
@@ -127,9 +133,29 @@ export class PresentationClientHook implements ClientHook {
         ' =>model',
         client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime,
+        platformNowDiff(startTime),
         JSON.stringify(result).length,
         this.stackLine()
+      )
+    }
+    return result
+  }
+
+  async domainRequest (
+    client: Client,
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult> {
+    const result = await client.domainRequest(domain, params)
+    if (this.notifyEnabled) {
+      console.debug(
+        'devmodel# domainRequest=>',
+        domain,
+        testing ? JSON.stringify(cutObjectArray(params)).slice(0, 160) : params,
+        options,
+        'result => ',
+        result
       )
     }
     return result
@@ -150,7 +176,7 @@ export class PresentationClientHook implements ClientHook {
   }
 
   async tx (client: Client, tx: Tx): Promise<TxResult> {
-    const startTime = Date.now()
+    const startTime = platformNow()
     const result = await client.tx(tx)
     if (this.notifyEnabled && (tx as any).objectClass !== core.class.BenchmarkDoc) {
       console.debug(
@@ -158,7 +184,7 @@ export class PresentationClientHook implements ClientHook {
         testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,
         result,
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime,
+        platformNowDiff(startTime),
         this.stackLine()
       )
     }

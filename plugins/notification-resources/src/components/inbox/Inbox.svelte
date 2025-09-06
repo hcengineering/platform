@@ -50,7 +50,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()
+  const acc = getCurrentAccount()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -95,7 +95,7 @@
   $: if (showArchive) {
     archivedActivityNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
-      { archived: true, user: me._id },
+      { archived: true, user: acc.uuid },
       (res) => {
         archivedActivityNotifications = res
       },
@@ -112,7 +112,7 @@
 
     archivedOtherNotificationsQuery.query(
       notification.class.CommonInboxNotification,
-      { archived: true, user: me._id },
+      { archived: true, user: acc.uuid },
       (res) => {
         archivedOtherNotifications = res
       },

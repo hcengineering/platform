@@ -27,8 +27,6 @@
     "Rename": "名前を変更",
     "Restore": "復元",
     "RoleLabel": "ロール",
-    "Root": "/",
-    "ForbidCreateDrivePermission": "ドライブの作成禁止",
-    "ForbidCreateDrivePermissionDescription": "ユーザーが新しいドライブを作成することを禁止します"
+    "Root": "/"
   }
 }

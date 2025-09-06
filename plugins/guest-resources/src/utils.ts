@@ -1,20 +1,40 @@
+import {
+  type AccountClient,
+  type WorkspaceLoginInfo,
+  getClient as getAccountClientRaw
+} from '@hcengineering/account-client'
 import client from '@hcengineering/client'
-import { type Doc } from '@hcengineering/core'
+import { type Doc, AccountRole } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { getCurrentLocation, navigate } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
+function getAccountClient (token: string | undefined | null): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  return getAccountClientRaw(accountsUrl, token !== null ? token : undefined)
+}
+
 export async function checkAccess (doc: Doc): Promise<void> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-  const token = tokens[ws]
+
+  let wsLoginInfo: WorkspaceLoginInfo | undefined
+
+  try {
+    wsLoginInfo = await getAccountClient(null).selectWorkspace(ws)
+    if (wsLoginInfo === undefined || wsLoginInfo.role === AccountRole.DocGuest) return
+  } catch (err: any) {
+    return
+  }
+
+  const token = wsLoginInfo?.token
   const endpoint = getMetadata(presentation.metadata.Endpoint)
   if (token === undefined || endpoint === undefined) return
+
   const clientFactory = await getResource(client.function.GetClient)
   const _client = await clientFactory(token, endpoint)
 

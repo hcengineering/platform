@@ -12,7 +12,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.ReviewDocumentPermission,
-      scope: 'space',
       description: documents.string.ReviewDocumentDescription
     },
     documents.permission.ReviewDocument
@@ -23,7 +22,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.ApproveDocumentPermission,
-      scope: 'space',
       description: documents.string.ApproveDocumentDescription
     },
     documents.permission.ApproveDocument
@@ -34,7 +32,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.ArchiveDocumentPermission,
-      scope: 'space',
       description: documents.string.ArchiveDocumentDescription
     },
     documents.permission.ArchiveDocument
@@ -45,7 +42,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.CoAuthorDocumentPermission,
-      scope: 'space',
       description: documents.string.CoAuthorDocumentDescription
     },
     documents.permission.CoAuthorDocument
@@ -56,7 +52,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.CreateDocumentPermission,
-      scope: 'space',
       description: documents.string.CreateDocumentDescription
     },
     documents.permission.CreateDocument
@@ -67,7 +62,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.UpdateDocumentOwnerPermission,
-      scope: 'space',
       description: documents.string.UpdateDocumentOwnerDescription
     },
     documents.permission.UpdateDocumentOwner
@@ -78,7 +72,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.CreateDocumentCategoryPermission,
-      scope: 'space',
       description: documents.string.CreateDocumentCategoryDescription
     },
     documents.permission.CreateDocumentCategory
@@ -89,7 +82,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.UpdateDocumentCategoryPermission,
-      scope: 'space',
       description: documents.string.UpdateDocumentCategoryDescription
     },
     documents.permission.UpdateDocumentCategory
@@ -100,7 +92,6 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: documents.string.DeleteDocumentCategoryPermission,
-      scope: 'space',
       description: documents.string.DeleteDocumentCategoryDescription
     },
     documents.permission.DeleteDocumentCategory

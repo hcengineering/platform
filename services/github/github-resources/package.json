@@ -27,7 +27,7 @@
     "prettier-plugin-svelte": "^3.2.2",
     "prettier": "^3.1.0",
     "svelte-check": "^3.6.9",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "@types/qs": "~6.9.7",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
@@ -66,6 +66,7 @@
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/diffview": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/activity-resources": "^0.6.1"
+    "@hcengineering/activity-resources": "^0.6.1",
+    "@hcengineering/account-client": "^0.6.0"
   }
 }

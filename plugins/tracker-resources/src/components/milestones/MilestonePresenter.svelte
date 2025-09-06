@@ -49,7 +49,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {noUnderline} {accent} {onClick} />
+    <ObjectMention object={value} {disabled} {onClick} />
   {:else}
     <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
       <div class="flex-presenter" use:tooltip={{ label: tracker.string.Milestone }}>

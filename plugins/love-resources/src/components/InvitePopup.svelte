@@ -13,26 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRef, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
+  import { onDestroy, onMount } from 'svelte'
+
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
   import { connectRoom } from '../utils'
 
   export let invite: Invite
 
-  $: person = $personByIdStore.get(invite.from)
+  let person: Person | undefined = undefined
+  $: getPersonByPersonRefCb(invite.from, (p) => {
+    person = p ?? undefined
+  })
 
   const client = getClient()
+  let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
     const room = $rooms.find((p) => p._id === invite.room)
     if (room === undefined) return
-    const myPerson = $personByIdStore.get(invite.target)
-    if (myPerson === undefined) return
+    const myPerson = await getPersonByPersonRef(invite.target)
+    if (myPerson == null) return
     if ($myInfo === undefined) return
     await client.update(invite, { status: RequestStatus.Approved })
     const place = getFreeRoomPlace(
@@ -45,6 +51,14 @@
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }
+
+  onMount(async () => {
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.Invite, true)
+  })
+
+  onDestroy(() => {
+    stopSound?.()
+  })
 </script>
 
 <div class="antiPopup flex-col-center">

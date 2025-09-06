@@ -2,6 +2,8 @@
   "string": {
     "Cancel": "Cancel",
     "Retry": "Retry",
+    "UploadFiles": "Upload Files",
+    "UploadFolders": "Upload Folders",
     "UploadingTo": "Uploading {files, plural, =1 {# file} other {# files}} to"
   },
   "status": {

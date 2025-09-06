@@ -106,7 +106,7 @@
         id: s._id,
         component: StatusPresenter,
         props: { value: s, size: 'small' },
-        isSelected: selectedStatus?._id === s._id ?? false
+        isSelected: selectedStatus?._id === s._id
       }
     }) ?? []
   const handleStatusEditorOpened = (event: MouseEvent) => {
@@ -139,7 +139,7 @@
   >
     <svelte:fragment slot="icon">
       {#if selectedStatus}
-        <IssueStatusIcon value={selectedStatus} size={iconSize} space={undefined} />
+        <IssueStatusIcon value={selectedStatus} {taskType} size={iconSize} space={undefined} />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="content">

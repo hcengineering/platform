@@ -1,13 +1,5 @@
 {
   "string": {
-    "Subject": "件名",
-    "From": "差出人",
-    "To": "宛先",
-    "CreateMail": "新規メール",
-    "MailThread": "メール",
-    "Reply": "返信",
-    "Date": "日付",
-    "MailMessage": "メッセージ",
-    "MailMessages": "メッセージ"
+    "MailTag": "メール"
   }
 }

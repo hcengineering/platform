@@ -41,6 +41,8 @@
     "EnableDiffMode": "Mode différentiel",
     "AddColumnBefore": "Ajouter avant",
     "AddColumnAfter": "Ajouter après",
+    "TodoItem": "Tâche",
+    "TodoList": "Liste des tâches",
     "DeleteColumn": "Supprimer",
     "AddRowBefore": "Ajouter avant",
     "AddRowAfter": "Ajouter après",
@@ -57,7 +59,10 @@
     "Unset": "Non défini",
     "Image": "Image",
     "SeparatorLine": "Ligne de séparation",
-    "TodoList": "À faire",
-    "DrawingBoard": "Tableau de dessin"
+    "DrawingBoard": "Tableau de dessin",
+    "ConvertToLinkPreview": "Afficher comme lien",
+    "ConvertToEmbedPreview": "Afficher comme aperçu de contenu",
+    "UnableToLoadEmbeddedContent": "L’aperçu du lien n’a pas pu être chargé en raison des paramètres d’autorisation ou d’un contenu non pris en charge",
+    "CannotConnectToCollaborationService": "Impossible de se connecter au collaborateur"
   }
 }

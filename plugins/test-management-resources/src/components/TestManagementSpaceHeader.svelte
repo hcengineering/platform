@@ -24,8 +24,7 @@
 
   export let currentSpace: Ref<TestProject> | undefined
 
-  const me = getCurrentAccount()
-
+  const myAcc = getCurrentAccount()
   const query = createQuery()
 
   let hasProject = currentSpace !== undefined
@@ -33,7 +32,7 @@
   if (!hasProject) {
     query.query(
       testManagement.class.TestProject,
-      { archived: false, members: me._id },
+      { archived: false, members: myAcc.uuid },
       (res) => {
         hasProject = res.length > 0
         loading = false
@@ -87,7 +86,7 @@
     }
   ]
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
+  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
     ? [
         {
           id: testManagement.string.CreateProject,
@@ -101,44 +100,31 @@
 
 {#if loading}
   <Loading shrink />
-{:else if hasAccountRole(getCurrentAccount(), AccountRole.User) || hasProject}
+{:else}
   <div class="antiNav-subheader">
-    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
-      {#if hasProject}
-        <ButtonWithDropdown
-          icon={IconAdd}
-          justify={'left'}
-          kind={'primary'}
-          label={testManagement.string.CreateTestCase}
-          dropdownIcon={IconDropdown}
-          {dropdownItems}
-          disabled={currentSpace === undefined}
-          on:click={handleCreateTestCase}
-          on:dropdown-selected={(ev) => {
-            void handleDropdownItemSelected(ev.detail)
-          }}
-        />
-      {:else}
-        <Button
-          icon={IconAdd}
-          label={testManagement.string.CreateProject}
-          justify={'left'}
-          width={'100%'}
-          kind={'primary'}
-          gap={'large'}
-          on:click={showCreateProjectPopup}
-        />
-      {/if}
-    {:else if hasProject}
-      <Button
-        id={'new-document'}
+    {#if hasProject}
+      <ButtonWithDropdown
         icon={IconAdd}
+        justify={'left'}
+        kind={'primary'}
         label={testManagement.string.CreateTestCase}
+        dropdownIcon={IconDropdown}
+        {dropdownItems}
+        disabled={currentSpace === undefined}
+        on:click={handleCreateTestCase}
+        on:dropdown-selected={(ev) => {
+          void handleDropdownItemSelected(ev.detail)
+        }}
+      />
+    {:else}
+      <Button
+        icon={IconAdd}
+        label={testManagement.string.CreateProject}
         justify={'left'}
         width={'100%'}
         kind={'primary'}
         gap={'large'}
-        on:click={handleCreateTestCase}
+        on:click={showCreateProjectPopup}
       />
     {/if}
   </div>

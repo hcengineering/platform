@@ -14,12 +14,13 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, metricsAggregate } from '@hcengineering/core'
-import { getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
-import { decodeToken } from '@hcengineering/server-token'
+import { getClient } from '@hcengineering/account-client'
+import { MeasureContext, Tx, metricsAggregate } from '@hcengineering/core'
+import { PlatformQueue, QueueTopic, getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
+import { decodeToken, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
-import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import express, { type Express, type NextFunction, type Response } from 'express'
 import fileUpload from 'express-fileupload'
 import { type Server } from 'http'
 import morgan from 'morgan'
@@ -28,7 +29,15 @@ import onHeaders from 'on-headers'
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { keepAlive, withAdminAuthorization, withAuthorization, withBlob, withWorkspace } from './middleware'
+import {
+  type RequestWithAuth,
+  keepAlive,
+  withAdminAuthorization,
+  withAuthorization,
+  withBlob,
+  withWorkspace,
+  withReadonly
+} from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -45,7 +54,9 @@ import {
   handleMultipartUploadStart,
   handleS3CreateBlob,
   handleS3CreateBlobParams,
-  handleUploadFormData
+  handleUploadFormData,
+  handleBlobSetParent,
+  handleWorkspaceStats
 } from './handlers'
 import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
@@ -53,11 +64,14 @@ import { Config } from './config'
 import { createBucket, createClient, S3Bucket } from './s3'
 import { TemporaryDir } from './tempdir'
 
+const KEEP_ALIVE_TIMEOUT = 5 // seconds
+const KEEP_ALIVE_MAX = 1000
+
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 type AsyncRequestHandler = (
   ctx: MeasureContext,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   datalake: Datalake,
   tempDir: TemporaryDir
@@ -69,12 +83,13 @@ const handleRequest = async (
   datalake: Datalake,
   tempDir: TemporaryDir,
   fn: AsyncRequestHandler,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    await ctx.with(name, {}, (ctx) => {
+    const source = req.token?.extra?.service ?? '🤦‍♂️user'
+    await ctx.with(name, { source }, (ctx) => {
       onHeaders(res, () => {
         const measurements = ctx.metrics?.measurements
         if (measurements !== undefined) {
@@ -96,7 +111,13 @@ const handleRequest = async (
   }
 }
 
-export function createServer (ctx: MeasureContext, config: Config): { app: Express, close: () => void } {
+export async function createServer (
+  ctx: MeasureContext,
+  queue: PlatformQueue,
+  config: Config
+): Promise<{ app: Express, close: () => void }> {
+  await ensureAccountReady(ctx, config)
+
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
@@ -108,24 +129,26 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       location === 'enam' ||
       location === 'apac'
     ) {
-      buckets.push({ location, bucket: createBucket(createClient(bucket), bucket.bucket) })
+      buckets.push({ location, bucket: await createBucket(ctx, createClient(bucket), bucket.bucket) })
     } else {
       ctx.warn('invalid bucket location', { location, bucket })
     }
   }
 
-  const db = createDb(ctx, config.DbUrl)
-  const datalake = new DatalakeImpl(db, buckets, { cacheControl })
+  const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}, { span: false }), QueueTopic.Tx)
+
+  const db = await createDb(ctx, config.DbUrl)
+  const datalake = new DatalakeImpl(db, buckets, producer, { cacheControl, cache: config.Cache })
   const tempDir = new TemporaryDir(ctx, 'datalake-', config.CleanupInterval)
 
   const app = express()
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
   app.use(fileUpload({ useTempFiles: true, tempFileDir: tempDir.path }))
-  app.use(keepAlive({ timeout: 5, max: 1000 }))
+  app.use(keepAlive({ timeout: KEEP_ALIVE_TIMEOUT, max: KEEP_ALIVE_MAX }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
-  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
   class LogStream {
     write (text: string): void {
       requests.info(text)
@@ -134,12 +157,23 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   const wrapRequest =
     (ctx: MeasureContext, name: string, fn: AsyncRequestHandler) =>
-      (req: Request, res: Response, next: NextFunction) => {
+      (req: RequestWithAuth, res: Response, next: NextFunction) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
         handleRequest(ctx, name, datalake, tempDir, fn, req, res, next)
       }
 
   app.use(morgan('short', { stream: new LogStream() }))
+
+  if (config.Readonly) {
+    app.use(withReadonly)
+  }
+
+  app.get(
+    '/stats/:workspace',
+    withAdminAuthorization,
+    withWorkspace,
+    wrapRequest(ctx, 'workspaceStats', handleWorkspaceStats)
+  )
 
   app.get('/blob/:workspace', withAdminAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
 
@@ -162,9 +196,18 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   app.delete('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'deleteBlob', handleBlobDeleteList))
 
+  // Blob parent
+
+  app.patch(
+    '/blob/:workspace/:name/parent',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'patchParent', handleBlobSetParent)
+  )
+
   // Blob meta
 
-  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', handleMetaGet))
+  app.get('/meta/:workspace/:name', withBlob, wrapRequest(ctx, 'getMeta', handleMetaGet))
 
   app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', handleMetaPut))
 
@@ -223,6 +266,16 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', handleImageGet)) // no auth
 
+  const sendErrorToAnalytics = (err: any): boolean => {
+    const ignoreMessages = [
+      'Unexpected end of form', // happens when the client closes the connection before the upload is complete
+      'Premature close', // happens when the client closes the connection before the upload is complete
+      'File too large' // happens when the file exceeds the limit set by express-fileupload
+    ]
+
+    return !ignoreMessages.includes(err.message)
+  }
+
   app.use((err: any, _req: any, res: any, _next: any) => {
     ctx.error(err.message, { code: err.code, message: err.message })
     if (err instanceof ApiError) {
@@ -230,7 +283,11 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       return
     }
 
-    Analytics.handleError(err)
+    // do not send some errors to analytics
+    if (sendErrorToAnalytics(err)) {
+      Analytics.handleError(err)
+    }
+
     res.status(500).json({ message: err.message?.length > 0 ? err.message : 'Internal Server Error' })
   })
 
@@ -254,6 +311,10 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       })
       res.status(200).send(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send()
+        return
+      }
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.status(404).send()
@@ -284,5 +345,19 @@ export function listen (e: Express, port: number, host?: string): Server {
     console.log(`Service started at ${host ?? '*'}:${port}`)
   }
 
-  return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
+  const server = host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
+  server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 1000
+  server.headersTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 2000
+
+  return server
+}
+
+async function ensureAccountReady (ctx: MeasureContext, config: Config): Promise<void> {
+  const client = getClient(config.AccountsUrl)
+  try {
+    await client.getRegionInfo()
+  } catch (err: any) {
+    ctx.error('Accounts service not ready', { err })
+    throw new Error('Accounts service not ready')
+  }
 }

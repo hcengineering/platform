@@ -28,18 +28,19 @@ fi
 
 ./wait-elastic.sh 9201
 
-# Create user record in accounts
+echo "Creating user accounts..."
 ./tool.sh create-account admin -f Super -l Admin -p 1234
-./tool.sh set-user-admin admin true
-
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
 
-./tool.sh confirm-email user1
-./tool.sh confirm-email user2
+echo "Creating workspace api-tests..."
+./tool.sh create-workspace api-tests email:user1
 
+echo "Creating workspace api-tests-cr..."
+./tool-europe.sh create-workspace api-tests-cr email:user1 --region 'europe'
 
-./tool.sh create-workspace api-tests -w api-tests
-./tool-europe.sh create-workspace api-tests-cr -w api-tests --region 'europe'
+echo "Assigning user1 to workspaces..."
 ./tool.sh assign-workspace user1 api-tests
 ./tool.sh assign-workspace user1 api-tests-cr
+
+rm -rf ./sanity/.auth

@@ -14,21 +14,14 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import {
-    Avatar,
-    SystemAvatar,
-    employeeByIdStore,
-    personAccountByIdStore,
-    personByIdStore
-  } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { Avatar, SystemAvatar, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'
 
   import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let value: ActivityInfoMessage
   export let showNotify: boolean = false
@@ -39,16 +32,15 @@
   export let withActions: boolean = true
   export let actions: Action[] = []
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
-  $: person =
-    personAccount?.person !== undefined
-      ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
-      : undefined
+  let person: Person | undefined
+  $: getPersonByPersonIdCb(value.createdBy ?? value.modifiedBy, (p) => {
+    person = p ?? undefined
+  })
 
   let content = ''
 

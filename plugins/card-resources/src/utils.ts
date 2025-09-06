@@ -11,31 +11,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
-import {
+import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
+import core, {
   type Class,
   type Client,
+  type Data,
   type Doc,
   type DocumentQuery,
+  fillDefaults,
+  generateId,
+  type Hierarchy,
+  makeCollabId,
+  type Markup,
+  type MarkupBlobRef,
   type Ref,
   type RelatedDocument,
+  SortingOrder,
+  type Space,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
-import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import {
+  createMarkup,
+  getClient,
+  IconWithEmoji,
+  MessageBox,
+  type ObjectSearchResult
+} from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
+  type IconComponent,
+  type IconProps,
   type Location,
   type ResolvedLocation,
   showPopup
 } from '@hcengineering/ui'
-import view from '@hcengineering/view'
+import view, { encodeObjectURI } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
-import { type LocationData } from '@hcengineering/workbench'
+import workbench, { type LocationData, type Widget, type WidgetTab } from '@hcengineering/workbench'
+import { translate } from '@hcengineering/platform'
+import { makeRank } from '@hcengineering/rank'
+import { Analytics } from '@hcengineering/analytics'
+import { createWidgetTab } from '@hcengineering/workbench-resources'
+import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+
 import CardSearchItem from './components/CardSearchItem.svelte'
-import card from './plugin'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
+import card from './plugin'
+import { type NavigatorConfig } from './types'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -174,3 +198,137 @@ const toCardObjectSearchResult = (e: WithLookup<Card>): ObjectSearchResult => ({
   icon: card.icon.Card,
   component: CardSearchItem
 })
+
+export async function createCard (
+  type: Ref<MasterTag>,
+  space: Ref<Space>,
+  data: Partial<Data<Card>> = {},
+  contentMarkup: Markup = EmptyMarkup,
+  id?: Ref<Card>
+): Promise<Ref<Card>> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
+  const title = data.title ?? (await translate(card.string.Card, {}))
+
+  const _id = id ?? generateId()
+  const content = isEmptyMarkup(contentMarkup)
+    ? ('' as MarkupBlobRef)
+    : await createMarkup(makeCollabId(type, _id, 'content'), contentMarkup)
+
+  const _data: Data<Card> = {
+    parentInfo: [],
+    blobs: {},
+    ...data,
+    title,
+    rank: makeRank(lastOne?.rank, undefined),
+    content
+  }
+
+  const filledData = fillDefaults(hierarchy, _data, type)
+
+  await client.createDoc(type, space, filledData, _id)
+
+  Analytics.handleEvent(CardEvents.CardCreated)
+  return _id
+}
+
+export function getRootType (hierarchy: Hierarchy, type: Ref<MasterTag>): Ref<MasterTag> {
+  const ancestors = hierarchy.getAncestors(type)
+  const idx = ancestors.indexOf(card.class.Card)
+
+  return idx > 0 ? ancestors[idx - 1] : type
+}
+
+export function sortNavigatorTypes (types: MasterTag[], config: NavigatorConfig): MasterTag[] {
+  return types.sort((a, b) => {
+    const aOrder = config.preorder?.find((it) => it.type === a._id)?.order ?? Infinity
+    const bOrder = config.preorder?.find((it) => it.type === b._id)?.order ?? Infinity
+
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder
+    }
+
+    return a.label.localeCompare(b.label)
+  })
+}
+
+export async function openCardInSidebar (cardId: Ref<Card>, doc?: Card): Promise<void> {
+  const client = getClient()
+
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: card.ids.CardWidget as Ref<Widget> })[0]
+  if (widget === undefined) return
+
+  const object = doc ?? (await client.findOne(card.class.Card, { _id: cardId }))
+  if (object === undefined) return
+
+  const tab: WidgetTab = {
+    id: cardId,
+    name: object.title
+  }
+
+  createWidgetTab(widget, tab, false)
+}
+
+export function cardCustomLinkMatch (doc: Card): boolean {
+  const loc = getCurrentResolvedLocation()
+  const client = getClient()
+  const alias = loc.path[2]
+  const app = client.getModel().findAllSync(workbench.class.Application, {
+    alias
+  })[0]
+
+  return app.type === 'cards'
+}
+
+export function cardCustomLinkEncode (doc: Card): Location {
+  const loc = getCurrentResolvedLocation()
+  loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
+  return loc
+}
+
+export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  const parents = h.getAncestors(doc._class)
+  const mixins = h.findAllMixins(doc)
+  const associationsB = client
+    .getModel()
+    .findAllSync(core.class.Association, { classA: { $in: [...parents, ...mixins] } })
+    .filter((a) => a.nameB.trim().length > 0)
+
+  if (associationsB.length > 0) {
+    return true
+  }
+
+  return (
+    client
+      .getModel()
+      .findAllSync(core.class.Association, { classB: { $in: [...parents, ...mixins] } })
+      .filter((a) => a.nameA.trim().length > 0).length > 0
+  )
+}
+
+export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: IconProps } {
+  if (doc === undefined) return { icon: card.icon.Card, props: {} }
+  if (doc.icon === view.ids.IconWithEmoji) {
+    return { icon: IconWithEmoji, props: { icon: doc.color } }
+  }
+
+  if (doc.icon !== undefined) {
+    return {
+      icon: doc.icon,
+      props: {}
+    }
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(doc._class) as MasterTag
+
+  return {
+    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
+    props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
+  }
+}

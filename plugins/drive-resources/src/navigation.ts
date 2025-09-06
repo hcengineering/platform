@@ -27,7 +27,7 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
   return getPanelURI(component, object._id, object._class, 'content')
 }
 
-export function getFolderIdFromFragment (fragment: string): Ref<Folder> | undefined {
+export function getFolderIdFromFragment (fragment: string): Ref<Folder> {
   const [, _id, _class] = decodeURIComponent(fragment).split('|')
   return _class === drive.class.Folder ? (_id as Ref<Folder>) : drive.ids.Root
 }
@@ -105,7 +105,7 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, doc.space],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {

@@ -33,7 +33,8 @@
     ModernEditbox,
     Label,
     showPopup,
-    ButtonIcon
+    ButtonIcon,
+    Toggle
   } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import setting from '../plugin'
@@ -52,6 +53,7 @@
   let index: IndexKind | undefined
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
+  let readonly: boolean = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -67,7 +69,9 @@
       isCustom: true,
       icon,
       type,
-      defaultValue
+      defaultValue,
+      readonly,
+      automationOnly: readonly
     }
     if (index !== undefined) {
       data.index = index
@@ -141,25 +145,24 @@
         <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} autoFocus />
       </div>
     </div>
-    <div class="hulyModal-content__settingsSet">
-      <div class="hulyModal-content__settingsSet-line">
-        <span class="label">
-          <Label label={setting.string.Type} />
-        </span>
-        <DropdownLabelsIntl
-          label={setting.string.Type}
-          {items}
-          size={'large'}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={handleSelection}
-        />
-      </div>
+    <div class="grid">
+      <span class="label">
+        <Label label={setting.string.Type} />
+      </span>
+      <DropdownLabelsIntl
+        label={setting.string.Type}
+        {items}
+        size={'large'}
+        width={'100%'}
+        bind:selected={selectedType}
+        on:selected={handleSelection}
+      />
       {#if is}
         <Component
           {is}
           props={{
             type,
+            width: '100%',
             defaultValue,
             isCard,
             kind: 'regular',
@@ -168,6 +171,24 @@
           on:change={handleChange}
         />
       {/if}
+      <span class="label">
+        <Label label={view.string.AutomationOnly} />
+      </span>
+      <Toggle bind:on={readonly} />
     </div>
   </div>
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    padding: 0.5rem;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

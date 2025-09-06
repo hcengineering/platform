@@ -31,7 +31,14 @@ import {
   TrainingSpecialIds
 } from '@hcengineering/training'
 
-import { AccountRole, type Data, type FindOptions, type Permission, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  ClassCollaborators,
+  type Data,
+  type FindOptions,
+  type Permission,
+  type Ref
+} from '@hcengineering/core'
 import { Prop, type Builder } from '@hcengineering/model'
 
 import contacts from '@hcengineering/model-contact'
@@ -342,22 +349,18 @@ function defineTraining (builder: Builder): void {
 
   definePermission(builder, training.permission.ChangeSomeoneElsesTrainingOwner, {
     label: training.string.Permission_ChangeSomeoneElsesTrainingOwner,
-    scope: 'space',
     description: training.string.Permission_ChangeSomeoneElsesTrainingOwner_Description
   })
   definePermission(builder, training.permission.CreateTraining, {
     label: training.string.Permission_CreateTraining,
-    scope: 'space',
     description: training.string.Permission_CreateTraining_Description
   })
   definePermission(builder, training.permission.ViewSomeoneElsesTrainingOverview, {
     label: training.string.Permission_ViewSomeoneElsesTrainingOverview,
-    scope: 'space',
     description: training.string.Permission_ViewSomeoneElsesTrainingOverview_Description
   })
   definePermission(builder, training.permission.ViewSomeoneElsesTrainingQuestions, {
     label: training.string.Permission_ViewSomeoneElsesTrainingQuestions,
-    scope: 'space',
     description: training.string.Permission_ViewSomeoneElsesTrainingQuestions_Description
   })
 }
@@ -483,17 +486,14 @@ function defineTrainingRequest (builder: Builder): void {
 
     definePermission(builder, training.permission.ChangeSomeoneElsesSentRequestOwner, {
       label: training.string.Permission_ChangeSomeoneElsesSentRequestOwner,
-      scope: 'space',
       description: training.string.Permission_ChangeSomeoneElsesSentRequestOwner_Description
     })
     definePermission(builder, training.permission.CreateRequestOnSomeoneElsesTraining, {
       label: training.string.Permission_CreateRequestOnSomeoneElsesTraining,
-      scope: 'space',
       description: training.string.Permission_CreateRequestOnSomeoneElsesTraining_Description
     })
     definePermission(builder, training.permission.ViewSomeoneElsesSentRequest, {
       label: training.string.Permission_ViewSomeoneElsesSentRequest,
-      scope: 'space',
       description: training.string.Permission_ViewSomeoneElsesSentRequest_Description
     })
   })()
@@ -576,8 +576,9 @@ function defineTrainingRequest (builder: Builder): void {
     titleProvider: training.function.TrainingRequestObjectTitleProvider
   })
 
-  builder.mixin(training.class.TrainingRequest, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['trainees'] as Array<keyof TrainingRequest>
+  builder.createDoc<ClassCollaborators<TrainingRequest>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: training.class.TrainingRequest,
+    fields: ['trainees']
   })
 
   builder.createDoc<NotificationType>(
@@ -747,7 +748,6 @@ function defineTrainingAttempt (builder: Builder): void {
 
   definePermission(builder, training.permission.ViewSomeoneElsesTraineesResults, {
     label: training.string.Permission_ViewSomeoneElsesTraineesResults,
-    scope: 'space',
     description: training.string.Permission_ViewSomeoneElsesTraineesResults_Description
   })
 }

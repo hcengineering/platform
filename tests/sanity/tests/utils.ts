@@ -14,10 +14,13 @@ export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
 export const PlatformUser = process.env.PLATFORM_USER as string
 export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
+export const PlatformAdmin = process.env.PLATFORM_ADMIN as string
+export const PlatformWs = process.env.PLATFORM_WS as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
+export const PlatformWorkspaceRegion = process.env.WORKSPACE_REGION as string
 
-export const DefaultWorkspace = 'SanityTest'
+export const DefaultWorkspace = 'sanity-ws'
 export const LocalUrl = process.env.LOCAL_URL as string
 export const DevUrl = process.env.DEV_URL as string
 export const StagingUrl = process.env.STAGING_URL as string
@@ -116,7 +119,7 @@ export function generateId (len = 100): string {
  * @returns {Promise<Locator>}
  */
 export async function fillSearch (page: Page, search: string): Promise<Locator> {
-  await page.locator('.searchInput-icon').click()
+  await page.locator('.searchInput-wrapper').click()
   const searchBox = page.locator('input[placeholder="Search"]')
 
   await searchBox.fill(search)
@@ -233,6 +236,8 @@ export async function uploadFile (page: Page, fileName: string, fileUploadTestId
 
 export async function getInviteLink (page: Page): Promise<string | null> {
   const leftSideMenuPage = new LeftSideMenuPage(page)
+  // If we don't wait and it's called on inital render initial navigate may close the popup in the middle
+  await leftSideMenuPage.appHeader().waitFor({ state: 'visible' })
   await leftSideMenuPage.openProfileMenu()
   await leftSideMenuPage.inviteToWorkspace()
   await leftSideMenuPage.getInviteLink()

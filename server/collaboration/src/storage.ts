@@ -17,15 +17,15 @@ import {
   type Blob,
   type CollaborativeDoc,
   type Ref,
-  type WorkspaceId,
-  Markup,
-  MarkupBlobRef,
-  MeasureContext,
+  type WorkspaceIds,
+  type Markup,
+  type MarkupBlobRef,
+  type MeasureContext,
   generateId,
   makeCollabJsonId,
   makeCollabYdocId
 } from '@hcengineering/core'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { yDocToMarkup } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
@@ -35,12 +35,12 @@ import { yDocFromBuffer, yDocToBuffer } from './ydoc'
 export async function loadCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   doc: CollaborativeDoc | MarkupBlobRef
 ): Promise<YDoc | undefined> {
   const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
 
-  const blob = await storageAdapter.stat(ctx, workspace, blobId)
+  const blob = await storageAdapter.stat(ctx, wsIds, blobId)
   if (blob === undefined) {
     return undefined
   }
@@ -53,22 +53,22 @@ export async function loadCollabYdoc (
   // it is either already gc-ed, or gc not needed and it is disabled
   const ydoc = new YDoc({ guid: generateId(), gc: false })
 
-  const buffer = await storageAdapter.read(ctx, workspace, blobId)
-  return yDocFromBuffer(Buffer.concat(buffer as any), ydoc)
+  const buffer = await storageAdapter.read(ctx, wsIds, blobId)
+  return yDocFromBuffer(Buffer.concat(buffer), ydoc)
 }
 
 /** @public */
 export async function saveCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   doc: CollaborativeDoc | MarkupBlobRef,
   ydoc: YDoc
 ): Promise<Ref<Blob>> {
   const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
 
   const buffer = yDocToBuffer(ydoc)
-  await storageAdapter.put(ctx, workspace, blobId, buffer, 'application/ydoc', buffer.length)
+  await storageAdapter.put(ctx, wsIds, blobId, buffer, 'application/ydoc', buffer.length)
 
   return blobId
 }
@@ -76,14 +76,14 @@ export async function saveCollabYdoc (
 /** @public */
 export async function removeCollabYdoc (
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   collaborativeDocs: CollaborativeDoc[],
   ctx: MeasureContext
 ): Promise<void> {
   const toRemove: string[] = collaborativeDocs.map(makeCollabYdocId)
   if (toRemove.length > 0) {
     await ctx.with('remove', {}, async () => {
-      await storageAdapter.remove(ctx, workspace, toRemove)
+      await storageAdapter.remove(ctx, wsIds, toRemove)
     })
   }
 }
@@ -92,10 +92,10 @@ export async function removeCollabYdoc (
 export async function loadCollabJson (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   blobId: Ref<Blob>
 ): Promise<Markup | undefined> {
-  const blob = await storageAdapter.stat(ctx, workspace, blobId)
+  const blob = await storageAdapter.stat(ctx, wsIds, blobId)
   if (blob === undefined) {
     return undefined
   }
@@ -105,7 +105,7 @@ export async function loadCollabJson (
     return undefined
   }
 
-  const buffer = await storageAdapter.read(ctx, workspace, blobId)
+  const buffer = await storageAdapter.read(ctx, wsIds, blobId)
   return Buffer.concat(buffer as any).toString()
 }
 
@@ -113,7 +113,7 @@ export async function loadCollabJson (
 export async function saveCollabJson (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   doc: CollaborativeDoc,
   content: Markup | YDoc
 ): Promise<Ref<Blob>> {
@@ -121,7 +121,7 @@ export async function saveCollabJson (
 
   const markup = typeof content === 'string' ? content : yDocToMarkup(content, doc.objectAttr)
   const buffer = Buffer.from(markup)
-  await storageAdapter.put(ctx, workspace, blobId, buffer, 'application/json', buffer.length)
+  await storageAdapter.put(ctx, wsIds, blobId, buffer, 'application/json', buffer.length)
 
   return blobId
 }

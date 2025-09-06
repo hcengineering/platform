@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { concatLink, Doc, Hierarchy } from '@hcengineering/core'
-  import presentation, { NavLink, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
+  import presentation, { NavLink, getClient, createQuery, MessageBox } from '@hcengineering/presentation'
+  import { AnyComponent, getPanelURI, locationToUrl, showPopup } from '@hcengineering/ui'
   import view from '../plugin'
   import { getObjectLinkFragment, restrictionStore } from '../utils'
   import { getMetadata } from '@hcengineering/platform'
@@ -31,12 +31,26 @@
   export let shrink: number = 1
   export let accent: boolean = false
   export let noOverflow: boolean = false
+  export let inlineReference: boolean = false
+  export let transparent: boolean = false
+  export let inlineBlock = false
+  export let noSelect: boolean = true
+  export let title: string | undefined = undefined
+
+  const docQuery = createQuery()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let broken: boolean = false
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  $: if (object?._class != null && object?._id != null && hierarchy.hasClass(object?._class)) {
+    docQuery.query(object?._class, { _id: object?._id }, (r) => {
+      broken = r.shift() === undefined
+    })
+  }
 
   let href: string | undefined =
     object !== undefined
@@ -56,8 +70,39 @@
   }
 
   $: if (object !== undefined) getHref(object)
+
+  function onBrokenLinkClick (event: MouseEvent): void {
+    showPopup(MessageBox, {
+      label: presentation.string.UnableToFollowMention,
+      message: presentation.string.AccessDenied,
+      canSubmit: false
+    })
+  }
 </script>
 
-<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
-  <slot />
-</NavLink>
+{#if broken}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <span class="antiMention" class:transparent class:broken on:click={onBrokenLinkClick}>
+    <slot />
+  </span>
+{:else}
+  <NavLink
+    disabled={_disabled}
+    {onClick}
+    {noUnderline}
+    {inline}
+    {shrink}
+    {href}
+    {colorInherit}
+    {accent}
+    {noOverflow}
+    {inlineReference}
+    {transparent}
+    {inlineBlock}
+    {noSelect}
+    {title}
+  >
+    <slot />
+  </NavLink>
+{/if}

@@ -13,7 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { getCurrentEmployee, formatName } from '@hcengineering/contact'
+  import { getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { translate } from '@hcengineering/platform'
+  import { notEmpty, Ref } from '@hcengineering/core'
   import love, { isOffice, Room } from '@hcengineering/love'
   import { Dropdown, Icon } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -25,16 +28,78 @@
 
   const dispatch = createEventDispatcher()
 
-  $: items = $rooms
-    .filter((p) => !isOffice(p) && p._id !== love.ids.Reception)
-    .map((p) => {
-      return {
-        _id: p._id,
-        label: p.name
-      }
-    })
+  $: currentPersonId = getCurrentEmployee()
 
-  $: selected = value !== undefined ? items.find((p) => p._id === value) : undefined
+  $: items = $rooms
+    .filter((room) => {
+      if (room._id === love.ids.Reception) {
+        return false
+      }
+      if (isOffice(room)) {
+        return room.person === currentPersonId
+      }
+      return true
+    })
+    .map((room) => makeRoomItem(room, false))
+
+  $: personByRefStore = getPersonByPersonRefStore(
+    $rooms
+      .filter(isOffice)
+      .map((r) => r.person)
+      .filter(notEmpty)
+  )
+  $: selectedRoom = $rooms.find((p) => p._id === value)
+  $: selected = selectedRoom !== undefined ? makeRoomItem(selectedRoom, true) : undefined
+
+  function makeRoomItem (room: Room, forSelected: boolean): { _id: string, label: string } {
+    const item = { _id: room._id, label: room.name }
+    if (isOffice(room)) {
+      if (room.person === currentPersonId) {
+        translate(love.string.MyOffice, {})
+          .then((res) => {
+            item.label = res
+            if (forSelected) {
+              selected = { ...item }
+            } else {
+              items = [...items]
+            }
+          })
+          .catch((err) => {
+            console.error(err)
+          })
+      } else if (room.person !== null) {
+        const person = $personByRefStore.get(room.person)
+        if (person !== undefined) {
+          translate(love.string.Office, {})
+            .then((res) => {
+              item.label = `${res} (${formatName(person.name)})`
+              if (forSelected) {
+                selected = { ...item }
+              } else {
+                items = [...items]
+              }
+            })
+            .catch((err) => {
+              console.error(err)
+            })
+        }
+      } else {
+        translate(love.string.Office, {})
+          .then((res) => {
+            item.label = res
+            if (forSelected) {
+              selected = { ...item }
+            } else {
+              items = [...items]
+            }
+          })
+          .catch((err) => {
+            console.error(err)
+          })
+      }
+    }
+    return item
+  }
 
   function change (id: Ref<Room>): void {
     if (value !== id) {
@@ -45,12 +110,15 @@
 </script>
 
 {#if items.length > 0}
-  <div class="flex-row-center flex-gap-1">
+  <div class="flex-row-center flex-gap-1 mt-1">
     <Icon icon={love.icon.Mic} size={'small'} />
     <Dropdown
       kind={'ghost'}
       size={'medium'}
       placeholder={love.string.Room}
+      justify="left"
+      stretchWidth={true}
+      padding="0.5rem"
       {items}
       withSearch={false}
       {selected}

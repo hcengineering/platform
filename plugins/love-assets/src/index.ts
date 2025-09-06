@@ -37,8 +37,10 @@ loadMetadata(love.icon, {
   FullScreen: `${icons}#fullscreen`,
   ExitFullScreen: `${icons}#exitfullscreen`,
   Invite: `${icons}#invite`,
-  Kick: `${icons}#kick`
+  Kick: `${icons}#kick`,
+  MeetingMinutes: `${icons}#meeting-minutes`
 })
 loadMetadata(love.sound, {
-  Knock: require('../assets/knock.wav')
+  Knock: require('../assets/knock.wav'),
+  MeetingEndNotification: require('../assets/meeting-end-notification.wav')
 })

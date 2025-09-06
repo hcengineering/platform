@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { cardId } from '@hcengineering/card'
+import { type Card, cardId } from '@hcengineering/card'
 import card from '@hcengineering/card-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
@@ -21,6 +21,7 @@ import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type LocationData } from '@hcengineering/workbench'
 import { type ActionCategory, type Action, type ViewAction } from '@hcengineering/view'
+import { type TagCategory } from '@hcengineering/tags'
 
 export default mergeIds(cardId, card, {
   app: {
@@ -33,10 +34,12 @@ export default mergeIds(cardId, card, {
   action: {
     DeleteMasterTag: '' as Ref<Action>,
     SetParent: '' as Ref<Action<Doc, any>>,
-    UnsetParent: '' as Ref<Action<Doc, any>>
+    UnsetParent: '' as Ref<Action<Doc, any>>,
+    PublicLink: '' as Ref<Action<Doc, any>>
   },
   category: {
-    Card: '' as Ref<ActionCategory>
+    Card: '' as Ref<ActionCategory>,
+    Labels: '' as Ref<TagCategory>
   },
   ids: {
     MasterTags: '' as Ref<Doc>,
@@ -50,6 +53,9 @@ export default mergeIds(cardId, card, {
   function: {
     CardTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     CardIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    CardCustomLinkMatch: '' as Resource<(doc: Doc) => boolean>,
+    CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>,
+    CheckRelationsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })

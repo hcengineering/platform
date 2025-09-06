@@ -3,18 +3,18 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { startFront } from '@hcengineering/front/src/starter'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { join } from 'path'
 
-configureAnalytics(process.env.SENTRY_DSN, {})
+configureAnalytics('front', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'front')
 
 const metricsContext = initStatisticsContext('front', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'front',
       {},
       {},
@@ -43,6 +43,7 @@ startFront(metricsContext, {
   POSTHOG_HOST: process.env.POSTHOG_HOST,
   DESKTOP_UPDATES_URL: process.env.DESKTOP_UPDATES_URL,
   DESKTOP_UPDATES_CHANNEL: process.env.DESKTOP_UPDATES_CHANNEL,
+  DESKTOP_UPDATES_CHANNELS: process.env.DESKTOP_UPDATES_CHANNELS,
   ANALYTICS_COLLECTOR_URL: process.env.ANALYTICS_COLLECTOR_URL,
   LINK_PREVIEW_URL: process.env.LINK_PREVIEW_URL,
   AI_URL: process.env.AI_URL,
@@ -50,5 +51,9 @@ startFront(metricsContext, {
   STATS_URL: process.env.STATS_API ?? process.env.STATS_URL,
   BACKUP_URL: process.env.BACKUP_URL,
   TRANSACTOR_OVERRIDE: process.env.TRANSACTOR_OVERRIDE,
-  EXPORT_URL: process.env.EXPORT_URL
+  PUBLIC_SCHEDULE_URL: process.env.PUBLIC_SCHEDULE_URL,
+  CALDAV_SERVER_URL: process.env.CALDAV_SERVER_URL,
+  EXPORT_URL: process.env.EXPORT_URL,
+  COMMUNICATION_API_ENABLED: process.env.COMMUNICATION_API_ENABLED,
+  EXCLUDED_APPLICATIONS_FOR_ANONYMOUS: process.env.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS
 })

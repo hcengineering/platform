@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { ArrOf, Prop, TypeRef, type Builder } from '@hcengineering/model'
+import { ArrOf, Prop, TypeString, type Builder } from '@hcengineering/model'
 import { type Asset } from '@hcengineering/platform'
 import { getRoleAttributeLabel } from '@hcengineering/core'
 
-import { TSpacesTypeData } from './security'
+import { TSpacesTypeData, TTxAccessLevel } from './security'
 import core from './component'
 
 const roles = [
@@ -31,12 +31,13 @@ const roles = [
 export function defineSpaceType (builder: Builder): void {
   for (const role of roles) {
     const label = getRoleAttributeLabel(role.name)
-    const roleAssgtType = ArrOf(TypeRef(core.class.Account))
+    const roleAssgtType = ArrOf(TypeString())
 
     Prop(roleAssgtType, label)(TSpacesTypeData.prototype, role._id)
   }
 
   builder.createModel(TSpacesTypeData)
+  builder.createModel(TTxAccessLevel)
 
   builder.createDoc(
     core.class.SpaceTypeDescriptor,

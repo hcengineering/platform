@@ -1,4 +1,4 @@
-import { type Locator, type Page, expect } from '@playwright/test'
+import { type Locator, type Page } from '@playwright/test'
 import { CommonPage } from './common-page'
 
 export class LeftSideMenuPage extends CommonPage {
@@ -13,7 +13,7 @@ export class LeftSideMenuPage extends CommonPage {
   buttonContacts = (): Locator => this.page.locator('button[id$="Contacts"]')
   buttonTracker = (): Locator => this.page.locator('button[id$="TrackerApplication"]')
   buttonRecruiting = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
-  buttonNotification = (): Locator => this.page.locator('button[id$="Inbox"]')
+  buttonNotification = (): Locator => this.page.locator('button[id$="app-notification:string:Inbox"]')
   buttonDocuments = (): Locator => this.page.locator('button[id$="document:string:DocumentApplication"]')
   buttonPlanner = (): Locator => this.page.locator('button[id$="app-time:string:Planner"]')
   buttonTeam = (): Locator => this.page.locator('button[id$="app-time:string:Team"]')
@@ -69,30 +69,5 @@ export class LeftSideMenuPage extends CommonPage {
 
   async clickOnCloseInvite (): Promise<void> {
     await this.clickCloseOnInviteLinkButton().click()
-  }
-
-  // Retrieve the last token from local storage
-  async getLastToken (): Promise<string> {
-    return await this.page.evaluate(() => localStorage.getItem('login:metadata:LastToken') ?? '')
-  }
-
-  // Set the last token in local storage on the same page
-  async setLastToken (lastToken: string): Promise<void> {
-    await this.page.evaluate((token) => {
-      localStorage.setItem('login:metadata:LastToken', token)
-    }, lastToken)
-  }
-
-  // Set the last token in local storage on any specified page
-  async setLastTokenOnPage (targetPage: Page, lastToken: string): Promise<void> {
-    await targetPage.evaluate((token) => {
-      localStorage.setItem('login:metadata:LastToken', token)
-    }, lastToken)
-  }
-
-  // Assert that the last token is not empty
-  async verifyLastTokenNotEmpty (): Promise<void> {
-    const lastToken = await this.getLastToken()
-    expect(lastToken).not.toEqual('')
   }
 }

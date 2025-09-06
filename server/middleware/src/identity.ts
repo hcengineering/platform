@@ -13,9 +13,20 @@
 // limitations under the License.
 //
 import { aiBotAccountEmail } from '@hcengineering/ai-bot'
-import core, { MeasureContext, Tx, systemAccountEmail, type SessionData, type TxApplyIf } from '@hcengineering/core'
+import core, {
+  type MeasureContext,
+  type Tx,
+  systemAccountUuid,
+  type SessionData,
+  type TxApplyIf
+} from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
 /**
  * @public
@@ -35,18 +46,19 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
-    if (account.email === systemAccountEmail || account.email === aiBotAccountEmail) {
+
+    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
       // TODO: We need to enhance allowed list in case of user service, on behalf of user activities.
 
       // We pass for system accounts and services.
       return this.provideTx(ctx, txes)
     }
     function checkTx (tx: Tx): void {
-      const mxAccount = tx.modifiedBy
-      if (mxAccount === undefined || mxAccount !== account._id) {
+      const mxAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accontUuid
+      if (mxAccount === undefined || mxAccount !== account.uuid) {
         throw new PlatformError(
           new Status(Severity.ERROR, platform.status.AccountMismatch, {
-            account: account.email,
+            account: account.uuid,
             requiredAccount: mxAccount
           })
         )

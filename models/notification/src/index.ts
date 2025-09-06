@@ -18,9 +18,12 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { type PersonSpace } from '@hcengineering/contact'
 import {
   AccountRole,
+  type Collaborator,
+  type CollectionSize,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   IndexKind,
-  type Account,
+  type AccountUuid,
   type AttachedDoc,
   type Class,
   type Collection,
@@ -29,19 +32,20 @@ import {
   type DocumentQuery,
   type IndexingConfiguration,
   type Markup,
+  type PersonId,
   type Ref,
   type Space,
   type Timestamp,
   type Tx,
-  type TxCUD,
-  DOMAIN_TRANSIENT
+  type TxCUD
 } from '@hcengineering/core'
 import {
-  ArrOf,
+  Collection as CollectionType,
   Index,
   Mixin,
   Model,
   Prop,
+  TypeAccountUuid,
   TypeBoolean,
   TypeDate,
   TypeIntlString,
@@ -55,16 +59,15 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, template } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  notificationId,
-  DOMAIN_USER_NOTIFY,
-  DOMAIN_NOTIFICATION,
+  type Collaborators,
   DOMAIN_DOC_NOTIFY,
+  DOMAIN_NOTIFICATION,
+  DOMAIN_USER_NOTIFY,
+  notificationId,
   type ActivityInboxNotification,
   type ActivityNotificationViewlet,
-  type BaseNotificationType,
   type BrowserNotification,
   type CommonInboxNotification,
-  type CommonNotificationType,
   type DocNotifyContext,
   type InboxNotification,
   type MentionInboxNotification,
@@ -88,50 +91,44 @@ import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
 
-export { notificationId, DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/notification'
+export { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY, notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
 export { notification as default }
 
 @Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_TRANSIENT)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
-  senderId?: Ref<Account> | undefined
+  senderId?: PersonId | undefined
   tag!: Ref<Doc<Space>>
   title!: string
   body!: string
   onClickLocation?: Location | undefined
-  user!: Ref<Account>
+  user!: AccountUuid
   messageId?: Ref<ActivityMessage>
   messageClass?: Ref<Class<ActivityMessage>>
   objectId!: Ref<Doc>
   objectClass!: Ref<Class<Doc>>
+  soundAlert!: boolean
 }
 
 @Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)
 export class TPushSubscription extends TDoc implements PushSubscription {
-  user!: Ref<Account>
+  user!: AccountUuid
   endpoint!: string
   keys!: PushSubscriptionKeys
 }
 
-@Model(notification.class.BaseNotificationType, core.class.Doc, DOMAIN_MODEL)
-export class TBaseNotificationType extends TDoc implements BaseNotificationType {
+@Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
+export class TNotificationType extends TDoc implements NotificationType {
   generated!: boolean
   label!: IntlString
   group!: Ref<NotificationGroup>
   defaultEnabled!: boolean
   hidden!: boolean
   templates?: NotificationTemplate
-}
-
-@Model(notification.class.NotificationType, notification.class.BaseNotificationType)
-export class TNotificationType extends TBaseNotificationType implements NotificationType {
   txClasses!: Ref<Class<Tx>>[]
   objectClass!: Ref<Class<Doc>>
   onlyOwn?: boolean
 }
-
-@Model(notification.class.CommonNotificationType, notification.class.BaseNotificationType)
-export class TCommonNotificationType extends TBaseNotificationType implements CommonNotificationType {}
 
 @Model(notification.class.NotificationGroup, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationGroup extends TDoc implements NotificationGroup {
@@ -151,7 +148,7 @@ export class TNotificationPreferencesGroup extends TDoc implements NotificationP
 @Model(notification.class.NotificationTypeSetting, preference.class.Preference)
 export class TNotificationTypeSetting extends TPreference implements NotificationTypeSetting {
   declare attachedTo: Ref<TNotificationProvider>
-  type!: Ref<BaseNotificationType>
+  type!: Ref<NotificationType>
   enabled!: boolean
 }
 
@@ -161,17 +158,11 @@ export class TNotificationProviderSetting extends TPreference implements Notific
   enabled!: boolean
 }
 
-@Mixin(notification.mixin.ClassCollaborators, core.class.Class)
-export class TClassCollaborators extends TClass {
-  fields!: string[]
-}
-
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
-export class TCollaborators extends TDoc {
-  @Prop(ArrOf(TypeRef(core.class.Account)), notification.string.Collaborators)
-  @Index(IndexKind.Indexed)
-    collaborators!: Ref<Account>[]
+export class TCollaborators extends TDoc implements Collaborators {
+  @Prop(CollectionType(core.class.Collaborator), notification.string.Collaborators)
+    collaborators!: CollectionSize<Collaborator>
 }
 
 @Mixin(notification.mixin.NotificationObjectPresenter, core.class.Class)
@@ -191,9 +182,9 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_DOC_NOTIFY)
 export class TDocNotifyContext extends TDoc implements DocNotifyContext {
-  @Prop(TypeRef(core.class.Account), core.string.Account)
+  @Prop(TypeAccountUuid(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: Ref<Account>
+    user!: AccountUuid
 
   @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
@@ -228,9 +219,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Index(IndexKind.Indexed)
     docNotifyContext!: Ref<DocNotifyContext>
 
-  @Prop(TypeRef(core.class.Account), core.string.Account)
+  @Prop(TypeAccountUuid(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: Ref<Account>
+    user!: AccountUuid
 
   @Prop(TypeBoolean(), core.string.Boolean)
   // @Index(IndexKind.Indexed)
@@ -243,6 +234,8 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   objectClass!: Ref<Class<Doc>>
 
   declare space: Ref<PersonSpace>
+
+  types?: Ref<NotificationType>[]
 
   title?: IntlString
   body?: IntlString
@@ -316,9 +309,9 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
 @Model(notification.class.NotificationProviderDefaults, core.class.Doc)
 export class TNotificationProviderDefaults extends TDoc implements NotificationProviderDefaults {
   provider!: Ref<NotificationProvider>
-  excludeIgnore?: Ref<BaseNotificationType>[]
-  ignoredTypes!: Ref<BaseNotificationType>[]
-  enabledTypes!: Ref<BaseNotificationType>[]
+  excludeIgnore?: Ref<NotificationType>[]
+  ignoredTypes!: Ref<NotificationType>[]
+  enabledTypes!: Ref<NotificationType>[]
 }
 
 export const notificationActionTemplates = template({
@@ -346,12 +339,11 @@ export const notificationActionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TCollaborators,
     TBrowserNotification,
     TNotificationType,
     TNotificationGroup,
     TNotificationPreferencesGroup,
-    TClassCollaborators,
-    TCollaborators,
     TNotificationObjectPresenter,
     TNotificationPreview,
     TDocNotifyContext,
@@ -360,8 +352,7 @@ export function createModel (builder: Builder): void {
     TCommonInboxNotification,
     TNotificationContextPresenter,
     TActivityNotificationViewlet,
-    TBaseNotificationType,
-    TCommonNotificationType,
+    TNotificationType,
     TMentionInboxNotification,
     TPushSubscription,
     TNotificationProvider,
@@ -399,7 +390,8 @@ export function createModel (builder: Builder): void {
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      order: 50
     },
     notification.app.Inbox
   )
@@ -439,34 +431,39 @@ export function createModel (builder: Builder): void {
       label: notification.string.Collaborators,
       group: notification.ids.NotificationGroup,
       txClasses: [],
-      objectClass: notification.mixin.Collaborators,
+      objectClass: core.class.Collaborator,
       defaultEnabled: true
     },
     notification.ids.CollaboratoAddNotification
   )
 
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    presenter: notification.component.NotificationCollaboratorsChanged,
-    messageMatch: {
-      _class: activity.class.DocUpdateMessage,
-      'attributeUpdates.attrClass': notification.mixin.Collaborators
-    }
-  })
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: core.class.Collaborator,
+      action: 'create',
+      icon: notification.icon.Notifications,
+      component: notification.component.CollaboratorsChanged
+    },
+    notification.ids.CollaboratorsAddMessage
+  )
 
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
-      objectClass: notification.mixin.Collaborators,
-      action: 'update',
+      objectClass: core.class.Collaborator,
+      action: 'remove',
       icon: notification.icon.Notifications,
-      label: notification.string.ChangeCollaborators
+      component: notification.component.CollaboratorsChanged
     },
-    notification.ids.CollaboratorsChangedMessage
+    notification.ids.CollaboratorsRemoveMessage
   )
 
-  builder.mixin(notification.mixin.Collaborators, core.class.Class, activity.mixin.ActivityAttributeUpdatesPresenter, {
-    presenter: notification.component.CollaboratorsChanged
+  builder.mixin(core.class.Collaborator, core.class.Class, view.mixin.CollectionEditor, {
+    editor: notification.component.CollaboratorEditor,
+    inlineEditor: notification.component.CollaboratorEditor
   })
 
   createAction(
@@ -555,15 +552,24 @@ export function createModel (builder: Builder): void {
   builder.mixin(notification.class.CommonInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.CommonInboxNotificationPresenter
   })
+  builder.mixin(notification.class.MentionInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: notification.component.MentionInboxNotificationPresenter
+  })
+
+  builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
+  })
 
   builder.createDoc(
-    notification.class.CommonNotificationType,
+    notification.class.NotificationType,
     core.space.Model,
     {
       label: activity.string.Mentions,
       generated: false,
       hidden: false,
       group: notification.ids.NotificationGroup,
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: core.class.Doc,
       defaultEnabled: true,
       templates: {
         textTemplate: '{sender} mentioned you in {doc}: {message}',
@@ -571,9 +577,8 @@ export function createModel (builder: Builder): void {
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },
-    notification.ids.MentionCommonNotificationType
+    notification.ids.MentionNotificationType
   )
-
   createAction(
     builder,
     {
@@ -774,7 +779,6 @@ export function createModel (builder: Builder): void {
       depends: notification.providers.PushNotificationProvider,
       defaultEnabled: true,
       canDisable: true,
-      ignoreAll: true,
       order: 250
     },
     notification.providers.SoundNotificationProvider
@@ -782,6 +786,12 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [notification.ids.CollaboratoAddNotification],
+    enabledTypes: []
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.SoundNotificationProvider,
     ignoredTypes: [notification.ids.CollaboratoAddNotification],
     enabledTypes: []
   })
@@ -800,7 +810,7 @@ export function generateClassNotificationTypes (
     hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc
   )
   const filtered = Array.from(attributes.values()).filter((p) => p.hidden !== true && p.readonly !== true)
-  const enabledInboxTypes: Ref<BaseNotificationType>[] = []
+  const enabledInboxTypes: Ref<NotificationType>[] = []
 
   for (const attribute of filtered) {
     if (ignoreKeys.includes(attribute.name)) continue
@@ -822,7 +832,7 @@ export function generateClassNotificationTypes (
       defaultEnabled: false,
       templates: {
         textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
         subjectTemplate: '{doc} updated'
       },
       label: attribute.label

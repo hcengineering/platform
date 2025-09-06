@@ -20,7 +20,7 @@ import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
-import { doNavigate } from './utils'
+import { doNavigate, logIn, logOut } from './utils'
 import Workbench from './components/Workbench.svelte'
 import ServerManager from './components/ServerManager.svelte'
 import WorkbenchTabs from './components/WorkbenchTabs.svelte'
@@ -64,7 +64,9 @@ export default async (): Promise<Resources> => ({
     CreateWidgetTab: createWidgetTab,
     CloseWidgetTab: closeWidgetTab,
     CloseWidget: closeWidget,
-    GetSidebarObject: getSidebarObject
+    GetSidebarObject: getSidebarObject,
+    LogIn: logIn,
+    LogOut: logOut
   },
   actionImpl: {
     Navigate: doNavigate,

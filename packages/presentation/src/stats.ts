@@ -1,4 +1,4 @@
-import type { Metrics } from '@hcengineering/core'
+import type { Metrics, PersonId } from '@hcengineering/core'
 
 // Copy from server/core/stats.ts for UI usage.
 export interface MemoryStatistics {
@@ -22,7 +22,7 @@ export interface StatisticsElement {
 }
 
 export interface UserStatistics {
-  userId: string
+  userId: PersonId // TODO: FIXME - test if it's PersonId or PersonUuid
   sessionId: string
   data: any
   mins5: StatisticsElement

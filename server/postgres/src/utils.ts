@@ -21,17 +21,18 @@ import core, {
   type DocumentUpdate,
   type Domain,
   type FieldIndexConfig,
-  generateId,
   type MeasureContext,
   type MixinUpdate,
+  platformNow,
+  platformNowDiff,
   type Projection,
   type Ref,
-  type WorkspaceId
+  systemAccountUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import postgres, { type Options, type ParameterOrJSON } from 'postgres'
-import type { DBClient } from './client'
+import type postgres from 'postgres'
+import { type ParameterOrJSON } from 'postgres'
 import {
   addSchema,
   type DataType,
@@ -43,21 +44,11 @@ import {
   type SchemaAndFields,
   translateDomain
 } from './schemas'
+import { retryTxn, type DBClient } from '@hcengineering/postgres-base'
 
-const clientRefs = new Map<string, ClientRef>()
 const loadedDomains = new Set<string>()
 
 let loadedTables = new Set<string>()
-
-export async function retryTxn (
-  pool: postgres.Sql,
-  operation: (client: postgres.TransactionSql) => Promise<any>
-): Promise<any> {
-  await pool.begin(async (client) => {
-    const result = await operation(client)
-    return result
-  })
-}
 
 export const NumericTypes = [
   core.class.TypeNumber,
@@ -77,7 +68,7 @@ export async function createTables (
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
-  const t = Date.now()
+  const t = platformNow()
   loadedTables =
     loadedTables.size === 0
       ? new Set(
@@ -95,7 +86,7 @@ export async function createTables (
         ).map((it) => it.table_name)
       )
       : loadedTables
-  console.log('load-table', Date.now() - t)
+  console.log('load-table', platformNowDiff(t))
 
   const domainsToLoad = mapped.filter((it) => loadedTables.has(it))
   if (domainsToLoad.length > 0) {
@@ -187,163 +178,10 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
   }
 }
 
-/**
- * @public
- */
-export async function shutdownPostgres (contextVars: Record<string, any>): Promise<void> {
-  const connections: Map<string, PostgresClientReferenceImpl> | undefined =
-    contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
-  if (connections === undefined) {
-    return
-  }
-  for (const c of connections.values()) {
-    c.close(true)
-  }
-  connections.clear()
-}
-
-export interface PostgresClientReference {
-  getClient: () => Promise<postgres.Sql>
-  close: () => void
-
-  url: () => string
-}
-
-class PostgresClientReferenceImpl {
-  count: number
-  client: postgres.Sql | Promise<postgres.Sql>
-
-  constructor (
-    readonly connectionString: string,
-    client: postgres.Sql | Promise<postgres.Sql>,
-    readonly onclose: () => void
-  ) {
-    this.count = 0
-    this.client = client
-  }
-
-  url (): string {
-    return this.connectionString
-  }
-
-  async getClient (): Promise<postgres.Sql> {
-    if (this.client instanceof Promise) {
-      this.client = await this.client
-    }
-    return this.client
-  }
-
-  close (force: boolean = false): void {
-    this.count--
-    if (this.count === 0 || force) {
-      if (force) {
-        this.count = 0
-      }
-      void (async () => {
-        this.onclose()
-        const cl = await this.client
-        await cl.end({ timeout: 1 })
-      })()
-    }
-  }
-
-  addRef (): void {
-    this.count++
-  }
-}
-export class ClientRef implements PostgresClientReference {
-  id = generateId()
-  constructor (readonly client: PostgresClientReferenceImpl) {
-    clientRefs.set(this.id, this)
-  }
-
-  url (): string {
-    return this.client.url()
-  }
-
-  closed = false
-  async getClient (): Promise<postgres.Sql> {
-    if (!this.closed) {
-      return await this.client.getClient()
-    } else {
-      throw new PlatformError(unknownStatus('DB client is already closed'))
-    }
-  }
-
-  close (): void {
-    // Do not allow double close of mongo connection client
-    if (!this.closed) {
-      clientRefs.delete(this.id)
-      this.closed = true
-      this.client.close()
-    }
-  }
-}
-
-export let dbExtraOptions: Partial<Options<any>> = {}
-export function setDBExtraOptions (options: Partial<Options<any>>): void {
-  dbExtraOptions = options
-}
-
-export function getPrepare (): { prepare: boolean } {
-  return { prepare: dbExtraOptions.prepare ?? false }
-}
-
-export const doFetchTypes = true
-
-/**
- * Initialize a workspace connection to DB
- * @public
- */
-export function getDBClient (
-  contextVars: Record<string, any>,
-  connectionString: string,
-  database?: string
-): PostgresClientReference {
-  const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
-  const key = `${connectionString}${extraOptions}`
-  const connections = contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
-  contextVars.pgConnections = connections
-
-  let existing = connections.get(key)
-
-  if (existing === undefined) {
-    const sql = postgres(connectionString, {
-      connection: {
-        application_name: 'transactor'
-      },
-      database,
-      max: 10,
-      min: 2,
-      connect_timeout: 10,
-      idle_timeout: 30,
-      max_lifetime: 300,
-      transform: {
-        undefined: null
-      },
-      debug: false,
-      notice: false,
-      onnotice (notice) {},
-      onparameter (key, value) {},
-      ...dbExtraOptions,
-      ...extraOptions,
-      fetch_types: doFetchTypes
-    })
-
-    existing = new PostgresClientReferenceImpl(connectionString, sql, () => {
-      connections.delete(key)
-    })
-    connections.set(key, existing)
-  }
-  // Add reference and return once closable
-  existing.addRef()
-  return new ClientRef(existing)
-}
-
 export function convertDoc<T extends Doc> (
   domain: string,
   doc: T,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   schemaAndFields?: SchemaAndFields
 ): DBDoc {
   const extractedFields: Doc & Record<string, any> = {
@@ -471,20 +309,14 @@ export function escapeBackticks (str: string): string {
 }
 
 export function isOwner (account: Account): boolean {
-  return account.role === AccountRole.Owner || account._id === core.account.System
+  return account.role === AccountRole.Owner || account.uuid === systemAccountUuid
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
-  protected readonly workspaceId: WorkspaceId
-
   constructor (
     protected readonly client: DBClient,
-    protected readonly enrichedWorkspaceId: WorkspaceId
-  ) {
-    this.workspaceId = {
-      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
-    }
-  }
+    protected readonly workspaceId: WorkspaceUuid
+  ) {}
 
   async dropIndex (domain: Domain, name: string): Promise<void> {}
 
@@ -641,7 +473,7 @@ export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
 }
 
 export interface DBDoc extends Doc {
-  workspaceId: string
+  workspaceId: WorkspaceUuid
   data: Record<string, any>
   [key: string]: any
 }
@@ -660,4 +492,14 @@ export interface JoinProps {
   isReverse: boolean
   toClass?: Ref<Class<Doc>>
   classes?: Ref<Class<Doc>>[] // filter by classes
+}
+
+export function escape<T> (str: T): T {
+  if (typeof str === 'string') {
+    // Remove all characters except a-z, A-Z, 0-9 and _ .
+    // Add cyrillic for support old custom attributes
+    // eslint-disable-next-line no-useless-escape
+    return str.replace(/[^a-zA-ZА-Яа-яЁё0-9_.:\-\$ ]/g, '') as T
+  }
+  return str
 }

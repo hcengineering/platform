@@ -14,7 +14,7 @@
 //
 
 import { config as dotenvConfig } from 'dotenv'
-import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, shell, systemPreferences } from 'electron'
+import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
 import Store from 'electron-store'
@@ -22,12 +22,16 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, NotificationParams } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams, JumpListSpares } from '../ui/types'
 import { getOptions } from './args'
-import { cancelBackup, startBackup } from './backup'
-import { addMenus } from './menu'
+import { addMenus } from './standardMenu'
+import { dispatchMenuBarAction } from './customMenu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
+import { generateId } from '@hcengineering/core'
+import { DownloadItem } from '@hcengineering/desktop-downloads'
+import { rebuildJumpList, setupWindowsSpecific } from './windowsSpecificSetup'
+import { readPackedConfig } from './config'
 
 let mainWindow: BrowserWindow | undefined
 let winBadge: any
@@ -37,10 +41,14 @@ const isWindows = process.platform === 'win32'
 const isDev = process.env.NODE_ENV === 'development'
 
 const sessionPartition = !isDev ? 'persist:huly' : 'persist:huly_dev'
-const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', 'AppIcon.png')
+const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', isWindows ? 'AppIcon.ico' : 'AppIcon.png')
+const preloadScriptPath = path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
 
 const defaultWidth = 1440
 const defaultHeight = 960
+
+const packedConfig = readPackedConfig()
+log.info('packed config', packedConfig)
 
 const envPath = path.join(app.getAppPath(), isDev ? '.env-dev' : '.env')
 console.log('do loading env from', envPath)
@@ -48,6 +56,9 @@ dotenvConfig({
   path: envPath
 })
 const options = getOptions()
+
+const containerPageFileName = isWindows ? 'index.windows.html' : 'index.html'
+const containerPagePath = path.join('dist', 'ui', containerPageFileName)
 
 // Note: using electron-store here as local storage is not available in the main process
 // before the window is created
@@ -63,10 +74,10 @@ const serverChanged = oldFront !== FRONT_URL
 
 function readServerUrl (): string {
   if (isDev) {
-    return process.env.FRONT_URL ?? 'http://localhost:8087'
+    return process.env.FRONT_URL ?? 'http://huly.local:8087'
   }
 
-  return ((settings as any).get('server', process.env.FRONT_URL) as string) ?? 'https://huly.app'
+  return ((settings as any).get('server') as string) ?? packedConfig?.server ?? process.env.FRONT_URL ?? 'https://huly.app'
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -75,6 +86,25 @@ if (require('electron-squirrel-startup') === true) {
 }
 
 console.log('Running Huly', process.env.MODEL_VERSION, process.env.VERSION, isMac, isDev, process.env.NODE_ENV)
+
+// Fix screen-sharing thumbnails being missing sometimes
+// See https://github.com/electron/electron/issues/44504
+const disabledFeatures = [
+  'ThumbnailCapturerMac:capture_mode/sc_screenshot_manager',
+  'ScreenCaptureKitPickerScreen',
+  'ScreenCaptureKitStreamPickerSonoma'
+]
+
+app.commandLine.appendSwitch('disable-features', disabledFeatures.join(','))
+
+function setupWindowTitleBar (windowOptions: Electron.BrowserWindowConstructorOptions): void {
+  if (isWindows) {
+    // on Windows we use frameless window with custom hand-made title bar
+    windowOptions.frame = false
+  } else {
+    windowOptions.titleBarStyle = isMac ? 'hidden' : 'default'
+  }
+}
 
 function hookOpenWindow (window: BrowserWindow): void {
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -93,19 +123,19 @@ function hookOpenWindow (window: BrowserWindow): void {
     } else {
       void (async (): Promise<void> => {
         const bounds = mainWindow?.getBounds()
-        const childWindow = new BrowserWindow({
+        const windowOptions: Electron.BrowserWindowConstructorOptions = {
           width: bounds?.width ?? defaultWidth,
           height: bounds?.height ?? defaultHeight,
           x: (bounds?.x ?? 0) + 25,
           y: (bounds?.y ?? 0) + 25,
-          titleBarStyle: isMac ? 'hidden' : 'default',
           trafficLightPosition: { x: 10, y: 10 },
           icon: nativeImage.createFromPath(iconKey),
           webPreferences: {
             devTools: true,
             sandbox: false,
             partition: sessionPartition,
-            preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js'),
+            nodeIntegration: true,
+            preload: preloadScriptPath,
             additionalArguments: [
               `--open=${encodeURI(
                 new URL(url).pathname
@@ -115,13 +145,48 @@ function hookOpenWindow (window: BrowserWindow): void {
               )}`
             ]
           }
-        })
-        await childWindow.loadFile(path.join('dist', 'ui', 'index.html'))
+        }
+        setupWindowTitleBar(windowOptions)
+        const childWindow = new BrowserWindow(windowOptions)
+        await childWindow.loadFile(containerPagePath)
         hookOpenWindow(childWindow)
       })()
     }
     return { action: 'deny' }
   })
+}
+
+function setupCookieHandler (config: Config): void {
+  const normalizedAccountsUrl = config.ACCOUNTS_URL.endsWith('/') ? config.ACCOUNTS_URL : config.ACCOUNTS_URL + '/'
+  const urls = [
+    normalizedAccountsUrl,
+    normalizedAccountsUrl + '*'
+  ]
+
+  session.defaultSession.webRequest.onHeadersReceived({ urls }, handleSetCookie)
+  session.fromPartition(sessionPartition).webRequest.onHeadersReceived({ urls }, handleSetCookie)
+}
+
+function handleSetCookie (details: Electron.OnHeadersReceivedListenerDetails, callback: (headersReceivedResponse: Electron.HeadersReceivedResponse) => void): void {
+  if (details.responseHeaders !== undefined) {
+    for (const header in details.responseHeaders) {
+      if (header.toLowerCase() === 'set-cookie') {
+        const cookies = details.responseHeaders[header]
+        details.responseHeaders[header] = cookies.map((cookie) => {
+          if (!cookie.includes('SameSite=')) {
+            if (details.url.startsWith('https://') && !cookie.includes('; Secure')) {
+              cookie += '; Secure'
+            }
+            cookie += '; SameSite=None'
+          }
+          return cookie
+        })
+      }
+    }
+  }
+
+  // eslint-disable-next-line n/no-callback-literal
+  callback({ responseHeaders: { ...details.responseHeaders } })
 }
 
 function handleAuthRedirects (window: BrowserWindow): void {
@@ -132,40 +197,106 @@ function handleAuthRedirects (window: BrowserWindow): void {
       event.preventDefault()
 
       void (async (): Promise<void> => {
-        await window.loadFile(path.join('dist', 'ui', 'index.html'))
+        await window.loadFile(containerPagePath)
         window.webContents.send('handle-auth', urlObj.searchParams.get('token'))
       })()
     }
   })
 }
 
+function handleWillDownload (window: BrowserWindow): void {
+  window.webContents.session.on('will-download', (_event, item) => {
+    const key = generateId()
+
+    const notifyDownloadUpdated = (): void => {
+      const download: DownloadItem = {
+        key,
+        state: item.isPaused() ? 'paused' : item.getState(),
+        fileName: item.getFilename(),
+        receivedBytes: item.getReceivedBytes(),
+        totalBytes: item.getTotalBytes(),
+        url: item.getURL(),
+        savePath: item.getSavePath()
+      }
+      window.webContents.send('handle-download-item', download)
+    }
+
+    notifyDownloadUpdated()
+
+    item.on('updated', notifyDownloadUpdated)
+    item.on('done', notifyDownloadUpdated)
+  })
+}
+
 const createWindow = async (): Promise<void> => {
-  mainWindow = new BrowserWindow({
-    width: defaultWidth,
-    height: defaultHeight,
-    titleBarStyle: isMac ? 'hidden' : 'default',
+  // Restore window position if available
+  const restoredBounds: any = settings.get('windowBounds')
+  const windowOptions: Electron.BrowserWindowConstructorOptions = {
+    width: restoredBounds?.width ?? defaultWidth,
+    height: restoredBounds?.height ?? defaultHeight,
+    x: restoredBounds?.x ?? undefined,
+    y: restoredBounds?.y ?? undefined,
     trafficLightPosition: { x: 10, y: 10 },
+    roundedCorners: true,
     icon: nativeImage.createFromPath(iconKey),
     webPreferences: {
       devTools: true,
       sandbox: false,
-      backgroundThrottling: false,
+      nodeIntegration: true,
+      // backgroundThrottling: false,
       partition: sessionPartition,
-      preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
+      preload: preloadScriptPath
     }
-  })
+  }
+  setupWindowTitleBar(windowOptions)
+  mainWindow = new BrowserWindow(windowOptions)
   app.dock?.setIcon(nativeImage.createFromPath(iconKey))
   // await mainWindow.webContents.openDevTools()
   if (isDev) {
     mainWindow.webContents.openDevTools()
   }
-  await mainWindow.loadFile(path.join('dist', 'ui', 'index.html'))
+  await mainWindow.loadFile(containerPagePath)
   addPermissionHandlers(mainWindow.webContents.session)
   handleAuthRedirects(mainWindow)
+  handleWillDownload(mainWindow)
 
   // In this example, only windows with the `about:blank` url will be created.
   // All other urls will be blocked.
   hookOpenWindow(mainWindow)
+
+  // Save window position on close
+  mainWindow.on('close', () => {
+    const bounds = mainWindow?.getBounds()
+    if (bounds !== undefined) {
+      settings.set('windowBounds', bounds)
+    }
+  })
+
+  function sendWindowMaximizedMessage (maximized: boolean): void {
+    mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
+  }
+
+  mainWindow.on('blur', () => {
+    mainWindow?.webContents.send('window-focus-loss')
+  })
+
+  mainWindow.on('maximize', () => {
+    sendWindowMaximizedMessage(true)
+  })
+
+  mainWindow.on('unmaximize', () => {
+    sendWindowMaximizedMessage(false)
+  })
+
+  mainWindow.on('enter-full-screen', () => {
+    sendWindowMaximizedMessage(true)
+  })
+
+  mainWindow.on('leave-full-screen', () => {
+    if (mainWindow != null) {
+      sendWindowMaximizedMessage(mainWindow.isMaximized())
+    }
+  })
 
   if (isMac) {
     mainWindow.on('close', (event) => {
@@ -181,9 +312,25 @@ const createWindow = async (): Promise<void> => {
   }
 }
 
-addMenus(() => mainWindow as BrowserWindow, (cmd: string, ...args: any[]) => {
+function sendCommand (cmd: string, ...args: any[]): void {
   mainWindow?.webContents.send(cmd, ...args)
-})
+}
+
+function activateWindow (): void {
+  if (mainWindow != null) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+    mainWindow.show()
+    mainWindow.focus()
+  }
+}
+
+if (isWindows) {
+  setupWindowsSpecific(activateWindow, sendCommand)
+} else {
+  addMenus(sendCommand)
+}
 
 contextMenu({
   showSaveImageAs: false,
@@ -191,7 +338,7 @@ contextMenu({
   showSelectAll: false
 })
 
-ipcMain.on('set-badge', (event, badge: number) => {
+ipcMain.on('set-badge', (_event: any, badge: number) => {
   app.dock?.setBadge(badge > 0 ? `${badge}` : '')
   app.badgeCount = badge
 
@@ -200,34 +347,52 @@ ipcMain.on('set-badge', (event, badge: number) => {
   }
 })
 
-ipcMain.on('dock-bounce', (event) => {
+ipcMain.on('dock-bounce', (_event: any) => {
   app.dock?.bounce('informational')
 })
 
-ipcMain.on('send-notification', (event, notificationParams: NotificationParams) => {
+ipcMain.on('send-notification', (_event: any, notificationParams: NotificationParams) => {
   if (Notification.isSupported()) {
     const notification = new Notification(notificationParams)
 
     notification.on('click', () => {
       mainWindow?.show()
-      mainWindow?.webContents.send('handle-notification-navigation')
+      mainWindow?.webContents.send('handle-notification-navigation', notificationParams)
     })
 
     notification.show()
   }
 })
 
-ipcMain.on('set-title', (event, title) => {
+ipcMain.on('set-title', (event: any, title: string) => {
   const webContents = event.sender
-  const win = BrowserWindow.fromWebContents(webContents)
-  win?.setTitle(title)
+  const window = BrowserWindow.fromWebContents(webContents)
+  window?.setTitle(title)
 })
 
-ipcMain.on('set-combined-config', (event, config: Config) => {
+ipcMain.on('set-combined-config', (_event: any, config: Config) => {
   log.info('Config set: ', config)
 
+  setupCookieHandler(config)
+
   const updatesUrl = process.env.DESKTOP_UPDATES_URL ?? config.DESKTOP_UPDATES_URL ?? 'https://dist.huly.io'
-  const updatesChannel = process.env.DESKTOP_UPDATES_CHANNEL ?? config.DESKTOP_UPDATES_CHANNEL ?? 'huly'
+  // NOTE: env format is: default_value;key1:value1;key2:value2...
+  const updatesChannels = (process.env.DESKTOP_UPDATES_CHANNEL ?? config.DESKTOP_UPDATES_CHANNELS ?? config.DESKTOP_UPDATES_CHANNEL ?? 'huly').split(';').map(c => c.trim().split(':'))
+  const updateChannelsMap: Record<string, string> = {}
+  for (const channelInfo of updatesChannels) {
+    if (channelInfo.length === 1) {
+      updateChannelsMap.default = channelInfo[0]
+    } else if (channelInfo.length === 2) {
+      const [key, value] = channelInfo
+      updateChannelsMap[key] = value
+    }
+  }
+
+  const updatesChannelKey = packedConfig?.updatesChannelKey ?? 'default'
+  const updatesChannel = updateChannelsMap[updatesChannelKey] ?? updateChannelsMap.default ?? 'huly'
+
+  log.info('updates channels', updatesChannels)
+  log.info('updates channel', updatesChannelKey, updatesChannel)
 
   autoUpdater.setFeedURL({
     provider: 'generic',
@@ -237,7 +402,7 @@ ipcMain.on('set-combined-config', (event, config: Config) => {
   void autoUpdater.checkForUpdatesAndNotify()
 })
 
-ipcMain.handle('get-main-config', (event, path) => {
+ipcMain.handle('get-main-config', (_event: any, _path: any) => {
   const cfg = {
     CONFIG_URL: process.env.CONFIG_URL ?? '',
     FRONT_URL,
@@ -247,11 +412,11 @@ ipcMain.handle('get-main-config', (event, path) => {
   }
   return cfg
 })
-ipcMain.handle('get-host', (event, path) => {
+ipcMain.handle('get-host', (_event: any, _path: any) => {
   return new URL(FRONT_URL).host
 })
 
-ipcMain.on('set-front-cookie', function (event, host: string, name: string, value: string) {
+ipcMain.on('set-front-cookie', function (event: any, host: string, name: string, value: string) {
   const webContents = event.sender
   const win = BrowserWindow.fromWebContents(webContents)
   const cv: CookiesSetDetails = {
@@ -267,17 +432,36 @@ ipcMain.on('set-front-cookie', function (event, host: string, name: string, valu
   void win?.webContents?.session.cookies.set(cv)
 })
 
-const DEEP_LINKS_PROTOCOL = 'huly'
-/*
-  Copy-paste from official tutorial for deep links
-  https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
-*/
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(DEEP_LINKS_PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
+ipcMain.handle('window-minimize', () => {
+  mainWindow?.minimize()
+})
+
+ipcMain.handle('window-maximize', () => {
+  if (mainWindow != null) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize()
+    } else {
+      mainWindow.maximize()
+    }
   }
-} else {
-  app.setAsDefaultProtocolClient(DEEP_LINKS_PROTOCOL)
+})
+
+ipcMain.handle('window-close', () => {
+  mainWindow?.close()
+})
+
+ipcMain.handle('get-is-os-using-dark-theme', () => {
+  return nativeTheme.shouldUseDarkColors
+})
+
+ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
+  dispatchMenuBarAction(mainWindow, action)
+})
+
+if (isWindows) {
+  ipcMain.on('rebuild-user-jump-list', (_event: any, spares: JumpListSpares) => {
+    rebuildJumpList(spares)
+  })
 }
 
 const gotTheLock = app.requestSingleInstanceLock()
@@ -286,46 +470,10 @@ if (!gotTheLock) {
   app.quit()
 }
 
-let deepLink = ''
-let haveDeepLinkHandler = false
-function tryToOpenDeepLink (link?: string): void {
-  if (mainWindow == null || !haveDeepLinkHandler) {
-    if (link != null) {
-      deepLink = link
-    }
-    return
-  }
-
-  const url = link ?? deepLink
-  const httpsUrl = url.replace(`${DEEP_LINKS_PROTOCOL}://`, 'https://')
-  mainWindow.webContents.send('handle-deep-link', httpsUrl)
-}
-
-// Add windows / linux handler for second instance
-// This is because Windows try to open second instance from the deep link
-app.on('second-instance', (event, commandLine, workingDirectory) => {
-  if (mainWindow != null) {
-    if (mainWindow.isMinimized()) mainWindow.restore()
-    mainWindow.focus()
-  }
-
-  const url = commandLine.pop()
-  console.log('Opening url', url)
-
-  if (url != null) {
-    tryToOpenDeepLink(url)
-  }
-})
-
-ipcMain.on('on-deep-link-handler', () => {
-  haveDeepLinkHandler = true
-  tryToOpenDeepLink()
-})
-
 ipcMain.handle('get-screen-access', () => systemPreferences.getMediaAccessStatus('screen') === 'granted')
 ipcMain.handle('get-screen-sources', () => {
   return desktopCapturer.getSources({ types: ['window', 'screen'], fetchWindowIcons: true, thumbnailSize: { width: 225, height: 135 } }).then(async sources => {
-    return sources.map(source => {
+    return sources.map((source: any) => {
       return {
         ...source,
         appIconURL: source.appIcon?.toDataURL(),
@@ -335,20 +483,8 @@ ipcMain.handle('get-screen-sources', () => {
   })
 })
 
-// MacOS implementation
-// Handle the protocol. In this case, we choose to show an Error Box.
-app.on('open-url', (event, url) => {
-  if (url == null) {
-    return
-  }
-  tryToOpenDeepLink(url)
-})
-
 async function onReady (): Promise<void> {
   await createWindow()
-
-  const customProtocolArg = process.argv.find((arg) => arg.startsWith(`${DEEP_LINKS_PROTOCOL}://`)) ?? ''
-  tryToOpenDeepLink(customProtocolArg)
 
   if (serverChanged) {
     mainWindow?.webContents.send('logout')
@@ -371,15 +507,20 @@ if (isMac) {
       mainWindow.show()
     }
   })
+}
+app.on('before-quit', () => {
+  if (mainWindow !== undefined && !mainWindow.isDestroyed()) {
+    const bounds = mainWindow.getBounds()
+    settings.set('windowBounds', bounds)
+  }
+  // Note: in case the app is exited by auto-updater all windows will be destroyed at this point
+  if (mainWindow === undefined || mainWindow.isDestroyed()) return
 
-  app.on('before-quit', () => {
-    // Note: in case the app is exited by auto-updater all windows will be destroyed at this point
-    if (mainWindow === undefined || mainWindow.isDestroyed()) return
-
+  if (isMac) {
     mainWindow?.removeAllListeners('close')
     mainWindow?.close()
-  })
-}
+  }
+})
 
 // Note: it is reset when the app is relaunched after update
 let isUpdating = false
@@ -394,7 +535,7 @@ autoUpdater.on('update-available', (info: UpdateInfo) => {
       defaultId: 0,
       message: `A new version ${info.version} is available and it is required to continue. It will be downloaded and installed automatically.`
     })
-    .then(({ response }) => {
+    .then(({ response }: any) => {
       log.info(`Update dialog exit code: ${response}`) // eslint-disable-line no-console
 
       if (response !== 0) {
@@ -410,29 +551,17 @@ autoUpdater.on('download-progress', (progressObj: ProgressInfo) => {
 })
 
 function setDownloadProgress (percent: number): void {
-  if (mainWindow === undefined) return
-
+  if (mainWindow === undefined) {
+    return
+  }
   mainWindow.setProgressBar(percent / 100)
   mainWindow.webContents.send('handle-update-download-progress', percent)
 }
 
-autoUpdater.on('update-downloaded', (info) => {
+autoUpdater.on('update-downloaded', (_info: any) => {
   // We have listeners that prevents the app from being exited on mac
   app.removeAllListeners('window-all-closed')
   mainWindow?.removeAllListeners('close')
 
   autoUpdater.quitAndInstall()
-})
-
-ipcMain.on('start-backup', (event, token, endpoint, workspace) => {
-  console.log('start backup', token, endpoint, workspace)
-  if (mainWindow != null) {
-    startBackup(mainWindow, token, endpoint, workspace, (cmd: string, ...args: any[]) => {
-      mainWindow?.webContents.send(cmd, ...args)
-    })
-  }
-})
-
-ipcMain.on('cancel-backup', (event) => {
-  cancelBackup()
 })

@@ -13,17 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { IntlString, Plugin } from '@hcengineering/platform'
-import { ClientConnectEvent, DocChunk } from '..'
-import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
-import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
-import { ClientConnection, createClient } from '../client'
+import { type IntlString, type Plugin } from '@hcengineering/platform'
+import { ClientConnectEvent, type DocChunk } from '..'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Space, Timestamp } from '../classes'
+import { ClassifierKind, DOMAIN_MODEL } from '../classes'
+import { type ClientConnection, createClient } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
-import { Tx, TxFactory, TxProcessor } from '../tx'
+import type {
+  DocumentQuery,
+  DomainResult,
+  FindResult,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  TxResult
+} from '../storage'
+import { type Tx, TxFactory, TxProcessor } from '../tx'
 import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
@@ -121,6 +129,11 @@ describe('client', () => {
 
         isConnected = (): boolean => true
         findAll = findAll
+        pushHandler = (): void => {}
+
+        domainRequest (): Promise<DomainResult> {
+          return Promise.resolve({ domain: 'test' as Domain, value: null })
+        }
 
         searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }
@@ -155,10 +168,6 @@ describe('client', () => {
         async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
         async loadModel (last: Timestamp): Promise<Tx[]> {
           return txes
-        }
-
-        async getAccount (): Promise<Account> {
-          return null as unknown as Account
         }
 
         async sendForceClose (): Promise<void> {}

@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+351 21 123 4567",
     "LinkedInPlaceholder": "https://pt.linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -69,6 +71,7 @@
     "CreateEmployee": "Criar funcionário",
     "Inactive": "Inativo",
     "Active": "Ativo",
+    "Role": "Função",
     "Birthday": "Aniversário",
     "UseImage": "Foto anexada",
     "UseGravatar": "Gravatar",
@@ -107,6 +110,19 @@
     "AddGuest": "Adicionar convidado",
     "ViewProfile": "Ver perfil",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Identificação social",
+    "SocialIds": "Identificações sociais",
+    "Type": "Tipo",
+    "Confirmed": "Confirmado",
+    "UserProfile": "Perfil do usuário",
+    "DeactivatedAccount": "Conta desativada",
+    "LocalTime": "hora local",
+    "Everyone": "Todos",
+    "Here": "Aqui",
+    "EveryoneDescription": "Notificar todos neste {title}",
+    "HereDescription": "Notificar todos neste {title}",
+    "Guest": "Convidado",
+    "Deleted": "Excluído"
   }
 }

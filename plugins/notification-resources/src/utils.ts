@@ -28,44 +28,43 @@ import {
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  SortingOrder,
-  getCurrentAccount,
   type Class,
   type Doc,
-  type DocumentUpdate,
+  getCurrentAccount,
   type Ref,
+  SortingOrder,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  notificationId,
   type ActivityInboxNotification,
-  type BaseNotificationType,
-  type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
+  getClassCollaborators,
   type InboxNotification,
   type MentionInboxNotification,
+  notificationId,
   type NotificationProvider,
   type NotificationProviderSetting,
+  type NotificationType,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
+  type Location,
   locationStorageKeyId,
   navigate,
   parseLocation,
-  showPopup,
-  type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  showPopup
 } from '@hcengineering/ui'
 import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
-import { get, writable } from 'svelte/store'
 import type { LocationData } from '@hcengineering/workbench'
+import { get, writable } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
@@ -233,37 +232,24 @@ export async function subscribeDoc (
   op: 'add' | 'remove',
   doc?: Doc
 ): Promise<void> {
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
   const hierarchy = client.getHierarchy()
-
-  if (hierarchy.classHierarchyMixin(docClass, notification.mixin.ClassCollaborators) === undefined) return
+  const classCollaborators = getClassCollaborators(client.getModel(), hierarchy, docClass)
+  if (classCollaborators === undefined) return
 
   const target = doc ?? (await client.findOne(docClass, { _id: docId }))
   if (target === undefined) return
-  if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
-    const collab = hierarchy.as(target, notification.mixin.Collaborators)
-    let collabUpdate: DocumentUpdate<Collaborators> | undefined
-
-    if (collab.collaborators.includes(me) && op === 'remove') {
-      collabUpdate = {
-        $pull: {
-          collaborators: me
-        }
-      }
-    } else if (!collab.collaborators.includes(me) && op === 'add') {
-      collabUpdate = {
-        $push: {
-          collaborators: me
-        }
-      }
-    }
-
-    if (collabUpdate !== undefined) {
-      await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, collabUpdate)
-    }
-  } else if (op === 'add') {
-    await client.createMixin(docId, docClass, target.space, notification.mixin.Collaborators, {
-      collaborators: [me]
+  const current = await client.findOne(core.class.Collaborator, {
+    attachedTo: docId,
+    collaborator: myAcc.uuid
+  })
+  if (op === 'remove') {
+    if (current === undefined) return // already removed
+    await client.remove(current)
+  } else {
+    if (current !== undefined) return // already added
+    await client.addCollection(core.class.Collaborator, target.space, target._id, target._class, 'collaborators', {
+      collaborator: myAcc.uuid
     })
   }
 }
@@ -345,7 +331,6 @@ export async function getDisplayInboxNotifications (
 ): Promise<DisplayInboxNotification[]> {
   const result: DisplayInboxNotification[] = []
   const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
-
   for (const notification of notifications) {
     if (filter === 'unread' && notification.isViewed) {
       continue
@@ -749,7 +734,7 @@ export async function subscribePush (): Promise<boolean> {
           applicationServerKey: publicKey
         })
         await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           endpoint: subscription.endpoint,
           keys: {
             p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
@@ -758,12 +743,12 @@ export async function subscribePush (): Promise<boolean> {
         })
       } else {
         const exists = await client.findOne(notification.class.PushSubscription, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           endpoint: current.endpoint
         })
         if (exists === undefined) {
           await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-            user: getCurrentAccount()._id,
+            user: getCurrentAccount().uuid,
             endpoint: current.endpoint,
             keys: {
               p256dh: arrayBufferToBase64(current.getKey('p256dh')),
@@ -820,7 +805,7 @@ export function notificationsComparator (notifications1: InboxNotification, noti
   return 0
 }
 
-export function isNotificationAllowed (type: BaseNotificationType, providerId: Ref<NotificationProvider>): boolean {
+export function isNotificationAllowed (type: NotificationType, providerId: Ref<NotificationProvider>): boolean {
   const client = getClient()
   const provider = client.getModel().findAllSync(notification.class.NotificationProvider, { _id: providerId })[0]
   if (provider === undefined) return false

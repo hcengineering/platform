@@ -14,29 +14,25 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { setMetadata, translate } from '@hcengineering/platform'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
+import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
+import { TelegramQueueMessage, TelegramQueueMessageType } from '@hcengineering/server-telegram'
 import serverToken from '@hcengineering/server-token'
-import telegram from '@hcengineering/telegram'
 import { join } from 'path'
-import { Telegraf } from 'telegraf'
 
 import config from './config'
-import { Limiter } from './limiter'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server'
 import { setUpBot } from './telegraf/bot'
-import { Command } from './telegraf/commands'
-import { TgContext } from './telegraf/types'
 import { PlatformWorker } from './worker'
 
 const ctx = initStatisticsContext('telegram-bot', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'telegram-bot-service',
       {},
       {},
@@ -48,45 +44,25 @@ const ctx = initStatisticsContext('telegram-bot', {
     )
 })
 
-configureAnalytics(config.SentryDSN, config)
+configureAnalytics('telegram-bot-service', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'telegram-bot-service')
-
-export async function requestReconnect (
-  bot: Telegraf<TgContext>,
-  worker: PlatformWorker,
-  limiter: Limiter
-): Promise<void> {
-  const toReconnect = await worker.getUsersToDisconnect()
-
-  if (toReconnect.length > 0) {
-    ctx.info('Disconnecting users', { users: toReconnect.map((it) => it.email) })
-    const message = await translate(telegram.string.DisconnectMessage, { app: config.App, command: Command.Connect })
-    for (const userRecord of toReconnect) {
-      try {
-        await limiter.add(userRecord.telegramId, async () => {
-          await bot.telegram.sendMessage(userRecord.telegramId, message)
-        })
-      } catch (e) {
-        ctx.error('Failed to send message', { user: userRecord.email, error: e })
-      }
-    }
-    await worker.disconnectUsers()
-  }
-}
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'telegram-bot-service')
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig)
-
-  const worker = await PlatformWorker.create(ctx, storageAdapter)
+  ctx.info('Creating worker...')
+  const worker = await PlatformWorker.create(ctx)
+  ctx.info('Set up bot...')
   const bot = await setUpBot(worker)
-  const limiter = new Limiter()
-  const app = createServer(bot, worker, ctx, limiter)
+  ctx.info('Creating server...')
+  const app = createServer(bot, worker, ctx)
+  ctx.info('Creating queue...')
+  const queue = getPlatformQueue('telegramBotService', config.QueueRegion)
+  ctx.info('queue', { clientId: queue.getClientId() })
 
   if (config.Domain === '') {
     ctx.info('Starting bot with polling')
@@ -108,11 +84,31 @@ export const start = async (): Promise<void> => {
     res.status(200).send()
   })
 
-  await requestReconnect(bot, worker, limiter)
+  ctx.info('Starting server...')
   const server = listen(app, ctx, config.Port)
 
+  const consumer = queue.createConsumer<TelegramQueueMessage>(
+    ctx,
+    QueueTopic.TelegramBot,
+    queue.getClientId(),
+    async (ctx, message) => {
+      const workspace = message.workspace
+      const record = message.value
+      switch (record.type) {
+        case TelegramQueueMessageType.Notification:
+          await worker.processNotification(workspace, record, bot)
+          break
+        case TelegramQueueMessageType.WorkspaceSubscription:
+          await worker.processWorkspaceSubscription(workspace, record)
+          break
+      }
+    }
+  )
+
   const onClose = (): void => {
-    server.close(() => process.exit())
+    void Promise.all([consumer.close(), worker.close(), server.close()]).then(() => {
+      process.exit()
+    })
   }
 
   process.once('SIGINT', () => {

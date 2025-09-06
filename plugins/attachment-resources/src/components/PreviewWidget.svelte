@@ -69,7 +69,7 @@
       showTooltip={{ label: attachment.string.OpenInWindow }}
       on:click={() => {
         closeTooltip()
-        showPopup(FilePreviewPopup, { file, name: fileName, contentType, metadata }, 'centered')
+        showPopup(FilePreviewPopup, { file, name: fileName, contentType, metadata, fullSize: true }, 'centered')
       }}
     />
   </svelte:fragment>

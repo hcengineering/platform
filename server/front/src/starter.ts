@@ -24,22 +24,13 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const serverSecret = process.env.SERVER_SECRET
-  if (serverSecret === undefined) {
-    console.log('Please provide server secret')
-    process.exit(1)
-  }
-
-  setMetadata(serverToken.metadata.Secret, serverSecret)
-
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig)
-
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
     console.error('please provide accounts url')
     process.exit(1)
   }
+
+  const accountsUrlInternal = process.env.ACCOUNTS_URL_INTERNAL
 
   const uploadUrl = process.env.UPLOAD_URL
   if (uploadUrl === undefined) {
@@ -91,6 +82,12 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  const serverSecret = process.env.SERVER_SECRET
+  if (serverSecret === undefined) {
+    console.log('Please provide server secret')
+    process.exit(1)
+  }
+
   let uploadConfig = process.env.UPLOAD_CONFIG
   if (uploadConfig === undefined) {
     uploadConfig = ''
@@ -100,6 +97,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   if (previewConfig === undefined) {
     // Use universal preview config
     previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
+  }
+
+  let previewUrl = process.env.PREVIEW_URL
+  if (previewUrl === undefined) {
+    previewUrl = ''
   }
 
   let filesUrl = process.env.FILES_URL
@@ -113,11 +115,26 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const linkPreviewUrl = process.env.LINK_PREVIEW_URL
 
+  const streamUrl = process.env.STREAM_URL
+
   const disableSignUp = process.env.DISABLE_SIGNUP
+
+  const hideLocalLogin = process.env.HIDE_LOCAL_LOGIN
+
+  const mailUrl = process.env.MAIL_URL
+
+  const billingUrl = process.env.BILLING_URL
+
+  setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'front')
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const config = {
     storageAdapter,
     accountsUrl,
+    accountsUrlInternal,
     uploadUrl,
     filesUrl,
     modelVersion,
@@ -129,11 +146,16 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaboratorUrl,
     collaborator,
     brandingUrl,
+    previewUrl,
     previewConfig,
     uploadConfig,
     pushPublicKey,
     disableSignUp,
-    linkPreviewUrl
+    hideLocalLogin,
+    linkPreviewUrl,
+    streamUrl,
+    mailUrl,
+    billingUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

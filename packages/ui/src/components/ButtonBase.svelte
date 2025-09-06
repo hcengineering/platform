@@ -36,6 +36,7 @@
   export let hasMenu: boolean = false
   export let noPrint: boolean = false
   export let autoFocus: boolean = false
+  export let noFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
@@ -49,7 +50,7 @@
 
   $: if (iconSize) {
     actualIconSize = iconSize
-  } else if (type === 'type-button' && !hasMenu) {
+  } else if (type === 'type-button' && !hasMenu && iconProps?.size === undefined) {
     actualIconSize = 'medium'
   }
   $: iconOnly = title === undefined && label === undefined && $$slots.default === undefined && icon !== undefined
@@ -100,6 +101,7 @@
   class:menu={hasMenu}
   class:iconOnly
   class:no-print={noPrint}
+  class:no-focus={noFocus}
   disabled={loading || disabled}
   data-id={dataId}
   use:tp={tooltip}

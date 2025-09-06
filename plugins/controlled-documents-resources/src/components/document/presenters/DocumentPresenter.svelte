@@ -17,7 +17,8 @@
   import { Document } from '@hcengineering/controlled-documents'
   import { WithLookup } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { getPanelURI, tooltip } from '@hcengineering/ui'
+  import { tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   import DocumentIcon from '../../icons/DocumentIcon.svelte'
   import documents from '../../../plugin'
@@ -29,16 +30,17 @@
   export let withIcon = false
   export let withTitle = false
   export let disableLink = false
-  export let editable = false
+  export let canEdit = false
 
   $: documentCode = value !== undefined ? value.code : ''
-  $: noUnderline = disableLink && !editable
+  $: noUnderline = disableLink && !canEdit
+  $: disabled = disableLink && !canEdit
   $: title = withTitle ? `${documentCode} ${value?.title}` : documentCode
 
   const dispatch = createEventDispatcher()
 
   function handleClick (event: MouseEvent): void {
-    if (!editable) {
+    if (!canEdit) {
       return
     }
 
@@ -47,23 +49,26 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    href={!disableLink ? `#${getPanelURI(documents.component.EditDoc, value._id, value._class, 'content')}` : undefined}
-    class:inline-presenter={inline}
-    class:noBold={isRegular}
-    class:no-underline={noUnderline}
-    class:cursor-inherit={noUnderline}
-    use:tooltip={{ label: getEmbeddedLabel(title) }}
-    on:click={handleClick}
+  <DocNavLink
+    object={value}
+    component={documents.component.EditDoc}
+    onClick={canEdit ? handleClick : undefined}
+    accent={!isRegular}
+    {disabled}
+    {noUnderline}
+    {inline}
   >
-    {#if withIcon}
-      <div class="icon">
-        <DocumentIcon size="small" />
-      </div>
-    {/if}
-    <span class="label nowrap" class:no-underline={noUnderline} class:label-gray={isGray}>{title}</span>
-  </a>
+    <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(title) }}>
+      {#if withIcon}
+        <div class="icon">
+          <DocumentIcon size="small" />
+        </div>
+      {/if}
+      <span class="label nowrap" class:fs-bold={!isRegular} class:no-underline={noUnderline} class:label-gray={isGray}
+        >{title}</span
+      >
+    </div>
+  </DocNavLink>
 {/if}
 
 <style lang="scss">

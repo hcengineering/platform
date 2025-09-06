@@ -79,4 +79,9 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxCreateDoc
     }
   })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchIcon: love.icon.MeetingMinutes,
+    title: [['title']]
+  })
 }

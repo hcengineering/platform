@@ -1,5 +1,5 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, PersonAccount, Organization } from '@hcengineering/contact'
+import contact, { Channel, Organization } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   AttachedDoc,
@@ -9,6 +9,7 @@ import core, {
   Doc,
   DocumentUpdate,
   Mixin,
+  PersonId,
   Ref,
   RefTo,
   Space,
@@ -46,9 +47,7 @@ export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
   for (const f of fieldMapping) {
     switch (f.operation.kind) {
       case MappingOperation.CopyValue:
-        fields.push(
-          ...Array.from(f.operation.patterns.map((it) => it.field).filter((it) => it !== undefined) as string[])
-        )
+        fields.push(...Array.from(f.operation.patterns.map((it) => it.field).filter((it) => it !== undefined)))
         break
       case MappingOperation.CreateChannel:
         fields.push(...Array.from(f.operation.fields.map((it) => it.field).filter((it) => it !== undefined)))
@@ -103,7 +102,7 @@ export async function convert (
   space: Ref<Space>,
   fields: BitrixFieldMapping[],
   rawDocument: any,
-  userList: Map<string, Ref<PersonAccount>>,
+  userList: Map<string, PersonId>,
   existingDoc: WithLookup<Doc> | undefined,
   defaultCategories: TagCategory[],
   allTagElements: TagElement[],

@@ -52,8 +52,8 @@
       <Button label={card.string.MinimizeAll} kind={'ghost'} iconRight={IconUpOutline} on:click={collapseAll} />
       <Button label={card.string.ExpandAll} kind={'ghost'} iconRight={IconDownOutline} on:click={expandAll} />
     </div>
+    <div class="divider" />
   {/if}
-  <div class="divider" />
   <div class="masterTag">
     <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {ignoreKeys} fourRows={columns === 2} />
   </div>
@@ -67,7 +67,6 @@
       {/each}
     </Grid>
   {/if}
-  <div class="divider" />
 </div>
 
 <style lang="scss">
@@ -80,6 +79,7 @@
     height: 100%;
     padding: 1rem;
     padding-left: 0;
+    overflow: hidden;
 
     &.withoutBorder {
       padding-bottom: 0;

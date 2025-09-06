@@ -15,10 +15,9 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import { Asset } from '@hcengineering/platform'
   import core, {
-    Account,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -27,15 +26,16 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import view from '@hcengineering/view'
   import testManagement, { TestProject } from '@hcengineering/test-management'
-  import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
+  import presentation, { Card, IconWithEmoji, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
-    IconWithEmoji,
     Label,
     Toggle,
     getColorNumberByText,
@@ -61,10 +61,11 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
 
-  let members: Ref<Account>[] =
-    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+  let members: AccountUuid[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().uuid]
+  $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  let owners: AccountUuid[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = project?.type ?? testManagementRes.spaceType.DefaultProject
@@ -218,14 +219,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -251,7 +252,7 @@
     showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -323,10 +324,10 @@
       <Button
         icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? testManagement.icon.Home}
         iconProps={icon === view.ids.IconWithEmoji
-          ? { icon: color }
+          ? { icon: color, size: 'medium' }
           : {
               fill:
-                color !== undefined
+                color !== undefined && typeof color !== 'string'
                   ? getPlatformColorDef(color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(name, $themeStore.dark).icon
             }}
@@ -379,8 +380,8 @@
           <AccountArrayEditor
             value={rolesAssignment?.[role._id] ?? []}
             label={core.string.Members}
-            includeItems={members}
-            readonly={members.length === 0}
+            includeItems={membersPersons}
+            readonly={membersPersons.length === 0}
             onChange={(refs) => {
               handleRoleAssignmentChanged(role._id, refs)
             }}

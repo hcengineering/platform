@@ -13,15 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, MasterTag } from '@hcengineering/card'
+  import { Ref } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
-  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
-  import card from '../plugin'
 
-  export let value: Card | undefined
+  import card from '../plugin'
+  import CardIcon from './CardIcon.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
+
+  export let value: Card | Ref<Card> | undefined
   export let disabled: boolean = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
@@ -30,58 +34,93 @@
   export let noSelect: boolean = true
   export let inline = false
   export let showParent: boolean = false
+  export let shrink: boolean = false
   export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  const client = getClient()
+  let cardObj: Card | undefined = undefined
+
+  $: {
+    if (typeof value === 'string') {
+      void readCard(value)
+    } else {
+      cardObj = value
+    }
+  }
+
+  async function readCard (ref: Ref<Card>): Promise<void> {
+    cardObj = await client.findOne(card.class.Card, { _id: ref })
+  }
+
+  $: _class = cardObj && (client.getHierarchy().getClass(cardObj?._class) as MasterTag)
+  $: icon = _class && _class.icon
 </script>
 
-{#if inline && value}
-  <ObjectMention object={value} {disabled} {noUnderline} {onClick} component={card.component.EditCard} />
-{:else if value}
+{#if inline && cardObj}
+  <ObjectMention object={cardObj} {disabled} {onClick} component={card.component.EditCard} />
+{:else if cardObj}
   {#if type === 'link'}
-    <div class="flex-row-center">
-      {#if showParent}
-        <ParentNamesPresenter {value} />
-      {/if}
+    {#if showParent}
+      <ParentNamesPresenter value={cardObj}>
+        <DocNavLink
+          object={cardObj}
+          {onClick}
+          {disabled}
+          {noUnderline}
+          {colorInherit}
+          {noSelect}
+          inline
+          component={card.component.EditCard}
+          shrink={1}
+          title={cardObj?.title}
+        >
+          {#if shouldShowAvatar}
+            <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
+              <CardIcon value={cardObj} />
+            </div>
+          {/if}
+          <span class="overflow-label">
+            {cardObj.title}
+            <slot name="details" />
+          </span>
+        </DocNavLink>
+      </ParentNamesPresenter>
+    {:else}
       <DocNavLink
-        object={value}
+        object={cardObj}
         {onClick}
         {disabled}
         {noUnderline}
-        {inline}
         {colorInherit}
+        {noSelect}
+        inline
         component={card.component.EditCard}
-        shrink={0}
+        shrink={1}
+        title={cardObj?.title}
       >
-        <span class="presenterRoot" class:cursor-pointer={!disabled}>
-          {#if shouldShowAvatar}
-            <div class="icon" use:tooltip={{ label: card.string.Card }}>
-              <Icon icon={icon ?? card.icon.Card} size={'small'} />
-            </div>
-          {/if}
-          <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {value.title}
-            <slot name="details" />
-          </span>
+        {#if shouldShowAvatar}
+          <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
+            <CardIcon value={cardObj} />
+          </div>
+        {/if}
+        <span class="overflow-label cropped-text-presenter">
+          {cardObj.title}
+          <slot name="details" />
         </span>
       </DocNavLink>
-    </div>
+    {/if}
   {:else}
-    <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
-      {value.title}
+    <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(cardObj.title) }}>
+      {cardObj.title}
     </span>
   {/if}
 {/if}
 
 <style lang="scss">
-  .presenterRoot {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-
-    .icon {
-      margin-right: 0.5rem;
-      color: var(--theme-dark-color);
-    }
+  .icon {
+    margin-right: 0.5rem;
+    color: var(--theme-dark-color);
   }
 </style>

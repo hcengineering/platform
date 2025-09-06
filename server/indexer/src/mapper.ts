@@ -24,8 +24,10 @@ export function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc
     if (searchMixin !== undefined) {
       return searchMixin
     }
-    return undefined
-  } catch {}
+  } catch (err: any) {
+    // Ignore missing classes
+  }
+  return undefined
 }
 
 /**
@@ -76,6 +78,7 @@ export async function updateDocWithPresenter (
     }
   }
   async function formatTemplate (template: FieldTemplate): Promise<string> {
+    if (template === undefined) return ''
     let tValue = ''
     for (const t of template) {
       if (typeof t === 'string') {
@@ -88,25 +91,29 @@ export async function updateDocWithPresenter (
   }
 
   for (const prop of props) {
-    if (!Array.isArray(prop.config)) {
-      if (prop.config.fields !== undefined) {
-        const params: string[] = []
-        for (const f of prop.config.fields) {
-          params.push(await extractParam(f))
+    try {
+      if (!Array.isArray(prop.config)) {
+        if (prop.config?.fields !== undefined) {
+          const params: string[] = []
+          for (const f of prop.config.fields) {
+            params.push(await extractParam(f))
+          }
+          elasticDoc[prop.name + '_fields'] = params
         }
-        elasticDoc[prop.name + '_fields'] = params
-      }
-      if (prop.config.template !== undefined) {
-        elasticDoc[prop.name] = await formatTemplate(prop.config.template)
-      }
-      if (prop.config.extraFields !== undefined) {
-        elasticDoc[prop.name + '_extra'] = []
-        for (const t of prop.config.extraFields) {
-          elasticDoc[prop.name + '_extra'].push(await formatTemplate(t))
+        if (prop.config?.template !== undefined) {
+          elasticDoc[prop.name] = await formatTemplate(prop.config.template)
         }
+        if (prop.config?.extraFields !== undefined) {
+          elasticDoc[prop.name + '_extra'] = []
+          for (const t of prop.config.extraFields) {
+            elasticDoc[prop.name + '_extra'].push(await formatTemplate(t))
+          }
+        }
+      } else {
+        elasticDoc[prop.name] = await formatTemplate(prop.config)
       }
-    } else {
-      elasticDoc[prop.name] = await formatTemplate(prop.config)
+    } catch (err: any) {
+      console.error('failed to format template', err, prop, JSON.stringify(searchPresenter))
     }
   }
 }
@@ -132,7 +139,10 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     shortTitle: raw.searchShortTitle,
     doc: {
       _id: raw.id,
-      _class: raw._class[0]
+      _class: raw._class[0],
+      createdOn: raw.createdOn,
+      attachedTo: raw.attachedTo,
+      attachedToClass: raw.attachedToClass
     },
     score: raw._score
   }
@@ -143,17 +153,15 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
 
   function toProps (comp: FieldTemplateComponent, values: any[]): Record<string, any> {
     const result: Record<string, any> = {}
-    if (!Array.isArray(comp)) {
-      let pos = 0
-      for (const f of comp.fields ?? []) {
-        if (f.length === 1) {
-          result[f[0]] = values[pos]
-          pos++
-        }
-        if (f.length === 2) {
-          result[f[0] + fUpper(f[1])] = values[pos]
-          pos++
-        }
+    let pos = 0
+    for (const f of comp.fields ?? []) {
+      if (f.length === 1) {
+        result[f[0]] = values[pos]
+        pos++
+      }
+      if (f.length === 2) {
+        result[f[0] + fUpper(f[1])] = values[pos]
+        pos++
       }
     }
     return result

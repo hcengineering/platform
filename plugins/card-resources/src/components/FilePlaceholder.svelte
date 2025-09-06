@@ -27,14 +27,15 @@
   let inputFile: HTMLInputElement
   let dragover = false
 
-  async function onFileUploaded ({ uuid, name, file, type }: FileUploadCallbackParams): Promise<void> {
+  async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
     const metadata = await getFileMetadata(file, uuid)
     const blobs = doc.blobs ?? {}
     blobs[uuid] = {
       name,
-      type,
+      type: file.type,
       metadata,
-      file: uuid
+      file: uuid,
+      size: file.size
     }
     await client.update(doc, {
       blobs

@@ -96,12 +96,22 @@ import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
+import PersonArrayEditor from './components/PersonArrayEditor.svelte'
+import PersonIdPresenter from './components/PersonIdPresenter.svelte'
+import PersonIdFilter from './components/filter/PersonIdFilter.svelte'
+import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import AudioViewer from './components/viewer/AudioViewer.svelte'
 import ImageViewer from './components/viewer/ImageViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
 import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
+import BaseDocPresenter from './components/BaseDocPresenter.svelte'
+import MasterDetailView from './components/masterDetail/MasterDetailView.svelte'
+import AssociationPresenter from './components/AssociationPresenter.svelte'
+import TreeView from './components/TreeView.svelte'
+import MasterDetailBrowser from './components/masterDetail/MasterDetailBrowser.svelte'
+import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -128,7 +138,7 @@ import {
   valueNinResult
 } from './filter'
 
-import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
+import { AggregationMiddleware, AnalyticsMiddleware, ReadOnlyAccessMiddleware } from './middleware'
 import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
   canArchiveSpace,
@@ -139,6 +149,8 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
+import { canCopyLink, getLink, openDocFromRef } from './utils'
+import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
@@ -167,9 +179,14 @@ export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as PersonIdPresenter } from './components/PersonIdPresenter.svelte'
+export { default as PersonIdFilter } from './components/filter/PersonIdFilter.svelte'
+export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
 export { default as RelationsEditor } from './components/RelationsEditor.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
+export { default as ViewOptions } from './components/ViewOptions.svelte'
+export { default as ViewletClassSettings } from './components/ViewletClassSettings.svelte'
 
 export * from './filter'
 export * from './middleware'
@@ -295,6 +312,10 @@ export default async (): Promise<Resources> => ({
     FileSizePresenter,
     StatusPresenter,
     StatusRefPresenter,
+    PersonArrayEditor,
+    PersonIdPresenter,
+    PersonIdFilter,
+    PersonIdFilterValuePresenter,
     DateFilterPresenter,
     StringFilterPresenter,
     AttachedDocPanel,
@@ -305,7 +326,14 @@ export default async (): Promise<Resources> => ({
     VideoViewer,
     PDFViewer,
     TextViewer,
-    FoldersBrowser
+    FoldersBrowser,
+    BaseDocPresenter,
+    MasterDetailView,
+    AssociationPresenter,
+    TreeView,
+    MasterDetailBrowser,
+    ReadOnlyNotification,
+    ForbiddenNotification
   },
   popup: {
     PositionElementAlignment
@@ -337,6 +365,8 @@ export default async (): Promise<Resources> => ({
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     AnalyticsMiddleware: AnalyticsMiddleware.create,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    ReadOnlyAccessMiddleware: ReadOnlyAccessMiddleware.create,
     CanDeleteObject: canDeleteObject,
     CanEditSpace: canEditSpace,
     CanArchiveSpace: canArchiveSpace,
@@ -345,6 +375,9 @@ export default async (): Promise<Resources> => ({
     CanLeaveSpace: canLeaveSpace,
     IsClipboardAvailable: isClipboardAvailable,
     BlobImageMetadata: blobImageMetadata,
-    BlobVideoMetadata: blobVideoMetadata
+    BlobVideoMetadata: blobVideoMetadata,
+    OpenDocument: openDocFromRef,
+    CanCopyLink: canCopyLink,
+    GetLink: getLink
   }
 })

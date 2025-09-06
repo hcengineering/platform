@@ -1,0 +1,9 @@
+{
+  "string": {
+    "Inbox": "Inbox",
+    "ReactedToYourMessage": "reacted to your message",
+    "ClearAll": "Clear all",
+    "InboxIsClear": "Inbox is clear",
+    "YouDontHaveAnyNewMessages": "You don’t have any new messages"
+  }
+}

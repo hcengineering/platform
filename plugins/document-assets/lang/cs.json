@@ -39,6 +39,7 @@
     "Description": "Popis",
 
     "CopyDocumentUrl": "Kopírovat URL dokumentu do schránky",
+    "DocumentUrlCopied": "Zkopírováno!",
 
     "ViewMode": "Zobrazit",
     "EditMode": "Upravit",
@@ -57,8 +58,6 @@
 
     "Icon": "Ikona",
     "Color": "Barva",
-    "RoleLabel": "Role: {role}",
-    "ForbidCreateTeamspacePermission": "Zakázat vytvoření týmového prostoru",
-    "ForbidCreateTeamspacePermissionDescription": "Zakazuje uživatelům vytvářet nové týmové prostory"
+    "RoleLabel": "Role: {role}"
   }
 }

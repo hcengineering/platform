@@ -14,23 +14,23 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
-import { Analytics } from '@hcengineering/analytics'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import serverClient from '@hcengineering/server-client'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import serverToken from '@hcengineering/server-token'
+
+import { Analytics } from '@hcengineering/analytics'
+import { SplitLogger, configureAnalytics, createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { join } from 'path'
 
+import { initStatisticsContext } from '@hcengineering/server-core'
 import config from './config'
 import { createServer, listen } from './server'
-import { Collector } from './collector'
-import { registerLoaders } from './loaders'
-import { closeDB, getDB } from './storage'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import { setGeoipLogContext } from './geoip'
 
+configureAnalytics('analytics-collector', process.env.VERSION ?? '0.7.0')
 const ctx = initStatisticsContext('analytics-collector', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'analytics-collector-service',
       {},
       {},
@@ -42,7 +42,6 @@ const ctx = initStatisticsContext('analytics-collector', {
     )
 })
 
-configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {
@@ -50,22 +49,17 @@ export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
 
+  // Set context for geoip logging
+  setGeoipLogContext(ctx)
+
   ctx.info('Analytics service started', {
-    accountsUrl: config.AccountsUrl,
-    supportWorkspace: config.SupportWorkspace
+    accountsUrl: config.AccountsUrl
   })
 
-  registerLoaders()
-
-  const db = await getDB()
-  const collector = new Collector(ctx, db)
-
-  const app = createServer(collector)
+  const app = createServer()
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
-    void collector.close()
-    void closeDB()
     server.close(() => process.exit())
   }
 

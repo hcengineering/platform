@@ -14,20 +14,21 @@
 //
 
 import core, {
-  type Account,
-  AccountRole,
+  type AccountUuid,
+  type AnyAttribute,
   type Arr,
   type AttachedDoc,
   type Class,
   ClassifierKind,
   type Data,
   type Doc,
-  DOMAIN_DOC_INDEX_STATE,
+  type Domain,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
   DOMAIN_TX,
   type Mixin,
   type Obj,
+  type PersonId,
   type Ref,
   type TxCreateDoc,
   type TxCUD,
@@ -43,6 +44,10 @@ export function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)
 }
 
+export function createAttribute (attribute: Data<AnyAttribute>): TxCreateDoc<Doc> {
+  return txFactory.createTxCreateDoc(core.class.Attribute, core.space.Model, attribute)
+}
+
 /**
  * @public
  */
@@ -50,7 +55,7 @@ export function createDoc<T extends Doc> (
   _class: Ref<Class<T>>,
   attributes: Data<T>,
   id?: Ref<T>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCreateDoc<Doc> {
   const result = txFactory.createTxCreateDoc(_class, core.space.Model, attributes, id)
   if (modifiedBy !== undefined) {
@@ -73,15 +78,33 @@ export interface AttachedComment extends AttachedDoc {
   message: string
 }
 
+export interface ComplexClass extends Doc {
+  stringField: string
+  numberField: number
+  booleanField: boolean
+  arrayField: string[]
+  numberArrayField: number[]
+}
+
+export interface ComplexMixin extends Mixin<ComplexClass> {
+  stringField: string
+  numberField: number
+  booleanField: boolean
+  arrayField: string[]
+  numberArrayField: number[]
+}
+
 /**
  * @public
  */
 export const test = plugin('test' as Plugin, {
   mixin: {
-    TestMixin: '' as Ref<Mixin<TestMixin>>
+    TestMixin: '' as Ref<Mixin<TestMixin>>,
+    ComplexMixin: '' as Ref<Mixin<ComplexMixin>>
   },
   class: {
-    TestComment: '' as Ref<Class<AttachedComment>>
+    TestComment: '' as Ref<Class<AttachedComment>>,
+    ComplexClass: '' as Ref<Class<ComplexClass>>
   }
 })
 
@@ -96,6 +119,13 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(core.class.Obj, { label: 'Obj' as IntlString, kind: ClassifierKind.CLASS }))
   txes.push(
     createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
+  )
+  txes.push(
+    createClass(core.class.Attribute, {
+      label: 'Attribute' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS
+    })
   )
   txes.push(
     createClass(core.class.Relation, {
@@ -131,23 +161,6 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(
     createClass(core.class.Space, {
       label: 'Space' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
-  txes.push(
-    createClass(core.class.DocIndexState, {
-      label: 'DocIndexState' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_DOC_INDEX_STATE
-    })
-  )
-
-  txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
@@ -207,12 +220,27 @@ export function genMinModel (): TxCUD<Doc>[] {
       kind: ClassifierKind.CLASS
     })
   )
-
-  const u1 = 'User1' as Ref<Account>
-  const u2 = 'User2' as Ref<Account>
   txes.push(
-    createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
-    createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
+    createClass(test.class.ComplexClass, {
+      label: 'ComplexClass' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: 'pg-testing' as Domain
+    })
+  )
+
+  txes.push(
+    createClass(test.mixin.ComplexMixin, {
+      label: 'ComplexMixin' as IntlString,
+      extends: test.class.ComplexClass,
+      kind: ClassifierKind.MIXIN,
+      domain: 'pg-testing' as Domain
+    })
+  )
+
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
+  txes.push(
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',

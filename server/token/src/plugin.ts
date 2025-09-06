@@ -26,7 +26,8 @@ export const serverTokenId = 'server-token' as Plugin
  */
 const serverToken = plugin(serverTokenId, {
   metadata: {
-    Secret: '' as Metadata<string>
+    Secret: '' as Metadata<string>,
+    Service: '' as Metadata<string>
   }
 })
 

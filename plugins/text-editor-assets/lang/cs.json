@@ -61,13 +61,18 @@
     "Unset": "Zrušit",
     "Image": "Obrázek",
     "SeparatorLine": "Oddělovací čára",
-    "TodoList": "Úkoly",
+    "TodoList": "Seznam úkolů",
+    "TodoItem": "Úkoly",
     "DrawingBoard": "Rýsovací plocha",
     "MermaidDiargram": "Diagram",
     "Comment": "Komentář",
     "AddComment": "Přidat komentář",
     "AddCommentPlaceholder": "Přidat komentář...",
     "SetCellHighlightColor": "Nastavit barvu buňky",
-    "SetTextColor": "Nastavit barvu textu"
+    "SetTextColor": "Nastavit barvu textu",
+    "ConvertToLinkPreview": "Zobrazit jako odkaz",
+    "ConvertToEmbedPreview": "Zobrazit jako náhled obsahu",
+    "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu",
+    "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce"
   }
 }

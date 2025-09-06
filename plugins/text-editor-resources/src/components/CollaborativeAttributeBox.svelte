@@ -16,11 +16,10 @@
   import { Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
-  import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import textEditor, { CollaborationUser, RefAction } from '@hcengineering/text-editor'
+  import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
-  import { FocusExtension } from './extension/focus'
   import { type FileAttachFunction } from './extension/types'
 
   export let object: Doc
@@ -77,13 +76,6 @@
       updateFocus()
     }
   }
-
-  const extensions = [
-    FocusExtension.configure({
-      onCanBlur: (value: boolean) => (canBlur = value),
-      onFocus: handleFocus
-    })
-  ]
 </script>
 
 <CollaborativeTextEditor
@@ -93,18 +85,26 @@
   {user}
   {userComponent}
   {refActions}
-  {extensions}
   {attachFile}
   {placeholder}
   {boundary}
   {readonly}
-  canEmbedFiles={false}
   withSideMenu={false}
   kitOptions={{
-    note: false
+    inlineNote: false,
+    hooks: {
+      focus: {
+        onCanBlur: (value) => {
+          canBlur = value
+        },
+        onFocus: handleFocus
+      }
+    },
+    shortcuts: {
+      fileUpload: false
+    }
   }}
   on:focus
   on:blur
   on:update
-  on:open-document
 />

@@ -16,9 +16,9 @@
   import core, { Class, Doc, DOMAIN_STATUS, Ref, RefTo } from '@hcengineering/core'
   import { TypeRef } from '@hcengineering/model'
   import { getClient } from '@hcengineering/presentation'
-  import card from '@hcengineering/card'
   import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
+  import card from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import type { ButtonKind, ButtonSize, DropdownIntlItem } from '@hcengineering/ui'
   import contactPlugin from '@hcengineering/contact'
@@ -28,6 +28,7 @@
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
   export let isCard: boolean = false
+  export let width: string | undefined = undefined
 
   const _classes = isCard ? [card.class.Card, contactPlugin.class.Contact] : [core.class.Doc]
   const exclude = !isCard ? [card.class.Card] : []
@@ -74,13 +75,11 @@
   $: refClass !== undefined && dispatch('change', { type: TypeRef(refClass) })
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={core.string.Class} />
-  </span>
-  {#if editable}
-    <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} {kind} {size} />
-  {:else if selected}
-    <Label label={selected.label} />
-  {/if}
-</div>
+<span class="label">
+  <Label label={core.string.Class} />
+</span>
+{#if editable}
+  <DropdownLabelsIntl label={core.string.Class} items={classes} {width} bind:selected={refClass} {kind} {size} />
+{:else if selected}
+  <Label label={selected.label} />
+{/if}

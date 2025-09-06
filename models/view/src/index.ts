@@ -1,6 +1,8 @@
 //
 // Copyright © 2020 Anticrm Platform Contributors.
 //
+// Copyright © 2025 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
@@ -14,7 +16,6 @@
 //
 
 import {
-  type Account,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -25,7 +26,8 @@ import {
   type Domain,
   type Ref,
   type Space,
-  type AnyAttribute
+  type AnyAttribute,
+  type AccountUuid
 } from '@hcengineering/core'
 import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
@@ -94,7 +96,8 @@ import {
   type ObjectTooltip,
   type AttrPresenter,
   type AttributeCategory,
-  type LinkIdProvider
+  type LinkIdProvider,
+  type CustomObjectLinkProvider
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -117,7 +120,7 @@ export class TFilteredView extends TDoc implements FilteredView {
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
-  users!: Ref<Account>[]
+  users!: AccountUuid[]
   attachedTo!: string
   sharable?: boolean
 }
@@ -317,6 +320,7 @@ export class TViewlet extends TDoc implements Viewlet {
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
   props?: Record<string, any>
+  title?: IntlString
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
@@ -385,6 +389,12 @@ export class TAttrPresenter extends TDoc implements AttrPresenter {
   objectClass!: Ref<Class<Doc<Space>>>
   attribute!: Ref<AnyAttribute>
   component!: AnyComponent
+}
+
+@Mixin(view.mixin.CustomObjectLinkProvider, core.class.Class)
+export class TCustomObjectLinkProvider extends TClass implements CustomObjectLinkProvider {
+  match!: Resource<(doc: Doc) => boolean>
+  encode!: Resource<(doc: Doc) => Location>
 }
 
 export type ActionTemplate = Partial<Data<Action>>
@@ -475,7 +485,8 @@ export function createModel (builder: Builder): void {
     TObjectTooltip,
     TObjectIcon,
     TAttrPresenter,
-    TLinkIdProvider
+    TLinkIdProvider,
+    TCustomObjectLinkProvider
   )
 
   classPresenter(
@@ -598,6 +609,39 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.MasterDetail,
+      icon: view.icon.MasterDetail,
+      component: view.component.MasterDetailView
+    },
+    view.viewlet.MasterDetail
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Tree,
+      icon: view.icon.Tree,
+      component: view.component.TreeView
+    },
+    view.viewlet.Tree
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Document,
+      icon: view.icon.Document,
+      component: view.component.EditDoc
+    },
+    view.viewlet.Document
+  )
+
+  builder.createDoc(
     presentation.class.PresentationMiddlewareFactory,
     core.space.Model,
     {
@@ -613,6 +657,15 @@ export function createModel (builder: Builder): void {
       createPresentationMiddleware: view.function.AnalyticsMiddleware
     },
     view.pipeline.AnalyticsMiddleware
+  )
+
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: view.function.ReadOnlyAccessMiddleware
+    },
+    view.pipeline.ReadOnlyAccessMiddleware
   )
 
   builder.createDoc(
@@ -644,7 +697,7 @@ export function createModel (builder: Builder): void {
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {
-      contentType: ['video/*'],
+      contentType: ['video/*', 'application/x-mpegURL'],
       alignment: 'centered',
       component: view.component.VideoViewer,
       metadataProvider: view.function.BlobVideoMetadata,
@@ -691,6 +744,24 @@ export function createModel (builder: Builder): void {
       visibilityTester: view.function.CanDeleteObject
     },
     view.action.Delete
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: view.function.GetLink
+      },
+      label: view.string.CopyLink,
+      icon: view.icon.CopyLink,
+      category: view.category.General,
+      input: 'any',
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'] },
+      visibilityTester: view.function.CanCopyLink
+    },
+    view.action.CopyLink
   )
 
   createAction(
@@ -817,7 +888,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      context: { mode: 'browser' }
+      context: { mode: ['browser'] }
     },
     view.action.MoveLeft
   )
@@ -831,7 +902,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      context: { mode: 'browser' }
+      context: { mode: ['browser'] }
     },
     view.action.MoveRight
   )
@@ -960,6 +1031,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.DateFilter,
     group: 'bottom'
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
   })
 
   builder.createDoc(
@@ -1198,6 +1273,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringFilterPresenter
   })
 
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.StringFilterPresenter
+  })
+
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
   createAction(
@@ -1241,6 +1320,31 @@ export function createModel (builder: Builder): void {
   builder.mixin(view.class.FilteredView, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],
     searchDisabled: true
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter,
+    arrayPresenter: view.component.PersonArrayEditor
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.PersonIdFilter
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(core.class.Association, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.AssociationPresenter
+  })
+
+  builder.mixin(view.class.ViewletDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.BaseDocPresenter
   })
 }
 

@@ -15,14 +15,16 @@
     Object.keys(metrics.params).length > 0 ||
     (metrics.topResult?.length ?? 0) > 0
 
+  const toTime = (value: number, digits = 10): number => Math.round(value * digits) / digits
+
   function showAvg (name: string, time: number, ops: number): string {
     if (name.startsWith('#')) {
-      return `➿ ${time}`
+      return `➿ ${toTime(time)}`
     }
     if (ops === 0) {
-      return `⏱️ ${time}`
+      return `⏱️ ${toTime(time)}`
     }
-    return `${Math.floor((time / ops) * 100) / 100}`
+    return `${toTime(time / ops, 100)}`
   }
   const getSorted = (v: Record<string, MetricsData>, sortingOrder: 'avg' | 'ops' | 'total') => {
     if (sortingOrder === 'avg') {
@@ -87,7 +89,7 @@
         </FixedColumn>
         <FixedColumn key="time-full">
           <span class="p-1">
-            {metrics.value}
+            {toTime(metrics.value)}
           </span>
         </FixedColumn>
       </div>
@@ -98,14 +100,14 @@
       <Expandable>
         <svelte:fragment slot="title">
           <div class="flex-row-center flex-between flex-grow ml-2">
-            Slowest result:{metrics.topResult[0].value}
+            Slowest result:{toTime(metrics.topResult[0].value)}
           </div>
         </svelte:fragment>
         {#each metrics.topResult ?? [] as r}
           <Expandable>
             <svelte:fragment slot="title">
               <div class="flex-row-center flex-between flex-grow select-text">
-                Time:{r.value}
+                Time:{toTime(r.value)}
               </div>
             </svelte:fragment>
             <pre class="select-text">
@@ -142,23 +144,32 @@
                 <FixedColumn key="time">
                   {showAvg(kk, vv.value, vv.operations)}
                 </FixedColumn>
-                <FixedColumn key="time-full">{vv.value}</FixedColumn>
+                <FixedColumn key="time-full">{toTime(vv.value)}</FixedColumn>
               </div>
             </FixedColumn>
           </svelte:fragment>
           {#if childExpandable}
             <div class="p-1" style:margin-left={`${level * 0.5 + 0.5}rem`}>
               {#each vv.topResult ?? [] as r}
-                <Expandable>
-                  <svelte:fragment slot="title">
-                    <div class="flex-row-center flex-between flex-grow">
-                      Time:{r.value}
-                    </div>
-                  </svelte:fragment>
-                  <pre class="select-text">
-                    {JSON.stringify(r, null, 2)}
-                  </pre>
-                </Expandable>
+                <FixedColumn key="row-f">
+                  <div class="flex-row-center">
+                    <FixedColumn key="f1">
+                      <div class="p-1">
+                        {Object.entries(r.params)[0][0]}
+                      </div>
+                    </FixedColumn>
+                    <FixedColumn key="f2">
+                      <div class="p-1">
+                        {r.value}
+                      </div>
+                    </FixedColumn>
+                    <FixedColumn key="f3">
+                      <div class="p-1">
+                        {toTime(r.time ?? 0)}
+                      </div>
+                    </FixedColumn>
+                  </div>
+                </FixedColumn>
               {/each}
             </div>
           {/if}

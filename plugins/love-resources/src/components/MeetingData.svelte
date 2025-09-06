@@ -19,44 +19,37 @@
   import { Writable } from 'svelte/store'
   import love from '../plugin'
   import RoomSelector from './RoomSelector.svelte'
-  import { OK, Severity, Status } from '@hcengineering/platform'
 
   export let state: Writable<Record<string, any>>
-  export let setError: (error: Status) => void
-
-  const roomRequired = new Status(Severity.ERROR, love.status.RoomRequired, {})
 
   function changeRoom (val: Ref<Room>): void {
     $state.room = val
-    if (isMeeting && $state.room === undefined) {
-      setError(roomRequired)
-    } else {
-      setError(OK)
-    }
   }
 
-  function changeIsMeeting (): void {
-    isMeeting = !isMeeting
-    $state.isMeeting = isMeeting
-    if (isMeeting && $state.room === undefined) {
-      setError(roomRequired)
-    } else {
-      setError(OK)
-    }
+  function changeIsMeeting (val: boolean): void {
+    $state.isMeeting = val
   }
 
   let isMeeting = false
 </script>
 
 <div class="flex-row-center gap-1-5 mt-1">
-  <CheckBox checked={isMeeting} kind={'primary'} on:value={changeIsMeeting} />
+  <CheckBox
+    bind:checked={isMeeting}
+    kind={'primary'}
+    on:value={(ev) => {
+      changeIsMeeting(ev.detail)
+    }}
+  />
   <Button
     label={love.string.CreateMeeting}
     kind={'ghost'}
     padding={'0 .5rem'}
     justify={'left'}
+    flex="1"
     on:click={() => {
-      changeIsMeeting()
+      isMeeting = !isMeeting
+      changeIsMeeting(isMeeting)
     }}
   />
 </div>

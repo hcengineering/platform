@@ -36,7 +36,8 @@
     ExpandCollapse,
     mouseAttractor,
     Loading,
-    Label
+    Label,
+    Scroller
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -441,7 +442,11 @@
   in:fade|local={{ duration: 50 }}
   bind:this={div}
   class="category-container"
-  class:zero-container={level === 0}
+  class:listGrid-container={level === 0}
+  class:collapsed
+  class:category-one={oneCat}
+  class:category-last={lastCat}
+  class:disableHeader
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
@@ -485,114 +490,106 @@
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
-    {#if !lastLevel}
-      <slot
-        name="category"
-        docs={itemProj}
-        {_class}
-        {space}
-        {lookup}
-        {baseMenuClass}
-        {config}
-        {configurations}
-        {selectedObjectIds}
-        {createItemDialog}
-        {createItemLabel}
-        {viewOptions}
-        {docKeys}
-        newObjectProps={_newObjectProps}
-        {flatHeaders}
-        {props}
-        level={level + 1}
-        {groupPersistKey}
-        {viewOptionsConfig}
-        {listDiv}
-        dragItem
-        dragstart={dragStartHandler}
-      />
-    {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
-      {@const HLimited = lastLevel ? limited.length : itemProj.length}
-      {#if limited}
-        {#key configurationsVersion}
-          {#each limited as docObject, i (docObject._id)}
-            <ListItem
-              bind:this={listItems[i]}
-              {docObject}
-              model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
-              {groupByKey}
-              selected={isSelected(docObject, $focusStore)}
-              checked={selectedObjectIdsSet.has(docObject._id)}
-              last={i === limited.length - 1 && HLimited >= itemProj.length}
-              lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}
-              on:dragstart={(e) => {
-                dragStart(e, docObject, i)
-              }}
-              on:dragenter={(e) => {
-                if (dragItemIndex !== undefined) {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }
-              }}
-              on:dragleave={(e) => {
-                dragItemLeave(e, i)
-              }}
-              on:dragover={(e) => {
-                dragover(e, i)
-              }}
-              on:drop={dropItemHandle}
-              on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-              on:contextmenu={async (event) => {
-                await handleMenuOpened(event, docObject)
-              }}
-              on:focus={() => {}}
-              on:mouseover={mouseAttractor(() => {
-                handleRowFocused(docObject)
-              })}
-              on:mouseenter={mouseAttractor(() => {
-                handleRowFocused(docObject)
-              })}
-              {props}
-              {compactMode}
-              on:on-mount={() => {
-                wasLoaded = true
-              }}
-            />
-          {/each}
-          {#if HLimited < itemProj.length}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
-              class:lastCat={oneCat || lastCat}
-              on:mouseenter={() => {
-                $focusStore.focus = undefined
-              }}
-              on:click={() => {
-                if (limit !== undefined) limit += 50
-              }}
-            >
-              <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
-              {#if loading}
-                <div class="p-1">
-                  <Loading shrink size={'small'} />
-                </div>
-              {:else}
-                <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
-              {/if}
-            </div>
-          {/if}
-        {/key}
+  <Scroller horizontal shrink noFade={false} showOverflowArrows>
+    <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
+      {#if !lastLevel}
+        <slot
+          name="category"
+          docs={itemProj}
+          {_class}
+          {space}
+          {lookup}
+          {baseMenuClass}
+          {config}
+          {configurations}
+          {selectedObjectIds}
+          {createItemDialog}
+          {createItemLabel}
+          {viewOptions}
+          {docKeys}
+          newObjectProps={_newObjectProps}
+          {flatHeaders}
+          {props}
+          level={level + 1}
+          {groupPersistKey}
+          {viewOptionsConfig}
+          {listDiv}
+          dragItem
+          dragstart={dragStartHandler}
+        />
+      {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+        {@const HLimited = lastLevel ? limited.length : itemProj.length}
+        {#if limited}
+          {#key configurationsVersion}
+            {#each limited as docObject, i (docObject._id)}
+              <ListItem
+                bind:this={listItems[i]}
+                {docObject}
+                model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
+                {groupByKey}
+                selected={isSelected(docObject, $focusStore)}
+                checked={selectedObjectIdsSet.has(docObject._id)}
+                last={i === limited.length - 1 && HLimited >= itemProj.length}
+                lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}
+                on:dragstart={(e) => {
+                  dragStart(e, docObject, i)
+                }}
+                on:dragenter={(e) => {
+                  if (dragItemIndex !== undefined) {
+                    e.stopPropagation()
+                    e.preventDefault()
+                  }
+                }}
+                on:dragleave={(e) => {
+                  dragItemLeave(e, i)
+                }}
+                on:dragover={(e) => {
+                  dragover(e, i)
+                }}
+                on:drop={dropItemHandle}
+                on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
+                on:contextmenu={async (event) => {
+                  await handleMenuOpened(event, docObject)
+                }}
+                on:focus={() => {}}
+                on:mouseover={mouseAttractor(() => {
+                  handleRowFocused(docObject)
+                })}
+                on:mouseenter={mouseAttractor(() => {
+                  handleRowFocused(docObject)
+                })}
+                {props}
+                {compactMode}
+                on:on-mount={() => {
+                  wasLoaded = true
+                }}
+              />
+            {/each}
+            {#if HLimited < itemProj.length}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div
+                class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
+                class:lastCat={oneCat || lastCat}
+                on:mouseenter={() => {
+                  $focusStore.focus = undefined
+                }}
+                on:click={() => {
+                  if (limit !== undefined) limit += 50
+                }}
+              >
+                <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
+                {#if loading}
+                  <div class="p-1">
+                    <Loading shrink size={'small'} />
+                  </div>
+                {:else}
+                  <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
+                {/if}
+              </div>
+            {/if}
+          {/key}
+        {/if}
       {/if}
-    {/if}
-  </ExpandCollapse>
+    </ExpandCollapse>
+  </Scroller>
 </div>
-
-<style lang="scss">
-  .zero-container {
-    border-radius: 0.25rem;
-
-    &:not(:first-child) {
-      margin-top: 0.5rem;
-    }
-  }
-</style>

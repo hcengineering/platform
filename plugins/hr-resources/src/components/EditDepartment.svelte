@@ -22,8 +22,10 @@
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createEventDispatcher, onMount } from 'svelte'
   import hr from '../plugin'
+  import Members from './Members.svelte'
 
   export let object: Department
+  export let readonly: boolean = false
 
   let avatarEditor: EditableAvatar
 
@@ -50,11 +52,14 @@
   const manager = createFocusManager()
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
-  const accountId = getCurrentAccount()._id
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: accountId, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { createdBy: { $in: getCurrentAccount().socialIds }, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   onMount(() => {
     dispatch('open', {
@@ -62,12 +67,14 @@
       collectionArrays: ['members']
     })
   })
+
+  $: members = object.members ?? []
 </script>
 
 <FocusHandler {manager} />
 
 {#if object !== undefined}
-  <div class="flex-row-stretch flex-grow">
+  <div class="flex-row-stretch flex-grow step-tb-6">
     <div class="mr-8">
       {#key object}
         <EditableAvatar
@@ -89,6 +96,8 @@
       </div>
     </div>
   </div>
+
+  <Members department={object} {members} {readonly} />
 {/if}
 
 <style lang="scss">

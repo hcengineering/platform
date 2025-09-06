@@ -19,7 +19,6 @@
 
   export let currentDate: Date | null
   export let timeZone: string = getUserTimezone()
-  export let mondayStart: boolean = true
 
   const dispatch = createEventDispatcher()
 </script>
@@ -28,7 +27,6 @@
   <Month
     bind:currentDate
     {timeZone}
-    {mondayStart}
     on:update={(result) => {
       if (result.detail !== undefined) {
         dispatch('close', result.detail)

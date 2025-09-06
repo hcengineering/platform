@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
+import { Client, type DocumentQuery } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 
 import uploader from './plugin'
-import type { FileUploadOptions, FileUploadPopupOptions, FileWithPath } from './types'
+import type { FileUploadOptions, FileUploadPopupOptions, FileWithPath, UploadHandlerDefinition } from './types'
 
 /** @public */
 export async function showFilesUploadPopup (
@@ -31,6 +32,14 @@ export async function showFilesUploadPopup (
 export async function uploadFile (file: File, options: FileUploadOptions): Promise<void> {
   const fn = await getResource(uploader.function.UploadFiles)
   await fn([file], options)
+}
+
+/** @public */
+export function getUploadHandlers (
+  client: Client,
+  query?: DocumentQuery<UploadHandlerDefinition>
+): UploadHandlerDefinition[] {
+  return client.getModel().findAllSync(uploader.class.UploadHandlerDefinition, query ?? {})
 }
 
 /** @public */

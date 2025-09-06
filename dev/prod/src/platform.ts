@@ -43,6 +43,7 @@ import notification, { notificationId } from '@hcengineering/notification'
 import onboard, { onboardId } from '@hcengineering/onboard'
 import presence, { presenceId } from '@hcengineering/presence'
 import print, { printId } from '@hcengineering/print'
+import { processId } from '@hcengineering/process'
 import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { recruitId } from '@hcengineering/recruit'
@@ -63,10 +64,20 @@ import tracker, { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
 import uiPlugin from '@hcengineering/ui'
 import { uploaderId } from '@hcengineering/uploader'
+import { mediaId } from '@hcengineering/media'
+import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
-
+import { mailId } from '@hcengineering/mail'
+import { chatId } from '@hcengineering/chat'
+import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
+import {inboxId} from '@hcengineering/inbox'
+import {achievementId} from '@hcengineering/achievement'
+import communication, { communicationId } from '@hcengineering/communication'
+import {emojiId} from '@hcengineering/emoji'
+import billingPlugin, {billingId} from '@hcengineering/billing'
+import { hulyMailId } from '@hcengineering/huly-mail'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -93,6 +104,7 @@ import '@hcengineering/love-assets'
 import '@hcengineering/notification-assets'
 import '@hcengineering/preference-assets'
 import '@hcengineering/print-assets'
+import '@hcengineering/process-assets'
 import '@hcengineering/products-assets'
 import '@hcengineering/questions-assets'
 import '@hcengineering/recruit-assets'
@@ -110,11 +122,19 @@ import '@hcengineering/time-assets'
 import '@hcengineering/tracker-assets'
 import '@hcengineering/training-assets'
 import '@hcengineering/uploader-assets'
+import '@hcengineering/recorder-assets'
+import '@hcengineering/media-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
-
-import github, { githubId } from '@hcengineering/github'
+import '@hcengineering/chat-assets'
+import '@hcengineering/inbox-assets'
+import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
+import '@hcengineering/achievement-assets'
+import '@hcengineering/communication-assets'
+import '@hcengineering/emoji-assets'
+import '@hcengineering/billing-assets'
+import '@hcengineering/huly-mail-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, {
@@ -160,10 +180,12 @@ export interface Config {
   TELEGRAM_BOT_URL?: string
   AI_URL?: string
   DISABLE_SIGNUP?: string
+  HIDE_LOCAL_LOGIN?: string
   LINK_PREVIEW_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   // Could be defined for dev environment
   FRONT_URL?: string
+  PREVIEW_URL?: string
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
   STATS_URL?: string
@@ -171,7 +193,14 @@ export interface Config {
   USE_BINARY_PROTOCOL?: boolean
   TRANSACTOR_OVERRIDE?: string
   BACKUP_URL?: string
+  STREAM_URL?: string
+  PUBLIC_SCHEDULE_URL?: string
+  CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
+  MAIL_URL?: string,
+  COMMUNICATION_API_ENABLED?: string
+  BILLING_URL?: string,
+  EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
 }
 
 export interface Branding {
@@ -204,7 +233,7 @@ const configs: Record<string, string> = {
   'dev-worker-local': '/config-worker-local.json'
 }
 
-const PASSWORD_REQUIREMENTS: Record<Config['PASSWORD_STRICTNESS'], Record<string, number>> = {
+const PASSWORD_REQUIREMENTS: Record<NonNullable<Config['PASSWORD_STRICTNESS']>, Record<string, number>> = {
   very_strict: {
     MinDigits: 4,
     MinLength: 32,
@@ -237,8 +266,18 @@ const PASSWORD_REQUIREMENTS: Record<Config['PASSWORD_STRICTNESS'], Record<string
 
 function configureI18n(): void {
   //Add localization
-  addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
-  addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
+  addStringsLoader(platformId, async (lang: string) => await import(
+    /* webpackInclude: /\.json$/ */
+    /* webpackMode: "lazy" */
+    /* webpackChunkName: "lang-[request]" */
+    `@hcengineering/platform/lang/${lang}.json`
+  ))
+  addStringsLoader(coreId, async (lang: string) => await import(
+    /* webpackInclude: /\.json$/ */
+    /* webpackMode: "lazy" */
+    /* webpackChunkName: "lang-[request]" */
+    `@hcengineering/core/lang/${lang}.json`
+  ))
   addStringsLoader(
     presentationId,
     async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`)
@@ -249,6 +288,8 @@ function configureI18n(): void {
   )
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
+  addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
+  addStringsLoader(mediaId, async (lang: string) => await import(`@hcengineering/media-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
   addStringsLoader(
     attachmentId,
@@ -327,6 +368,15 @@ function configureI18n(): void {
   )
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
+  addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
+  addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
+  addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
+  addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
+  addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
+  addStringsLoader(communicationId, async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`))
+  addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
+  addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
+  addStringsLoader(hulyMailId, async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -344,7 +394,7 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await loadServerConfig(configs[clientType] ?? '/config.json')
+  const config: Config = await loadServerConfig(configs[clientType ?? ''] ?? '/config.json')
   const branding: BrandingMap =
     config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL, { keepalive: true })).json() : {}
   const myBranding = branding[window.location.host] ?? {}
@@ -385,6 +435,7 @@ export async function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  setMetadata(login.metadata.HideLocalLogin, config.HIDE_LOCAL_LOGIN === 'true')
 
   setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
 
@@ -393,11 +444,15 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
+  setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
-  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
+  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG ?? '', config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
+  setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
+  setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
+  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
@@ -408,9 +463,11 @@ export async function configurePlatform() {
     setMetadata(presentation.metadata.FrontVersion, config.VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
-  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL)
+  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL ?? 'http://huly.local:4020')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
+  setMetadata(calendar.metadata.PublicScheduleURL, config.PUBLIC_SCHEDULE_URL)
+  setMetadata(calendar.metadata.CalDavServerURL, config.CALDAV_SERVER_URL)
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
@@ -429,6 +486,8 @@ export async function configurePlatform() {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
   setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
+
+  setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())
@@ -510,6 +569,9 @@ export async function configurePlatform() {
   addLocation(exportId, () => import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
+  addLocation(recorderId, () => import(/* webpackChunkName: "recorder" */ '@hcengineering/recorder-resources'))
+  addLocation(mediaId, () => import(/* webpackChunkName: "media" */ '@hcengineering/media-resources'))
+
   addLocation(
     testManagementId,
     () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources')
@@ -517,6 +579,14 @@ export async function configurePlatform() {
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
+  addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
+  addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
+  addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
+  addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
+  addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
+  addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
+  addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
+  addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
@@ -538,6 +608,13 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+
+  try {
+    const parsed = JSON.parse(config.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS ?? '')
+    setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, Array.isArray(parsed) ? parsed : [])
+  } catch (err) {
+    setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, [])
+  }
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
 

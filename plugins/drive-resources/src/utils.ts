@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,16 +18,18 @@ import drive, {
   type Drive,
   type FileVersion,
   type Folder,
+  type File,
   type Resource,
   createFile,
   createFolder,
   DriveEvents
 } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, getFileMetadata } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
+  type FileUploadOptions,
   getDataTransferFiles,
   showFilesUploadPopup,
   uploadFiles
@@ -167,11 +169,20 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   return parents.reverse()
 }
 
-export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
-  const files = await getDataTransferFiles(dt)
+export async function getUploadOptionsByFragment (space: Ref<Drive>, fragment: string): Promise<FileUploadOptions> {
+  const [, _id, _class] = decodeURIComponent(fragment).split('|')
+  if (_class === drive.class.Folder) {
+    return await getUploadOptions(space, _id as Ref<Folder>)
+  }
+  if (_class === drive.class.File) {
+    const res = await getClient().findOne(drive.class.File, { _id: _id as Ref<File> })
+    return await getUploadOptions(res?.space as Ref<Drive>, res?.parent as Ref<Folder>)
+  }
+  return await getUploadOptions(space, drive.ids.Root)
+}
 
+export async function getUploadOptions (space: Ref<Drive>, parent: Ref<Folder>): Promise<FileUploadOptions> {
   const onFileUploaded = await fileUploadCallback(space, parent)
-
   const target =
     parent !== drive.ids.Root
       ? { objectId: parent, objectClass: drive.class.Folder }
@@ -181,8 +192,16 @@ export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, p
     onFileUploaded,
     showProgress: {
       target
-    }
+    },
+    target
   }
+
+  return options
+}
+
+export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const files = await getDataTransferFiles(dt)
+  const options = await getUploadOptions(space, parent)
 
   await uploadFiles(files, options)
 }
@@ -200,7 +219,8 @@ export async function uploadFilesToDrivePopup (space: Ref<Drive>, parent: Ref<Fo
       onFileUploaded,
       showProgress: {
         target
-      }
+      },
+      target
     },
     {
       fileManagerSelectionType: 'both'
@@ -219,7 +239,6 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     if (path == null || path.length === 0) {
       return parent
     }
-
     const segments = path.split('/').filter((p) => p.length > 0)
     if (segments.length <= 1) {
       return parent
@@ -244,23 +263,26 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, type, file, path, metadata }) => {
+  const callback: FileUploadCallback = async ({ uuid, name, file, path }) => {
+    // TODO this should be done in the upload service
+    const metadata = await getFileMetadata(file, uuid)
+
     const folder = await findParent(path)
     try {
       const data = {
         file: uuid,
         size: file.size,
-        type: type ?? file.type,
+        type: file.type,
         lastModified: file instanceof File ? file.lastModified : Date.now(),
         title: name,
         metadata
       }
 
       await createFile(client, space, folder, data)
+
       Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type: file.type, size: file.size, name })
     } catch (err) {
       void setPlatformStatus(unknownError(err))
-      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: false, name })
     }
   }
 

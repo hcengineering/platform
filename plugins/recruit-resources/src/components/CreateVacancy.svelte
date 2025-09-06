@@ -17,7 +17,6 @@
   import contact, { Organization } from '@hcengineering/contact'
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
-    Account,
     AttachedData,
     Data,
     Ref,
@@ -27,7 +26,8 @@
     fillDefaults,
     generateId,
     getCurrentAccount,
-    makeCollabId
+    makeCollabId,
+    AccountUuid
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
@@ -73,7 +73,7 @@
   let issueTemplates: IssueTemplate[] = []
   let fullDescription: string = ''
 
-  let members = [getCurrentAccount()._id]
+  let members = [getCurrentAccount().uuid]
   let membersChanged: boolean = false
 
   $: setDefaultMembers(typeType)
@@ -249,7 +249,7 @@
       company,
       members,
       autoJoin: typeType.autoJoin ?? false,
-      owners: [getCurrentAccount()._id],
+      owners: [getCurrentAccount().uuid],
       type: typeId
     }
 
@@ -269,7 +269,7 @@
         _class: recruit.class.Vacancy,
         space: core.space.Space,
         modifiedOn: 0,
-        modifiedBy: getCurrentAccount()._id
+        modifiedBy: getCurrentAccount().primarySocialId
       })
     })
 
@@ -323,7 +323,7 @@
     )
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -416,6 +416,7 @@
       onChange={() => {
         membersChanged = true
       }}
+      allowGuests
       kind={'regular'}
       size={'large'}
     />

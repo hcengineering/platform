@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import {
-  BaseNotificationType,
+  NotificationType,
   DocNotifyContext,
   InboxNotification,
   NotificationProvider
@@ -32,7 +32,7 @@ export interface Content {
 /**
  * @public
  */
-export type NotifyResult = Map<Ref<NotificationProvider>, BaseNotificationType[]>
+export type NotifyResult = Map<Ref<NotificationProvider>, NotificationType[]>
 
 export interface NotifyParams {
   isOwn: boolean

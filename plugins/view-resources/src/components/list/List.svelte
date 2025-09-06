@@ -109,7 +109,6 @@
     queryNoLookup,
     (res) => {
       fastDocs = res
-      // console.log('query, res', queryNoLookup, res)
       fastQueryIds = new Set(res.map((it) => it._id))
     },
     { ...categoryQueryOptions, limit: 1000 }
@@ -250,6 +249,6 @@
     width: 100%;
     height: max-content;
     min-width: auto;
-    min-height: auto;
+    min-height: 0;
   }
 </style>

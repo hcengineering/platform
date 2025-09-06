@@ -3,7 +3,7 @@
     "RequiredField": "Campo obligatorio: {field}",
     "FieldsDoNotMatch": "{field} no coincide con {field2}",
     "ConnectingToServer": "Conectando al servidor...",
-    "IncorrectValue": "Valor incorrecto para {field}"    
+    "IncorrectValue": "Valor incorrecto para {field}"
   },
   "string": {
     "LogIn": "Iniciar sesión",
@@ -42,7 +42,6 @@
     "AlreadyJoined": "¿Ya te has unido?",
     "ConfirmationSent": "Se ha enviado un mensaje a su correo electrónico con un enlace para confirmar su dirección.",
     "ConfirmationSent2": "Por favor, siga el enlace para completar su registro.",
-    "Slogan": "Un lugar único para gestionar todo tu trabajo\nBienvenido/a a la Plataforma",
     "ContinueWith": "Continuar com {provider}",
     "HaventReceivedCode": "¿No has recibido el código?",
     "ResendCode": "Reenviar código",
@@ -52,6 +51,8 @@
     "CanFindCode": "¿No encuentras tu código? Revisa tu",
     "LoginWithPassword": "Iniciar sesión con contraseña",
     "LoginWithCode": "Iniciar sesión con código",
+    "SignUpWithPassword": "Registrarse con contraseña",
+    "SignUpWithCode": "Registrarse con código",
     "FillInProfile": "Rellena tu perfil",
     "SetUpPassword": "Establecer tu contraseña",
     "Next": "Siguiente",
@@ -64,6 +65,15 @@
     "PasswordMinUpperChars": "{count, plural, =1 {La contraseña debe contener al menos # letra mayúscula} other {La contraseña debe contener al menos # letras mayúsculas}}",
     "PasswordMinLowerChars": "{count, plural, =1 {La contraseña debe contener al menos # letra minúscula} other {La contraseña debe contener al menos # letras minúsculas}}",
     "WorkspaceArchivedDesc": "El espacio de trabajo está archivado por no estar en uso.",
-    "RestoreArchivedWorkspace": "Restaurar"
+    "RestoreArchivedWorkspace": "Restaurar",
+    "Hello": "Hola {name},",
+    "ProcessingInvite": "Procesando invitación, por favor espere...",
+    "SignToProceed": "Por favor inicie sesión para continuar",
+    "Proceed": "Continuar",
+    "SetPasswordLater": "Estableceré una contraseña más tarde",
+    "SetPasswordNow": "Estableceré una contraseña ahora",
+    "LoginAsGuest": "Continuar como invitado",
+    "SignUpToCreateWorkspace": "No hay espacios de trabajo con acceso de invitado. Por favor, regístrese para crear el suyo.",
+    "WhatIsYourName": "¿Cuál es su nombre?"
   }
 }

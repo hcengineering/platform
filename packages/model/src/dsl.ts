@@ -14,43 +14,44 @@
 //
 
 import core, {
-  Account,
-  AttachedDoc,
-  Attribute,
-  Class,
-  Classifier,
+  type PersonId,
+  type AttachedDoc,
+  type Attribute,
+  type Class,
+  type Classifier,
   ClassifierKind,
-  Data,
+  type Data,
   DateRangeMode,
-  Doc,
-  Domain,
-  Enum,
-  EnumOf,
+  type Doc,
+  type Domain,
+  type Enum,
+  type EnumOf,
   Hierarchy,
-  Hyperlink,
-  Mixin as IMixin,
-  IndexKind,
-  Interface,
-  Markup,
-  MarkupBlobRef,
-  MixinData,
-  Obj,
-  PropertyType,
-  Rank,
-  Ref,
-  RefTo,
-  Space,
-  Timestamp,
-  Tx,
-  TxCreateDoc,
+  type Hyperlink,
+  type Mixin as IMixin,
+  type IndexKind,
+  type Interface,
+  type Markup,
+  type MarkupBlobRef,
+  type MixinData,
+  type Obj,
+  type PropertyType,
+  type Rank,
+  type Ref,
+  type RefTo,
+  type Space,
+  type Timestamp,
+  type Tx,
+  type TxCreateDoc,
   TxFactory,
   TxProcessor,
-  Type,
-  TypeAny as TypeAnyType,
-  ArrOf as TypeArrOf,
-  Collection as TypeCollection,
-  TypeDate as TypeDateType,
-  generateId
+  type Type,
+  type TypeAny as TypeAnyType,
+  type ArrOf as TypeArrOf,
+  type Collection as TypeCollection,
+  type TypeDate as TypeDateType,
+  generateId,
+  type AccountUuid
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -350,7 +351,7 @@ export class Builder {
     space: Ref<Space>,
     attributes: Data<T>,
     objectId?: Ref<T>,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): T {
     const tx = txFactory.createTxCreateDoc(_class, space, attributes, objectId)
     if (modifiedBy !== undefined) {
@@ -522,4 +523,12 @@ export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
  */
 export function TypeRank (): Type<Rank> {
   return { _class: core.class.TypeRank, label: core.string.Rank, icon: core.icon.TypeRank }
+}
+
+export function TypePersonId (): Type<PersonId> {
+  return { _class: core.class.TypePersonId, label: core.string.PersonId }
+}
+
+export function TypeAccountUuid (): Type<AccountUuid> {
+  return { _class: core.class.TypeAccountUuid, label: core.string.AccountId }
 }

@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Attachment, SavedAttachments } from '@hcengineering/attachment'
   import { AttachmentPreview, savedAttachmentsStore } from '@hcengineering/attachment-resources'
-  import { Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { getDisplayTime, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { getName as getContactName } from '@hcengineering/contact'
+  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getDisplayTime, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
@@ -48,19 +48,14 @@
     })
   }
 
-  function getName (
-    attach: Attachment,
-    personAccountByIdStore: IdMap<PersonAccount>,
-    personByIdStore: IdMap<Person>
-  ): string | undefined {
-    const acc = personAccountByIdStore.get(attach.modifiedBy as Ref<PersonAccount>)
-    if (acc !== undefined) {
-      const emp = personByIdStore.get(acc?.person)
-      if (emp !== undefined) {
-        return getContactName(client.getHierarchy(), emp)
-      }
+  async function getName (attach: Attachment): Promise<string | undefined> {
+    const person = await getPersonByPersonId(attach.modifiedBy)
+
+    if (person != null) {
+      return getContactName(client.getHierarchy(), person)
     }
   }
+
   function handleMessageClicked (message?: ActivityMessage): void {
     void openMessageFromSpecial(message)
   }
@@ -99,13 +94,15 @@
           <Lazy>
             <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
             <div class="label">
-              <Label
-                label={chunter.string.SharedBy}
-                params={{
-                  name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
-                  time: getDisplayTime(attach.modifiedOn)
-                }}
-              />
+              {#await getName(attach.$lookup.attachedTo) then name}
+                <Label
+                  label={chunter.string.SharedBy}
+                  params={{
+                    name,
+                    time: getDisplayTime(attach.modifiedOn)
+                  }}
+                />
+              {/await}
             </div>
           </Lazy>
         </div>

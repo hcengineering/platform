@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Employee, Person, formatName } from '@hcengineering/contact'
-  import { employeeByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import documents, {
+    ControlledDocument,
     DocumentRequest,
-    emptyBundle,
-    extractValidationWorkflow
+    DocumentValidationState,
+    emptyBundle
   } from '@hcengineering/controlled-documents'
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
@@ -30,7 +31,7 @@
     $controlledDocument as controlledDocument,
     $documentSnapshots as documentSnapshots
   } from '../../stores/editors/document/editor'
-  import { formatSignatureDate } from '../../utils'
+  import { formatSignatureDate, extractValidationWorkflow } from '../../utils'
 
   let requests: DocumentRequest[] = []
 
@@ -45,16 +46,15 @@
     })
   }
 
-  $: workflow = extractValidationWorkflow(
-    hierarchy,
-    {
-      ...emptyBundle(),
-      ControlledDocument: doc ? [doc] : [],
-      DocumentRequest: requests,
-      DocumentSnapshot: $documentSnapshots
-    },
-    (ref) => $personIdByAccountId.get(ref)
-  )
+  let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]>
+  $: void extractValidationWorkflow(hierarchy, {
+    ...emptyBundle(),
+    ControlledDocument: doc ? [doc] : [],
+    DocumentRequest: requests,
+    DocumentSnapshot: $documentSnapshots
+  }).then((res) => {
+    workflow = res
+  })
 
   $: state = (doc ? workflow?.get(doc._id) ?? [] : [])[0]
   $: signers = (state?.approvals ?? [])

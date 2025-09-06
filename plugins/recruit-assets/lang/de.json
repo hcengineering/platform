@@ -105,26 +105,24 @@
     "MoveApplication": "Zu anderer Stelle verschieben",
     "SearchVacancy": "Stelle suchen...",
     "Organizations": "Unternehmen",
-
+    
     "TemplateReplace": "Möchten Sie die neue Vorlage anwenden?",
     "TemplateReplaceConfirm": "Alle Felder werden mit den Werten der neuen Vorlage überschrieben",
     "Apply": "Anwenden",
-
+    
     "OpenVacancyList": "Liste öffnen",
     "Export": "Exportieren",
     "ConfigLabel": "Rekrutierung",
     "ConfigDescription": "Erweiterung zur Verwaltung von Talenten/Bewerbern und Stellen.",
     "MyApplications": "Meine Bewerbungen",
-
+    
     "ShowApplications": "Bewerbungen anzeigen",
     "GetTalentIds": "Talent-IDs abrufen",
     "HideDoneState": "Abgeschlossene Bewerbungen ausblenden",
     "HideArchivedVacancies": "Archivierte Stellen ausblenden",
     "HideApplicantsFromArchivedVacancies": "Aus archivierten Stellen ausblenden",
     "CreateNewSkills": "Neue Fähigkeiten erstellen, wenn keine bestehenden gefunden werden",
-    "SwapFirstAndLastNames": "Vor- und Nachnamen tauschen",
-    "ForbidCreateVacancyPermission": "Stellenerstellung verbieten",
-    "ForbidCreateVacancyPermissionDescription": "Verbietet Benutzern das Erstellen neuer Stellenangebote"
+    "SwapFirstAndLastNames": "Vor- und Nachnamen tauschen"
   },
   "status": {
     "ApplicationExists": "Bewerbung existiert bereits",

@@ -14,10 +14,13 @@
 //
 
 import { Channel } from '@hcengineering/chunter'
+import type { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
 
 export enum AnalyticEventType {
   SetUser = 'setUser',
+  SetAlias = 'setAlias',
   SetTag = 'setTag',
+  SetGroup = 'setGroup',
   Navigation = 'navigation',
   Error = 'error',
   CustomEvent = 'customEvent'
@@ -25,15 +28,16 @@ export enum AnalyticEventType {
 
 export interface AnalyticEvent {
   event: AnalyticEventType
-  params: Record<string, any>
+  properties: Record<string, any>
   timestamp: number
+  distinct_id: string
 }
 
 export interface OnboardingChannel extends Channel {
-  workspaceId: string
+  workspaceId: WorkspaceUuid
   workspaceName: string
   workspaceUrl: string
-  email: string
+  account: AccountUuid
   userName: string
   disableAIReplies: boolean
   showAIReplies: boolean

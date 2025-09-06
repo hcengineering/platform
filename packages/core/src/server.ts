@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, DocIndexState, Domain, Ref } from './classes'
-import { MeasureContext } from './measurements'
-import { DocumentQuery, FindOptions } from './storage'
+import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
+import { type MeasureContext } from '@hcengineering/measurements'
+import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
-import type { WorkspaceIdWithUrl } from './utils'
+import { type WorkspaceIds } from './utils'
 
 /**
  * @public
@@ -27,6 +27,8 @@ export interface DocInfo {
   hash: string
 
   size?: number
+
+  contentType?: string
 }
 /**
  * @public
@@ -36,32 +38,42 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
-export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
+export interface BroadcastTargetResult {
+  target: AccountUuid[]
+}
+
+export interface BroadcastExcludeResult {
+  exclude: AccountUuid[]
+}
+
+export type BroadcastResult = BroadcastTargetResult | BroadcastExcludeResult | undefined
+export type BroadcastTargets = Record<string, (tx: Tx) => Promise<BroadcastResult>>
 
 export interface SessionData {
   broadcast: {
     txes: Tx[]
     targets: BroadcastTargets // A set of broadcast filters if required
+    queue: Tx[] // Queue only broadcast
+    sessions: Record<string, Tx[]> // Session based broadcast
   }
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
-
-  userEmail: string
+  account: Account
+  service: string
   sessionId: string
   admin?: boolean
-
   isTriggerCtx?: boolean
+  hasDomainBroadcast?: boolean
+  workspace: WorkspaceIds
+  socialStringsToUsers: Map<
+  PersonId,
+  {
+    accontUuid: AccountUuid
+    role: AccountRole
+  }
+  >
 
-  account: Account
-
-  getAccount: (account: Ref<Account>) => Account | undefined
-
-  workspace: WorkspaceIdWithUrl
-  branding: Branding | null
-
-  fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
-
-  asyncRequests?: (() => Promise<void>)[]
+  asyncRequests?: ((ctx: MeasureContext, id?: string) => Promise<void>)[]
 }
 
 /**

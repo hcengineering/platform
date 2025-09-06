@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "取消",
+    "Pause": "暂停",
+    "Stop": "停止",
+    "Resume": "继续",
+    "Record": "录制",
+    "Done": "完成",
+    "CancelRecording": "取消录制",
+    "CancelRecordingConfirm": "您确定要取消录制吗？",
+    "RestartRecording": "重新开始录制",
+    "RestartRecordingConfirm": "您确定要重新开始录制吗？",
+    "ScreenRecordingName": "屏幕录制 {date}",
+    "CameraRecordingName": "相机录制 {date}",
+    "ClickToSkip": "点击跳过",
+    "RecordVideo": "录制视频",
+    "ShareWithAudio": "共享音频",
+    "ShareScreen": "共享屏幕",
+    "StopSharing": "停止共享",
+    "SelectVideoToRecord": "启用摄像头或共享屏幕以进行录制",
+    "CameraSize": "摄像头大小",
+    "CameraPos": "摄像头位置",
+    "Small": "小",
+    "Medium": "中",
+    "Large": "大",
+    "TopLeft": "左上",
+    "TopRight": "右上",
+    "BottomLeft": "左下",
+    "BottomRight": "右下",
+    "Resolution": "分辨率",
+    "Original": "原始"
+  }
+}

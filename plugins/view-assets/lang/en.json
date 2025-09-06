@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "contains",
+    "NotContains": "does not contain",
     "MoveClass": "Move {class}",
     "SelectToMove": "Select the {classLabel} you want to move {class} to.",
     "Delete": "Delete",
@@ -49,6 +50,8 @@
     "CustomizeView": "Customize view",
     "Filter": "Filter",
     "ClearFilters": "Clear filters",
+    "FilterLessThan": "Less than",
+    "FilterGreaterThan": "Greater than",
     "FilterIsNot": "is not",
     "FilterIsEither": "is",
     "FilterIsEitherPlural": "is",
@@ -104,8 +107,8 @@
     "Between": "is between",
     "ShowColors": "Use colors",
     "Show": "Show",
-    "FilterArrayAll": "includes all",
-    "FilterArrayAny": "includes any",
+    "FilterArrayAll": "all",
+    "FilterArrayAny": "any",
     "Or": "Or",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copy to clipboard",
@@ -129,6 +132,21 @@
     "Title": "Title",
     "HideArchived": "Hide archived",
     "RemoveRelation": "Remove relation",
-    "RemoveRelationConfirmation": "Do you want to remove relation?"
+    "RemoveRelationConfirmation": "Do you want to remove relation?",
+    "MasterDetail": "Master-detail",
+    "Tree": "Tree",
+    "Document": "Document",
+    "Loading": "Loading...",
+    "NoRelations": "No relations",
+    "ReadOnlyWarningTitle": "✨ Anonymous Guest Demo",
+    "ReadOnlyWarningMessage": "You're in view-only mode. Choose your path: Join this workspace to collaborate (as guest) or create your own space to fully manage projects — tasks, deadlines, team!",
+    "ReadOnlyJoinWorkspace": "Join workspace",
+    "ReadOnlySignUp": "Create workspace",
+    "PermissionWarningTitle": "✨ Level up your access!",
+    "PermissionWarningMessage": "Your current role has limited permissions. To unlock this and other advanced features, ask your workspace admin to upgrade your access level!",
+    "Icon": "Icon",
+    "Color": "Color",
+    "AutomationOnly": "Automation only",
+    "CopyLink": "Copy link"
   }
 }

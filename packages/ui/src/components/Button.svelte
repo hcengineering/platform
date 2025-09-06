@@ -63,6 +63,7 @@
   export let showTooltip: LabelAndProps | undefined = undefined
   export let short: boolean = false
   export let shrink: number = 0
+  export let flex: string | undefined = undefined
   export let accent: boolean = false
   export let noFocus: boolean = false
   export let noPrint: boolean = false
@@ -146,6 +147,7 @@
   style:min-width={minWidth}
   style:width
   style:height
+  style:flex
   style:flex-shrink={shrink}
   style:padding
   {title}
@@ -171,7 +173,7 @@
   {/if}
   {#if loading}
     <div
-      class="btn-icon pointer-events-none spinner"
+      class="btn-icon pointer-events-none spinner pl-2"
       class:resetIconSize={resetIconSize === 'icon'}
       style:color={primary ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
     >

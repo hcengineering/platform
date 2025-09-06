@@ -19,12 +19,13 @@
   import NodeMarks from '../NodeMarks.svelte'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
 </script>
 
 {#if node}
   {@const marks = node.marks ?? []}
 
   <NodeMarks {marks}>
-    <LiteNodeContent {node} />
+    <LiteNodeContent {node} {colorInherit} />
   </NodeMarks>
 {/if}

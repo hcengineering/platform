@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Una vez enviado, no se podrán modificar las respuestas. ¿Seguro que desea enviarlo ahora?",
     "ValidateFail": "Faltan respuestas a algunas preguntas obligatorias",
     "ValidateInfo": "Así es como verán los usuarios el formulario. Pruebe ingresando respuestas y seleccionando opciones para probar la encuesta. El icono verde en la parte superior indica que el formulario está correctamente completado.",
-    "ValidateOk": "El formulario está correctamente completado"
+    "ValidateOk": "El formulario está correctamente completado",
+    "ConfigLabel": "Encuestas",
+    "ConfigDescription": "Extensión para gestionar encuestas"
   }
 }

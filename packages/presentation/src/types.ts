@@ -10,7 +10,9 @@ import {
   type Ref,
   type RelatedDocument,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type BlobMetadata,
+  type AccountRole
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
@@ -91,6 +93,7 @@ export interface ComponentExt {
 export interface ComponentPointExtension extends Doc, ComponentExt {
   // Extension point we should extend.
   extension: ComponentExtensionId
+  accessLevel?: AccountRole
 }
 
 export type DocCreatePhase = 'pre' | 'post'
@@ -183,11 +186,6 @@ export interface DocRules extends Doc {
  * @public
  */
 export type FileOrBlob = File | Blob
-
-/**
- * @public
- */
-export type BlobMetadata = Record<string, any>
 
 /**
  * @public

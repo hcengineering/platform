@@ -15,28 +15,29 @@
 //
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
-  import { Document, DocumentEvents } from '@hcengineering/document'
+  import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
+  import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
+
   import {
     Button,
     ButtonItem,
     Component,
     FocusHandler,
     IconMoreH,
-    IconWithEmoji,
     Label,
     TimeSince,
     createFocusManager,
     getPlatformColorDef,
-    navigate,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -46,14 +47,12 @@
     IconPicker,
     ParentsNavigator,
     RelationsEditor,
-    getObjectLinkFragment,
     restrictionStore,
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
-  import { starDocument, unstarDocument, unlockContent } from '..'
+  import { starDocument, unlockContent, unstarDocument } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -85,6 +84,9 @@
   let title = ''
   let innerWidth: number
 
+  let isCopied = false
+  let copyTimeout: ReturnType<typeof setTimeout>
+
   let headings: Heading[] = []
 
   let loadedDocumentContent = false
@@ -103,6 +105,7 @@
 
   onDestroy(async () => {
     void notificationClient.then((client) => client.readDoc(_id))
+    clearTimeout(copyTimeout)
   })
 
   const starredQuery = createQuery()
@@ -232,10 +235,17 @@
   $: actions = [
     {
       icon: view.icon.CopyId,
-      label: document.string.CopyDocumentUrl,
+      label: isCopied ? document.string.DocumentUrlCopied : document.string.CopyDocumentUrl,
       action: () => {
         if (doc !== undefined) {
           void copyTextToClipboard(getDocumentUrl(doc))
+          isCopied = true
+
+          clearTimeout(copyTimeout)
+
+          copyTimeout = setTimeout(() => {
+            isCopied = false
+          }, 2000)
         }
       }
     },
@@ -250,6 +260,16 @@
   onMount(() => {
     Analytics.handleEvent(DocumentEvents.DocumentOpened, { id: _id })
   })
+
+  let spaceElement: Teamspace | undefined
+
+  $: if (doc?.space !== undefined) {
+    void client.findOne(document.class.Teamspace, { _id: doc.space }).then((res) => {
+      spaceElement = res
+    })
+  } else {
+    spaceElement = undefined
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -277,6 +297,9 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="title">
+      {#if spaceElement !== undefined}
+        <TeamspacePresenter value={spaceElement} noCursor /> /
+      {/if}
       <ParentsNavigator element={doc} />
       <DocumentPresenter value={doc} breadcrumb noUnderline />
       {#if locked}
@@ -332,7 +355,10 @@
               ? { icon: doc.color, size: 'large' }
               : {
                   size: 'large',
-                  fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+                  fill:
+                    doc.color !== undefined && typeof doc.color !== 'string'
+                      ? getPlatformColorDef(doc.color, $themeStore.dark).icon
+                      : 'currentColor'
                 }}
             disabled={readonly}
             showTooltip={{ label: document.string.Icon, direction: 'bottom' }}
@@ -383,13 +409,6 @@
             }}
             on:headings={(evt) => {
               headings = evt.detail
-            }}
-            on:open-document={async (event) => {
-              const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-              if (doc != null) {
-                const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-                navigate(location)
-              }
             }}
             on:loaded={() => {
               loadedDocumentContent = true

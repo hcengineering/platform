@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Camera": "Caméra",
+    "Microphone": "Microphone",
+    "Speaker": "Haut-parleur",
+    "DefaultCam": "Caméra par défaut",
+    "DefaultMic": "Microphone par défaut",
+    "DefaultSpeaker": "Haut-parleur par défaut",
+    "TurnOnCam": "Allumer la caméra",
+    "TurnOffCam": "Éteindre la caméra",
+    "TurnOnMic": "Allumer le microphone",
+    "TurnOffMic": "Éteindre le microphone",
+    "NoCam": "Aucune caméra",
+    "NoMic": "Aucun microphone",
+    "NoSpeaker": "Aucun haut-parleur",
+    "On": "Allumé",
+    "Off": "Éteint"
+  }
+}

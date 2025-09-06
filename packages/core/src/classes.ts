@@ -16,7 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
-import { Tx } from './tx'
+import { type WorkspaceDataId, type WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -69,6 +69,38 @@ export interface Obj {
   _class: Ref<Class<this>>
 }
 
+export interface Account {
+  uuid: AccountUuid
+  role: AccountRole
+  primarySocialId: PersonId
+  socialIds: PersonId[]
+  fullSocialIds: SocialId[]
+}
+
+/**
+ * @public
+ * Global person UUID.
+ */
+export type PersonUuid = string & { __personUuid: true }
+
+/**
+ * @public
+ * Global person account UUID.
+ * The same UUID as PersonUuid but for when account exists.
+ */
+export type AccountUuid = PersonUuid & { __accountUuid: true }
+
+/**
+ * @public
+ * Generated identifier of a social id linked to a global person.
+ */
+export type PersonId = string & { __personId: true }
+
+export interface BasePerson {
+  name: string
+  personUuid?: PersonUuid
+}
+
 /**
  * @public
  */
@@ -76,8 +108,8 @@ export interface Doc<S extends Space = Space> extends Obj {
   _id: Ref<this>
   space: Ref<S>
   modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
-  createdBy?: Ref<Account> // Marked as optional since it will be filled by platform.
+  modifiedBy: PersonId
+  createdBy?: PersonId // Marked as optional since it will be filled by platform.
   createdOn?: Timestamp // Marked as optional since it will be filled by platform.
 }
 
@@ -175,6 +207,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   shortLabel?: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 
   // Extra customization properties
   [key: string]: any
@@ -205,6 +238,11 @@ export interface Classifier extends Doc, UXObject {
  * @public
  */
 export type Domain = string & { __domain: true }
+
+/**
+ * @public
+ */
+export type OperationDomain = string & { __domain: true }
 
 /**
  * @public
@@ -382,6 +420,11 @@ export const DOMAIN_RELATION = 'relation' as Domain
 /**
  * @public
  */
+export const DOMAIN_COLLABORATOR = 'collaborator' as Domain
+
+/**
+ * @public
+ */
 export interface TransientConfiguration extends Class<Doc> {
   // If set will not store transient objects into memdb
   broadcastOnly: boolean
@@ -392,8 +435,6 @@ export interface TransientConfiguration extends Class<Doc> {
  * @public
  */
 export const DOMAIN_BLOB = 'blob' as Domain
-
-export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
 
 /**
  * @public
@@ -409,9 +450,9 @@ export interface Space extends Doc {
   name: string
   description: string
   private: boolean
-  members: Arr<Ref<Account>>
+  members: AccountUuid[]
   archived: boolean
-  owners?: Ref<Account>[]
+  owners?: AccountUuid[]
   autoJoin?: boolean
 }
 
@@ -452,7 +493,7 @@ export interface SpaceType extends Doc {
   name: string
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
-  members?: Ref<Account>[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
+  members?: AccountUuid[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
   autoJoin?: boolean // if true, all new users will be added to space automatically
   targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
   roles: CollectionSize<Role>
@@ -471,7 +512,7 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
  * @public
  * Defines assignment of employees to a role within a space
  */
-export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
+export type RolesAssignment = Record<Ref<Role>, AccountUuid[] | undefined>
 
 /**
  * @public
@@ -479,10 +520,6 @@ export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
  */
 export interface Permission extends Doc {
   label: IntlString
-  txClass?: Ref<Class<Tx>>
-  forbid?: boolean
-  objectClass?: Ref<Class<Doc>>
-  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }
@@ -490,41 +527,57 @@ export interface Permission extends Doc {
 /**
  * @public
  */
-export interface Account extends Doc {
-  email: string
-  role: AccountRole
-
-  person?: Ref<Doc>
-}
-
-/**
- * @public
- */
 export enum AccountRole {
+  ReadOnlyGuest = 'READONLYGUEST',
   DocGuest = 'DocGuest',
   Guest = 'GUEST',
   User = 'USER',
   Maintainer = 'MAINTAINER',
-  Owner = 'OWNER'
+  Owner = 'OWNER',
+  Admin = 'ADMIN'
 }
 
 /**
  * @public
  */
 export const roleOrder: Record<AccountRole, number> = {
-  [AccountRole.DocGuest]: 0,
-  [AccountRole.Guest]: 1,
-  [AccountRole.User]: 2,
-  [AccountRole.Maintainer]: 3,
-  [AccountRole.Owner]: 4
+  [AccountRole.ReadOnlyGuest]: 5,
+  [AccountRole.DocGuest]: 10,
+  [AccountRole.Guest]: 20,
+  [AccountRole.User]: 30,
+  [AccountRole.Maintainer]: 40,
+  [AccountRole.Owner]: 50,
+  [AccountRole.Admin]: 100
+}
+
+export interface TxAccessLevel extends Class<Doc> {
+  createAccessLevel?: AccountRole
+  removeAccessLevel?: AccountRole
+  updateAccessLevel?: AccountRole
 }
 
 /**
  * @public
  */
+export interface Person {
+  uuid: PersonUuid
+  firstName: string
+  lastName: string
+  country?: string
+  city?: string
+}
+
+export interface PersonInfo extends BasePerson {
+  socialIds: SocialId[]
+}
+
+/**
+ * @public
+ */
+// TODO: move to contact
 export interface UserStatus extends Doc {
   online: boolean
-  user: Ref<Account>
+  user: AccountUuid
 }
 
 /**
@@ -549,17 +602,6 @@ export interface MigrationState extends Doc {
  */
 export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
-}
-
-/**
- * @public
- *
- * Define status for full text indexing
- */
-export interface DocIndexState extends Doc {
-  objectClass: Ref<Class<Doc>>
-  needIndex: boolean
-  removed: boolean
 }
 
 /**
@@ -596,6 +638,19 @@ export interface Blob extends Doc {
   size: number
 }
 
+export interface BlobType {
+  file: Ref<Blob>
+
+  type: string
+
+  name: string
+  size: number
+
+  metadata?: BlobMetadata
+}
+
+export type Blobs = Record<string, BlobType>
+
 /**
  * For every blob will automatically add a lookup.
  *
@@ -616,13 +671,6 @@ export interface FullTextSearchContext extends Doc {
   toClass: Ref<Class<Doc>>
   fullTextSummary?: boolean
   forceIndex?: boolean
-
-  // If defined, will propagate changes to child's with defined set of classes
-  propagate?: Ref<Class<Doc>>[]
-  // If defined, will propagate all document from child's based on class
-  propagateClasses?: Ref<Class<Doc>>[]
-
-  childProcessingAllowed?: boolean
 }
 
 /**
@@ -634,18 +682,6 @@ export interface ConfigurationElement extends Class<Doc> {
   // Group for grouping.
   group: IntlString
 }
-
-export interface BlobType {
-  file: Ref<Blob>
-
-  type: string
-
-  name: string
-
-  metadata?: BlobMetadata
-}
-
-export type Blobs = Record<string, BlobType>
 
 /**
  * @public
@@ -730,6 +766,8 @@ export type WorkspaceMode =
   | 'pending-restore' // -> 'restoring'
   | 'restoring' // -> 'active'
 
+export type WorkspaceUserOperation = 'archive' | 'migrate-to' | 'unarchive' | 'delete' | 'reset-attempts'
+
 export function isActiveMode (mode?: WorkspaceMode): boolean {
   return mode === 'active'
 }
@@ -783,6 +821,20 @@ export type WorkspaceUpdateEvent =
   | 'delete-started'
   | 'delete-done'
 
+export interface WorkspaceInfo {
+  uuid: WorkspaceUuid
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
+  name: string
+  url: string
+  region?: string
+  branding?: string
+  createdOn: number
+  createdBy?: PersonUuid // Should always be set for NEW workspaces
+  billingAccount?: PersonUuid // Should always be set for NEW workspaces
+  allowReadOnlyGuest?: boolean // Should always be set for NEW workspaces
+  allowGuestSignUp?: boolean // Should always be set for NEW workspaces
+}
+
 export interface BackupStatus {
   dataSize: number
   blobsSize: number
@@ -793,36 +845,66 @@ export interface BackupStatus {
   backups: number
 }
 
-export interface BaseWorkspaceInfo {
-  workspace: string // An uniq workspace name, Database names
-  uuid?: string // An uuid for a workspace to be used already for cockroach data
-
-  disabled?: boolean
-  version?: Data<Version>
-  branding?: string
-
-  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
-  workspaceName?: string // An displayed workspace name
-  createdOn: number
-  lastVisit: number
-  createdBy: string
+export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
+  isDisabled?: boolean
+  versionMajor: number
+  versionMinor: number
+  versionPatch: number
+  lastVisit?: number
   mode: WorkspaceMode
-  progress?: number // Some progress
-
-  endpoint: string
-
-  region?: string // Transactor group name
-  targetRegion?: string // Transactor region to move to
-
+  processingProgress?: number
   backupInfo?: BackupStatus
+  processingAttemps: number
+}
+
+export interface WorkspaceMemberInfo {
+  person: AccountUuid
+  role: AccountRole
+}
+
+export enum SocialIdType {
+  EMAIL = 'email',
+  GITHUB = 'github',
+  GOOGLE = 'google',
+  PHONE = 'phone',
+  OIDC = 'oidc',
+  HULY = 'huly',
+  TELEGRAM = 'telegram'
+}
+
+export interface SocialId {
+  // generated ID so the actual social ID can be detached from a person w/o losing the ID in the linked database records
+  _id: PersonId
+
+  // Should never be changed after creation
+  type: SocialIdType
+  value: string
+  key: string // Calculated from type and value. Just for convenience.
+
+  displayValue?: string
+  verifiedOn?: number
+
+  isDeleted?: boolean // Social ids are soft-deleted so all objects created with them can still be properly displayed.
+}
+
+export interface AccountInfo {
+  timezone?: string
+  locale?: string
+}
+
+export type SocialKey = Pick<SocialId, 'type' | 'value'>
+
+export interface ClassCollaborators<T extends Doc> extends Doc {
+  attachedTo: Ref<Class<T>>
+  fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
+  provideSecurity?: boolean // If true, will provide security for collaborators
+}
+
+export interface Collaborator extends AttachedDoc {
+  collaborator: AccountUuid
 }
 
 /**
  * @public
  */
-export type ClientWorkspaceInfo = Omit<BaseWorkspaceInfo, 'workspaceUrl'> & {
-  lastProcessingTime?: number
-  attempts?: number
-  message?: string
-  workspaceId: string
-}
+export type IntegrationKind = string & { __IntegrationKind: true }

@@ -47,7 +47,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()._id
+  const acc = getCurrentAccount()
 
   let isThreadOpened = false
   let isAsideShown = false
@@ -70,14 +70,14 @@
     if (hierarchy.isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
-      return !space.members.includes(me)
+      return !space.members.includes(acc.uuid)
     }
 
     return false
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: me } })
+    await client.update(object as Space, { $push: { members: acc.uuid } })
   }
 
   defineSeparators('aside', panelSeparators)
@@ -140,7 +140,7 @@
             </div>
           </div>
         {:else}
-          <ChannelComponent {context} {object} {autofocus} />
+          <ChannelComponent {readonly} {context} {object} {autofocus} />
         {/if}
       {/key}
     </div>

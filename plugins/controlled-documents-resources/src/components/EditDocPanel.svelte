@@ -128,11 +128,15 @@
 
   let tabs: Tab[]
 
+  let content: HTMLElement
+
   $: tabs = [
     {
       label: documentRes.string.ContentTab,
       component: EditDocContent,
-      props: {}
+      props: {
+        boundary: content
+      }
     },
     {
       label: documentRes.string.ReasonAndImpact,
@@ -307,6 +311,7 @@
 {#if $controlledDocument !== null && attribute !== undefined}
   <Panel
     bind:innerWidth
+    bind:content
     isHeader={false}
     object={$controlledDocument}
     customAside={sideBar}

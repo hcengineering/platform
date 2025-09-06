@@ -99,13 +99,18 @@ export default plugin(textEditorId, {
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
     TodoList: '' as IntlString,
+    TodoItem: '' as IntlString,
     DrawingBoard: '' as IntlString,
     MermaidDiargram: '' as IntlString,
 
     TableOptions: '' as IntlString,
     SelectTable: '' as IntlString,
     SetCellHighlightColor: '' as IntlString,
-    SetTextColor: '' as IntlString
+    SetTextColor: '' as IntlString,
+
+    ConvertToLinkPreview: '' as IntlString,
+    ConvertToEmbedPreview: '' as IntlString,
+    UnableToLoadEmbeddedContent: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,
@@ -118,6 +123,7 @@ export default plugin(textEditorId, {
     Link: '' as Asset,
     ListNumber: '' as Asset,
     ListBullet: '' as Asset,
+    ListTodo: '' as Asset,
     Quote: '' as Asset,
     Code: '' as Asset,
     CodeBlock: '' as Asset,
@@ -135,6 +141,8 @@ export default plugin(textEditorId, {
     MergeCells: '' as Asset,
     SplitCells: '' as Asset,
     Brush: '' as Asset,
-    TextStyle: '' as Asset
+    TextStyle: '' as Asset,
+    LinkPreview: '' as Asset,
+    EmbedPreview: '' as Asset
   }
 })

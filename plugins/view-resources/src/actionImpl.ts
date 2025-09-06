@@ -164,10 +164,10 @@ async function Leave (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const myAccount = getCurrentAccount().uuid
   for (const obj of objs) {
-    if (obj.members.includes(me)) {
-      promises.push(client.update(obj, { $pull: { members: me } }))
+    if (obj.members.includes(myAccount)) {
+      promises.push(client.update(obj, { $pull: { members: myAccount } }))
     }
   }
   await Promise.all(promises)
@@ -177,10 +177,10 @@ async function Join (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const myAccount = getCurrentAccount().uuid
   for (const obj of objs) {
-    if (!obj.members.includes(me)) {
-      promises.push(client.update(obj, { $push: { members: me } }))
+    if (!obj.members.includes(myAccount)) {
+      promises.push(client.update(obj, { $push: { members: myAccount } }))
     }
   }
   await Promise.all(promises)

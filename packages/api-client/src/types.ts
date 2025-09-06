@@ -54,11 +54,11 @@ MarkupContent
  * @public
  * */
 export type PlatformClient = {
-  getAccount: () => Account
-
   getHierarchy: () => Hierarchy
 
   getModel: () => ModelDb
+
+  getAccount: () => Promise<Account>
 
   close: () => Promise<void>
 } & FindOperations &

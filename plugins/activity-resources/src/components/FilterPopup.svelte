@@ -20,6 +20,7 @@
   import { ActivityMessagesFilter } from '@hcengineering/activity'
 
   import activity from '../plugin'
+  import { getActivityNewestFirst } from '../utils'
 
   export let selectedFiltersRefs: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = activity.ids.AllFilter
   export let filters: ActivityMessagesFilter[] = []
@@ -29,7 +30,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
+  let activityOrderNewestFirst = getActivityNewestFirst()
 
   interface ActionMenu {
     label: IntlString

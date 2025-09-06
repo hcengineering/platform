@@ -1,9 +1,18 @@
 import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import { withRetry } from '@hcengineering/retry'
 
-import { getFileUrl, getCurrentWorkspaceId, getBlobUrl } from './file'
+import { getFileUrl, getCurrentWorkspaceUuid } from './file'
 import presentation from './plugin'
+
+export interface PreviewMetadata {
+  thumbnail?: {
+    width: number
+    height: number
+    blurhash: string
+  }
+}
 
 export interface PreviewConfig {
   image: string
@@ -19,7 +28,7 @@ export interface HLSMeta {
   source?: string
 }
 
-const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
+const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceUuid()}?file=:blobId&size=:size`
 
 /**
  *
@@ -66,31 +75,56 @@ export function getPreviewConfig (): PreviewConfig {
 export async function getBlobRef (
   file: Ref<Blob>,
   name?: string,
-  width?: number
+  width?: number,
+  height?: number
 ): Promise<{
     src: string
     srcset: string
   }> {
   return {
     src: getFileUrl(file, name),
-    srcset: getSrcSet(file, width)
+    srcset: getSrcSet(file, width, height)
   }
 }
 
-export async function getBlobSrcSet (file: Ref<Blob>, width?: number): Promise<string> {
-  return getSrcSet(file, width)
+export async function getBlobSrcSet (file: Ref<Blob>, width?: number, height?: number): Promise<string> {
+  return getSrcSet(file, width, height)
 }
 
-export function getSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
-function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | undefined): string {
+function blobToSrcSet (
+  cfg: PreviewConfig,
+  blob: Ref<Blob>,
+  width: number | undefined,
+  height: number | undefined
+): string {
   if (blob.includes('://')) {
     return ''
   }
 
-  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  const workspace = encodeURIComponent(getCurrentWorkspaceUuid())
+  const name = encodeURIComponent(blob)
+
+  const previewUrl = getMetadata(presentation.metadata.PreviewUrl) ?? ''
+  if (previewUrl !== '') {
+    if (width !== undefined) {
+      return (
+        getImagePreviewUrl(workspace, name, width, height ?? width, 1) +
+        ' 1x , ' +
+        getImagePreviewUrl(workspace, name, width, height ?? width, 2) +
+        ' 2x, ' +
+        getImagePreviewUrl(workspace, name, width, height ?? width, 3) +
+        ' 3x'
+      )
+    } else {
+      return ''
+    }
+  }
+
+  let url = cfg.image.replaceAll(':workspace', workspace)
   const downloadUrl = getFileUrl(blob)
 
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -98,28 +132,73 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
     url = concatLink(frontUrl ?? '', url)
   }
   url = url.replaceAll(':downloadFile', encodeURIComponent(downloadUrl))
-  url = url.replaceAll(':blobId', encodeURIComponent(blob))
+  url = url.replaceAll(':blobId', name)
 
   let result = ''
-  const fu = url
   if (width !== undefined) {
     result +=
-      fu.replaceAll(':size', `${width}`) +
+      formatImageSize(url, width, height ?? width, 1) +
       ' 1x , ' +
-      fu.replaceAll(':size', `${width * 2}`) +
+      formatImageSize(url, width, height ?? width, 2) +
       ' 2x, ' +
-      fu.replaceAll(':size', `${width * 3}`) +
+      formatImageSize(url, width, height ?? width, 3) +
       ' 3x'
   }
 
   return result
 }
 
+export function getPreviewThumbnail (file: string, width: number, height: number, dpr?: number): string {
+  return getImagePreviewUrl(
+    encodeURIComponent(getCurrentWorkspaceUuid()),
+    encodeURIComponent(file),
+    width,
+    height,
+    dpr ?? window.devicePixelRatio
+  )
+}
+
+export async function getPreviewMetadata (workspace: string, name: string): Promise<PreviewMetadata> {
+  const previewUrl = getMetadata(presentation.metadata.PreviewUrl) ?? ''
+
+  if (previewUrl !== '') {
+    const token = getMetadata(presentation.metadata.Token) ?? ''
+    const url = concatLink(previewUrl, `/metadata/${workspace}/${name}`)
+
+    try {
+      const response = await withRetry(async () => {
+        return await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      })
+      if (response.ok) {
+        const json = await response.json()
+        return json as PreviewMetadata
+      }
+    } catch (err) {
+      console.warn('Failed to fetch preview metadata', err)
+    }
+  }
+  return {}
+}
+
+function getImagePreviewUrl (workspace: string, name: string, width: number, height: number, dpr: number): string {
+  const previewUrl = getMetadata(presentation.metadata.PreviewUrl) ?? ''
+  const url = `/image/fit=cover,width=${width},height=${height},dpr=${dpr}/${workspace}/${name}`
+  return concatLink(previewUrl, url)
+}
+
+function formatImageSize (url: string, width: number, height: number, dpr: number): string {
+  return url
+    .replaceAll(':size', `${width * dpr}`)
+    .replaceAll(':width', `${width}`)
+    .replaceAll(':height', `${height}`)
+    .replaceAll(':dpr', `${dpr}`)
+}
+
 /***
  * @deprecated, please use Blob direct operations.
  */
-export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getFileSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
 /**
@@ -129,7 +208,7 @@ export async function getVideoMeta (file: string, filename?: string): Promise<Vi
   const cfg = getPreviewConfig()
 
   let url = cfg.video
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
     .replaceAll(':blobId', encodeURIComponent(file))
 
   if (url === '') {
@@ -145,12 +224,7 @@ export async function getVideoMeta (file: string, filename?: string): Promise<Vi
   try {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     if (response.ok) {
-      const result = (await response.json()) as VideoMeta
-      if (result.hls !== undefined) {
-        result.hls.source = getBlobUrl(result.hls.source ?? '')
-        result.hls.thumbnail = getBlobUrl(result.hls.thumbnail ?? '')
-      }
-      return result
+      return (await response.json()) as VideoMeta
     }
   } catch {}
 }

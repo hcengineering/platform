@@ -2,41 +2,48 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import chunter from '@hcengineering/chunter'
 import core, {
-  Account,
   BrandingMap,
+  buildSocialIdString,
   Client,
   ClientConnectEvent,
-  ClientWorkspaceInfo,
   DocumentUpdate,
   isActiveMode,
-  isArchivingMode,
   isDeletingMode,
   MeasureContext,
+  PersonId,
   RateLimiter,
-  Ref,
-  systemAccountEmail,
+  SocialIdType,
+  systemAccountUuid,
   TimeRateLimiter,
-  TxOperations
+  TxOperations,
+  versionToString,
+  WorkspaceInfoWithStatus,
+  WorkspaceUuid,
+  type PersonUuid,
+  type Ref
 } from '@hcengineering/core'
-import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
-import { getMongoClient, MongoClientReference } from '@hcengineering/mongo'
-import { setMetadata } from '@hcengineering/platform'
+import github, {
+  GithubAuthentication,
+  githubId,
+  makeQuery,
+  type GithubIntegration,
+  githubIntegrationKind
+} from '@hcengineering/github'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { generateToken } from '@hcengineering/server-token'
+import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
 import { Installation, type InstallationCreatedEvent, type InstallationUnsuspendEvent } from '@octokit/webhooks-types'
-import { Collection } from 'mongodb'
 import { App, Octokit } from 'octokit'
 
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger } from '@hcengineering/analytics-service'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import contact, { type Employee, type SocialIdentityRef } from '@hcengineering/contact'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { join } from 'path'
-import { getWorkspaceInfo } from './account'
 import { createPlatformClient } from './client'
 import config from './config'
 import { registerLoaders } from './loaders'
@@ -57,8 +64,12 @@ export interface InstallationRecord {
   suspended: boolean
 }
 
+interface IntegrationDataValue {
+  installationId: number | number[]
+}
+
 export class PlatformWorker {
-  private readonly clients: Map<string, GithubWorker> = new Map<string, GithubWorker>()
+  private readonly clients = new Map<WorkspaceUuid, GithubWorker>()
 
   storageAdapter!: StorageAdapter
 
@@ -66,16 +77,12 @@ export class PlatformWorker {
 
   integrations: GithubIntegrationRecord[] = []
 
-  mongoRef!: MongoClientReference
-
-  integrationCollection!: Collection<GithubIntegrationRecord>
-
   periodicTimer: any
   periodicSyncPromise: Promise<void> | undefined
 
   canceled = false
 
-  userManager!: UserManager
+  userManager: UserManager = new UserManager()
 
   rateLimits = new Map<string, TimeRateLimiter>()
 
@@ -85,7 +92,6 @@ export class PlatformWorker {
     readonly brandingMap: BrandingMap,
     readonly periodicSyncInterval = 10 * 60 * 1000 // 10 minutes
   ) {
-    setMetadata(serverToken.metadata.Secret, config.ServerSecret)
     registerLoaders()
   }
 
@@ -99,14 +105,6 @@ export class PlatformWorker {
   }
 
   public async initStorage (): Promise<void> {
-    this.mongoRef = getMongoClient(config.MongoURL)
-    const mongoClient = await this.mongoRef.getClient()
-
-    const db = mongoClient.db(config.ConfigurationDB)
-    this.integrationCollection = db.collection<GithubIntegrationRecord>('installations')
-
-    this.userManager = new UserManager(db.collection<GithubUserRecord>('users'))
-
     const storageConfig = storageConfigFromEnv()
     this.storageAdapter = buildStorageFromConfig(storageConfig)
   }
@@ -121,24 +119,70 @@ export class PlatformWorker {
     )
     this.clients.clear()
     await this.storageAdapter.close()
-    this.mongoRef.close()
   }
 
   async init (ctx: MeasureContext): Promise<void> {
-    this.integrations = await this.integrationCollection.find({}).toArray()
+    const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
+    const accountsClient = getAccountClient(config.AccountsURL, sysToken)
+
+    const allIntegrations = await accountsClient.listIntegrations({ kind: githubIntegrationKind })
+
+    this.integrations = []
+
+    for (const i of allIntegrations) {
+      if (i.workspaceUuid == null) {
+        continue
+      }
+      const installationId = (i.data as IntegrationDataValue)?.installationId
+      if (installationId !== undefined) {
+        this.integrations.push({
+          accountId: i.socialId,
+          workspace: i.workspaceUuid,
+          installationId: Array.isArray(installationId) ? installationId : [installationId]
+        })
+      } else {
+        ctx.warn('Integration without installationId', {
+          accountId: i.socialId,
+          workspace: i.workspaceUuid
+        })
+        await accountsClient.deleteIntegration({
+          kind: githubIntegrationKind,
+          workspaceUuid: i.workspaceUuid,
+          socialId: i.socialId
+        })
+      }
+    }
+
     await this.queryInstallations(ctx)
 
     for (const integr of [...this.integrations]) {
       // We need to check and remove integrations without a real integration's
-      if (!this.installations.has(integr.installationId)) {
-        ctx.warn('Installation was deleted during service shutdown', {
-          installationId: integr.installationId,
+      const ids = integr.installationId
+
+      const missing = ids.filter((id) => !this.installations.has(id))
+      if (missing.length > 0) {
+        const has = ids.filter((id) => this.installations.has(id))
+        ctx.warn('Few Installation was deleted during service shutdown', {
+          installationId: missing,
           workspace: integr.workspace
         })
-        await this.integrationCollection.deleteOne({ installationId: integr.installationId })
-        this.integrations = this.integrations.filter((it) => it.installationId !== integr.installationId)
+        if (has.length > 0) {
+          await accountsClient.updateIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: integr.workspace,
+            socialId: integr.accountId,
+            data: { installationId: has } satisfies IntegrationDataValue
+          })
+        } else {
+          await accountsClient.deleteIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: integr.workspace,
+            socialId: integr.accountId
+          })
+        }
       }
     }
+    this.integrations = this.integrations.filter((it) => it.installationId.length > 0)
 
     void this.doSyncWorkspaces().catch((err) => {
       ctx.error('error during sync workspaces', { err })
@@ -154,11 +198,11 @@ export class PlatformWorker {
 
   async performPeriodicSync (): Promise<void> {
     // Sync authorized users information details.
-    const workspaces = await this.findUsersWorkspaces()
-    for (const [workspace, users] of workspaces) {
+    const workspaces = await this.getWorkspaces()
+    for (const workspace of workspaces) {
       const worker = this.clients.get(workspace)
       if (worker !== undefined) {
-        await this.ctx.with('syncUsers', {}, (ctx) => worker.syncUserData(ctx, users))
+        await this.ctx.with('syncUsers', {}, (ctx) => worker.syncUserData(ctx))
       }
     }
     this.periodicSyncPromise = undefined
@@ -203,61 +247,78 @@ export class PlatformWorker {
     }
   }
 
-  private async findUsersWorkspaces (): Promise<Map<string, GithubUserRecord[]>> {
-    const i = this.userManager.getAllUsers()
-    const workspaces = new Map<string, GithubUserRecord[]>()
-    while (await i.hasNext()) {
-      const userInfo = await i.next()
-      if (userInfo !== null) {
-        for (const ws of Object.keys(userInfo.accounts ?? {})) {
-          if (this.integrations.find((it) => it.workspace === ws) === undefined) {
-            // No workspace integration found, let's check workspace.
-            workspaces.set(ws, [...(workspaces.get(ws) ?? []), userInfo])
-          }
-        }
-      }
-    }
-    await i.close()
-    return workspaces
-  }
-
-  public async getUsers (workspace: string): Promise<GithubUserRecord[]> {
-    return await this.userManager.getUsers(workspace)
-  }
-
   public async getUser (login: string): Promise<GithubUserRecord | undefined> {
     return await this.userManager.getAccount(login)
   }
 
   async mapInstallation (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     installationId: number,
-    accountId: Ref<Account>
+    accountId: PersonId
   ): Promise<void> {
-    const oldInstallation = this.integrations.find((it) => it.installationId === installationId)
-    if (oldInstallation != null) {
-      ctx.info('update integration', { workspace, installationId, accountId })
+    const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
+    const accountsClient = getAccountClient(config.AccountsURL, sysToken)
+
+    const oldInstallation = this.integrations.filter((it) => it.installationId.includes(installationId))
+    if (oldInstallation.length > 0) {
+      ctx.info('update integrations', { workspace, installationId, accountId })
       // What to do with installation in different workspace?
       // Let's remove it and sync to new one.
-      if (oldInstallation.workspace !== workspace) {
-        //
-        const oldWorkspace = oldInstallation.workspace
+      const oldWorkspaces = oldInstallation.filter((it) => it.workspace !== workspace)
+      if (oldWorkspaces.length > 0) {
+        const oldWorkspace = oldWorkspaces[0].workspace
 
-        await this.integrationCollection.updateOne(
-          { installationId: oldInstallation.installationId },
-          { $set: { workspace } }
-        )
-        oldInstallation.workspace = workspace
+        for (const oldInstallation of oldWorkspaces) {
+          const has = oldInstallation.installationId.filter((it) => it !== installationId)
+          if (has.length > 0) {
+            oldInstallation.installationId = has
+            await accountsClient.updateIntegration({
+              kind: githubIntegrationKind,
+              workspaceUuid: oldWorkspace,
+              socialId: oldInstallation.accountId
+            })
+          } else {
+            await accountsClient.deleteIntegration({
+              kind: githubIntegrationKind,
+              workspaceUuid: oldWorkspace,
+              socialId: oldInstallation.accountId
+            })
+          }
+        }
+
+        // We need new integeration to be added to new workspace
+        const existingRecord = this.integrations.find((it) => it.workspace === workspace && it.accountId === accountId)
+        if (existingRecord !== undefined) {
+          existingRecord.installationId.push(installationId)
+          await accountsClient.updateIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: workspace,
+            socialId: accountId,
+            data: { installationId: existingRecord.installationId } satisfies IntegrationDataValue
+          })
+        } else {
+          await accountsClient.createIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: workspace,
+            socialId: accountId,
+            data: { installationId } satisfies IntegrationDataValue
+          })
+          this.integrations.push({
+            workspace,
+            installationId: [installationId],
+            accountId
+          })
+        }
 
         const oldWorker = this.clients.get(oldWorkspace) as GithubWorker
         if (oldWorker !== undefined) {
           await this.removeInstallationFromWorkspace(oldWorker.client, installationId)
-          await oldWorker.reloadRepositories(installationId)
+          await oldWorker.reloadRepositories(ctx, installationId)
         } else {
           let client: Client | undefined
           try {
-            ;({ client } = await createPlatformClient(oldWorkspace, 30000))
+            ;({ client } = await createPlatformClient(ctx, oldWorkspace, 30000))
             await this.removeInstallationFromWorkspace(oldWorker, installationId)
             await client.close()
           } catch (err: any) {
@@ -269,28 +330,49 @@ export class PlatformWorker {
       await this.updateInstallation(installationId)
 
       const worker = this.clients.get(workspace) as GithubWorker
-      await worker?.reloadRepositories(installationId)
+      await worker?.reloadRepositories(ctx, installationId)
       worker?.triggerUpdate()
 
       this.triggerCheckWorkspaces()
       return
     }
-    const record: GithubIntegrationRecord = {
-      workspace,
-      installationId,
-      accountId
-    }
     ctx.info('add integration', { workspace, installationId, accountId })
 
-    await ctx.with('add integration', { workspace, installationId, accountId }, async (ctx) => {
-      await this.integrationCollection.insertOne(record)
-      this.integrations.push(record)
-    })
+    await ctx.with(
+      'add integration',
+      {},
+      async (ctx) => {
+        const existing = this.integrations.find((it) => it.workspace === workspace && it.accountId === accountId)
+        if (existing !== undefined) {
+          existing.installationId.push(installationId)
+          await accountsClient.updateIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: existing.workspace,
+            socialId: existing.accountId,
+            data: { installationId: existing.installationId } satisfies IntegrationDataValue
+          })
+        } else {
+          const record: GithubIntegrationRecord = {
+            workspace,
+            installationId: [installationId],
+            accountId
+          }
+          await accountsClient.createIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: record.workspace,
+            socialId: record.accountId,
+            data: { installationId: record.installationId }
+          })
+          this.integrations.push(record)
+        }
+      },
+      { workspace, installationId, accountId }
+    )
     // We need to query installations to be sure we have it, in case event is delayed or not received.
     await this.updateInstallation(installationId)
 
     const worker = this.clients.get(workspace) as GithubWorker
-    await worker?.reloadRepositories(installationId)
+    await worker?.reloadRepositories(ctx, installationId)
     worker?.triggerUpdate()
 
     this.triggerCheckWorkspaces()
@@ -305,7 +387,7 @@ export class PlatformWorker {
     }
   }
 
-  async removeInstallation (ctx: MeasureContext, workspace: string, installationId: number): Promise<void> {
+  async removeInstallation (ctx: MeasureContext, workspace: WorkspaceUuid, installationId: number): Promise<void> {
     const installation = this.installations.get(installationId)
     if (installation !== undefined) {
       // Do not wait to github to process it
@@ -320,17 +402,45 @@ export class PlatformWorker {
           }
         })
 
-      await this.handleInstallationEventDelete(installationId)
+      await this.handleInstallationEventDelete(ctx, installationId)
+    } else {
+      await this.removeInstallationNoClient(workspace, ctx, installationId)
     }
     this.triggerCheckWorkspaces()
   }
 
-  async requestGithubAccessToken (payload: {
-    workspace: string
-    code: string
-    state: string
-    accountId: Ref<Account>
-  }): Promise<void> {
+  private async removeInstallationNoClient (
+    workspace: WorkspaceUuid,
+    ctx: MeasureContext<any>,
+    installationId: number
+  ): Promise<void> {
+    let client: Client | undefined
+    try {
+      const { client, endpoint } = await createPlatformClient(ctx, workspace, 30000)
+      ctx.info('connected to github', { workspace, endpoint })
+
+      const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
+      if (githubEnabled !== false) {
+        const wsIntegerations = await client.findAll(github.class.GithubIntegration, { installationId })
+        for (const intValue of wsIntegerations) {
+          const ops = new TxOperations(client, core.account.System)
+          await ops.remove<GithubIntegration>(intValue)
+        }
+      }
+    } finally {
+      await client?.close()
+    }
+  }
+
+  async requestGithubAccessToken (
+    ctx: MeasureContext,
+    payload: {
+      workspace: WorkspaceUuid
+      code: string
+      state: string
+      accountId: PersonId // Primary social Id
+    }
+  ): Promise<void> {
     try {
       const uri =
         'https://github.com/login/oauth/access_token?' +
@@ -349,7 +459,7 @@ export class PlatformWorker {
 
       const resultJson = await result.json()
       if (resultJson.error !== undefined) {
-        await this.updateAccountAuthRecord(payload, { error: null }, undefined, false)
+        await this.updateAccountAuthRecord(ctx, payload, { error: null }, undefined, false)
       } else {
         const okit = new Octokit({
           auth: resultJson.access_token,
@@ -359,6 +469,7 @@ export class PlatformWorker {
         const user = await okit.rest.users.getAuthenticated()
         const nowTime = Date.now() / 1000
         const dta: GithubUserRecord = {
+          account: payload.accountId,
           _id: user.data.login,
           token: resultJson.access_token,
           code: null,
@@ -376,12 +487,13 @@ export class PlatformWorker {
         if (existingUser == null) {
           await this.userManager.insertUser(dta)
         } else {
-          dta.accounts = { ...existingUser.accounts, [payload.workspace]: payload.accountId }
+          dta.accounts = { ...existingUser.accounts, [payload.workspace]: payload.accountId } // Put primary socialId for now.
           await this.userManager.updateUser(dta)
         }
 
         // Update workspace client login info.
         await this.updateAccountAuthRecord(
+          ctx,
           payload,
           {
             login: dta._id,
@@ -396,12 +508,13 @@ export class PlatformWorker {
       }
     } catch (err: any) {
       Analytics.handleError(err)
-      await this.updateAccountAuthRecord(payload, { error: errorToObj(err) }, undefined, false)
+      await this.updateAccountAuthRecord(ctx, payload, { error: errorToObj(err) }, undefined, false)
     }
   }
 
   private async updateAccountAuthRecord (
-    payload: { workspace: string, accountId: Ref<Account> },
+    ctx: MeasureContext,
+    payload: { workspace: WorkspaceUuid, accountId: PersonId },
     update: DocumentUpdate<GithubAuthentication>,
     dta: GithubUserRecord | undefined,
     revoke: boolean
@@ -413,7 +526,7 @@ export class PlatformWorker {
         platformClient = this.clients.get(payload.workspace)?.client
         if (platformClient === undefined) {
           shouldClose = true
-          ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
+          ;({ client: platformClient } = await createPlatformClient(ctx, payload.workspace, 30000))
         }
         const client = new TxOperations(platformClient, payload.accountId)
 
@@ -431,6 +544,8 @@ export class PlatformWorker {
           for (const personAuth of personAuths) {
             await client.remove(personAuth, Date.now(), payload.accountId)
           }
+
+          // TODO: Do we need to remove social ids?
         } else {
           if (personAuths.length > 0) {
             await client.update<GithubAuthentication>(personAuths[0], update, false, Date.now(), payload.accountId)
@@ -471,49 +586,118 @@ export class PlatformWorker {
           }
         }
 
-        // We need to re-bind previously created github:login account to a proper person.
-        const account = client.getModel().getObject(payload.accountId) as PersonAccount
-        const person = (await client.findOne(contact.class.Person, { _id: account.person })) as Person
+        const account = await client.findOne(contact.class.SocialIdentity, {
+          _id: payload.accountId as SocialIdentityRef
+        })
+        const person =
+          account !== undefined
+            ? await client.findOne(contact.mixin.Employee, { _id: account?.attachedTo as Ref<Employee> })
+            : undefined
         if (person !== undefined) {
           if (!revoke) {
             const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-            if (personSpace !== undefined) {
-              await createNotification(client, person, {
-                user: account._id,
-                space: personSpace._id,
-                message: github.string.AuthenticatedWithGithub,
-                props: {
-                  login: update.login
-                }
-              })
+            if (personSpace !== undefined && person.personUuid !== undefined) {
+              if (update.login != null) {
+                await createNotification(client, person, {
+                  user: person.personUuid,
+                  space: personSpace._id,
+                  message: github.string.AuthenticatedWithGithub,
+                  props: {
+                    login: update.login
+                  }
+                })
+              }
             }
 
-            const githubAccount = client.getModel().getAccountByEmail('github:' + update.login) as PersonAccount
-            if (githubAccount !== undefined && githubAccount.person !== account.person) {
-              const dummyPerson = githubAccount.person
-              // To add activity entry to dummy person.
-              await client.update(githubAccount, { person: account.person }, false, Date.now(), payload.accountId)
+            if (dta?._id !== undefined) {
+              const sysToken = generateToken(systemAccountUuid, payload.workspace, {
+                service: 'github'
+              })
+              const userToken = generateToken(person.personUuid as PersonUuid, payload.workspace, {
+                service: 'github'
+              })
+              const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
+              const userAccountClient = getAccountClient(config.AccountsURL, userToken)
 
-              const dPerson = (await client.findOne(contact.class.Person, { _id: dummyPerson })) as Person
-              if (person !== undefined && dPerson !== undefined) {
-                const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-                if (personSpace !== undefined) {
-                  await createNotification(client, dPerson, {
-                    user: githubAccount._id,
-                    space: personSpace._id,
-                    message: github.string.AuthenticatedWithGithubEmployee,
-                    props: {
-                      login: update.login
-                    }
+              // We only want not-deleted social ids here
+              const ids = await userAccountClient.getSocialIds()
+
+              let githubSocialId: PersonId | undefined = ids.find(
+                (it) => it.type === SocialIdType.GITHUB && it.value === dta?._id
+              )?._id
+              // We need to assign socialId to person in global account if missing and get it to match if exists.
+
+              if (githubSocialId === undefined) {
+                // We need to create a new social id for this account.
+                this.ctx.info('Create social id', {
+                  account: dta?._id,
+                  workspace: payload.workspace,
+                  personUuid: person.personUuid,
+                  ids
+                })
+                try {
+                  const pp = await sysAccountClient.findPersonBySocialKey(
+                    buildSocialIdString({ type: SocialIdType.GITHUB, value: dta?._id })
+                  )
+                  if (pp !== person.personUuid) {
+                    // TODO: We need to remove old social id association
+                  }
+
+                  githubSocialId = await sysAccountClient.addSocialIdToPerson(
+                    person.personUuid as PersonUuid,
+                    SocialIdType.GITHUB,
+                    dta?._id ?? '',
+                    true
+                  )
+                } catch (err: any) {
+                  this.ctx.error('Failed to create social id', {
+                    account: dta?._id,
+                    workspace: payload.workspace,
+                    error: err
+                  })
+                }
+              }
+
+              const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
+                _id: githubSocialId as SocialIdentityRef
+              })
+              if (githubSocialId !== undefined && socialIdentity === undefined) {
+                // We need to create a new social id for this account.
+
+                // We need to create social id github account
+                try {
+                  await client.addCollection(
+                    contact.class.SocialIdentity,
+                    contact.space.Contacts,
+                    person._id,
+                    contact.class.Person,
+                    'socialIds',
+                    {
+                      type: SocialIdType.GITHUB,
+                      value: dta._id.toLowerCase(),
+                      key: buildSocialIdString({
+                        type: SocialIdType.GITHUB,
+                        value: dta._id.toLowerCase()
+                      }),
+                      verifiedOn: Date.now()
+                    },
+                    githubSocialId as SocialIdentityRef
+                  )
+                } catch (err: any) {
+                  this.ctx.error('Failed to create social id', {
+                    account: dta?._id,
+                    workspace: payload.workspace,
+                    error: err,
+                    githubSocialId
                   })
                 }
               }
             }
           } else {
             const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-            if (personSpace !== undefined) {
+            if (personSpace !== undefined && person.personUuid !== undefined) {
               await createNotification(client, person, {
-                user: account._id,
+                user: person.personUuid,
                 space: personSpace._id,
                 message: github.string.AuthenticationRevokedGithub,
                 props: {
@@ -529,12 +713,15 @@ export class PlatformWorker {
             await syncUser(this.ctx, dta, personAuths[0], client, payload.accountId)
           } catch (err: any) {
             if (err.response?.data?.message === 'Bad credentials') {
-              await this.revokeUserAuth(dta)
+              await this.revokeUserAuth(ctx, dta)
             } else {
               this.ctx.error(`Failed to sync user ${dta._id}`, { error: errorToObj(err) })
             }
           }
         }
+      } catch (err: any) {
+        this.ctx.error('error workspace update', { err })
+        Analytics.handleError(err)
       } finally {
         if (shouldClose) {
           await platformClient?.close()
@@ -545,7 +732,7 @@ export class PlatformWorker {
     }
   }
 
-  async checkRefreshToken (auth: GithubUserRecord, force: boolean = false): Promise<void> {
+  async checkRefreshToken (ctx: MeasureContext, auth: GithubUserRecord, force: boolean = false): Promise<void> {
     if (auth.refreshToken != null && auth.expiresIn != null && auth.expiresIn < Date.now() / 1000) {
       const uri =
         'https://github.com/login/oauth/access_token?' +
@@ -566,7 +753,7 @@ export class PlatformWorker {
 
       if (resultJson.error !== undefined) {
         // We need to clear github integration info.
-        await this.revokeUserAuth(auth)
+        await this.revokeUserAuth(ctx, auth)
       } else {
         // Update okit
         const nowTime = Date.now() / 1000
@@ -595,8 +782,8 @@ export class PlatformWorker {
     return await this.userManager.getAccount(login)
   }
 
-  async getAccountByRef (workspace: string, ref: Ref<Account>): Promise<GithubUserRecord | undefined> {
-    return await this.userManager.getAccountByRef(workspace, ref)
+  async getAccountByRef (workspace: WorkspaceUuid, ref: PersonId): Promise<GithubUserRecord | undefined> {
+    return await this.userManager.getAccountByRef(this.ctx, workspace, ref)
   }
 
   private async updateInstallation (installationId: number): Promise<void> {
@@ -654,11 +841,12 @@ export class PlatformWorker {
   }
 
   async handleInstallationEvent (
+    ctx: MeasureContext,
     install: Installation,
     repositories: InstallationCreatedEvent['repositories'] | InstallationUnsuspendEvent['repositories'],
     enabled: boolean
   ): Promise<void> {
-    this.ctx.info('handle integration add', { installId: install.id, name: install.html_url })
+    ctx.info('handle integration add', { installId: install.id, name: install.html_url })
     const okit = await this.app.getInstallationOctokit(install.id)
     const iName = `${install.account.html_url ?? ''}`
 
@@ -679,8 +867,8 @@ export class PlatformWorker {
         integeration.enabled = enabled
       }
 
-      await worker.syncUserData(this.ctx, await this.getUsers(worker.workspace.name))
-      await worker.reloadRepositories(install.id)
+      await worker.syncUserData(this.ctx)
+      await worker.reloadRepositories(ctx, install.id)
 
       worker.triggerUpdate()
       worker.triggerSync()
@@ -690,15 +878,15 @@ export class PlatformWorker {
     this.triggerCheckWorkspaces()
   }
 
-  async handleInstallationEventDelete (installId: number): Promise<void> {
+  async handleInstallationEventDelete (ctx: MeasureContext, installId: number): Promise<void> {
     const existing = this.installations.get(installId)
     this.installations.delete(installId)
-    this.ctx.info('handle integration delete', { installId, name: existing?.installationName })
+    ctx.info('handle integration delete', { installId, name: existing?.installationName })
 
-    const interg = this.integrations.find((it) => it.installationId === installId)
+    const interg = this.integrations.filter((it) => it.installationId.includes(installId))
 
     // We already have, worker we need to update it.
-    const worker = this.getWorker(installId) ?? (interg !== undefined ? this.clients.get(interg.workspace) : undefined)
+    const worker = this.getWorker(installId) ?? (interg.length > 0 ? this.clients.get(interg[0].workspace) : undefined)
     if (worker !== undefined) {
       const integeration = worker.integrations.get(installId)
       if (integeration !== undefined) {
@@ -714,55 +902,68 @@ export class PlatformWorker {
     } else {
       this.ctx.info('No worker for removed installation', { installId, name: existing?.installationName })
       // No worker
+      const workspace = interg.length > 0 ? interg[0].workspace : undefined
+      if (workspace !== undefined) {
+        await this.removeInstallationNoClient(workspace, this.ctx, installId)
+      }
     }
-    this.integrations = this.integrations.filter((it) => it.installationId !== installId)
-    await this.integrationCollection.deleteOne({ installationId: installId })
+    if (interg.length > 0) {
+      const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
+      const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
+
+      for (const intgr of interg) {
+        const has = intgr.installationId.filter((it) => it !== installId)
+        if (has.length > 0) {
+          await sysAccountClient.updateIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: intgr.workspace,
+            socialId: intgr.accountId,
+            data: { installationId: has } satisfies IntegrationDataValue
+          })
+        } else {
+          intgr.installationId = []
+          await sysAccountClient.deleteIntegration({
+            kind: githubIntegrationKind,
+            workspaceUuid: intgr.workspace,
+            socialId: intgr.accountId
+          })
+        }
+      }
+    }
+    this.integrations = this.integrations.filter((it) => it.installationId.length > 0)
     this.triggerCheckWorkspaces()
   }
 
-  async getWorkspaces (): Promise<string[]> {
-    const workspaces = new Set(this.integrations.map((it) => it.workspace))
-
-    return Array.from(workspaces)
+  async getWorkspaces (): Promise<WorkspaceUuid[]> {
+    // Since few integeration could map into one workspace, we need to deduplicate
+    return Array.from(new Set(this.integrations.map((it) => it.workspace)))
   }
 
   checkedWorkspaces = new Set<string>()
 
   async checkWorkspaceIsActive (
-    token: string,
-    workspace: string
-  ): Promise<{ workspaceInfo: ClientWorkspaceInfo | undefined, needRecheck: boolean }> {
-    let workspaceInfo: ClientWorkspaceInfo | undefined
-    try {
-      workspaceInfo = await getWorkspaceInfo(token)
-    } catch (err: any) {
-      this.ctx.error('Workspace not found:', { workspace })
-      return { workspaceInfo: undefined, needRecheck: false }
+    workspace: WorkspaceUuid,
+    workspaceInfo?: WorkspaceInfoWithStatus,
+    needRecheck = false
+  ): Promise<{ workspaceInfo: WorkspaceInfoWithStatus | undefined, needRecheck: boolean }> {
+    if (workspaceInfo === undefined && needRecheck) {
+      const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
+      workspaceInfo = await getAccountClient(config.AccountsURL, token).getWorkspaceInfo()
     }
-    if (workspaceInfo?.workspace === undefined) {
+    if (workspaceInfo?.uuid === undefined) {
       this.ctx.error('No workspace exists for workspaceId', { workspace })
       return { workspaceInfo: undefined, needRecheck: false }
     }
-    if (workspaceInfo?.disabled === true || isDeletingMode(workspaceInfo?.mode)) {
-      if (!this.checkedWorkspaces.has(workspace)) {
-        this.checkedWorkspaces.add(workspace)
-        this.ctx.warn('Workspace is disabled', { workspace })
-      }
+    if (workspaceInfo?.isDisabled === true || isDeletingMode(workspaceInfo?.mode)) {
+      this.ctx.warn('Workspace is disabled', { workspace })
       return { workspaceInfo: undefined, needRecheck: false }
     }
     if (!isActiveMode(workspaceInfo?.mode)) {
-      const archived = isArchivingMode(workspaceInfo?.mode)
-      if (archived) {
-        if (!this.checkedWorkspaces.has(workspace)) {
-          this.checkedWorkspaces.add(workspace)
-          this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
-        }
-      } else {
-        this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
-      }
-      return { workspaceInfo: undefined, needRecheck: !archived }
+      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
+      return { workspaceInfo: undefined, needRecheck: true }
     }
-    const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
+
+    const lastVisit = (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
       if (!this.checkedWorkspaces.has(workspace)) {
@@ -778,143 +979,164 @@ export class PlatformWorker {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
     })
-    let workspaces = await this.getWorkspaces()
-    if (process.env.GITHUB_USE_WS !== undefined) {
-      workspaces = [process.env.GITHUB_USE_WS]
-    }
-    const toDelete = new Set<string>(this.clients.keys())
+    const workspaces = await this.getWorkspaces()
+    const toDelete = new Set<WorkspaceUuid>(this.clients.keys())
 
     const rateLimiter = new RateLimiter(5)
     const rechecks: string[] = []
     let idx = 0
-    const connecting = new Map<string, number>()
+    const connecting = new Map<
+    string,
+    {
+      time: number
+      version: string
+    }
+    >()
     const st = Date.now()
     const connectingInfo = setInterval(() => {
       this.ctx.info('****** connecting to workspaces ******', {
         connecting: connecting.size,
         time: Date.now() - st,
         workspaces: workspaces.length,
+        connected: this.clients.size,
         queue: rateLimiter.processingQueue.size
       })
       for (const [c, d] of connecting.entries()) {
-        this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d })
+        this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d.time, version: d.version })
       }
     }, 5000)
-    for (const workspace of workspaces) {
-      const widx = ++idx
-      if (this.clients.has(workspace)) {
-        toDelete.delete(workspace)
-        continue
-      }
-      await rateLimiter.add(async () => {
-        const token = generateToken(
-          systemAccountEmail,
-          {
-            name: workspace
-          },
-          { mode: 'github' }
-        )
-        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
-        if (workspaceInfo === undefined) {
-          if (needRecheck) {
-            rechecks.push(workspace)
-          }
-          return
+    try {
+      const token = generateToken(systemAccountUuid, undefined, { service: 'github', mode: 'github' })
+      const infos = new Map(
+        Array.from(await getAccountClient(config.AccountsURL, token).getWorkspacesInfo(workspaces)).map((it) => [
+          it.uuid,
+          it
+        ])
+      )
+      for (const workspace of workspaces) {
+        const widx = ++idx
+        if (this.clients.has(workspace)) {
+          toDelete.delete(workspace)
+          continue
         }
-        try {
-          const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
-          const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.workspace }, {})
-
-          connecting.set(workspaceInfo.workspace, Date.now())
-          workerCtx.info('************************* Register worker ************************* ', {
-            workspaceId: workspaceInfo.workspaceId,
-            workspace: workspaceInfo.workspace,
-            index: widx,
-            total: workspaces.length
-          })
-
-          let initialized = false
-          const worker = await GithubWorker.create(
-            this,
-            workerCtx,
-            this.installations,
-            {
-              name: workspace,
-              workspaceUrl: workspaceInfo.workspace,
-              workspaceName: workspace
-            },
-            branding,
-            this.app,
-            this.storageAdapter,
-            (workspace, event) => {
-              if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
-                void this.clients
-                  .get(workspace)
-                  ?.refreshClient(event === ClientConnectEvent.Upgraded)
-                  ?.catch((err) => {
-                    workerCtx.error('Failed to refresh', { error: err })
-                  })
-              }
-              if (initialized) {
-                // We need to check if workspace is inactive
-                void this.checkWorkspaceIsActive(token, workspace)
-                  .then((res) => {
-                    if (res === undefined) {
-                      this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
-                      this.clients.delete(workspace)
-                      void worker?.close().catch((err) => {
-                        this.ctx.error('Failed to close workspace', { workspace, error: err })
-                      })
-                    }
-                  })
-                  .catch((err) => {
-                    this.ctx.error('Failed to check workspace is active', { workspace, error: err })
-                  })
-              }
+        await rateLimiter.add(async () => {
+          const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(workspace, infos.get(workspace))
+          if (workspaceInfo === undefined) {
+            if (needRecheck) {
+              rechecks.push(workspace)
             }
-          )
-          if (worker !== undefined) {
-            initialized = true
-            workerCtx.info('************************* Register worker Done ************************* ', {
-              workspaceId: workspaceInfo.workspaceId,
-              workspace: workspaceInfo.workspace,
+            return
+          }
+          try {
+            const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
+            const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, { span: false })
+
+            connecting.set(workspaceInfo.uuid, {
+              time: Date.now(),
+              version: versionToString({
+                major: workspaceInfo.versionMajor,
+                minor: workspaceInfo.versionMinor,
+                patch: workspaceInfo.versionPatch
+              })
+            })
+            workerCtx.info('************************* Register worker ************************* ', {
+              workspaceId: workspaceInfo.uuid,
+              workspaceUrl: workspaceInfo.url,
+              versionMajor: workspaceInfo.versionMajor,
+              versionMinor: workspaceInfo.versionMinor,
+              versionPatch: workspaceInfo.versionPatch,
+              mode: workspaceInfo.mode,
               index: widx,
               total: workspaces.length
             })
-            // No if no integration, we will try connect one more time in a time period
-            this.clients.set(workspace, worker)
-          } else {
-            workerCtx.info(
-              '************************* Failed Register worker, timeout or integrations removed *************************',
+
+            let initialized = false
+            const worker = await GithubWorker.create(
+              this,
+              workerCtx,
+              this.installations,
               {
-                workspaceId: workspaceInfo.workspaceId,
-                workspace: workspaceInfo.workspace,
-                index: widx,
-                total: workspaces.length
+                dataId: workspaceInfo.dataId,
+                url: workspaceInfo.url,
+                uuid: workspaceInfo.uuid
+              },
+              branding,
+              this.app,
+              this.storageAdapter,
+              (workspace, event) => {
+                if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
+                  void this.clients
+                    .get(workspace)
+                    ?.refreshClient(event === ClientConnectEvent.Upgraded)
+                    ?.catch((err) => {
+                      workerCtx.error('Failed to refresh', { error: err })
+                    })
+                }
+                if (initialized) {
+                  // We need to check if workspace is inactive
+                  void this.checkWorkspaceIsActive(workspace, undefined, true)
+                    .then((res) => {
+                      if (res === undefined) {
+                        this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                        this.clients.delete(workspace)
+                        void worker?.close().catch((err) => {
+                          this.ctx.error('Failed to close workspace', { workspace, error: err })
+                        })
+                      }
+                    })
+                    .catch((err) => {
+                      this.ctx.error('Failed to check workspace is active', { workspace, error: err })
+                    })
+                }
               }
             )
+            if (worker !== undefined) {
+              initialized = true
+              workerCtx.info('************************* Register worker Done ************************* ', {
+                workspaceId: workspaceInfo.uuid,
+                workspaceUrl: workspaceInfo.url,
+                index: widx,
+                total: workspaces.length
+              })
+              this.clients.set(workspace, worker)
+            } else {
+              // No if no integration, we will try connect one more time in a time period
+              workerCtx.info(
+                '************************* Failed Register worker, timeout or integrations removed *************************',
+                {
+                  workspaceId: workspaceInfo.uuid,
+                  workspaceUrl: workspaceInfo.url,
+                  versionMajor: workspaceInfo.versionMajor,
+                  versionMinor: workspaceInfo.versionMinor,
+                  versionPatch: workspaceInfo.versionPatch,
+                  lastVisit: (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (24 * 60 * 60 * 1000),
+                  index: widx,
+                  total: workspaces.length
+                }
+              )
+              rechecks.push(workspace)
+            }
+          } catch (e: any) {
+            Analytics.handleError(e)
+            this.ctx.info("Couldn't create WS worker", { workspace, error: e })
             rechecks.push(workspace)
+          } finally {
+            connecting.delete(workspaceInfo.uuid)
           }
-        } catch (e: any) {
-          Analytics.handleError(e)
-          this.ctx.info("Couldn't create WS worker", { workspace, error: e })
-          rechecks.push(workspace)
-        } finally {
-          connecting.delete(workspaceInfo.workspace)
-        }
+        })
+      }
+      this.ctx.info('************************* Waiting To complete Workspace processing ************************* ', {
+        workspaces: this.clients.size,
+        rateLimiter: rateLimiter.processingQueue.size
       })
+      try {
+        await rateLimiter.waitProcessing()
+      } catch (e: any) {
+        Analytics.handleError(e)
+      }
+    } finally {
+      clearInterval(connectingInfo)
     }
-    this.ctx.info('************************* Waiting To complete Workspace processing ************************* ', {
-      workspaces: this.clients.size,
-      rateLimiter: rateLimiter.processingQueue.size
-    })
-    try {
-      await rateLimiter.waitProcessing()
-    } catch (e: any) {
-      Analytics.handleError(e)
-      this.ctx.error('Error', { err: e })
-    }
-    clearInterval(connectingInfo)
 
     this.ctx.info('************************* Check close deleted ************************* ', {
       workspaces: this.clients.size,
@@ -932,14 +1154,11 @@ export class PlatformWorker {
           })
         } catch (err: any) {
           Analytics.handleError(err)
-          this.ctx.error('Error', { err })
         }
       }
     }
     this.ctx.info('************************* Check workspaces done ************************* ', {
-      workspaces: this.clients.size,
-      recheckCount: rechecks.length,
-      workspacesToCheck: rechecks
+      workspaces: this.clients.size
     })
     return rechecks
   }
@@ -960,8 +1179,10 @@ export class PlatformWorker {
     const webhook = this.ctx.newChild(
       'webhook',
       {},
-      {},
-      new SplitLogger('webhook', { root: join(process.cwd(), 'logs'), pretty: true, enableConsole: false })
+      {
+        logger: new SplitLogger('webhook', { root: join(process.cwd(), 'logs'), pretty: true, enableConsole: false }),
+        span: false
+      }
     )
     webhook.info('Register webhook')
 
@@ -980,7 +1201,7 @@ export class PlatformWorker {
 
         const record = await this.getAccount(sender.login)
         if (record !== undefined) {
-          await this.revokeUserAuth(record)
+          await this.revokeUserAuth(webhook, record)
           await this.userManager.removeUser(sender.login)
         }
       }
@@ -1008,7 +1229,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(github.class.GithubPullRequest, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, github.class.GithubPullRequest, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1021,7 +1244,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(tracker.class.Issue, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, tracker.class.Issue, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1033,7 +1258,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(chunter.class.ChatMessage, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, chunter.class.ChatMessage, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1046,7 +1273,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(github.mixin.GithubProject, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, github.mixin.GithubProject, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1060,7 +1289,9 @@ export class PlatformWorker {
       if (repoWorker !== undefined) {
         if (payload.projects_v2_item.content_type === 'Issue') {
           catchEventError(
-            repoWorker.handleEvent(tracker.class.Issue, payload.installation?.id, payload),
+            this.ctx.with(name, {}, (ctx) =>
+              repoWorker.handleEvent(ctx, tracker.class.Issue, payload.installation?.id, payload)
+            ),
             payload.action,
             name,
             id,
@@ -1068,7 +1299,9 @@ export class PlatformWorker {
           )
         } else if (payload.projects_v2_item.content_type === 'PullRequest') {
           catchEventError(
-            repoWorker.handleEvent(github.class.GithubPullRequest, payload.installation?.id, payload),
+            this.ctx.with(name, {}, (ctx) =>
+              repoWorker.handleEvent(ctx, github.class.GithubPullRequest, payload.installation?.id, payload)
+            ),
             payload.action,
             name,
             id,
@@ -1083,7 +1316,9 @@ export class PlatformWorker {
         case 'created':
         case 'unsuspend': {
           catchEventError(
-            this.handleInstallationEvent(payload.installation, payload.repositories, true),
+            this.ctx.with(name, {}, (ctx) =>
+              this.handleInstallationEvent(ctx, payload.installation, payload.repositories, true)
+            ),
             payload.action,
             name,
             id,
@@ -1093,7 +1328,9 @@ export class PlatformWorker {
         }
         case 'suspend': {
           catchEventError(
-            this.handleInstallationEvent(payload.installation, payload.repositories, false),
+            this.ctx.with(name, {}, (ctx) =>
+              this.handleInstallationEvent(ctx, payload.installation, payload.repositories, false)
+            ),
             payload.action,
             name,
             id,
@@ -1103,7 +1340,7 @@ export class PlatformWorker {
         }
         case 'deleted': {
           catchEventError(
-            this.handleInstallationEventDelete(payload.installation.id),
+            this.ctx.with(name, {}, (ctx) => this.handleInstallationEventDelete(ctx, payload.installation.id)),
             payload.action,
             name,
             id,
@@ -1120,15 +1357,14 @@ export class PlatformWorker {
         return
       }
       catchEventError(
-        worker.reloadRepositories(payload.installation.id),
+        this.ctx.with(name, {}, (ctx) => worker.reloadRepositories(ctx, payload.installation.id)),
         payload.action,
         name,
         id,
         payload.installation.html_url
       )
       const doSyncUsers = async (worker: GithubWorker): Promise<void> => {
-        const users = await this.getUsers(worker.workspace.name)
-        await worker.syncUserData(this.ctx, users)
+        await worker.syncUserData(this.ctx)
       }
       catchEventError(doSyncUsers(worker), payload.action, name, id, payload.installation.html_url)
     })
@@ -1137,7 +1373,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(github.class.GithubReview, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, github.class.GithubReview, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1150,7 +1388,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(github.class.GithubReviewComment, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, github.class.GithubReviewComment, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1162,7 +1402,9 @@ export class PlatformWorker {
       const repoWorker = this.getWorker(payload.installation?.id)
       if (repoWorker !== undefined) {
         catchEventError(
-          repoWorker.handleEvent(github.class.GithubReviewThread, payload.installation?.id, payload),
+          this.ctx.with(name, {}, (ctx) =>
+            repoWorker.handleEvent(ctx, github.class.GithubReviewThread, payload.installation?.id, payload)
+          ),
           payload.action,
           name,
           id,
@@ -1172,9 +1414,15 @@ export class PlatformWorker {
     })
   }
 
-  public async revokeUserAuth (record: GithubUserRecord): Promise<void> {
+  public async revokeUserAuth (ctx: MeasureContext, record: GithubUserRecord): Promise<void> {
     for (const [ws, acc] of Object.entries(record.accounts)) {
-      await this.updateAccountAuthRecord({ workspace: ws, accountId: acc }, { login: record._id }, undefined, true)
+      await this.updateAccountAuthRecord(
+        ctx,
+        { workspace: ws as WorkspaceUuid, accountId: acc },
+        { login: record._id },
+        undefined,
+        true
+      )
     }
   }
 

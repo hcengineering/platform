@@ -17,26 +17,25 @@
 import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
-import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { startSessionManager } from '@hcengineering/server'
 import {
-  type ServerFactory,
-  type Session,
+  type CommunicationApiFactory,
+  type PlatformQueue,
   type SessionManager,
-  type StorageConfiguration,
-  type Workspace
+  type StorageConfiguration
 } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
 
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
   createServerPipeline,
+  isAdapterSecurity,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
-  sharedPipelineContextVars
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
-import { uncompress } from 'snappy'
 
 import {
   createMongoAdapter,
@@ -48,22 +47,21 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  registerGreenDecoder,
-  registerGreenUrl,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
+import { startHttpServer } from './server_http'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
 
 // Register close on process exit.
 process.on('exit', () => {
-  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+  shutdownPostgres().catch((err) => {
     console.error(err)
   })
-  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+  shutdownMongo().catch((err) => {
     console.error(err)
   })
 })
@@ -74,11 +72,12 @@ export function start (
   metrics: MeasureContext,
   dbUrl: string,
   opt: {
+    queue: PlatformQueue
     fulltextUrl: string
     storageConfig: StorageConfiguration
     port: number
     brandingMap: BrandingMap
-    serverFactory: ServerFactory
+    communicationApiEnabled: boolean
 
     enableCompression?: boolean
 
@@ -99,11 +98,9 @@ export function start (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
 
   const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
-
-  registerGreenDecoder('snappy', uncompress)
-  registerGreenUrl(process.env.GREEN_URL)
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults
@@ -113,32 +110,55 @@ export function start (
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
+  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
+      return {
+        findMessages: async () => [],
+        findMessagesGroups: async () => [],
+        findNotificationContexts: async () => [],
+        findCollaborators: async () => [],
+        findNotifications: async () => [],
+        findLabels: async () => [],
+        findThreads: async () => [],
+        findPeers: async () => [],
+        unsubscribeQuery: async () => {},
+        event: async () => {
+          return {}
+        },
+        closeSession: async () => {},
+        close: async () => {}
+      }
+    }
+
+    return await CommunicationApi.create(
+      ctx.newChild('💬 communication api', {}, { span: false }),
+      workspace.uuid,
+      dbUrl,
+      broadcastSessions
+    )
+  }
   const pipelineFactory = createServerPipeline(
     metrics,
     dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue, communicationApiFactory },
     {}
   )
-  const sessionFactory = (token: Token, workspace: Workspace): Session => {
-    return new ClientSession(token, workspace, token.extra?.mode === 'backup')
-  }
 
-  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
+  const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
-    sessionFactory,
-    port: opt.port,
     brandingMap: opt.brandingMap,
-    serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage,
-    profiling: opt.profiling
+    profiling: opt.profiling,
+    queue: opt.queue
   })
+  const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
   return {
     shutdown: async () => {
       await externalStorage.close()
-      await onClose()
+      await sessionManager.closeWorkspaces(metrics)
+      await shutdown()
     },
     sessionManager
   }

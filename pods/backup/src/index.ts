@@ -14,9 +14,9 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { startBackup } from '@hcengineering/backup-service'
-import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { newMetrics, type Tx } from '@hcengineering/core'
 import { initStatisticsContext, type PipelineFactory } from '@hcengineering/server-core'
 import {
   createBackupPipeline,
@@ -24,7 +24,7 @@ import {
   registerAdapterFactory,
   registerDestroyFactory,
   registerTxAdapterFactory,
-  sharedPipelineContextVars
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { join } from 'path'
 
@@ -46,17 +46,17 @@ const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').to
 
 // Register close on process exit.
 process.on('exit', () => {
-  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+  shutdownPostgres().catch((err) => {
     console.error(err)
   })
-  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+  shutdownMongo().catch((err) => {
     console.error(err)
   })
 })
 
 const metricsContext = initStatisticsContext('backup', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'backup',
       {},
       {},
@@ -68,9 +68,7 @@ const metricsContext = initStatisticsContext('backup', {
     )
 })
 
-const sentryDSN = process.env.SENTRY_DSN
-
-configureAnalytics(sentryDSN, {})
+configureAnalytics('backup', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'backup-service')
 
 const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
@@ -86,11 +84,12 @@ registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
 registerAdapterFactory('postgresql', createPostgresAdapter, true)
 registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+setAdapterSecurity('postgresql', true)
 
 startBackup(
   metricsContext,
-  (mongoUrl, storageAdapter) => {
-    const factory: PipelineFactory = createBackupPipeline(metricsContext, mongoUrl, model, {
+  (url, storageAdapter) => {
+    const factory: PipelineFactory = createBackupPipeline(metricsContext, url, model, {
       externalStorage: storageAdapter,
       usePassedCtx: true
     })
@@ -101,6 +100,5 @@ startBackup(
       externalStorage,
       disableTriggers: true
     })
-  },
-  sharedPipelineContextVars
+  }
 )

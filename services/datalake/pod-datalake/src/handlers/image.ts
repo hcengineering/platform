@@ -14,17 +14,48 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { createReadStream, createWriteStream } from 'fs'
 import sharp from 'sharp'
-import { pipeline, type Readable } from 'stream'
+import { Readable } from 'stream'
+import { pipeline } from 'stream/promises'
 
-import { type Datalake } from '../datalake'
+import config from '../config'
+import { CacheEntry, type Datalake, createCache, streamToBuffer } from '../datalake'
 import { TemporaryDir } from '../tempdir'
 
 const cacheControl = 'public, max-age=31536000, immutable'
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
+
+const cache = createCache(config.Cache)
+
+const QualityConfig = {
+  jpeg: {
+    quality: 85, // default + 5
+    progressive: true,
+    chromaSubsampling: '4:4:4'
+  } satisfies sharp.JpegOptions,
+  avif: {
+    quality: 60, // default + 10
+    effort: 5, // default + 1
+    chromaSubsampling: '4:4:4' // default
+  } satisfies sharp.AvifOptions,
+  webp: {
+    quality: 80, // default
+    alphaQuality: 100, // default
+    smartSubsample: true, // Better sharpness
+    effort: 5 // default + 1
+  } satisfies sharp.WebpOptions,
+  heif: {
+    quality: 80, // default + 30
+    effort: 5 // default + 1
+  } satisfies sharp.HeifOptions,
+  png: {
+    quality: 100, // default
+    effort: 7 // default
+  } satisfies sharp.PngOptions
+}
 
 interface ImageTransform {
   format: string
@@ -60,10 +91,10 @@ function parseImageTransform (accept: string, transform: string): ImageTransform
         image.dpr = parseFloat(value)
         break
       case 'width':
-        image.width = parseFloat(value)
+        image.width = parseInt(value)
         break
       case 'height':
-        image.height = parseFloat(value)
+        image.height = parseInt(value)
         break
     }
   })
@@ -78,7 +109,8 @@ export async function handleImageGet (
   datalake: Datalake,
   tempDir: TemporaryDir
 ): Promise<void> {
-  const { workspace, name, transform } = req.params
+  const { name, transform } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const accept = req.headers.accept ?? 'image/*'
   const { format, width, height, fit } = getImageTransformParams(accept, transform)
@@ -90,8 +122,16 @@ export async function handleImageGet (
     tempDir.rm(tmpFile, outFile)
   }
 
+  req.on('error', cleanup)
   req.on('close', cleanup)
+  res.on('error', cleanup)
   res.on('finish', cleanup)
+
+  const cached = cacheGet(workspace, name, { width, height, format, fit })
+  if (cached !== undefined) {
+    await writeCacheEntryToResponse(ctx, cached, res)
+    return
+  }
 
   const blob = await datalake.get(ctx, workspace, name, {})
   if (blob == null) {
@@ -99,25 +139,53 @@ export async function handleImageGet (
     return
   }
 
-  await writeTempFile(tmpFile, blob.body)
+  try {
+    await writeTempFile(tmpFile, blob.body)
+  } finally {
+    blob.body.destroy()
+  }
 
   try {
-    const { contentType } = await ctx.with('sharp', {}, () => {
-      return runPipeline(tmpFile, outFile, { format, width, height, fit })
-    })
+    const { contentType, size } = await ctx.with(
+      'sharp',
+      { format },
+      () => {
+        return runPipeline(tmpFile, outFile, { format, width, height, fit })
+      },
+      { fit, width, height, size: blob.size }
+    )
 
-    res.setHeader('Content-Type', contentType)
-    res.setHeader('Cache-Control', cacheControl)
+    if (cacheEnabled(size)) {
+      const buffer = await streamToBuffer(createReadStream(outFile))
 
-    await writeFileToResponse(ctx, outFile, res)
+      const entry = {
+        name: blob.name,
+        etag: blob.etag,
+        size: blob.size,
+        bodyEtag: blob.etag,
+        bodyLength: buffer.length,
+        lastModified: blob.lastModified,
+        body: buffer,
+        contentType,
+        cacheControl
+      }
+
+      cachePut(workspace, name, { width, height, format, fit }, entry)
+
+      await writeCacheEntryToResponse(ctx, entry, res)
+    } else {
+      await writeFileToResponse(ctx, outFile, res, { contentType, cacheControl })
+    }
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('image processing error', { workspace, name, error: err })
 
-    res.setHeader('Content-Type', blob.contentType)
-    res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
+    const headers = {
+      contentType: blob.contentType,
+      cacheControl: blob.cacheControl ?? cacheControl
+    }
 
-    await writeFileToResponse(ctx, tmpFile, res)
+    await writeFileToResponse(ctx, tmpFile, res, headers)
   }
 }
 
@@ -132,13 +200,13 @@ async function runPipeline (
   inFile: string,
   outFile: string,
   params: ImageTransformParams
-): Promise<{ contentType: string }> {
+): Promise<{ contentType: string, size: number }> {
   const { format, width, height, fit } = params
 
   let pipeline: sharp.Sharp | undefined
 
   try {
-    pipeline = sharp(inFile)
+    pipeline = sharp(inFile, { sequentialRead: true })
 
     // auto orient image based on exif to prevent resize use wrong orientation
     pipeline = pipeline.rotate()
@@ -153,41 +221,30 @@ async function runPipeline (
     let contentType = 'image/jpeg'
     switch (format) {
       case 'jpeg':
-        pipeline = pipeline.jpeg({
-          progressive: true
-        })
+        pipeline = pipeline.jpeg(QualityConfig.jpeg)
         contentType = 'image/jpeg'
         break
       case 'avif':
-        pipeline = pipeline.avif({
-          lossless: false,
-          effort: 0
-        })
+        pipeline = pipeline.avif(QualityConfig.avif)
         contentType = 'image/avif'
         break
       case 'heif':
-        pipeline = pipeline.heif({
-          effort: 0
-        })
+        pipeline = pipeline.heif(QualityConfig.heif)
         contentType = 'image/heif'
         break
       case 'webp':
-        pipeline = pipeline.webp({
-          effort: 0
-        })
+        pipeline = pipeline.webp(QualityConfig.webp)
         contentType = 'image/webp'
         break
       case 'png':
-        pipeline = pipeline.png({
-          effort: 0
-        })
+        pipeline = pipeline.png(QualityConfig.png)
         contentType = 'image/png'
         break
     }
 
-    await pipeline.toFile(outFile)
+    const { size } = await pipeline.toFile(outFile)
 
-    return { contentType }
+    return { contentType, size }
   } finally {
     pipeline?.destroy()
   }
@@ -211,40 +268,61 @@ function getImageTransformParams (accept: string, transform: string): ImageTrans
 
 async function writeTempFile (path: string, stream: Readable): Promise<void> {
   const outp = createWriteStream(path)
-
-  stream.pipe(outp)
-
-  await new Promise<void>((resolve, reject) => {
-    stream.on('error', (err) => {
-      stream.destroy()
-      outp.destroy()
-      reject(err)
-    })
-
-    outp.on('finish', () => {
-      stream.destroy()
-      resolve()
-    })
-
-    outp.on('error', (err) => {
-      stream.destroy()
-      outp.destroy()
-      reject(err)
-    })
-  })
+  await pipeline(stream, outp)
 }
 
-async function writeFileToResponse (ctx: MeasureContext, path: string, res: Response): Promise<void> {
-  const stream = createReadStream(path)
+async function writeCacheEntryToResponse (ctx: MeasureContext, cached: CacheEntry, res: Response): Promise<void> {
+  const readable = Readable.from(cached.body)
+  await writeToResponse(ctx, readable, res, { contentType: cached.contentType, cacheControl })
+}
 
-  pipeline(stream, res, (err) => {
-    if (err != null) {
-      Analytics.handleError(err)
-      const error = err instanceof Error ? err.message : String(err)
-      ctx.error('error writing response', { error })
-      if (!res.headersSent) {
-        res.status(500).send('Internal Server Error')
-      }
+async function writeFileToResponse (
+  ctx: MeasureContext,
+  path: string,
+  res: Response,
+  headers: { contentType: string, cacheControl: string }
+): Promise<void> {
+  const stream = createReadStream(path)
+  await writeToResponse(ctx, stream, res, headers)
+}
+
+async function writeToResponse (
+  ctx: MeasureContext,
+  stream: Readable,
+  res: Response,
+  headers: { contentType: string, cacheControl: string }
+): Promise<void> {
+  res.setHeader('Content-Type', headers.contentType)
+  res.setHeader('Cache-Control', headers.cacheControl)
+
+  try {
+    await pipeline(stream, res)
+  } catch (err: any) {
+    // ignore abort errors to avoid flooding the logs
+    if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
+      return
     }
-  })
+    Analytics.handleError(err)
+    const error = err instanceof Error ? err.message : String(err)
+    ctx.error('error writing response', { error })
+    if (!res.headersSent) {
+      res.status(500).send('Internal Server Error')
+    }
+  }
+}
+
+function cacheKey (workspace: WorkspaceUuid, name: string, params: ImageTransformParams): string {
+  return `${workspace}/${name}/${params.width ?? 0}/${params.height ?? 0}/${params.format}/${params.fit}`
+}
+
+function cacheEnabled (size: number): boolean {
+  return cache.enabled(size)
+}
+
+function cacheGet (workspace: WorkspaceUuid, name: string, params: ImageTransformParams): CacheEntry | undefined {
+  return cache.get(cacheKey(workspace, name, params))
+}
+
+function cachePut (workspace: WorkspaceUuid, name: string, params: ImageTransformParams, entry: CacheEntry): void {
+  cache.set(cacheKey(workspace, name, params), entry)
 }

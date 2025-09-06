@@ -20,15 +20,17 @@
   import Form from './Form.svelte'
 
   import { Analytics } from '@hcengineering/analytics'
-  import { workbenchId } from '@hcengineering/workbench'
+  import { signupStore } from '@hcengineering/analytics-providers'
+  import { logIn, workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
-  import { BottomAction } from '..'
   import { loginAction, recoveryAction } from '../actions'
   import login from '../plugin'
 
   const location = getCurrentLocation()
-  Analytics.handleEvent('invite_link_activated')
+  Analytics.handleEvent('invite_link_activated', { invite_id: location.query?.inviteId })
   let page = 'signUp'
+
+  $: signupStore.setSignUpFlow(page === 'signUp')
 
   $: fields =
     page === 'login'
@@ -66,23 +68,30 @@
 
       const [loginStatus, result] =
         page === 'login'
-          ? await join(object.username, object.password, location.query?.inviteId ?? '')
+          ? await join(
+            object.username,
+            object.password,
+            location.query?.inviteId ?? '',
+            location.query?.workspace ?? ''
+          )
           : await signUpJoin(
             object.username,
             object.password,
             object.first,
             object.last,
-            location.query?.inviteId ?? ''
+            location.query?.inviteId ?? '',
+            location.query?.workspace ?? ''
           )
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
+        await logIn(result)
         setLoginInfo(result)
 
         if (location.query?.navigateUrl != null) {
           try {
             const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
-            if (loc.path[1] === result.workspace) {
+            if (loc.path[1] === result.workspaceUrl) {
               navigate(loc)
               return
             }
@@ -91,7 +100,7 @@
           }
         }
 
-        navigate({ path: [workbenchId, result.workspace] })
+        navigate({ path: [workbenchId, result.workspaceUrl] })
       }
     }
   }
@@ -113,15 +122,16 @@
   async function check (): Promise<void> {
     if (location.query?.inviteId === undefined || location.query?.inviteId === null) return
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-    const [, result] = await checkJoined(location.query.inviteId)
+
+    const result = await checkJoined(location.query.inviteId)
     status = OK
-    if (result !== undefined) {
+    if (result != null) {
       setLoginInfo(result)
 
       if (location.query?.navigateUrl != null) {
         try {
           const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
-          if (loc.path[1] === result.workspace) {
+          if (loc.path[1] === result.workspaceUrl) {
             navigate(loc)
             return
           }
@@ -129,7 +139,7 @@
           // Json parse error could be ignored
         }
       }
-      navigate({ path: [workbenchId, result.workspace] })
+      navigate({ path: [workbenchId, result.workspaceUrl] })
     }
   }
 </script>

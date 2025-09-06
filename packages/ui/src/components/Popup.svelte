@@ -12,13 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script context="module" lang="ts">
+  let fullScreenMode: boolean = false
+
+  export function getFullScreenMode (): boolean {
+    return fullScreenMode
+  }
+  function setFullScreenMode (value: boolean): void {
+    fullScreenMode = value
+  }
+</script>
+
 <script lang="ts">
   import { popupstore as popups } from '../popups'
   import { modalStore as modals } from '../modals'
 
   import PopupInstance from './PopupInstance.svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   export let contentPanel: HTMLElement | undefined = undefined
+  export let fullScreen: boolean = false
 
   const instances: PopupInstance[] = []
 
@@ -26,13 +39,28 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
-  $: instances.length = $popups.filter((p) => p.dock !== true).length
+  onMount(() => {
+    if (fullScreen) setFullScreenMode(true)
+  })
+  onDestroy(() => {
+    if (fullScreen) setFullScreenMode(false)
+  })
+
+  const shouldDisplayPopup = (popup: any): boolean => {
+    return (
+      (fullScreen && fullScreenMode && popup.element !== 'full-centered') ||
+      (!fullScreen && fullScreenMode && popup.element === 'full-centered') ||
+      (!fullScreen && !fullScreenMode)
+    )
+  }
+
+  $: instances.length = $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)).length
 </script>
 
 {#if $popups.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $popups.filter((p) => p.dock !== true) as popup, i (popup.id)}
+{#each $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)) as popup, i (popup.id)}
   <PopupInstance
     bind:this={instances[i]}
     is={popup.is}

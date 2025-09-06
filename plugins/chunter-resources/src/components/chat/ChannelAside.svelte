@@ -13,13 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Account, Class, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { getCurrentAccount, Ref, notEmpty, AccountUuid } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
   import { Label, showPopup, tooltip } from '@hcengineering/ui'
 
   import { Channel, ChunterSpace, ObjectChatPanel } from '@hcengineering/chunter'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import { Employee, Person } from '@hcengineering/contact'
+  import {
+    EmployeeBox,
+    employeeRefByAccountUuidStore,
+    SelectUsersPopup,
+    employeeByIdStore,
+    getPersonRefByPersonIdCb
+  } from '@hcengineering/contact-resources'
 
   import ChannelMembers from '../ChannelMembers.svelte'
   import DocAside from './DocAside.svelte'
@@ -28,15 +34,22 @@
   export let object: ChunterSpace
   export let objectChatPanel: ObjectChatPanel | undefined
 
-  const currentAccount = getCurrentAccount()
+  const socialStrings = getCurrentAccount().socialIds
 
   let members = new Set<Ref<Person>>()
 
-  $: creatorPersonRef = object?.createdBy
-    ? $personAccountByIdStore.get(object.createdBy as Ref<PersonAccount>)?.person
-    : undefined
+  let creatorPersonRef: Ref<Person>
+  $: if (object.createdBy !== undefined) {
+    getPersonRefByPersonIdCb(object.createdBy, (personRef) => {
+      if (personRef == null) return
+      creatorPersonRef = personRef
+    })
+  }
 
-  $: disabledRemoveFor = currentAccount._id !== object?.createdBy && creatorPersonRef ? [creatorPersonRef] : []
+  $: disabledRemoveFor =
+    object.createdBy !== undefined && !socialStrings.includes(object.createdBy) && creatorPersonRef !== undefined
+      ? [creatorPersonRef]
+      : []
   $: updateMembers(object)
 
   function updateMembers (object: Channel | undefined): void {
@@ -45,17 +58,11 @@
       return
     }
 
-    members = new Set(
-      object.members
-        .map((accountId) => {
-          const personAccount = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
-          if (personAccount === undefined) {
-            return undefined
-          }
-          return personAccount.person
-        })
-        .filter((_id): _id is Ref<Person> => !!_id)
-    )
+    members = new Set(object.members.map((account) => $employeeRefByAccountUuidStore.get(account)).filter(notEmpty))
+  }
+
+  function getAccountsByPersons (persons: Ref<Person>[]): AccountUuid[] {
+    return persons.map((person) => $employeeByIdStore.get(person as Ref<Employee>)?.personUuid).filter(notEmpty)
   }
 
   async function changeMembers (personRefs: Ref<Person>[], object?: Channel): Promise<void> {
@@ -63,16 +70,12 @@
       return
     }
 
-    const personAccounts = Array.from($personAccountByIdStore.values())
+    const personsToLeave = Array.from(members).filter((_id) => !personRefs.includes(_id))
+    const accountsToLeave = getAccountsByPersons(personsToLeave)
+    const personsToJoin = personRefs.filter((_id) => !members.has(_id))
+    const accountsToJoin = getAccountsByPersons(personsToJoin)
 
-    const newMembers: Ref<Account>[] = personAccounts
-      .filter(({ person }) => personRefs.includes(person))
-      .map(({ _id }) => _id)
-
-    const toLeave = object.members.filter((_id) => !newMembers.includes(_id))
-    const toJoin = newMembers.filter((_id) => !object.members.includes(_id))
-
-    await Promise.all([leaveChannel(object, toLeave), joinChannel(object, toJoin)])
+    await Promise.all([leaveChannel(object, accountsToLeave), joinChannel(object, accountsToJoin)])
   }
 
   async function removeMember (ev: CustomEvent): Promise<void> {
@@ -86,15 +89,9 @@
       return
     }
 
-    const accounts = Array.from($personAccountByIdStore.values())
-      .filter((account) => account.person === personId)
-      .map(({ _id }) => _id)
+    const accountsToLeave = getAccountsByPersons([personId])
 
-    if (accounts.length === 0) {
-      return
-    }
-
-    await leaveChannel(object, accounts)
+    await leaveChannel(object, accountsToLeave)
   }
 
   function openSelectUsersPopup (): void {

@@ -15,19 +15,23 @@
 import core, {
   type Client,
   createClient,
-  generateId,
-  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
   type Ref,
   SortingOrder,
   type Space,
-  TxOperations
+  TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
-import { createPostgresAdapter, createPostgresTxAdapter } from '..'
-import { getDBClient, type PostgresClientReference, shutdownPostgres } from '../utils'
+import {
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  getDBClient,
+  shutdownPostgres,
+  type PostgresClientReference
+} from '..'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -38,11 +42,10 @@ createTaskModel(txes)
 const contextVars: Record<string, any> = {}
 
 describe('postgres operations', () => {
-  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
-  let dbId: string = 'pg_testdb_' + generateId()
-  let dbUuid: string = crypto.randomUUID()
-  let dbUri: string = baseDbUri + '/' + dbId
-  const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
+  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
+  let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
+  const clientRef: PostgresClientReference = getDBClient(baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -51,19 +54,21 @@ describe('postgres operations', () => {
 
   afterAll(async () => {
     clientRef.close()
-    await shutdownPostgres(contextVars)
+    await shutdownPostgres()
   })
 
   beforeEach(async () => {
     try {
-      dbId = 'pg_testdb_' + generateId()
-      dbUuid = crypto.randomUUID()
-      dbUri = baseDbUri + '/' + dbId
+      dbUuid = crypto.randomUUID() as WorkspaceUuid
+      dbUri = baseDbUri.replace('defaultdb', dbUuid)
       const client = await clientRef.getClient()
-      await client`CREATE DATABASE ${client(dbId)}`
+      await client`CREATE DATABASE ${client(dbUuid)}`
     } catch (err) {
       console.error(err)
     }
+
+    jest.setTimeout(30000)
+    await initDb()
   })
 
   afterEach(async () => {
@@ -90,12 +95,11 @@ describe('postgres operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createPostgresTxAdapter(
       mctx,
-      contextVars,
       hierarchy,
       dbUri,
       {
-        ...getWorkspaceId(dbId),
-        uuid: dbUuid
+        uuid: dbUuid,
+        url: dbUri
       },
       model
     )
@@ -110,12 +114,11 @@ describe('postgres operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     const serverStorage = await createPostgresAdapter(
       ctx,
-      contextVars,
       hierarchy,
       dbUri,
       {
-        ...getWorkspaceId(dbId),
-        uuid: dbUuid
+        uuid: dbUuid,
+        url: dbUri
       },
       model
     )
@@ -126,11 +129,6 @@ describe('postgres operations', () => {
 
     operations = new TxOperations(client, core.account.System)
   }
-
-  beforeEach(async () => {
-    jest.setTimeout(30000)
-    await initDb()
-  })
 
   it('check add', async () => {
     const times: number[] = []
@@ -156,7 +154,8 @@ describe('postgres operations', () => {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
         description: `${i * i}`,
-        rate: 20 + i
+        rate: 20 + i,
+        arr: new Array(i).fill(i)
       })
     }
 
@@ -171,6 +170,21 @@ describe('postgres operations', () => {
 
     const third = await client.findAll<Task>(taskPlugin.class.Task, { rate: { $in: [25, 26, 27, 28] } })
     expect(third.length).toEqual(4)
+
+    const size = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: 5 } })
+    expect(size.length).toEqual(1)
+
+    const sizeGt = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $gt: 45 } } })
+    expect(sizeGt.length).toEqual(4)
+
+    const sizeGte = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $gte: 45 } } })
+    expect(sizeGte.length).toEqual(5)
+
+    const sizeLt = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $lt: 45 } } })
+    expect(sizeLt.length).toEqual(45)
+
+    const sizeLte = await client.findAll<Task>(taskPlugin.class.Task, { arr: { $size: { $lte: 45 } } })
+    expect(sizeLte.length).toEqual(46)
   })
 
   it('check update', async () => {
@@ -252,6 +266,9 @@ describe('postgres operations', () => {
 
     const sortDesc = await client.findAll(taskPlugin.class.Task, {}, { sort: { name: SortingOrder.Descending } })
     expect(sortDesc[0].name).toMatch('my-task-4')
+
+    const sortEmpty = await client.findAll(taskPlugin.class.Task, {}, { sort: {} })
+    expect(sortEmpty).toHaveLength(5)
   })
 
   it('check attached', async () => {

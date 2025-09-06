@@ -14,15 +14,24 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+import type {
+  Account,
+  AccountRole,
+  Class,
+  Client,
+  Doc,
+  Ref,
+  Space,
+  TxOperations,
+  WorkspaceInfoWithStatus
+} from '@hcengineering/core'
 import core, { hasAccountRole } from '@hcengineering/core'
-import type { Workspace } from '@hcengineering/login'
-import login, { loginId } from '@hcengineering/login'
-import { getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, getClient } from '@hcengineering/presentation'
+import login from '@hcengineering/login'
+import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import presentation, { closeClient, getClient, setPresentationCookie } from '@hcengineering/presentation'
 import {
   closePanel,
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   type Location,
   location,
@@ -133,9 +142,9 @@ export async function doNavigate (
   }
 }
 
-export function isAppAllowed (app: Application, acc: Account): boolean {
-  if (app.accessLevel === undefined) return true
-  return hasAccountRole(acc, app.accessLevel)
+export function isAllowedToRole (role: AccountRole | undefined, acc: Account): boolean {
+  if (role === undefined) return true
+  return hasAccountRole(acc, role)
 }
 
 export async function hideApplication (app: Application): Promise<void> {
@@ -155,12 +164,12 @@ export async function showApplication (app: Application): Promise<void> {
   }
 }
 
-export const workspacesStore = writable<Workspace[]>([])
+export const workspacesStore = writable<WorkspaceInfoWithStatus[]>([])
 export const locationWorkspaceStore = derived(location, (loc: Location) => loc.path[1])
 export const currentWorkspaceStore = derived(
   [workspacesStore, locationWorkspaceStore],
   ([$workspaces, $locationWorkspace]) => {
-    return $workspaces.find((it) => it.workspace === $locationWorkspace)
+    return $workspaces.find((it) => it.url === $locationWorkspace)
   }
 )
 
@@ -198,19 +207,31 @@ export async function buildNavModel (
   return newNavModel
 }
 
-export function signOut (): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    const l = loc.path[1]
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete tokens[l]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+export async function logIn (loginInfo: { account: string, token?: string }): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  await getAccountClient(accountsUrl, loginInfo.token).setCookie()
+
+  setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
+  setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
+}
+
+export async function logOut (): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  try {
+    await getAccountClient(accountsUrl).deleteCookie()
+  } catch (error) {}
+
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (currentWorkspace !== undefined) {
+    setPresentationCookie('', currentWorkspace)
   }
+
   setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
+  setMetadata(presentation.metadata.WorkspaceUuid, null)
+  setMetadata(presentation.metadata.WorkspaceDataId, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-  setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  setMetadataLocalStorage(login.metadata.LoginAccount, null)
+
   void closeClient()
-  navigate({ path: [loginId] })
 }

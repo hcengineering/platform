@@ -53,7 +53,9 @@
     "UpdatedObject": "{object} を更新しました",
     "NewObjectType": "新しい {type}：{title}",
     "RemovedObjectType": "{type} を削除：{title}",
-    "AttributeSetTo": "{name} を {value} に設定しました"
+    "AttributeSetTo": "{name} を {value} に設定しました",
+    "AddedTag": "タグを追加しました：{title}",
+    "RemovedTag": "タグを削除しました：{title}"
   }
 }
   

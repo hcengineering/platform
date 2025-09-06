@@ -1,6 +1,6 @@
-import { ServerKit } from '@hcengineering/text'
+import { extensionKit, ServerKit } from '@hcengineering/text'
 
-import { AnyExtension, Extension, Node, mergeAttributes } from '@tiptap/core'
+import { AnyExtension, mergeAttributes, Node } from '@tiptap/core'
 
 export interface SubLinkOptions {
   HTMLAttributes: Record<string, any>
@@ -55,23 +55,17 @@ export const SubLink = Node.create<SubLinkOptions>({
   }
 })
 
-export interface GithubKitOptions {
-  sub?: Partial<SubLinkOptions> | false
-}
-
-export const GithubKit = Extension.create<GithubKitOptions>({
-  name: 'githubKit',
-
-  addExtensions () {
-    return [
-      ServerKit.configure({
+export const GithubKit = extensionKit(
+  'github',
+  (e) =>
+    ({
+      serverKit: e(ServerKit, {
         image: {
           getBlobRef: async () => ({ src: '', srcset: '' })
         }
       }),
-      ...(this.options.sub !== false ? [SubLink.configure({ ...this.options.sub })] : [])
-    ]
-  }
-})
+      sub: e(SubLink)
+    }) as const
+)
 
-export const defaultExtensions: AnyExtension[] = [GithubKit.configure({})]
+export const defaultExtensions: AnyExtension[] = [GithubKit]

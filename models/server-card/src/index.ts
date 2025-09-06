@@ -19,6 +19,7 @@ import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverCard from '@hcengineering/server-card'
 import card from '@hcengineering/card'
+import communication from '@hcengineering/communication'
 
 export { serverCardId } from '@hcengineering/server-card'
 
@@ -86,6 +87,24 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnDirectCreate,
+    isAsync: false,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: communication.type.Direct
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnThreadCreate,
+    isAsync: false,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCard.trigger.OnCardUpdate,
     isAsync: true,
     txMatch: {
@@ -104,7 +123,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchIcon: card.icon.Card,
+    iconConfig: {
+      component: card.component.CardIcon,
+      fields: [['_id']]
+    },
     title: [['title']]
   })
 }

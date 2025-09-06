@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type RegionInfo } from '@hcengineering/account-client'
   import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
-
   import { LoginInfo } from '@hcengineering/login'
   import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { createWorkspace, getAccount, getRegionInfo, goTo, setLoginInfo, type RegionInfo } from '../utils'
+  import { createWorkspace, getAccount, getRegionInfo, goTo, setLoginInfo, getAccountDisplayName } from '../utils'
   import Form from './Form.svelte'
 
   const fields = [
@@ -38,17 +38,17 @@
   }
 
   let status: Status<any> = OK
-
-  let account: LoginInfo | undefined = undefined
+  let loginInfo: LoginInfo | null | undefined
   let regions: RegionInfo[] = []
   let selectedRegion: string = ''
 
   onMount(async () => {
-    account = await getAccount()
+    loginInfo = await getAccount()
     // Show only regions with specified name
     regions = (await getRegionInfo())?.filter((it) => it.name.length > 0) ?? []
     selectedRegion = regions[0]?.region
-    if (account?.confirmed === false) {
+
+    if (loginInfo?.token == null) {
       const loc = getCurrentLocation()
       loc.path[1] = 'confirmationSend'
       loc.path.length = 2
@@ -61,13 +61,12 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion)
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '')
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
         setLoginInfo(result as any)
-
-        navigate({ path: [workbenchId, result.workspace] })
+        navigate({ path: [workbenchId, result.workspaceUrl] })
       }
     }
   }
@@ -79,7 +78,7 @@
   {fields}
   {object}
   {action}
-  subtitle={account?.email}
+  subtitle={getAccountDisplayName(loginInfo)}
   bottomActions={[
     {
       caption: login.string.HaveWorkspace,

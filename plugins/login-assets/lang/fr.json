@@ -42,7 +42,6 @@
     "AlreadyJoined": "Déjà inscrit ?",
     "ConfirmationSent": "Un message a été envoyé à votre adresse e-mail contenant un lien pour confirmer votre adresse.",
     "ConfirmationSent2": "Veuillez suivre le lien pour compléter votre inscription.",
-    "Slogan": "Un lieu unique pour gérer tout votre travail\nBienvenue sur la plateforme",
     "ContinueWith": "Continuer avec {provider}",
     "HaventReceivedCode": "Vous n'avez pas reçu le code ?",
     "ResendCode": "Renvoyer le code",
@@ -52,6 +51,8 @@
     "CanFindCode": "Vous ne trouvez pas votre code ? Vérifiez votre",
     "LoginWithPassword": "Connexion avec mot de passe",
     "LoginWithCode": "Connexion avec code",
+    "SignUpWithPassword": "Inscrivez-vous avec votre mot de passe",
+    "SignUpWithCode": "Inscrivez-vous avec votre code",
     "FillInProfile": "Remplissez votre profil",
     "SetUpPassword": "Définir votre mot de passe",
     "Next": "Suivant",
@@ -64,6 +65,15 @@
     "PasswordMinUpperChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre majuscule} other {Le mot de passe doit contenir au moins # lettres majuscules}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre minuscule} other {Le mot de passe doit contenir au moins # lettres minuscules}}",
     "WorkspaceArchivedDesc": "L'espace de travail est archivé en raison de son inactivité.",
-    "RestoreArchivedWorkspace": "Restaurer"
+    "RestoreArchivedWorkspace": "Restaurer",
+    "Hello": "Bonjour {name},",
+    "ProcessingInvite": "Invitation en cours, veuillez patienter...",
+    "SignToProceed": "Veuillez vous connecter pour continuer",
+    "Proceed": "Continuer",
+    "SetPasswordLater": "Je définirai un mot de passe plus tard",
+    "SetPasswordNow": "Je définirai un mot de passe maintenant",
+    "LoginAsGuest": "Continuer en tant qu'invité",
+    "SignUpToCreateWorkspace": "Aucun espace de travail avec accès invité. Veuillez vous inscrire pour créer le vôtre.",
+    "WhatIsYourName": "Quel est votre nom ?"
   }
 }

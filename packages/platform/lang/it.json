@@ -5,11 +5,13 @@
     "InvalidId": "Id non valido: {id}",
     "BadRequest": "Richiesta non valida",
     "Forbidden": "Proibito",
+    "Conflict": "Conflitto",
     "ExpiredLink": "Questo link di invito è scaduto",
     "Unauthorized": "Non autorizzato",
     "UnknownMethod": "Metodo sconosciuto: {method}",
     "InternalServerError": "Errore interno del server",
-    "MaintenanceWarning": "Manutenzione programmata tra {time, plural, =1 {meno di un minuto} other {# minuti}}",
+    "MaintenanceWarning": "Manutenzione programmata tra",
+    "MaintenanceWarningTime": "{time, plural, =1 {meno di un minuto} other {# minuti}}",
     "AccountNotFound": "Account non trovato",
     "AccountNotConfirmed": "Account non confermato",
     "WorkspaceNotFound": "Spazio di lavoro non trovato",
@@ -20,6 +22,9 @@
     "WorkspaceAlreadyExists": "Spazio di lavoro già esistente",
     "InvalidOtp": "Codice non valido",
     "InviteNotFound": "Invito con email:{email} non trovato.",
-    "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci..."
+    "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci...",
+    "ReadOnlyAccount": "Demo ospite anonimo",
+    "SystemAccount": "Account di sistema",
+    "SocialIdAlreadyExists": "L'ID social esiste già"
   }
 }

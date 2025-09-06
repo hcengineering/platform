@@ -16,8 +16,22 @@
 import type { Asset, Resource } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { Association, AttachedDoc, Class, Doc, Ref, Space } from './classes'
+import type { Association, AttachedDoc, Class, Doc, Domain, Ref, Space } from './classes'
 import type { Tx } from './tx'
+
+export type ArraySizeSelector =
+  | {
+    $gt: number
+  }
+  | {
+    $lt: number
+  }
+  | {
+    $gte: number
+  }
+  | {
+    $lte: number
+  }
 
 /**
  * @public
@@ -36,6 +50,7 @@ export type QuerySelector<T> = {
   $like?: string
   $regex?: string
   $options?: string
+  $size?: T extends Array<any> ? number | ArraySizeSelector : never
 }
 
 /**
@@ -205,6 +220,13 @@ export type FindResult<T extends Doc> = WithLookup<T>[] & {
   lookupMap?: Record<string, Doc>
 }
 
+export type DomainParams = Record<string, any>
+
+export interface DomainResult<T = any> {
+  domain: Domain
+  value: T
+}
+
 /**
  * @public
  */
@@ -244,8 +266,10 @@ export interface SearchResultDoc {
   shortTitleComponent?: SearchComponentWithProps
   title?: string
   titleComponent?: SearchComponentWithProps
+  description?: string
+  emojiIcon?: string
   score?: number
-  doc: Pick<Doc, '_id' | '_class'>
+  doc: Pick<Doc, '_id' | '_class' | 'createdOn'> & Partial<Pick<AttachedDoc, 'attachedTo' | 'attachedToClass'>>
 }
 
 /**

@@ -17,10 +17,11 @@ import core, {
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceId,
-  systemAccountEmail,
+  type WorkspaceIds,
+  systemAccountUuid,
   withContext
 } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
 import {
   type BlobStorageIterator,
   type BucketInfo,
@@ -30,11 +31,12 @@ import {
   type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
-import { generateToken } from '@hcengineering/server-token'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import { type UploadObjectParams, DatalakeClient } from './client'
+import { type UploadObjectParams, DatalakeClient, type WorkspaceStats } from './client'
+import { NotFoundError } from './error'
 
-export { DatalakeClient }
+export { DatalakeClient, type WorkspaceStats }
 
 /**
  * @public
@@ -73,23 +75,27 @@ export class DatalakeService implements StorageAdapter {
     readonly cfg: DatalakeConfig,
     readonly options: DatalakeClientOptions = {}
   ) {
-    const token = generateToken(systemAccountEmail, { name: '' }, { service: 'datalake' })
+    const secret = getMetadata(serverToken.metadata.Secret)
+    if (secret === undefined) {
+      console.warn('Server secret not set, datalake storage adapter initialized with default secret')
+    }
+    const token = generateToken(systemAccountUuid, undefined)
     this.client = createDatalakeClient(cfg, token)
     this.retryCount = options.retryCount ?? 5
     this.retryInterval = options.retryInterval ?? 50
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<boolean> {
     // workspace/buckets not supported, assume that always exist
     return true
   }
 
   @withContext('make')
-  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async make (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {
     // workspace/buckets not supported, assume that always exist
   }
 
@@ -98,21 +104,21 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('remove')
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]): Promise<void> {
     await Promise.all(
       objectNames.map(async (objectName) => {
-        await this.retry(ctx, () => this.client.deleteObject(ctx, workspaceId, objectName))
+        await this.retry(ctx, () => this.client.deleteObject(ctx, wsIds.uuid, objectName))
       })
     )
   }
 
   @withContext('delete')
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async delete (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {
     // not supported, just do nothing and pretend we deleted the workspace
   }
 
   @withContext('listStream')
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<BlobStorageIterator> {
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let cursor: string | undefined
@@ -121,7 +127,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.retry(ctx, () => this.client.listObjects(ctx, workspaceId, cursor))
+            const res = await this.retry(ctx, () => this.client.listObjects(ctx, wsIds.uuid, cursor, 10000))
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -133,13 +139,14 @@ export class DatalakeService implements StorageAdapter {
                 size: (typeof blob.size === 'string' ? parseInt(blob.size) : blob.size) ?? 0,
                 provider: this.cfg.name,
                 space: core.space.Configuration,
-                modifiedBy: core.account.ConfigUser,
-                modifiedOn: 0
+                modifiedBy: core.account.System,
+                modifiedOn: 0,
+                contentType: blob.contentType
               })
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
+          ctx.error('Failed to get list', { error: err, workspace: wsIds.uuid })
         }
         return buffer.splice(0, 50)
       },
@@ -148,8 +155,8 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('stat')
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
-    const result = await this.retry(ctx, () => this.client.statObject(ctx, workspaceId, objectName))
+  async stat (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Blob | undefined> {
+    const result = await this.retry(ctx, () => this.client.statObject(ctx, wsIds.uuid, objectName))
     if (result !== undefined) {
       return {
         provider: '',
@@ -167,14 +174,18 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('get')
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
-    return await this.retry(ctx, () => this.client.getObject(ctx, workspaceId, objectName))
+  async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
+    const object = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
+    if (object === undefined) {
+      throw new NotFoundError()
+    }
+    return object
   }
 
   @withContext('put')
   async put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    wsIds: WorkspaceIds,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
@@ -186,8 +197,11 @@ export class DatalakeService implements StorageAdapter {
       size
     }
 
-    const { etag } = await ctx.with('put', {}, (ctx) =>
-      this.retry(ctx, () => this.client.putObject(ctx, workspaceId, objectName, stream, params))
+    const { etag } = await ctx.with(
+      'put',
+      {},
+      (ctx) => this.retry(ctx, () => this.client.putObject(ctx, wsIds.uuid, objectName, stream, params)),
+      { workspace: wsIds.uuid, objectName }
     )
 
     return {
@@ -197,10 +211,13 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const data = await this.retry(ctx, () => this.client.getObject(ctx, workspaceId, objectName))
-    const chunks: Buffer[] = []
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+    const data = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
+    if (data === undefined) {
+      throw new NotFoundError()
+    }
 
+    const chunks: Buffer[] = []
     for await (const chunk of data) {
       chunks.push(chunk)
     }
@@ -211,16 +228,22 @@ export class DatalakeService implements StorageAdapter {
   @withContext('partial')
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    wsIds: WorkspaceIds,
     objectName: string,
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.retry(ctx, () => this.client.getPartialObject(ctx, workspaceId, objectName, offset, length))
+    const object = await this.retry(ctx, () =>
+      this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length)
+    )
+    if (object === undefined) {
+      throw new NotFoundError()
+    }
+    return object
   }
 
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
-    return this.client.getObjectUrl(ctx, workspaceId, objectName)
+  async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
+    return this.client.getObjectUrl(ctx, wsIds.uuid, objectName)
   }
 
   async retry<T>(ctx: MeasureContext, op: () => Promise<T>): Promise<T> {

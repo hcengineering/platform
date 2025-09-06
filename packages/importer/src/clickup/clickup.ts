@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
-import { type Ref, type Timestamp, type TxOperations } from '@hcengineering/core'
+import contact, { type Person } from '@hcengineering/contact'
+import { SocialIdType, buildSocialIdString, type Ref, type Timestamp, type TxOperations } from '@hcengineering/core'
 import { MarkupNodeType, traverseNode, type MarkupNode } from '@hcengineering/text'
 import tracker from '@hcengineering/tracker'
 import csv from 'csvtojson'
@@ -82,7 +82,7 @@ interface TasksProcessResult {
 
 class ClickupImporter {
   private personsByName = new Map<string, Ref<Person>>()
-  private accountsByEmail = new Map<string, Ref<PersonAccount>>()
+  private knownEmailSocialStrings: string[] = []
 
   constructor (
     private readonly client: TxOperations,
@@ -122,7 +122,7 @@ class ClickupImporter {
 
   private async processClickupTasks (file: string): Promise<TasksProcessResult> {
     await this.fillPersonsByNames()
-    await this.fillAccountsByEmails()
+    await this.fillKnownEmails()
 
     const projects = new Set<string>()
     const statuses = new Set<string>()
@@ -242,11 +242,13 @@ class ClickupImporter {
 
   private convertToImportComments (clickup: string): ImportComment[] {
     return JSON.parse(clickup).map((comment: ClickupComment) => {
-      const author = this.accountsByEmail.get(comment.by)
+      const authorSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: comment.by })
+      const knownAuthor = this.knownEmailSocialStrings.includes(authorSocialString)
+
       return {
-        text: author !== undefined ? comment.text : `${comment.text}\n\n*(comment by ${comment.by})*`,
+        text: knownAuthor ? comment.text : `${comment.text}\n\n*(comment by ${comment.by})*`,
         date: new Date(comment.date).getTime(),
-        author
+        author: knownAuthor ? authorSocialString : undefined
       }
     })
   }
@@ -298,12 +300,9 @@ class ClickupImporter {
       }, new Map())
   }
 
-  private async fillAccountsByEmails (): Promise<void> {
-    const accounts = await this.client.findAll(contact.class.PersonAccount, {})
-    this.accountsByEmail = accounts.reduce((accountsByEmail, account) => {
-      accountsByEmail.set(account.email, account._id)
-      return accountsByEmail
-    }, new Map())
+  private async fillKnownEmails (): Promise<void> {
+    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL })
+    this.knownEmailSocialStrings = emailSocialIds.map(buildSocialIdString)
   }
 
   private fixClickupString (content: string): string {

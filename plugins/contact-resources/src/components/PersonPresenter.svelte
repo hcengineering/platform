@@ -16,7 +16,7 @@
   import { getName, Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import type { LabelAndProps, IconSize } from '@hcengineering/ui'
-  import { getPersonTooltip, personByIdStore, PersonLabelTooltip } from '..'
+  import { getPersonByPersonRefStore, getPersonTooltip, PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
   import { getClient } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
@@ -45,9 +45,13 @@
   export let type: ObjectPresenterType = 'link'
   export let showStatus: boolean = false
   export let overflowLabel = true
+  export let inlineBlock = false
+  export let shrink: boolean = false
 
   const client = getClient()
-  $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
+
+  $: personByRefStore = typeof value === 'string' ? getPersonByPersonRefStore([value]) : undefined
+  $: personValue = typeof value === 'string' ? $personByRefStore?.get(value) : value
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
@@ -102,6 +106,8 @@
     {type}
     {showStatus}
     {overflowLabel}
+    {inlineBlock}
+    {shrink}
     on:accent-color
   />
 {/if}

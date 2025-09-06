@@ -19,13 +19,41 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import workbench from '@hcengineering/workbench'
-import core, { DOMAIN_TX } from '@hcengineering/core'
+import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
+import core, { type AccountUuid, DOMAIN_TX } from '@hcengineering/core'
+import { getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 
 import { workbenchId } from '.'
 
 async function removeTabs (client: MigrationClient): Promise<void> {
   await client.deleteMany(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+}
+
+async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
+  client.logger.log('migrating workbench tabs to social ids...', {})
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+  for (const tab of tabs) {
+    const newAttachedTo: any = socialKeyByAccount[tab.attachedTo]
+    if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
+      await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
+    }
+  }
+  client.logger.log('migrating workbench tabs to social ids completed...', {})
+}
+
+async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
+  client.logger.log('migrating workbench tabs to global accounts...', {})
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
+
+  const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+  for (const tab of tabs) {
+    const newAttachedTo = await getAccountUuidBySocialKey(client, tab.attachedTo, accountUuidBySocialKey)
+    if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
+      await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
+    }
+  }
+  client.logger.log('migrating workbench tabs to global accounts completed...', {})
 }
 
 export const workbenchOperation: MigrateOperation = {
@@ -45,6 +73,16 @@ export const workbenchOperation: MigrateOperation = {
             _class: core.class.TxUpdateDoc
           })
         }
+      },
+      {
+        state: 'tabs-accounts-to-social-ids',
+        mode: 'upgrade',
+        func: migrateTabsToSocialIds
+      },
+      {
+        state: 'tabs-social-ids-to-global-accounts',
+        mode: 'upgrade',
+        func: migrateSocialIdsToGlobalAccounts
       }
     ])
   },

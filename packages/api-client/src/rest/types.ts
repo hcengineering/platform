@@ -18,15 +18,23 @@ import {
   type Class,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
+  type FulltextStorage,
   type Hierarchy,
   type ModelDb,
+  type OperationDomain,
+  type PersonId,
+  type PersonUuid,
   type Ref,
+  type SocialIdType,
   type Storage,
   type WithLookup
 } from '@hcengineering/core'
 
-export interface RestClient extends Storage {
+export interface RestClient extends Storage, FulltextStorage {
   getAccount: () => Promise<Account>
 
   findOne: <T extends Doc>(
@@ -36,4 +44,17 @@ export interface RestClient extends Storage {
   ) => Promise<WithLookup<T> | undefined>
 
   getModel: () => Promise<{ hierarchy: Hierarchy, model: ModelDb }>
+
+  domainRequest: <T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ) => Promise<DomainResult<T>>
+
+  ensurePerson: (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }>
 }

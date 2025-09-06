@@ -160,7 +160,7 @@ async function migrateFixMissingDocSyncInfo (client: MigrationClient): Promise<v
     [github.mixin.GithubProject]: { $exists: true }
   })
   for (const p of projects) {
-    const issues = await client.traverse<Issue>(
+    const issuesIterator = await client.traverse<Issue>(
       DOMAIN_TASK,
       {
         _class: tracker.class.Issue,
@@ -178,52 +178,56 @@ async function migrateFixMissingDocSyncInfo (client: MigrationClient): Promise<v
       }
     )
     let counter = 0
-    while (true) {
-      const docs = await issues.next(1000)
-      if (docs === null || docs.length === 0) {
-        break
-      }
-      const infos = await client.find(
-        DOMAIN_GITHUB,
-        {
-          _class: github.class.DocSyncInfo,
-          _id: { $in: docs.map((it) => it._id as unknown as Ref<DocSyncInfo>) }
-        },
-        {
-          projection: {
-            _id: 1
-          }
+    try {
+      while (true) {
+        const docs = await issuesIterator.next(1000)
+        if (docs === null || docs.length === 0) {
+          break
         }
-      )
-      const infoIds = toIdMap(infos)
-      let repository: Ref<GithubIntegrationRepository> | null = null
-      for (const issue of docs) {
-        if (!infoIds.has(issue._id)) {
-          if (client.hierarchy.hasMixin(issue, github.mixin.GithubIssue)) {
-            repository = client.hierarchy.as(issue, github.mixin.GithubIssue).repository
-          }
-          counter++
-          // Missing
-          await client.create<DocSyncInfo>(DOMAIN_GITHUB, {
+        const infos = await client.find(
+          DOMAIN_GITHUB,
+          {
             _class: github.class.DocSyncInfo,
-            _id: issue._id as any,
-            url: '',
-            githubNumber: 0,
-            repository,
-            objectClass: issue._class,
-            externalVersion: '#', // We need to put this one to handle new documents.
-            needSync: '',
-            derivedVersion: '',
-            attachedTo: issue.attachedTo ?? tracker.ids.NoParent,
-            space: issue.space,
-            modifiedBy: issue.modifiedBy,
-            modifiedOn: issue.modifiedOn
-          })
+            _id: { $in: docs.map((it) => it._id as unknown as Ref<DocSyncInfo>) }
+          },
+          {
+            projection: {
+              _id: 1
+            }
+          }
+        )
+        const infoIds = toIdMap(infos)
+        let repository: Ref<GithubIntegrationRepository> | null = null
+        for (const issue of docs) {
+          if (!infoIds.has(issue._id)) {
+            if (client.hierarchy.hasMixin(issue, github.mixin.GithubIssue)) {
+              repository = client.hierarchy.as(issue, github.mixin.GithubIssue).repository
+            }
+            counter++
+            // Missing
+            await client.create<DocSyncInfo>(DOMAIN_GITHUB, {
+              _class: github.class.DocSyncInfo,
+              _id: issue._id as any,
+              url: '',
+              githubNumber: 0,
+              repository,
+              objectClass: issue._class,
+              externalVersion: '#', // We need to put this one to handle new documents.
+              needSync: '',
+              derivedVersion: '',
+              attachedTo: issue.attachedTo ?? tracker.ids.NoParent,
+              space: issue.space,
+              modifiedBy: issue.modifiedBy,
+              modifiedOn: issue.modifiedOn
+            })
+          }
         }
       }
-    }
-    if (counter > 0) {
-      console.log('Created', counter, 'DocSyncInfos')
+    } finally {
+      await issuesIterator.close()
+      if (counter > 0) {
+        console.log('Created', counter, 'DocSyncInfos')
+      }
     }
   }
 }

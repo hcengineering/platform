@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { AttachedDoc, Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Lead } from '@hcengineering/lead'
   import { IntlString, Asset } from '@hcengineering/platform'
@@ -46,9 +46,10 @@
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const me = getCurrentEmployee()
+  const myAcc = getCurrentAccount()
+  const assigned = { assignee: me }
+  const created = { createdBy: { $in: myAcc.socialIds } }
   let subscribed = { _id: { $in: [] as Ref<Lead>[] } }
   let mode: string | undefined = undefined
   let baseQuery: DocumentQuery<Lead> | undefined = undefined
@@ -68,7 +69,7 @@
   function getSubscribed () {
     subscribedQuery.query(
       _class,
-      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      { 'notification:mixin:Collaborators.collaborators': myAcc.uuid },
       (result) => {
         const newSub = result.map((p) => p._id as Ref<AttachedDoc> as Ref<Lead>)
         const curSub = subscribed._id.$in

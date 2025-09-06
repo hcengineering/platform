@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import client, { clientId } from '@hcengineering/client'
 import {
   type Account,
@@ -36,11 +36,12 @@ import {
   MixinData,
   MixinUpdate,
   TxOperations,
-  generateId
+  WorkspaceUuid,
+  generateId,
+  pickPrimarySocialId
 } from '@hcengineering/core'
 import { addLocation, getResource } from '@hcengineering/platform'
 
-import { login, selectWorkspace } from './account'
 import { type ServerConfig, loadServerConfig } from './config'
 import {
   type MarkupFormat,
@@ -50,6 +51,7 @@ import {
   createMarkupOperations
 } from './markup'
 import { type ConnectOptions, type PlatformClient, WithMarkup } from './types'
+import { getWorkspaceToken } from './utils'
 
 /**
  * Create platform client
@@ -57,15 +59,32 @@ import { type ConnectOptions, type PlatformClient, WithMarkup } from './types'
 export async function connect (url: string, options: ConnectOptions): Promise<PlatformClient> {
   const config = await loadServerConfig(url)
 
-  const { endpoint, token, workspaceId } = await getWorkspaceToken(url, options, config)
-  return await createClient(url, endpoint, workspaceId, token, config, options)
+  const { endpoint, token } = await getWorkspaceToken(url, options, config)
+  const accountClient = getAccountClient(config.ACCOUNTS_URL, token)
+  const socialIds = await accountClient.getSocialIds(true)
+  const wsLoginInfo = await accountClient.selectWorkspace(options.workspace)
+
+  if (wsLoginInfo === undefined) {
+    throw new Error(`Workspace ${options.workspace} not found`)
+  }
+
+  const account: Account = {
+    uuid: wsLoginInfo.account,
+    role: wsLoginInfo.role,
+    primarySocialId: pickPrimarySocialId(socialIds)._id,
+    socialIds: socialIds.map((si) => si._id),
+    fullSocialIds: socialIds
+  }
+
+  return await createClient(url, endpoint, token, wsLoginInfo.workspace, account, config, options)
 }
 
 async function createClient (
   url: string,
   endpoint: string,
-  workspaceId: string,
   token: string,
+  workspaceUuid: WorkspaceUuid,
+  account: Account,
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
@@ -78,9 +97,8 @@ async function createClient (
     socketFactory,
     connectionTimeout
   })
-  const account = await connection.getAccount()
 
-  return new PlatformClientImpl(url, workspaceId, token, config, connection, account)
+  return new PlatformClientImpl(url, workspaceUuid, token, config, connection, account)
 }
 
 class PlatformClientImpl implements PlatformClient {
@@ -89,21 +107,17 @@ class PlatformClientImpl implements PlatformClient {
 
   constructor (
     private readonly url: string,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly token: string,
     private readonly config: ServerConfig,
     private readonly connection: Client,
     private readonly account: Account
   ) {
-    this.client = new TxOperations(connection, account._id)
+    this.client = new TxOperations(connection, account.primarySocialId)
     this.markup = createMarkupOperations(url, workspace, token, config)
   }
 
   // Client
-
-  getAccount (): Account {
-    return { ...this.account }
-  }
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
@@ -111,6 +125,10 @@ class PlatformClientImpl implements PlatformClient {
 
   getModel (): ModelDb {
     return this.client.getModel()
+  }
+
+  async getAccount (): Promise<Account> {
+    return this.account
   }
 
   async findOne<T extends Doc>(
@@ -276,38 +294,4 @@ class PlatformClientImpl implements PlatformClient {
   async [Symbol.asyncDispose] (): Promise<void> {
     await this.close()
   }
-}
-
-export interface WorkspaceToken {
-  endpoint: string
-  token: string
-  workspaceId: string
-}
-
-export async function getWorkspaceToken (
-  url: string,
-  options: ConnectOptions,
-  config?: ServerConfig
-): Promise<WorkspaceToken> {
-  config ??= await loadServerConfig(url)
-
-  let token: string
-
-  if ('token' in options) {
-    token = options.token
-  } else {
-    const { email, password, workspace } = options
-    token = await login(config.ACCOUNTS_URL, email, password, workspace)
-  }
-
-  if (token === undefined) {
-    throw new Error('Login failed')
-  }
-
-  const ws = await selectWorkspace(config.ACCOUNTS_URL, token, options.workspace)
-  if (ws === undefined) {
-    throw new Error('Workspace not found')
-  }
-
-  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspaceId }
 }

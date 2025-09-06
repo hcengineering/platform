@@ -15,6 +15,7 @@ import {
 } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
+import type { IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
@@ -36,6 +37,14 @@ interface OverviewStatistics {
   workspaces: WorkspaceStatistics[]
 }
 
+const extractAuthorizationToken = (headers: IncomingHttpHeaders): string | undefined => {
+  try {
+    return headers.authorization?.slice(7) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
 /**
  * @public
  */
@@ -50,6 +59,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
   }
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'stats')
 
   const statistics = new Map<string, ServiceStatisticsEx>()
   const timeouts = new Map<string, number>()
@@ -70,7 +80,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
 
   router.get('/api/v1/overview', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractAuthorizationToken(req.headers)
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
       if (!admin) {
@@ -98,7 +108,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
       const json: Record<string, Omit<ServiceStatistics, 'stats' | 'workspaces'>> = {}
       for (const [k, v] of statistics.entries()) {
         if (Date.now() - v.lastUpdate > serviceTimeout) {
-          timeouts.set(v.serviceName, (timeouts.get(v.serviceName) ?? 0) + 1)
+          timeouts.set(k, (timeouts.get(k) ?? 0) + 1)
           toClean.push(k)
           continue
         }
@@ -117,6 +127,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
         }
       }
       for (const k of toClean) {
+        timeouts.delete(k)
         statistics.delete(k)
       }
 
@@ -139,7 +150,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
 
   router.get('/api/v1/statistics', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractAuthorizationToken(req.headers)
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
       ctx.info('get stats', { admin, service: req.query.name })
@@ -167,9 +178,9 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
   })
   router.put('/api/v1/statistics', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractAuthorizationToken(req.headers)
       const payload = decodeToken(token)
-      const service = payload.extra?.service === 'true'
+      const service = payload.extra?.service != null
       const serviceName = (req.query.name as string) ?? ''
       if (service) {
         ctx.info('put stats', { service: req.query.name, len: req.request.length })

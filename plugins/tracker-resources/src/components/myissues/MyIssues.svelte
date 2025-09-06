@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { PersonAccount } from '@hcengineering/contact'
-  import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import core, { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { Issue, IssueStatus } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -28,10 +28,13 @@
   export let config: [string, IntlString, object][] = []
   export let icon: Asset | undefined = undefined
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const socialIds = getCurrentAccount().socialIds
+  const acc = getCurrentAccount().uuid
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const assigned = { assignee: getCurrentEmployee() }
+  const created = { createdBy: { $in: socialIds } }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
@@ -63,16 +66,16 @@
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
-    tracker.class.Issue,
-    { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
-    (result) => {
-      const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Issue>)
+    core.class.Collaborator,
+    { collaborator: acc, attachedToClass: { $in: hierarchy.getDescendants(tracker.class.Issue) } },
+    (collaborators) => {
+      const newSub = collaborators.map((it) => it.attachedTo as Ref<Issue>)
       const curSub = subscribed._id.$in
       if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
         subscribed = { _id: { $in: newSub } }
       }
     },
-    { sort: { _id: 1 }, projection: { _id: 1 } }
+    { sort: { attachedTo: 1 }, projection: { attachedTo: 1 } }
   )
 
   $: queries = { assigned, active, backlog, created, subscribed }

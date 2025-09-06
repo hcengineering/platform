@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+1 555 333 7777",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -69,6 +71,7 @@
     "CreateEmployee": "Сотрудник",
     "Inactive": "Не активный",
     "Active": "Активный",
+    "Role": "Роль",
     "Birthday": "День рождения",
     "UseImage": "Загруженное Фото",
     "UseGravatar": "Граватар",
@@ -107,6 +110,19 @@
     "AddGuest": "Добавить гостя",
     "ViewProfile": "Посмотреть профиль",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Социальный ID",
+    "SocialIds": "Социальные ID",
+    "Type": "Тип",
+    "Confirmed": "Подтвержден",
+    "UserProfile": "Профиль пользователя",
+    "DeactivatedAccount": "Деактивированный аккаунт",
+    "LocalTime": "местного времени",
+    "Everyone": "Все",
+    "Here": "Здесь",
+    "EveryoneDescription": "Уведомить всех в этом {title}",
+    "HereDescription": "Уведомить всех в этом {title}",
+    "Guest": "Гость",
+    "Deleted": "Удалён"
   }
 }

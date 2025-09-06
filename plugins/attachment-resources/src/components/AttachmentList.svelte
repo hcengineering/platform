@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { Ref, type WithLookup } from '@hcengineering/core'
-  import { Scroller } from '@hcengineering/ui'
+  import { ListSelectionProvider } from '@hcengineering/view-resources'
+  import { updatePopup } from '@hcengineering/ui'
   import { AttachmentImageSize } from '../types'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
@@ -23,17 +24,43 @@
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize | undefined = undefined
   export let videoPreload = false
+
+  let attachmentPopupId = ''
+
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0) => {
+    const current = listProvider.current()
+    if (current === undefined) return
+    let pos = current + offset
+    if (pos < 0) pos = 0
+    if (pos >= attachments.length) pos = attachments.length - 1
+    const doc = listProvider.docs()[pos] as Attachment
+    if (doc !== undefined && attachmentPopupId !== '') {
+      listProvider.updateFocus(doc)
+      updatePopup(attachmentPopupId, { props: { value: doc } })
+    }
+  })
+  $: listProvider.update(attachments.filter((p) => p.type.startsWith('image/')))
 </script>
 
 {#if attachments.length}
-  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
+  <div class="gallery">
     {#each attachments as attachment}
       <AttachmentPreview
         value={attachment}
         isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
         {imageSize}
         {videoPreload}
+        {listProvider}
+        on:open={(res) => (attachmentPopupId = res.detail)}
       />
     {/each}
-  </Scroller>
+  </div>
 {/if}
+
+<style lang="scss">
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

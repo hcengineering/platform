@@ -148,8 +148,6 @@
     visible = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters) !== undefined
   }
 
-  const me = getCurrentAccount()._id
-
   function selectedFilterChanged (
     selectedFilter: FilteredView | undefined,
     filters: Filter[],
@@ -157,7 +155,7 @@
     viewOptionStore: Map<string, ViewOptions>
   ): boolean {
     if (selectedFilter === undefined) return false
-    if (selectedFilter.createdBy !== me) return false
+    if (!getCurrentAccount().socialIds.includes(selectedFilter.createdBy)) return false
     const loc = getCurrentLocation()
     const key = makeViewletKey(loc)
     if (selectedFilter.viewletId !== activeViewlet[key]) return true

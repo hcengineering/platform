@@ -62,7 +62,9 @@ import {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  LinkIdProvider
+  LinkIdProvider,
+  CustomObjectLinkProvider,
+  OpenDocumentFunction
 } from './types'
 
 export * from './types'
@@ -113,7 +115,8 @@ const view = plugin(viewId, {
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,
     Groupping: '' as Ref<Mixin<Groupping>>,
-    ObjectIcon: '' as Ref<Mixin<ObjectIcon>>
+    ObjectIcon: '' as Ref<Mixin<ObjectIcon>>,
+    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
@@ -151,11 +154,16 @@ const view = plugin(viewId, {
     // Edit document
     Open: '' as Ref<Action>,
     OpenInNewTab: '' as Ref<Action>,
-    RemoveRelation: '' as Ref<Action>
+    RemoveRelation: '' as Ref<Action>,
+
+    CopyLink: '' as Ref<Action<Doc, any>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
-    List: '' as Ref<ViewletDescriptor>
+    List: '' as Ref<ViewletDescriptor>,
+    MasterDetail: '' as Ref<ViewletDescriptor>,
+    Tree: '' as Ref<ViewletDescriptor>,
+    Document: '' as Ref<ViewletDescriptor>
   },
   component: {
     ActionsPopup: '' as AnyComponent,
@@ -170,7 +178,14 @@ const view = plugin(viewId, {
     AttachedDocPanel: '' as AnyComponent,
     ObjectMention: '' as AnyComponent,
     SearchSelector: '' as AnyComponent,
-    FoldersBrowser: '' as AnyComponent
+    FoldersBrowser: '' as AnyComponent,
+    PersonIdPresenter: '' as AnyComponent,
+    PersonIdFilter: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent,
+    ReadOnlyNotification: '' as AnyComponent,
+    ForbiddenNotification: '' as AnyComponent,
+    DatePresenter: '' as AnyComponent,
+    DateEditor: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset
@@ -221,7 +236,20 @@ const view = plugin(viewId, {
     DeleteObject: '' as IntlString,
     DeleteObjectConfirm: '' as IntlString,
     RemoveRelationConfirmation: '' as IntlString,
-    RemoveRelation: '' as IntlString
+    RemoveRelation: '' as IntlString,
+    MasterDetail: '' as IntlString,
+    Tree: '' as IntlString,
+    Document: '' as IntlString,
+    Loading: '' as IntlString,
+    ReadOnlyWarningTitle: '' as IntlString,
+    ReadOnlyWarningMessage: '' as IntlString,
+    ReadOnlySignUp: '' as IntlString,
+    ReadOnlyJoinWorkspace: '' as IntlString,
+    PermissionWarningTitle: '' as IntlString,
+    PermissionWarningMessage: '' as IntlString,
+    Icon: '' as IntlString,
+    Color: '' as IntlString,
+    AutomationOnly: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -269,7 +297,10 @@ const view = plugin(viewId, {
     Audio: '' as Asset,
     File: '' as Asset,
     PinTack: '' as Asset,
-    Feather: '' as Asset
+    Feather: '' as Asset,
+    MasterDetail: '' as Asset,
+    Tree: '' as Asset,
+    Document: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -303,6 +334,9 @@ const view = plugin(viewId, {
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
+  },
+  function: {
+    OpenDocument: '' as Resource<OpenDocumentFunction>
   },
   actionImpl: {
     CopyTextToClipboard: '' as ViewAction<{

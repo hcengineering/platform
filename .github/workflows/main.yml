@@ -22,9 +22,11 @@ on:
 
 env:
   CacheFolders: |
+    communication
     common
     desktop
     desktop-package
+    qms-desktop-package
     dev
     models
     packages
@@ -56,6 +58,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -75,6 +78,10 @@ jobs:
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
+
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -108,6 +115,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
@@ -123,7 +131,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
+        run: node common/scripts/install-run-rush.js svelte-check -v
   formatting:
     needs: build
     runs-on: ubuntu-latest
@@ -132,6 +140,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -156,7 +165,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'staging' }}
+        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'develop' }}
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -174,6 +183,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -186,6 +196,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -196,9 +207,9 @@ jobs:
           cd ./tests
           ./prepare-tests.sh
       - name: Testing...
-        run: node common/scripts/install-run-rush.js test
+        run: node common/scripts/install-run-rush.js test --verbose
         env:
-          DB_URL: 'postgresql://postgres:example@localhost:5433'
+          DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
   uitest:
@@ -209,6 +220,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -226,10 +238,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -239,6 +256,9 @@ jobs:
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+      - name: Configure /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./tests
@@ -330,6 +350,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -347,10 +368,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -360,6 +386,9 @@ jobs:
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+      - name: Configure /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./tests
@@ -369,10 +398,26 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js ci
+      - name: Start profiling
+        run: |
+          cd ./tests
+          ./profile-start.sh
       - name: Run UI tests
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+      - name: Download profile
+        run: |
+          cd ./tests
+          ./profile-download.sh
+          npm install -g cpupro
+          ./profile-generate.sh
+      - name: Upload profiling results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profiling-pg
+          path: ./tests/profiles
       - name: 'Store docker logs'
         if: always()
         run: |
@@ -400,6 +445,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -417,10 +463,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -431,7 +482,7 @@ jobs:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
         run: |
-          sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./qms-tests
@@ -472,6 +523,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -489,6 +541,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -496,6 +552,7 @@ jobs:
         run: node common/scripts/install-run-rush.js build -t @hcengineering/tests-sanity
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -532,7 +589,13 @@ jobs:
           mkdir logs
           cd logs
           docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
-      - name: Upload test results
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-api
+          path: ./ws-tests/api-tests/playwright-report/
+      - name: Upload UI test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -545,14 +608,25 @@ jobs:
           name: docker-logs-ws
           path: ./ws-tests/sanity/logs
   docker-build:
-    needs: [build, uitest-workspaces]
+    needs: [uitest-workspaces]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Configure docker
-        uses: crazy-max/ghaction-setup-docker@v3
+        uses: docker/setup-docker-action@v4
         with:
           daemon-config: |
             {
@@ -564,6 +638,7 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+          submodules: recursive
 
       - name: Checkout init repository
         run: |
@@ -589,6 +664,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -596,13 +675,16 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -v
+        run: |
+          node common/scripts/install-run-rush.js docker:build -v
+          docker builder prune -a -f
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -634,6 +716,7 @@ jobs:
           echo Pushing love-agent release of tag ${{ github.ref }}
           cd ./services/ai-bot/love-agent
           pnpm docker:push
+
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
@@ -662,15 +745,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
         run: node common/scripts/install-run-rush.js package --to desktop -v
-      - name: Package JSON
+      - name: Bump package JSON version
         run: |
           cd desktop-package
+          node ../common/scripts/install-run-rushx.js bump
           cat ./package.json
       - name: Install the Apple certificate and provisioning profile
         env:
@@ -701,7 +789,8 @@ jobs:
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           cd desktop-package
-          node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
+          node ../common/scripts/install-run-rushx.js dist --linux --x64
+          node ../common/scripts/install-run-rushx.js dist --windows --x64 --arm64
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
       - name: Publish distribution assets and version
@@ -733,3 +822,109 @@ jobs:
         with:
           name: Huly-Linux
           path: ./desktop-package/deploy/Huly-linux-*.zip
+
+  qms-dist-build:
+    # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    needs: build
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: node
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install --purge
+      - name: Model version from git tags
+        run: node common/scripts/install-run-rush.js model-version
+      - name: Package
+        run: node common/scripts/install-run-rush.js package --to qms-desktop -v
+      - name: Bump package JSON version
+        run: |
+          cd qms-desktop-package
+          node ../common/scripts/install-run-rushx.js bump
+          cat ./package.json
+      - name: Install the Apple certificate and provisioning profile
+        env:
+          DEV_ID_P12_BASE64: ${{ secrets.DEV_ID_P12_BASE64 }}
+          DEV_ID_P12_PASSWORD: ${{ secrets.DEV_ID_P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate from secret
+          echo -n "$DEV_ID_P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$DEV_ID_P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+      - name: Build distribution's
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_APP_PASS: ${{ secrets.APPLE_ID_APP_PASS }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          cd qms-desktop-package
+          node ../common/scripts/install-run-rushx.js dist --linux --x64
+          node ../common/scripts/install-run-rushx.js dist --windows --x64 --arm64
+          node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
+          ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
+      - name: Publish distribution assets and version
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: desktop-distro
+          source-dir: qms-desktop-package/${{ env.PublishTempFolder}}
+          destination-dir: ./
+      - name: Upload MacOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: TraceX-MacOS-x64
+          path: ./qms-desktop-package/deploy/TraceX-macos-*-x64.dmg
+      - name: Upload MacOS arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: TraceX-MacOS-arm64
+          path: ./qms-desktop-package/deploy/TraceX-macos-*-arm64.dmg
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: TraceX-Windows
+          path: ./qms-desktop-package/deploy/TraceX-windows-*.zip
+      - name: Upload Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: TraceX-Linux
+          path: ./qms-desktop-package/deploy/TraceX-linux-*.zip

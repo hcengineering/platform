@@ -55,9 +55,14 @@ import core, {
   generateId,
   getObjectValue,
   matchQuery,
+  platformNow,
   reduceCalls,
   shouldShowArchived,
-  toFindResult
+  toFindResult,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
+  type OperationDomain
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
@@ -187,7 +192,7 @@ export class LiveQuery implements WithTx, Client {
     options?: FindOptions<T>
   ): Query {
     const q = this.createQuery(_class, query, undefined, options)
-    this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+    this.queue.set(q.id, { ...q, lastUsed: platformNow() })
     if (!(q.result instanceof Promise)) {
       q.result.clean()
     }
@@ -223,10 +228,18 @@ export class LiveQuery implements WithTx, Client {
       q.result = await q.result
     }
     if (this.removeFromQueue(q, false)) {
-      this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+      this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       q.result.clean()
     }
     return toFindResult(q.result.getClone(), q.total)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    return await this.client.domainRequest(domain, params, options)
   }
 
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -265,7 +278,7 @@ export class LiveQuery implements WithTx, Client {
       q.result = await q.result
     }
     if (this.removeFromQueue(q, false)) {
-      this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+      this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       q.result.clean()
     }
     return q.result.getClone<WithLookup<T>>().shift()
@@ -443,7 +456,7 @@ export class LiveQuery implements WithTx, Client {
         if (!(q.result instanceof Promise)) {
           q.result.clean()
         }
-        this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+        this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       }
     }
   }

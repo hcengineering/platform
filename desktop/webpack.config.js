@@ -122,7 +122,8 @@ module.exports = [
   // ------ UI Part --------------------------
   {
     entry: {
-      bundle: ['@hcengineering/theme/styles/global.scss', ...['./src/ui/index.ts']]
+      bundle: ['@hcengineering/theme/styles/global.scss', ...['./src/ui/index.ts']],
+      'recorder-worker': '@hcengineering/recorder-resources/src/recorder-worker.ts'
     },
     ignoreWarnings: [
       {
@@ -147,8 +148,9 @@ module.exports = [
     },
     output: {
       path: path.join(__dirname, '/dist/ui/'),
-      filename: 'bundle.js',
-      publicPath: '',
+      filename: '[name].js',
+      chunkFilename: '[name].js',
+      publicPath: './',
       chunkFormat: false,
       clean: true
     },
@@ -316,6 +318,17 @@ module.exports = [
           viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
         },
         publicPath: ''
+      }),
+      new HtmlWebpackPlugin({
+        template: './src/ui/index.ejs',
+        filename: 'index.windows.html',
+        meta: {
+          viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
+        },
+        publicPath: '',
+        templateParameters: {
+          isWindows: true
+        }
       }),
       ...(!dev ? [new CompressionPlugin()] : []),
       // new MiniCssExtractPlugin({

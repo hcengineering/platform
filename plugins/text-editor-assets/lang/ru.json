@@ -61,13 +61,18 @@
     "Unset": "Убрать",
     "Image": "Изображение",
     "SeparatorLine": "Разделительная линия",
-    "TodoList": "Действие",
+    "TodoItem": "Задача",
+    "TodoList": "Список задач",
     "DrawingBoard": "Доска",
     "MermaidDiargram": "Диаграмма",
     "Comment": "Комментарий",
     "AddComment": "Добавить комментарий",
     "AddCommentPlaceholder": "Добавьте комментарий...",
     "SetCellHighlightColor": "Изменить цвет ячеек",
-    "SetTextColor": "Изменить цвет текста"
+    "SetTextColor": "Изменить цвет текста",
+    "ConvertToLinkPreview": "Показать как ссылку",
+    "ConvertToEmbedPreview": "Показать как превью контента",
+    "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",
+    "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы"
   }
 }

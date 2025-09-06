@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Contiene",
+    "NotContains": "No contiene",
     "MoveClass": "Mover {class}",
     "SelectToMove": "Seleccione el {classLabel} que desea mover a {class}.",
     "Delete": "Eliminar",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personalizar vista",
     "Filter": "Filtrar",
     "ClearFilters": "Borrar filtros",
+    "FilterLessThan": "Menos que",
+    "FilterGreaterThan": "Más que",
     "FilterIsNot": "no es",
     "FilterIsEither": "es",
     "FilterIsEitherPlural": "son",
@@ -100,8 +103,8 @@
     "Between": "está entre",
     "ShowColors": "Usar colores",
     "Show": "Mostrar",
-    "FilterArrayAll": "incluye todos",
-    "FilterArrayAny": "incluye alguno",
+    "FilterArrayAll": "todos",
+    "FilterArrayAny": "alguno",
     "Or": "O",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copiar al portapapeles",
@@ -123,7 +126,22 @@
     "Copied": "Copiado",
     "Title": "Título",
     "HideArchived": "Ocultar archivadas",
-    "RemoveRelation": "Eliminar relación",  
-    "RemoveRelationConfirmation": "¿Quieres eliminar la relación?"  
+    "RemoveRelation": "Eliminar relación",
+    "RemoveRelationConfirmation": "¿Quieres eliminar la relación?",
+    "MasterDetail": "Maestro-detalle",
+    "Tree": "Árbol",
+    "Document": "Documento",
+    "Loading": "Cargando...",
+    "NoRelations": "No hay relaciones",
+    "ReadOnlyWarningTitle": "✨ Demo de invitado anónimo",
+    "ReadOnlyWarningMessage": "Estás en modo de solo lectura. ¡Elige tu camino: Únete a este espacio para colaborar (como invitado) o crea tu propio espacio para gestionar proyectos completamente — tareas, plazos, equipo!",
+    "ReadOnlyJoinWorkspace": "Unirse al espacio",
+    "ReadOnlySignUp": "Crear espacio",
+    "PermissionWarningTitle": "✨ ¡Mejora tu acceso!",
+    "PermissionWarningMessage": "Tu rol actual tiene permisos limitados. ¡Para desbloquear esta y otras funciones avanzadas, pídele al administrador de tu espacio de trabajo que actualice tu nivel de acceso!",
+    "Icon": "Icono",
+    "Color": "Color",
+    "AutomationOnly": "Solo automatización",
+    "CopyLink": "Copiar enlace"
   }
 }

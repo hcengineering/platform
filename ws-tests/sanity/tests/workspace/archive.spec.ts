@@ -65,6 +65,9 @@ test.describe('Workspace Archive tests', () => {
       const loginPage2 = new LoginPage(adminSecondPage.page)
       await loginPage2.goto()
       await loginPage2.login('admin', '1234')
+      await loginPage2.page.waitForURL((url) => {
+        return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
+      })
 
       await loginPage2.page.waitForURL((url) => {
         return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
@@ -78,23 +81,23 @@ test.describe('Workspace Archive tests', () => {
       await page2.locator('div:nth-child(4) > .checkbox-container > .checkSVG').click()
 
       await page2.getByRole('button', { name: 'America', exact: true }).first().click()
-      await page2.getByRole('button', { name: 'europe (hidden)' }).first().click()
-      await page2.getByPlaceholder('Search').click()
-      await page2.getByPlaceholder('Search').fill(workspaceInfo.workspaceId)
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByRole('button', { name: 'Archive' }).click()
+      await page2.getByRole('button', { name: 'europe' }).first().click()
+      await page2.locator('[data-testid="workspace-search-container"] input').click()
+      await page2.locator('[data-testid="workspace-search-container"] input').fill(workspaceInfo.workspace)
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Archive' }).click()
 
       await page2.getByRole('button', { name: 'Ok' }).click()
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByText('archived').waitFor()
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByText('archived').waitFor()
     })
     await test.step('Check workspace is archived', async () => {
       await page.reload() // Will redirect to select workspace page
       await page.getByText('archived').waitFor()
     })
     await test.step('Restore workspace', async () => {
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByRole('button', { name: 'Unarchive' }).click()
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Unarchive' }).click()
 
       await page2.getByRole('button', { name: 'Ok' }).click()
-      await page2.locator(`[id="${workspaceInfo.workspaceId}"]`).getByText('active').waitFor()
+      await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByText('active').waitFor()
     })
     await test.step('Check workspace is active again', async () => {
       await page.reload()

@@ -25,6 +25,7 @@ import {
 import { type MigrateOperation } from '@hcengineering/model'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
+import { QueueTopic, type PlatformQueue, type QueueWorkspaceMessage } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
@@ -37,6 +38,7 @@ export * from './ws-operations'
  */
 export function serveWorkspaceAccount (
   measureCtx: MeasureContext,
+  queue: PlatformQueue,
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
@@ -93,6 +95,12 @@ export function serveWorkspaceAccount (
   }
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUri)
 
+  const accountDbUrl = process.env.ACCOUNTS_DB_URL
+  if (accountDbUrl === undefined) {
+    console.log('Please provide account db url')
+    process.exit(1)
+  }
+
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -102,6 +110,7 @@ export function serveWorkspaceAccount (
   const waitTimeout = parseInt(process.env.WAIT_TIMEOUT ?? '5000')
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'workspace')
 
   const initWS = process.env.INIT_WORKSPACE
   if (initWS !== undefined) {
@@ -121,7 +130,9 @@ export function serveWorkspaceAccount (
 
   let canceled = false
 
+  const wsProducer = queue.getProducer<QueueWorkspaceMessage>(measureCtx, QueueTopic.Workspace)
   const worker = new WorkspaceWorker(
+    wsProducer,
     version,
     txes,
     migrateOperations,
@@ -129,7 +140,9 @@ export function serveWorkspaceAccount (
     parseInt(process.env.PARALLEL ?? '1'),
     wsOperation,
     brandings,
-    fulltextUrl
+    fulltextUrl,
+    accountUri,
+    accountDbUrl
   )
 
   void worker
@@ -153,6 +166,7 @@ export function serveWorkspaceAccount (
 
   const close = (): void => {
     canceled = true
+    void queue.shutdown()
     onClose?.()
   }
 

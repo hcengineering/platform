@@ -29,24 +29,11 @@ import config from '../config.js'
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000
 
-const dgSchema: LiveSchema = {
-  model: 'nova-2-general',
-  encoding: 'linear16',
-  smart_format: true,
-  endpointing: 500,
-  interim_results: true,
-  vad_events: true,
-  utterance_end_ms: 1000,
-
-  punctuate: true,
-  language: 'en'
-}
-
 export class STT implements Stt {
   private readonly deepgram: DeepgramClient
 
   private isInProgress = false
-  private language: string = 'en'
+  // private language: string = 'en'
 
   private readonly trackBySid = new Map<string, RemoteTrack>()
   private readonly streamBySid = new Map<string, AudioStream>()
@@ -62,12 +49,12 @@ export class STT implements Stt {
   }
 
   updateLanguage (language: string): void {
-    const shouldRestart = (this.language ?? 'en') !== language
-    this.language = language
-    if (shouldRestart) {
-      this.stop()
-      this.start()
-    }
+    // const shouldRestart = (this.language ?? 'en') !== language
+    // this.language = language
+    // if (shouldRestart) {
+    //   this.stop()
+    //   this.start()
+    // }
   }
 
   start (): void {
@@ -90,40 +77,89 @@ export class STT implements Stt {
   }
 
   subscribe (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
-    if (this.trackBySid.has(publication.sid)) return
-    this.trackBySid.set(publication.sid, track)
-    this.participantBySid.set(publication.sid, participant)
+    const sid = publication.sid
+    if (sid === undefined) return
+    if (this.trackBySid.has(sid)) return
+    this.trackBySid.set(sid, track)
+    this.participantBySid.set(sid, participant)
     if (this.isInProgress) {
-      this.processTrack(publication.sid)
+      this.processTrack(sid)
     }
   }
 
   unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
-    this.trackBySid.delete(publication.sid)
-    this.participantBySid.delete(participant.sid)
-    this.stopDeepgram(publication.sid)
+    const sid = publication.sid
+    if (sid === undefined) return
+    this.trackBySid.delete(sid)
+    this.participantBySid.delete(sid)
+    this.stopDeepgram(sid)
   }
 
   stopDeepgram (sid: string): void {
-    const stream = this.streamBySid.get(sid)
-    if (stream !== undefined) {
-      stream.close()
+    try {
+      const stream = this.streamBySid.get(sid)
+      if (stream !== undefined) {
+        stream.close()
+      }
+
+      const dgConnection = this.dgConnectionBySid.get(sid)
+      if (dgConnection !== undefined) {
+        dgConnection.removeAllListeners()
+        dgConnection.disconnect()
+      }
+
+      const interval = this.intervalBySid.get(sid)
+      if (interval !== undefined) {
+        clearInterval(interval)
+      }
+
+      this.intervalBySid.delete(sid)
+      this.dgConnectionBySid.delete(sid)
+      this.streamBySid.delete(sid)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  getOptions (stream: AudioStream): LiveSchema {
+    const options: Partial<LiveSchema> = {}
+
+    if (config.DgEndpointing !== 0) {
+      options.endpointing = config.DgEndpointing
     }
 
-    const dgConnection = this.dgConnectionBySid.get(sid)
-    if (dgConnection !== undefined) {
-      dgConnection.removeAllListeners()
-      dgConnection.disconnect()
+    if (config.DgInterimResults) {
+      options.interim_results = true
     }
 
-    const interval = this.intervalBySid.get(sid)
-    if (interval !== undefined) {
-      clearInterval(interval)
+    if (config.DgVadEvents) {
+      options.vad_events = true
     }
 
-    this.intervalBySid.delete(sid)
-    this.dgConnectionBySid.delete(sid)
-    this.streamBySid.delete(sid)
+    if (config.DgUtteranceEndMs !== 0) {
+      options.utterance_end_ms = config.DgUtteranceEndMs
+    }
+
+    if (config.DgPunctuate) {
+      options.punctuate = true
+    }
+
+    if (config.DgSmartFormat) {
+      options.smart_format = true
+    }
+
+    if (config.DgNoDelay) {
+      options.no_delay = true
+    }
+
+    return {
+      ...options,
+      encoding: 'linear16',
+      channels: stream.numChannels,
+      sample_rate: stream.sampleRate,
+      language: 'multi',
+      model: config.DeepgramModel
+    }
   }
 
   processTrack (sid: string): void {
@@ -131,22 +167,19 @@ export class STT implements Stt {
     if (track === undefined) return
     if (this.dgConnectionBySid.has(sid)) return
 
-    const stream = new AudioStream(track)
-    const dgConnection = this.deepgram.listen.live({
-      ...dgSchema,
-      channels: stream.numChannels,
-      sample_rate: stream.sampleRate,
-      language: this.language ?? 'en'
-    })
-    console.log('Starting deepgram for track', this.room.name, sid)
+    const stream = new AudioStream(track, config.DgSampleRate)
+    // const language = this.language ?? 'en'
+    const options = this.getOptions(stream)
+    const dgConnection = this.deepgram.listen.live(options)
+    console.log('Starting deepgram for track', this.room.name, sid, options)
 
     const interval = setInterval(() => {
       dgConnection.keepAlive()
     }, KEEP_ALIVE_INTERVAL)
 
     this.streamBySid.set(sid, stream)
-    this.dgConnectionBySid.set(track.sid, dgConnection)
-    this.intervalBySid.set(track.sid, interval)
+    this.dgConnectionBySid.set(sid, dgConnection)
+    this.intervalBySid.set(sid, interval)
 
     dgConnection.on(LiveTranscriptionEvents.Open, () => {
       dgConnection.on(LiveTranscriptionEvents.Transcript, (data: LiveTranscriptionEvent) => {
@@ -157,16 +190,14 @@ export class STT implements Stt {
           return
         }
 
-        if (data.speech_final === true) {
-          void this.sendToPlatform(transcript, sid)
-        } else if (data.is_final === true) {
+        if (data.speech_final === true || data.is_final === true) {
           void this.sendToPlatform(transcript, sid)
         }
       })
 
-      dgConnection.on(LiveTranscriptionEvents.Close, (d) => {
-        console.log('Connection closed.', d, track.sid)
-        this.stopDeepgram(track.sid)
+      dgConnection.on(LiveTranscriptionEvents.Close, (data) => {
+        console.log('Deepgram closed', data)
+        this.stopDeepgram(sid)
       })
 
       dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
@@ -186,8 +217,7 @@ export class STT implements Stt {
         return
       }
       if (dgConnection.getReadyState() !== SOCKET_STATES.open) continue
-      const buf = Buffer.from(frame.data.buffer)
-      dgConnection.send(buf)
+      dgConnection.send(frame.data.buffer)
     }
   }
 

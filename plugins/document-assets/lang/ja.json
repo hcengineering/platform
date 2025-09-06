@@ -37,6 +37,7 @@
     "Untitled": "無題",
     "Description": "説明",
     "CopyDocumentUrl": "ドキュメントのURLをクリップボードにコピー",
+    "DocumentUrlCopied": "コピーしました",
     "ViewMode": "表示",
     "EditMode": "編集",
     "SuggestMode": "提案",
@@ -50,8 +51,6 @@
     "ConfigDescription": "共同ドキュメント編集のための拡張機能",
     "Icon": "アイコン",
     "Color": "色",
-    "RoleLabel": "ロール: {role}",
-    "ForbidCreateTeamspacePermission": "チームスペースの作成禁止",
-    "ForbidCreateTeamspacePermissionDescription": "ユーザーが新しいチームスペースを作成することを禁止します"
+    "RoleLabel": "ロール: {role}"
   }
 }

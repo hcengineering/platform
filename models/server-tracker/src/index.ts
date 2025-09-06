@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'
@@ -71,13 +70,6 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: tracker.class.Project
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
     }
   })
 

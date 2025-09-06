@@ -1,7 +1,7 @@
 // preload.js
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { BrandingMap, Config, IPCMainExposed, NotificationParams } from './types'
+import { BrandingMap, Config, IPCMainExposed, MenuBarAction, NotificationParams, JumpListSpares } from './types'
 
 /**
  * @public
@@ -60,6 +60,34 @@ const expose: IPCMainExposed = {
   },
   sendNotification: (notificationParams: NotificationParams) => {
     ipcRenderer.send('send-notification', notificationParams)
+  },
+
+  minimizeWindow: () => {
+    ipcRenderer.invoke('window-minimize')
+  },
+
+  maximizeWindow: () => {
+    ipcRenderer.invoke('window-maximize')
+  },
+
+  closeWindow: () => {
+    ipcRenderer.invoke('window-close')
+  },
+
+  onWindowStateChange: (callback) => {
+    ipcRenderer.on('window-state-changed', callback)
+  },
+
+  onWindowFocusLoss: (callback) => {
+    ipcRenderer.on('window-focus-loss', callback)
+  },
+
+  isOsUsingDarkTheme: async () => {
+    return await ipcRenderer.invoke('get-is-os-using-dark-theme')
+  },
+
+  executeMenuBarAction: (action: MenuBarAction) => {
+    ipcRenderer.invoke('menu-action', action)
   },
 
   config: async () => {
@@ -121,8 +149,8 @@ const expose: IPCMainExposed = {
   },
 
   handleNotificationNavigation: (callback) => {
-    ipcRenderer.on('handle-notification-navigation', (event) => {
-      callback()
+    ipcRenderer.on('handle-notification-navigation', (event, notificationParams) => {
+      callback(notificationParams)
     })
   },
 
@@ -138,6 +166,12 @@ const expose: IPCMainExposed = {
     })
   },
 
+  handleDownloadItem: (callback) => {
+    ipcRenderer.on('handle-download-item', (event, value) => {
+      callback(value)
+    })
+  },
+
   async setFrontCookie (host: string, name: string, value: string): Promise<void> {
     ipcRenderer.send('set-front-cookie', host, name, value)
   },
@@ -145,6 +179,8 @@ const expose: IPCMainExposed = {
   getScreenAccess: () => ipcRenderer.invoke('get-screen-access'),
   getScreenSources: () => ipcRenderer.invoke('get-screen-sources'),
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
-  startBackup: (token, endpoint, workspace) => { ipcRenderer.send('start-backup', token, endpoint, workspace) }
+  startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) },
+
+  rebuildJumpList: (spares: JumpListSpares) => { ipcRenderer.send('rebuild-user-jump-list', spares) }
 }
 contextBridge.exposeInMainWorld('electron', expose)

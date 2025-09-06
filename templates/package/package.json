@@ -16,7 +16,7 @@
     "style-loader": "^3.3.1",
     "file-loader": "^6.2.0",
     "sass-loader": "^13.2.0",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "webpack-bundle-analyzer": "^4.10.2",
     "svgo-loader": "^3.0.0",
     "autoprefixer": "^10.4.14",
@@ -26,11 +26,11 @@
     "compression-webpack-plugin": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
-    "update-browserslist-db": "^1.1.2",
-    "browserslist": "^4.24.4",
+    "update-browserslist-db": "^1.1.3",
+    "browserslist": "^4.25.0",
     "esbuild": "^0.24.2",
     "esbuild-loader": "^4.0.3",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "svelte-preprocess": "^5.1.3"
   },
   "dependencies": {

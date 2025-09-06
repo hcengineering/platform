@@ -84,7 +84,9 @@ import {
   translateMessage,
   showOriginalMessage,
   canTranslateMessage,
-  startConversationAction
+  startConversationAction,
+  summarizeMessages,
+  canSummarizeMessages
 } from './utils'
 
 export { default as ChannelEmbeddedContent } from './components/ChannelEmbeddedContent.svelte'
@@ -213,6 +215,7 @@ export default async (): Promise<Resources> => ({
     CloseChatWidgetTab: closeChatWidgetTab,
     OpenChannelInSidebar: openChannelInSidebar,
     CanTranslateMessage: canTranslateMessage,
+    CanSummarizeMessages: canSummarizeMessages,
     OpenThreadInSidebar: openThreadInSidebar,
     LocationDataResolver: locationDataResolver
   },
@@ -226,6 +229,7 @@ export default async (): Promise<Resources> => ({
     ReplyToThread: replyToThread,
     OpenInSidebar: openChannelInSidebarAction,
     TranslateMessage: translateMessage,
+    SummarizeMessages: summarizeMessages,
     ShowOriginalMessage: showOriginalMessage,
     StartConversation: startConversationAction
   }

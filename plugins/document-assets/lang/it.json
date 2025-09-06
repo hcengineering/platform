@@ -37,6 +37,7 @@
     "Untitled": "Senza titolo",
     "Description": "Descrizione",
     "CopyDocumentUrl": "Copia l'URL del documento negli appunti",
+    "DocumentUrlCopied": "Copiato!",
     "ViewMode": "Visualizzazione",
     "EditMode": "Modifica",
     "SuggestMode": "Suggerisci",
@@ -50,8 +51,6 @@
     "ConfigDescription": "Estensione per la modifica collaborativa dei documenti",
     "Icon": "Icona",
     "Color": "Colore",
-    "RoleLabel": "Ruolo: {role}",
-    "ForbidCreateTeamspacePermission": "Vieta creazione teamspace",
-    "ForbidCreateTeamspacePermissionDescription": "Vieta agli utenti di creare nuovi teamspaces"
+    "RoleLabel": "Ruolo: {role}"
   }
 }

@@ -22,7 +22,7 @@
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
-  import { FoldersStore, FoldersState, emptyFoldersState, getFoldersManager } from './store/folderStore'
+  import { createFoldersStore, FoldersState, emptyFoldersState, getFoldersManager } from './store/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
   import { TreeNode, TreeItem, getActions as getContributedActions } from '../../index'
 
@@ -46,11 +46,12 @@
 
   const client = getClient()
 
+  const foldersStore = createFoldersStore()
   let foldersState: FoldersState = emptyFoldersState()
 
-  const foldersManager = getFoldersManager(titleKey, parentKey, noParentId, plainList)
+  const foldersManager = getFoldersManager(foldersStore, titleKey, parentKey, noParentId, plainList)
 
-  FoldersStore.subscribe((newState) => {
+  foldersStore.subscribe((newState) => {
     foldersState = newState
   })
 

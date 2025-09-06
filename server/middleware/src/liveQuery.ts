@@ -73,6 +73,9 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
           results.total
         )[0]
       },
+      domainRequest: async (domain, params) => {
+        return await this.provideDomainRequest(metrics, domain, params)
+      },
       tx: (tx) => {
         return Promise.resolve({})
       },

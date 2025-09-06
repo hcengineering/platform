@@ -34,8 +34,6 @@
     "ConfigDescription": "Extension pour la gestion de la relation client",
     "EditFunnel": "Modifier le pipeline",
     "FunnelMembers": "Membres",
-    "RoleLabel": "Rôle : {role}",
-    "ForbidCreateFunnelPermission": "Interdire la création de pipeline",
-    "ForbidCreateFunnelPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux pipelines"
+    "RoleLabel": "Rôle : {role}"
   }
 }

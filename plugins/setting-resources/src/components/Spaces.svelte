@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Header, Breadcrumb, Scroller } from '@hcengineering/ui'
-  import core, { Account, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
+  import { Header, Breadcrumb } from '@hcengineering/ui'
+  import core, { AccountUuid, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
 
@@ -69,7 +69,7 @@
     }
   }
 
-  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): Promise<void> {
+  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): Promise<void> {
     await client.updateMixin(space._id, space._class, core.space.Space, spaceType.targetClass, {
       [roleId]: newMembers
     })
@@ -81,24 +81,22 @@
     <Breadcrumb icon={setting.icon.Views} label={setting.string.Spaces} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
-    <Scroller>
-      {#each roles as role}
-        <div class="antiGrid-row">
-          <div class="antiGrid-row__header">
-            {role.name}
-          </div>
-          <AccountArrayEditor
-            value={rolesAssignment?.[role._id] ?? []}
-            label={setting.string.Assignees}
-            onChange={async (refs) => {
-              await handleRoleAssignmentChanged(role._id, refs)
-            }}
-            kind="regular"
-            size="large"
-          />
+    {#each roles as role}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          {role.name}
         </div>
-      {/each}
-    </Scroller>
+        <AccountArrayEditor
+          value={rolesAssignment?.[role._id] ?? []}
+          label={core.string.Members}
+          onChange={(refs) => {
+            void handleRoleAssignmentChanged(role._id, refs)
+          }}
+          kind="regular"
+          size="large"
+        />
+      </div>
+    {/each}
   </div>
 </div>
 

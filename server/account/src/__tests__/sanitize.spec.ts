@@ -1,4 +1,4 @@
-import { sanitizeEmail } from '../operations'
+import { sanitizeEmail } from '../utils'
 
 describe('sanitizeEmail', () => {
   it('should lowercase and trim email', () => {

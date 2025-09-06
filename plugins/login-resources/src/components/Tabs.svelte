@@ -21,7 +21,7 @@
   export let loginState: 'login' | 'signup' | 'none' = 'none'
   export let signUpDisabled = false
 
-  const goTab = (path: string) => {
+  const goTab = (path: string): void => {
     const loc = getCurrentLocation()
     loc.path[1] = path
     loc.path.length = 2

@@ -22,7 +22,6 @@
   import { Icon, IconMoreV, Label, Menu, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
 
   export let channel: ChunterSpace | undefined
-  const myAccId = getCurrentAccount()._id
   const client = getClient()
 
   const query = createQuery()
@@ -38,7 +37,7 @@
       Menu,
       {
         actions: [
-          ...(myAccId === object.modifiedBy
+          ...(getCurrentAccount().socialIds.includes(object.modifiedBy)
             ? [
                 {
                   label: attachment.string.DeleteFile,

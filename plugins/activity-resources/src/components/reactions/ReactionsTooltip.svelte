@@ -1,12 +1,17 @@
 <script lang="ts">
-  import core, { Account, Ref } from '@hcengineering/core'
+  import { PersonId } from '@hcengineering/core'
   import { ObjectPresenter } from '@hcengineering/view-resources'
+  import contact from '@hcengineering/contact'
+  import { getPersonRefByPersonIdStore } from '@hcengineering/contact-resources'
 
-  export let reactionAccounts: Ref<Account>[]
+  export let socialIds: PersonId[] = []
+
+  $: personRefByPersonIdStore = getPersonRefByPersonIdStore(socialIds)
+  $: persons = socialIds.map((si) => $personRefByPersonIdStore.get(si))
 </script>
 
 <div class="m-2 flex-col flex-gap-2">
-  {#each reactionAccounts as acc}
-    <ObjectPresenter objectId={acc} _class={core.class.Account} disabled />
+  {#each persons as person}
+    <ObjectPresenter objectId={person} _class={contact.class.Person} disabled />
   {/each}
 </div>

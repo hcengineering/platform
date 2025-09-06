@@ -27,29 +27,22 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import github from './plugin'
 
 import {
+  AccountRole,
   DateRangeMode,
   IndexKind,
-  type Account,
   type Class,
+  type ClassCollaborators,
   type Data,
   type Doc,
   type Domain,
   type Hyperlink,
   type Markup,
+  type PersonId,
   type Ref,
   type Timestamp
 } from '@hcengineering/core'
 
 import { type Person } from '@hcengineering/contact'
-import contact, { TContact } from '@hcengineering/model-contact'
-import presentation from '@hcengineering/model-presentation'
-import tracker, { TComponent, TIssue, TProject, issuesOptions } from '@hcengineering/model-tracker'
-import view, { classPresenter } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
-import { getEmbeddedLabel } from '@hcengineering/platform'
-import setting from '@hcengineering/setting'
-import tags from '@hcengineering/tags'
-import task from '@hcengineering/task'
 import {
   type DocSyncInfo,
   type GithubAuthentication,
@@ -74,8 +67,18 @@ import {
   type GithubUserInfo,
   type LastReviewState,
   type MinimizeReason,
-  type PullRequestMergeable
+  type PullRequestMergeable,
+  githubIntegrationKind
 } from '@hcengineering/github'
+import contact, { TPerson } from '@hcengineering/model-contact'
+import presentation from '@hcengineering/model-presentation'
+import tracker, { TComponent, TIssue, TProject, issuesOptions } from '@hcengineering/model-tracker'
+import view, { classPresenter } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
+import tags from '@hcengineering/tags'
+import task from '@hcengineering/task'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
@@ -84,7 +87,7 @@ import activity, { TActivityMessage } from '@hcengineering/model-activity'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import { TPreference } from '@hcengineering/model-preference'
-import { TToDO } from '@hcengineering/model-time'
+import { TToDo } from '@hcengineering/model-time'
 import notification from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import time from '@hcengineering/time'
@@ -394,13 +397,13 @@ export class TGithubIssue extends TIssue implements GithubIssue {
 }
 
 @Mixin(github.mixin.GithubTodo, time.class.ToDo)
-export class TGithubTodo extends TToDO implements GithubTodo {
+export class TGithubTodo extends TToDo implements GithubTodo {
   purpose!: 'review' | 'fix'
 }
 
 @Mixin(github.mixin.GithubUser, contact.class.Contact)
 @UX(github.string.GithubUser, github.icon.Github)
-export class TGithubUser extends TContact implements GithubUser {
+export class TGithubUser extends TPerson implements GithubUser {
   @Prop(TypeHyperlink(), getEmbeddedLabel('Github URL'))
   @Index(IndexKind.FullText)
   @ReadOnly()
@@ -519,7 +522,7 @@ export class TGithubReviewThread extends TActivityMessage implements GithubRevie
   originalStartLine!: number | null
   path!: string
   startDiffSide!: 'LEFT' | 'RIGHT' | null
-  resolvedBy!: Ref<Account> | null
+  resolvedBy!: PersonId | null
   threadId!: string
 }
 
@@ -582,7 +585,9 @@ export function createModel (builder: Builder): void {
       icon: github.component.GithubIcon,
       allowMultiple: false,
       createComponent: github.component.Connect,
-      configureComponent: github.component.Configure
+      configureComponent: github.component.Configure,
+      stateComponent: github.component.IntegrationState,
+      kind: githubIntegrationKind
     },
     github.integrationType.Github
   )
@@ -616,7 +621,8 @@ export function createModel (builder: Builder): void {
     editor: github.component.EditPullRequest
   })
 
-  builder.mixin(github.class.GithubPullRequest, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<GithubPullRequest>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: github.class.GithubPullRequest,
     fields: ['createdBy', 'assignee', 'reviewers']
   })
 
@@ -849,12 +855,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: tracker.extensions.IssueListHeader,
-    component: github.component.AuthenticationCheck
+    component: github.component.AuthenticationCheck,
+    accessLevel: AccountRole.User
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: tracker.extensions.EditIssueHeader,
     component: github.component.AuthenticationCheck,
+    accessLevel: AccountRole.User,
     props: {
       kind: 'ghost'
     }

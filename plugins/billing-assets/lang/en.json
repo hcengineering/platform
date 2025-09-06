@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Billing": "Billing",
+    "DriveSize": "Files size",
+    "DriveCount": "Files count",
+    "OfficeSessionsDuration": "Meetings time",
+    "OfficeSessionsBandwidth": "Meetings bandwidth",
+    "OfficeEgressDuration": "Recording time"
+  }
+}

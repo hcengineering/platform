@@ -131,6 +131,7 @@
     "ViewingThreadFromArchivedChannel": "Está a visualizar uma conversa em cadeia de um canal arquivado",
     "ViewingArchivedChannel": "Está a visualizar um canal arquivado",
     "OpenChatInSidebar": "Abrir chat na barra lateral",
-    "NoThreadsYet": "Não há conversas ainda."
+    "NoThreadsYet": "Não há conversas ainda.",
+    "SummarizeMessages": "Resumir discussão"
   }
 }

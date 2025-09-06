@@ -15,17 +15,22 @@
 import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 import core, {
   AccountRole,
-  MeasureContext,
-  Tx,
+  type MeasureContext,
+  type Tx,
   TxProcessor,
-  systemAccountEmail,
+  systemAccountUuid,
   type Doc,
   type SessionData,
   type TxApplyIf,
   type TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
 /**
  * @public
@@ -45,7 +50,7 @@ export class PluginConfigurationMiddleware extends BaseMiddleware implements Mid
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
-    if (account.email === systemAccountEmail || account.email === aiBotAccountEmail) {
+    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
       // We pass for system accounts and services.
       return this.provideTx(ctx, txes)
     }
@@ -55,7 +60,7 @@ export class PluginConfigurationMiddleware extends BaseMiddleware implements Mid
         if (cud.objectClass === core.class.PluginConfiguration && ctx.contextData.account.role !== AccountRole.Owner) {
           throw new PlatformError(
             new Status(Severity.ERROR, platform.status.Forbidden, {
-              account: account.email
+              account: account.uuid
             })
           )
         }

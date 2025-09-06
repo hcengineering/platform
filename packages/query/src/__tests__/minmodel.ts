@@ -14,7 +14,7 @@
 //
 
 import type {
-  Account,
+  PersonId,
   Arr,
   Class,
   Data,
@@ -25,9 +25,10 @@ import type {
   Ref,
   Space,
   TxCreateDoc,
-  TxCUD
+  TxCUD,
+  AccountUuid
 } from '@hcengineering/core'
-import core, { AccountRole, AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
+import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
@@ -44,7 +45,7 @@ export function createDoc<T extends Doc> (
   _class: Ref<Class<T>>,
   attributes: Data<T>,
   id?: Ref<T>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCreateDoc<Doc> {
   const result = txFactory.createTxCreateDoc(_class, core.space.Model, attributes, id)
   if (modifiedBy !== undefined) {
@@ -142,14 +143,15 @@ export function genMinModel (): TxCUD<Doc>[] {
       domain: DOMAIN_MODEL
     })
   )
-  txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
+  // TODO: fixme!
+  // txes.push(
+  //   createClass(core.class.Account, {
+  //     label: 'Account' as IntlString,
+  //     extends: core.class.Doc,
+  //     kind: ClassifierKind.CLASS,
+  //     domain: DOMAIN_MODEL
+  //   })
+  // )
 
   txes.push(
     createClass(core.class.Tx, {
@@ -239,11 +241,12 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as Ref<Account>
-  const u2 = 'User2' as Ref<Account>
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
+  // TODO: fixme!
   txes.push(
-    createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
-    createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
+    // createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
+    // createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',

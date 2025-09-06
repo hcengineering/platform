@@ -37,6 +37,7 @@
     "Untitled": "Sin título",
     "Description": "Descrição",
     "CopyDocumentUrl": "Copiar URL do documento para a área de transferência",
+    "DocumentUrlCopied": "Copiado!",
     "ViewMode": "Visualização",
     "EditMode": "Edição",
     "SuggestMode": "Sugestão",
@@ -50,8 +51,6 @@
     "ConfigDescription": "Extensão para edição colaborativa de documentos",
     "Icon": "Ícone",
     "Color": "Cor",
-    "RoleLabel": "Papel: {role}",
-    "ForbidCreateTeamspacePermission": "Proibir criação de espaço de trabalho",
-    "ForbidCreateTeamspacePermissionDescription": "Proíbe os utilizadores de criar novos espaços de trabalho"
+    "RoleLabel": "Papel: {role}"
   }
 }

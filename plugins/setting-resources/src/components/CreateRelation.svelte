@@ -130,6 +130,7 @@
   let mode: '1:1' | '1:N' | 'N:N' = 'N:N' as '1:1' | '1:N' | 'N:N'
 
   $: classA = getAClass(aClass)
+
   function getAClass (aClass: Ref<Class<Doc>> | undefined): DropdownIntlItem | undefined {
     if (aClass === undefined) {
       return undefined

@@ -1,5 +1,5 @@
 {
-  "localhost:8083": {
+  "huly.local:8083": {
     "key": "huly",
     "title": "Platform",
     "protocol": "http",

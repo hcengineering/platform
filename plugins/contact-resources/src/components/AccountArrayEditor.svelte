@@ -13,39 +13,77 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, Employee, PersonAccount, getName } from '@hcengineering/contact'
-  import core, { Account, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
+  import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { personAccountByIdStore } from '../utils'
+  import { employeeByIdStore, employeeRefByAccountUuidStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
-  export let value: Ref<Account>[]
-  export let onChange: ((refs: Ref<Account>[]) => void | Promise<void>) | undefined
+  export let value: AccountUuid | AccountUuid[] | undefined
+  export let onChange: ((refs: AccountUuid[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
-  export let includeItems: Ref<Account>[] | undefined = undefined
-  export let excludeItems: Ref<Account>[] | undefined = undefined
+  export let includeItems: Ref<Person>[] = []
+  export let excludeItems: Ref<Person>[] = []
   export let emptyLabel: IntlString | undefined = undefined
   export let allowGuests: boolean = false
+  export let attributeKey: string | undefined = undefined
+
+  $: accounts = typeof value === 'string' ? [value] : value ?? []
 
   let timer: any = null
   const client = getClient()
   let update: (() => Promise<void>) | undefined
+
+  $: accountsByPersonRef = new Map(
+    accounts
+      .map((uuid) => {
+        const empRef = $employeeRefByAccountUuidStore.get(uuid)
+
+        if (empRef === undefined) {
+          console.error('Employee not found by account id', uuid)
+          return null
+        }
+
+        const employee = $employeeByIdStore.get(empRef)
+
+        if (employee?.active !== true) {
+          return null
+        }
+
+        return [empRef, uuid] as const
+      })
+      .filter(notEmpty)
+  )
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
     if (timer !== null) {
       clearTimeout(timer)
     }
     update = async () => {
-      const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
-      onChange?.(accounts.map((it) => it._id))
+      const newPersons = evt.detail
+      const newAccounts: AccountUuid[] = []
+
+      for (const person of newPersons) {
+        const acc = accountsByPersonRef.get(person)
+        if (acc !== undefined) {
+          newAccounts.push(acc)
+        } else {
+          const employee = $employeeByIdStore.get(person)
+          if (employee?.personUuid == null) continue
+
+          newAccounts.push(employee.personUuid)
+        }
+      }
+
+      void onChange?.(newAccounts)
       if (timer !== null) {
         clearTimeout(timer)
       }
@@ -60,60 +98,33 @@
     void update?.()
   })
 
-  const excludedQuery = createQuery()
-  let excluded: Account[] = []
-  $: if (excludeItems !== undefined && excludeItems.length > 0) {
-    excludedQuery.query(core.class.Account, { _id: { $in: excludeItems } }, (res) => {
-      excluded = res
-    })
-  } else {
-    excludedQuery.unsubscribe()
-    excluded = []
-  }
-
-  const includedQuery = createQuery()
-  let included: Account[] = []
-  $: if (includeItems !== undefined && includeItems.length > 0) {
-    includedQuery.query(core.class.Account, { _id: { $in: includeItems } }, (res) => {
-      included = res
-    })
-  } else {
-    includedQuery.unsubscribe()
-    included = []
-  }
-
-  $: employees = Array.isArray(value)
-    ? (Array.from((value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)).filter(
-        (it) => it !== undefined
-      ) as Ref<Employee>[])
-    : []
-
+  $: employees = accounts.map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty)
   $: docQuery =
-    excluded.length === 0 && included.length === 0
+    excludeItems.length === 0 && includeItems.length === 0
       ? {}
       : {
           _id: {
-            ...(included.length > 0
+            ...(includeItems.length > 0
               ? {
-                  $in: included.map((p) => (p as PersonAccount).person as Ref<Employee>)
+                  $in: includeItems
                 }
               : {}),
-            ...(excluded.length > 0
+            ...(excludeItems.length > 0
               ? {
-                  $nin: excluded.map((p) => (p as PersonAccount).person as Ref<Employee>)
+                  $nin: excludeItems
                 }
               : {})
           }
         }
 
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
 
   function sort (a: Contact, b: Contact): number {
-    if (me.person === a._id) {
+    if (me === a._id) {
       return -1
     }
-    if (me.person === b._id) {
+    if (me === b._id) {
       return 1
     }
     const aIncludes = employees.includes(a._id as Ref<Employee>)
@@ -131,7 +142,7 @@
 </script>
 
 <UserBoxList
-  _class={!allowGuests ? contact.mixin.Employee : contact.class.Person}
+  _class={contact.mixin.Employee}
   items={employees}
   {label}
   {emptyLabel}

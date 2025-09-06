@@ -13,48 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, tick } from 'svelte'
-  import { merge } from 'effector'
-  import { type Ref, type Blob, generateId } from '@hcengineering/core'
-  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import documents, { DocumentState } from '@hcengineering/controlled-documents'
+  import { type Blob, type Ref, generateId } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Editor, Heading } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
+    NodeHighlightType,
     TableOfContents,
     TableOfContentsContent,
-    FocusExtension,
-    HeadingsExtension,
-    IsEmptyContentExtension,
-    NodeHighlightExtension,
-    NodeHighlightType,
-    highlightUpdateCommand,
-    getNodeElement
+    getNodeElement,
+    highlightUpdateCommand
   } from '@hcengineering/text-editor-resources'
-  import { navigate, EditBox, Scroller, Label } from '@hcengineering/ui'
-  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { EditBox, Label, Scroller } from '@hcengineering/ui'
+  import { getCollaborationUser } from '@hcengineering/view-resources'
+  import { merge } from 'effector'
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import plugin from '../../plugin'
 
   import {
-    $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
-    $controlledDocument as controlledDocument,
-    $isEditable as isEditable,
-    $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $areDocumentCommentPopupsOpened as arePopupsOpened,
     $canAddDocumentComments as canAddDocumentComments,
     $canViewDocumentComments as canViewDocumentComments,
+    $controlledDocument as controlledDocument,
+    $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
     documentCommentsLocationNavigateRequested,
-    $documentReleasedVersions as documentReleasedVersions
+    $documentReleasedVersions as documentReleasedVersions,
+    $isEditable as isEditable
   } from '../../stores/editors/document'
-  import DocumentTitle from './DocumentTitle.svelte'
-  import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import { syncDocumentMetaTitle } from '../../utils'
+  import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
+  import DocumentTitle from './DocumentTitle.svelte'
+
+  export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -65,7 +61,6 @@
   let textEditor: CollaboratorEditor
   let selectedNodeId: string | null | undefined = undefined
   let isFocused = false
-  let isEmpty = true
   let editor: Editor
   let title = $controlledDocument?.title ?? ''
 
@@ -192,47 +187,6 @@
     }
   }
 
-  function handleExtensions () {
-    return [
-      FocusExtension.configure({
-        onFocus (focused) {
-          isFocused = focused
-        }
-      }),
-      IsEmptyContentExtension.configure({
-        onChange (empty) {
-          isEmpty = empty
-        }
-      }),
-      HeadingsExtension.configure({
-        onChange: (h) => {
-          headings = h
-        }
-      }),
-      NodeHighlightExtension.configure({
-        isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
-        getNodeHighlight: handleNodeHighlight,
-        onNodeSelected: (uuid: string | null) => {
-          if (selectedNodeId !== uuid) {
-            selectedNodeId = uuid
-          }
-          if (isFocused) {
-            documentCommentsHighlightUpdated(selectedNodeId !== null ? { nodeId: selectedNodeId } : null)
-          }
-        },
-        onNodeClicked: (uuid: string) => {
-          if (selectedNodeId !== uuid) {
-            selectedNodeId = uuid
-          }
-
-          if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
-            handleShowDocumentComments(selectedNodeId)
-          }
-        }
-      })
-    ]
-  }
-
   $: attribute = {
     key: 'content',
     attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
@@ -280,25 +234,55 @@
           object={$controlledDocument}
           {attribute}
           {user}
+          {boundary}
           readonly={!$isEditable}
           editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
           overflow="none"
-          canShowPopups={!$areDocumentCommentPopupsOpened}
-          enableInlineComments={false}
-          onExtensions={handleExtensions}
           kitOptions={{
-            note: {
+            inlineNote: {
               readonly: !isTemplate
+            },
+            qms: {
+              qmsInlineComment: {
+                isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
+                getNodeHighlight: handleNodeHighlight,
+                onNodeSelected: (uuid) => {
+                  if (selectedNodeId !== uuid) {
+                    selectedNodeId = uuid
+                  }
+                  if (isFocused) {
+                    documentCommentsHighlightUpdated(selectedNodeId !== null ? { nodeId: selectedNodeId } : null)
+                  }
+                },
+                onNodeClicked: (uuid) => {
+                  if (selectedNodeId !== uuid) {
+                    selectedNodeId = uuid
+                  }
+
+                  if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
+                    handleShowDocumentComments(selectedNodeId)
+                  }
+                }
+              }
+            },
+            hooks: {
+              focus: {
+                onFocus: (focused) => {
+                  isFocused = focused
+                }
+              }
+            },
+            toc: {
+              onChange: (h) => {
+                headings = h
+                dispatch('headings', h)
+              }
+            },
+            collaboration: {
+              inlineComments: false
             }
           }}
           on:editor={(e) => (editor = e.detail)}
-          on:open-document={async (event) => {
-            const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-            if (doc != null) {
-              const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-              navigate(location)
-            }
-          }}
           attachFile={async (file) => {
             return await createEmbedding(file)
           }}

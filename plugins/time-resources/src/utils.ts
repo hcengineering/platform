@@ -1,14 +1,10 @@
-import type { WorkSlot, ToDo } from '@hcengineering/time'
-import type { DefSeparators } from '@hcengineering/ui'
-import core, { type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
-import time from '@hcengineering/time'
-import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
-import { SvelteNodeViewRenderer } from '@hcengineering/text-editor-resources'
+import { getCurrentAccount, type Client, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import type { ToDo, WorkSlot } from '@hcengineering/time'
+import time from '@hcengineering/time'
+import type { DefSeparators } from '@hcengineering/ui'
 
-import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
-import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
-import { TodoItemExtension, TodoListExtension } from './text-editor-extensions'
+import calendarPlugin, { AccessLevel, getPrimaryCalendar, type Calendar } from '@hcengineering/calendar'
 
 export * from './types'
 
@@ -44,61 +40,6 @@ export async function ToDoTitleProvider (client: Client, ref: Ref<ToDo>, doc?: T
   return object.title
 }
 
-function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
-  const hierarchy = getClient().getHierarchy()
-
-  try {
-    const todosCollection = hierarchy.getAttribute(objectClass, 'todos')
-
-    return todosCollection !== undefined && todosCollection.type._class === core.class.Collection
-  } catch (e) {
-    return false
-  }
-}
-
-function isTodoable (mode: TextEditorMode): boolean {
-  return mode === 'full'
-}
-
-export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode)) {
-    return
-  }
-
-  const { objectId, objectClass, objectSpace } = ctx
-  const componentProps = isTodoableClass(objectClass) ? { objectId, objectClass, objectSpace } : {}
-
-  return TodoItemExtension.extend({
-    addNodeView () {
-      return SvelteNodeViewRenderer(ToDoItemNodeView, {
-        contentAs: 'li',
-        contentClass: 'todo-item',
-        componentProps
-      })
-    }
-  }).configure({
-    HTMLAttributes: {
-      class: 'todo-item'
-    }
-  })
-}
-
-export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode)) {
-    return
-  }
-
-  return TodoListExtension.extend({
-    addNodeView () {
-      return SvelteNodeViewRenderer(ToDoListNodeView, {})
-    }
-  }).configure({
-    HTMLAttributes: {
-      class: 'todo-list'
-    }
-  })
-}
-
 export function calculateEventsDuration (events: WorkSlot[]): number {
   const points = events.flatMap((event) => [
     { time: event.date, type: 'start' },
@@ -120,4 +61,17 @@ export function calculateEventsDuration (events: WorkSlot[]): number {
   })
 
   return duration
+}
+
+export async function findPrimaryCalendar (): Promise<Ref<Calendar>> {
+  const acc = getCurrentAccount()
+  const primary = acc.primarySocialId
+  const client = getClient()
+  const calendars = await client.findAll(calendarPlugin.class.Calendar, {
+    user: primary,
+    hidden: false,
+    access: { $in: [AccessLevel.Owner, AccessLevel.Writer] }
+  })
+  const preference = await client.findOne(calendarPlugin.class.PrimaryCalendar, {})
+  return getPrimaryCalendar(calendars, preference, acc.uuid)
 }

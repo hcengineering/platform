@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Markup } from '@hcengineering/core'
+  import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
+  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
   import { Button, type ButtonSize, Scroller } from '@hcengineering/ui'
-  import { AnyExtension, mergeAttributes, type Editor } from '@tiptap/core'
+  import { type Editor, mergeAttributes } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
-  import textEditor, { RefAction, TextEditorHandler, TextFormatCategory } from '@hcengineering/text-editor'
+  import { EditorKitOptions } from '../kits/editor-kit'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
 
@@ -34,10 +35,10 @@
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let autofocus = false
   export let full = false
-  export let extensions: AnyExtension[] = []
   export let editorAttributes: Record<string, string> = {}
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   let editor: TextEditor | undefined = undefined
 
@@ -78,6 +79,9 @@
   export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       editor?.insertText(text)
+    },
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.insertEmoji(text, image)
     },
     insertMarkup: (markup) => {
       editor?.insertMarkup(markup)
@@ -160,7 +164,6 @@
             editorAttributes={mergedEditorAttributes}
             bind:content
             {placeholder}
-            {extensions}
             bind:this={editor}
             on:value
             on:content={(ev) => {
@@ -170,6 +173,7 @@
             }}
             on:blur
             on:focus
+            {kitOptions}
             supportSubmit={false}
           />
         </Scroller>
@@ -178,7 +182,6 @@
           editorAttributes={mergedEditorAttributes}
           bind:content
           {placeholder}
-          {extensions}
           bind:this={editor}
           on:value
           on:content={(ev) => {
@@ -188,6 +191,7 @@
           }}
           on:blur
           on:focus
+          {kitOptions}
           supportSubmit={false}
           {boundary}
         />

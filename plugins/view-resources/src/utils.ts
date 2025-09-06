@@ -24,7 +24,6 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   getObjectValue,
-  type Account,
   type AggregateValue,
   type AnyAttribute,
   type AttachedDoc,
@@ -39,7 +38,7 @@ import core, {
   type Lookup,
   type Mixin,
   type Obj,
-  type Permission,
+  type PersonId,
   type Ref,
   type RefTo,
   type ReverseLookup,
@@ -51,6 +50,7 @@ import core, {
   type TxMixin,
   type TxOperations,
   type TxUpdateDoc,
+  type Type,
   type TypeAny,
   type TypedSpace,
   type WithLookup
@@ -58,7 +58,7 @@ import core, {
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import {
+import presentation, {
   createQuery,
   getAttributePresenterClass,
   getClient,
@@ -97,7 +97,12 @@ import view, {
   type ViewletDescriptor
 } from '@hcengineering/view'
 
-import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
+import contact, {
+  getAllSocialStringsByPersonRef,
+  getCurrentEmployee,
+  getName,
+  type Contact
+} from '@hcengineering/contact'
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
@@ -275,34 +280,57 @@ export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>)
   return presenterMixin?.presenter
 }
 
-export async function getAttributePresenter (
-  client: Client,
-  _class: Ref<Class<Obj>>,
-  key: string,
-  preserveKey: BuildModelKey,
-  mixinClass?: Ref<Mixin<CollectionPresenter>>,
-  _category?: AttributeCategory
-): Promise<AttributeModel> {
-  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
+export function getAttrTypePresenter (hierarchy: Hierarchy, type: Type<any>): AnyComponent | undefined {
+  const actualMixinClass = view.mixin.AttributePresenter
 
-  const hierarchy = client.getHierarchy()
-  const attribute = hierarchy.getAttribute(_class, key)
-  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
-  if (_category !== undefined) {
-    category = _category
-  }
-
-  let overridedPresenter = await client
-    .getModel()
-    .findOne(view.class.AttrPresenter, { objectClass: _class, attribute: attribute._id, category })
-  if (overridedPresenter === undefined) {
-    overridedPresenter = await client
-      .getModel()
-      .findOne(view.class.AttrPresenter, { attribute: attribute._id, category })
-  }
+  const { attrClass, category } = getAttributePresenterClass(hierarchy, type)
 
   const isCollectionAttr = category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  const presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
+    attrClass,
+    mixin
+  )
+
+  const attributePresenter = presenterMixin as AttributePresenter
+  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+    return attributePresenter.arrayPresenter
+  } else if (presenterMixin?.presenter !== undefined) {
+    return presenterMixin.presenter
+  } else if (attrClass === core.class.TypeAny) {
+    const typeAny = type as TypeAny
+    return typeAny.presenter
+  }
+}
+
+export function findAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  mixinClass: Ref<Mixin<CollectionPresenter>> = view.mixin.CollectionPresenter,
+  _category?: AttributeCategory
+): AnyComponent | undefined {
+  const model = client.getModel()
+  const hierarchy = client.getHierarchy()
+
+  const attribute = hierarchy.findAttribute(_class, key)
+  if (attribute === undefined) return
+  const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+  let overridedPresenter = model.findAllSync(view.class.AttrPresenter, {
+    objectClass: _class,
+    attribute: attribute._id,
+    category
+  })[0]
+  if (overridedPresenter === undefined) {
+    overridedPresenter = model.findAllSync(view.class.AttrPresenter, { attribute: attribute._id, category })[0]
+  }
+  if (overridedPresenter !== undefined) {
+    return overridedPresenter.component
+  }
+
+  const isCollectionAttr = category === 'collection'
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : mixinClass
 
   let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
     attrClass,
@@ -313,26 +341,49 @@ export async function getAttributePresenter (
     presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
-  let presenter: AnySvelteComponent | undefined
+  const attributePresenter = presenterMixin as AttributePresenter
+  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+    return attributePresenter.arrayPresenter
+  } else if (presenterMixin?.presenter !== undefined) {
+    return presenterMixin.presenter
+  } else if (attrClass === core.class.TypeAny) {
+    const typeAny = attribute.type as TypeAny
+    return typeAny.presenter
+  }
+}
 
-  if (overridedPresenter !== undefined) {
-    presenter = await getResource(overridedPresenter.component)
+export async function getAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  preserveKey: BuildModelKey,
+  mixinClass?: Ref<Mixin<CollectionPresenter>>,
+  _category?: AttributeCategory
+): Promise<AttributeModel> {
+  const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
+  const hierarchy = client.getHierarchy()
+  const attribute = hierarchy.getAttribute(_class, key)
+  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+  if (_category !== undefined) {
+    category = _category
   }
 
-  if (presenter === undefined) {
-    const attributePresenter = presenterMixin as AttributePresenter
-    if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
-      presenter = await getResource(attributePresenter.arrayPresenter)
-    } else if (presenterMixin?.presenter !== undefined) {
-      presenter = await getResource(presenterMixin.presenter)
-    } else if (attrClass === core.class.TypeAny) {
-      const typeAny = attribute.type as TypeAny
-      presenter = await getResource(typeAny.presenter)
-    }
-  }
-
-  if (presenter === undefined) {
+  const presenterRef = findAttributePresenter(client, _class, key, actualMixinClass, category)
+  if (presenterRef === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
+  }
+
+  const isCollectionAttr = category === 'collection'
+
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
+    attrClass,
+    mixin
+  )
+
+  if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
+    presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
@@ -347,7 +398,7 @@ export async function getAttributePresenter (
     sortingKey,
     _class: attrClass,
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
-    presenter,
+    presenter: await getResource(presenterRef),
     props: preserveKey.props,
     displayProps: preserveKey.displayProps,
     icon: presenterMixin?.icon,
@@ -368,7 +419,7 @@ export function hasAttributePresenter (
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
 
-  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
 
@@ -523,13 +574,13 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         return errorPresenter
       }
     })
-  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
+  return (await Promise.all(model)).filter((a) => a !== undefined)
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
   const currentAcc = getCurrentAccount()
-  const accounts = await getCurrentPersonAccounts()
-  if (currentAcc.role !== AccountRole.Owner && !accounts.has(object.createdBy)) return
+  const socialStrings = new Set(await getAllSocialStringsByPersonRef(client, getCurrentEmployee()))
+  if (currentAcc.role !== AccountRole.Owner && !socialStrings.has(object.createdBy as PersonId)) return
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
     await client
@@ -544,22 +595,11 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
-export async function getCurrentPersonAccounts (): Promise<Set<Ref<Account> | undefined>> {
-  return new Set(
-    (
-      await getClient().findAll(contact.class.PersonAccount, { person: (getCurrentAccount() as PersonAccount).person })
-    ).map((it) => it._id)
-  )
-}
-
 export async function deleteObjects (client: TxOperations, objects: Doc[], skipCheck: boolean = false): Promise<void> {
   let realObjects: Doc[] = []
   if (!skipCheck) {
     const currentAcc = getCurrentAccount()
-
-    // We need to find all person current accounts
-    const allPersonAccounts = await getCurrentPersonAccounts()
-
+    const socialStrings = new Set(await getAllSocialStringsByPersonRef(client, getCurrentEmployee()))
     const byClass = new Map<Ref<Class<Doc>>, Doc[]>()
     for (const d of objects) {
       byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
@@ -567,7 +607,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
     const adminUser = isAdminUser()
     for (const [cl, docs] of byClass.entries()) {
       const realDocs = await client.findAll(cl, { _id: { $in: docs.map((it: Doc) => it._id) } })
-      const notAllowed = realDocs.filter((p) => !allPersonAccounts.has(p.createdBy))
+      const notAllowed = realDocs.filter((p) => !socialStrings.has(p.createdBy as PersonId))
 
       if (notAllowed.length > 0) {
         console.error('You are not allowed to delete this object', notAllowed)
@@ -575,7 +615,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
       if (currentAcc.role === AccountRole.Owner || adminUser) {
         realObjects.push(...realDocs)
       } else {
-        realObjects.push(...realDocs.filter((p) => allPersonAccounts.has(p.createdBy)))
+        realObjects.push(...realDocs.filter((p) => socialStrings.has(p.createdBy as PersonId)))
       }
     }
   } else {
@@ -727,7 +767,7 @@ export function categorizeFields (
   }
 
   for (const key of keys) {
-    const cl = getAttributePresenterClass(hierarchy, key.attr)
+    const cl = getAttributePresenterClass(hierarchy, key.attr.type)
     if (useAsCollection.includes(key.key)) {
       result.collections.push({ key, category: cl.category })
     } else if (useAsAttribute.includes(key.key)) {
@@ -735,7 +775,7 @@ export function categorizeFields (
     } else if (cl.category === 'collection' || cl.category === 'inplace') {
       result.collections.push({ key, category: cl.category })
     } else if (cl.category === 'array') {
-      const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+      const attrClass = getAttributePresenterClass(hierarchy, key.attr.type)
       const clazz = hierarchy.getClass(attrClass.attrClass)
       const mix = hierarchy.as(clazz, view.mixin.ArrayEditor)
       if (mix.editor !== undefined && mix.inlineEditor === undefined) {
@@ -902,7 +942,7 @@ export async function groupByCategory (
   if (attr === undefined) return categories
   if (key === noCategory) return [undefined]
 
-  const attrClass = getAttributePresenterClass(h, attr).attrClass
+  const attrClass = getAttributePresenterClass(h, attr.type).attrClass
   const mixin = h.classHierarchyMixin(attrClass, view.mixin.Groupping)
   let existingCategories: any[] = []
 
@@ -946,7 +986,9 @@ export async function getCategories (
  */
 export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {
   return Array.from(
-    (categories.filter((it) => typeof it === 'object') as AggregateValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
+    categories
+      .filter((it) => typeof it === 'object')
+      .reduce<Set<Ref<Space>>>((arr, val) => {
       val.values.forEach((it) => arr.add(it.space))
       return arr
     }, new Set())
@@ -1123,6 +1165,20 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
+  const customProvider = hierarchy.classHierarchyMixin(
+    Hierarchy.mixinOrClass(object),
+    view.mixin.CustomObjectLinkProvider,
+    (m) => hasResource(m.encode) ?? false
+  )
+  if (customProvider !== undefined) {
+    const matchFn = await getResource(customProvider.match)
+    if (matchFn(object)) {
+      const encodeFn = await getResource(customProvider.encode)
+
+      return encodeFn(object)
+    }
+  }
+
   const provider = hierarchy.classHierarchyMixin(
     Hierarchy.mixinOrClass(object),
     view.mixin.LinkProvider,
@@ -1172,6 +1228,46 @@ export async function openDoc (hierarchy: Hierarchy, object: Doc): Promise<void>
   navigate(loc)
 }
 
+export async function openDocFromRef<T extends Doc = Doc> (_class: Ref<Class<T>>, _id: Ref<T>): Promise<boolean> {
+  const client = getClient()
+  const doc = await client.findOne<Doc>(_class, { _id })
+  if (doc?._id !== undefined) {
+    await openDoc(client.getHierarchy(), doc)
+    return true
+  }
+  return false
+}
+
+export async function canCopyLink (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc) && doc.length !== 1) {
+    return false
+  }
+  return true
+}
+
+export async function getLink (doc?: Doc | Doc[]): Promise<string> {
+  doc = Array.isArray(doc) ? doc[0] : doc
+  if (doc === undefined) {
+    return ''
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const panelComponent = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
+  const comp = panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, doc, {}, comp)
+  const url = locationToUrl(loc)
+
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+  const protocolAndHost = frontUrl ?? `${window.location.protocol}//${window.location.host}`
+
+  return `${protocolAndHost}${url}`
+}
+
 /**
  * @public
  */
@@ -1200,13 +1296,17 @@ export async function getDocLabel (client: Client, object: Doc | undefined): Pro
     return name
   }
 
-  const label = hierarchy.getClass(object._class).label
+  const label = hierarchy.getClass(object._class).label ?? getObjectLabel(object)
 
   if (label === undefined) {
     return undefined
   }
 
   return await translate(label, {}, get(themeStore).language)
+}
+
+function getObjectLabel (object: any): IntlString | undefined {
+  return object?.label
 }
 
 export async function getDocTitle (
@@ -1444,7 +1544,7 @@ export async function getDocAttrsInfo (
 
   for (const k of collections) {
     if (allowedCollections.includes(k.key.key)) continue
-    const editor = await getAttrEditor(k.key, hierarchy)
+    const editor = getAttrEditor(k.key, hierarchy)
     if (editor === undefined) continue
     if (k.category === 'inplace') {
       inplaceAttributes.push(k.key.key)
@@ -1459,8 +1559,8 @@ export async function getDocAttrsInfo (
   }
 }
 
-async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promise<AnyComponent | undefined> {
-  const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): AnyComponent | undefined {
+  const attrClass = getAttributePresenterClass(hierarchy, key.attr.type)
   const clazz = hierarchy.getClass(attrClass.attrClass)
   const mix = {
     array: view.mixin.ArrayEditor,
@@ -1478,40 +1578,8 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
   }
 }
 
-type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
-type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
-type MembersBySpace = Record<Ref<Space>, Set<Ref<Account>>>
-export interface PermissionsStore {
-  ps: PermissionsBySpace
-  ap: AccountsByPermission
-  ms: MembersBySpace
-  whitelist: Set<Ref<Space>>
-}
-
-export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
-  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
-  if (arePermissionsDisabled) return true
-  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
-}
-
-export function getPermittedAccounts (
-  _id: Ref<Permission>,
-  space: Ref<TypedSpace>,
-  store: PermissionsStore
-): Array<Ref<Account>> {
-  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
-  if (arePermissionsDisabled) return Array.from(store.ms[space] ?? [])
-  return store.whitelist.has(space) ? Array.from(store.ms[space] ?? []) : Array.from(store.ap[space]?.[_id] ?? [])
-}
-
+export const allowGuestSignUpStore = writable<boolean>(false)
 export const accessDeniedStore = writable<boolean>(false)
-
-export const permissionsStore = writable<PermissionsStore>({
-  ps: {},
-  ap: {},
-  ms: {},
-  whitelist: new Set()
-})
 
 const spaceSpaceQuery = createQuery(true)
 
@@ -1521,94 +1589,13 @@ spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) =>
   spaceSpace.set(res[0])
 })
 
-const spaceTypesQuery = createQuery(true)
-const permissionsQuery = createQuery(true)
-type TargetClassesProjection = Record<Ref<Class<Space>>, number>
-
-spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
-  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
-    acc[st.targetClass] = 1
-    return acc
-  }, {})
-
-  permissionsQuery.query(
-    core.class.Space,
-    {},
-    (res) => {
-      const whitelistedSpaces = new Set<Ref<Space>>()
-      const permissionsBySpace: PermissionsBySpace = {}
-      const accountsByPermission: AccountsByPermission = {}
-      const membersBySpace: MembersBySpace = {}
-      const client = getClient()
-      const hierarchy = client.getHierarchy()
-      const me = getCurrentAccount()
-
-      for (const s of res) {
-        membersBySpace[s._id] = new Set(s.members)
-        if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-          const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-          const mixin = type?.targetClass
-
-          if (mixin === undefined) {
-            permissionsBySpace[s._id] = new Set()
-            accountsByPermission[s._id] = {}
-            continue
-          }
-
-          const asMixin = hierarchy.as(s, mixin)
-          const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-          const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
-          permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-          accountsByPermission[s._id] = {}
-
-          for (const role of roles) {
-            const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
-
-            if (assignment.length === 0) {
-              continue
-            }
-
-            for (const permissionId of role.permissions) {
-              if (accountsByPermission[s._id][permissionId] === undefined) {
-                accountsByPermission[s._id][permissionId] = new Set()
-              }
-
-              assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
-            }
-          }
-        } else {
-          whitelistedSpaces.add(s._id)
-        }
-      }
-
-      permissionsStore.set({
-        ps: permissionsBySpace,
-        ap: accountsByPermission,
-        ms: membersBySpace,
-        whitelist: whitelistedSpaces
-      })
-    },
-    {
-      showArchived: true,
-      projection: {
-        _id: 1,
-        type: 1,
-        members: 1,
-        ...targetClasses
-      } as any
-    }
-  )
-})
-
 export function getCollaborationUser (): CollaborationUser {
-  const me = getCurrentAccount() as PersonAccount
-  const color = getColorNumberByText(me.email)
+  const me = getCurrentAccount()
+  const color = getColorNumberByText(me.primarySocialId)
 
   return {
-    id: me._id,
-    name: me.email,
-    email: me.email,
+    id: me.primarySocialId,
+    name: me.primarySocialId,
     color
   }
 }
@@ -1643,7 +1630,7 @@ export async function parseLinkId<T extends Doc> (
 ): Promise<Ref<T>> {
   const hierarchy = getClient().getHierarchy()
   const provider =
-    providers.find(({ _id }) => id === _class) ?? providers.find(({ _id }) => hierarchy.isDerived(_class, _id))
+    providers.find(({ _id }) => _id === _class) ?? providers.find(({ _id }) => hierarchy.isDerived(_class, _id))
 
   if (provider === undefined) {
     return id as Ref<T>

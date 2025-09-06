@@ -14,23 +14,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact, { PermissionsStore } from '@hcengineering/contact'
   import type { Attachment } from '@hcengineering/attachment'
   import core, { BlobType, type WithLookup } from '@hcengineering/core'
   import presentation, {
     canPreviewFile,
     getBlobRef,
     getFileUrl,
-    getJsonOrEmpty,
     previewTypes,
+    getJsonOrEmpty,
     sizeToWidth
   } from '@hcengineering/presentation'
   import { Label, Spinner } from '@hcengineering/ui'
-  import { permissionsStore, PermissionsStore } from '@hcengineering/view-resources'
+  import WebIcon from './icons/Web.svelte'
   import filesize from 'filesize'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
+  import { Readable } from 'svelte/store'
   import { getType, isAttachment, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
   import AttachmentName from './AttachmentName.svelte'
-  import WebIcon from './icons/Web.svelte'
 
   export let value: WithLookup<Attachment> | BlobType | undefined
   export let removable: boolean = false
@@ -38,6 +40,11 @@
   export let preview = false
 
   const dispatch = createEventDispatcher()
+  let permissionsStore: Readable<PermissionsStore> | undefined = undefined
+
+  onMount(async () => {
+    permissionsStore = await getResource(contact.store.Permissions)
+  })
 
   const maxLength: number = 30
 
@@ -45,6 +52,7 @@
     fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
 
   $: canRemove = isRemovable(removable, value, $permissionsStore)
+
   function isRemovable (
     removable: boolean,
     value: Attachment | BlobType | undefined,
@@ -65,9 +73,12 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
+
   function isImage (contentType: string): boolean {
     return getType(contentType) === 'image'
   }
+
+  $: canShowImage = value?.type?.startsWith('image/') === true || value?.metadata?.thumbnail !== undefined
 
   let canPreview = false
   let useDefaultIcon = false
@@ -91,7 +102,8 @@
       return
     }
     if (value.type.startsWith('image/') || value.type.startsWith('video/') || value.type.startsWith('audio/')) {
-      showAttachmentPreviewPopup(value)
+      const popup = showAttachmentPreviewPopup(value)
+      dispatch('open', popup.id)
     } else {
       await openAttachmentInSidebar(value)
     }
@@ -124,50 +136,54 @@
         {#await getJsonOrEmpty(value.file, value.name)}
           <Spinner size="small" />
         {:then linkPreviewDetails}
-          <div class="flex-center icon image">
-            {#if linkPreviewDetails.icon !== undefined && !useDefaultIcon}
-              <img
-                src={linkPreviewDetails.icon}
-                class="link-preview-icon"
-                alt="link-preview"
-                on:error={() => {
-                  useDefaultIcon = true
-                }}
-              />
-            {:else}
-              <WebIcon size="medium" />
-            {/if}
-          </div>
-          <div class="flex-col info-container">
-            <div class="name">
-              <a target="_blank" class="no-line" style:flex-shrink={0} href={linkPreviewDetails.url}
-                >{trimFilename(linkPreviewDetails?.title ?? value.name)}</a
-              >
-            </div>
-            <div class="info-content flex-row-center">
-              <span class="actions inline-flex clear-mins gap-1">
-                {#if linkPreviewDetails.description}
-                  {trimFilename(linkPreviewDetails.description)}
-                  <span>•</span>
-                {/if}
-                <span
-                  class="remove-link"
-                  on:click={(ev) => {
-                    ev.stopPropagation()
-                    ev.preventDefault()
-                    dispatch('remove', value)
+          {#if linkPreviewDetails !== undefined}
+            <div class="flex-center icon image">
+              {#if linkPreviewDetails.icon !== undefined && !useDefaultIcon}
+                <img
+                  src={linkPreviewDetails.icon}
+                  class="link-preview-icon"
+                  alt="link-preview"
+                  on:error={() => {
+                    useDefaultIcon = true
                   }}
-                >
-                  <Label label={presentation.string.Delete} />
-                </span>
-              </span>
+                />
+              {:else}
+                <WebIcon size="medium" />
+              {/if}
             </div>
-          </div>
+            <div class="flex-col info-container">
+              <div class="name">
+                <a target="_blank" class="no-line" style:flex-shrink={0} href={linkPreviewDetails.url}
+                  >{trimFilename(linkPreviewDetails?.title ?? value.name)}</a
+                >
+              </div>
+              <div class="info-content flex-row-center">
+                <span class="actions inline-flex clear-mins gap-1">
+                  {#if linkPreviewDetails.description}
+                    {trimFilename(linkPreviewDetails.description)}
+                    <span>•</span>
+                  {/if}
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
+                  <!-- svelte-ignore a11y-no-static-element-interactions -->
+                  <span
+                    class="remove-link"
+                    on:click={(ev) => {
+                      ev.stopPropagation()
+                      ev.preventDefault()
+                      dispatch('remove', value)
+                    }}
+                  >
+                    <Label label={presentation.string.Delete} />
+                  </span>
+                </span>
+              </div>
+            </div>
+          {/if}
         {/await}
       {:else}
         {#await getBlobRef(value.file, value.name, sizeToWidth('large')) then valueRef}
           <a
-            class="no-line"
+            class="no-line no-underline"
             style:flex-shrink={0}
             href={valueRef.src}
             download={value.name}
@@ -175,14 +191,13 @@
             on:mousedown={middleClickHandler}
             on:dragstart={dragStart}
           >
-            {#if showPreview && isImage(value.type)}
+            {#if showPreview && canShowImage}
               <img
                 src={valueRef.src}
                 data-id={value.file}
                 srcset={valueRef.srcset}
-                class="flex-center icon"
+                class="flex-center icon image"
                 class:svg={value.type === 'image/svg+xml'}
-                class:image={isImage(value.type)}
                 alt={value.name}
               />
             {:else}
@@ -198,7 +213,7 @@
               </a>
             </div>
             <div class="info-content flex-row-center">
-              {#if isAttachment(value)}{filesize(value.size, { spacer: '' })}{/if}
+              {#if value.size != null && value.size !== 0}{filesize(value.size, { spacer: '' })}{/if}
               <span class="actions inline-flex clear-mins ml-1 gap-1">
                 <span>•</span>
                 <a class="no-line colorInherit" href={valueRef.src} download={value.name} bind:this={download}>

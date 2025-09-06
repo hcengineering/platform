@@ -19,12 +19,13 @@
   import { type Attachment } from '@hcengineering/attachment'
   import { Scroller } from '@hcengineering/ui'
   export let attachments: WithLookup<Attachment>[] = []
+  export let isOwn = false
 </script>
 
 <div class="gapV-2">
   {#each attachments as attachment}
     <Scroller contentDirection={'horizontal'} horizontal scrollSnap>
-      <LinkPreviewPresenter {attachment} />
+      <LinkPreviewPresenter {attachment} {isOwn} />
     </Scroller>
   {/each}
 </div>

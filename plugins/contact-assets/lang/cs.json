@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+420 123 456 789",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -69,6 +71,7 @@
     "CreateEmployee": "Zaměstnanec",
     "Inactive": "Neaktivní",
     "Active": "Aktivní",
+    "Role": "Typ",
     "Birthday": "Narozeniny",
     "UseImage": "Přiložená fotografie",
     "UseGravatar": "Gravatar",
@@ -107,6 +110,15 @@
     "AddGuest": "Přidat hosta",
     "ViewProfile": "Zobrazit profil",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "UserProfile": "Uživatelský profil",
+    "DeactivatedAccount": "Deaktivovaný účet",
+    "LocalTime": "místní čas",
+    "Everyone": "Všichni",
+    "Here": "Zde",
+    "EveryoneDescription": "Upozornit všechny v tomto {title}",
+    "HereDescription": "Upozornit všechny v tomto {title}",
+    "Guest": "Host",
+    "Deleted": "Smazáno"
   }
 }

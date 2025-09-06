@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Blob as PlatformBlob, Class, Doc, Ref } from '@hcengineering/core'
 
 /** @public */
@@ -27,9 +27,21 @@ export type UploadFilesPopupFn = (options: FileUploadOptions, popupOptions: File
 export type UploadFilesFn = (files: File[] | FileList, options: FileUploadOptions) => Promise<void>
 
 /** @public */
+export type UploadHandler = (options: FileUploadOptions) => Promise<void>
+
+/** @public */
 export interface FileUploadTarget {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
+}
+
+/** @public */
+export interface UploadHandlerDefinition extends Doc {
+  icon: Asset
+  label: IntlString
+  order?: number
+  category?: string
+  handler: Resource<UploadHandler>
 }
 
 /** @public */
@@ -39,12 +51,12 @@ export interface FileUploadProgressOptions {
 
 /** @public */
 export interface FileUploadOptions {
-  // Uppy options
   maxFileSize?: number
   maxNumberOfFiles?: number
   allowedFileTypes?: string[] | null
 
   onFileUploaded?: FileUploadCallback
+  target?: FileUploadTarget
   showProgress?: FileUploadProgressOptions
 }
 
@@ -57,10 +69,10 @@ export interface FileUploadPopupOptions {
 export interface FileUploadCallbackParams {
   uuid: Ref<PlatformBlob>
   name: string
-  type: string
-  file: FileWithPath | Blob
-  path: string | undefined
-  metadata: Record<string, any> | undefined
+  file: File | Blob
+  path?: string
+  size?: number
+  metadata?: Record<string, any>
 }
 
 /** @public */

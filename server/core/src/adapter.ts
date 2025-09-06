@@ -15,7 +15,6 @@
 
 import {
   type Class,
-  type Data,
   type Doc,
   type DocumentQuery,
   type Domain,
@@ -28,7 +27,8 @@ import {
   type Ref,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
 import type { ServerFindOptions } from './types'
@@ -61,6 +61,11 @@ export type DbAdapterHandler = (
   count: number,
   helper: DomainHelperOperations
 ) => void
+
+export interface RawFindIterator {
+  find: (ctx: MeasureContext) => Promise<Doc[]>
+  close: () => Promise<void>
+}
 /**
  * @public
  */
@@ -85,15 +90,10 @@ export interface DbAdapter extends LowLevelStorage {
 
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
-  // Bulk update operations
-  update: <T extends Doc>(
-    ctx: MeasureContext,
-    domain: Domain,
-    operations: Map<Ref<Doc>, Partial<Data<T>>>
-  ) => Promise<void>
-
   // Allow to register a handler to listen for domain operations
   on?: (handler: DbAdapterHandler) => void
+
+  rawFind: (ctx: MeasureContext, domain: Domain) => RawFindIterator
 }
 
 /**
@@ -108,7 +108,7 @@ export interface TxAdapter extends DbAdapter {
  * @public
  */
 export interface WorkspaceDestroyAdapter {
-  deleteWorkspace: (ctx: MeasureContext, contextVars: Record<string, any>, workspace: WorkspaceId) => Promise<void>
+  deleteWorkspace: (ctx: MeasureContext, workspace: WorkspaceUuid, dataId?: string) => Promise<void>
 }
 
 /**
@@ -116,10 +116,9 @@ export interface WorkspaceDestroyAdapter {
  */
 export type DbAdapterFactory = (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb,
   storage?: StorageAdapter
 ) => Promise<DbAdapter>

@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TRANSIENT, type Account, type Ref, type UserStatus } from '@hcengineering/core'
+import { type AccountUuid, DOMAIN_TRANSIENT, type UserStatus } from '@hcengineering/core'
 import { Model } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'
 
 @Model(core.class.UserStatus, core.class.Doc, DOMAIN_TRANSIENT)
 export class TUserStatus extends TDoc implements UserStatus {
-  user!: Ref<Account>
+  user!: AccountUuid
   online!: boolean
 }

@@ -14,16 +14,9 @@
 // limitations under the License.
 //
 
-import { ActivityMessage } from '@hcengineering/activity'
-import contact, { Employee, Person, PersonAccount, PersonSpace } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
-import {
-  BaseNotificationType,
-  InboxNotification,
-  NotificationContent,
-  NotificationProvider,
-  NotificationType
-} from '@hcengineering/notification'
+import { Employee, Person, PersonSpace } from '@hcengineering/contact'
+import { PersonId, Class, Doc, Mixin, Ref, Tx, TxCUD, AccountUuid } from '@hcengineering/core'
+import { NotificationContent, NotificationType } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -32,37 +25,6 @@ import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
  */
 export const serverNotificationId = 'server-notification' as Plugin
 export { DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/notification'
-
-/**
- * @public
- */
-export function getPersonAccountById (_id: Ref<Account>, control: TriggerControl): PersonAccount | undefined {
-  const account = control.modelDb.findAllSync(
-    contact.class.PersonAccount,
-    {
-      _id: _id as Ref<PersonAccount>
-    },
-    { limit: 1 }
-  )[0]
-  return account
-}
-
-/**
- * @public
- */
-export async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
-  const account = (
-    await control.findAll(
-      control.ctx,
-      contact.mixin.Employee,
-      {
-        _id: employee
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account !== undefined ? control.hierarchy.as(account, contact.mixin.Employee) : undefined
-}
 
 /**
  * @public
@@ -87,7 +49,15 @@ export interface TextPresenter<T extends Doc = any> extends Class<T> {
  * @public
  */
 export type TypeMatchFunc = Resource<
-(tx: Tx, doc: Doc, user: Ref<Account>[], type: NotificationType, control: TriggerControl) => boolean
+(
+  tx: Tx,
+  doc: Doc,
+  person: Ref<Person>,
+  socialIds: PersonId[],
+  type: NotificationType,
+  control: TriggerControl,
+  account: AccountUuid
+) => boolean | Promise<boolean>
 >
 
 /**
@@ -103,7 +73,7 @@ export interface TypeMatch extends NotificationType {
 export type NotificationContentProvider = (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: Ref<Account>,
+  person: Ref<Person>,
   control: TriggerControl
 ) => Promise<NotificationContent>
 
@@ -115,31 +85,16 @@ export interface NotificationPresenter extends Class<Doc> {
 }
 
 export interface ReceiverInfo {
-  _id: Ref<Account>
-  account: PersonAccount
-  person: Employee
+  account: AccountUuid
+  employee: Ref<Employee>
+  role: 'USER' | 'GUEST' | undefined
+  socialIds: PersonId[]
   space: Ref<PersonSpace>
 }
 
 export interface SenderInfo {
-  _id: Ref<Account>
-  account?: PersonAccount
+  socialId: PersonId
   person?: Person
-}
-
-export type NotificationProviderFunc = (
-  control: TriggerControl,
-  types: BaseNotificationType[],
-  object: Doc,
-  data: InboxNotification,
-  receiver: ReceiverInfo,
-  sender: SenderInfo,
-  message?: ActivityMessage
-) => Promise<Tx[]>
-
-export interface NotificationProviderResources extends Doc {
-  provider: Ref<NotificationProvider>
-  fn: Resource<NotificationProviderFunc>
 }
 
 export const NOTIFICATION_BODY_SIZE = 50
@@ -154,9 +109,6 @@ export default plugin(serverNotificationId, {
     MailAuthToken: '' as Metadata<string>,
     WebPushUrl: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
-  },
-  class: {
-    NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
@@ -173,7 +125,7 @@ export default plugin(serverNotificationId, {
     PushNotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
-    IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,
-    IsUserEmployeeInFieldValueTypeMatch: '' as TypeMatchFunc
+    IsUserEmployeeInFieldValueTypeMatch: '' as TypeMatchFunc,
+    MentionTypeMatch: '' as TypeMatchFunc
   }
 })

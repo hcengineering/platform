@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
@@ -33,17 +33,29 @@ interface DeleteBlobsRequest {
   names: string[]
 }
 
-export async function handleBlobList (
+export async function handleWorkspaceStats (
   ctx: MeasureContext,
   req: Request,
   res: Response,
   datalake: Datalake
 ): Promise<void> {
   const { workspace } = req.params
+  const stats = await datalake.getWorkspaceStats(ctx, workspace as WorkspaceUuid)
+  res.status(200).json(stats)
+}
+
+export async function handleBlobList (
+  ctx: MeasureContext,
+  req: Request,
+  res: Response,
+  datalake: Datalake
+): Promise<void> {
+  const workspace = req.params.workspace as WorkspaceUuid
   const cursor = req.query.cursor as string
   const limit = extractIntParam(req.query.limit as string)
+  const derived = req.query.derived === 'true'
 
-  const blobs = await datalake.list(ctx, workspace, cursor, limit)
+  const blobs = await datalake.list(ctx, workspace, { cursor, limit, derived })
   res.status(200).json(blobs)
 }
 
@@ -53,7 +65,8 @@ export async function handleBlobGet (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name, filename } = req.params
+  const { name, filename } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const range = req.headers.range
 
@@ -69,7 +82,7 @@ export async function handleBlobGet (
   res.setHeader('Content-Security-Policy', "default-src 'none';")
   res.setHeader(
     'Content-Disposition',
-    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}"` : 'attachment'
+    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}` : 'attachment'
   )
   res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(blob.lastModified).toUTCString())
@@ -84,7 +97,15 @@ export async function handleBlobGet (
   res.status(status)
 
   pipeline(blob.body, res, (err) => {
+    if (!blob.body.destroyed) {
+      blob.body.destroy()
+    }
+
     if (err != null) {
+      // ignore abort errors to avoid flooding the logs
+      if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
+        return
+      }
       const error = err instanceof Error ? err.message : String(err)
       ctx.error('error writing response', { workspace, name, error })
       Analytics.handleError(err)
@@ -92,10 +113,6 @@ export async function handleBlobGet (
         res.status(500).send('Internal Server Error')
       }
     }
-  })
-
-  req.on('close', () => {
-    blob.body.destroy()
   })
 }
 
@@ -105,7 +122,8 @@ export async function handleBlobHead (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name, filename } = req.params
+  const { name, filename } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const head = await datalake.head(ctx, workspace, name)
   if (head == null) {
@@ -117,7 +135,10 @@ export async function handleBlobHead (
   res.setHeader('Content-Length', head.size.toString())
   res.setHeader('Content-Type', head.contentType ?? '')
   res.setHeader('Content-Security-Policy', "default-src 'none';")
-  res.setHeader('Content-Disposition', filename !== undefined ? `attachment; filename="${filename}"` : 'attachment')
+  res.setHeader(
+    'Content-Disposition',
+    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}` : 'attachment'
+  )
   res.setHeader('Cache-Control', head.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(head.lastModified).toUTCString())
   res.setHeader('ETag', wrapETag(head.etag))
@@ -134,13 +155,13 @@ export async function handleBlobDelete (
   const { workspace, name } = req.params
 
   try {
-    await datalake.delete(ctx, workspace, name)
+    await datalake.delete(ctx, workspace as WorkspaceUuid, name)
     ctx.info('deleted', { workspace, name })
 
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blob', { error })
+    ctx.error('failed to delete blob', { workspace, name, error })
     res.status(500).send()
   }
 }
@@ -155,13 +176,13 @@ export async function handleBlobDeleteList (
   const body = req.body.names as DeleteBlobsRequest
 
   try {
-    await datalake.delete(ctx, workspace, body.names)
+    await datalake.delete(ctx, workspace as WorkspaceUuid, body.names)
     ctx.info('deleted', { workspace, names: body.names })
 
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blobs', { error })
+    ctx.error('failed to delete blobs', { workspace, names: body.names, error })
     res.status(500).send()
   }
 }
@@ -172,15 +193,38 @@ export async function handleBlobSetParent (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
   const { parent } = (await req.body) as BlobParentRequest
+
+  if (parent != null) {
+    const [blobHead, parentHead] = await Promise.all([
+      datalake.head(ctx, workspace, name),
+      datalake.head(ctx, workspace, parent)
+    ])
+
+    if (blobHead == null) {
+      res.status(404).send()
+      return
+    }
+    if (parentHead == null) {
+      res.status(400).send()
+      return
+    }
+  } else {
+    const blobHead = await datalake.head(ctx, workspace, name)
+    if (blobHead == null) {
+      res.status(404).send()
+      return
+    }
+  }
 
   try {
     await datalake.setParent(ctx, workspace, name, parent)
     res.status(204).send()
   } catch (error: any) {
     Analytics.handleError(error)
-    ctx.error('failed to delete blob', { error })
+    ctx.error('failed to delete blob', { workspace, name, error })
     res.status(500).send()
   }
 }
@@ -192,7 +236,7 @@ export async function handleUploadFormData (
   datalake: Datalake,
   tempDir: TemporaryDir
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   if (req.files == null) {
     res.status(400).send('missing files')
@@ -222,18 +266,27 @@ export async function handleUploadFormData (
           throw err
         }
 
-        const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
+        let data: Buffer | Readable = file.data
+        if (file.tempFilePath !== undefined) {
+          data = fs.createReadStream(file.tempFilePath)
+          data.on('error', (err) => {
+            ctx.error('stream error during upload', { workspace, name, file: file.name, error: err })
+          })
+        }
 
         try {
           const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
             size,
             contentType,
+            cacheControl: Array.isArray(req.headers['cache-control'])
+              ? req.headers['cache-control'].join(', ')
+              : req.headers['cache-control'],
             lastModified: Date.now()
           })
 
           ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
 
-          return { key, metadata }
+          return { key, id: name, metadata }
         } catch (err: any) {
           Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)

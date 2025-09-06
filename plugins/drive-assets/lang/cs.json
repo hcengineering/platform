@@ -27,8 +27,6 @@
     "Rename": "Přejmenovat",
     "Restore": "Obnovit",
     "RoleLabel": "Role",
-    "Root": "/",
-    "ForbidCreateDrivePermission": "Zakázat vytvoření disku",
-    "ForbidCreateDrivePermissionDescription": "Zakazuje uživatelům vytvářet nové disky"
+    "Root": "/"
   }
 }

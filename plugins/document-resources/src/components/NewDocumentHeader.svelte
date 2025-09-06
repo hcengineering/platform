@@ -13,9 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AccountRole, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { HeaderButton, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonWithDropdown,
+    IconAdd,
+    IconDropdown,
+    Loading,
+    SelectPopupValueType,
+    showPopup
+  } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
   import { Analytics } from '@hcengineering/analytics'
   import { DocumentEvents } from '@hcengineering/document'
@@ -30,14 +38,13 @@
 
   const client = getClient()
   const query = createQuery()
-
-  const me = getCurrentAccount()
+  const myAcc = getCurrentAccount()
 
   let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
-    { archived: false, members: me._id },
+    { archived: false, members: myAcc.uuid },
     (res) => {
       hasTeamspace = res.length > 0
       loading = false
@@ -63,37 +70,51 @@
     showPopup(CreateTeamspace, {}, 'top')
   }
 
-  let mainActionId: string | undefined = undefined
-  let visibleActions: string[] = []
-  function updateActions (teamspace: boolean): void {
-    mainActionId = document.string.CreateDocument
-    if (teamspace) {
-      visibleActions = [document.string.CreateTeamspace, document.string.CreateDocument]
-    } else {
-      visibleActions = [document.string.CreateTeamspace]
+  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+    if (res === document.string.CreateDocument) {
+      await newDocument()
+    } else if (res === document.string.CreateTeamspace) {
+      await newTeamspace()
     }
   }
 
-  $: updateActions(hasTeamspace)
+  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
+    ? [
+        { id: document.string.CreateDocument, label: document.string.CreateDocument },
+        { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
+      ]
+    : [{ id: document.string.CreateDocument, label: document.string.CreateDocument }]
 </script>
 
-<HeaderButton
-  {loading}
-  {client}
-  {mainActionId}
-  {visibleActions}
-  actions={[
-    {
-      id: document.string.CreateTeamspace,
-      label: document.string.CreateTeamspace,
-      accountRole: AccountRole.User,
-      callback: newTeamspace
-    },
-    {
-      id: document.string.CreateDocument,
-      label: document.string.CreateDocument,
-      accountRole: AccountRole.User,
-      callback: newDocument
-    }
-  ]}
-/>
+{#if loading}
+  <Loading shrink />
+{:else}
+  <div class="antiNav-subheader">
+    {#if hasTeamspace}
+      <ButtonWithDropdown
+        icon={IconAdd}
+        justify={'left'}
+        kind={'primary'}
+        label={document.string.CreateDocument}
+        on:click={newDocument}
+        mainButtonId={'new-document'}
+        dropdownIcon={IconDropdown}
+        {dropdownItems}
+        on:dropdown-selected={(ev) => {
+          void dropdownItemSelected(ev.detail)
+        }}
+      />
+    {:else}
+      <Button
+        id={'new-teamspace'}
+        icon={IconAdd}
+        label={document.string.CreateTeamspace}
+        justify={'left'}
+        width={'100%'}
+        kind={'primary'}
+        gap={'large'}
+        on:click={newTeamspace}
+      />
+    {/if}
+  </div>
+{/if}

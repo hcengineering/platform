@@ -16,8 +16,6 @@
 import {
   type Class,
   type Doc,
-  type DocIndexState,
-  type DocumentUpdate,
   type FullTextSearchContext,
   type Hierarchy,
   type ModelDb,
@@ -34,8 +32,3 @@ export interface FullTextPipeline {
 
   cancelling: boolean
 }
-
-/**
- * @public
- */
-export type DocUpdateHandler = (doc: DocIndexState, update: DocumentUpdate<DocIndexState>) => Promise<void>

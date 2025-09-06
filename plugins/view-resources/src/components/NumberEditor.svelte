@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import type { ButtonSize } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
@@ -24,7 +24,7 @@
   export let autoFocus: boolean = false
   // export let maxWidth: string = '10rem'
   export let onChange: (value: number | undefined) => void
-  export let kind: 'no-border' | 'link' | 'button' | 'list' = 'no-border'
+  export let kind: ButtonKind | undefined = undefined
   export let readonly = false
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -40,9 +40,9 @@
   }
 </script>
 
-{#if kind === 'button' || kind === 'link' || kind === 'list'}
+{#if kind}
   <Button
-    kind={kind === 'button' ? 'regular' : kind}
+    {kind}
     {size}
     {justify}
     {width}

@@ -21,7 +21,7 @@
   export let embedded: boolean = false
 </script>
 
-<div class:card-container={!embedded}>
+<div class={embedded ? 'clear-mins' : 'card-container'}>
   <div class="overflow-label label"><Label {label} /></div>
   <div class="content"><slot /></div>
 </div>
@@ -32,6 +32,8 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 1.5rem 1.5rem;
+    min-width: 0;
+    min-height: 0;
     border-radius: 0.5rem;
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
@@ -48,7 +50,7 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      height: fit-content;
+      // height: fit-content;
     }
   }
 </style>

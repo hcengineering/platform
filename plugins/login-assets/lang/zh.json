@@ -42,7 +42,6 @@
     "AlreadyJoined": "已经加入了？",
     "ConfirmationSent": "已发送确认邮件到您的邮箱，包含一个确认地址的链接。",
     "ConfirmationSent2": "请点击链接完成注册。",
-    "Slogan": "一个独特的地方来管理你所有的工作\n欢迎来到平台",
     "ContinueWith": "继续使用 {provider}",
     "HaventReceivedCode": "没有收到验证码？",
     "ResendCode": "重新发送验证码",
@@ -52,6 +51,8 @@
     "CanFindCode": "找不到验证码？请检查您的垃圾邮件文件夹。",
     "LoginWithPassword": "使用密码登录",
     "LoginWithCode": "使用代码登录",
+    "SignUpWithPassword": "注册密码",
+    "SignUpWithCode": "注册代码",
     "FillInProfile": "填写您的个人资料",
     "SetUpPassword": "设置您的密码",
     "Next": "下一个",
@@ -64,6 +65,15 @@
     "PasswordMinUpperChars": "{count, plural, =1 {密码至少需要 # 个大写字母} other {密码至少需要 # 个大写字母}}",
     "PasswordMinLowerChars": "{count, plural, =1 {密码至少需要 # 个小写字母} other {密码至少需要 # 个小写字母}}",
     "WorkspaceArchivedDesc": "工作区已被归档，因为未使用。",
-    "RestoreArchivedWorkspace": "解包"
+    "RestoreArchivedWorkspace": "解包",
+    "Hello": "你好 {name},",
+    "ProcessingInvite": "处理邀请，请稍候...",
+    "SignToProceed": "请登录以继续",
+    "Proceed": "继续",
+    "SetPasswordLater": "稍后设置密码",
+    "SetPasswordNow": "现在设置密码",
+    "LoginAsGuest": "以访客身份继续",
+    "SignUpToCreateWorkspace": "没有支持访客访问的工作区。请注册以创建您自己的工作区。",
+    "WhatIsYourName": "您的姓名是什么？"
   }
 }

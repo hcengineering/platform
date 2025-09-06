@@ -14,33 +14,33 @@
 //
 
 import activity, {
-  ActivityMessage,
-  ActivityMessageControl,
-  DocAttributeUpdates,
-  DocUpdateMessage,
-  Reaction
+  type ActivityMessage,
+  type ActivityMessageControl,
+  type DocAttributeUpdates,
+  type DocUpdateMessage,
+  type Reaction
 } from '@hcengineering/activity'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
-  AttachedDoc,
-  Class,
-  Collection,
-  Data,
-  Doc,
-  Hierarchy,
+  type PersonId,
+  type AttachedDoc,
+  type Class,
+  type Collection,
+  type Data,
+  type Doc,
+  type Hierarchy,
   matchQuery,
-  MeasureContext,
-  Ref,
-  Space,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
+  type MeasureContext,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxCreateDoc,
+  type TxCUD,
   TxProcessor
 } from '@hcengineering/core'
-import notification, { NotificationContent } from '@hcengineering/notification'
+import { getAccountBySocialId } from '@hcengineering/server-contact'
+import notification, { type NotificationContent } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
-import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
+import { type ActivityControl, type DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollabDocInfo,
@@ -48,9 +48,12 @@ import {
   getTextPresenter,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
+import { type Card } from '@hcengineering/card'
+import { type Person } from '@hcengineering/contact'
 
 import { ReferenceTrigger } from './references'
 import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
+import { generateActivity } from './newActivity'
 
 export async function OnReactionChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
@@ -109,9 +112,9 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
     return []
   }
 
-  const user = parentMessage.createdBy
+  const userSocialId = parentMessage.createdBy
 
-  if (user === undefined || user === core.account.System || user === tx.modifiedBy) {
+  if (userSocialId === undefined || userSocialId === core.account.System || userSocialId === tx.modifiedBy) {
     return []
   }
 
@@ -137,18 +140,18 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
   res.push(messageTx)
 
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
+  const account = await getAccountBySocialId(control, userSocialId)
+
+  if (account == null) {
+    return []
+  }
 
   res = res.concat(
-    await createCollabDocInfo(
-      control.ctx,
-      res,
-      [user] as Ref<PersonAccount>[],
-      control,
-      tx,
-      parentMessage,
-      [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
-    )
+    await createCollabDocInfo(control.ctx, res, [account], control, tx, parentMessage, [docUpdateMessage], {
+      isOwn: true,
+      isSpace: false,
+      shouldUpdateTimestamp: false
+    })
   )
 
   return res
@@ -169,7 +172,7 @@ function getDocUpdateMessageTx (
   originTx: TxCUD<Doc>,
   object: Doc,
   rawMessage: Data<DocUpdateMessage>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCUD<DocUpdateMessage> {
   const { hierarchy } = control
   const space = isSpace(object, hierarchy) ? object._id : object.space
@@ -199,7 +202,7 @@ export async function pushDocUpdateMessages (
   res: TxCUD<DocUpdateMessage>[],
   object: Doc | undefined,
   originTx: TxCUD<Doc>,
-  modifiedBy?: Ref<Account>,
+  modifiedBy?: PersonId,
   objectCache?: DocObjectCache,
   controlRules?: ActivityMessageControl[]
 ): Promise<TxCUD<DocUpdateMessage>[]> {
@@ -281,7 +284,7 @@ export async function generateDocUpdateMessages (
   if (controlRules.length > 0) {
     for (const r of controlRules) {
       for (const s of r.skip) {
-        if (matchQuery([tx], s, r.objectClass, hierarchy).length > 0) {
+        if (matchQuery([tx], s, core.class.TxCUD, hierarchy).length > 0) {
           // Match found, we need to skip
           return res
         }
@@ -376,7 +379,7 @@ async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerCon
     const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>))
 
     const notificationTxes = await control.ctx.with('createCollaboratorNotifications', {}, (ctx) =>
-      createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
+      createCollaboratorNotifications(ctx, tx, control, messages)
     )
 
     result.push(...txes, ...notificationTxes)
@@ -417,7 +420,7 @@ async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promi
 async function ReactionNotificationContentProvider (
   doc: ActivityMessage,
   originTx: TxCUD<Doc>,
-  _: Ref<Account>,
+  _: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const tx = originTx as TxCreateDoc<Reaction>
@@ -509,6 +512,15 @@ export async function DocUpdateMessageTextPresenter (doc: DocUpdateMessage, cont
   return await translate(activity.string.UpdatedObject, { object: name })
 }
 
+async function HandleCardActivity (txes: TxCUD<Card>[], control: TriggerControl): Promise<Tx[]> {
+  const cache = new Map<Ref<Card>, Card>()
+  for (const tx of txes) {
+    await generateActivity(tx, control, cache)
+  }
+
+  return []
+}
+
 export * from './references'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -517,7 +529,8 @@ export default async () => ({
     ReferenceTrigger,
     ActivityMessagesHandler,
     OnDocRemoved,
-    OnReactionChanged
+    OnReactionChanged,
+    HandleCardActivity
   },
   function: {
     ReactionNotificationContentProvider,

@@ -17,6 +17,8 @@ import { type BackupConfig } from '@hcengineering/server-backup'
 
 interface Config extends Omit<BackupConfig, 'Token'> {
   AccountsURL: string
+  AccountsDbURL: string
+  AccountsDbNS: string
   ServiceID: string
   Secret: string
 
@@ -36,6 +38,8 @@ interface Config extends Omit<BackupConfig, 'Token'> {
 
 const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
+  AccountsDbURL: 'ACCOUNTS_DB_URL',
+  AccountsDbNS: 'ACCOUNTS_NS',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   BucketName: 'BUCKET_NAME',
@@ -47,11 +51,13 @@ const envMap: { [key in keyof Config]: string } = {
   Storage: 'STORAGE',
   WorkspaceStorage: 'WORKSPACE_STORAGE',
   Region: 'REGION',
-  Parallel: 'PARALLEL'
+  Parallel: 'PARALLEL',
+  KeepSnapshots: 'KEEP_SNAPSHOTS'
 }
 
 const required: Array<keyof Config> = [
   'AccountsURL',
+  'AccountsDbURL',
   'Secret',
   'ServiceID',
   'BucketName',
@@ -63,6 +69,8 @@ const required: Array<keyof Config> = [
 export const config: () => Config = () => {
   const params: Partial<Config> = {
     AccountsURL: process.env[envMap.AccountsURL],
+    AccountsDbURL: process.env[envMap.AccountsDbURL],
+    AccountsDbNS: process.env[envMap.AccountsDbNS],
     Secret: process.env[envMap.Secret],
     BucketName: process.env[envMap.BucketName] ?? 'backups',
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
@@ -74,7 +82,8 @@ export const config: () => Config = () => {
     WorkspaceStorage: process.env[envMap.WorkspaceStorage],
     Storage: process.env[envMap.Storage],
     Region: process.env[envMap.Region] ?? '',
-    Parallel: parseInt(process.env[envMap.Parallel] ?? '1')
+    Parallel: parseInt(process.env[envMap.Parallel] ?? '1'),
+    KeepSnapshots: parseInt(process.env[envMap.KeepSnapshots] ?? '84')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

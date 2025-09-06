@@ -1,3 +1,4 @@
+import { getWorkspaceById, getWorkspaceByUrl, type AccountDB, type Workspace } from '@hcengineering/account'
 import {
   type AttachedData,
   type AttachedDoc,
@@ -6,7 +7,8 @@ import {
   type DocumentUpdate,
   type Ref,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 
 export async function findOrUpdateAttached<T extends AttachedDoc> (
@@ -42,3 +44,18 @@ export async function findOrUpdateAttached<T extends AttachedDoc> (
   }
   return existingObj
 }
+
+export async function getWorkspace (db: AccountDB, workspace: string): Promise<Workspace | null> {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  let wsObj: Workspace | null
+
+  if (uuidRegex.test(workspace)) {
+    wsObj = await getWorkspaceById(db, workspace as WorkspaceUuid)
+  } else {
+    wsObj = await getWorkspaceByUrl(db, workspace)
+  }
+
+  return wsObj
+}
+
+export { getToolToken, getWorkspaceTransactorEndpoint } from '@hcengineering/server-tool'

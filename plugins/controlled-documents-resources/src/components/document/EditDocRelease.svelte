@@ -111,18 +111,7 @@
     selectedReviewInterval = interval.toString()
   }
 
-  $: canEdit =
-    $isDocumentOwner &&
-    $documentState != null &&
-    ![
-      DocumentState.Archived,
-      DocumentState.Deleted,
-      DocumentState.Effective,
-      DocumentState.Obsolete,
-      ControlledDocumentState.InApproval,
-      ControlledDocumentState.Approved,
-      ControlledDocumentState.ToReview
-    ].includes($documentState)
+  $: canEdit = $isDocumentOwner && $documentState === DocumentState.Draft
 
   const hierarchy = client.getHierarchy()
   const documentTrainingClass = getDocumentTrainingClass(hierarchy)
@@ -357,6 +346,7 @@
           kind="regular"
           width="max-content"
           value={$documentTraining.roles}
+          readonly={!canEdit}
           onChange={(roles) => {
             void updateTraining({ roles })
           }}

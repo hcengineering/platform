@@ -28,6 +28,7 @@ export default mergeIds(cardId, card, {
     MasterTags: '' as AnyComponent,
     CreateTag: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
+    FavoriteCardPresenter: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Main: '' as AnyComponent,
     GeneralSection: '' as AnyComponent,
@@ -37,12 +38,25 @@ export default mergeIds(cardId, card, {
     RelationsSection: '' as AnyComponent,
     SetParentActionPopup: '' as AnyComponent,
     RelationSetting: '' as AnyComponent,
+    ViewsSection: '' as AnyComponent,
+    EditView: '' as AnyComponent,
     CardEditor: '' as AnyComponent,
     CardRefPresenter: '' as AnyComponent,
     ChangeType: '' as AnyComponent,
-    CardArrayEditor: '' as AnyComponent,
+    CreateCardButton: '' as AnyComponent,
     NewCardHeader: '' as AnyComponent,
-    SpacePresenter: '' as AnyComponent
+    SpacePresenter: '' as AnyComponent,
+    RolesSection: '' as AnyComponent,
+    EditRole: '' as AnyComponent,
+    CardWidget: '' as AnyComponent,
+    CardWidgetTab: '' as AnyComponent
+  },
+  sectionComponent: {
+    AttachmentsSection: '' as AnyComponent,
+    ChildrenSection: '' as AnyComponent,
+    ContentSection: '' as AnyComponent,
+    PropertiesSection: '' as AnyComponent,
+    RelationsSection: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
@@ -73,10 +87,25 @@ export default mergeIds(cardId, card, {
     SetParent: '' as IntlString,
     CreateChild: '' as IntlString,
     Children: '' as IntlString,
+    CreateView: '' as IntlString,
+    EditView: '' as IntlString,
+    SelectViewType: '' as IntlString,
     Document: '' as IntlString,
+    Documents: '' as IntlString,
     ChangeType: '' as IntlString,
     ChangeTypeWarning: '' as IntlString,
+    MasterDetailViews: '' as IntlString,
+    SelectType: '' as IntlString,
     CreateSpace: '' as IntlString,
-    NumberTypes: '' as IntlString
+    NumberTypes: '' as IntlString,
+    Properties: '' as IntlString,
+    NoChildren: '' as IntlString,
+    AddCollaborators: '' as IntlString,
+    Home: '' as IntlString,
+    WhatDoYouWantToShare: '' as IntlString,
+    Share: '' as IntlString,
+    Compact: '' as IntlString,
+    Comfortable: '' as IntlString,
+    Comfortable2: '' as IntlString
   }
 })

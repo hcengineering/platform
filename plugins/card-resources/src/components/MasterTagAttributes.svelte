@@ -21,17 +21,14 @@
     Chevron,
     ExpandCollapse,
     getCurrentResolvedLocation,
-    Icon,
     IconAdd,
-    IconWithEmoji,
     Label,
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import card from '../plugin'
   import CardAttributes from './CardAttributes.svelte'
-  import view from '@hcengineering/view'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import CardIcon from './CardIcon.svelte'
 
   export let value: Card
   export let readonly: boolean = false
@@ -56,11 +53,7 @@
 
 <div class="header flex flex-gap-2">
   <div class="label flex flex-gap-2" on:click={isCollapsed ? expand : collapse}>
-    <Icon
-      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon ?? card.icon.MasterTag}
-      iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
-      size="large"
-    />
+    <CardIcon {value} size="large" buttonSize={'x-large'} editable={!readonly} />
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color)'} />
   </div>

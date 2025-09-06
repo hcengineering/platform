@@ -11,6 +11,7 @@ import { createServer, listen } from './server'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'print')
 }
 
 export const main = async (): Promise<void> => {

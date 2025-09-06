@@ -19,7 +19,6 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { tooltip, Icon } from '@hcengineering/ui'
-  import { personByIdStore } from '@hcengineering/contact-resources'
 
   import { getRoomName } from '../utils'
 
@@ -31,12 +30,15 @@
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
 
-  $: roomName = getRoomName(value, $personByIdStore)
+  let roomName: string
+  $: void getRoomName(value).then((name) => {
+    roomName = name
+  })
 </script>
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+    <ObjectMention object={value} {disabled} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(roomName) }}>

@@ -22,6 +22,7 @@ import {
   type FindResult,
   type MeasureContext,
   type Ref,
+  type SessionData,
   DOMAIN_MODEL
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
@@ -51,7 +52,7 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
   }
 
   findAll<T extends Doc>(
-    ctx: MeasureContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
@@ -61,13 +62,13 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
       return this.next?.findAll(ctx, _class, query, options) ?? emptyFindResult
     }
     const p = options?.prefix ?? 'client'
-    const domain = options?.domain ?? this.context.hierarchy.getDomain(_class)
+    const domain = this.context.hierarchy.getDomain(_class)
     if (domain === DOMAIN_MODEL) {
       return Promise.resolve(this.context.modelDb.findAllSync(_class, query, options))
     }
     return ctx.with(
       p + '-find-all',
-      { _class },
+      { source: ctx.contextData?.service ?? 'system', _class },
       (ctx) => {
         return this.adapterManager.getAdapter(domain, false).findAll(ctx, _class, query, options)
       },

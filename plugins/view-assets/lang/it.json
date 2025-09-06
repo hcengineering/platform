@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "contiene",
+    "NotContains": "non contiene",
     "MoveClass": "Sposta {class}",
     "SelectToMove": "Seleziona {classLabel} da spostare in {class}.",
     "Delete": "Elimina",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personalizza vista",
     "Filter": "Filtra",
     "ClearFilters": "Pulisci filtri",
+    "FilterLessThan": "Meno di",
+    "FilterGreaterThan": "Più di",
     "FilterIsNot": "non è",
     "FilterIsEither": "è",
     "FilterIsEitherPlural": "è",
@@ -100,8 +103,8 @@
     "Between": "è tra",
     "ShowColors": "Usa colori",
     "Show": "Mostra",
-    "FilterArrayAll": "include tutti",
-    "FilterArrayAny": "include qualsiasi",
+    "FilterArrayAll": "tutti",
+    "FilterArrayAny": "qualsiasi",
     "Or": "O",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copia negli appunti",
@@ -123,7 +126,22 @@
     "Copied": "Copiato",
     "Title": "Titolo",
     "HideArchived": "Nascondi archiviato",
-    "RemoveRelation": "Rimuovere relazione",  
-    "RemoveRelationConfirmation": "Vuoi rimuovere la relazione?"
+    "RemoveRelation": "Rimuovere relazione",
+    "RemoveRelationConfirmation": "Vuoi rimuovere la relazione?",
+    "MasterDetail": "Master-detail",
+    "Tree": "Albero",
+    "Document": "Documento",
+    "Loading": "Caricamento...",
+    "NoRelations": "Nessuna relazione",
+    "ReadOnlyWarningTitle": "✨ Demo ospite anonimo",
+    "ReadOnlyWarningMessage": "Sei in modalità di sola lettura. Scegli il tuo percorso: Unisciti a questo spazio per collaborare (come ospite) o crea il tuo spazio per gestire completamente i progetti — task, scadenze, team!",
+    "ReadOnlyJoinWorkspace": "Unisciti allo spazio",
+    "ReadOnlySignUp": "Crea spazio",
+    "PermissionWarningTitle": "✨ Migliora il tuo accesso!",
+    "PermissionWarningMessage": "Il tuo ruolo attuale ha autorizzazioni limitate. Per sbloccare questa e altre funzionalità avanzate, chiedi all'amministratore del tuo spazio di lavoro di aggiornare il tuo livello di accesso!",
+    "Icon": "Icona",
+    "Color": "Colore",
+    "AutomationOnly": "Solo automazione",
+    "CopyLink": "Copia link"
   }
 }

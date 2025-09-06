@@ -41,15 +41,15 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
 
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
   $: if (alias !== undefined) {
     filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: alias }, (result) => {
-      myFilteredViews = result.filter((p) => p.users.includes(me))
-      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
+      myFilteredViews = result.filter((p) => p.users.includes(myAcc.uuid))
+      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(myAcc.uuid))
 
       const location = getLocation()
       if (location.query?.filterViewId) {
@@ -139,7 +139,7 @@
     const setPublic = await switchPublicAction(filteredView, originalEvent)
     const hide = await hideAction(filteredView)
 
-    if (filteredView.createdBy === me) {
+    if (filteredView.createdBy !== undefined && myAcc.socialIds.includes(filteredView.createdBy)) {
       const remove = await removeAction(filteredView)
       return [...setPublic, ...rename, ...remove, ...copyUrl]
     }
@@ -152,7 +152,7 @@
         icon: view.icon.Archive,
         label: view.string.Hide,
         action: async (ctx: any, evt: Event) => {
-          await client.update(object, { $pull: { users: me } })
+          await client.update(object, { $pull: { users: myAcc.uuid } })
         }
       }
     ]
@@ -239,7 +239,7 @@
       const pushMeToFV = async (id: Ref<FilteredView>): Promise<void> => {
         if (id === undefined) return
         const filteredView = filteredViewsIdMap.get(id)
-        if (filteredView) await client.update(filteredView, { $push: { users: me } })
+        if (filteredView) await client.update(filteredView, { $push: { users: myAcc.uuid } })
       }
       const value = availableFilteredViews.map((p) => ({
         id: p._id,

@@ -2,10 +2,10 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeViewlet, makeViewletKey, setActiveViewletId } from '../utils'
   import { resolvedLocationStore, Switcher } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import core, { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
   import { deepEqual } from 'fast-equals'
+  import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: Array<WithLookup<Viewlet>> = []
@@ -14,6 +14,7 @@
   export let loading = true
   export let hidden = false
   export let ignoreFragment = false
+  export let defaultViewletDescriptor: Ref<ViewletDescriptor> | undefined = undefined
 
   const query = createQuery()
 
@@ -47,9 +48,12 @@
     viewlets: Array<WithLookup<Viewlet>>,
     activeViewlet: Record<string, Ref<Viewlet> | null>,
     key: string
-  ) {
+  ): void {
     if (viewlets == null || viewlets.length === 0) return
-    const newViewlet = viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ?? viewlets[0]
+    const newViewlet =
+      viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ??
+      viewlets.find((viewlet) => viewlet.descriptor === defaultViewletDescriptor) ??
+      viewlets[0]
     if (viewlet?._id !== newViewlet?._id || !deepEqual(viewlet.config, newViewlet.config)) {
       viewlet = newViewlet
       setActiveViewletId(newViewlet._id)
@@ -61,7 +65,8 @@
     return {
       id: views._id,
       icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
+      tooltip: views.$lookup?.descriptor?.label,
+      label: views.title
     }
   })
 

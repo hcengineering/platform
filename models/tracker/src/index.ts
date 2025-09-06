@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
-import { AccountRole, type Ref, type Status } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, type Ref, type Status } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -25,14 +25,13 @@ import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import pluginState, { trackerId } from '@hcengineering/tracker'
+import pluginState, { type Issue, trackerId } from '@hcengineering/tracker'
 
 import type { TaskStatusFactory } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { createActions as defineActions } from './actions'
 import tracker from './plugin'
 import { definePresenters } from './presenters'
-import { definePermissions } from './permissions'
 import {
   DOMAIN_TRACKER,
   TClassicProjectTypeData,
@@ -503,7 +502,8 @@ export function createModel (builder: Builder): void {
 
   defineSortAndGrouping(builder)
 
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Issue>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: tracker.class.Issue,
     fields: ['createdBy', 'assignee']
   })
 
@@ -709,7 +709,6 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  definePermissions(builder)
   defineSpaceType(builder)
 }
 

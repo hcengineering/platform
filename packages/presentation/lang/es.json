@@ -6,6 +6,7 @@
     "Save": "Guardar",
     "Saved": "Guardado...",
     "Download": "Descargar",
+    "DownloadOriginal": "Descargar original",
     "Delete": "Eliminar",
     "Close": "Cerrar",
     "NotSelected": "No seleccionado",
@@ -29,6 +30,7 @@
     "MakePrivate": "Hacer privado",
     "MakePrivateDescription": "Solo los miembros pueden verlo",
     "Created": "Creado",
+    "Selected": "Seleccionado",
     "NoResults": "No hay resultados para mostrar",
     "Next": "Siguiente",
     "FailedToPreview": "Error al previsualizar",
@@ -38,7 +40,20 @@
     "DrawingHistory": "Historia de garabatos",
     "ColorAdd": "Añadir ajuste preestablecido de color",
     "ColorRemove": "Eliminar el ajuste preestablecido de color",
-    "ColorReset": "Restablecer ajustes preestablecidos de color"
+    "ColorReset": "Restablecer ajustes preestablecidos de color",
+    "Copy": "Copiar",
+    "DocumentUrlCopied": "¡Copiado!",
+    "CopyLink": "Copiar enlace",
+    "AccessDenied": "El objeto no existe o no tienes permiso para acceder a él.",
+    "UnableToFollowMention": "No se puede abrir el objeto mencionado",
+    "Undo": "Deshacer",
+    "Redo": "Rehacer",
+    "ClearCanvas": "Limpiar lienzo",
+    "PenTool": "Herramienta lápiz",
+    "EraserTool": "Herramienta borrador",
+    "PanTool": "Herramienta mover",
+    "TextTool": "Herramienta texto",
+    "PaletteManagementMenu": "Gestionar preajustes de color"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"

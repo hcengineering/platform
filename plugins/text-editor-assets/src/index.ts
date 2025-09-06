@@ -28,6 +28,7 @@ loadMetadata(textEditor.icon, {
   Link: `${icons}#link`,
   ListNumber: `${icons}#listNumber`,
   ListBullet: `${icons}#listBullet`,
+  ListTodo: `${icons}#listTodo`,
   Quote: `${icons}#quote`,
   Code: `${icons}#code`,
   CodeBlock: `${icons}#codeBlock`,
@@ -45,5 +46,7 @@ loadMetadata(textEditor.icon, {
   MergeCells: `${icons}#union`,
   SplitCells: `${icons}#divide`,
   Brush: `${icons}#brush`,
-  TextStyle: `${icons}#textStyle`
+  TextStyle: `${icons}#textStyle`,
+  LinkPreview: `${icons}#link`,
+  EmbedPreview: `${icons}#linkEmbed`
 })

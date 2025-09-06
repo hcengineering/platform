@@ -16,6 +16,7 @@
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import documentsPlugin, {
+  type ControlledDocument,
   documentsId,
   DocumentState,
   type Document,
@@ -37,7 +38,7 @@ import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import textEditor from '@hcengineering/text-editor'
 
-import { AccountRole, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type Action } from '@hcengineering/view'
 import { definePermissions } from './permissions'
 import documents from './plugin'
@@ -104,10 +105,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(documents.class.ControlledDocument, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: documents.function.ControlledDocumentTitleProvider
-  })
-
-  builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: documents.function.DocumentMetaTitleProvider
   })
 
   builder.mixin(documents.class.DocumentApprovalRequest, core.class.Class, view.mixin.ObjectPresenter, {
@@ -412,6 +409,10 @@ export function createModel (builder: Builder): void {
     presenter: documents.component.DocumentMetaPresenter
   })
 
+  builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: documents.function.DocumentMetaTitleProvider
+  })
+
   builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.LinkProvider, {
     encode: documents.function.GetDocumentMetaLinkFragment
   })
@@ -634,8 +635,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: documents.class.Document,
-    fullTextSummary: true,
-    childProcessingAllowed: true
+    fullTextSummary: true
   })
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.ClassFilters, {
@@ -977,7 +977,8 @@ export function defineNotifications (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
-  builder.mixin(documents.class.ControlledDocument, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<ControlledDocument>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.ControlledDocument,
     fields: ['author', 'owner', 'reviewers', 'approvers', 'coAuthors']
   })
 
@@ -1101,9 +1102,7 @@ export function defineSearch (builder: Builder): void {
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: documents.class.DocumentMeta,
-    fullTextSummary: true,
-    childProcessingAllowed: true,
-    propagate: []
+    fullTextSummary: true
   })
 
   builder.createDoc(
@@ -1125,6 +1124,7 @@ export function defineSearch (builder: Builder): void {
 export function defineTextActions (builder: Builder): void {
   // Comment category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    tags: ['text'],
     action: documents.function.Comment,
     icon: chunter.icon.Chunter,
     visibilityTester: documents.function.IsCommentVisible,

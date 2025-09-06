@@ -40,6 +40,7 @@
     initialProps = Object.assign(initialProps, props)
   }
   const WINDOW_PADDING = 1
+  const ALLOW_ANIMATION = false // Fullsize animation
 
   interface PopupParams {
     x: number
@@ -51,7 +52,7 @@
   let modalHTML: HTMLElement
   let componentInstance: any
   let docSize: boolean = false
-  let fullSize: boolean = false
+  let fullSize: boolean = initialProps?.fullSize ?? false
 
   let clientWidth = -1
   let clientHeight = -1
@@ -282,7 +283,7 @@
   id={popup.options.refId}
   class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : !showing ? 'preShow' : 'startShow'}"
   class:testing
-  class:anim={(element === 'float' || element === 'centered') && !testing && !drag}
+  class:anim={(element === 'float' || element === 'centered') && !testing && !drag && ALLOW_ANIMATION}
   bind:this={modalHTML}
   style={`z-index: ${zIndex};`}
   style:top={options?.props?.top}
@@ -296,6 +297,8 @@
   style:min-width={options?.props?.minWidth}
   style:min-height={options?.props?.minHeight}
   style:transform={options?.props?.transform}
+  data-block-editor-blur="true"
+  data-block-cursor-update="true"
   use:resizeObserver={(element) => {
     clientWidth = element.clientWidth
     clientHeight = element.clientHeight

@@ -20,28 +20,47 @@ import {
   yDocCopyXmlField,
   yDocFromBuffer
 } from '@hcengineering/collaboration'
+import documents from '@hcengineering/controlled-documents'
 import core, {
+  type AnyAttribute,
   type Blob,
+  type Class,
+  DOMAIN_TX,
   type Doc,
+  type Domain,
   type Hierarchy,
+  type LowLevelStorage,
   type MeasureContext,
+  MeasureMetricsContext,
+  RateLimiter,
   type Ref,
+  SortingOrder,
+  type Tx,
   type TxCreateDoc,
   type TxUpdateDoc,
-  type WorkspaceId,
-  DOMAIN_TX,
-  type LowLevelStorage,
-  SortingOrder,
+  type WorkspaceIds,
+  type WorkspaceUuid,
+  groupByArray,
+  isArchivingMode,
+  isDeletingMode,
   makeCollabId,
   makeCollabYdocId,
-  makeDocCollabId
+  makeDocCollabId,
+  systemAccountUuid
 } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
-import documents from '@hcengineering/controlled-documents'
-import { DOMAIN_DOCUMENT } from '@hcengineering/model-document'
 import { DOMAIN_DOCUMENTS } from '@hcengineering/model-controlled-documents'
-import { type StorageAdapter } from '@hcengineering/server-core'
+import { DOMAIN_DOCUMENT } from '@hcengineering/model-document'
+import { getDBClient } from '@hcengineering/postgres'
+import { withRetry } from '@hcengineering/retry'
+import { getAccountClient } from '@hcengineering/server-client'
+import { type PipelineFactory, type StorageAdapter, createDummyStorageAdapter } from '@hcengineering/server-core'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
+import { generateToken } from '@hcengineering/server-token'
+import { isEmptyMarkup } from '@hcengineering/text-core'
+
 import { type Db } from 'mongodb'
+import { type Sql } from 'postgres'
 
 export interface RestoreWikiContentParams {
   dryRun: boolean
@@ -50,7 +69,7 @@ export interface RestoreWikiContentParams {
 export async function restoreWikiContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -75,17 +94,17 @@ export async function restoreWikiContentMongo (
 
       const correctCollabId = { objectClass: doc._class, objectId: doc._id, objectAttr: 'content' }
 
-      const wrongYdocId = await findWikiDocYdocName(ctx, db, workspaceId, doc._id)
+      const wrongYdocId = await findWikiDocYdocName(ctx, db, doc._id)
       if (wrongYdocId === undefined) {
         console.log('current ydoc not found', doc._id)
         continue
       }
 
-      const stat = storageAdapter.stat(ctx, workspaceId, wrongYdocId)
+      const stat = storageAdapter.stat(ctx, wsIds, wrongYdocId)
       if (stat === undefined) continue
 
-      const ydoc1 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, correctCollabId)
-      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, wrongYdocId)
+      const ydoc1 = await loadCollabYdoc(ctx, storageAdapter, wsIds, correctCollabId)
+      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, wsIds, wrongYdocId)
 
       if (ydoc1 !== undefined && ydoc1.share.has('content')) {
         // There already is content, we should skip the document
@@ -104,7 +123,7 @@ export async function restoreWikiContentMongo (
             yDocCopyXmlField(ydoc2, 'description', 'content')
           }
 
-          await saveCollabYdoc(ctx, storageAdapter, workspaceId, correctCollabId, ydoc2)
+          await saveCollabYdoc(ctx, storageAdapter, wsIds, correctCollabId, ydoc2)
         }
         restoredCnt++
       } catch (err: any) {
@@ -120,7 +139,6 @@ export async function restoreWikiContentMongo (
 export async function findWikiDocYdocName (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
   doc: Ref<Document>
 ): Promise<Ref<Blob> | undefined> {
   const updateContentTx = await db.collection<TxUpdateDoc<Document & { content: string }>>(DOMAIN_TX).findOne(
@@ -199,7 +217,7 @@ export interface RestoreControlledDocContentParams {
 export async function restoreControlledDocContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -221,15 +239,7 @@ export async function restoreControlledDocContentMongo (
       const doc = await iterator.next()
       if (doc === null) break
 
-      const restored = await restoreControlledDocContentForDoc(
-        ctx,
-        db,
-        workspaceId,
-        storageAdapter,
-        params,
-        doc,
-        'content'
-      )
+      const restored = await restoreControlledDocContentForDoc(ctx, db, wsIds, storageAdapter, params, doc, 'content')
       if (restored) {
         restoredCnt++
       }
@@ -248,7 +258,7 @@ export async function restoreControlledDocContentMongo (
 export async function restoreControlledDocContentForDoc (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams,
   doc: Doc,
@@ -273,7 +283,7 @@ export async function restoreControlledDocContentForDoc (
   const ydocId = makeCollabYdocId(makeDocCollabId(doc, attribute))
 
   // Ensure that we don't have new content in storage
-  const stat = await storageAdapter.stat(ctx, workspaceId, ydocId)
+  const stat = await storageAdapter.stat(ctx, wsIds, ydocId)
   if (stat !== undefined) {
     console.log('content already restored', doc._class, doc._id, ydocId)
     return false
@@ -282,15 +292,15 @@ export async function restoreControlledDocContentForDoc (
   console.log('restoring content', doc._id, currentYdocId, '-->', ydocId)
   if (!params.dryRun) {
     try {
-      const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
+      const stat = await storageAdapter.stat(ctx, wsIds, currentYdocId)
       if (stat === undefined) {
         console.log('no content to restore', doc._class, doc._id, ydocId)
         return false
       }
 
-      const data = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+      const data = await storageAdapter.read(ctx, wsIds, currentYdocId)
       const buffer = Buffer.concat(data as any)
-      await storageAdapter.put(ctx, workspaceId, ydocId, buffer, 'application/ydoc', buffer.length)
+      await storageAdapter.put(ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
     } catch (err: any) {
       console.error('failed to restore content for', doc._class, doc._id, err)
       return false
@@ -300,17 +310,14 @@ export async function restoreControlledDocContentForDoc (
   return true
 }
 
-export async function restoreMarkupRefs (
+export async function restoreMarkupRefsMongo (
   ctx: MeasureContext,
-  lowLevelStorage: LowLevelStorage,
-  workspaceId: WorkspaceId,
+  db: Db,
+  wsIds: WorkspaceIds,
   hierarchy: Hierarchy,
-  storageAdapter: StorageAdapter,
-  dryRun: boolean
+  storageAdapter: StorageAdapter
 ): Promise<void> {
   const classes = hierarchy.getDescendants(core.class.Doc)
-  let updatedCount = 0
-  const curHash = Date.now().toString(16) // Current hash value
   for (const _class of classes) {
     const domain = hierarchy.findDomain(_class)
     if (domain === undefined) continue
@@ -323,60 +330,264 @@ export async function restoreMarkupRefs (
     if (attributes.length === 0) continue
     if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
 
-    ctx.info('processing', { _class, domain, attributes: attributes.map((p) => p.name) })
+    ctx.info('processing', { _class, attributes: attributes.map((p) => p.name) })
 
-    const iterator = await lowLevelStorage.traverse(domain, { _class })
+    const collection = db.collection<Doc>(domain)
+    const iterator = collection.find({ _class })
     try {
       while (true) {
-        // next's count param doesn't work for CR. Always returns all rows regardless of count param.
-        const docs = await iterator.next(20)
-        if (docs === null) {
+        const doc = await iterator.next()
+        if (doc === null) {
           break
         }
-        for (const doc of docs) {
-          if (doc === null) continue
 
-          for (const attribute of attributes) {
-            const isMixin = hierarchy.isMixin(attribute.attributeOf)
+        for (const attribute of attributes) {
+          const isMixin = hierarchy.isMixin(attribute.attributeOf)
 
-            const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
+          const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
 
-            const value = isMixin
-              ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
-              : ((doc as any)[attribute.name] as string)
+          const value = isMixin
+            ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+            : ((doc as any)[attribute.name] as string)
 
-            if (value != null && value !== '') {
-              continue
-            }
-
-            const collabId = makeCollabId(doc._class, doc._id, attribute.name)
-            const ydocId = makeCollabYdocId(collabId)
-
-            try {
-              // Note: read operation throws if not found so it won't update docs for which
-              // there's no blob.
-              const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
-              if (!dryRun) {
-                const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
-
-                const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
-                await lowLevelStorage.rawUpdate(domain, { _id: doc._id }, {
-                  [attributeName]: jsonId,
-                  '%hash%': curHash
-                } as any)
-              }
-
-              ctx.info('Restored empty markup ref', { _class, attributeName, collabId, ydocId })
-              updatedCount++
-            } catch (err: any) {
-              ctx.error('Failed to restore markup ref', { _class, attributeName, collabId, ydocId, err })
-            }
+          if (typeof value === 'string') {
+            continue
           }
+
+          const collabId = makeCollabId(doc._class, doc._id, attribute.name)
+          const ydocId = makeCollabYdocId(collabId)
+
+          try {
+            const buffer = await storageAdapter.read(ctx, wsIds, ydocId)
+            const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+
+            const jsonId = await saveCollabJson(ctx, storageAdapter, wsIds, collabId, ydoc)
+            await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })
+          } catch {}
         }
       }
     } finally {
       await iterator.close()
     }
   }
-  ctx.info('Restored markup refs', { updatedCount })
+}
+
+export async function restoreMarkupRefs (
+  dbUrl: string,
+  txes: Tx[],
+  storageAdapter: StorageAdapter,
+  region: string | null
+): Promise<void> {
+  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
+  const ctx = new MeasureMetricsContext('restore-markup-ref', {})
+
+  const accountClient = getAccountClient(token)
+  ctx.info('fetching workspaces in region', { region })
+  const workspaces = await accountClient.listWorkspaces()
+  const workspacesById = workspaces.reduce((map, ws) => map.set(ws.uuid, ws), new Map())
+  ctx.info('found workspaces in region', { region, count: workspaces.length })
+
+  const factory: PipelineFactory = createBackupPipeline(ctx, dbUrl, txes, {
+    externalStorage: createDummyStorageAdapter(),
+    usePassedCtx: true
+  })
+
+  const pg = getDBClient(dbUrl)
+  const pgClient = await pg.getClient()
+
+  try {
+    ctx.info('fetching workspaces to fix', { region })
+    const targets = await pgClient<{ workspaceId: WorkspaceUuid, _class: Ref<Class<Doc>> }[]>`
+      SELECT "workspaceId", _class, COUNT(*)
+      FROM task
+      WHERE data->>'description' LIKE '{%'
+      GROUP BY "workspaceId", _class
+    `
+
+    const workspaceTargets = groupByArray(targets, (it) => it.workspaceId)
+    ctx.info('found workspaces to fix', { region, count: workspaceTargets.size })
+
+    for (const [wsUuid, targets] of workspaceTargets) {
+      const workspace = workspacesById.get(wsUuid)
+      if (workspace === undefined) {
+        ctx.warn('workspace not found', { wsUuid, region })
+        continue
+      }
+
+      const { uuid, name, url, mode } = workspace
+      if (isArchivingMode(mode) || isDeletingMode(mode)) {
+        ctx.warn('skipping workspace', { uuid, name, url, region, mode })
+        continue
+      }
+
+      const classes = targets.map((it) => it._class)
+      ctx.info('processing workspace', { uuid, name, url, region, classes })
+
+      try {
+        const pipeline = await factory(ctx, workspace, createEmptyBroadcastOps(), null)
+
+        try {
+          const { hierarchy, lowLevelStorage } = pipeline.context
+          if (lowLevelStorage === undefined) {
+            ctx.error('Low level storage not available', { region })
+            continue
+          }
+
+          for (const _class of classes) {
+            await restoreMarkupRefsForClass(
+              ctx,
+              _class,
+              workspace,
+              hierarchy,
+              lowLevelStorage,
+              storageAdapter,
+              pgClient
+            )
+          }
+        } finally {
+          await pipeline.close()
+        }
+      } catch (err: any) {
+        ctx.error('failed to process workspace', { err, uuid, name, url, region })
+      }
+    }
+  } finally {
+    pg.close()
+  }
+}
+
+async function restoreMarkupRefsForClass (
+  ctx: MeasureContext,
+  _class: Ref<Class<Doc>>,
+  wsIds: WorkspaceIds,
+  hierarchy: Hierarchy,
+  lowLevelStorage: LowLevelStorage,
+  storageAdapter: StorageAdapter,
+  pgClient: Sql
+): Promise<void> {
+  const workspace = wsIds.uuid
+  const rateLimiter = new RateLimiter(10)
+
+  const domain = hierarchy.findDomain(_class)
+  if (domain === undefined) return
+
+  const attributes = findCollabAttributes(hierarchy, _class)
+  if (attributes.length === 0) return
+  if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) return
+
+  const query = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
+  const iterator = await lowLevelStorage.traverse<Doc>(domain, query)
+
+  let processed = 0
+
+  try {
+    while (true) {
+      const docs = await iterator.next(100)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      for (const doc of docs) {
+        await rateLimiter.add(async () => {
+          try {
+            await withRetry(() =>
+              restoreMarkupRefsForDoc(
+                ctx,
+                doc,
+                domain,
+                attributes,
+                wsIds,
+                hierarchy,
+                lowLevelStorage,
+                storageAdapter,
+                pgClient
+              )
+            )
+            processed++
+          } catch (err: any) {
+            ctx.error('failed to restore markup refs', { doc: doc._id, class: doc._class, workspace })
+          }
+        })
+      }
+
+      await rateLimiter.waitProcessing()
+      ctx.info('...', { _class, workspace, processed })
+    }
+
+    await rateLimiter.waitProcessing()
+    ctx.info('done', { _class, workspace, processed })
+  } finally {
+    await iterator.close()
+  }
+}
+
+async function restoreMarkupRefsForDoc (
+  ctx: MeasureContext,
+  doc: Doc,
+  domain: Domain,
+  attributes: AnyAttribute[],
+  wsIds: WorkspaceIds,
+  hierarchy: Hierarchy,
+  lowLevelStorage: LowLevelStorage,
+  storageAdapter: StorageAdapter,
+  pgClient: Sql
+): Promise<void> {
+  const workspace = wsIds.uuid
+
+  for (const attribute of attributes) {
+    const value = hierarchy.isMixin(attribute.attributeOf)
+      ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+      : ((doc as any)[attribute.name] as string)
+
+    if (value == null || value === '') continue
+    if (!value.startsWith('{')) continue
+
+    const attributeName = hierarchy.isMixin(attribute.attributeOf)
+      ? `${attribute.attributeOf}.${attribute.name}`
+      : attribute.name
+
+    if (isEmptyMarkup(value)) {
+      // If the value is empty, we can just remove the attribute
+      await lowLevelStorage.rawUpdate(domain, { _id: doc._id }, { [attributeName]: null })
+    } else {
+      // Otherwise try to find the most recent blob for this attribute
+      const blobId = await findRecentBlobId(pgClient, workspace, doc, attribute)
+      if (blobId !== undefined) {
+        // If found, we need to update the document with the blobId
+        ctx.info('updating blob', { doc: doc._id, class: doc._class, workspace, attribute: attribute.name, blobId })
+        await lowLevelStorage.rawUpdate(domain, { _id: doc._id }, { [attributeName]: blobId })
+      } else {
+        // If not found, and the content is not empty, we need to save it and update the document with the blobId
+        const collabId = makeDocCollabId(doc, attribute.name)
+        const blobId = await withRetry(() => saveCollabJson(ctx, storageAdapter, wsIds, collabId, value))
+        await lowLevelStorage.rawUpdate(domain, { _id: doc._id }, { [attributeName]: blobId })
+        ctx.info('uploading blob', { doc: doc._id, class: doc._class, workspace, attribute: attribute.name, blobId })
+      }
+    }
+  }
+}
+
+function findCollabAttributes (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): AnyAttribute[] {
+  const allAttributes = hierarchy.getAllAttributes(_class)
+  return Array.from(allAttributes.values()).filter((attribute) => {
+    return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
+  })
+}
+
+async function findRecentBlobId (
+  sql: Sql,
+  workspace: string,
+  doc: Doc,
+  attribute: AnyAttribute
+): Promise<string | undefined> {
+  const prefix = `${doc._id}-${attribute.name}-%`
+
+  const [blobId] = await sql`
+    SELECT name
+    FROM blob.blob
+    WHERE workspace = ${workspace} AND name LIKE ${prefix} AND deleted_at IS NULL
+    ORDER BY created_at DESC
+    LIMIT 1
+  `
+  return blobId?.name
 }

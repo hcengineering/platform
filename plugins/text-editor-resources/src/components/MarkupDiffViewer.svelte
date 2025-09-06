@@ -16,15 +16,15 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { MarkupNode, ReferenceNode, CommentNode, jsonToPmNode } from '@hcengineering/text'
+  import { jsonToPmNode, MarkupNode } from '@hcengineering/text'
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
 
+  import { getEditorKit } from '../../src/kits/editor-kit'
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: MarkupNode
   export let comparedVersion: MarkupNode | undefined = undefined
@@ -55,6 +55,7 @@
     }
   }
 
+  // TODO: should be implemented as regular plugin
   const DecorationExtension = Extension.create({
     addProseMirrorPlugins () {
       return [
@@ -76,19 +77,17 @@
   }
 
   onMount(async () => {
+    const kit = await getEditorKit({
+      objectClass,
+      commentNode: true
+    })
+
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       content,
       editable: false,
-      extensions: [
-        (await getEditorKit()).configure({
-          objectClass
-        }),
-        ReferenceNode,
-        DecorationExtension,
-        CommentNode
-      ],
+      extensions: [kit, DecorationExtension],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor

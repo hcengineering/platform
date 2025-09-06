@@ -15,7 +15,6 @@
 
 import type { KeysByType } from 'simplytyped'
 import type {
-  Account,
   Arr,
   AttachedDoc,
   Class,
@@ -23,6 +22,8 @@ import type {
   Doc,
   Domain,
   Mixin,
+  OperationDomain,
+  PersonId,
   PropertyType,
   Ref,
   Space,
@@ -41,6 +42,7 @@ import { generateId } from './utils'
  */
 export interface Tx extends Doc {
   objectSpace: Ref<Space> // space where transaction will operate
+  meta?: Record<string, string | number | boolean> // meta information about transaction, non persisted to final DB's
 }
 
 /**
@@ -62,6 +64,10 @@ export enum WorkspaceEvent {
 export interface TxWorkspaceEvent<T = any> extends Tx {
   event: WorkspaceEvent
   params: T
+}
+export interface TxDomainEvent<T = any> extends Tx {
+  domain: OperationDomain
+  event: T
 }
 
 /**
@@ -399,10 +405,16 @@ export abstract class TxProcessor implements WithTx {
     return rawDoc
   }
 
-  static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined {
+  static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined | null {
     let doc: Doc
+    const deleteTx = txes.find((tx) => tx._class === core.class.TxRemoveDoc)
+    if (deleteTx !== undefined) {
+      return null
+    }
     const createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    if (createTx === undefined) return
+    if (createTx === undefined) {
+      return
+    }
     doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
     for (const tx of txes) {
       if (tx._class === core.class.TxUpdateDoc) {
@@ -452,7 +464,7 @@ export abstract class TxProcessor implements WithTx {
 export class TxFactory {
   private readonly txSpace: Ref<Space>
   constructor (
-    readonly account: Ref<Account>,
+    readonly account: PersonId,
     readonly isDerived: boolean = false
   ) {
     this.txSpace = isDerived ? core.space.DerivedTx : core.space.Tx
@@ -464,7 +476,7 @@ export class TxFactory {
     attributes: Data<T>,
     objectId?: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxCreateDoc<T> {
     return {
       _id: generateId(),
@@ -487,7 +499,7 @@ export class TxFactory {
     collection: string,
     tx: TxCUD<P>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxCUD<P> {
     return {
       ...tx,
@@ -506,7 +518,7 @@ export class TxFactory {
     operations: DocumentUpdate<T>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxUpdateDoc<T> {
     return {
       _id: generateId(),
@@ -527,7 +539,7 @@ export class TxFactory {
     space: Ref<Space>,
     objectId: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxRemoveDoc<T> {
     return {
       _id: generateId(),
@@ -548,7 +560,7 @@ export class TxFactory {
     mixin: Ref<Mixin<M>>,
     attributes: MixinUpdate<D, M>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxMixin<D, M> {
     return {
       _id: generateId(),
@@ -574,7 +586,7 @@ export class TxFactory {
     notify: boolean = true,
     extraNotify: Ref<Class<Doc>>[] = [],
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxApplyIf {
     return {
       _id: generateId(),

@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,32 +13,23 @@
 // limitations under the License.
 //
 
-import { Account, type Mixin, Ref } from '@hcengineering/core'
+import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { ChatMessage } from '@hcengineering/chunter'
 
-export * from './types'
 export * from './rest'
 
 export const aiBotId = 'ai-bot' as Plugin
 
 export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
-
-export interface TransferredMessage extends ChatMessage {
-  messageId: Ref<ChatMessage>
-  parentMessageId?: Ref<ChatMessage>
-}
+export const aiBotEmailSocialKey = buildSocialIdString({
+  type: SocialIdType.EMAIL,
+  value: aiBotAccountEmail
+})
 
 const aiBot = plugin(aiBotId, {
   metadata: {
     EndpointURL: '' as Metadata<string>
-  },
-  mixin: {
-    TransferredMessage: '' as Ref<Mixin<TransferredMessage>>
-  },
-  account: {
-    AIBot: '' as Ref<Account>
   }
 })
 

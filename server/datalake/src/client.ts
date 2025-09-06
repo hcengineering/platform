@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
-import FormData from 'form-data'
-import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
+import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
 import { Readable } from 'stream'
 
 import { DatalakeError, NetworkError, NotFoundError } from './error'
@@ -25,7 +23,7 @@ import { unwrapETag } from './utils'
 export interface ObjectMetadata {
   lastModified: number
   name: string
-  type: string
+  contentType: string
   etag: string
   size?: number
 }
@@ -79,6 +77,12 @@ export interface R2UploadParams {
 }
 
 /** @public */
+export interface WorkspaceStats {
+  count: number
+  size: number
+}
+
+/** @public */
 export class DatalakeClient {
   private readonly headers: Record<string, string>
 
@@ -89,18 +93,25 @@ export class DatalakeClient {
     this.headers = { Authorization: 'Bearer ' + token }
   }
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
-    const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<WorkspaceStats> {
+    const path = `/stats/${workspace}`
+    const url = new URL(concatLink(this.endpoint, path))
+    const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
+    return (await response.json()) as WorkspaceStats
   }
 
   async listObjects (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     cursor: string | undefined,
     limit: number = 100
   ): Promise<ListObjectOutput> {
-    const path = `/blob/${workspace.name}`
+    const path = `/blob/${workspace}`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('limit', String(limit))
     if (cursor !== undefined) {
@@ -111,15 +122,15 @@ export class DatalakeClient {
     return (await response.json()) as ListObjectOutput
   }
 
-  async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
+  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
     let response
     try {
       response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
     } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        console.error('failed to get object', { workspace, objectName, err })
+      if (err.name === 'NotFoundError') {
+        return undefined
       }
       throw err
     }
@@ -129,16 +140,16 @@ export class DatalakeClient {
       throw new DatalakeError('Missing response body')
     }
 
-    return Readable.from(response.body)
+    return Readable.fromWeb(response.body as any)
   }
 
   async getPartialObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number
-  ): Promise<Readable> {
+  ): Promise<Readable | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     const headers = {
       ...this.headers,
@@ -149,8 +160,8 @@ export class DatalakeClient {
     try {
       response = await fetchSafe(ctx, url, { headers })
     } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        console.error('failed to get partial object', { workspace, objectName, err })
+      if (err.name === 'NotFoundError') {
+        return undefined
       }
       throw err
     }
@@ -160,12 +171,12 @@ export class DatalakeClient {
       throw new DatalakeError('Missing response body')
     }
 
-    return Readable.from(response.body)
+    return Readable.fromWeb(response.body as any)
   }
 
   async statObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string
   ): Promise<StatObjectOutput | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
@@ -180,7 +191,6 @@ export class DatalakeClient {
       if (err.name === 'NotFoundError') {
         return
       }
-      console.error('failed to stat object', { workspace, objectName, err })
       throw err
     }
 
@@ -196,7 +206,7 @@ export class DatalakeClient {
     }
   }
 
-  async deleteObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  async deleteObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     try {
       await fetchSafe(ctx, url, {
@@ -205,7 +215,6 @@ export class DatalakeClient {
       })
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
-        console.error('failed to delete object', { workspace, objectName, err })
         throw err
       }
     }
@@ -213,7 +222,7 @@ export class DatalakeClient {
 
   async putObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -230,47 +239,45 @@ export class DatalakeClient {
       }
     }
 
-    try {
-      if (size === undefined || size < 64 * 1024 * 1024) {
-        return await ctx.with('direct-upload', {}, (ctx) =>
-          this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
-        )
-      } else {
-        return await ctx.with('multipart-upload', {}, (ctx) =>
-          this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size })
-        )
-      }
-    } catch (err) {
-      console.error('failed to put object', { workspace, objectName, err })
-      throw err
+    if (size === undefined || size < 64 * 1024 * 1024) {
+      return await ctx.with(
+        'direct-upload',
+        {},
+        (ctx) => this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size }),
+        { workspace, objectName }
+      )
+    } else {
+      return await ctx.with(
+        'multipart-upload',
+        {},
+        (ctx) => this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size }),
+        { workspace, objectName }
+      )
     }
   }
 
   async uploadWithFormData (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
   ): Promise<ObjectMetadata> {
-    const path = `/upload/form-data/${workspace.name}`
+    const path = `/upload/form-data/${workspace}`
     const url = concatLink(this.endpoint, path)
 
+    const buffer = await toBuffer(stream)
+    const file = new File([buffer], objectName, { type: params.type, lastModified: params.lastModified })
+
     const form = new FormData()
-    const options: FormData.AppendOptions = {
-      filename: objectName,
-      contentType: params.type,
-      knownLength: params.size,
-      header: {
-        'Last-Modified': params.lastModified
-      }
-    }
-    form.append('file', stream, options)
+    form.append('file', file)
 
     const response = await fetchSafe(ctx, url, {
       method: 'POST',
-      body: form,
-      headers: { ...this.headers }
+      body: form as unknown as BodyInit,
+      headers: {
+        ...this.headers
+      }
     })
 
     const result = (await response.json()) as BlobUploadResult[]
@@ -289,7 +296,7 @@ export class DatalakeClient {
 
   async uploadWithMultipart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -319,7 +326,7 @@ export class DatalakeClient {
 
   async uploadFromS3 (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     params: {
       url: string
@@ -327,7 +334,7 @@ export class DatalakeClient {
       secretAccessKey: string
     }
   ): Promise<void> {
-    const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/s3/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
@@ -340,8 +347,8 @@ export class DatalakeClient {
     })
   }
 
-  async getS3UploadParams (ctx: MeasureContext, workspace: WorkspaceId): Promise<R2UploadParams> {
-    const path = `/upload/s3/${workspace.name}`
+  async getS3UploadParams (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<R2UploadParams> {
+    const path = `/upload/s3/${workspace}`
     const url = concatLink(this.endpoint, path)
 
     const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
@@ -351,13 +358,13 @@ export class DatalakeClient {
 
   async createFromS3 (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     params: {
       filename: string
     }
   ): Promise<void> {
-    const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/s3/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
@@ -374,11 +381,11 @@ export class DatalakeClient {
 
   private async multipartUploadStart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     params: UploadObjectParams
   ): Promise<MultipartUpload> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     try {
@@ -398,16 +405,18 @@ export class DatalakeClient {
 
   private async multipartUploadPart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload,
     partNumber: number,
-    body: Readable | Buffer | string
+    data: Readable | Buffer | string
   ): Promise<MultipartUploadPart> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/part`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/part`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.set('uploadId', multipart.uploadId)
     url.searchParams.set('partNumber', partNumber.toString())
+
+    const body = data instanceof Readable ? (Readable.toWeb(data) as ReadableStream) : data
 
     try {
       const response = await fetchSafe(ctx, url, {
@@ -424,12 +433,12 @@ export class DatalakeClient {
 
   private async multipartUploadComplete (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload,
     parts: MultipartUploadPart[]
   ): Promise<ObjectMetadata> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/complete`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/complete`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.set('uploadId', multipart.uploadId)
 
@@ -451,11 +460,11 @@ export class DatalakeClient {
 
   private async multipartUploadAbort (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload
   ): Promise<void> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/abort`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/abort`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.set('uploadId', multipart.uploadId)
 
@@ -465,6 +474,22 @@ export class DatalakeClient {
       ctx.error('failed to abort multipart upload', { workspace, objectName, err })
       throw new DatalakeError('Failed to abort multipart upload')
     }
+  }
+}
+
+async function toBuffer (data: Buffer | string | Readable): Promise<Buffer> {
+  if (Buffer.isBuffer(data)) {
+    return data
+  } else if (typeof data === 'string') {
+    return Buffer.from(data)
+  } else if (data instanceof Readable) {
+    const chunks: Buffer[] = []
+    for await (const chunk of data) {
+      chunks.push(chunk)
+    }
+    return Buffer.concat(chunks as any)
+  } else {
+    throw new TypeError('Unsupported data type')
   }
 }
 
@@ -495,7 +520,7 @@ async function * getChunks (data: Buffer | string | Readable, chunkSize: number)
   }
 }
 
-async function fetchSafe (ctx: MeasureContext, url: RequestInfo, init?: RequestInit): Promise<Response> {
+async function fetchSafe (ctx: MeasureContext, url: string | URL, init?: RequestInit): Promise<Response> {
   let response
   try {
     response = await fetch(url, init)
@@ -505,10 +530,11 @@ async function fetchSafe (ctx: MeasureContext, url: RequestInfo, init?: RequestI
   }
 
   if (!response.ok) {
+    const text = await response.text()
     if (response.status === 404) {
-      throw new NotFoundError()
+      throw new NotFoundError(text)
     } else {
-      throw new DatalakeError(`${response.status} ${response.statusText}`)
+      throw new DatalakeError(text)
     }
   }
 

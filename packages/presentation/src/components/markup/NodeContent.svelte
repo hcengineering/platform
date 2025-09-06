@@ -13,16 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Blob } from '@hcengineering/core'
   import { AttrValue, MarkupNode, MarkupNodeType } from '@hcengineering/text'
 
   import CodeBlockNode from './CodeBlockNode.svelte'
   import ObjectNode from './ObjectNode.svelte'
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
+  import { getBlobRef } from '../../preview'
+  import { emojiRegex } from '@hcengineering/emoji'
 
   export let node: MarkupNode
+  export let single = true
   export let preview = false
+
+  function toRefBlob (blobId: AttrValue): Ref<Blob> {
+    return blobId as Ref<Blob>
+  }
 
   function toRef (objectId: string): Ref<Doc> {
     return objectId as Ref<Doc>
@@ -36,7 +43,7 @@
   }
 
   function toString (value: AttrValue | undefined): string | undefined {
-    return value !== undefined ? `${value}` : undefined
+    return value != null ? `${value}` : undefined
   }
 
   function toNumber (value: AttrValue | undefined): number | undefined {
@@ -44,7 +51,14 @@
       return value ? 1 : 0
     }
 
-    return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+    return value != null ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+  }
+
+  const checkEmoji = (nodes: MarkupNode[]): boolean => {
+    if (nodes.length !== 1) return false
+    const match = nodes[0].text?.match(emojiRegex)
+    if (match == null) return false
+    return match[0] === nodes[0].text
   }
 </script>
 
@@ -60,11 +74,23 @@
     {/if}
   {:else if node.type === MarkupNodeType.text}
     {node.text}
+  {:else if node.type === MarkupNodeType.emoji}
+    <span class="emoji" class:emojiOnly={single}>
+      {#if node.attrs?.kind === 'image'}
+        {@const blob = toRefBlob(attrs.image)}
+        {@const alt = toString(attrs.emoji)}
+        {#await getBlobRef(blob) then blobSrc}
+          <img src={blobSrc.src} {alt} />
+        {/await}
+      {:else}
+        {node.attrs?.emoji}
+      {/if}
+    </span>
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={preview}>
+    <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {node} {preview} single={nodes.length === 1} />
         {/each}
       {/if}
     </p>
@@ -206,6 +232,10 @@
 <style lang="scss">
   .imgContainer {
     display: inline;
+  }
+  .emojiOnly {
+    font-size: 2rem;
+    line-height: 115%;
   }
 
   .img {

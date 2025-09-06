@@ -22,26 +22,25 @@ import { ReferenceNode, type ReferenceNodeProps, type ReferenceOptions } from '@
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type SuggestionProps } from './suggestion'
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import { getMetadata, getResource } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
+import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 
-import { parseLocation, type Location } from '@hcengineering/ui'
+import contact from '@hcengineering/contact'
+import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
-  showDoc?: (event: MouseEvent, _id: string, _class: string) => void
+  docClass?: Ref<Class<Doc>>
+  multipleMentions?: boolean
+  openDocument?: (_class: Ref<Class<Doc>>, _id: Ref<Doc>, event?: MouseEvent) => void | Promise<void>
 }
 
 export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions>({
   addOptions () {
     return {
       HTMLAttributes: {},
-      renderLabel ({ options, props }) {
-        // eslint-disable-next-line
-        return `${options.suggestion.char}${props.label ?? props.id}`
-      },
       suggestion: {
         char: '@',
         allowSpaces: true,
@@ -86,68 +85,134 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
   addNodeView () {
     return ({ node, HTMLAttributes }) => {
-      const span = document.createElement('span')
-      span.setAttribute('data-type', this.name)
-      span.className = 'antimention'
+      const root = document.createElement('span')
+      root.className = 'antiMention'
       const attributes = mergeAttributes(
         {
           'data-type': this.name,
+          'data-id': node.attrs.id,
+          'data-objectclass': node.attrs.objectclass,
+          'data-label': node.attrs.label,
+          'data-toolbar-anchor': 'true',
+          'data-toolbar-prevent-anchoring': 'true',
           class: 'antiMention'
         },
         this.options.HTMLAttributes,
         HTMLAttributes
       )
+      const withoutDoc = [contact.mention.Everyone, contact.mention.Here].includes(node.attrs.id)
+      const id = node.attrs.id
+      const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
 
-      span.addEventListener('click', (event) => {
+      root.addEventListener('click', (event) => {
+        if (withoutDoc) return
         if (event.button !== 0) return
-
-        const link = (event.target as HTMLElement)?.closest('span')
-        if (link != null) {
-          const _class = link.getAttribute('data-objectclass')
-          const _id = link.getAttribute('data-id')
-          if (_id != null && _class != null) {
-            this.options.showDoc?.(event, _id, _class)
-          }
+        if (broken) {
+          showPopup(MessageBox, {
+            label: presentation.string.UnableToFollowMention,
+            message: presentation.string.AccessDenied,
+            canSubmit: false
+          })
+        }
+        const _class = objectclass
+        const _id = id
+        if (_id != null && _class != null) {
+          void this.options.openDocument?.(_class, _id, event)
         }
       })
 
       Object.entries(attributes).forEach(([key, value]) => {
-        span.setAttribute(key, value)
+        root.setAttribute(key, value)
       })
+
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
 
       const query = createQuery(true)
       const options = this.options
 
-      const renderLabel = (props: ReferenceNodeProps): void => {
-        span.setAttribute('data-label', props.label)
-        span.innerText = options.renderLabel({ options, props: props ?? (node.attrs as ReferenceNodeProps) })
+      let broken = false
+
+      const renderLabel = async (props: ReferenceNodeProps): Promise<void> => {
+        root.setAttribute('data-label', props.label)
+
+        if (props.id === contact.mention.Here) {
+          const trans = await translate(contact.string.Here, {})
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${trans}`
+          root.classList.add('lower')
+        } else if (props.id === contact.mention.Everyone) {
+          const trans = await translate(contact.string.Everyone, {})
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${trans}`
+          root.classList.add('lower')
+        } else {
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
+        }
+        if (broken) {
+          root.classList.add('broken')
+        } else {
+          root.classList.remove('broken')
+        }
       }
 
-      const id = node.attrs.id
-      const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
+      const icon =
+        objectclass !== undefined && !hierarchy.isDerived(objectclass, contact.class.Contact)
+          ? hierarchy.getClass(objectclass).icon
+          : undefined
 
-      renderLabel({ id, objectclass, label: node.attrs.label })
+      const iconUrl = typeof icon === 'string' ? getMetadata(icon) ?? 'https://anticrm.org/logo.svg' : ''
 
-      if (id !== undefined && objectclass !== undefined) {
+      if (iconUrl !== '') {
+        const svg = root.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
+        root.appendChild(document.createTextNode(' '))
+        svg.setAttribute('class', 'svg-small')
+        svg.setAttribute('fill', 'currentColor')
+        const use = svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'use'))
+        use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconUrl)
+      }
+
+      let tooltipHandle: any
+      const resetTooltipHandle = (newState: any): void => {
+        if (typeof tooltipHandle?.destroy === 'function') {
+          tooltipHandle.destroy()
+        }
+        tooltipHandle = newState
+      }
+
+      const titleSpan = root.appendChild(document.createElement('span'))
+      void renderLabel({ id, objectclass, label: node.attrs.label })
+
+      if (id !== undefined && objectclass !== undefined && !withoutDoc) {
         query.query(objectclass, { _id: id }, async (result) => {
           const obj = result[0]
-          if (obj === undefined) return
+          broken = obj === undefined
+          if (broken) {
+            void renderLabel({ id, objectclass, label: node.attrs.label })
+            resetTooltipHandle(undefined)
+          } else {
+            const label = await getReferenceLabel(objectclass, id, obj)
+            if (label === '') return
 
-          const label = await getReferenceLabel(objectclass, id, obj)
-          if (label === '') return
-
-          renderLabel({ id, objectclass, label })
+            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(objectclass, id, obj)
+            if (tooltipOptions.component === undefined) {
+              tooltipOptions = undefined
+            }
+            resetTooltipHandle(tooltip(root, tooltipOptions))
+            void renderLabel({ id, objectclass, label })
+          }
         })
+      } else if (withoutDoc) {
+        query.unsubscribe()
       }
 
       return {
-        dom: span,
+        dom: root,
         update (node, decorations) {
-          renderLabel({ id, objectclass, label: node.attrs.label })
+          void renderLabel({ id, objectclass, label: node.attrs.label })
           return true
         },
         destroy () {
           query.unsubscribe()
+          resetTooltipHandle(undefined)
         }
       }
     }
@@ -185,6 +250,8 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
     return [
       Suggestion({
         editor: this.editor,
+        docClass: this.options.docClass,
+        multipleMentions: this.options.multipleMentions,
         ...this.options.suggestion
       }),
       // ReferenceClickHandler(this.options),
@@ -233,6 +300,10 @@ export const referenceConfig: Partial<ReferenceExtensionOptions> = {
         }
       }
     }
+  },
+  openDocument: async (_class, _id, event) => {
+    const openDocument = await getResource(view.function.OpenDocument)
+    await openDocument?.(_class, _id)
   }
 }
 
@@ -322,6 +393,24 @@ export function ResolveReferenceUrlsPlugin (editor: Editor): Plugin<ResolveRefer
   })
 }
 
+async function getReferenceTooltip<T extends Doc> (
+  objectclass: Ref<Class<T>>,
+  id: Ref<T>,
+  doc?: T
+): Promise<LabelAndProps> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const mixin = hierarchy.classHierarchyMixin(objectclass as Ref<Class<Doc>>, view.mixin.ObjectTooltip)
+
+  if (mixin?.provider !== undefined) {
+    const providerFn = await getResource(mixin.provider)
+    return (await providerFn(client, doc)) ?? { label: hierarchy.getClass(objectclass).label }
+  }
+
+  return { label: hierarchy.getClass(objectclass).label }
+}
+
 export async function getReferenceLabel<T extends Doc> (
   objectclass: Ref<Class<T>>,
   id: Ref<T>,
@@ -339,7 +428,12 @@ export async function getReferenceLabel<T extends Doc> (
   const identifier = (await labelProviderFn?.(client, id, doc)) ?? ''
   const title = (await titleProviderFn?.(client, id, doc)) ?? ''
 
-  const label = identifier !== '' && title !== '' && identifier !== title ? `${identifier} ${title}` : title ?? ''
+  const label =
+    identifier !== '' && title !== '' && identifier !== title
+      ? `${identifier} ${title}`
+      : title !== ''
+        ? title
+        : identifier
 
   return label
 }
@@ -382,10 +476,11 @@ export async function getTargetObjectFromUrl (
   urlOrLocation: string | Location
 ): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let location: Location
   if (typeof urlOrLocation === 'string') {
+    if (!URL.canParse(urlOrLocation)) return
+
     const url = new URL(urlOrLocation)
 
     const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -398,19 +493,43 @@ export async function getTargetObjectFromUrl (
 
   const appAlias = (location.path[2] ?? '').trim()
   if (!(appAlias.length > 0)) return
-
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
   const apps: Application[] = client
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   const app = apps.find((p) => p.alias === appAlias)
+  const locationResolver = app?.locationResolver
+  const locationDataResolver = app?.locationDataResolver
 
-  if (app?.locationResolver === undefined) return
-  const locationResolverFn = await getResource(app.locationResolver)
-  const resolvedLocation = await locationResolverFn(location)
+  if ((location.fragment ?? '') !== '') {
+    const obj = await getObjectFromFragment(location.fragment ?? '')
+    if (obj !== undefined) return obj
+  }
 
-  const locationParts = decodeURIComponent(resolvedLocation?.loc?.fragment ?? '').split('|')
+  if (locationResolver !== undefined) {
+    const locationResolverFn = await getResource(locationResolver)
+    const resolvedLocation = await locationResolverFn(location)
+    const obj = await getObjectFromFragment(resolvedLocation?.loc?.fragment ?? '')
+    if (obj !== undefined) return obj
+  }
+
+  if (locationDataResolver !== undefined) {
+    const locationDataResolverFn = await getResource(locationDataResolver)
+    const locationData = await locationDataResolverFn(location)
+    if (locationData.objectId !== undefined && locationData.objectClass !== undefined) {
+      return { _id: locationData.objectId, _class: locationData.objectClass }
+    }
+  }
+}
+
+async function getObjectFromFragment (
+  fragment: string
+): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const locationParts = decodeURIComponent(fragment).split('|')
   const id = locationParts[1] as Ref<Doc>
   const objectclass = locationParts[2] as Ref<Class<Doc>>
   if (id === undefined || objectclass === undefined) return
@@ -424,4 +543,35 @@ export async function getTargetObjectFromUrl (
     _id,
     _class: objectclass
   }
+}
+
+export function buildReferenceUrl (props: Partial<ReferenceNodeProps>, refUrl: string = 'ref://'): string | undefined {
+  if (props.id === undefined || props.objectclass === undefined) return
+  let url = refUrl + (refUrl.includes('?') ? '&' : '?')
+  const query = makeQuery({ _class: props.objectclass, _id: props.id, label: props.label })
+  url = `${url}${query}`
+  return url
+}
+
+export function parseReferenceUrl (urlString: string, refUrl: string = 'ref://'): ReferenceNodeProps | undefined {
+  if (!urlString.startsWith(refUrl)) return
+  if (!URL.canParse(urlString)) return
+
+  const url = new URL(urlString)
+  const label = url.searchParams?.get('label') ?? ''
+  const id = (url.searchParams?.get('_id') as Ref<Doc>) ?? undefined
+  const objectclass = (url.searchParams?.get('_class') as Ref<Class<Doc>>) ?? undefined
+
+  if (id === undefined || objectclass === undefined) return
+
+  return { label, id, objectclass }
+}
+
+function makeQuery (obj: Record<string, string | number | boolean | null | undefined>): string {
+  return Object.keys(obj)
+    .filter((it) => it[1] != null)
+    .map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k] as string | number | boolean)
+    })
+    .join('&')
 }

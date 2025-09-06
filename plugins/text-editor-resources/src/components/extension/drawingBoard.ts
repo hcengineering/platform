@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,7 +17,7 @@ import { type DrawingCmd } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { type Editor, mergeAttributes, Node } from '@tiptap/core'
 import { NodeSelection } from '@tiptap/pm/state'
-import type { Array as YArray, Map as YMap } from 'yjs'
+import type { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
 import DrawingBoardNodeView from '../DrawingBoardNodeView.svelte'
 import DrawingBoardPopup from '../DrawingBoardPopup.svelte'
 import { SvelteNodeViewRenderer } from '../node-view'
@@ -27,16 +27,19 @@ export interface DrawingBoardOptions {
 }
 
 export interface SavedBoard {
+  document: YDoc
   commands: YArray<DrawingCmd>
   props: YMap<any>
   loading: boolean
 }
 
-export function showBoardPopup (board: SavedBoard, editor: Editor): void {
+export function showBoardPopup (id: string, board: SavedBoard, editor: Editor): void {
   if (board.commands !== undefined && board.props !== undefined) {
     showPopup(
       DrawingBoardPopup,
       {
+        boardId: id,
+        document: board.document,
         savedCmds: board.commands,
         savedProps: board.props,
         readonly: !editor.isEditable
@@ -105,7 +108,7 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
               if (node?.type.name === this.name) {
                 const board = this.options.getSavedBoard(node.attrs.id)
                 if (!board.loading) {
-                  showBoardPopup(board, this.editor)
+                  showBoardPopup(node.attrs.id, board, this.editor)
                 }
                 return true
               }

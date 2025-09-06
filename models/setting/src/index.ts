@@ -15,13 +15,23 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Account, type Blob, type Domain, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  DOMAIN_MODEL,
+  type AccountUuid,
+  type Blob,
+  type ClassCollaborators,
+  type Ref,
+  type IntegrationKind
+} from '@hcengineering/core'
+import exportPlugin from '@hcengineering/export'
 import { Mixin, Model, UX, type Builder } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
+  DOMAIN_SETTING,
   settingId,
   type Editable,
   type Handler,
@@ -36,7 +46,6 @@ import {
   type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
-import exportPlugin from '@hcengineering/export'
 import setting from './plugin'
 
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
@@ -46,15 +55,13 @@ export { settingId } from '@hcengineering/setting'
 export { settingOperation } from './migration'
 export { default } from './plugin'
 
-export const DOMAIN_SETTING = 'setting' as Domain
-
 @Model(setting.class.Integration, core.class.Doc, DOMAIN_SETTING)
 @UX(setting.string.Integrations)
 export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   disabled!: boolean
   value!: string
-  shared!: Ref<Account>[]
+  shared!: AccountUuid[]
   error?: IntlString | null
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
@@ -86,6 +93,8 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler
   configureComponent?: AnyComponent
+  kind!: IntegrationKind
+  stateComponent?: AnyComponent
 }
 
 @Mixin(setting.mixin.Editable, core.class.Class)
@@ -146,12 +155,9 @@ export function createModel (builder: Builder): void {
     setting.ids.SettingsWidget
   )
 
-  builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Integration>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: setting.class.Integration,
     fields: ['modifiedBy']
-  })
-
-  builder.mixin(setting.class.Integration, core.class.Class, view.mixin.ObjectPanel, {
-    component: setting.component.IntegrationPanel
   })
 
   builder.createDoc(
@@ -213,6 +219,20 @@ export function createModel (builder: Builder): void {
       order: 1500
     },
     setting.ids.Integrations
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'mailboxes',
+      label: setting.string.Mailboxes,
+      icon: setting.icon.Mailbox,
+      component: setting.component.Mailboxes,
+      group: 'settings-account',
+      role: AccountRole.User,
+      order: 1700
+    },
+    setting.ids.Mailboxes
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
@@ -398,7 +418,7 @@ export function createModel (builder: Builder): void {
     workbench.class.Application,
     core.space.Model,
     {
-      label: setting.string.Setting,
+      label: setting.string.Settings,
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,

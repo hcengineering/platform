@@ -1,17 +1,17 @@
 <script lang="ts">
   import documents, {
+    ControlledDocument,
     ControlledDocumentState,
     DocumentRequest,
     DocumentState,
-    emptyBundle,
-    extractValidationWorkflow
+    DocumentValidationState,
+    emptyBundle
   } from '@hcengineering/controlled-documents'
-  import { SortingOrder } from '@hcengineering/core'
 
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
 
-  import { personIdByAccountId } from '@hcengineering/contact-resources'
+  import chunter, { ChatMessage } from '@hcengineering/chunter'
   import documentsRes from '../../../plugin'
   import {
     $controlledDocument as controlledDocument,
@@ -21,7 +21,8 @@
   import DocumentApprovalGuideItem from './DocumentApprovalGuideItem.svelte'
   import DocumentApprovalItem from './DocumentApprovalItem.svelte'
   import RightPanelTabHeader from './RightPanelTabHeader.svelte'
-  import chunter, { ChatMessage } from '@hcengineering/chunter'
+  import { extractValidationWorkflow } from '../../../utils'
+  import { Ref } from '@hcengineering/core'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,19 +45,18 @@
     })
   }
 
-  $: workflow = extractValidationWorkflow(
-    hierarchy,
-    {
-      ...emptyBundle(),
-      ControlledDocument: doc ? [doc] : [],
-      DocumentRequest: requests,
-      DocumentSnapshot: $documentSnapshots,
-      ChatMessage: messages
-    },
-    (ref) => $personIdByAccountId.get(ref)
-  )
+  let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]> | undefined
+  $: void extractValidationWorkflow(hierarchy, {
+    ...emptyBundle(),
+    ControlledDocument: doc ? [doc] : [],
+    DocumentRequest: requests,
+    DocumentSnapshot: $documentSnapshots,
+    ChatMessage: messages
+  }).then((res) => {
+    workflow = res
+  })
 
-  $: validationStates = ((doc ? workflow.get(doc._id) : []) ?? []).slice()
+  $: validationStates = ((doc ? workflow?.get(doc._id) : []) ?? []).slice()
 
   const noGuideStates: (ControlledDocumentState | undefined)[] = [
     ControlledDocumentState.Approved,

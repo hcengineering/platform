@@ -21,7 +21,7 @@
   import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
-  import { personByIdStore } from '../utils'
+  import { getPersonByPersonRefStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
@@ -37,7 +37,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
-  export let emptyLabel: IntlString = plugin.string.Members
+  export let emptyLabel: IntlString = label ?? plugin.string.Members
   export let readonly: boolean = false
   export let create: ObjectCreate | undefined = undefined
 
@@ -47,22 +47,15 @@
     return (items ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 
-  let persons: Person[] = filter(items)
-    .map((p) => $personByIdStore.get(p))
-    .filter((p) => p !== undefined) as Person[]
+  $: personByRefStore = getPersonByPersonRefStore(items)
+  let persons: Person[] = []
   $: persons = filter(items)
-    .map((p) => $personByIdStore.get(p))
+    .map((p) => $personByRefStore.get(p))
     .filter((p) => p !== undefined) as Person[]
 
   const dispatch = createEventDispatcher()
 
   async function addPerson (evt: Event): Promise<void> {
-    const accounts = new Set(
-      getClient()
-        .getModel()
-        .findAllSync(contact.class.PersonAccount, {})
-        .map((p) => p.person)
-    )
     const popupProps: any = {
       _class,
       label,
@@ -77,7 +70,7 @@
           const isSelected = items.some((selectedItem) => selectedItem === it._id)
           return isActive || isSelected
         }
-        return accounts.has(it._id as Ref<Person>)
+        return true // Previously it was cheching for PersonAccount to exist. Now we could check for any social id to exist?
       },
       readonly,
       create

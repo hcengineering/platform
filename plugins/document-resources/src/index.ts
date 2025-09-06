@@ -51,7 +51,6 @@ import {
   documentTitleProvider,
   getDocumentLink,
   getDocumentLinkId,
-  getDocumentUrl,
   parseDocumentId,
   resolveLocation
 } from './utils'
@@ -137,7 +136,7 @@ export async function lockContent (doc: Document | Document[]): Promise<void> {
 
   const arr = Array.isArray(doc) ? doc : [doc]
   for (const doc of arr) {
-    await client.diffUpdate(doc, { lockedBy: me._id })
+    await client.diffUpdate(doc, { lockedBy: me.uuid })
   }
 }
 
@@ -192,7 +191,6 @@ export default async (): Promise<Resources> => ({
     UnlockContent: unlockContent
   },
   function: {
-    GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
     DocumentTitleProvider: documentTitleProvider,
     CanLockDocument: canLockDocument,

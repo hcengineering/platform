@@ -19,7 +19,7 @@ import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 
-import { Plugin, type Transaction } from '@tiptap/pm/state'
+import { type EditorState, Plugin, TextSelection, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import AddColAfter from '../../icons/table/AddColAfter.svelte'
 import AddColBefore from '../../icons/table/AddColBefore.svelte'
@@ -29,6 +29,13 @@ import DeleteCol from '../../icons/table/DeleteCol.svelte'
 import DeleteRow from '../../icons/table/DeleteRow.svelte'
 import DeleteTable from '../../icons/table/DeleteTable.svelte'
 import { SvelteNodeViewRenderer } from '../../node-view'
+import {
+  getToolbarCursor,
+  type NodeWithPos,
+  registerToolbarProvider,
+  type ResolveCursorProps,
+  type ToolbarCursor
+} from '../toolbar/toolbar'
 import TableNodeView from './TableNodeView.svelte'
 import { TableSelection } from './types'
 import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
@@ -48,9 +55,69 @@ export const Table = TiptapTable.extend({
     return SvelteNodeViewRenderer(TableNodeView, {})
   },
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), tableSelectionHighlight(), cleanupBrokenTables()]
+    return [...(this.parent?.() ?? []), tableSelectionHighlight(), cleanupBrokenTables(), TableToolbarPlugin()]
   }
 })
+
+function TableToolbarPlugin (): Plugin {
+  return new Plugin({
+    view: (view) => {
+      registerToolbarProvider<any>(view, { name: 'table', resolveCursor, priority: 30 })
+
+      return {}
+    }
+  })
+}
+
+export interface TableCursorProps {
+  tableScrollOffset?: number
+}
+
+export type TableCursor = ToolbarCursor<TableCursorProps>
+
+export function getTableCursor (state: EditorState): TableCursor | null {
+  const cursor = getToolbarCursor<TableCursorProps>(state)
+  if (cursor === null || cursor.tag !== 'table') {
+    return null
+  }
+  return cursor
+}
+
+function resolveCursor (props: ResolveCursorProps): TableCursor | null {
+  const selection = props.editorState.selection
+  const table = findTable(selection)
+  if (table === undefined) return null
+
+  if (selection instanceof TextSelection && !selection.empty) {
+    return null
+  }
+
+  const range =
+    selection instanceof CellSelection
+      ? { from: selection.from, to: selection.to }
+      : { from: table.pos, to: table.pos + table.node.nodeSize }
+
+  let nodes: NodeWithPos[] = [{ node: table.node, pos: table.pos }]
+  if (selection instanceof CellSelection) {
+    nodes = []
+    selection.forEachCell((node, pos) => {
+      nodes.push({ node, pos })
+    })
+  }
+
+  const cursor: TableCursor = {
+    source: props.source,
+    tag: 'table',
+    range,
+    props: {},
+    nodes,
+    viewOptions: {
+      offset: selection instanceof CellSelection ? [0, 12] : [0, -12]
+    }
+  }
+
+  return cursor
+}
 
 function handleDelete (editor: Editor): boolean {
   const { selection } = editor.state.tr
@@ -244,9 +311,9 @@ export async function selectTable (editor: Editor, event: MouseEvent): Promise<v
 }
 
 export async function isEditableTableActive (editor: Editor): Promise<boolean> {
-  return editor.isEditable && editor.isActive('table')
+  return editor.isEditable && getTableCursor(editor.state) !== null
 }
 
 export async function isTableToolbarContext (editor: Editor, context: ActionContext): Promise<boolean> {
-  return editor.isEditable && editor.isActive('table') && context.tag === 'table-toolbar'
+  return editor.isEditable && getTableCursor(editor.state) !== null
 }

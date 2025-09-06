@@ -104,6 +104,7 @@ export default plugin(attachmentId, {
     PreviewWidget: '' as Ref<Widget>
   },
   string: {
+    UploadDropFilesHere: '' as IntlString,
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
     NoParticipants: '' as IntlString,
@@ -124,7 +125,6 @@ export default plugin(attachmentId, {
     Attachments: '' as IntlString,
     FileBrowser: '' as IntlString,
     OpenInWindow: '' as IntlString,
-    Embeddings: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString
+    Embeddings: '' as IntlString
   }
 })

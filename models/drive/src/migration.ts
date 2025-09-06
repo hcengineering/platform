@@ -73,11 +73,9 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
         _class: file._class
       },
       {
-        $set: {
-          version: 1,
-          versions: 1,
-          file: fileVersionId
-        },
+        version: 1,
+        versions: 1,
+        file: fileVersionId,
         $unset: {
           metadata: 1
         }

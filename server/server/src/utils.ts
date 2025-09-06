@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { type MeasureContext } from '@hcengineering/core'
+import { type WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 
 import type {
   AddSessionActive,
   AddSessionResponse,
   ConnectionSocket,
-  HandleRequestFunction,
-  Session
+  Session,
+  SessionManager
 } from '@hcengineering/server-core'
 
 import { type Response } from '@hcengineering/rpc'
@@ -41,7 +41,7 @@ export function doSessionOp (
 ): void {
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
-    const msgCopy = Buffer.copyBytesFrom(msg)
+    const msgCopy = Buffer.copyBytesFrom(new Uint8Array(msg))
     void data.session
       .then((_session) => {
         data.session = _session
@@ -63,13 +63,15 @@ export function processRequest (
   session: Session,
   cs: ConnectionSocket,
   context: MeasureContext,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   buff: any,
-  handleRequest: HandleRequestFunction
+  sessions: SessionManager
 ): void {
   try {
     const request = cs.readRequest(buff, session.binaryMode)
-    handleRequest(context, session, cs, request, workspaceId)
+    void sessions.handleRequest(context, session, cs, request, workspaceId).catch((err) => {
+      context.error('failed to handle request', { err, request })
+    })
   } catch (err: any) {
     if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {
       // ignore it

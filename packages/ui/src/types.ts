@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountRole, type Permission, type Timestamp, type Ref, type TypedSpace } from '@hcengineering/core'
+import type { Blob, Ref, Timestamp } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,
@@ -78,8 +78,12 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
+export type IconComponent = Asset | AnySvelteComponent | ComponentType
+
 export interface Action {
+  id?: string
   label: IntlString
+  labelParams?: Record<string, any>
   icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
   inline?: boolean
@@ -262,7 +266,7 @@ export type IconSize =
   | '2x-large'
   | 'full'
 export interface IconProps {
-  icon?: number
+  icon?: number | number[] | Ref<Blob>
   size?: IconSize
   fill?: string
   filled?: boolean
@@ -306,6 +310,9 @@ export interface LabelAndProps {
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
   timeout?: number
+  style?: 'default' | 'modern'
+  noArrow?: boolean
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 export interface ListItem {
@@ -386,6 +393,7 @@ export interface DeviceOptions {
   sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
+  firstDayOfWeek: number
   theme?: string
   language?: string
   replacedPanel?: HTMLElement
@@ -459,6 +467,7 @@ export interface CalendarItem {
   date: Timestamp
   dueDate: Timestamp
   day: number
+  blockTime: boolean
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
 
@@ -513,21 +522,6 @@ export interface SelectPopupValueType {
 /**
  * @public
  */
-export interface HeaderButtonAction extends SelectPopupValueType {
-  callback: () => void
-  keyBindingPromise?: Promise<string[] | undefined>
-  keyBinding?: string[] | undefined
-  draft?: boolean
-  accountRole?: AccountRole
-  permissions?: Array<{
-    id: Ref<Permission>
-    space: Ref<TypedSpace>
-  }>
-}
-
-/**
- * @public
- */
 export interface TimeZone {
   id: string
   continent: string
@@ -556,4 +550,36 @@ export enum StateType {
   Positive,
   Primary,
   Regular
+}
+
+export interface IHeaderState {
+  headerWidth: number
+  extraWidth: number
+  spaceWidth: number
+  titleWidth: number
+  titleOverflow: boolean
+  extraOverflow: boolean
+}
+
+export interface IPanelState extends IHeaderState {
+  panelWidth: number
+  innerWidth: number
+}
+
+export interface FilterOption {
+  id: string
+  label: IntlString
+}
+
+export interface FilterCategory {
+  id: string
+  label: IntlString
+  options: FilterOption[]
+}
+
+export interface ActiveFilter {
+  categoryId: string
+  optionId: string
+  categoryLabel: IntlString
+  optionLabel: IntlString
 }

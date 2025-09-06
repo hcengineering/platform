@@ -14,8 +14,17 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { CollectionSize, Domain, MarkupBlobRef, Rank, Role, RolesAssignment } from '@hcengineering/core'
-import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
+import type {
+  CollectionSize,
+  MarkupBlobRef,
+  Domain,
+  Rank,
+  Ref,
+  Role,
+  RolesAssignment,
+  ClassCollaborators
+} from '@hcengineering/core'
+import { AccountUuid, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
   type DocumentSnapshot,
@@ -36,7 +45,8 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  TypeAccountUuid
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -53,7 +63,6 @@ import { type Asset, getEmbeddedLabel } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import time, { type ToDo, type Todoable } from '@hcengineering/time'
 import document from './plugin'
-import { definePermissions } from './permissions'
 
 export { documentId } from '@hcengineering/document'
 
@@ -80,9 +89,9 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
+  @Prop(TypeAccountUuid(), document.string.LockedBy)
   @Hidden()
-    lockedBy?: Ref<Account>
+    lockedBy?: AccountUuid
 
   @Prop(Collection(attachment.class.Embedding), attachment.string.Embeddings)
     embeddings?: number
@@ -151,7 +160,7 @@ export class TTeamspace extends TTypedSpace implements Teamspace {}
 @Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
 @UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
 export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 function defineTeamspace (builder: Builder): void {
@@ -363,27 +372,6 @@ function defineDocument (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: document.function.GetDocumentLink
-      },
-      label: document.string.CopyDocumentUrl,
-      icon: view.icon.CopyLink,
-      input: 'focus',
-      category: document.category.Document,
-      target: document.class.Document,
-      context: {
-        mode: ['context', 'browser'],
-        application: document.app.Documents,
-        group: 'copy'
-      }
-    },
-    document.action.CopyDocumentLink
-  )
-
-  createAction(
-    builder,
-    {
       action: document.actionImpl.LockContent,
       label: document.string.Lock,
       icon: document.icon.Lock,
@@ -423,7 +411,8 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.mixin(document.class.Document, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Document>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: document.class.Document,
     fields: ['createdBy', 'modifiedBy']
   })
 
@@ -561,7 +550,6 @@ export function createModel (builder: Builder): void {
   defineDocument(builder)
 
   defineApplication(builder)
-  definePermissions(builder)
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOCUMENT,

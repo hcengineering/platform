@@ -8,7 +8,7 @@ export SERVER_SECRET=secret
 export REKONI_URL=http://localhost:4004
 export MODEL_JSON=./bundle/model.json
 export ELASTIC_INDEX_NAME=local_storage_index
-export STATS_URL=http://host.docker.internal:4900
+export STATS_URL=http://huly.local:4900
 export ACCOUNTS_URL=http://localhost:3000
 rushx bundle
 node --inspect ./bundle/bundle.js

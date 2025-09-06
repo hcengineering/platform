@@ -15,7 +15,7 @@
 
 import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
 import { Collection, Db, MongoClient, ObjectId, UpdateFilter, WithId } from 'mongodb'
-import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+import { Doc, Ref, SortingOrder, WorkspaceUuid } from '@hcengineering/core'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 
 import config from './config'
@@ -24,7 +24,7 @@ import { HistoryRecord } from './types'
 const clientRef: MongoClientReference = getMongoClient(config.MongoURL)
 let client: MongoClient | undefined
 
-export const getDB = (() => {
+const connectDB = (() => {
   return async () => {
     if (client === undefined) {
       client = await clientRef.getClient()
@@ -34,8 +34,9 @@ export const getDB = (() => {
   }
 })()
 
-export const closeDB: () => Promise<void> = async () => {
-  clientRef.close()
+export async function getDbStorage (): Promise<DbStorage> {
+  const db = await connectDB()
+  return new DbStorage(db)
 }
 
 export class DbStorage {
@@ -51,7 +52,7 @@ export class DbStorage {
     return (await this.historyCollection.insertOne(record)).insertedId
   }
 
-  async getHistoryRecords (workspace: string, objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
+  async getHistoryRecords (workspace: WorkspaceUuid, objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
     return await this.historyCollection
       .find({ workspace, objectId }, { sort: { timestamp: SortingOrder.Ascending } })
       .toArray()
@@ -71,5 +72,9 @@ export class DbStorage {
 
   async updateWorkspace (workspace: string, update: UpdateFilter<WorkspaceInfoRecord>): Promise<void> {
     await this.workspacesInfoCollection.updateOne({ workspace }, update)
+  }
+
+  close (): void {
+    clientRef.close()
   }
 }

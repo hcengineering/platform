@@ -14,41 +14,40 @@
 -->
 
 <script lang="ts">
-  import type { DocumentQuery, Ref, WithLookup, IdMap } from '@hcengineering/core'
-  import type { ToDo, WorkSlot } from '@hcengineering/time'
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import type { DocumentQuery, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { SortingOrder, toIdMap } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
   import type { TagElement } from '@hcengineering/tags'
+  import tags from '@hcengineering/tags'
+  import type { ToDo, WorkSlot } from '@hcengineering/time'
   import type { Project } from '@hcengineering/tracker'
-  import type { ToDosMode } from '..'
+  import tracker from '@hcengineering/tracker'
   import {
+    ButtonIcon,
+    Header,
+    IconMenuClose,
+    IconMenuOpen,
+    Label,
     Scroller,
     areDatesEqual,
-    todosSP,
     defaultSP,
-    Header,
-    ButtonIcon,
-    Label,
-    IconMenuOpen,
-    IconMenuClose,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    todosSP
   } from '@hcengineering/ui'
-  import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import tracker from '@hcengineering/tracker'
-  import tags from '@hcengineering/tags'
   import view from '@hcengineering/view-resources/src/plugin'
+  import type { ToDosMode } from '..'
+  import time from '../plugin'
   import { getNearest } from '../utils'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
-  import time from '../plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
 
-  const acc = getCurrentAccount() as PersonAccount
-  const user = acc.person
+  const user = getCurrentEmployee()
 
   const doneQuery = createQuery()
   const inboxQuery = createQuery()
@@ -198,9 +197,11 @@
   let inbox: WithLookup<ToDo>[] = []
   let done: WithLookup<ToDo>[] = []
   let rawActive: WithLookup<ToDo>[] = []
+  let todoValue: string = ''
+
   $: active = filterActive(mode, rawActive, currentDate)
 
-  $: groups = group(inbox, done, active)
+  $: groups = group(inbox, done, active, todoValue)
 
   function filterActive (mode: ToDosMode, raw: WithLookup<ToDo>[], currentDate: Date): WithLookup<ToDo>[] {
     if (mode === 'planned') {
@@ -234,13 +235,18 @@
   function group (
     unplanned: WithLookup<ToDo>[],
     done: WithLookup<ToDo>[],
-    active: WithLookup<ToDo>[]
+    active: WithLookup<ToDo>[],
+    filterValue: string
   ): [IntlString, WithLookup<ToDo>[]][] {
+    const trimFilter = filterValue.trim().toLowerCase()
+
+    const filterOp = (it: WithLookup<ToDo>) => trimFilter === '' || it.title.toLowerCase().includes(trimFilter)
+
     const groups = new Map<IntlString, WithLookup<ToDo>[]>([
       [time.string.Scheduled, []],
-      [time.string.Unplanned, unplanned],
+      [time.string.Unplanned, unplanned.filter(filterOp)],
       [time.string.ToDos, []],
-      [time.string.Done, done]
+      [time.string.Done, done.filter(filterOp)]
     ])
     const now = Date.now()
     const todos: {
@@ -251,7 +257,7 @@
       nearest: WorkSlot | undefined
       todo: WithLookup<ToDo>
     }[] = []
-    for (const todo of active) {
+    for (const todo of active.filter(filterOp)) {
       if (todo.$lookup?.workslots !== undefined) {
         todo.$lookup.workslots = getWorkslots(todo).sort((a, b) => a.date - b.date)
       }
@@ -276,6 +282,13 @@
       time.string.Scheduled,
       scheduled.map((p) => p.todo)
     )
+    if (trimFilter.length > 0) {
+      for (const [k, v] of groups) {
+        if (v.length === 0) {
+          groups.delete(k)
+        }
+      }
+    }
     return Array.from(groups)
   }
   const getDateStr = (date: Date): string => {
@@ -314,8 +327,7 @@
       {/if}
     </div>
   </Header>
-  <CreateToDo fullSize />
-
+  <CreateToDo fullSize bind:value={todoValue} />
   <Scroller fade={filteredGroups.length > 1 ? todosSP : defaultSP} noStretch>
     {#each filteredGroups as group}
       <ToDoGroup

@@ -37,7 +37,7 @@
   export let title: IntlString = tags.string.Tags
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let item: IntlString = tags.string.Tag
-  export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
+  export let createItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
@@ -92,8 +92,7 @@
     }
   )
   const countSorting = (a: Doc, b: Doc) =>
-    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
-      (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
+    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) - (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0)
 
   let visibleCategories: TagCategory[] = []
 </script>
@@ -112,7 +111,7 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     <slot />
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </svelte:fragment>
 </Header>
 <CategoryBar

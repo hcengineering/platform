@@ -157,9 +157,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 

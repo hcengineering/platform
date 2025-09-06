@@ -22,6 +22,7 @@ export interface Field {
   password?: boolean
   optional?: boolean
   short?: boolean
+  disabled?: boolean
   rules?: Array<{
     rule: RegExp | ((value: string) => boolean)
     notMatch: boolean

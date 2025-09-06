@@ -13,6 +13,5 @@ export function getStt (room: Room): Stt | undefined {
       return new dg.STT(room)
     case 'openai':
       return new openai.STT(room)
-    default: return undefined
   }
 }

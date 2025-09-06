@@ -15,7 +15,6 @@
 
 import core, {
   type Class,
-  type Data,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
@@ -34,9 +33,9 @@ import core, {
   type TxCUD,
   TxProcessor,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceIds
 } from '@hcengineering/core'
-import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations } from './adapter'
+import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations, type RawFindIterator } from './adapter'
 /**
  * @public
  */
@@ -61,6 +60,13 @@ export class DummyDbAdapter implements DbAdapter {
     options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
     return toFindResult([])
+  }
+
+  rawFind (ctx: MeasureContext, domain: Domain): RawFindIterator {
+    return {
+      find: async () => [],
+      close: async () => {}
+    }
   }
 
   async init (): Promise<void> {}
@@ -105,12 +111,6 @@ export class DummyDbAdapter implements DbAdapter {
     // Return '' for empty documents content.
     return Promise.resolve('')
   }
-
-  async update<T extends Doc>(
-    ctx: MeasureContext,
-    domain: Domain,
-    operations: Map<Ref<Doc>, Partial<Data<T>>>
-  ): Promise<void> {}
 
   async groupBy<T, P extends Doc>(
     ctx: MeasureContext,
@@ -181,10 +181,9 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
  */
 export async function createInMemoryAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceIds
 ): Promise<DbAdapter> {
   return new InMemoryAdapter(hierarchy)
 }

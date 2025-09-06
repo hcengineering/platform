@@ -15,16 +15,16 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import {
-    Account,
+    type Blob,
     BlobMetadata,
     Class,
     Doc,
     generateId,
     Markup,
+    PersonId,
     Ref,
     Space,
     toIdMap,
-    type Blob,
     TxOperations
   } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -40,7 +40,7 @@
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
-  import { AttachIcon, StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { AttachIcon, EditorKitOptions, StyledTextBox } from '@hcengineering/text-editor-resources'
   import { ButtonSize } from '@hcengineering/ui'
   import { type FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -64,8 +64,8 @@
   export let useAttachmentPreview = false
   export let focusIndex: number | undefined = -1
   export let enableAttachments: boolean = true
-  export let enableBackReferences: boolean = false
   export let isScrollable = true
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   export let useDirectAttachDelete = false
   export let boundary: HTMLElement | undefined = undefined
@@ -183,7 +183,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space,
         attachedTo: objectId,
         attachedToClass: _class,
@@ -426,7 +426,7 @@
     {maxHeight}
     {focusable}
     {kind}
-    {enableBackReferences}
+    {kitOptions}
     {isScrollable}
     {boundary}
     {extraActions}
@@ -434,7 +434,6 @@
     on:changeContent
     on:blur
     on:focus
-    on:open-document
     {attachFile}
   />
   {#if attachments.size > 0 && enableAttachments}

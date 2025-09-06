@@ -18,7 +18,6 @@
   import { FileBrowser } from '@hcengineering/attachment-resources'
   import { Scroller, Switcher } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
-  import workbench from '@hcengineering/workbench'
   import contact from '@hcengineering/contact'
   import contactPlg from '@hcengineering/contact-resources/src/plugin'
   import { EmployeeBrowser } from '@hcengineering/contact-resources'

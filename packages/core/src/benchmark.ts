@@ -1,4 +1,4 @@
-import { Doc, type Domain } from './classes'
+import { type Doc, type Domain } from './classes'
 
 /**
  * @public

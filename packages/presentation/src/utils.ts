@@ -16,13 +16,8 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  MeasureMetricsContext,
-  TxOperations,
-  TxProcessor,
-  getCurrentAccount,
-  reduceCalls,
   type Account,
-  type AnyAttribute,
+  AccountRole,
   type ArrOf,
   type AttachedDoc,
   type Class,
@@ -30,11 +25,20 @@ import core, {
   type Collection,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
+  getCurrentAccount,
+  hasAccountRole,
   type Hierarchy,
+  MeasureMetricsContext,
   type Mixin,
+  type ModelDb,
   type Obj,
+  type OperationDomain,
+  reduceCalls,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -44,21 +48,25 @@ import core, {
   type Tx,
   type TxApplyIf,
   type TxCUD,
+  TxOperations,
+  TxProcessor,
   type TxResult,
+  type Type,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, getRawCurrentLocation, workspaceId } from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
-import plugin from './plugin'
+import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
+import plugin, { type ClientHook } from './plugin'
 
 export { reduceCalls } from '@hcengineering/core'
 
@@ -96,12 +104,11 @@ export const uiContext = new MeasureMetricsContext('client-ui', {})
 export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 
 class UIClient extends TxOperations implements Client {
-  hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
     client: Client,
     private readonly liveQuery: Client
   ) {
-    super(client, getCurrentAccount()._id)
+    super(client, getCurrentAccount().primarySocialId)
   }
 
   protected pendingTxes = new Set<Ref<Tx>>()
@@ -155,9 +162,6 @@ class UIClient extends TxOperations implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    if (this.hook !== undefined) {
-      return await this.hook.findAll(this.liveQuery, _class, query, options)
-    }
     return await this.liveQuery.findAll(_class, query, options)
   }
 
@@ -166,21 +170,18 @@ class UIClient extends TxOperations implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    if (this.hook !== undefined) {
-      return await this.hook.findOne(this.liveQuery, _class, query, options)
-    }
     return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    void this.notifyEarly(tx)
-    if (this.hook !== undefined) {
-      return await this.hook.tx(this.client, tx)
-    }
+    void this.notifyEarly(tx).catch((err) => {
+      console.error(err)
+    })
     return await this.client.tx(tx)
   }
 
   private async notifyEarly (tx: Tx): Promise<void> {
+    if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) return
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
@@ -219,9 +220,6 @@ class UIClient extends TxOperations implements Client {
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    if (this.hook !== undefined) {
-      return await this.hook.searchFulltext(this.client, query, options)
-    }
     return await this.client.searchFulltext(query, options)
   }
 }
@@ -255,14 +253,14 @@ export function getClient (): TxOperations & Client {
   return clientProxy
 }
 
-export type OnClientListener = (client: Client, account: Account) => void
+export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
 const onClientListeners: OnClientListener[] = []
 
 export function onClient (l: OnClientListener): void {
   onClientListeners.push(l)
   if (client !== undefined) {
     setTimeout(() => {
-      l(client, getCurrentAccount())
+      void l(client, getCurrentAccount())
     })
   }
 }
@@ -275,6 +273,80 @@ const refreshListeners = new Set<RefreshListener>()
 
 export function addRefreshListener (r: RefreshListener): void {
   refreshListeners.add(r)
+}
+
+class ClientHookImpl implements Client {
+  constructor (
+    private readonly client: Client,
+    private readonly hook: ClientHook
+  ) {}
+
+  set notify (op: (...tx: Tx[]) => void) {
+    this.client.notify = op
+  }
+
+  get notify (): ((...tx: Tx[]) => void) | undefined {
+    return this.client.notify
+  }
+
+  getHierarchy (): Hierarchy {
+    return this.client.getHierarchy()
+  }
+
+  getModel (): ModelDb {
+    return this.client.getModel()
+  }
+
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    if (this.hook !== undefined) {
+      return await this.hook.findOne(this.client, _class, query, options)
+    }
+    return await this.client.findOne(_class, query, options)
+  }
+
+  async close (): Promise<void> {
+    await this.client.close()
+  }
+
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.findAll(this.client, _class, query, options)
+    }
+    return await this.client.findAll(_class, query, options)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.domainRequest(this.client, domain, params, options)
+    }
+    return await this.client.domainRequest(domain, params, options)
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.tx(this.client, tx)
+    }
+    return await this.client.tx(tx)
+  }
+
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.searchFulltext(this.client, query, options)
+    }
+    return await this.client.searchFulltext(query, options)
+  }
 }
 
 /**
@@ -290,6 +362,12 @@ export async function setClient (_client: Client): Promise<void> {
   }
   if (pipeline !== undefined) {
     await pipeline.close()
+  }
+
+  const hook = getMetadata(plugin.metadata.ClientHook)
+
+  if (hook !== undefined) {
+    _client = new ClientHookImpl(_client, hook)
   }
 
   const needRefresh = liveQuery !== undefined
@@ -322,7 +400,7 @@ export async function setClient (_client: Client): Promise<void> {
   }
   const acc = getCurrentAccount()
   onClientListeners.forEach((l) => {
-    l(_client, acc)
+    void l(_client, acc)
   })
 }
 /**
@@ -505,6 +583,11 @@ export function getCurrentWorkspaceUrl (): string {
   return wsId
 }
 
+export function remToPx (rem: number): number {
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rem * fontSize
+}
+
 export function sizeToWidth (size: string): number | undefined {
   let width: number | undefined
   switch (size) {
@@ -514,22 +597,22 @@ export function sizeToWidth (size: string): number | undefined {
     case 'x-small':
     case 'smaller':
     case 'small':
-      width = 32
+      width = 2
       break
     case 'medium':
-      width = 64
+      width = 2.5
       break
     case 'large':
-      width = 256
+      width = 4.5
       break
     case 'x-large':
-      width = 512
+      width = 7.5
       break
     case '2x-large':
-      width = 1024
+      width = 10
       break
   }
-  return width
+  return width !== undefined ? remToPx(width) : undefined
 }
 
 /**
@@ -591,12 +674,12 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
  */
 export function getAttributePresenterClass (
   hierarchy: Hierarchy,
-  attribute: AnyAttribute
+  type: Type<any>
 ): { attrClass: Ref<Class<Doc>>, category: AttributeCategory } {
-  let attrClass = attribute.type._class
+  let attrClass = type._class
   let category: AttributeCategory = 'attribute'
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
-    attrClass = (attribute.type as RefTo<Doc>).to
+    attrClass = (type as RefTo<Doc>).to
     category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
@@ -606,11 +689,11 @@ export function getAttributePresenterClass (
     category = 'inplace'
   }
   if (hierarchy.isDerived(attrClass, core.class.Collection)) {
-    attrClass = (attribute.type as Collection<AttachedDoc>).of
+    attrClass = (type as Collection<AttachedDoc>).of
     category = 'collection'
   }
   if (hierarchy.isDerived(attrClass, core.class.ArrOf)) {
-    const of = (attribute.type as ArrOf<AttachedDoc>).of
+    const of = (type as ArrOf<AttachedDoc>).of
     attrClass = of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
     category = 'array'
   }
@@ -628,20 +711,46 @@ function getAttributeEditorNotFoundError (
   return `attribute editor not found for class "${_class}", attribute "${attributeKey}"` + error
 }
 
-export async function getAttributeEditor (
+export function getAttrEditor (type: Type<any>, hierarchy: Hierarchy): AnyComponent | undefined {
+  const attrClass = getAttributePresenterClass(hierarchy, type)
+  if (attrClass === undefined) {
+    return
+  }
+
+  let mixin: Ref<Mixin<AttributeEditor>>
+
+  switch (attrClass.category) {
+    case 'collection': {
+      mixin = view.mixin.CollectionEditor
+      break
+    }
+    case 'array': {
+      mixin = view.mixin.ArrayEditor
+      break
+    }
+    default: {
+      mixin = view.mixin.AttributeEditor
+    }
+  }
+
+  const editorMixin = hierarchy.classHierarchyMixin(attrClass.attrClass, mixin)
+  return editorMixin?.inlineEditor
+}
+
+export function findAttributeEditor (
   client: Client,
   _class: Ref<Class<Obj>>,
   key: KeyedAttribute | string
-): Promise<AnySvelteComponent | undefined> {
+): AnyComponent | undefined {
   const hierarchy = client.getHierarchy()
   const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
 
   if (attribute.type._class === core.class.TypeAny) {
     const _type: TypeAny = attribute.type as TypeAny<AnyComponent>
-    return await getResource(_type.editor ?? _type.presenter)
+    return _type.editor ?? _type.presenter
   }
 
-  const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
+  const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute.type) : undefined
 
   if (presenterClass === undefined) {
     return
@@ -664,11 +773,7 @@ export async function getAttributeEditor (
   }
 
   if (attribute.editor != null) {
-    try {
-      return await getResource(attribute.editor)
-    } catch (ex) {
-      console.error(getAttributeEditorNotFoundError(_class, key, ex))
-    }
+    return attribute.editor
   }
   const editorMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
 
@@ -680,11 +785,21 @@ export async function getAttributeEditor (
     // }
     return
   }
+  return editorMixin.inlineEditor
+}
 
-  try {
-    return await getResource(editorMixin.inlineEditor)
-  } catch (ex) {
-    console.error(getAttributeEditorNotFoundError(_class, key, ex))
+export async function getAttributeEditor (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: KeyedAttribute | string
+): Promise<AnySvelteComponent | undefined> {
+  const value = findAttributeEditor(client, _class, key)
+  if (value !== undefined) {
+    try {
+      return await getResource(value)
+    } catch (ex) {
+      console.error(getAttributeEditorNotFoundError(_class, key, ex))
+    }
   }
 }
 
@@ -752,7 +867,8 @@ export function decodeTokenPayload (token: string): any {
 }
 
 export function isAdminUser (): boolean {
-  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+  const decodedToken = decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '')
+  return decodedToken.extra?.admin === 'true'
 }
 
 export function isSpace (space: Doc): space is Space {
@@ -763,15 +879,17 @@ export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
   return client.getHierarchy().isDerived(_class, core.class.Space)
 }
 
-export function setPresentationCookie (token: string, workspaceId: string): void {
+export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
   function setToken (path: string): void {
-    document.cookie =
+    const res =
       encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
       '=' +
       encodeURIComponent(token) +
       `; path=${path}`
+    console.log('setting cookie', res)
+    document.cookie = res
   }
-  setToken('/files/' + workspaceId)
+  setToken('/files/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)

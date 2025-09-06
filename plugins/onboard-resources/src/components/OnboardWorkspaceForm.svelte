@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
-  import { createWorkspace, getRegionInfo, RegionInfo, setLoginInfo } from '@hcengineering/login-resources'
+  import { LoginInfo, RegionInfo } from '@hcengineering/login'
+  import { createWorkspace, getAccountDisplayName, getRegionInfo, setLoginInfo } from '@hcengineering/login-resources'
   import { Status, Severity, OK, getEmbeddedLabel } from '@hcengineering/platform'
-  import { ButtonMenu } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ButtonMenu } from '@hcengineering/ui'
 
   import Form from './Form.svelte'
   import onboard from '../plugin'
@@ -49,15 +49,22 @@
       const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion)
       status = loginStatus
 
-      if (result !== undefined) {
-        setLoginInfo(result as WorkspaceLoginInfo)
+      if (result != null) {
+        setLoginInfo(result)
         dispatch('step', result)
       }
     }
   }
 </script>
 
-<Form caption={onboard.string.CreateWorkspace} subtitle={account.email} {status} {fields} {object} {action}>
+<Form
+  caption={onboard.string.CreateWorkspace}
+  subtitle={getAccountDisplayName(account)}
+  {status}
+  {fields}
+  {object}
+  {action}
+>
   <svelte:fragment slot="region-selector">
     {#if regions.length > 1}
       <div class="flex flex-grow flex-reverse">

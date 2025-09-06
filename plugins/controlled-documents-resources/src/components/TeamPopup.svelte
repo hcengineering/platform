@@ -4,19 +4,18 @@
 //
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { RequestStatus } from '@hcengineering/request'
-  import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import { Class, Ref } from '@hcengineering/core'
-  import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { getPermittedAccounts, permissionsStore } from '@hcengineering/view-resources'
+  import { Employee } from '@hcengineering/contact'
+  import { UserBoxItems, getPermittedPersons, permissionsStore } from '@hcengineering/contact-resources'
   import documents, {
     ControlledDocument,
     ControlledDocumentState,
     DocumentRequest
   } from '@hcengineering/controlled-documents'
+  import { Class, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { RequestStatus } from '@hcengineering/request'
+  import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import documentsRes from '../plugin'
   import { sendApprovalRequest, sendReviewRequest } from '../utils'
@@ -39,20 +38,8 @@
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
-  $: permittedAccounts = new Set(getPermittedAccounts(permissionId, permissionsSpace, $permissionsStore))
-  let permittedPeople: Array<Ref<Employee>> = []
-
-  $: if (permittedAccounts.size > 0) {
-    void client
-      .findAll(contact.class.PersonAccount, {
-        _id: { $in: Array.from(permittedAccounts) as Array<Ref<PersonAccount>> }
-      })
-      .then((res) => {
-        permittedPeople = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      })
-  } else {
-    permittedPeople = []
-  }
+  $: permittedPeople = new Set(getPermittedPersons(permissionId, permissionsSpace, $permissionsStore))
+  $: permittedEmployees = Array.from(permittedPeople) as Ref<Employee>[]
 
   let docRequest: DocumentRequest | undefined
   let loading = true
@@ -120,7 +107,7 @@
             readonly}
           docQuery={{
             active: true,
-            _id: { $in: permittedPeople }
+            _id: { $in: permittedEmployees }
           }}
           on:update={({ detail }) => (users = detail)}
         />

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ActionIcon, IconAdd, showPopup, ModernEditbox, Spinner } from '@hcengineering/ui'
-  import { SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { SortingOrder } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { TimeEvents, ToDoPriority } from '@hcengineering/time'
   import { getClient } from '@hcengineering/presentation'
   import CreateToDoPopup from './CreateToDoPopup.svelte'
@@ -10,11 +10,11 @@
   import { Analytics } from '@hcengineering/analytics'
 
   export let fullSize: boolean = false
-  let value: string = ''
+  export let value: string = ''
   let disabled: boolean = false
 
   const client = getClient()
-  const acc = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
 
   async function save (): Promise<void> {
     let [name, description] = value.split('//')
@@ -25,7 +25,7 @@
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {
-        user: acc.person,
+        user: me,
         doneOn: null
       },
       {
@@ -41,7 +41,7 @@
       {
         title: name,
         description,
-        user: acc.person,
+        user: me,
         workslots: 0,
         priority: ToDoPriority.NoPriority,
         visibility: 'private',
@@ -53,12 +53,12 @@
     clear()
   }
 
-  function clear () {
+  function clear (): void {
     value = ''
   }
 
-  function openPopup () {
-    showPopup(CreateToDoPopup, {}, 'top')
+  function openPopup (): void {
+    showPopup(CreateToDoPopup, { value }, 'top')
   }
 </script>
 

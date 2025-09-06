@@ -13,19 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    AccountRole,
-    Class,
-    Doc,
-    DocumentQuery,
-    FindOptions,
-    getCurrentAccount,
-    hasAccountRole,
-    Ref,
-    Space,
-    WithLookup
-  } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
+  import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
   import { getClient, ComponentExtensions } from '@hcengineering/presentation'
   import {
     AnyComponent,
@@ -40,7 +29,7 @@
     SearchInput,
     showPopup
   } from '@hcengineering/ui'
-  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions, BuildModelKey } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
@@ -51,6 +40,7 @@
   } from '@hcengineering/view-resources'
   import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
+  import { deepEqual } from 'fast-equals'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -60,15 +50,18 @@
   export let createLabel: IntlString | undefined = undefined
   export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
-  export let createComponentAccess: AccountRole | undefined = undefined
   export let createButton: AnyComponent | undefined = undefined
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
   export let actionConfig: Record<string, any> = {}
   export let actionVisible: boolean = false
+  export let defaultViewletDescriptor: Ref<ViewletDescriptor> | undefined = undefined
+  export let defaultViewOptions: ViewOptions | undefined = undefined
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -80,14 +73,22 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: _baseQuery = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  let isQueryLoaded = queryBuilder === undefined
+
+  $: _baseQuery = mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {})
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
+  $: resultQuery = isQueryLoaded ? searchQuery : undefined
 
   let options = viewlet?.options
+  let _options = viewlet?.options ?? {}
 
-  $: void updateQuery(_baseQuery, viewOptions, viewlet)
+  $: if (!deepEqual(viewlet?.options ?? {}, _options)) {
+    _options = viewlet?.options ?? {}
+    options = viewlet?.options
+  }
+
+  $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)
 
   async function updateOptions (
@@ -101,12 +102,25 @@
   async function updateQuery (
     initialQuery: DocumentQuery<Doc>,
     viewOptions: ViewOptions | undefined,
-    viewlet: Viewlet | undefined
+    viewlet: Viewlet | undefined,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
   ): Promise<void> {
+    const updatedQuery = builder === undefined ? initialQuery : updateInitialQuery(initialQuery, builder)
     query =
       viewOptions !== undefined && viewlet !== undefined
-        ? await getResultQuery(hierarchy, initialQuery, viewlet.viewOptions?.other, viewOptions)
-        : initialQuery
+        ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
+        : updatedQuery
+    isQueryLoaded = true
+  }
+
+  async function updateInitialQuery (
+    initialQuery: DocumentQuery<Doc>,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
+  ): Promise<DocumentQuery<Doc>> {
+    if (builder === undefined) return initialQuery
+    const fn = await getResource(builder)
+    const q = (await fn()) ?? {}
+    return mergeQueries(initialQuery ?? {}, q ?? {})
   }
 
   function showCreateDialog (): void {
@@ -126,6 +140,7 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      {defaultViewletDescriptor}
       ignoreFragment
       viewletQuery={{
         attachTo: _class,
@@ -133,7 +148,7 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
+    <ViewletSettingButton bind:viewOptions bind:viewlet {defaultViewOptions} {defaultConfig} />
   </svelte:fragment>
 
   <Breadcrumb {icon} {label} size={'large'} isCurrent />
@@ -147,27 +162,25 @@
       extension={workbench.extensions.SpecialViewAction}
       props={{ _class, visible: actionVisible, query: resultQuery, config: actionConfig }}
     />
-    {#if createComponentAccess === undefined || hasAccountRole(getCurrentAccount(), createComponentAccess)}
-      {#if createLabel && createComponent}
-        <Button
-          icon={IconAdd}
-          label={createLabel}
-          kind={'primary'}
-          disabled={isCreationDisabled}
-          event={createEvent}
-          on:click={() => {
-            showCreateDialog()
-          }}
-        />
-      {:else if createButton !== undefined}
-        <Component
-          is={createButton}
-          props={{
-            ...createComponentProps,
-            space
-          }}
-        />
-      {/if}
+    {#if createLabel && createComponent}
+      <Button
+        icon={IconAdd}
+        label={createLabel}
+        kind={'primary'}
+        disabled={isCreationDisabled}
+        event={createEvent}
+        on:click={() => {
+          showCreateDialog()
+        }}
+      />
+    {:else if createButton !== undefined}
+      <Component
+        is={createButton}
+        props={{
+          ...createComponentProps,
+          space
+        }}
+      />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="extra">
@@ -196,7 +209,7 @@
         _class,
         space,
         options,
-        config: preference?.config ?? viewlet.config,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,
@@ -216,7 +229,7 @@
         _class,
         space,
         options,
-        config: preference?.config ?? viewlet.config,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,

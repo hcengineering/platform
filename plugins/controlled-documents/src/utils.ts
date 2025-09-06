@@ -20,8 +20,6 @@ import {
   Doc,
   DocumentQuery,
   DocumentUpdate,
-  Hierarchy,
-  getCurrentAccount,
   Rank,
   Ref,
   SortingOrder,
@@ -37,7 +35,7 @@ import documents from './plugin'
 
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { Person, PersonAccount, Employee } from '@hcengineering/contact'
+import { Employee, getCurrentEmployee, Person } from '@hcengineering/contact'
 import { makeRank } from '@hcengineering/rank'
 import tags, { TagReference } from '@hcengineering/tags'
 import {
@@ -53,7 +51,6 @@ import {
   ProjectDocument,
   ProjectMeta
 } from './types'
-import { RequestStatus } from '@hcengineering/request'
 
 /**
  * @public
@@ -173,7 +170,7 @@ export function compareDocumentVersions (
 function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjmeta: ProjectMeta): DocumentBundle {
   bundle = { ...bundle }
 
-  const person = getCurrentAccount().person as Ref<Employee>
+  const person = getCurrentEmployee()
   const documentById = toIdMap(bundle.ControlledDocument)
 
   const prjdoc = bundle.ProjectDocument.filter((prjdoc) => {
@@ -678,127 +675,8 @@ export interface DocumentValidationState {
   snapshot?: DocumentSnapshot
   document: ControlledDocument
   approvals: DocumentApprovalState[]
+  messages: ChatMessage[]
   modifiedOn?: Timestamp
-}
-
-export function extractValidationWorkflow (
-  hierarchy: Hierarchy,
-  bundle: DocumentBundle,
-  accountIdToPerson: (ref: Ref<PersonAccount>) => Ref<Person> | undefined
-): Map<Ref<ControlledDocument>, DocumentValidationState[]> {
-  const result: ReturnType<typeof extractValidationWorkflow> = new Map()
-
-  const getApprovalStates = (request: DocumentRequest | undefined): DocumentApprovalState[] => {
-    if (request === undefined) return []
-
-    const role = hierarchy.isDerived(request._class, documents.class.DocumentReviewRequest) ? 'reviewer' : 'approver'
-
-    const rejected: DocumentApprovalState[] =
-      request.rejected !== undefined
-        ? [
-            {
-              person: request.rejected,
-              role,
-              state: 'rejected',
-              timestamp: request.modifiedOn
-            }
-          ]
-        : []
-
-    const approved: DocumentApprovalState[] = request.approved.map((person, idx) => {
-      return {
-        person,
-        role,
-        state: 'approved',
-        timestamp: request.approvedDates?.[idx] ?? request.modifiedOn
-      }
-    })
-
-    const ignored: DocumentApprovalState[] = request.requested
-      .filter((person) => person !== request.rejected)
-      .filter((person) => !request.approved.includes(person))
-      .map((person) => {
-        return {
-          person,
-          role,
-          state: request.rejected !== undefined ? 'cancelled' : 'waiting'
-        }
-      })
-
-    const states = [...rejected, ...approved, ...ignored]
-
-    const messages = bundle.ChatMessage.filter((m) => m.attachedTo === request._id)
-    for (const state of states) {
-      state.messages = messages.filter((m) => accountIdToPerson(m.createdBy as Ref<PersonAccount>) === state.person)
-    }
-
-    return states
-  }
-
-  for (const document of bundle.ControlledDocument) {
-    const snapshots = bundle.DocumentSnapshot.filter((s) => s.attachedTo === document._id).sort(
-      (a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0)
-    )
-    const requests = bundle.DocumentRequest.filter((s) => s.attachedTo === document._id).sort(
-      (a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0)
-    )
-
-    const states: DocumentValidationState[] = [...snapshots, undefined].map((snapshot) => {
-      return {
-        requests: [],
-        snapshot,
-        document,
-        approvals: [],
-        messages: []
-      }
-    })
-
-    for (const request of requests) {
-      if (request.status === RequestStatus.Cancelled) {
-        continue
-      }
-      const state =
-        states.find((s) => (s.snapshot?.createdOn ?? 0) > (request.createdOn ?? 0)) ?? states[states.length - 1]
-      state.requests.push(request)
-    }
-
-    for (const state of states) {
-      const review = state.requests.findLast((r) =>
-        hierarchy.isDerived(r._class, documents.class.DocumentReviewRequest)
-      )
-      let approval = state.requests.findLast((r) =>
-        hierarchy.isDerived(r._class, documents.class.DocumentApprovalRequest)
-      )
-
-      if ((approval?.createdOn ?? 0) < (review?.createdOn ?? 0)) approval = undefined
-
-      const anchor = review ?? approval
-      const author =
-        anchor?.createdBy !== undefined
-          ? accountIdToPerson?.(anchor.createdBy as Ref<PersonAccount>) ?? document.author
-          : document.author
-
-      state.approvals = [
-        {
-          person: author,
-          role: 'author',
-          state: anchor !== undefined ? 'approved' : 'waiting',
-          timestamp: anchor !== undefined ? anchor.createdOn ?? document.createdOn : undefined
-        },
-        ...getApprovalStates(review),
-        ...getApprovalStates(approval)
-      ]
-
-      if (state.requests.length > 0) {
-        state.modifiedOn = Math.max(...state.requests.map((r) => r.modifiedOn ?? 0))
-      }
-    }
-
-    states.reverse()
-    result.set(document._id, states)
-  }
-
-  return result
 }
 
 /**

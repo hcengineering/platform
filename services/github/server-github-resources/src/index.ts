@@ -1,9 +1,8 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import chunter from '@hcengineering/chunter'
-import contact, { PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
   DocumentUpdate,
@@ -15,7 +14,8 @@ import core, {
   TxCUD,
   TxProcessor,
   TxUpdateDoc,
-  systemAccountEmail,
+  systemAccount,
+  systemAccountUuid,
   type Class,
   type TxMixin
 } from '@hcengineering/core'
@@ -29,10 +29,10 @@ import tracker from '@hcengineering/tracker'
  */
 export async function OnGithubBroadcast (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   // Enhance broadcast to send DocSyncInfo change only to system account.
-  control.ctx.contextData.broadcast.targets.github = (it) => {
+  control.ctx.contextData.broadcast.targets.github = async (it) => {
     if (TxProcessor.isExtendsCUD(it._class)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
-        return [systemAccountEmail]
+        return { target: [systemAccountUuid] }
       }
     }
   }
@@ -181,7 +181,6 @@ async function updateDocSyncInfo (
     control.hierarchy.isDerived(tx._class, core.class.TxCUD) &&
     (tx as TxCUD<Doc>).objectClass === github.class.DocSyncInfo &&
     (tx as TxCUD<Doc>).objectId === cud.objectId
-
   const txes = [...control.txes, ...control.ctx.contextData.broadcast.txes, ...toApply]
   // Check already captured Txes
   for (const i of txes) {
@@ -190,19 +189,14 @@ async function updateDocSyncInfo (
       return
     }
   }
-
-  const [account] = control.modelDb.findAllSync(contact.class.PersonAccount, {
-    _id: tx.modifiedBy as Ref<PersonAccount>
-  })
   // Do not modify state if is modified by github service.
-  if (account === undefined) {
+  if (tx.modifiedBy === systemAccount.primarySocialId) {
     return
   }
   const projects =
     (cache.get('projects') as GithubProject[]) ??
     (await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } }))
   cache.set('projects', projects)
-
   if (projects.some((it) => it._id === (space as Ref<GithubProject>))) {
     const sdoc =
       (cache.get(cud.objectId) as DocSyncInfo) ??
@@ -211,7 +205,6 @@ async function updateDocSyncInfo (
           _id: cud.objectId as Ref<DocSyncInfo>
         })
       ).shift()
-
     // We need to check if sync doc is already exists.
     if (sdoc === undefined) {
       // Created by non github integration

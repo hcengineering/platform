@@ -57,7 +57,7 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
       (p: CompAndProps) => p.id === id
     )
     if (popupIndex !== -1) {
-      ;(modals[popupIndex] as CompAndProps).update?.(props)
+      ;(modals[popupIndex] as CompAndProps).update?.(props.props)
     }
     return modals
   })
@@ -109,6 +109,10 @@ export function showPopup (
     })
   }
   closePopupOp()
+  const anchor = document.activeElement as HTMLElement
+  const editable = anchor?.isContentEditable || anchor?.tagName === 'INPUT' || anchor?.tagName === 'TEXTAREA'
+  if (anchor != null && !editable) anchor.blur()
+
   const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
   const data: Omit<CompAndProps, 'is'> = {
     id,
@@ -431,7 +435,7 @@ export function fitPopupElement (
   return { props: newProps, showOverlay: show, direction: '' }
 }
 
-export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
+export function eventToHTMLElement (evt: MouseEvent | TouchEvent): HTMLElement {
   return evt.target as HTMLElement
 }
 

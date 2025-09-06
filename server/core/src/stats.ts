@@ -1,7 +1,6 @@
 import type { MeasureContext, Metrics } from '@hcengineering/core'
-import { concatLink, MeasureMetricsContext, metricsToString, newMetrics, systemAccountEmail } from '@hcengineering/core'
+import { concatLink, MeasureMetricsContext, newMetrics, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { writeFile } from 'fs/promises'
 import os from 'os'
 
 export interface MemoryStatistics {
@@ -79,14 +78,13 @@ export function initStatisticsContext (
   serviceName: string,
   ops?: {
     logFile?: string
-    logConsole?: boolean
-    factory?: () => MeasureMetricsContext
-    getUsers?: () => WorkspaceStatistics[]
+    factory?: () => MeasureContext
+    getStats?: () => WorkspaceStatistics[]
     statsUrl?: string
     serviceName?: () => string
   }
 ): MeasureContext {
-  let metricsContext: MeasureMetricsContext
+  let metricsContext: MeasureContext
   if (ops?.factory !== undefined) {
     metricsContext = ops.factory()
   } else {
@@ -95,18 +93,13 @@ export function initStatisticsContext (
 
   const statsUrl = ops?.statsUrl ?? process.env.STATS_URL
 
-  const metricsFile = ops?.logFile
-
   let errorToSend = 0
 
-  if (metricsFile !== undefined || ops?.logConsole === true || statsUrl !== undefined) {
-    if (metricsFile !== undefined) {
-      console.info('storing measurements into local file', metricsFile)
-    }
-    let oldMetricsValue = ''
+  if (statsUrl !== undefined) {
+    metricsContext.info('using stats url', { statsUrl, service: serviceName ?? '' })
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
-    let prev: Promise<void> | undefined
+    let prev: Promise<void> | Promise<any> | undefined
     const handleError = (err: any): void => {
       errorToSend++
       if (errorToSend % 2 === 0) {
@@ -119,50 +112,42 @@ export function initStatisticsContext (
 
     const intTimer = setInterval(() => {
       try {
-        if (metricsFile !== undefined || ops?.logConsole === true) {
-          const val = metricsToString(metricsContext.metrics, serviceName, 140)
-          if (val !== oldMetricsValue) {
-            oldMetricsValue = val
-            if (metricsFile !== undefined) {
-              void writeFile(metricsFile, val).catch((err) => {
-                console.error(err)
-              })
-            }
-            if (ops?.logConsole === true) {
-              console.info('METRICS:', val)
-            }
-          }
-        }
         if (prev !== undefined) {
           // In case of high load, skip
           return
         }
         if (statsUrl !== undefined) {
-          const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
+          const token = generateToken(systemAccountUuid, undefined, { service: serviceName })
           const data: ServiceStatistics = {
             serviceName: ops?.serviceName?.() ?? serviceName,
             cpu: getCPUInfo(),
             memory: getMemoryInfo(),
             stats: metricsContext.metrics,
-            workspaces: ops?.getUsers?.()
+            workspaces: ops?.getStats?.()
           }
 
           const statData = JSON.stringify(data)
 
-          prev = fetch(
-            concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: statData
-            }
+          void metricsContext.with(
+            'sendStatistics',
+            {},
+            async (ctx) => {
+              prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  authorization: `Bearer ${token}`
+                },
+                body: statData
+              })
+                .finally(() => {
+                  prev = undefined
+                })
+                .catch(handleError)
+            },
+            undefined,
+            { span: 'disable' }
           )
-            .catch(handleError)
-            .then(() => {
-              prev = undefined
-            })
         }
       } catch (err: any) {
         handleError(err)

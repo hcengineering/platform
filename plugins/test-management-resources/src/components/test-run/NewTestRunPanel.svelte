@@ -34,7 +34,6 @@
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { IntlString } from '@hcengineering/platform'
   import { Attachment } from '@hcengineering/attachment'
-  import { PersonAccount } from '@hcengineering/contact'
 
   import { selectedTestCases, selectedTestPlan, resetStore } from './store/testRunStore'
   import NewTestRunAside from './NewTestRunAside.svelte'
@@ -72,7 +71,7 @@
   }
 
   const id: Ref<TestRun> = generateId()
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentAccount()
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
@@ -84,7 +83,7 @@
     _id: id,
     space,
     modifiedOn: 0,
-    modifiedBy: me._id,
+    modifiedBy: me.primarySocialId,
     _class: testManagement.class.TestPlan
   }
 
@@ -153,7 +152,7 @@
     isHeader={false}
     isAside={true}
     isSub={false}
-    adaptive={'default'}
+    adaptive={'disabled'}
     withoutActivity={true}
     on:open
     on:close={() => dispatch('close')}
@@ -179,7 +178,7 @@
       placeholder={core.string.Description}
       kind="indented"
       isScrollable={false}
-      enableBackReferences={true}
+      kitOptions={{ reference: true }}
       enableAttachments={false}
       on:attachments={(ev) => {
         if (ev.detail.size > 0) attachments = ev.detail.values

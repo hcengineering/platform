@@ -13,111 +13,164 @@
 // limitations under the License.
 // -->
 <script lang="ts">
-  import { getJsonOrEmpty, type LinkPreviewDetails } from '@hcengineering/presentation'
+  import {
+    getJsonOrEmpty,
+    getClient,
+    type LinkPreviewDetails,
+    LinkPreviewAttachmentMetadata
+  } from '@hcengineering/presentation'
   import { type Attachment } from '@hcengineering/attachment'
   import { type WithLookup } from '@hcengineering/core'
-  import { Spinner } from '@hcengineering/ui'
-  import WebIcon from './icons/Web.svelte'
   import { onMount } from 'svelte'
 
-  export let attachment: WithLookup<Attachment>
-  let useDefaultIcon = false
-  let retryCount = 0
-  let viewModel: LinkPreviewDetails
-  let previewImageSrc: string | undefined
+  import TrashIcon from './icons/Trash.svelte'
+  import { getImageDimensions } from '../utils'
+  import LinkPreviewIcon from './LinkPreviewIcon.svelte'
+  import LinkPreviewImage from './LinkPreviewImage.svelte'
 
-  function refreshPreviewImage (): void {
-    if (viewModel?.image === undefined) {
-      return
-    }
-    if (retryCount > 3) {
-      previewImageSrc = undefined
-      return
-    }
-    retryCount++
-    previewImageSrc = `${viewModel.image}#${Date.now()}`
+  export let attachment: WithLookup<Attachment>
+  export let isOwn = false
+
+  let viewModel: LinkPreviewDetails | undefined
+
+  let metadata: LinkPreviewAttachmentMetadata | undefined
+  $: metadata = attachment.metadata
+
+  const client = getClient()
+
+  async function onDelete (): Promise<void> {
+    await client.removeCollection(
+      attachment._class,
+      attachment.space,
+      attachment._id,
+      attachment.attachedTo,
+      attachment.attachedToClass,
+      'attachments'
+    )
   }
 
   onMount(() => {
-    void getJsonOrEmpty(attachment.file, attachment.name)
+    void getJsonOrEmpty<LinkPreviewDetails>(attachment.file, attachment.name)
       .then((res) => {
-        viewModel = res as LinkPreviewDetails
-        refreshPreviewImage()
+        viewModel = res
       })
       .catch((err) => {
+        viewModel = undefined
         console.error(err)
       })
   })
+
+  $: description = viewModel?.description ?? metadata?.description
+  $: title = viewModel?.title ?? metadata?.title
+  $: icon = viewModel?.icon
+  $: image = viewModel?.image ?? metadata?.image
+  $: host = viewModel?.host
+  $: hostname = viewModel?.hostname
+  $: url = viewModel?.url
+
+  $: imageDimensions =
+    metadata?.imageWidth && metadata.imageHeight
+      ? getImageDimensions(
+        { width: metadata.imageWidth, height: metadata.imageHeight },
+        {
+          maxWidth: 24.5,
+          minWidth: 4,
+          maxHeight: 15,
+          minHeight: 4
+        }
+      )
+      : undefined
 </script>
 
-<div class="quote content">
-  {#if viewModel}
-    <div class="gapV-2">
-      <div class="flex-row-center gap-1">
-        {#if viewModel.icon !== undefined && !useDefaultIcon}
-          <img
-            src={viewModel.icon}
-            class="preview-icon"
-            alt="link-preview-icon"
-            on:error={() => {
-              useDefaultIcon = true
-            }}
-          />
-        {:else}
-          <WebIcon size="medium" />
-        {/if}
-        <b><a target="_blank" href={viewModel.host}>{viewModel.hostname}</a></b>
+<div class="link-preview">
+  <div class="link-preview__header">
+    <LinkPreviewIcon src={icon} />
+    {#if host}
+      <b class="overflow-label"><a class="link" target="_blank" href={host}>{hostname}</a></b>
+    {/if}
+    {#if isOwn}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="link-preview__delete-button" tabindex="0" role="button" on:click={onDelete}>
+        <TrashIcon size="small" />
       </div>
-      <div>
-        <div>
-          {#if viewModel.title?.toLowerCase() !== viewModel.hostname?.toLowerCase()}
-            <b><a target="_blank" href={viewModel.url}>{viewModel.title}</a></b>
-          {/if}
-        </div>
-        <div>
-          {#if viewModel.description}
-            {viewModel.description}
-          {/if}
-          {#if previewImageSrc}
-            <a target="_blank" href={viewModel.url}>
-              <img
-                src={previewImageSrc}
-                class="round-image"
-                alt="link-preview"
-                on:error={() => {
-                  refreshPreviewImage()
-                }}
-              />
-            </a>
-          {/if}
-        </div>
-      </div>
-    </div>
-  {:else}
-    <div class="centered">
-      <Spinner size="medium" />
-    </div>
+    {/if}
+  </div>
+  <div class="link-preview__body">
+    {#if title && title.toLowerCase() !== (hostname ?? '').toLowerCase()}
+      {#if url}
+        <b><a class="link" target="_blank" href={url}>{title}</a></b>
+      {:else}
+        <b>{title}</b>
+      {/if}
+    {/if}
+    {#if description && description !== ''}
+      <span class="link-preview__description lines-limit-4">
+        {description}
+      </span>
+    {/if}
+  </div>
+  {#if image}
+    <LinkPreviewImage
+      {url}
+      src={image}
+      width={imageDimensions?.width ?? 300}
+      height={imageDimensions?.height ?? 170}
+      fit={imageDimensions?.fit ?? 'contain'}
+    />
   {/if}
 </div>
 
 <style lang="scss">
-  .round-image {
-    border: 0.5px solid;
-    border-radius: 7px;
-    max-width: 25rem;
-    max-height: 25rem;
-  }
-  .preview-icon {
-    max-width: 16px;
-    max-height: 16px;
-  }
-  .quote {
-    border-left: 0.25rem solid;
-    padding-left: 0.75rem;
-  }
-  .content {
+  .link-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    line-height: 150%;
+    padding: 0.75rem;
+    background-color: var(--theme-link-preview-bg-color);
+    border-radius: 0.75rem;
     scroll-snap-align: start;
-    max-width: 35rem;
-    max-height: 35rem;
+    max-width: 26rem;
+    min-width: 16rem;
+
+    &:hover {
+      .link-preview__delete-button {
+        visibility: visible;
+      }
+    }
+  }
+
+  .link-preview__header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.375rem;
+  }
+
+  .link-preview__delete-button {
+    margin-left: auto;
+    cursor: pointer;
+    visibility: hidden;
+
+    &:not(:hover) {
+      color: var(--theme-link-preview-description-color);
+    }
+  }
+
+  .link-preview__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+
+  .link-preview__description {
+    color: var(--theme-link-preview-description-color);
+    overflow: hidden;
+  }
+
+  .link {
+    color: var(--theme-link-preview-text-color);
   }
 </style>

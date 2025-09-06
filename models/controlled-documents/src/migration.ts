@@ -14,11 +14,12 @@ import {
 import {
   type ChangeControl,
   type ControlledDocument,
-  ControlledDocumentState,
   createChangeControl,
   createDocumentTemplate,
+  type DocumentApprovalRequest,
   type DocumentCategory,
   type DocumentMeta,
+  type DocumentReviewRequest,
   documentsId,
   DocumentState,
   type ProjectMeta
@@ -27,13 +28,10 @@ import {
   type Class,
   type Data,
   type Doc,
-  type DocIndexState,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_SEQUENCE,
   DOMAIN_TX,
   generateId,
   makeDocCollabId,
-  MeasureMetricsContext,
   type Ref,
   SortingOrder,
   toIdMap,
@@ -57,6 +55,8 @@ import tags from '@hcengineering/tags'
 import { compareDocumentVersions } from '@hcengineering/controlled-documents/src'
 import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
+import { DOMAIN_REQUEST } from '@hcengineering/model-request'
+import { RequestStatus } from '@hcengineering/request'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
   const existingSpace = await tx.findOne(documents.class.DocumentSpace, {
@@ -273,15 +273,12 @@ async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
       'attributes.descriptor': documents.descriptor.DocumentSpaceType
     },
     {
-      $set: {
-        objectClass: documents.class.DocumentSpaceType
-      }
+      objectClass: documents.class.DocumentSpaceType
     }
   )
 }
 
 async function migrateDocSections (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrate_doc_sections', {})
   const storage = client.storageAdapter
 
   const targetDocuments = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
@@ -304,7 +301,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
     // Migrate sections headers + content
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      const ydoc = await loadCollabYdoc(client.ctx, storage, client.wsIds, collabId)
       if (ydoc === undefined) {
         // no content, ignore
         continue
@@ -350,9 +347,9 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
         }
       })
 
-      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+      await saveCollabYdoc(client.ctx, storage, client.wsIds, collabId, ydoc)
     } catch (err) {
-      ctx.error('error collaborative document content migration', { error: err, document: document.title })
+      client.logger.error('error collaborative document content migration', { error: err, document: document.title })
     }
 
     attachmentsOps.push({
@@ -400,7 +397,7 @@ async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
   for (const doc of projectMeta) {
     operations.push({
       filter: { _id: doc._id },
-      update: { $set: { rank } }
+      update: { rank }
     })
     rank = makeRank(rank, undefined)
   }
@@ -449,14 +446,6 @@ async function migrateDocumentMetaInternalCode (client: MigrationClient): Promis
   }
 
   await client.bulk(DOMAIN_DOCUMENTS, operations)
-  await client.update<DocIndexState>(
-    DOMAIN_DOC_INDEX_STATE,
-    {
-      _id: { $in: Array.from(updatedIds) as any },
-      objectClass: documents.class.DocumentMeta
-    },
-    { $set: { needIndex: true } }
-  )
 }
 
 async function migrateInvalidDocumentState (client: MigrationClient): Promise<void> {
@@ -480,39 +469,48 @@ async function migrateInvalidDocumentState (client: MigrationClient): Promise<vo
   await client.bulk(DOMAIN_DOCUMENTS, operations)
 }
 
-async function migrateInvalidPlannedEffectiveDate (client: MigrationClient): Promise<void> {
-  const docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
-    _class: documents.class.ControlledDocument,
-    plannedEffectiveDate: { $exists: false }
+async function migrateCancelDuplicateActiveRequests (client: MigrationClient): Promise<void> {
+  const reviews = await client.find<DocumentReviewRequest>(DOMAIN_REQUEST, {
+    _class: documents.class.DocumentReviewRequest
+  })
+  const approvals = await client.find<DocumentApprovalRequest>(DOMAIN_REQUEST, {
+    _class: documents.class.DocumentApprovalRequest
   })
 
-  const operations: {
-    filter: MigrationDocumentQuery<ControlledDocument>
-    update: MigrateUpdate<ControlledDocument>
-  }[] = []
-  for (const doc of docs) {
-    operations.push({
-      filter: { _id: doc._id },
-      update: {
-        plannedEffectiveDate: 0
-      }
-    })
-    if (doc.state === DocumentState.Draft && doc.controlledState === ControlledDocumentState.Approved) {
-      operations.push({
-        filter: { _id: doc._id },
-        update: { $unset: { controlledState: true } }
-      })
-      operations.push({
-        filter: { _id: doc._id },
-        update: {
-          state: DocumentState.Effective,
-          effectiveDate: Date.now()
-        }
-      })
+  const requests = [...reviews, ...approvals].sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+
+  const requestsByDoc = new Map<Ref<ControlledDocument>, (DocumentApprovalRequest | DocumentReviewRequest)[]>()
+  for (const request of requests) {
+    const attachedTo = request.attachedTo as Ref<ControlledDocument>
+    const entry = requestsByDoc.get(attachedTo)
+    if (entry === undefined) {
+      requestsByDoc.set(attachedTo, [request])
+    } else {
+      entry.push(request)
     }
   }
 
-  await client.bulk(DOMAIN_DOCUMENTS, operations)
+  const requestsToCancel: (DocumentApprovalRequest | DocumentReviewRequest)[] = []
+
+  for (const entry of requestsByDoc.entries()) {
+    const requests = entry[1]
+    if (requests.length < 2) continue
+    const tail = requests.slice(1).filter((r) => r.status === RequestStatus.Active)
+    requestsToCancel.push(...tail)
+  }
+
+  const operations: {
+    filter: MigrationDocumentQuery<DocumentApprovalRequest | DocumentReviewRequest>
+    update: MigrateUpdate<DocumentApprovalRequest | DocumentReviewRequest>
+  }[] = []
+  for (const doc of requestsToCancel) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { status: RequestStatus.Cancelled }
+    })
+  }
+
+  await client.bulk(DOMAIN_REQUEST, operations)
 }
 
 export const documentsOperation: MigrateOperation = {
@@ -550,8 +548,8 @@ export const documentsOperation: MigrateOperation = {
         func: migrateInvalidDocumentState
       },
       {
-        state: 'migrateInvalidPlannedEffectiveDate',
-        func: migrateInvalidPlannedEffectiveDate
+        state: 'migrateCancelDuplicateActiveRequests',
+        func: migrateCancelDuplicateActiveRequests
       }
     ])
   },

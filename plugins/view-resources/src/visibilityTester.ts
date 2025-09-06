@@ -15,8 +15,10 @@
 
 import core, {
   checkPermission,
+  checkForbiddenPermission,
   getCurrentAccount,
   toIdMap,
+  AccountRole,
   type Doc,
   type Space,
   type TypedSpace
@@ -27,6 +29,11 @@ import { spaceSpace } from './utils'
 
 function isTypedSpace (space: Space): space is TypedSpace {
   return getClient().getHierarchy().isDerived(space._class, core.class.TypedSpace)
+}
+
+function isSpaceOwner (space: Space): boolean {
+  const currentAccount = getCurrentAccount()
+  return currentAccount.role === AccountRole.Owner || (space.owners ?? []).includes(currentAccount.uuid)
 }
 
 export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
@@ -44,7 +51,7 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
   return !(
     await Promise.all(
       Array.from(targetSpaces.entries()).map(
-        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
+        async (s) => await checkForbiddenPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
       )
     )
   ).some((r) => r)
@@ -57,7 +64,7 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
@@ -83,7 +90,7 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
@@ -109,7 +116,7 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
@@ -131,7 +138,7 @@ export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return !space.members?.includes(getCurrentAccount()._id)
+  return !(space.members ?? []).includes(getCurrentAccount().uuid)
 }
 
 export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
@@ -141,7 +148,7 @@ export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return space.members?.includes(getCurrentAccount()._id)
+  return (space.members ?? []).includes(getCurrentAccount().uuid)
 }
 
 export function isClipboardAvailable (doc?: Doc | Doc[]): boolean {

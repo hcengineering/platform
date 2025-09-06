@@ -37,11 +37,11 @@ export async function createContent (
     throw new Error(`Document ${documentName} already exists`)
   }
 
-  const { documentId, workspaceId } = decodeDocumentId(documentName)
+  const { documentId } = decodeDocumentId(documentName)
 
   const result: Record<string, Ref<Blob>> = {}
   for (const [field, markup] of Object.entries(content)) {
-    const blob = await saveCollabJson(ctx, storageAdapter, { name: workspaceId }, documentId, markup)
+    const blob = await saveCollabJson(ctx, storageAdapter, context.wsIds, documentId, markup)
     result[field] = blob
   }
 

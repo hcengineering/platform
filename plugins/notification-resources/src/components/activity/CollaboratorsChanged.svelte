@@ -14,71 +14,31 @@
 -->
 
 <script lang="ts">
-  import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
-  import { personAccountByIdStore, PersonAccountRefPresenter } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import activity, { DocAttributeUpdates } from '@hcengineering/activity'
+  import activity, { DisplayDocUpdateMessage } from '@hcengineering/activity'
+  import { employeeRefByAccountUuidStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { Collaborator } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { Icon, Label } from '@hcengineering/ui'
 
-  export let value: DocAttributeUpdates
+  export let message: DisplayDocUpdateMessage
+  export let value: Collaborator | undefined
 
-  $: removed = getAccountRefs(value.removed)
-  $: added = getAccountRefs(value.added.length > 0 ? value.added : value.set)
-
-  function getAccountRefs (values: DocAttributeUpdates['removed' | 'added' | 'set']): Ref<PersonAccount>[] {
-    const persons = new Set<Ref<Person>>()
-
-    return values.filter((value) => {
-      const account = $personAccountByIdStore.get(value as Ref<PersonAccount>)
-
-      if (account === undefined) {
-        return false
-      }
-
-      if (persons.has(account.person)) {
-        return false
-      }
-
-      persons.add(account.person)
-      return true
-    }) as Ref<PersonAccount>[]
-  }
-
-  $: hasDifferentChanges = added.length > 0 && removed.length > 0
+  $: person = value ? $employeeRefByAccountUuidStore.get(value?.collaborator) : undefined
 </script>
 
 <span class="root">
   <Icon icon={activity.icon.Activity} size="small" />
   <span class="label">
-    {#if hasDifferentChanges}
-      <Label label={notification.string.ChangedCollaborators} />:
-    {:else if added.length > 0}
-      <Label label={notification.string.NewCollaborators} />:
-    {:else if removed.length > 0}
-      <Label label={notification.string.RemovedCollaborators} />:
+    {#if message.action === 'create'}
+      <Label label={notification.string.NewCollaborators} />
+    {:else}
+      <Label label={notification.string.RemovedCollaborators} />
     {/if}
   </span>
 
-  {#if added.length > 0}
+  {#if person !== undefined}
     <span class="row">
-      {#if hasDifferentChanges}
-        <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {/if}
-      {#each added as add}
-        <PersonAccountRefPresenter value={add} avatarSize="card" compact />
-      {/each}
-    </span>
-  {/if}
-  <span class="antiHSpacer"></span>
-  {#if removed.length > 0}
-    <span class="row">
-      {#if hasDifferentChanges}
-        <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {/if}
-      {#each removed as remove}
-        <PersonAccountRefPresenter value={remove} avatarSize="card" compact />
-      {/each}
+      <PersonRefPresenter value={person} avatarSize="card" compact />
     </span>
   {/if}
 </span>
@@ -88,6 +48,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    color: var(--global-primary-TextColor);
     gap: 0.5rem;
   }
 

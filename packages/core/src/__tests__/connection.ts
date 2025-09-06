@@ -13,13 +13,21 @@
 // limitations under the License.
 //
 
-import { ClientConnectEvent, DocChunk, generateId } from '..'
-import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
-import { ClientConnection } from '../client'
+import { ClientConnectEvent, type DocChunk, generateId } from '..'
+import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
+import { type ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
+import type {
+  DocumentQuery,
+  DomainResult,
+  FindResult,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  TxResult
+} from '../storage'
 import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
@@ -64,12 +72,18 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       return { docs: [] }
     }
 
+    pushHandler = (): void => {}
+
     async tx (tx: Tx): Promise<TxResult> {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)
       }
       const result = await Promise.all([model.tx(tx), transactions.tx(tx)])
       return result[0]
+    }
+
+    async domainRequest (): Promise<DomainResult> {
+      return await Promise.resolve({ domain: 'test' as Domain, value: null })
     }
 
     async close (): Promise<void> {}
@@ -95,10 +109,6 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
     async loadModel (last: Timestamp): Promise<Tx[]> {
       return txes
-    }
-
-    async getAccount (): Promise<Account> {
-      return null as unknown as Account
     }
 
     async sendForceClose (): Promise<void> {}

@@ -68,26 +68,30 @@
 </script>
 
 {#if !allDay && rules.length === 0 && myTimezone === timeZone}
-  <div class="antiButton ghost x-small sh-no-shape text-11px pl-2 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="overflow-label cursor-pointer" on:click={() => (allDay = true)}>
-      <Label label={calendar.string.AllDay} />
-    </div>
-    <div class="overflow-label cursor-default" on:click={showTimezoneSelector}>
-      <Label label={calendar.string.TimeZone} />
-    </div>
-    {#if !noRepeat}
+  {#if !readOnly}
+    <div class="antiButton ghost x-small sh-no-shape text-11px pl-1 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="overflow-label cursor-pointer" on:click={() => dispatch('repeat')}>
-        <Label label={calendar.string.Repeat} />
+      <div class="overflow-label cursor-pointer" on:click={() => (allDay = true)}>
+        <Label label={calendar.string.AllDay} />
       </div>
-    {/if}
-  </div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="overflow-label cursor-default" on:click={showTimezoneSelector}>
+        <Label label={calendar.string.TimeZone} />
+      </div>
+      {#if !noRepeat}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="overflow-label cursor-pointer" on:click={() => dispatch('repeat')}>
+          <Label label={calendar.string.Repeat} />
+        </div>
+      {/if}
+    </div>
+  {/if}
 {:else}
   <div class="flex-row-center gap-1-5 mt-1">
-    <CheckBox bind:checked={allDay} kind={'primary'} on:value={() => dispatch('allday')} />
+    <CheckBox bind:checked={allDay} kind={'primary'} on:value={() => dispatch('allday')} readonly={readOnly} />
     <Button
       label={calendar.string.AllDay}
       kind={'ghost'}
@@ -95,17 +99,19 @@
       justify={'left'}
       disabled={readOnly}
       on:click={() => {
-        allDay = !allDay
-        dispatch('allday')
+        if (!readOnly) {
+          allDay = !allDay
+          dispatch('allday')
+        }
       }}
     />
   </div>
-  <div class="flex-row-center gap-1-5 mt-1">
+  <div class="flex-row-center gap-1 mt-1">
     <Icon icon={calendar.icon.Globe} size={'small'} fill={'var(--theme-dark-color)'} />
     <TimeZoneSelector bind:timeZone disabled={readOnly} />
   </div>
   {#if !noRepeat}
-    <div class="flex-row-center gap-1-5 mt-1">
+    <div class="flex-row-center gap-1 mt-1">
       <Icon icon={calendar.icon.Repeat} size={'small'} fill={'var(--theme-dark-color)'} />
       <Button
         label={rules.length > 0 ? undefined : calendar.string.Repeat}

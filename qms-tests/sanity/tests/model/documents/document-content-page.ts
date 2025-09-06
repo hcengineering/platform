@@ -207,7 +207,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.employeeDropdown = page.locator('div:nth-child(4) > button').first()
     this.kickEmployee = page.getByRole('button', { name: 'Kick employee' })
     this.confirmKickEmployee = page.getByRole('button', { name: 'Ok' })
-    this.openTeam = page.getByText('Team')
+    this.openTeam = page.getByText('Team', { exact: true })
     this.privateToggle = page.locator('#teamspace-private span')
     this.inputTeamspaceName = page.getByPlaceholder('New teamspace')
     this.teamspaceArrow = page.locator('.w-full > button:nth-child(2)')
@@ -589,6 +589,17 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
+  async addThirdUserToMembers (spaceName: string): Promise<void> {
+    await this.page.getByRole('button', { name: spaceName }).hover()
+    await this.page.getByRole('button', { name: spaceName }).getByRole('button').click()
+    await this.editDocumentSpace.click()
+    await this.page.getByRole('button', { name: 'AJ DK 2 members' }).click()
+    await this.page.getByRole('button', { name: 'VC Velasquez Cain' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.saveButton.click()
+  }
+
   async checkIfTheSpaceIsVisible (spaceName: string, visible: boolean): Promise<void> {
     if (visible) {
       await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
@@ -751,6 +762,13 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.getByText(text).click()
     await this.page.getByText(text).dblclick()
 
+    // NOTE: without the resize the menu popup might be placed in a wrong place initially
+    // and only update its position on the button click (MouseDown) which leads
+    // to the MouseUp land not on the button and the click handler is not triggered
+    // Resize event ensures that the menu popup is placed correctly before clicking
+    await this.page.evaluate(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
     await this.buttonAddMessageToText.click()
     await this.addMessage(message)
 

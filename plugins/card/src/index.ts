@@ -11,20 +11,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref, Space } from '@hcengineering/core'
-import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
+import {
+  AttachedDoc,
+  Blobs,
+  Class,
+  CollectionSize,
+  Data,
+  Doc,
+  Domain,
+  MarkupBlobRef,
+  Mixin,
+  Rank,
+  Ref,
+  Space
+} from '@hcengineering/core'
+import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import { Preference } from '@hcengineering/preference'
+import { IconProps } from '@hcengineering/view'
 
 export * from './analytics'
 
 export interface MasterTag extends Class<Card> {
-  color?: number
+  color?: number // used for emoji icon
+  background?: number
   removed?: boolean
+  roles?: CollectionSize<Role>
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
-export interface Card extends Doc {
+export interface Role extends AttachedDoc<MasterTag | Tag, 'roles'> {
+  name: string
+  attachedTo: Ref<MasterTag | Tag>
+}
+
+export interface Card extends Doc, IconProps {
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
@@ -34,6 +56,7 @@ export interface Card extends Doc {
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
+  readonly?: boolean
 }
 
 export interface CardSpace extends Space {
@@ -53,6 +76,39 @@ export interface MasterTagEditorSection extends Doc {
   masterOnly?: boolean
 }
 
+export interface CardNavigation {
+  id: string
+  label: IntlString
+}
+
+export interface CardSection extends Doc {
+  label: IntlString
+  component: AnyComponent
+  order: number
+  navigation: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
+}
+
+export interface CardViewDefaults extends MasterTag {
+  defaultSection: Ref<CardSection>
+  defaultNavigation?: string
+}
+
+export interface FavoriteCard extends Preference {
+  attachedTo: Ref<Card>
+  application: string
+}
+
+export interface CreateCardExtension extends MasterTag {
+  component?: AnyComponent
+  canCreate?: CanCreateCardResource
+  disableTitle?: boolean
+  hideSpace?: boolean
+}
+
+export type CanCreateCardFn = (space: Ref<Space>, data: Partial<Data<Card>>) => Promise<boolean | Ref<Card>>
+export type CanCreateCardResource = Resource<CanCreateCardFn>
+
 /**
  * @public
  */
@@ -69,7 +125,14 @@ const cardPlugin = plugin(cardId, {
     MasterTag: '' as Ref<Class<MasterTag>>,
     Tag: '' as Ref<Class<Tag>>,
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>,
-    CardSpace: '' as Ref<Class<CardSpace>>
+    CardSpace: '' as Ref<Class<CardSpace>>,
+    Role: '' as Ref<Class<Role>>,
+    CardSection: '' as Ref<Class<CardSection>>,
+    FavoriteCard: '' as Ref<Class<FavoriteCard>>
+  },
+  mixin: {
+    CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,
+    CreateCardExtension: '' as Ref<Mixin<CreateCardExtension>>
   },
   space: {
     Default: '' as Ref<CardSpace>
@@ -85,7 +148,10 @@ const cardPlugin = plugin(cardId, {
     Tags: '' as Asset,
     Card: '' as Asset,
     File: '' as Asset,
-    Document: '' as Asset
+    View: '' as Asset,
+    Document: '' as Asset,
+    Home: '' as Asset,
+    Space: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -97,7 +163,33 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as IntlString,
     Card: '' as IntlString,
     Cards: '' as IntlString,
-    CardApplication: '' as IntlString
+    CardApplication: '' as IntlString,
+    Views: '' as IntlString,
+    Labels: '' as IntlString
+  },
+  section: {
+    Attachments: '' as Ref<CardSection>,
+    Children: '' as Ref<CardSection>,
+    Content: '' as Ref<CardSection>,
+    Properties: '' as Ref<CardSection>,
+    Relations: '' as Ref<CardSection>
+  },
+  ids: {
+    CardWidget: '' as Ref<Doc>
+  },
+  component: {
+    LabelsPresenter: '' as AnyComponent,
+    CardTagColored: '' as AnyComponent,
+    CardTagsColored: '' as AnyComponent,
+    CardIcon: '' as AnyComponent,
+    CardArrayEditor: '' as AnyComponent
+  },
+  function: {
+    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
+  },
+  label: {
+    Subscribed: '' as Ref<Doc>,
+    NewMessages: '' as Ref<Doc>
   }
 })
 

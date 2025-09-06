@@ -14,16 +14,18 @@
 //
 
 import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
-import core, { TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
+import core, { DOMAIN_MODEL, type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  createOrUpdate
 } from '@hcengineering/model'
-import view from '@hcengineering/view'
+import view, { type Viewlet } from '@hcengineering/view'
 import card from '.'
+import tags from '@hcengineering/tags'
 
 export const cardOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
@@ -42,14 +44,23 @@ export const cardOperation: MigrateOperation = {
         state: 'migrate-childs-spaces',
         mode: 'upgrade',
         func: migrateChildsSpaces
+      },
+      {
+        state: 'update-custom-fields-displayprops',
+        mode: 'upgrade',
+        func: updateCustomFieldsDisplayProps
       }
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, cardId, [
       {
-        state: 'migrateViewlets-v2',
+        state: 'migrateViewlets-v5',
         func: migrateViewlets
+      },
+      {
+        state: 'removeVariantViewlets',
+        func: removeVariantViewlets
       },
       {
         state: 'create-defaults',
@@ -57,8 +68,89 @@ export const cardOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaultProject(tx)
         }
+      },
+      {
+        state: 'default-labels',
+        func: defaultLabels
+      },
+      {
+        state: 'fill-parent-info',
+        mode: 'upgrade',
+        func: fillParentInfo
       }
     ])
+  }
+}
+
+async function fillParentInfo (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const cards = await client.findAll(card.class.Card, { parentInfo: { $exists: false }, parent: { $ne: null } })
+  const cache = new Map<Ref<Card>, Card>()
+  for (const val of cards) {
+    if (val.parent == null) continue
+    const parent = await getCardParentWithParentInfo(txOp, val.parent, cache)
+    if (parent !== undefined) {
+      const parentInfo = [
+        ...(parent.parentInfo ?? []),
+        {
+          _id: parent._id,
+          _class: parent._class,
+          title: parent.title
+        }
+      ]
+      await txOp.update(val, { parentInfo })
+      val.parentInfo = parentInfo
+      cache.set(val._id, val)
+    }
+  }
+}
+
+async function getCardParentWithParentInfo (
+  txOp: TxOperations,
+  _id: Ref<Card>,
+  cache: Map<Ref<Card>, Card>,
+  visited: Set<Ref<Card>> = new Set<Ref<Card>>()
+): Promise<Card | undefined> {
+  if (visited.has(_id)) {
+    return undefined
+  }
+  const doc = cache.get(_id) ?? (await txOp.findOne(card.class.Card, { _id }))
+  if (doc === undefined) return
+  if (doc.parentInfo === undefined) {
+    if (doc.parent == null) {
+      doc.parentInfo = []
+    } else {
+      visited.add(_id) // Add current card to visited set before recursing
+      const parent = await getCardParentWithParentInfo(txOp, doc.parent, cache)
+      visited.delete(_id)
+      if (parent !== undefined) {
+        doc.parentInfo = [
+          ...(parent.parentInfo ?? []),
+          {
+            _id: parent._id,
+            _class: parent._class,
+            title: parent.title
+          }
+        ]
+      } else {
+        doc.parent = null
+        doc.parentInfo = []
+      }
+    }
+  }
+  cache.set(doc._id, doc)
+  return doc
+}
+
+async function removeVariantViewlets (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const desc = client
+    .getHierarchy()
+    .getDescendants(card.class.Card)
+    .filter((c) => c !== card.class.Card)
+  const viewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: desc }, variant: { $exists: true } })
+  for (const viewlet of viewlets) {
+    await txOp.remove(viewlet)
   }
 }
 
@@ -74,10 +166,11 @@ async function setParentInfo (client: MigrationClient): Promise<void> {
   )
 }
 
-function extractObjectProps<T extends Doc> (doc: T): Data<T> {
+function extractObjectData<T extends Doc> (doc: T): Data<T> {
+  const dataKeys = ['_id', 'space', 'modifiedOn', 'modifiedBy', 'createdBy', 'createdOn']
   const data: any = {}
   for (const key in doc) {
-    if (key === '_id') {
+    if (dataKeys.includes(key)) {
       continue
     }
     data[key] = doc[key]
@@ -92,8 +185,8 @@ async function migrateViewlets (client: Client): Promise<void> {
   const currentViewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: masterTags.map((p) => p._id) } })
   for (const masterTag of masterTags) {
     for (const viewlet of viewlets) {
-      const base = extractObjectProps(viewlet)
-      const resConfig = base.config
+      const base = extractObjectData(viewlet)
+      const resConfig = [...base.config]
       let index = -1
       if (viewlet.descriptor === view.viewlet.List) {
         index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
@@ -168,4 +261,70 @@ async function migrateChildsSpaces (client: MigrationClient): Promise<void> {
 
 async function migrateSpaces (client: MigrationClient): Promise<void> {
   await client.update(DOMAIN_CARD, { space: core.space.Workspace }, { space: card.space.Default })
+}
+
+async function defaultLabels (client: Client): Promise<void> {
+  const ops = new TxOperations(client, core.account.System)
+  await createOrUpdate(
+    ops,
+    tags.class.TagCategory,
+    core.space.Workspace,
+    {
+      icon: tags.icon.Tags,
+      label: 'Labels',
+      targetClass: card.class.Card,
+      tags: [],
+      default: true
+    },
+    card.category.Labels
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'Subscribed',
+      targetClass: card.class.Card,
+      description: '',
+      color: 17, // green
+      category: card.category.Labels
+    },
+    card.label.Subscribed
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'New messages',
+      targetClass: card.class.Card,
+      description: '',
+      color: 19, // orange
+      category: card.category.Labels
+    },
+    card.label.NewMessages
+  )
+}
+
+async function updateCustomFieldsDisplayProps (client: MigrationClient): Promise<void> {
+  const viewlets = await client.find<Viewlet>(DOMAIN_MODEL, { _class: view.class.Viewlet })
+
+  for (const viewlet of viewlets) {
+    if (viewlet.config !== undefined && Array.isArray(viewlet.config)) {
+      let hasChanges = false
+      const newConfig = viewlet.config.map((item: any) => {
+        if (typeof item === 'string' && item.startsWith('custom')) {
+          hasChanges = true
+          return { key: item, displayProps: { optional: true } }
+        }
+        return item
+      })
+
+      if (hasChanges) {
+        await client.update(DOMAIN_MODEL, { _id: viewlet._id }, { config: newConfig })
+      }
+    }
+  }
 }

@@ -116,8 +116,10 @@
     </button>
   {/if}
   {#if visibleIcon || (type === 'type-tag' && color)}
-    <div class="hulyNavItem-icon" class:withBackground class:w-auto={iconSize === 'x-small'}>
-      {#if type !== 'type-tag' && visibleIcon}
+    <div class="hulyNavItem-icon relative" class:withBackground class:w-auto={iconSize === 'x-small'}>
+      {#if $$slots.icon}
+        <slot name="icon" />
+      {:else if type !== 'type-tag' && visibleIcon}
         <Icon icon={visibleIcon} size={iconSize} {iconProps} />
       {:else if type === 'type-tag'}
         <div style:background-color={color} class="hulyNavItem-icon__tag" />
@@ -206,6 +208,7 @@
       margin-right: var(--spacing-1);
       width: var(--global-min-Size);
       height: var(--global-min-Size);
+      min-width: var(--global-min-Size);
       color: var(--global-primary-TextColor);
 
       &__tag {
@@ -275,6 +278,7 @@
 
       .hulyNavItem-icon {
         width: 0.75rem;
+        min-width: 0.75rem;
         margin-right: 0.625rem;
       }
     }
@@ -285,6 +289,7 @@
         margin-right: var(--spacing-0_75);
         width: var(--global-extra-small-Size);
         height: var(--global-extra-small-Size);
+        min-width: var(--global-extra-small-Size);
         background-color: var(--global-ui-BackgroundColor);
         border-radius: var(--extra-small-BorderRadius);
       }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
+import { Class, Doc, MeasureMetricsContext, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { createElasticAdapter } from '../adapter'
@@ -22,7 +22,7 @@ import { createElasticAdapter } from '../adapter'
 describe('Elastic Adapter', () => {
   let adapter: FullTextAdapter
   const ctx = new MeasureMetricsContext('-', {})
-  const ws1 = getWorkspaceId('ws1')
+  const ws1 = 'ws1' as WorkspaceUuid
   beforeEach(async () => {
     adapter = await createElasticAdapter(process.env.ELASTIC_URL ?? 'http://localhost:9200/')
   })
@@ -39,7 +39,7 @@ describe('Elastic Adapter', () => {
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
       _class: ['class1' as Ref<Class<Doc>>],
-      modifiedBy: 'andrey' as Ref<Account>,
+      modifiedBy: 'andrey' as PersonId,
       modifiedOn: 0,
       space: 'space1' as Ref<Space>,
       content0: 'hey there!'

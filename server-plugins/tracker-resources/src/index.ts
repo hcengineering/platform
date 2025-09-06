@@ -14,10 +14,8 @@
 //
 
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { Person, PersonAccount } from '@hcengineering/contact'
+import { Person } from '@hcengineering/contact'
 import core, {
-  Account,
-  AccountRole,
   concatLink,
   Doc,
   DocumentUpdate,
@@ -36,7 +34,14 @@ import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text-core'
-import tracker, { Component, Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, {
+  Component,
+  Issue,
+  IssueParentInfo,
+  TimeSpendReport,
+  trackerId,
+  type Project
+} from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -58,7 +63,7 @@ async function updateSubIssues (
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
+  const path = `${workbenchId}/${control.workspace.url}/${trackerId}/${issue.identifier}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issue.identifier}</a> ${issue.title}`
 }
@@ -80,18 +85,13 @@ export async function issueTextPresenter (doc: Doc): Promise<string> {
   return `${issue.identifier} ${issue.title}`
 }
 
-function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
-  const targetAccount = control.modelDb.getObject(target) as PersonAccount
-  return assignee === targetAccount?.person
-}
-
 /**
  * @public
  */
 export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: Ref<Account>,
+  target: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const issue = doc as Issue
@@ -118,7 +118,7 @@ export async function getIssueNotificationContent (
     if (
       updateTx.operations.assignee !== null &&
       updateTx.operations.assignee !== undefined &&
-      isSamePerson(control, updateTx.operations.assignee, target)
+      updateTx.operations.assignee === target
     ) {
       body = tracker.string.IssueAssignedToYou
     } else {
@@ -167,8 +167,10 @@ export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Pro
       }
     }
   }
-  control.ctx.contextData.broadcast.targets.projectRemove = (it) => {
-    return []
+  control.ctx.contextData.broadcast.targets.projectRemove = async (it) => {
+    return {
+      target: []
+    }
   }
   return result
 }
@@ -194,56 +196,6 @@ export async function OnComponentRemove (txes: Tx[], control: TriggerControl): P
       }
       const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
       result.push(tx)
-    }
-  }
-  return result
-}
-
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  for (const tx of txes) {
-    let ownerId: Ref<PersonAccount> | undefined
-    if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-      const createTx = tx as TxCreateDoc<PersonAccount>
-
-      if (createTx.attributes.role === AccountRole.Owner) {
-        ownerId = createTx.objectId
-      }
-    } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-      const updateTx = tx as TxUpdateDoc<PersonAccount>
-
-      if (updateTx.operations.role === AccountRole.Owner) {
-        ownerId = updateTx.objectId
-      }
-    }
-
-    if (ownerId === undefined) {
-      continue
-    }
-
-    const targetProject = (
-      await control.findAll(control.ctx, tracker.class.Project, {
-        _id: tracker.project.DefaultProject
-      })
-    )[0]
-
-    if (targetProject === undefined) {
-      continue
-    }
-
-    if (
-      targetProject.owners === undefined ||
-      targetProject.owners.length === 0 ||
-      targetProject.owners[0] === core.account.System
-    ) {
-      result.push(
-        control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
-          owners: [ownerId]
-        })
-      )
     }
   }
   return result
@@ -348,7 +300,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
 
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(
@@ -357,7 +309,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
           { _id: attachedTo },
           { limit: 1 }
         )
-        if (doc !== undefined) {
+        if (doc != null) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
               attachedToClass,
@@ -387,8 +339,8 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
-        if (doc !== undefined) {
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
+        if (doc != null) {
           const [currentIssue] = await control.findAll(
             control.ctx,
             tracker.class.Issue,
@@ -562,8 +514,7 @@ export default async () => ({
   },
   trigger: {
     OnIssueUpdate,
-    OnProjectRemove,
     OnComponentRemove,
-    OnWorkspaceOwnerAdded
+    OnProjectRemove
   }
 })

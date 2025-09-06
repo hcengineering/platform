@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Data, Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { AccountUuid, Data, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -36,9 +36,9 @@
   let types: Ref<MasterTag>[] =
     space?.types !== undefined ? hierarchy.clone(space.types) : topLevelTypes.map((it) => it._id)
   let isPrivate: boolean = space?.private ?? false
-  let members: Ref<Account>[] =
-    space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = space?.owners !== undefined ? hierarchy.clone(space.owners) : [getCurrentAccount()._id]
+  let members: AccountUuid[] =
+    space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount().uuid]
+  let owners: AccountUuid[] = space?.owners !== undefined ? hierarchy.clone(space.owners) : [getCurrentAccount().uuid]
 
   $: isNew = space === undefined
 
@@ -86,14 +86,14 @@
     dispatch('close', id)
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     members = newMembers
   }
 

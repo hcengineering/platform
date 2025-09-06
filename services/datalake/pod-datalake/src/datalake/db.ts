@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import postgres, { type Row } from 'postgres'
+import postgres, { Sql, type Row } from 'postgres'
 import { type Location, type UUID } from './types'
 import { type RetryOptions, retry } from './retry'
 
@@ -53,6 +53,12 @@ export interface BlobMetaRecord extends BlobId {
 
 export type BlobWithDataRecord = BlobRecord & BlobDataRecord
 
+export interface ListBlobOptions {
+  cursor?: string
+  limit?: number
+  derived?: boolean
+}
+
 export interface ListBlobResult {
   cursor: string | undefined
   blobs: BlobWithDataRecord[]
@@ -75,7 +81,7 @@ export interface WorkspaceStatsResult {
   size: number
 }
 
-export function createDb (ctx: MeasureContext, connectionString: string): BlobDB {
+export async function createDb (ctx: MeasureContext, connectionString: string): Promise<BlobDB> {
   const sql = postgres(connectionString, {
     max: 5,
     connection: {
@@ -94,14 +100,14 @@ export function createDb (ctx: MeasureContext, connectionString: string): BlobDB
     }
   })
 
-  const dbAdapter = new PostgresDBAdapter(sql)
-  return new LoggedDB(ctx, new PostgresDB(new RetryDBAdapter(dbAdapter, { retries: 5 })))
+  const db = await PostgresDB.create(ctx, sql)
+  return new LoggedDB(ctx, new RetryDB(db, { retries: 5 }))
 }
 
 export interface BlobDB {
   getData: (ctx: MeasureContext, dataId: BlobDataId) => Promise<BlobDataRecord | null>
   getBlob: (ctx: MeasureContext, blobId: BlobId) => Promise<BlobWithDataRecord | null>
-  listBlobs: (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number) => Promise<ListBlobResult>
+  listBlobs: (ctx: MeasureContext, workspace: string, options: ListBlobOptions) => Promise<ListBlobResult>
   createData: (ctx: MeasureContext, data: BlobDataRecord) => Promise<void>
   createBlob: (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>) => Promise<void>
   createBlobData: (ctx: MeasureContext, blob: BlobWithDataRecord) => Promise<void>
@@ -114,37 +120,51 @@ export interface BlobDB {
   getWorkspaceStats: (ctx: MeasureContext, workspace: string) => Promise<WorkspaceStatsResult>
 }
 
-interface DBAdapter {
-  execute: <T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: any[]) => Promise<T>
-}
+export class PostgresDB implements BlobDB {
+  private constructor (private readonly sql: Sql) {}
 
-class RetryDBAdapter implements DBAdapter {
-  constructor (
-    private readonly db: DBAdapter,
-    private readonly options: RetryOptions
-  ) {}
-
-  async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: any[]): Promise<T> {
-    return await retry(() => this.db.execute(query, params), this.options)
+  static async create (ctx: MeasureContext, sql: Sql): Promise<PostgresDB> {
+    const db = new PostgresDB(sql)
+    await db.initSchema(ctx)
+    return db
   }
-}
-
-class PostgresDBAdapter implements DBAdapter {
-  constructor (private readonly sql: postgres.Sql) {}
 
   async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: any[]): Promise<T> {
     query = params !== undefined && params.length > 0 ? injectVars(query, params) : query
     return await this.sql.unsafe<T>(query)
   }
-}
 
-export class PostgresDB implements BlobDB {
-  constructor (private readonly db: DBAdapter) {}
+  async initSchema (ctx: MeasureContext): Promise<void> {
+    await this.execute('CREATE SCHEMA IF NOT EXISTS blob')
+    await this.execute(`CREATE TABLE IF NOT EXISTS blob.migrations
+      (
+          name       VARCHAR(255) NOT NULL,
+          created_on TIMESTAMP    NOT NULL DEFAULT now()
+      )`)
+
+    const appliedMigrations = (await this.execute<Row[]>('SELECT name FROM blob.migrations')).map((row) => row.name)
+    ctx.info('applied migrations', { migrations: appliedMigrations })
+
+    for (const [name, sql] of getMigrations()) {
+      if (appliedMigrations.includes(name)) {
+        continue
+      }
+
+      try {
+        ctx.warn('applying migration', { migration: name })
+        await this.execute(sql)
+        await this.execute('INSERT INTO blob.migrations (name) VALUES ($1)', [name])
+      } catch (err: any) {
+        ctx.error('failed to apply migration', { migration: name, error: err })
+        throw err
+      }
+    }
+  }
 
   async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
     const { hash, location } = dataId
 
-    const rows = await this.db.execute<BlobDataRecord[]>(
+    const rows = await this.execute<BlobDataRecord[]>(
       `
       SELECT hash, location, filename, size, type
       FROM blob.data
@@ -159,7 +179,7 @@ export class PostgresDB implements BlobDB {
   async deleteBlobList (ctx: MeasureContext, blobList: BlobIds): Promise<void> {
     const { workspace, names } = blobList
 
-    await this.db.execute(
+    await this.execute(
       `
       UPDATE blob.blob
       SET deleted_at = now()
@@ -172,7 +192,7 @@ export class PostgresDB implements BlobDB {
   async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
     const { workspace, name } = blobId
 
-    const rows = await this.db.execute<BlobWithDataRecord[]>(
+    const rows = await this.execute<BlobWithDataRecord[]>(
       `
       SELECT b.workspace, b.name, b.hash, b.location, b.parent, d.filename, d.size, d.type
       FROM blob.blob AS b
@@ -189,16 +209,17 @@ export class PostgresDB implements BlobDB {
     return null
   }
 
-  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    let { cursor, limit, derived } = options
     cursor = cursor ?? ''
     limit = Math.min(limit ?? 100, 1000)
 
-    const rows = await this.db.execute<BlobWithDataRecord[]>(
+    const rows = await this.execute<BlobWithDataRecord[]>(
       `
       SELECT b.workspace, b.name, b.hash, b.location, b.parent, b.deleted_at, d.filename, d.size, d.type
       FROM blob.blob AS b
       JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
-      WHERE b.workspace = $1 AND b.name > $2 AND b.deleted_at IS NULL
+      WHERE b.workspace = $1 AND b.name > $2 AND b.deleted_at IS NULL ${derived !== true ? 'AND b.parent IS NULL' : ''}
       ORDER BY b.workspace, b.name
       LIMIT $3
     `,
@@ -214,7 +235,7 @@ export class PostgresDB implements BlobDB {
   async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
     const { workspace, name, hash, location, parent } = blob
 
-    await this.db.execute(
+    await this.execute(
       `
       UPSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
       VALUES ($1, $2, $3, $4, $5, NULL)
@@ -226,7 +247,7 @@ export class PostgresDB implements BlobDB {
   async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
     const { hash, location, filename, size, type } = data
 
-    await this.db.execute(
+    await this.execute(
       `
       UPSERT INTO blob.data (hash, location, filename, size, type)
       VALUES ($1, $2, $3, $4, $5)
@@ -238,7 +259,7 @@ export class PostgresDB implements BlobDB {
   async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
     const { workspace, name, hash, location, parent, filename, size, type } = data
 
-    await this.db.execute(
+    await this.execute(
       `
       UPSERT INTO blob.data (hash, location, filename, size, type)
       VALUES ($1, $2, $3, $4, $5)
@@ -246,7 +267,7 @@ export class PostgresDB implements BlobDB {
       [hash, location, filename, size, type]
     )
 
-    await this.db.execute(
+    await this.execute(
       `
       UPSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
       VALUES ($1, $2, $3, $4, $5, NULL)
@@ -265,7 +286,7 @@ export class PostgresDB implements BlobDB {
     queue.push(name)
 
     while (queue.length > 0) {
-      const children = await this.db.execute<BlobId[]>(
+      const children = await this.execute<BlobId[]>(
         `
         SELECT blob.workspace, blob.name
         FROM blob.blob
@@ -284,7 +305,7 @@ export class PostgresDB implements BlobDB {
       }
     }
 
-    await this.db.execute(
+    await this.execute(
       `
       UPDATE blob.blob
       SET deleted_at = now()
@@ -297,7 +318,7 @@ export class PostgresDB implements BlobDB {
   async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
     const { workspace, name } = blobId
 
-    const rows = await this.db.execute<BlobMetaRecord[]>(
+    const rows = await this.execute<BlobMetaRecord[]>(
       `
       SELECT m.workspace, m.name, m.meta
       FROM blob.blob b
@@ -313,7 +334,7 @@ export class PostgresDB implements BlobDB {
   async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
     const { workspace, name } = blobId
 
-    await this.db.execute(
+    await this.execute(
       `
       UPSERT INTO blob.meta (workspace, name, meta)
       VALUES ($1, $2, $3)
@@ -325,7 +346,7 @@ export class PostgresDB implements BlobDB {
   async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
     const { workspace, name } = blob
 
-    await this.db.execute(
+    await this.execute(
       `
       UPDATE blob.blob
       SET parent = $3
@@ -336,14 +357,14 @@ export class PostgresDB implements BlobDB {
   }
 
   async getStats (ctx: MeasureContext): Promise<StatsResult> {
-    const blobStatsRows = await this.db.execute(`
+    const blobStatsRows = await this.execute(`
       SELECT count(distinct b.workspace) as workspaces, count(1) as count, sum(d.size) as size
       FROM blob.blob b
       JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
       WHERE deleted_at IS NULL
     `)
 
-    const dataStatsRows = await this.db.execute(`
+    const dataStatsRows = await this.execute(`
       SELECT count(1) as count, sum(d.size) as size
       FROM blob.data AS d
     `)
@@ -365,7 +386,7 @@ export class PostgresDB implements BlobDB {
   }
 
   async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
-    const rows = await this.db.execute(
+    const rows = await this.execute(
       `
       SELECT count(1) as count, sum(d.size) as size
       FROM blob.blob b
@@ -384,6 +405,65 @@ export class PostgresDB implements BlobDB {
   }
 }
 
+export class RetryDB implements BlobDB {
+  constructor (
+    private readonly db: BlobDB,
+    private readonly options: RetryOptions
+  ) {}
+
+  async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
+    return await retry(() => this.db.getData(ctx, dataId), this.options)
+  }
+
+  async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
+    return await retry(() => this.db.getBlob(ctx, blobId), this.options)
+  }
+
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    return await retry(() => this.db.listBlobs(ctx, workspace, options), this.options)
+  }
+
+  async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
+    await retry(() => this.db.createData(ctx, data), this.options)
+  }
+
+  async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
+    await retry(() => this.db.createBlob(ctx, blob), this.options)
+  }
+
+  async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
+    await retry(() => this.db.createBlobData(ctx, data), this.options)
+  }
+
+  async deleteBlobList (ctx: MeasureContext, blobs: BlobIds): Promise<void> {
+    await retry(() => this.db.deleteBlobList(ctx, blobs), this.options)
+  }
+
+  async deleteBlob (ctx: MeasureContext, blob: BlobId): Promise<void> {
+    await retry(() => this.db.deleteBlob(ctx, blob), this.options)
+  }
+
+  async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
+    return await retry(() => this.db.getMeta(ctx, blobId), this.options)
+  }
+
+  async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
+    await retry(() => this.db.setMeta(ctx, blobId, meta), this.options)
+  }
+
+  async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
+    await retry(() => this.db.setParent(ctx, blob, parent), this.options)
+  }
+
+  async getStats (ctx: MeasureContext): Promise<StatsResult> {
+    return await retry(() => this.db.getStats(ctx), this.options)
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
+    return await retry(() => this.db.getWorkspaceStats(ctx, workspace), this.options)
+  }
+}
+
 export class LoggedDB implements BlobDB {
   constructor (
     private readonly ctx: MeasureContext,
@@ -391,47 +471,58 @@ export class LoggedDB implements BlobDB {
   ) {}
 
   async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
-    return await ctx.with('db.getData', {}, () => this.db.getData(this.ctx, dataId))
+    const params = { location: dataId.location }
+    return await ctx.with('db.getData', {}, () => this.db.getData(this.ctx, dataId), params)
   }
 
   async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
-    return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId))
+    const params = { workspace: blobId.workspace }
+    return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId), params)
   }
 
-  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
-    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, cursor, limit))
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    const params = { workspace }
+    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, options), params)
   }
 
   async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
-    await ctx.with('db.createData', {}, () => this.db.createData(this.ctx, data))
+    const params = { type: data.type }
+    await ctx.with('db.createData', {}, () => this.db.createData(this.ctx, data), params)
   }
 
   async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
-    await ctx.with('db.createBlob', {}, () => this.db.createBlob(this.ctx, blob))
+    const params = { workspace: blob.workspace, location: blob.location }
+    await ctx.with('db.createBlob', {}, () => this.db.createBlob(this.ctx, blob), params)
   }
 
   async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
-    await ctx.with('db.createBlobData', {}, () => this.db.createBlobData(this.ctx, data))
+    const params = { workspace: data.workspace, location: data.location, type: data.type }
+    await ctx.with('db.createBlobData', {}, () => this.db.createBlobData(this.ctx, data), params)
   }
 
   async deleteBlobList (ctx: MeasureContext, blobs: BlobIds): Promise<void> {
-    await ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(this.ctx, blobs))
+    const params = { workspace: blobs.workspace }
+    await ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(this.ctx, blobs), params)
   }
 
   async deleteBlob (ctx: MeasureContext, blob: BlobId): Promise<void> {
-    await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob))
+    const params = { workspace: blob.workspace }
+    await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob), params)
   }
 
   async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
-    return await this.ctx.with('db.getMeta', {}, () => this.db.getMeta(ctx, blobId))
+    const params = { workspace: blobId.workspace }
+    return await this.ctx.with('db.getMeta', {}, () => this.db.getMeta(ctx, blobId), params)
   }
 
   async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
-    await this.ctx.with('db.setMeta', {}, () => this.db.setMeta(ctx, blobId, meta))
+    const params = { workspace: blobId.workspace }
+    await this.ctx.with('db.setMeta', {}, () => this.db.setMeta(ctx, blobId, meta), params)
   }
 
   async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
-    await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent))
+    const params = { workspace: blob.workspace }
+    await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent), params)
   }
 
   async getStats (ctx: MeasureContext): Promise<StatsResult> {
@@ -439,7 +530,8 @@ export class LoggedDB implements BlobDB {
   }
 
   async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
-    return await ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(this.ctx, workspace))
+    const params = { workspace }
+    return await ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(this.ctx, workspace), params)
   }
 }
 
@@ -477,4 +569,76 @@ export function escape (value: any): string {
     default:
       throw new Error(`Unsupported value type: ${typeof value}`)
   }
+}
+
+function getMigrations (): [string, string][] {
+  return [migrationV1(), migrationV2()]
+}
+
+function migrationV1 (): [string, string] {
+  const sql = `
+    CREATE TYPE IF NOT EXISTS blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+
+    CREATE TABLE IF NOT EXISTS blob.data (
+      hash UUID NOT NULL,
+      location blob.location NOT NULL,
+      size INT8 NOT NULL,
+      filename STRING(255) NOT NULL,
+      type STRING(255) NOT NULL,
+      CONSTRAINT pk_data PRIMARY KEY (hash, location)
+    );
+
+    CREATE TABLE IF NOT EXISTS blob.blob (
+      workspace STRING(255) NOT NULL,
+      name STRING(255) NOT NULL,
+      hash UUID NOT NULL,
+      location blob.location NOT NULL,
+      parent STRING(255) DEFAULT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      deleted_at TIMESTAMP DEFAULT NULL,
+      CONSTRAINT pk_blob PRIMARY KEY (workspace, name),
+      CONSTRAINT fk_data FOREIGN KEY (hash, location) REFERENCES blob.data (hash, location),
+      CONSTRAINT fk_parent FOREIGN KEY (workspace, parent)  REFERENCES blob.blob (workspace, name) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS blob.meta (
+      workspace STRING(255) NOT NULL,
+      name STRING(255) NOT NULL,
+      meta JSONB NOT NULL,
+      CONSTRAINT pk_meta PRIMARY KEY (workspace, name),
+      CONSTRAINT fk_blob FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name)
+    );
+  `
+  return ['init_tables_01', sql]
+}
+
+function migrationV2 (): [string, string] {
+  const sql = `
+    ALTER TABLE blob.meta DROP CONSTRAINT IF EXISTS fk_blob;
+
+    UPDATE blob.blob
+    SET workspace = w.uuid
+    FROM global_account.workspace w
+    WHERE workspace = w.data_id
+      AND NOT EXISTS (
+        SELECT 1
+        FROM blob.blob existing
+        WHERE existing.workspace = w.uuid::string
+        AND existing.name = blob.blob.name
+      );
+
+    UPDATE blob.meta
+    SET workspace = w.uuid
+    FROM global_account.workspace w
+    WHERE workspace = w.data_id
+      AND NOT EXISTS (
+        SELECT 1
+        FROM blob.meta existing
+        WHERE existing.workspace = w.uuid::string
+        AND existing.name = blob.meta.name
+      );
+
+    ALTER TABLE blob.meta ADD CONSTRAINT fk_blob_meta FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name);
+  `
+  return ['migrate_workspaces_02', sql]
 }

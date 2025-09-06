@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { markupToJSON } from '@hcengineering/text'
+  import { MarkupNode, markupToJSON } from '@hcengineering/text'
+  import { Markup } from '@hcengineering/core'
   import LiteNode from './markup/lite/LiteNode.svelte'
 
-  export let message: string
+  export let message: Markup | MarkupNode
+  export let colorInherit: boolean = false
 
-  $: node = markupToJSON(message)
+  $: node = typeof message === 'string' ? markupToJSON(message) : message
 </script>
 
-<div class="text-markup-view">
-  <LiteNode {node} />
+<div class="text-markup-view" class:colorInherit>
+  <LiteNode {node} {colorInherit} />
 </div>

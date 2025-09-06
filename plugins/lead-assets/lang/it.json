@@ -34,8 +34,6 @@
     "ConfigDescription": "Estensione per la gestione delle relazioni con i clienti",
     "EditFunnel": "Modifica Funnel",
     "FunnelMembers": "Membri",
-    "RoleLabel": "Ruolo: {role}",
-    "ForbidCreateFunnelPermission": "Vieta creazione funnel",
-    "ForbidCreateFunnelPermissionDescription": "Vieta agli utenti di creare nuovi funnel"
+    "RoleLabel": "Ruolo: {role}"
   }
 }

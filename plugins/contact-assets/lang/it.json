@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+39 333 2213456",
     "LinkedInPlaceholder": "https://linkedin.com/in/username",
     "AtPlaceHolder": "@username",
@@ -69,6 +71,7 @@
     "CreateEmployee": "Dipendente",
     "Inactive": "Inattivo",
     "Active": "Attivo",
+    "Role": "Ruolo",
     "Birthday": "Compleanno",
     "UseImage": "Foto allegata",
     "UseGravatar": "Gravatar",
@@ -107,6 +110,19 @@
     "AddGuest": "Aggiungi ospite",
     "ViewProfile": "Visualizza profilo",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "ID sociale",
+    "SocialIds": "ID social",
+    "Type": "Tipo",
+    "Confirmed": "Confermato",
+    "UserProfile": "Profilo utente",
+    "DeactivatedAccount": "Account disattivato",
+    "LocalTime": "ora locale",
+    "Everyone": "Tutti",
+    "Here": "Qui",
+    "EveryoneDescription": "Notifica tutti in questo {title}",
+    "HereDescription": "Notifica tutti in questo {title}",
+    "Guest": "Ospite",
+    "Deleted": "Eliminato"
   }
 }

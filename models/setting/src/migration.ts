@@ -13,25 +13,89 @@
 // limitations under the License.
 //
 
-import core, { type Ref, type Space } from '@hcengineering/core'
+import core, { type AccountUuid, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { settingId } from '@hcengineering/setting'
-import { DOMAIN_SETTING } from '.'
+import setting, { DOMAIN_SETTING, type Integration, settingId } from '@hcengineering/setting'
+import { getSocialKeyByOldAccount, getUniqueAccountsFromOldAccounts } from '@hcengineering/model-core'
+
+/**
+ * Migrates old accounts to new accounts
+ * Should be applied to prodcution directly without applying migrateSocialIdsToAccountUuids
+ * @param client
+ * @returns
+ */
+async function migrateAccounts (client: MigrationClient): Promise<void> {
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
+
+  client.logger.log('processing setting integration shared ', {})
+  const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Integration>, update: MigrateUpdate<Integration> }[] = []
+
+      for (const doc of docs) {
+        const integration = doc as Integration
+
+        if (integration.shared === undefined || integration.shared.length === 0) continue
+
+        const newShared = await getUniqueAccountsFromOldAccounts(
+          client,
+          integration.shared,
+          socialKeyByAccount,
+          accountUuidByOldAccount
+        )
+
+        operations.push({
+          filter: { _id: integration._id },
+          update: {
+            shared: newShared
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_SETTING, operations)
+      }
+
+      processed += docs.length
+      client.logger.log('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  client.logger.log('finished processing setting integration shared ', {})
+}
 
 export const settingOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, settingId, [
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'setting:space:Setting' as Ref<Space>, core.space.Workspace, [DOMAIN_SETTING])
         }
+      },
+      {
+        state: 'accounts-to-social-ids',
+        mode: 'upgrade',
+        func: migrateAccounts
       }
     ])
   },

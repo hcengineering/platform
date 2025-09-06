@@ -29,10 +29,23 @@
     "EditView": "Ansicht bearbeiten",
     "SelectViewType": "Ansichtstyp auswählen",
     "Document": "Dokument",
+    "Documents": "Dokumente",
     "ChangeType": "Typ ändern",
     "ChangeTypeWarning": "Warnung: Das Ändern des Typs einer Karte wird alle Daten für alle Attribute entfernen, die nicht auf dem Zieltyp vorhanden sind. Vorherige Attributdaten können wiederhergestellt werden, indem Sie die Karte auf einen früheren Typ zurücksetzen. Karteninhalt wird nicht betroffen.",
+    "MasterDetailViews": "Master-Detail-Ansichten",
+    "SelectType": "Typ auswählen",
     "CreateSpace": "Raum erstellen",
     "NumberTypes": "{count, plural, one {# typ} other {# typen}}",
-    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement."
+    "Labels": "Labels",
+    "Properties": "Eigenschaften",
+    "NoChildren": "Keine Kinder",
+    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement.",
+    "AddCollaborators": "Mitarbeiter hinzufügen",
+    "Home": "Startseite",
+    "WhatDoYouWantToShare": "Was möchten Sie teilen?",
+    "Share": "Teilen",
+    "Compact": "Kompakt",
+    "Comfortable": "Komfortabel",
+    "Comfortable2": "Komfortabel 2"
   }
 }

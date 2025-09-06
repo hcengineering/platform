@@ -14,26 +14,28 @@
 //
 
 import {
-  type Account,
+  type AccountUuid,
   type AnyAttribute,
   type ArrOf,
   type Association,
   type AttachedDoc,
   type Blob,
   type Class,
+  type ClassCollaborators,
   type ClassifierKind,
+  type Collaborator,
   type Collection,
   type Configuration,
   type ConfigurationElement,
   type Doc,
-  type DocIndexState,
   type Domain,
   DOMAIN_BLOB,
+  DOMAIN_COLLABORATOR,
   DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
+  DOMAIN_SEQUENCE,
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
@@ -45,18 +47,18 @@ import {
   type MigrationState,
   type Mixin,
   type Obj,
+  type PersonId,
   type PluginConfiguration,
   type Ref,
   type RefTo,
   type Relation,
-  type Space,
   type Sequence,
+  type Space,
   type Timestamp,
   type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version,
-  DOMAIN_SEQUENCE
+  type Version
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -68,6 +70,7 @@ import {
   TypeBoolean,
   TypeFileSize,
   TypeIntlString,
+  TypePersonId,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -102,13 +105,13 @@ export class TDoc extends TObj implements Doc {
   @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Prop(TypePersonId(), core.string.ModifiedBy)
   @Index(IndexKind.Indexed)
-    modifiedBy!: Ref<Account>
+    modifiedBy!: PersonId
 
-  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+  @Prop(TypePersonId(), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
-    createdBy!: Ref<Account>
+    createdBy!: PersonId
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()
@@ -147,6 +150,7 @@ export class TAssociation extends TDoc implements Association {
 }
 
 @Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
+@UX(core.string.Relation)
 export class TRelation extends TDoc implements Relation {
   docA!: Ref<Doc<Space>>
 
@@ -221,6 +225,7 @@ export class TAttribute extends TDoc implements AnyAttribute {
   label!: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 }
 
 @Model(core.class.Type, core.class.Obj, DOMAIN_MODEL)
@@ -259,6 +264,14 @@ export class TTypeFileSize extends TType {}
 @UX(core.string.Markup)
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
+
+@UX(core.string.PersonId)
+@Model(core.class.TypePersonId, core.class.Type)
+export class TTypePersonId extends TType {}
+
+@UX(core.string.AccountId)
+@Model(core.class.TypeAccountUuid, core.class.Type)
+export class TTypeAccountUuid extends TType {}
 
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
@@ -330,22 +343,6 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   beta!: boolean
 }
 
-@Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
-export class TDocIndexState extends TDoc implements DocIndexState {
-  @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    objectClass!: Ref<Class<Doc>>
-
-  @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
-  @Hidden()
-    removed!: boolean
-
-  @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
-  @Hidden()
-    needIndex!: boolean
-}
-
 @Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)
 export class TFullTextSearchContext extends TDoc implements FullTextSearchContext {
   toClass!: Ref<Class<Doc<Space>>>
@@ -398,4 +395,16 @@ export class TSequence extends TDoc implements Sequence {
     attachedTo!: Ref<Class<Doc>>
 
   sequence!: number
+}
+
+@Model(core.class.ClassCollaborators, core.class.Doc, DOMAIN_MODEL)
+export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc> {
+  attachedTo!: Ref<Class<Doc>>
+  fields!: (keyof Doc)[]
+  provideSecurity?: boolean
+}
+
+@Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
+export class TCollaborator extends TAttachedDoc implements Collaborator {
+  collaborator!: AccountUuid
 }

@@ -55,7 +55,6 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
           key,
           await adapterConf.factory(
             ctx,
-            this.context.contextVars,
             this.context.hierarchy,
             adapterConf.url,
             this.context.workspace,
@@ -66,7 +65,7 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
       }
     })
 
-    const metrics = ctx.newChild('📔 adapters', {})
+    const metrics = ctx.newChild('📔 adapters', {}, { span: false })
 
     const txAdapterName = this.conf.domains[DOMAIN_TX]
     const txAdapter = adapters.get(txAdapterName) as TxAdapter

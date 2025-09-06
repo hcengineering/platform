@@ -13,42 +13,44 @@
 // limitations under the License.
 //
 
-import { getEmbeddedLabel, getMetadata, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
 import { DOMAIN_BENCHMARK } from './benchmark'
 import {
-  Account,
+  type Account,
   AccountRole,
-  AnyAttribute,
-  AttachedDoc,
-  Class,
+  type AnyAttribute,
+  type AttachedDoc,
+  type Class,
   ClassifierKind,
-  Collection,
-  Doc,
-  DocData,
+  type Collection,
+  type Doc,
+  type DocData,
   DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
-  FullTextSearchContext,
+  type FullTextSearchContext,
   IndexKind,
-  Obj,
-  Permission,
-  Ref,
-  Role,
+  type Obj,
+  type Permission,
+  type Ref,
+  type Role,
   roleOrder,
-  Space,
-  TypedSpace,
-  WorkspaceMode,
+  type SocialId,
+  SocialIdType,
+  type SocialKey,
+  type Space,
+  type TypedSpace,
+  type WorkspaceMode,
   type Domain,
   type PluginConfiguration
 } from './classes'
 import core from './component'
-import { Hierarchy } from './hierarchy'
-import { TxOperations } from './operations'
+import { type Hierarchy } from './hierarchy'
+import { type TxOperations } from './operations'
 import { isPredicate } from './predicate'
-import { Branding, BrandingMap } from './server'
-import { DocumentQuery, FindResult } from './storage'
+import { type Branding, type BrandingMap } from './server'
+import { type DocumentQuery, type FindResult } from './storage'
 import { DOMAIN_TX, TxProcessor, type Tx, type TxCreateDoc, type TxCUD, type TxUpdateDoc } from './tx'
 
 function toHex (value: number, chars: number): string {
@@ -78,6 +80,11 @@ function count (): string {
  */
 export function generateId<T extends Doc> (join: string = ''): Ref<T> {
   return (timestamp() + join + random + join + count()) as Ref<T>
+}
+
+export function generateUuid (): string {
+  // Consider own implementation if it will be slow
+  return crypto.randomUUID()
 }
 
 /** @public */
@@ -120,39 +127,12 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
   return Object.assign(docs, { total: length, lookupMap })
 }
 
-/**
- * @public
- */
-export interface WorkspaceId {
-  name: string
-  uuid?: string
-}
-
-/**
- * @public
- */
-export interface WorkspaceIdWithUrl extends WorkspaceId {
-  workspaceUrl: string
-  workspaceName: string
-}
-
-/**
- * @public
- *
- * Previously was combining workspace with productId, if not equal ''
- * Now just returning workspace as is. Keeping it to simplify further refactoring of ws id.
- */
-export function getWorkspaceId (workspace: string): WorkspaceId {
-  return {
-    name: workspace
-  }
-}
-
-/**
- * @public
- */
-export function toWorkspaceString (id: WorkspaceId): string {
-  return id.name
+export type WorkspaceUuid = string & { __workspaceUuid: true }
+export type WorkspaceDataId = string & { __workspaceDataId: true }
+export interface WorkspaceIds {
+  uuid: WorkspaceUuid
+  url: string
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
 }
 
 /**
@@ -344,12 +324,22 @@ export class RateLimiter {
     }
   }
 
-  async add<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
-    if (this.processingQueue.size < this.rate) {
-      void this.exec(op, args)
-    } else {
-      await this.exec(op, args)
+  async add<T, B extends Record<string, any> = any>(
+    op: (args?: B) => Promise<T>,
+    args?: B,
+    errHandler?: (err: any) => void
+  ): Promise<void> {
+    while (this.processingQueue.size >= this.rate) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
     }
+    void this.exec(op, args).catch((err) => {
+      if (errHandler !== undefined) {
+        errHandler(err)
+      }
+      console.error('Failed to execute in rate limitter', err)
+    })
   }
 
   async waitProcessing (): Promise<void> {
@@ -555,6 +545,14 @@ export function cutObjectArray (obj: any): any {
   return r
 }
 
+export function includesAny (arr1: string[] | null | undefined, arr2: string[] | null | undefined): boolean {
+  if (arr1 == null || arr1.length === 0 || arr2 == null || arr2.length === 0) {
+    return false
+  }
+
+  return arr1.some((m) => arr2.includes(m))
+}
+
 export const isEnum =
   <T>(e: T) =>
     (token: any): token is T[keyof T] => {
@@ -570,6 +568,27 @@ export async function checkPermission (
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true
 
+  return await hasPermission(client, _id, _space, space)
+}
+
+export async function checkForbiddenPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
+): Promise<boolean> {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return false
+
+  return await hasPermission(client, _id, _space, space)
+}
+
+async function hasPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
+): Promise<boolean> {
   space = space ?? (await client.findOne(core.class.TypedSpace, { _id: _space }))
   const type = await client
     .getModel()
@@ -581,7 +600,7 @@ export async function checkPermission (
 
   const me = getCurrentAccount()
   const asMixin = client.getHierarchy().as(space, mixin)
-  const myRoles = type.$lookup?.roles?.filter((role) => (asMixin as any)[role._id]?.includes(me._id)) as Role[]
+  const myRoles = type.$lookup?.roles?.filter((role) => ((asMixin as any)[role._id] ?? []).includes(me.uuid)) as Role[]
 
   if (myRoles === undefined) {
     return false
@@ -660,9 +679,7 @@ export function getFullTextContext (
   ctx = {
     toClass: objectClass,
     fullTextSummary: false,
-    forceIndex: false,
-    propagate: [],
-    childProcessingAllowed: true
+    forceIndex: false
   }
   hierarchy.setClassifierProp(objectClass, ctxKey, ctx)
   return ctx
@@ -687,7 +704,6 @@ export function isClassIndexable (
   }
 
   if (
-    domain === DOMAIN_DOC_INDEX_STATE ||
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
@@ -754,12 +770,16 @@ export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<
     currentCall = nextCall
     nextCall = undefined
     if (currentCall !== undefined) {
-      void currentCall.op()
+      void currentCall.op().catch()
     }
   }
   return async function (...args: ReduceParameters<T>): Promise<void> {
     const myOp = async (): Promise<void> => {
-      await operation(...args)
+      try {
+        await operation(...args)
+      } catch (err: any) {
+        console.error('Error occurred in reduceCalls:', err)
+      }
       next()
     }
 
@@ -848,7 +868,6 @@ export function pluginFilterTx (
 /**
  * @public
  */
-
 export class TimeRateLimiter {
   idCounter: number = 0
   active: number = 0
@@ -911,14 +930,63 @@ export class TimeRateLimiter {
 export function combineAttributes (
   attributes: any[],
   key: string,
-  operator: '$push' | '$pull',
-  arrayKey: '$each' | '$in'
+  operator: '$push' | '$pull' | '$unset',
+  arrayKey?: '$each' | '$in'
 ): any[] {
   return Array.from(
     new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
+      attributes.flatMap((attr) => {
+        if (arrayKey === undefined) {
+          return attr[operator]?.[key]
+        }
+
+        return Array.isArray(attr[operator]?.[key]?.[arrayKey])
+          ? attr[operator]?.[key]?.[arrayKey]
+          : attr[operator]?.[key]
+      })
     )
   ).filter((v) => v != null)
 }
+
+export function buildSocialIdString (key: SocialKey): string {
+  return `${key.type}:${key.value}`
+}
+
+export function parseSocialIdString (id: string): SocialKey {
+  const [type, value] = id.split(':')
+
+  if (type === undefined || value === undefined) {
+    throw new Error(`Social id is not valid: ${id}`)
+  }
+
+  if (!Object.values(SocialIdType).includes(type as SocialIdType)) {
+    throw new Error(`Social id type is not valid: ${id}`)
+  }
+
+  return { type: type as SocialIdType, value }
+}
+
+export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
+  const activeSocialIds = socialIds.filter((si) => si.isDeleted !== true)
+  if (activeSocialIds.length === 0) {
+    throw new Error('No active social ids provided')
+  }
+  const hulySocialIds = activeSocialIds.filter((si) => si.type === SocialIdType.HULY)
+
+  return hulySocialIds[0] ?? activeSocialIds[0]
+}
+
+export const loginSocialTypes = [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB]
+
+export function notEmpty<T> (id: T | undefined | null): id is T {
+  return id !== undefined && id !== null && id !== ''
+}
+
+export function unique<T> (arr: T[]): T[] {
+  return Array.from(new Set(arr))
+}
+
+export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | undefined | null>): T[] {
+  return unique(arr).filter(notEmpty)
+}
+export { platformNow, platformNowDiff } from '@hcengineering/measurements'

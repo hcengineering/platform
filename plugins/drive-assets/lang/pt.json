@@ -27,8 +27,6 @@
     "Rename": "Renomear",
     "Restore": "Restaurar",
     "RoleLabel": "Papel",
-    "Root": "/",
-    "ForbidCreateDrivePermission": "Proibir criação de unidade",
-    "ForbidCreateDrivePermissionDescription": "Proíbe os utilizadores de criar novas unidades"
+    "Root": "/"
   }
 }

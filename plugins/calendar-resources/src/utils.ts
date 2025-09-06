@@ -1,16 +1,30 @@
 import {
+  AccessLevel,
   type Calendar,
   type Event,
   type ReccuringEvent,
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import { type DocumentUpdate, type IdMap, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
-import { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import {
+  type Client,
+  type Doc,
+  type DocumentUpdate,
+  type IdMap,
+  type Ref,
+  type Timestamp,
+  getCurrentAccount,
+  toIdMap
+} from '@hcengineering/core'
+import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import calendar from './plugin'
+import { getMetadata } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import CalDavAccess from './components/CalDavAccess.svelte'
 
 export function saveUTC (date: Timestamp): Timestamp {
   const utcdate = new Date(date)
@@ -26,10 +40,9 @@ export function saveUTC (date: Timestamp): Timestamp {
 }
 
 export function hidePrivateEvents (events: Event[], calendars: IdMap<Calendar>, allowMe: boolean = true): Event[] {
-  const me = getCurrentAccount()._id
   const res: Event[] = []
   for (const event of events) {
-    if (event.user === me && allowMe) {
+    if (getCurrentAccount().socialIds.includes(event.user) && allowMe) {
       res.push(event)
     } else {
       if (event.visibility !== undefined) {
@@ -48,15 +61,13 @@ export function hidePrivateEvents (events: Event[], calendars: IdMap<Calendar>, 
 }
 
 export function isReadOnly (value: Event): boolean {
-  const me = getCurrentAccount()._id
-  if (value.user !== me) return true
+  if (value.createdBy === undefined || !getCurrentAccount().socialIds.includes(value.user)) return true
   if (['owner', 'writer'].includes(value.access)) return false
   return true
 }
 
 export function isVisible (value: Event, calendars: IdMap<Calendar>): boolean {
-  const me = getCurrentAccount()._id
-  if (value.user === me) return true
+  if (value.createdBy !== undefined && getCurrentAccount().socialIds.includes(value.user)) return true
   if (value.visibility === 'freeBusy') {
     return false
   } else if (value.visibility === 'public') {
@@ -153,12 +164,13 @@ export async function updateReccuringInstance (
                   location: object.location,
                   eventId: object.eventId,
                   calendar: object.calendar,
-                  access: 'owner',
+                  access: AccessLevel.Owner,
                   rules: object.rules,
                   exdate: object.exdate,
                   rdate: object.rdate,
                   timeZone: object.timeZone,
                   user: object.user,
+                  blockTime: object.blockTime,
                   ...ops
                 },
                 object._id
@@ -197,4 +209,23 @@ export async function updateReccuringInstance (
       })
     })
   }
+}
+
+export async function configureCalDavAccess (): Promise<void> {
+  showPopup(CalDavAccess, {}, undefined)
+}
+
+export function getAccountClient (): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+
+  return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function eventTitleProvider (client: Client, ref: Ref<Doc>, doc?: Event): Promise<string> {
+  const object = doc ?? (await client.findOne(calendar.class.Event, { _id: ref as Ref<Event> }))
+  if (object === undefined) {
+    return ''
+  }
+  return object.title
 }

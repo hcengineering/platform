@@ -15,19 +15,20 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, Class, ClassifierKind, Doc, fillDefaults, Ref } from '@hcengineering/core'
+  import { AnyAttribute, fillDefaults, Ref } from '@hcengineering/core'
   import { Card as CardModal, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, Label, NestedDropdown } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import ui, { Label } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import TypeSelector from './TypeSelector.svelte'
 
   export let value: Card
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let selected: Ref<MasterTag> | undefined = value._class
+  let selected: Ref<MasterTag> = value._class
 
   $: mapping = buildMapping(selected, value._class)
 
@@ -74,51 +75,11 @@
   }
 
   const dispatch = createEventDispatcher()
-
-  function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
-    const descendants = hierarchy.getDescendants(card.class.Card).filter((p) => p !== card.class.Card)
-    const added = new Set<Ref<Class<Doc>>>()
-    const base = new Map<Ref<Class<Doc>>, Class<Doc>[]>()
-    for (const _id of descendants) {
-      if (added.has(_id)) continue
-      const _class = hierarchy.getClass(_id)
-      if (_class.label === undefined) continue
-      if (_class.kind !== ClassifierKind.CLASS) continue
-      if ((_class as MasterTag).removed === true) continue
-      added.add(_id)
-      const descendants = hierarchy.getDescendants(_id)
-      const toAdd: Class<Doc>[] = []
-      for (const desc of descendants) {
-        if (added.has(desc)) continue
-        const _class = hierarchy.getClass(desc)
-        if (_class.label === undefined) continue
-        if (_class.kind !== ClassifierKind.CLASS) continue
-        if ((_class as MasterTag).removed === true) continue
-        added.add(desc)
-        toAdd.push(_class)
-      }
-      base.set(_id, toAdd)
-    }
-    const result: [DropdownIntlItem, DropdownIntlItem[]][] = []
-    for (const [key, value] of base) {
-      try {
-        const clazz = hierarchy.getClass(key)
-        result.push([
-          { id: key, label: clazz.label, icon: clazz.icon },
-          value
-            .map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
-            .sort((a, b) => a.label.localeCompare(b.label))
-        ])
-      } catch {}
-    }
-    return result
-  }
-
-  const classes = filterClasses()
 </script>
 
 <CardModal
   label={card.string.ChangeType}
+  okLabel={ui.string.Ok}
   okAction={changeType}
   canSave={selected !== undefined && selected !== value._class}
   gap={'gapV-4'}
@@ -130,10 +91,5 @@
   <div class="mb-2">
     <Label label={card.string.ChangeTypeWarning} />
   </div>
-  <NestedDropdown
-    items={classes}
-    on:selected={(e) => {
-      selected = e.detail
-    }}
-  />
+  <TypeSelector bind:value={selected} />
 </CardModal>

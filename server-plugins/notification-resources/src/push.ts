@@ -16,7 +16,7 @@
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, { PUSH_NOTIFICATION_TITLE_SIZE } from '@hcengineering/server-notification'
 import {
-  Account,
+  AccountUuid,
   Class,
   concatLink,
   Data,
@@ -45,15 +45,16 @@ import contact, {
   getAvatarProviderId,
   getGravatarUrl,
   Person,
-  PersonAccount,
   PersonSpace
 } from '@hcengineering/contact'
 import { AvailableProvidersCache, AvailableProvidersCacheKey, getTranslatedNotificationContent } from './index'
+import { getPerson } from '@hcengineering/server-contact'
 
 async function createPushFromInbox (
   control: TriggerControl,
   n: InboxNotification,
-  receiver: Ref<Account>,
+  receiver: AccountUuid,
+  soundAlert: boolean,
   receiverSpace: Ref<PersonSpace>,
   subscriptions: PushSubscription[],
   senderPerson?: Person
@@ -86,17 +87,11 @@ async function createPushFromInbox (
     id = await encodeFn(doc, control)
   }
 
-  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, n.objectClass)]
-  await createPushNotification(
-    control,
-    receiver as Ref<PersonAccount>,
-    title,
-    body,
-    n._id,
-    subscriptions,
-    senderPerson,
-    path
-  )
+  const path = [workbenchId, control.workspace.url, notificationId, encodeObjectURI(id, n.objectClass)]
+
+  if (subscriptions.length > 0) {
+    await createPushNotification(control, receiver, title, body, n._id, subscriptions, senderPerson, path)
+  }
 
   const messageInfo = getMessageInfo(n, control.hierarchy)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiverSpace, {
@@ -111,7 +106,8 @@ async function createPushFromInbox (
     messageClass: messageInfo._class,
     onClickLocation: {
       path
-    }
+    },
+    soundAlert
   })
 }
 
@@ -156,7 +152,7 @@ function getMessageInfo (
 
 export async function createPushNotification (
   control: TriggerControl,
-  target: Ref<PersonAccount>,
+  target: AccountUuid,
   title: string,
   body: string,
   _id: string,
@@ -177,7 +173,7 @@ export async function createPushNotification (
     data.tag = _id
   }
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
+  const domainPath = `${workbenchId}/${control.workspace.url}`
   data.domain = concatLink(front, domainPath)
   if (path !== undefined) {
     data.url = concatLink(front, path.join('/'))
@@ -201,7 +197,7 @@ async function sendPushToSubscription (
   pushURL: string,
   mailAuth: string | undefined,
   control: TriggerControl,
-  targetUser: Ref<Account>,
+  targetUser: AccountUuid,
   subscriptions: PushSubscription[],
   data: PushData
 ): Promise<void> {
@@ -255,34 +251,23 @@ export async function PushNotificationsHandler (
     receivers.has(it.user)
   )
 
-  if (subscriptions.length === 0) {
-    return []
-  }
-
-  const senders = Array.from(new Set(all.map((it) => it.createdBy)))
-  const senderAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-    _id: { $in: senders as Ref<PersonAccount>[] }
-  })
-  const senderPersons = await control.findAll(control.ctx, contact.class.Person, {
-    _id: { $in: Array.from(new Set(senderAccounts.map((it) => it.person))) }
-  })
-
   const res: Tx[] = []
 
   for (const inboxNotification of all) {
     const { user } = inboxNotification
     const userSubscriptions = subscriptions.filter((it) => it.user === user)
-    if (userSubscriptions.length === 0) continue
 
-    const senderAccount = senderAccounts.find(
-      (it) => it._id === (inboxNotification.createdBy ?? inboxNotification.modifiedBy)
-    )
-    const senderPerson =
-      senderAccount !== undefined ? senderPersons.find((it) => it._id === senderAccount.person) : undefined
+    const senderSocialString = inboxNotification.createdBy ?? inboxNotification.modifiedBy
+    const senderPerson = await getPerson(control, senderSocialString)
+    const soundAlert =
+      availableProviders
+        .get(inboxNotification._id)
+        ?.find((p) => p === notification.providers.SoundNotificationProvider) !== undefined
     const tx = await createPushFromInbox(
       control,
       inboxNotification,
       user,
+      soundAlert,
       inboxNotification.space,
       userSubscriptions,
       senderPerson

@@ -13,14 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, Event, ReccuringEvent, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, Markup, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { OK, Severity, Status } from '@hcengineering/platform'
+  import {
+    AccessLevel,
+    Calendar,
+    Event,
+    ReccuringEvent,
+    RecurringRule,
+    Visibility,
+    generateEventId
+  } from '@hcengineering/calendar'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import core, { Class, Doc, Markup, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import presentation, {
+    createQuery,
     DocCreateExtComponent,
     DocCreateExtensionManager,
-    createQuery,
     getClient
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -31,11 +38,10 @@
     FocusHandler,
     Icon,
     IconClose,
-    Scroller,
-    Status as StatusControl,
     createFocusManager,
     getUserTimezone,
-    showPopup
+    showPopup,
+    Scroller
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -49,14 +55,16 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const acc = getCurrentAccount()
+  const currentUser = getCurrentEmployee()
+  const myPrimaryId = acc.primarySocialId
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
   export let title: string = ''
   export let date: Date | undefined = undefined
   export let withTime = false
-  export let participants: Ref<Person>[] = [currentUser.person]
+  export let participants: Ref<Person>[] = [currentUser]
 
   const now = new Date()
   const defaultDuration = 60 * 60 * 1000
@@ -76,14 +84,12 @@
 
   let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
-  const me = getCurrentAccount()
-  let _calendar: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> | undefined = undefined
 
-  const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, createdBy: me._id, hidden: false }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
-    }
+  const spaceQ = createQuery()
+  let space: Space | undefined = undefined
+  spaceQ.query(core.class.Space, { _id: calendar.space.Calendar }, (res) => {
+    space = res[0]
   })
 
   let rules: RecurringRule[] = []
@@ -97,12 +103,13 @@
     return title !== undefined && title.trim().length === 0 && participants.length === 0
   }
 
-  async function saveEvent (): Promise<void> {
+  async function saveEvent () {
     let date: number | undefined
     if (startDate != null) date = startDate
     if (date === undefined) return
+    if (_calendar === undefined) return
     if (title === '') return
-    const user = me._id
+    const user = myPrimaryId
     const _id = generateId<Event>()
     if (rules.length > 0) {
       await client.addCollection(
@@ -126,8 +133,9 @@
           visibility,
           title,
           location,
+          blockTime: !allDay,
           allDay,
-          access: 'owner',
+          access: AccessLevel.Owner,
           originalStartTime: allDay ? saveUTC(date) : date,
           timeZone,
           user
@@ -153,24 +161,22 @@
           reminders,
           title,
           location,
+          blockTime: !allDay,
           allDay,
           timeZone,
-          access: 'owner',
+          access: AccessLevel.Owner,
           user
         },
         _id
       )
     }
-    const space = await client.findOne(core.class.Space, { _id: calendar.space.Calendar })
     if (space !== undefined) {
       await docCreateManager.commit(client, _id, space, {}, 'post')
-    } else {
-      console.error('calendarspace not found')
     }
     dispatch('close')
   }
 
-  function allDayChangeHandler (): void {
+  async function allDayChangeHandler () {
     if (allDay) {
       startDate = new Date(startDate).setHours(0, 0, 0, 0)
       if (dueDate - startDate < allDayDuration) dueDate = allDayDuration + startDate
@@ -180,19 +186,13 @@
     }
   }
 
-  function setRecurrance (): void {
+  function setRecurrance () {
     showPopup(ReccurancePopup, { rules, startDate }, undefined, (res) => {
       if (res) {
         rules = res
       }
     })
   }
-
-  let status: Status = OK
-
-  const statusStore = docCreateManager.status
-
-  $: status = $statusStore
 
   const manager = createFocusManager()
 </script>
@@ -241,7 +241,7 @@
     <div class="block">
       <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
     </div>
-    <div class="block row gap-1-5">
+    <div class="block description">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -259,20 +259,20 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} size={'small'} focusIndex={10102} withoutIcon />
+        <VisibilityEditor bind:value={visibility} kind="inline" size="medium" focusIndex={10102} withoutIcon />
       </div>
       <EventReminders bind:reminders focusIndex={10103} />
     </div>
   </Scroller>
   <div class="antiDivider noMargin" />
   <div class="flex-between p-5 flex-no-shrink">
-    <StatusControl {status} />
+    <div />
     <Button
       kind="primary"
       label={presentation.string.Create}
       focusIndex={10104}
       on:click={saveEvent}
-      disabled={title === '' || status.severity !== Severity.OK}
+      disabled={title === ''}
     />
   </div>
 </div>
@@ -302,25 +302,26 @@
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.row) {
+      &:not(.description) {
         flex-direction: column;
       }
       &.first {
         padding-top: 0;
       }
       &:not(.rightCropPadding) {
-        padding: 0.75rem 1.25rem;
+        padding: 0.75rem 1rem;
       }
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
-      &.row {
-        padding: 0 1.25rem 0.5rem;
+      &.description {
+        padding: 0 1.25rem;
       }
     }
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
   }
 </style>

@@ -14,22 +14,45 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { BackupClient, DocChunk } from './backup'
-import { Account, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { type BackupClient, type DocChunk } from './backup'
+import {
+  type Class,
+  DOMAIN_MODEL,
+  type Doc,
+  type Domain,
+  type OperationDomain,
+  type Ref,
+  type Timestamp
+} from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { MeasureContext, MeasureMetricsContext } from './measurements'
+import { type MeasureContext, MeasureMetricsContext } from '@hcengineering/measurements'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
-import { SearchOptions, SearchQuery, SearchResult } from './storage'
-import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
-import { toFindResult } from './utils'
+import type {
+  DocumentQuery,
+  DomainParams,
+  DomainResult,
+  FindOptions,
+  FindResult,
+  FulltextStorage,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  Storage,
+  TxResult,
+  WithLookup
+} from './storage'
+import { type Tx, type TxWorkspaceEvent, WorkspaceEvent } from './tx'
+import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
  * @public
  */
 export type TxHandler = (...tx: Tx[]) => void
 
+export interface DomainRequestOptions {
+  retry?: boolean
+}
 /**
  * @public
  */
@@ -43,13 +66,12 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
-}
 
-/**
- * @public
- */
-export interface AccountClient extends Client {
-  getAccount: () => Promise<Account>
+  domainRequest: <T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ) => Promise<DomainResult<T>>
 }
 
 /**
@@ -76,6 +98,7 @@ export enum ClientConnectEvent {
   Refresh, // In case we detect query refresh is required
   Maintenance // In case workspace are in maintenance mode
 }
+
 /**
  * @public
  */
@@ -87,17 +110,21 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  getAccount: () => Promise<Account>
-
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
+  pushHandler: (handler: TxHandler) => void
+  domainRequest: (ctx: OperationDomain, params: DomainParams, options?: DomainRequestOptions) => Promise<DomainResult>
 }
 
-class ClientImpl implements AccountClient, BackupClient {
+class ClientImpl implements Client, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
   private readonly appliedModelTransactions = new Set<Ref<Tx>>()
   constructor (private readonly conn: ClientConnection) {}
+
+  getConnection (): ClientConnection {
+    return this.conn
+  }
 
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
     this.hierarchy = hierarchy
@@ -134,6 +161,14 @@ class ClientImpl implements AccountClient, BackupClient {
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.conn.searchFulltext(query, options)
+  }
+
+  async domainRequest (
+    ctx: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult> {
+    return await this.conn.domainRequest(ctx, params, options)
   }
 
   async findOne<T extends Doc>(
@@ -202,10 +237,6 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.clean(domain, docs)
   }
 
-  async getAccount (): Promise<Account> {
-    return await this.conn.getAccount()
-  }
-
   async sendForceClose (): Promise<void> {
     await this.conn.sendForceClose()
   }
@@ -230,7 +261,7 @@ export async function createClient (
   modelFilter?: ModelFilter,
   txPersistence?: TxPersistenceStore,
   _ctx?: MeasureContext
-): Promise<AccountClient> {
+): Promise<Client> {
   const ctx = _ctx ?? new MeasureMetricsContext('createClient', {})
   let client: ClientImpl | null = null
 
@@ -302,7 +333,7 @@ export async function createClient (
         // We have upgrade procedure and need rebuild all stuff.
         hierarchy = new Hierarchy()
         model = new ModelDb(hierarchy)
-        ;(client as ClientImpl).setModel(hierarchy, model)
+        client.setModel(hierarchy, model)
 
         ctx.withSync('build-model', {}, (ctx) => {
           buildModel(ctx, current, modelFilter, hierarchy, model)
@@ -340,23 +371,12 @@ export async function createClient (
   return client
 }
 
-// Ignore Employee accounts.
-function isPersonAccount (tx: Tx): boolean {
-  return (
-    (tx._class === core.class.TxCreateDoc ||
-      tx._class === core.class.TxUpdateDoc ||
-      tx._class === core.class.TxRemoveDoc) &&
-    ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-      (tx as TxCUD<Doc>).objectClass === 'core:class:Account')
-  )
-}
-
 async function loadModel (
   ctx: MeasureContext,
   conn: ClientConnection,
   persistence?: TxPersistenceStore
 ): Promise<{ mode: 'same' | 'addition' | 'upgrade', current: Tx[], addition: Tx[] }> {
-  const t = Date.now()
+  const t = platformNow()
 
   const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
     full: true,
@@ -396,7 +416,7 @@ async function loadModel (
     })
 
   if (typeof window !== 'undefined') {
-    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, Date.now() - t)
+    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, platformNowDiff(t))
   }
   if (result.full) {
     return { mode: 'upgrade', current: result.transactions, addition: [] }
@@ -411,23 +431,7 @@ export function buildModel (
   hierarchy: Hierarchy,
   model: ModelDb
 ): void {
-  const systemTx: Tx[] = []
-  const userTx: Tx[] = []
-
-  const atxes = transactions
-
-  ctx.withSync('split txes', {}, () => {
-    atxes.forEach((tx) =>
-      ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
-        ? systemTx
-        : userTx
-      ).push(tx)
-    )
-  })
-
-  userTx.sort(compareTxes)
-
-  let txes = systemTx.concat(userTx)
+  let txes = transactions
   if (modelFilter !== undefined) {
     txes = modelFilter(txes)
   }
@@ -458,20 +462,4 @@ function getLastTxTime (txes: Tx[]): number {
     }
   }
   return lastTxTime
-}
-
-function compareTxes (a: Tx, b: Tx): number {
-  const result = a.modifiedOn - b.modifiedOn
-  if (result !== 0) {
-    return result
-  }
-  if (a._class !== b._class) {
-    if (a._class === core.class.TxCreateDoc) {
-      return -1
-    }
-    if (b._class === core.class.TxCreateDoc) {
-      return 1
-    }
-  }
-  return a._id.localeCompare(b._id)
 }

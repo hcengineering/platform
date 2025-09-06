@@ -6,17 +6,15 @@ export MONGO_URL=mongodb://localhost:27017
 export SERVER_SECRET=secret
 
 # Restore workspace contents in mongo/elastic
-./tool-local.sh backup-restore ./sanity-ws-qms sanity-ws-qms
-
-./tool-local.sh upgrade-workspace sanity-ws-qms
+./tool-local.sh backup-restore ./sanity-ws-qms sanity-ws-qms --upgrade
 
 # Re-assign user to workspace.
 ./tool-local.sh assign-workspace user1 sanity-ws-qms
 ./tool-local.sh assign-workspace user2 sanity-ws-qms
 ./tool-local.sh assign-workspace user3 sanity-ws-qms
 ./tool-local.sh assign-workspace user4 sanity-ws-qms
-
 ./tool-local.sh assign-workspace user_qara sanity-ws-qms
+
 ./tool-local.sh set-user-role user1 sanity-ws-qms OWNER
 ./tool-local.sh set-user-role user2 sanity-ws-qms OWNER
 

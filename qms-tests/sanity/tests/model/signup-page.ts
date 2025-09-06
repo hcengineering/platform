@@ -22,7 +22,7 @@ export class SignupPage {
     this.textError = page.locator('div.ERROR > span')
   }
 
-  async signup (userData: UserSignUp): Promise<void> {
+  async signupPwd (userData: UserSignUp): Promise<void> {
     await this.inputFirstName.fill(userData.firstName)
     await this.inputLastName.fill(userData.lastName)
     await this.inputEmail.fill(userData.email)

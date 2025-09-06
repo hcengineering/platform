@@ -16,14 +16,13 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import { RoomType } from '@hcengineering/love'
 
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, isConnected, isCurrentInstanceConnected, screenSharing } from '../utils'
-  import { infos, invites, myInfo, myRequests, storePromise, currentRoom } from '../stores'
+  import { tryConnect } from '../utils'
+  import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
+  import { lkSessionConnected } from '../liveKitClient'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -41,20 +40,18 @@
       return
     }
 
-    await $storePromise
+    await waitForOfficeLoaded()
     const room = $currentRoom
 
     if (room === undefined) return
 
     if (
-      !$isConnected &&
-      !$isCurrentInstanceConnected &&
-      (room.type === RoomType.Video || $screenSharing) &&
-      $myInfo?.sessionId &&
+      !$lkSessionConnected &&
+      $myInfo?.sessionId !== undefined &&
       $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+      await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
   })
 </script>

@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+1 555 333 7777",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -115,6 +117,12 @@
     "Confirmed": "確認済み",
     "UserProfile": "ユーザープロフィール",
     "DeactivatedAccount": "アカウントは無効化されました",
-    "LocalTime": "現地時間"
+    "LocalTime": "現地時間",
+    "Everyone": "全員",
+    "Here": "ここ",
+    "EveryoneDescription": "この{title}のすべてに通知する",
+    "HereDescription": "この{title}のすべてに通知する",
+    "Guest": "ゲスト",
+    "Deleted": "削除済み"
   }
 }

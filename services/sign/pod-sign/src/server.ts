@@ -14,24 +14,30 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { AccountClient, getClient as getAccountClientRaw, isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { generateId, newMetrics, type WorkspaceIds } from '@hcengineering/core'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
 
-import { type Branding, type BrandingMap, extractBranding } from './branding'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { join } from 'path'
+import { extractBranding, type Branding, type BrandingMap } from './branding'
 import config from './config'
 import { ApiError } from './error'
 import { signPDF } from './sign'
 import { extractToken } from './token'
 
+function getAccountClient (token: string): AccountClient {
+  return getAccountClientRaw(config.AccountsUrl, token)
+}
+
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
-  token: Token,
+  wsIds: WorkspaceIds,
   branding: Branding | null,
   next: NextFunction
 ) => Promise<void>
@@ -44,9 +50,18 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { token } = extractToken(req.headers, req.query)
+    const { rawToken } = extractToken(req.headers, req.query)
+    const wsLoginInfo = await getAccountClient(rawToken).getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
+    }
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
     const branding = extractBranding(brandings, req.headers)
-    await fn(req, res, token, branding, next)
+    await fn(req, res, wsIds, branding, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -60,7 +75,19 @@ const wrapRequest =
 
 export function createServer (storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = initStatisticsContext('sign', {})
+  const measureCtx = initStatisticsContext('sign', {
+    factory: () =>
+      createOpenTelemetryMetricsContext(
+        'sign',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('sign', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   const app = express()
   app.use(cors())
@@ -68,14 +95,14 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
 
   app.post(
     '/sign',
-    wrapRequest(brandings, async (req, res, token, branding) => {
+    wrapRequest(brandings, async (req, res, wsIds, branding) => {
       const fileId = req.body.fileId as string
 
       if (fileId === undefined) {
         throw new ApiError(400, 'Missing fileId')
       }
 
-      const originalFile = await storageAdapter.read(measureCtx, token.workspace, fileId)
+      const originalFile = await storageAdapter.read(measureCtx, wsIds, fileId)
       const ctx = {
         title: branding?.title ?? 'Huly'
       }
@@ -87,7 +114,7 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
 
       const signedId = `signed-${fileId}-${generateId()}`
 
-      await storageAdapter.put(measureCtx, token.workspace, signedId, signRes, 'application/pdf', signRes.length)
+      await storageAdapter.put(measureCtx, wsIds, signedId, signRes, 'application/pdf', signRes.length)
 
       res.contentType('application/json')
       res.send({ id: signedId })

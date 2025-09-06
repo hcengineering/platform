@@ -17,9 +17,7 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
-  type Account,
   type AccountRole,
-  type Arr,
   type Class,
   type CollectionSize,
   type Permission,
@@ -30,8 +28,8 @@ import {
   type SpaceType,
   type SpaceTypeDescriptor,
   type TypedSpace,
-  type Doc,
-  type Tx
+  type AccountUuid,
+  type TxAccessLevel
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -42,14 +40,14 @@ import {
   Model,
   Prop,
   TypeBoolean,
+  TypeAccountUuid,
   TypeRef,
   TypeString,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TAttachedDoc, TDoc } from './core'
-
+import { TAttachedDoc, TDoc, TClass } from './core'
 // S P A C E
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_SPACE)
@@ -70,12 +68,12 @@ export class TSpace extends TDoc implements Space {
   @Index(IndexKind.Indexed)
     archived!: boolean
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
   @Index(IndexKind.Indexed)
-    members!: Arr<Ref<Account>>
+    members!: AccountUuid[]
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
-    owners?: Ref<Account>[]
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Owners)
+    owners?: AccountUuid[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -121,8 +119,8 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Prop(Collection(core.class.Role), core.string.Roles)
     roles!: CollectionSize<Role>
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-    members!: Arr<Ref<Account>>
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
+    members!: AccountUuid[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -157,10 +155,6 @@ export class TRole extends TAttachedDoc implements Role {
 @UX(core.string.Permission)
 export class TPermission extends TDoc implements Permission {
   label!: IntlString
-  txClass?: Ref<Class<Tx>>
-  forbid?: boolean
-  objectClass?: Ref<Class<Doc<Space>>>
-  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }
@@ -168,12 +162,12 @@ export class TPermission extends TDoc implements Permission {
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)
 @UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
 export class TSpacesTypeData extends TSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
-@Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Account, undefined, undefined, 'name')
-export class TAccount extends TDoc implements Account {
-  email!: string
-  role!: AccountRole
+@Mixin(core.mixin.TxAccessLevel, core.class.Class)
+export class TTxAccessLevel extends TClass implements TxAccessLevel {
+  createAccessLevel?: AccountRole
+  removeAccessLevel?: AccountRole
+  updateAccessLevel?: AccountRole
 }

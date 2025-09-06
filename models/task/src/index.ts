@@ -371,23 +371,6 @@ export function createModel (builder: Builder): void {
     task.action.Move
   )
 
-  createAction(
-    builder,
-    {
-      label: task.string.Export,
-      action: task.actionImpl.ExportTasks,
-      icon: view.icon.Move,
-      input: 'selection',
-      category: view.category.General,
-      target: task.class.Task,
-      context: {
-        mode: ['context', 'browser'],
-        group: 'tools'
-      }
-    },
-    task.action.ExportTasks
-  )
-
   builder.createDoc(
     core.class.StatusCategory,
     core.space.Model,

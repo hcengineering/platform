@@ -290,6 +290,7 @@
     if (attr === undefined) return
     if (attribute.collectionAttr) return
     if (attribute.isLookup) return
+    if (attribute?.attribute?.readonly === true) return
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
     return (value: any) => {
       onChange(value, doc, key, attr)
@@ -330,6 +331,13 @@
       }
     }
   }
+
+  async function canEdit (object: Doc): Promise<boolean> {
+    if (client.getHierarchy().isDerived(object._class, core.class.Space)) {
+      return await canEditSpace(object)
+    }
+    return true
+  }
 </script>
 
 {#if !model || isBuildingModel}
@@ -362,7 +370,7 @@
               {/if}
             </th>
           {/if}
-          {#each model as attribute}
+          {#each model.filter((m) => !m.displayProps?.grow) as attribute}
             <th
               class:w-full={attribute.displayProps?.grow === true}
               class:sortable={attribute.sortingKey}
@@ -443,16 +451,27 @@
                 {/if}
               </td>
             {/if}
-            {#await canEditSpace(object) then canEditObject}
+            {#await canEdit(object) then canEditObject}
               {#if row < rowLimit}
-                {#each model as attribute, cell}
+                {#each model.filter((m) => !m.displayProps?.grow) as attribute, cell}
                   <td
                     class:align-left={attribute.displayProps?.align === 'left'}
                     class:align-center={attribute.displayProps?.align === 'center'}
                     class:align-right={attribute.displayProps?.align === 'right'}
                   >
-                    <div class:antiTable-cells__firstCell={!cell}>
-                      <!-- {getOnChange(object, attribute) !== undefined} -->
+                    {#if !cell}
+                      <div class="antiTable-cells__firstCell">
+                        <!-- {getOnChange(object, attribute) !== undefined} -->
+                        <svelte:component
+                          this={attribute.presenter}
+                          value={getValue(attribute, object)}
+                          onChange={getOnChange(object, attribute)}
+                          label={attribute.label}
+                          attribute={attribute.attribute}
+                          {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
+                        />
+                      </div>
+                    {:else}
                       <svelte:component
                         this={attribute.presenter}
                         value={getValue(attribute, object)}
@@ -461,7 +480,7 @@
                         attribute={attribute.attribute}
                         {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
                       />
-                    </div>
+                    {/if}
                   </td>
                 {/each}
               {/if}
@@ -473,7 +492,7 @@
       <tbody>
         {#each Array(getLoadingLength(loadingProps, options)) as i, row}
           <tr class="antiTable-body__row" class:fixed={row === selection}>
-            {#each model as attribute, cell}
+            {#each model.filter((m) => !m.displayProps?.grow) as attribute, cell}
               {#if !cell}
                 {#if enableChecking}
                   <td>

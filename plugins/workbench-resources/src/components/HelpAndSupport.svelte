@@ -246,6 +246,7 @@
     align-items: flex-end;
     margin: 0 0.5rem 0.5rem;
     padding-top: 0.625rem;
+    gap: 0.25rem;
   }
   .key-box {
     padding: 0 0.5rem;

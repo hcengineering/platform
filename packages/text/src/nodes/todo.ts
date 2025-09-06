@@ -5,6 +5,7 @@ import { getDataAttribute } from './utils'
 
 export const TodoItemNode = TaskItem.extend({
   name: 'todoItem',
+  group: 'listItems',
 
   addOptions () {
     return {

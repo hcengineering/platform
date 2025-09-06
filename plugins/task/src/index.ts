@@ -75,6 +75,7 @@ export interface KanbanCard extends Class<Doc> {
 export interface ProjectStatus extends IconProps {
   _id: Ref<Status>
   taskType: Ref<TaskType>
+  description?: string
 }
 
 /**

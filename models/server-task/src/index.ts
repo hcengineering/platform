@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core from '@hcengineering/core/src/component'
+import core from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import task from '@hcengineering/task'
 import serverCore from '@hcengineering/server-core'

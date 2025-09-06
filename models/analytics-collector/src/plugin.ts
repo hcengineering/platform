@@ -14,8 +14,6 @@
 //
 
 import { mergeIds } from '@hcengineering/platform'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Ref, Mixin } from '@hcengineering/core'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 
 export default mergeIds(analyticsCollectorId, analyticsCollector, {})

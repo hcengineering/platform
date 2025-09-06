@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact'
+  import { myEmployeeStore } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
     Class,
@@ -26,7 +26,7 @@
     SortingOrder,
     Space
   } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { broadcastEvent, getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
@@ -55,6 +55,7 @@
     getCurrentLocation,
     getLocation,
     IconSettings,
+    isSameSegments,
     Label,
     languageStore,
     Location,
@@ -63,7 +64,6 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    showPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -71,15 +71,15 @@
     PopupResult,
     popupstore,
     pushRootBarComponent,
+    resizeObserver,
     ResolvedLocation,
     resolvedLocationStore,
     Separator,
     setResolvedLocation,
+    showPanel,
     showPopup,
     TooltipInstance,
-    workbenchSeparators,
-    resizeObserver,
-    isSameSegments
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -101,7 +101,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, signOut, workspacesStore } from '../utils'
+  import { buildNavModel, isAllowedToRole, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -145,6 +145,8 @@
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
 
+  const account = getCurrentAccount()
+
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
@@ -154,6 +156,7 @@
   const apps: Application[] = client
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .filter((it) => isAllowedToRole(it.accessLevel, account))
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -187,10 +190,11 @@
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
-    { attachedTo: account._id },
+    { attachedTo: account.uuid },
     (res) => {
       tabs = res
       tabsStore.set(tabs)
+      if (account.role === AccountRole.ReadOnlyGuest) return
       if (!areTabsLoaded) {
         void initCurrentTab(tabs)
         areTabsLoaded = true
@@ -237,7 +241,7 @@
         } else {
           console.log('Creating new tab on init')
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-            attachedTo: account._id,
+            attachedTo: account.uuid,
             location: url,
             isPinned: false
           })
@@ -259,11 +263,8 @@
     syncWorkbenchTab()
   })
 
-  const account = getCurrentAccount() as PersonAccount
-
-  $: person = $personByIdStore.get(account.person)
-
   const workspaceId = $location.path[1]
+
   const inboxClient = InboxNotificationsClientImpl.createClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
@@ -302,18 +303,18 @@
   let windowWorkspaceName = ''
 
   async function updateWindowTitle (loc: Location): Promise<void> {
-    let ws = loc.path[1]
-    const wsName = $workspacesStore.find((it) => it.workspace === ws)
-    if (wsName !== undefined) {
-      ws = wsName?.workspaceName ?? wsName.workspace
-      windowWorkspaceName = ws
+    let wsUrl = loc.path[1]
+    const ws = $workspacesStore.find((it) => it.url === wsUrl)
+    if (ws !== undefined) {
+      wsUrl = ws?.name ?? ws.url
+      windowWorkspaceName = wsUrl
     }
     const docTitle = await getWindowTitle(loc)
     if (docTitle !== undefined && docTitle !== '') {
-      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+      document.title = wsUrl == null ? docTitle : `${docTitle} - ${wsUrl}`
     } else {
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
-      document.title = ws == null ? title : `${ws} - ${title}`
+      document.title = wsUrl == null ? title : `${wsUrl} - ${title}`
     }
     void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
@@ -396,7 +397,10 @@
       }
     }
     loc.query = resolved.loc.query ?? loc.query ?? currentQuery ?? resolved.defaultLocation.query
-    loc.fragment = resolved.loc.fragment ?? loc.fragment ?? resolved.defaultLocation.fragment
+    loc.fragment =
+      (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
+        ? loc.fragment
+        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
     return loc
   }
 
@@ -466,9 +470,14 @@
 
     if (currentAppAlias !== app) {
       clear(1)
-      currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
-      currentAppAlias = currentApplication?.alias
-      navigatorModel = await buildNavModel(client, currentApplication)
+      const newApplication: Application | undefined = await client.findOne<Application>(workbench.class.Application, {
+        alias: app
+      })
+      if (newApplication?.accessLevel === undefined || hasAccountRole(account, newApplication.accessLevel)) {
+        currentApplication = newApplication
+        currentAppAlias = currentApplication?.alias
+        navigatorModel = await buildNavModel(client, currentApplication)
+      }
     }
 
     if (
@@ -750,12 +759,22 @@
   $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
 
   $: deactivated =
-    person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
-      ? !client.getHierarchy().as(person, contact.mixin.Employee).active
+    $myEmployeeStore && client.getHierarchy().hasMixin($myEmployeeStore, contact.mixin.Employee)
+      ? !client.getHierarchy().as($myEmployeeStore, contact.mixin.Employee).active
       : false
+
+  function isExcludedApp (alias: string): boolean {
+    const me = getCurrentAccount()
+
+    if (me.role === AccountRole.ReadOnlyGuest || me.role === AccountRole.Guest) {
+      return (getMetadata(workbench.metadata.ExcludedApplicationsForAnonymous) ?? []).includes(alias)
+    } else {
+      return false
+    }
+  }
 </script>
 
-{#if person && deactivated && !isAdminUser()}
+{#if $myEmployeeStore && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
@@ -764,11 +783,13 @@
       kind={'link'}
       size={'small'}
       on:click={() => {
-        signOut()
+        void logOut().then(() => {
+          navigate({ path: [loginId] })
+        })
       }}
     />
   </div>
-{:else if person || account.role === AccountRole.Owner || isAdminUser()}
+{:else if $myEmployeeStore || account.role === AccountRole.Owner || isAdminUser()}
   <ActionHandler {currentSpace} />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -811,33 +832,41 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink
-          app={notificationId}
-          shrink={0}
-          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
-        >
-          <AppItem
-            icon={notification.icon.Notifications}
-            label={notification.string.Inbox}
-            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
-            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
-              $deviceInfo.navigator.visible}
-            on:click={(e) => {
-              if (e.metaKey || e.ctrlKey) return
-              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
-                toggleNav()
-              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
-                e.preventDefault()
-                e.stopPropagation()
-                navigate(lastLoc)
-                lastLoc = undefined
-              } else {
-                lastLoc = $location
-              }
-            }}
-            notify={hasInboxNotifications}
-          />
-        </NavLink>
+        {#if !isExcludedApp(notificationId)}
+          <NavLink
+            app={notificationId}
+            shrink={0}
+            disabled={!$deviceInfo.navigator.visible &&
+              $deviceInfo.navigator.float &&
+              currentAppAlias === notificationId}
+          >
+            <AppItem
+              icon={notification.icon.Notifications}
+              label={notification.string.Inbox}
+              selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+              navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+                $deviceInfo.navigator.visible}
+              on:click={(e) => {
+                if (e.metaKey || e.ctrlKey) return
+                if (
+                  !$deviceInfo.navigator.visible &&
+                  $deviceInfo.navigator.float &&
+                  currentAppAlias === notificationId
+                ) {
+                  toggleNav()
+                } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate(lastLoc)
+                  lastLoc = undefined
+                } else {
+                  lastLoc = $location
+                }
+              }}
+              notify={hasInboxNotifications}
+            />
+          </NavLink>
+        {/if}
         <Applications
           {apps}
           active={currentApplication?._id}
@@ -852,7 +881,7 @@
       >
         <AppItem
           icon={IconSettings}
-          label={setting.string.Settings}
+          label={setting.string.Customize}
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />
@@ -895,7 +924,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', account: account._id, showStatus: true }}
+              props={{ person: $myEmployeeStore, name: $myEmployeeStore?.name, size: 'small', showStatus: true }}
             />
           </div>
         </div>
@@ -1000,7 +1029,8 @@
                 currentSpace,
                 space: currentSpace,
                 navigationModel: specialComponent?.navigationModel,
-                workbenchWidth
+                workbenchWidth,
+                queryBuilder: specialComponent?.queryBuilder
               }}
               on:action={(e) => {
                 if (e?.detail) {
@@ -1092,8 +1122,10 @@
   }
 
   .hamburger-container {
+    position: relative;
     display: flex;
     align-items: center;
+    z-index: 1;
 
     &.portrait {
       margin-left: 1rem;
@@ -1157,6 +1189,31 @@
       &.mini > *:not(:last-child) {
         margin-bottom: 0.25rem;
       }
+    }
+    &.horizontal {
+      margin-right: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-navpanel-divider);
+
+      &:not(.mini) > *:not(:last-child) {
+        margin-right: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+
+  .new-world {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-top: auto;
+      border-top: 1px solid var(--theme-navpanel-divider);
+      padding: 0.5rem 0;
+      gap: 0.25rem;
     }
     &.horizontal {
       margin-right: 1rem;

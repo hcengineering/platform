@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+1 555 333 7777",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -69,6 +71,7 @@
     "CreateEmployee": "员工",
     "Inactive": "非活动",
     "Active": "活动",
+    "Role": "角色",
     "Birthday": "生日",
     "UseImage": "附加照片",
     "UseGravatar": "头像",
@@ -107,6 +110,19 @@
     "AddGuest": "添加访客",
     "ViewProfile": "查看资料",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "社交 ID",
+    "SocialIds": "社交 ID",
+    "Type": "类型",
+    "Confirmed": "已确认",
+    "UserProfile": "用户资料",
+    "DeactivatedAccount": "已停用账户",
+    "LocalTime": "当地时间",
+    "Everyone": "所有人",
+    "Here": "这里",
+    "EveryoneDescription": "通知所有人在此{title}",
+    "HereDescription": "通知所有人在此{title}",
+    "Guest": "访客",
+    "Deleted": "已删除"
   }
 }

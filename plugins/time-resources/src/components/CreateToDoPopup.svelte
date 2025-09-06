@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import tagsPlugin, { TagReference } from '@hcengineering/tags'
@@ -32,16 +32,19 @@
   import Workslots from './Workslots.svelte'
 
   export let object: Doc | undefined
+  export let value: string = ''
 
-  const acc = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  const myAccount = getCurrentAccount()
+
   const todo: AttachedData<ToDo> = {
     workslots: 0,
-    title: '',
+    title: value,
     description: '',
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,
     visibility: 'private',
-    user: acc.person,
+    user: me,
     rank: ''
   }
 
@@ -60,7 +63,7 @@
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {
-        user: acc.person,
+        user: me,
         doneOn: null
       },
       {
@@ -79,7 +82,7 @@
         description: todo.description,
         priority: todo.priority,
         visibility: todo.visibility,
-        user: acc.person,
+        user: me,
         dueDate: todo.dueDate,
         attachedSpace: todo.attachedSpace,
         rank: makeRank(undefined, latestTodo?.rank)
@@ -92,14 +95,15 @@
         date: slot.date,
         dueDate: slot.dueDate,
         description: todo.description,
-        participants: [acc.person],
+        participants: [me],
         calendar: _calendar,
+        blockTime: true,
         title: todo.title,
         allDay: false,
-        access: 'owner',
+        access: AccessLevel.Owner,
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
         reminders: [],
-        user: acc._id
+        user: myAccount.primarySocialId
       })
       Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
     }
@@ -110,11 +114,10 @@
     dispatch('close', true)
   }
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  let _calendar: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${myAccount.uuid}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, createdBy: currentUser._id }, (res) => {
+  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, user: myAccount.primarySocialId }, (res) => {
     if (res.length > 0) {
       _calendar = res[0]._id
     }
@@ -140,10 +143,11 @@
       date,
       dueDate,
       description: todo.description,
-      participants: [acc.person],
+      participants: [me],
       title: todo.title,
       allDay: false,
-      access: 'owner',
+      blockTime: true,
+      access: AccessLevel.Owner,
       visibility: todo.visibility,
       reminders: [],
       calendar: _calendar,
@@ -153,9 +157,9 @@
       attachedTo: generateId(),
       attachedToClass: time.class.ToDo,
       collection: 'workslots',
-      modifiedOn: Date.now(),
-      modifiedBy: acc._id,
-      user: acc._id
+      modifiedOn: now,
+      modifiedBy: myAccount.primarySocialId,
+      user: myAccount.primarySocialId
     })
     slots = slots
   }
@@ -186,7 +190,7 @@
   <div class="header flex-between">
     <EditBox
       bind:value={todo.title}
-      kind={'ghost-large'}
+      kind={'large-style'}
       placeholder={time.string.AddTitle}
       fullSize
       focusable
@@ -229,7 +233,7 @@
         </div>
         <SpaceSelector
           _class={task.class.Project}
-          query={{ archived: false, members: getCurrentAccount()._id }}
+          query={{ archived: false, members: getCurrentAccount().uuid }}
           label={core.string.Space}
           autoSelect={false}
           allowDeselect

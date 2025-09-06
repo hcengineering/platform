@@ -1,23 +1,20 @@
-import { Person, PersonAccount } from '@hcengineering/contact'
+import { Person } from '@hcengineering/contact'
 import {
-  Account,
   Branding,
   Class,
   Data,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   Space,
   Status,
   TxOperations,
   WithLookup,
-  WorkspaceIdWithUrl,
-  type Blob
+  WorkspaceUuid,
+  type Blob,
+  type MeasureContext
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode } from '@hcengineering/text'
-import { User } from '@octokit/webhooks-types'
 import {
   DocSyncInfo,
   GithubIntegration,
@@ -25,6 +22,10 @@ import {
   GithubProject,
   GithubUserInfo
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
+import { ProjectType, TaskType } from '@hcengineering/task'
+import { MarkupNode } from '@hcengineering/text'
+import { User } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 
 /**
@@ -79,9 +80,9 @@ export interface ContainerFocus {
 export interface IntegrationManager {
   liveQuery: LiveQuery
   getContainer: (space: Ref<Space>) => Promise<ContainerFocus | undefined>
-  getAccount: (user?: UserInfo | null) => Promise<PersonAccount | undefined>
-  getAccountU: (user: User) => Promise<PersonAccount | undefined>
-  getOctokit: (account: Ref<PersonAccount>) => Promise<Octokit | undefined>
+  getAccount: (user?: UserInfo | null) => Promise<PersonId | undefined>
+  getAccountU: (user: User) => Promise<PersonId | undefined>
+  getOctokit: (ctx: MeasureContext, account: PersonId) => Promise<Octokit | undefined>
   getMarkupSafe: (
     container: IntegrationContainer,
     text?: string | null,
@@ -106,14 +107,16 @@ export interface IntegrationManager {
   getTaskTypeOf: (project: Ref<ProjectType>, ofClass: Ref<Class<Doc>>) => Promise<TaskType | undefined>
 
   handleEvent: <T>(
+    ctx: MeasureContext,
     requestClass: Ref<Class<Doc>>,
     integrationId: number | undefined,
     repo: GithubIntegrationRepository,
     event: T
   ) => Promise<void>
 
-  doSyncFor: (docs: DocSyncInfo[], project: GithubProject) => Promise<void>
-  getWorkspaceId: () => WorkspaceIdWithUrl
+  doSyncFor: (ctx: MeasureContext, docs: DocSyncInfo[], project: GithubProject) => Promise<void>
+  getWorkspaceId: () => WorkspaceUuid
+  getWorkspaceUrl: () => string
   getBranding: () => Branding | null
 
   getProjectAndRepository: (
@@ -125,7 +128,7 @@ export interface IntegrationManager {
     body: string
   ) => Promise<{ markdownCompatible: boolean, markdown: string }>
 
-  isPlatformUser: (account: Ref<PersonAccount>) => Promise<boolean>
+  isPlatformUser: (account: PersonId) => Promise<boolean>
 
   getRepositoryById: (ref?: Ref<GithubIntegrationRepository> | null) => Promise<GithubIntegrationRepository | undefined>
 
@@ -144,6 +147,7 @@ export interface DocSyncManager {
   init: (provider: IntegrationManager) => Promise<void>
   // Perform synchronization of document with external source.
   sync: (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     parent: DocSyncInfo | undefined,
@@ -151,6 +155,7 @@ export interface DocSyncManager {
   ) => Promise<DocumentUpdate<DocSyncInfo> | undefined>
 
   handleDelete: (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     derivedClient: TxOperations,
@@ -160,6 +165,7 @@ export interface DocSyncManager {
 
   // Perform synchronization with external source.
   externalFullSync: (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     projects: GithubProject[],
@@ -168,6 +174,7 @@ export interface DocSyncManager {
 
   // Perform synchronization with external source.
   externalSync: (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     kind: ExternalSyncField,
@@ -176,26 +183,36 @@ export interface DocSyncManager {
     project: GithubProject
   ) => Promise<void>
 
-  handleEvent: <T>(integration: IntegrationContainer, derivedClient: TxOperations, event: T) => Promise<void>
+  handleEvent: <T>(
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    derivedClient: TxOperations,
+    event: T
+  ) => Promise<void>
 
   externalDerivedSync: boolean
 
-  repositoryDisabled: (integration: IntegrationContainer, repo: GithubIntegrationRepository) => void
+  repositoryDisabled: (
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    repo: GithubIntegrationRepository
+  ) => void
 }
 
 /**
  * @public
  */
 export interface GithubIntegrationRecord {
-  installationId: number
-  workspace: string
-  accountId: Ref<Account>
+  installationId: number[]
+  workspace: WorkspaceUuid
+  accountId: PersonId
 }
 
 /**
  * @public
  */
 export interface GithubUserRecord {
+  account: PersonId
   _id: string // login
   code?: string | null
   token?: string
@@ -206,6 +223,5 @@ export interface GithubUserRecord {
   state?: string
   scope?: string
   error?: string | null
-
-  accounts: Record<string, Ref<Account>>
+  accounts: Record<WorkspaceUuid, PersonId>
 }

@@ -15,3 +15,4 @@
 //
 
 export * from './rpc'
+export * from './sliding'

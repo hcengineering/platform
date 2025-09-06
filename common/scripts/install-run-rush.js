@@ -16,16 +16,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 179896:
-/*!*********************!*\
-  !*** external "fs" ***!
-  \*********************/
-/***/ ((module) => {
-
-module.exports = require("fs");
-
-/***/ }),
-
 /***/ 16928:
 /*!***********************!*\
   !*** external "path" ***!
@@ -33,6 +23,16 @@ module.exports = require("fs");
 /***/ ((module) => {
 
 module.exports = require("path");
+
+/***/ }),
+
+/***/ 179896:
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = require("fs");
 
 /***/ })
 
@@ -105,7 +105,7 @@ module.exports = require("path");
 /******/
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!************************************************!*\
   !*** ./lib-esnext/scripts/install-run-rush.js ***!

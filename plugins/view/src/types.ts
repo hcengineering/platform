@@ -15,7 +15,7 @@
 //
 
 import {
-  Account,
+  PersonId,
   AggregateValue,
   AnyAttribute,
   CategoryType,
@@ -37,7 +37,9 @@ import {
   Tx,
   TxOperations,
   Type,
-  UXObject
+  UXObject,
+  AccountUuid,
+  Blob
 } from '@hcengineering/core'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -112,8 +114,8 @@ export interface FilteredView extends Doc {
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
   sharable?: boolean
-  users: Ref<Account>[]
-  createdBy: Ref<Account>
+  users: AccountUuid[]
+  createdBy: PersonId
   attachedTo: string
 }
 
@@ -432,8 +434,10 @@ export interface Viewlet extends Doc {
   config: (BuildModelKey | string)[]
   configOptions?: ViewletConfigOptions
   viewOptions?: ViewOptionsModel
+  masterDetailOptions?: MasterDetailModel
   variant?: string
   props?: Record<string, any>
+  title?: string
 }
 
 /**
@@ -481,6 +485,11 @@ export type ViewActionFunction<T extends Doc = Doc, P = Record<string, any>> = (
  * @public
  */
 export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (doc: T | T[] | undefined) => Promise<boolean>
+
+/**
+ * @public
+ */
+export type OpenDocumentFunction<T extends Doc = Doc> = (_class: Ref<Class<T>>, _id: Ref<T>) => Promise<boolean>
 
 /**
  * @public
@@ -809,6 +818,12 @@ export interface ObjectPanel extends Class<Doc> {
   component: AnyComponent
 }
 
+// Temp workaround for cards-based apps navigation
+export interface CustomObjectLinkProvider extends Class<Doc> {
+  match: Resource<(doc: Doc) => boolean>
+  encode: Resource<(doc: Doc) => Location>
+}
+
 /**
  * @public
  */
@@ -823,9 +838,34 @@ export interface ViewOptionsModel {
 /**
  * @public
  */
+export interface MasterDetailModel {
+  views: MasterDetailConfig[]
+}
+
+export interface MasterDetailConfig {
+  id?: string
+  class: Ref<Class<Doc>>
+  view: Ref<ViewletDescriptor>
+  associationId?: Ref<Class<Doc>>
+  props?: Record<string, any>
+  createComponent?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface MasterDetailOption {
+  class: Ref<Class<Doc>>
+  viewlet?: Ref<Viewlet>
+  associationId?: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
 export interface IconProps {
   icon?: Asset
-  color?: number
+  color?: number | number[] | Ref<Blob>
 }
 
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array' | 'object'

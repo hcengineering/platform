@@ -15,7 +15,7 @@
 
 import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Doc,
@@ -25,7 +25,8 @@ import {
   type RelatedDocument,
   Timestamp,
   Tx,
-  TxCUD
+  TxCUD,
+  Blob
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -37,7 +38,7 @@ import type { Action } from '@hcengineering/view'
  * @public
  */
 export interface ActivityMessage extends AttachedDoc {
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   modifiedOn: Timestamp
 
   isPinned?: boolean
@@ -220,7 +221,8 @@ export interface Reaction extends AttachedDoc {
   attachedTo: Ref<ActivityMessage>
   attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
-  createBy: Ref<Account>
+  image?: Ref<Blob>
+  createBy: PersonId
 }
 
 /**
@@ -317,7 +319,12 @@ export default plugin(activityId, {
     RemovedObject: '' as IntlString,
     ChangedObject: '' as IntlString,
     UnsetObject: '' as IntlString,
-    UpdatedObject: '' as IntlString
+    UpdatedObject: '' as IntlString,
+    NewObjectType: '' as IntlString,
+    RemovedObjectType: '' as IntlString,
+    AttributeSetTo: '' as IntlString,
+    AddedTag: '' as IntlString,
+    RemovedTag: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

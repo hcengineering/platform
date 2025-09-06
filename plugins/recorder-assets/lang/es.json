@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Cancelar",
+    "Pause": "Pausar",
+    "Stop": "Detener",
+    "Resume": "Reanudar",
+    "Record": "Grabar",
+    "Done": "Hecho",
+    "CancelRecording": "Cancelar grabación",
+    "CancelRecordingConfirm": "¿Está seguro de que desea cancelar la grabación?",
+    "RestartRecording": "Reiniciar grabación",
+    "RestartRecordingConfirm": "¿Está seguro de que desea reiniciar la grabación?",
+    "ScreenRecordingName": "Grabación de pantalla {date}",
+    "CameraRecordingName": "Grabación de cámara {date}",
+    "ClickToSkip": "Haz clic para saltar",
+    "RecordVideo": "Grabar video",
+    "ShareWithAudio": "Compartir con audio",
+    "ShareScreen": "Compartir pantalla",
+    "StopSharing": "Detener compartir",
+    "SelectVideoToRecord": "Habilitar cámara de video o compartir pantalla para grabar",
+    "CameraSize": "Tamaño de la cámara",
+    "CameraPos": "Posición de la cámara",
+    "Small": "Pequeña",
+    "Medium": "Mediana",
+    "Large": "Grande",
+    "TopLeft": "Arriba a la izquierda",
+    "TopRight": "Arriba a la derecha",
+    "BottomLeft": "Abajo a la izquierda",
+    "BottomRight": "Abajo a la derecha",
+    "Resolution": "Resolución",
+    "Original": "Original"
+  }
+}

@@ -14,8 +14,9 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
@@ -26,17 +27,18 @@ import { createServer, listen } from './server'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'datalake')
 }
 
 export const main = async (): Promise<void> => {
   setupMetadata()
 
-  configureAnalytics(process.env.SENTRY_DSN, {})
+  configureAnalytics('datalake', process.env.VERSION ?? '0.7.0')
   Analytics.setTag('application', 'datalake')
 
   const metricsContext = initStatisticsContext('datalake', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'datalake',
         {},
         {},
@@ -48,7 +50,9 @@ export const main = async (): Promise<void> => {
       )
   })
 
-  const { app, close } = createServer(metricsContext, config)
+  const queue = getPlatformQueue('datalake')
+
+  const { app, close } = await createServer(metricsContext, queue, config)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {

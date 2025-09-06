@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import type { AccountClient, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
+import type { Client, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
 import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
+
 /**
  * @public
  */
@@ -73,7 +74,7 @@ export interface ClientFactoryOptions {
 /**
  * @public
  */
-export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<AccountClient>
+export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<Client>
 
 // client - will filter out all server model elements
 // It will also filter out all UI Elements, like Actions, View declarations etc.
@@ -95,8 +96,5 @@ export default plugin(clientId, {
   },
   function: {
     GetClient: '' as Resource<ClientFactory>
-  },
-  event: {
-    NetworkRequests: '' as Metadata<string>
   }
 })

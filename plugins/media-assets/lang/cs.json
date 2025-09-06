@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Camera": "Kamera",
+    "Microphone": "Mikrofon",
+    "Speaker": "Reproduktor",
+    "DefaultCam": "Výchozí kamera",
+    "DefaultMic": "Výchozí mikrofon",
+    "DefaultSpeaker": "Výchozí reproduktor",
+    "TurnOnCam": "Zapnout kameru",
+    "TurnOffCam": "Vypnout kameru",
+    "TurnOnMic": "Zapnout mikrofon",
+    "TurnOffMic": "Vypnout mikrofon",
+    "NoCam": "Žádná kamera",
+    "NoMic": "Žádný mikrofon",
+    "NoSpeaker": "Žádný reproduktor",
+    "On": "Zapnuto",
+    "Off": "Vypnuto"
+  }
+}

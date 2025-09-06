@@ -1,38 +1,49 @@
 services:
-  mongodb:
-    image: 'mongo:7-jammy'
-    container_name: mongodb
+  stream:
+    image: 'hardcoreeng/stream'
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    healthcheck:
-      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27017 --quiet
-      interval: 5s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
+      - 'huly.local:host-gateway'
+    container_name: stream
     environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - db:/data/db
+      - STREAM_ENDPOINT_URL=datalake://huly.local:4030
+      - STREAM_INSECURE=true
+      - STREAM_SERVER_SECRET=secret
+      - STREAM_MAX_PARALLEL_SCALING_COUNT=6
+      - STREAM_LOG_LEVEL=debug
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+      - STREAM_REGION=cockroach
+      - STREAM_QUEUE_CONFIG=${QUEUE_CONFIG}
     ports:
-      - 27017:27017
+      - 1080:1080
     restart: unless-stopped
-  postgres:
-    image: postgres
-    container_name: postgres
+  media:
+    image: 'hardcoreeng/media'
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
+    container_name: media
     environment:
-      - POSTGRES_PASSWORD=example
-    volumes:
-      - dbpg:/data/db
+      - ACCOUNTS_URL=http://huly.local:3000
+      - SECRET=secret
+      - REGION=cockroach
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+    restart: unless-stopped
+  preview:
+    image: 'hardcoreeng/preview'
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: preview
+    environment:
+      - SECRET=secret
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - CACHE_PATH=/data/cache
     ports:
-      - 5432:5432
+      - 4040:4040
     restart: unless-stopped
   cockroach:
     image: cockroachdb/cockroach:latest-v24.2
+    extra_hosts:
+      - 'huly.local:host-gateway'
     ports:
       - '26257:26257'
       - '8089:8080'
@@ -40,20 +51,85 @@ services:
     volumes:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --memory 256M
+    container_name: redpanda
+    volumes:
+      - redpanda:/var/lib/redpanda/data
+    ports:
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8000:8080
+    depends_on:
+      - redpanda
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    expose:
+      - 9000
+      - 9001
     ports:
       - 9000:9000
       - 9001:9001
     volumes:
       - files:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      retries: 10
     restart: unless-stopped
   elastic:
     image: 'elasticsearch:7.14.2'
-    command: |
-      /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;      
-      /usr/local/bin/docker-entrypoint.sh eswrapper"
+    expose:
+      - 9200
+    extra_hosts:
+      - 'huly.local:host-gateway'
     volumes:
       - elastic:/usr/share/elasticsearch/data
     ports:
@@ -62,21 +138,27 @@ services:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
-      - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:8082
+      - ES_JAVA_OPTS=-Xms256m -Xmx450m
     healthcheck:
       interval: 20s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+  redis:
+    image: redis:8.0.2-alpine3.21
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+
   account:
     image: hardcoreeng/account
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
-      - mongodb
-      - minio
       - stats
     ports:
       - 3000:3000
@@ -84,144 +166,92 @@ services:
       - ./branding.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
+      - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
+      - STATS_URL=http://huly.local:4900
       - WORKSPACE_LIMIT_PER_USER=10000
-      - STATS_URL=http://host.docker.internal:4900
-      # - DB_URL=postgresql://postgres:example@postgres:5432
-      - DB_URL=${MONGO_URL}
+      - DB_URL=${DB_CR_URL}
       # - DB_NS=account-2
-      # Pass only one region to disallow selection for new workspaces.Ø
-      - REGION_INFO=|Mongo;pg|Postgres;cockroach|CockroachDB
-      # - REGION_INFO=cockroach|CockroachDB
-      - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
+      # Pass only one region to disallow selection for new workspaces.
+      - REGION_INFO=cockroach|CockroachDB
+      - TRANSACTOR_URL=ws://huly.local:3332;;cockroach,
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
-      - RESERVED_DB_NAMES=telegram,gmail,github
+      - FRONT_URL=http://huly.local:8087
       - LAST_NAME_FIRST=true
       # - WS_LIVENESS_DAYS=1
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
-      # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
-      # - INIT_WORKSPACE=onboarding
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - MAILBOX_DOMAINS=huly.dev.local
+      - MAILBOX_MAX_COUNT_PER_ACCOUNT=2
     restart: unless-stopped
   stats:
     image: hardcoreeng/stats
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     ports:
       - 4900:4900
     environment:
       - PORT=4900
       - SERVER_SECRET=secret
-    restart: unless-stopped
-  workspace:
-    image: hardcoreeng/workspace
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    links:
-      - mongodb
-      - minio
-      - stats
-    volumes:
-      - ./branding.json:/var/cfg/branding.json
-    environment:
-      - WS_OPERATION=all+backup
-      - SERVER_SECRET=secret
-      - DB_URL=${MONGO_URL}
-      - STATS_URL=http://host.docker.internal:4900
-      - MAIL_URL=
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - RESERVED_DB_NAMES=telegram,gmail,github
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - BRANDING_PATH=/var/cfg/branding.json
-      # - PARALLEL=2
-      - INIT_WORKSPACE=test
-      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
-      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
-    restart: unless-stopped
-  workspacepg:
-    image: hardcoreeng/workspace
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    links:
-      - postgres
-      - minio
-      - stats
-    volumes:
-      - ./branding.json:/var/cfg/branding.json
-    environment:
-      - WS_OPERATION=all+backup
-      - SERVER_SECRET=secret
-      - DB_URL=postgresql://postgres:example@postgres:5432
-      - STATS_URL=http://host.docker.internal:4900
-      - MAIL_URL=
-      - REGION=pg
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
-      - RESERVED_DB_NAMES=telegram,gmail,github
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - BRANDING_PATH=/var/cfg/branding.json
-      # - PARALLEL=2
-      # - INIT_WORKSPACE=onboarding
-      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
-      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
       - cockroach
       - minio
       - stats
+    depends_on:
+      redpanda:
+        condition: service_started
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
       - WS_OPERATION=all+backup
-      - SERVER_SECRET=secret
-      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
-      - STATS_URL=http://host.docker.internal:4900
-      - MAIL_URL=
       - REGION=cockroach
+      - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
+      - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - RESERVED_DB_NAMES=telegram,gmail,github
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
       - BRANDING_PATH=/var/cfg/branding.json
-      # - PARALLEL=2
-      # - INIT_WORKSPACE=onboarding
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      - MAIL_URL=
+      # - INIT_WORKSPACE=staging-dev
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
-      - mongodb
       - minio
-      - transactor
+      - transactor_cockroach
       - stats
     ports:
       - 3078:3078
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://huly.local:3000
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - STATS_URL=http://host.docker.internal:4900
+      - STATS_URL=http://huly.local:4900
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   front:
     image: hardcoreeng/front
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
-      - mongodb
-      - minio
-      - elastic
-      - transactor
-      - collaborator
       - stats
     ports:
       - 8087:8080
@@ -229,225 +259,131 @@ services:
     environment:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - STATS_URL=http://host.docker.internal:4900
-      - UPLOAD_URL=/files
-      - GMAIL_URL=http://host.docker.internal:8088
-      - CALENDAR_URL=http://host.docker.internal:8095
-      - TELEGRAM_URL=http://host.docker.internal:8086
-      - REKONI_URL=http://host.docker.internal:4004
-      - COLLABORATOR_URL=ws://host.docker.internal:3078
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://huly.local:4030/upload/form-data/:workspace
+      - PREVIEW_URL=http://huly.local:4040
+      - PREVIEW_CONFIG=image|http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|http://huly.local:4030/meta/:workspace/:blobId
+      - GMAIL_URL=http://huly.local:8093
+      - CALENDAR_URL=http://huly.local:8095
+      - TELEGRAM_URL=http://huly.local:8086
+      - REKONI_URL=http://huly.local:4004
+      - COLLABORATOR_URL=ws://huly.local:3078
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - GITHUB_URL=http://host.docker.internal:3500
-      - PRINT_URL=http://host.docker.internal:4005
-      - SIGN_URL=http://host.docker.internal:4006
-      - ANALYTICS_COLLECTOR_URL=http://host.docker.internal:4017
+      - GITHUB_URL=http://huly.local:3500
+      - PRINT_URL=http://huly.local:4005
+      - SIGN_URL=http://huly.local:4006
+      #      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
-      - BRANDING_URL=http://host.docker.internal:8087/branding.json
+      - DESKTOP_UPDATES_CHANNELS=dev;tracex:dev-tracex
+      - BRANDING_URL=http://huly.local:8087/branding.json
+      - STREAM_URL=http://huly.local:1080/recording
+      - COMMUNICATION_API_ENABLED=true
+      - BACKUP_URL=http://huly.local:4039/api/backup,
+      - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
-    restart: unless-stopped
-  transactor:
-    image: hardcoreeng/transactor
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    links:
-      - mongodb
-      - minio
-      - account
-      - stats
-      # - apm-server
-    ports:
-      - 3333:3333
-    volumes:
-      - ./branding.json:/var/cfg/branding.json
-    environment:
-      # - SERVER_PROVIDER=uweb
-      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      - UV_THREADPOOL_SIZE=10
-      - SERVER_PORT=3333
-      - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=false
-      - STATS_URL=http://host.docker.internal:4900
-      - FULLTEXT_URL=http://host.docker.internal:4700
-      # - DB_URL=postgresql://postgres:example@postgres:5432
-      - DB_URL=${MONGO_URL}
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
-      - METRICS_CONSOLE=false
-      - METRICS_FILE=metrics.txt
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
-      # - APM_SERVER_URL=http://apm-server:8200
-      - MAIL_URL=''
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - BRANDING_PATH=/var/cfg/branding.json
-      - SUPPORT_WORKSPACE=support
-      - AI_BOT_URL=http://host.docker.internal:4010
-    restart: unless-stopped
-  transactor_pg:
-    image: hardcoreeng/transactor
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    links:
-      - postgres
-      - minio
-      - account
-      - stats
-      # - apm-server
-    ports:
-      - 3331:3331
-    volumes:
-      - ./branding.json:/var/cfg/branding.json
-    environment:
-      # - SERVER_PROVIDER=uweb
-      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      # - UV_THREADPOOL_SIZE=10
-      - SERVER_PORT=3331
-      - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=true
-      - FULLTEXT_URL=http://host.docker.internal:4701
-      - STATS_URL=http://host.docker.internal:4900
-      - DB_URL=postgresql://postgres:example@postgres:5432
-      - METRICS_CONSOLE=false
-      - METRICS_FILE=metrics.txt
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
-      # - APM_SERVER_URL=http://apm-server:8200
-      - MAIL_URL=''
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - BRANDING_PATH=/var/cfg/branding.json
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
       - cockroach
       - minio
       - account
       - stats
-      # - apm-server
+    depends_on:
+      redpanda:
+        condition: service_started
     ports:
       - 3332:3332
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - SERVER_PROVIDER=uweb
-      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      # - UV_THREADPOOL_SIZE=10
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3332
+      - REGION=cockroach
       - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=false
-      - FULLTEXT_URL=http://host.docker.internal:4702
-      - STATS_URL=http://host.docker.internal:4900
-      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+      - ENABLE_COMPRESSION=true
+      - FULLTEXT_URL=http://huly.local:4702
+      - STATS_URL=http://huly.local:4900
+      - DB_URL=${DB_CR_URL}
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
-      # - APM_SERVER_URL=http://apm-server:8200
+      - FRONT_URL=http://huly.local:8087
       - MAIL_URL=''
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://huly.local:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
-    restart: unless-stopped
-  green:
-    image: hardcoreeng/green
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    links:
-      - cockroach
-      - stats
-    ports:
-      - 6767:6767
-    environment:
-      - PORT=6767
-      - AUTH_TOKEN=secret
-      - STATS_URL=http://host.docker.internal:4900
-      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+      - AI_BOT_URL=http://huly.local:4010
+      - MSG2FILE_URL=http://huly.local:9087
+      - COMMUNICATION_TIME_LOGGING_ENABLED=true
+      - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
+      - RATE_LIMIT_WINDOW=30000
+      - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
+      - COMMUNICATION_API_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
+    extra_hosts:
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4004:4004
-  fulltext:
-    image: hardcoreeng/fulltext
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-    links:
-      - elastic
-      - mongodb
-    ports:
-      - 4700:4700
     environment:
-      - SERVER_SECRET=secret
-      - DB_URL=${MONGO_URL}
-      - FULLTEXT_DB_URL=http://host.docker.internal:9200
-      - ELASTIC_INDEX_NAME=local_storage_index
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - STATS_URL=http://host.docker.internal:4900
-      - REKONI_URL=http://host.docker.internal:4004
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-  fulltext_pg:
-    image: hardcoreeng/fulltext
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-    links:
-      - elastic
-      - postgres
-    ports:
-      - 4701:4701
-    environment:
-      - PORT=4701
-      - SERVER_SECRET=secret
-      - DB_URL=postgresql://postgres:example@postgres:5432
-      - FULLTEXT_DB_URL=http://host.docker.internal:9200
-      - ELASTIC_INDEX_NAME=local_storage_index
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - STATS_URL=http://host.docker.internal:4900
-      - REKONI_URL=http://host.docker.internal:4004
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - STATS_URL=http://huly.local:4901
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   fulltext_cockroach:
     image: hardcoreeng/fulltext
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
+    depends_on:
+      elastic:
+        condition: service_healthy
     restart: unless-stopped
     links:
       - elastic
       - cockroach
+      - rekoni
     ports:
       - 4702:4702
     environment:
       - PORT=4702
+      - REGION=cockroach
       - SERVER_SECRET=secret
-      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
-      - FULLTEXT_DB_URL=http://host.docker.internal:9200
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
+      - FULLTEXT_DB_URL=http://huly.local:9200
+      - ELASTIC_INDEX_NAME=local_storage_index # Same index for simplicity
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - STATS_URL=http://host.docker.internal:4900
-      - REKONI_URL=http://host.docker.internal:4004
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - STATS_URL=http://huly.local:4900
+      - REKONI_URL=http://huly.local:4004
+      - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   print:
     image: hardcoreeng/print
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4005:4005
     environment:
       - SECRET=secret
+      - REGION=cockroach
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - STATS_URL=http://host.docker.internal:4900
+      - STATS_URL=http://huly.local:4900
+      - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   sign:
     image: hardcoreeng/sign
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -457,71 +393,72 @@ services:
     environment:
       - SECRET=secret
       - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - MINIO_SECRET_KEY=minioadmin
+      - REGION=cockroach
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://huly.local:3000
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
       - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
-      - STATS_URL=http://host.docker.internal:4900
-  analytics:
-    image: hardcoreeng/analytics-collector
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-    ports:
-      - 4017:4017
-    environment:
-      - SECRET=secret
-      - PORT=4017
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-      - SERVICE_ID=analytics-collector-service
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=support
-      - STATS_URL=http://host.docker.internal:4900
-  aiBot:
-    image: hardcoreeng/ai-bot
-    ports:
-      - 4010:4010
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-    environment:
-      - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=support
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FIRST_NAME=Jolie
-      - LAST_NAME=AI
-      - PASSWORD=password
-      - AVATAR_PATH=./avatar.png
-      - AVATAR_CONTENT_TYPE=.png
-      - STATS_URL=http://host.docker.internal:4900
-  #      - LOVE_ENDPOINT=http://host.docker.internal:8096
-  #      - OPENAI_API_KEY=token
-  #  telegram-bot:
-  #    image: hardcoreeng/telegram-bot
+      - STATS_URL=http://huly.local:4900
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+  # aiBot:
+  #   image: hardcoreeng/ai-bot
+  #   ports:
+  #     - 4010:4010
   #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-  #    restart: unless-stopped
-  #    environment:
-  #      - PORT=4020
-  #      - BOT_TOKEN=token
-  #      - MONGO_URL=${MONGO_URL}
-  #      - MONGO_DB=telegram-bot
-  #      - SECRET=secret
-  #      - DOMAIN=domain
-  #      - ACCOUNTS_URL=http://host.docker.internal:3000
-  #      - SERVICE_ID=telegram-bot-service
-  #      - STATS_URL=http://host.docker.internal:4900
+  #     - 'huly.local:host-gateway'
+  #   restart: unless-stopped
+  #   environment:
+  #     - SERVER_SECRET=secret
+  #     - DB_URL=${DB_CR_URL}
+  #     - QUEUE_CONFIG=${QUEUE_CONFIG}
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - STORAGE_CONFIG=${STORAGE_CONFIG}
+  #     - FIRST_NAME=Jolie
+  #     - LAST_NAME=AI
+  #     - PASSWORD=password
+  #     - AVATAR_PATH=./avatar.png
+  #     - AVATAR_CONTENT_TYPE=.png
+  #     - STATS_URL=http://huly.local:4900
+  # #      - LOVE_ENDPOINT=http://huly.local:8096
+  # #      - OPENAI_API_KEY=token
+  # analytics:
+  #   image: hardcoreeng/analytics-collector
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   restart: unless-stopped
+  #   ports:
+  #     - 4017:4017
+  #   environment:
+  #     - SECRET=secret
+  #     - PORT=4017
+  #     - SERVICE_ID=analytics-collector-service
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - STATS_URL=http://huly.local:4900
+  #     - POSTHOG_HOST=${POSTHOG_HOST}
+  #     - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+  #     - MAX_PAYLOAD_SIZE=10mb
+  msg2file:
+    image: hardcoreeng/msg2file
+    ports:
+      - 9087:9087
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    environment:
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - PORT=9087
+      - SECRET=secret
+      - SERVICE_ID=msg2file-service
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   export:
     image: hardcoreeng/export
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - 'huly.local:host-gateway'
     links:
-      - mongodb
       - minio
       - stats
     ports:
@@ -530,13 +467,164 @@ services:
       - PORT=4009
       - SECRET=secret
       - SERVICE_ID=export-service
-      - DB_URL=${MONGO_URL}
-      - STATS_URL=http://host.docker.internal:4900
+      - DB_URL=${DB_CR_URL}
+      - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://huly.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  datalake:
+    image: hardcoreeng/datalake
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4030:4030
+    environment:
+      - PORT=4030
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - DB_URL=${DB_CR_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+      - REGION=cockroach
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  hulykvs:
+    image: hardcoreeng/hulykvs
+    depends_on:
+      cockroach:
+        condition: service_started
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 8094:8094
+    environment:
+      - HULY_DB_CONNECTION=${DB_CR_URL}
+      - HULY_TOKEN_SECRET=secret
+    restart: unless-stopped
+  hulygun:
+    image: hardcoreeng/hulygun
+    depends_on:
+      redpanda:
+        condition: service_started
+      account:
+        condition: service_started
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    environment:
+      - HULY_LOG=debug
+      - HULY_KAFKA_BOOTSTRAP=redpanda:9092
+      - HULY_TOKEN_SECRET=secret
+      - HULY_ACCOUNT_SERVICE=http://huly.local:3000
+    restart: unless-stopped
+  hulypulse:
+    image: hardcoreeng/hulypulse
+    depends_on:
+      redis:
+        condition: service_started
+    ports:
+      - 8095:8095
+    environment:
+      - HULY_REDIS_URLS=redis://redis:6379
+      - HULY_BIND_PORT=8095
+    restart: unless-stopped
+
+  process-service:
+    image: hardcoreeng/process
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      redpanda:
+        condition: service_started
+      account:
+        condition: service_started
+    environment:
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - QUEUE_REGION=cockroach
+    restart: unless-stopped
+  backup-cockroach:
+    image: hardcoreeng/backup
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    environment:
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
+      - STATS_URL=http://huly.local:4900
+      - DB_URL=${DB_CR_URL}
+      - REGION=cockroach
+      - BUCKET_NAME=backups
+      - INTERVAL=60
+      - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+      - WORKSPACE_STORAGE=${STORAGE_CONFIG}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - TEMPORAL_ADDRESS=localhost:7233
+    restart: unless-stopped
+  backup-api:
+    image: hardcoreeng/backup-api
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4039:4039
+    environment:
+      - PORT=4039
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - BUCKET_NAME=backups
+      - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 16686:16686 # Web UI
+      - 4317:4317
+      - 4318:4318
+    volumes:
+      - telemetry:/badger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+    restart: unless-stopped
 volumes:
   db:
   dbpg:
   files:
   elastic:
   cockroach_db:
+  redpanda:
+  telemetry:

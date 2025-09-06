@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { Token, TokenError, decodeToken } from '@hcengineering/server-token'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -32,6 +32,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { getWorkspaceIds } from './utils'
 
 /**
  * @public
@@ -53,7 +54,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   app.use(express.json({ limit: '10mb' }))
   app.use(bp.json({ limit: '10mb' }))
 
-  const extensionsCtx = ctx.newChild('extensions', {})
+  const extensionsCtx = ctx.newChild('extensions', {}, { span: false })
   const transformer = new MarkupTransformer()
 
   const hocuspocus = new Hocuspocus({
@@ -93,22 +94,24 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
     extensions: [
       new AuthenticationExtension({
-        ctx: extensionsCtx.newChild('authenticate', {})
+        ctx: extensionsCtx.newChild('authenticate', {}, { span: false })
       }),
       new StorageExtension({
-        ctx: extensionsCtx.newChild('storage', {}),
+        ctx: extensionsCtx.newChild('storage', {}, { span: false }),
         adapter: new PlatformStorageAdapter(storageAdapter, { retryCount, retryInterval }),
         transformer
       })
     ]
   })
 
-  const rpcCtx = ctx.newChild('rpc', {})
+  const rpcCtx = ctx.newChild('rpc', {}, { span: false })
 
-  const getContext = (token: Token): Context => {
+  const getContext = async (rawToken: string, token: Token): Promise<Context> => {
+    const wsIds = await getWorkspaceIds(rawToken)
+
     return {
       connectionId: generateId(),
-      workspaceId: token.workspace,
+      wsIds,
       clientFactory: simpleClientFactory(token)
     }
   }
@@ -131,6 +134,11 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       })
       res.end(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send({ error: 'Unauthorized' })
+        return
+      }
+
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.writeHead(404, {})
@@ -142,7 +150,16 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   app.post('/rpc/:id', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
-      res.status(403).send({ error: 'Unauthorized' })
+      res.status(401).send({ error: 'Unauthorized' })
+      return
+    }
+
+    const rawToken = authHeader.split(' ')[1]
+    let token: Token
+    try {
+      token = decodeToken(rawToken)
+    } catch {
+      res.status(401).send({ error: 'Unauthorized' })
       return
     }
 
@@ -166,21 +183,27 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       return
     }
 
-    const token = decodeToken(authHeader.split(' ')[1])
-    const context = getContext(token)
+    const context = await getContext(rawToken, token)
 
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
-    await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
-      try {
-        const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
-          return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
-        })
-        res.status(200).send(response)
-      } catch (err: any) {
-        Analytics.handleError(err)
-        res.status(500).send({ error: err.message })
+    await rpcCtx.with(
+      '/rpc',
+      {
+        source: token.extra?.service ?? '🤦‍♂️user',
+        method: request.method
+      },
+      async (ctx) => {
+        try {
+          const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
+            return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+          })
+          res.status(200).send(response)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          res.status(500).send({ error: err.message })
+        }
       }
-    })
+    )
   })
 
   const wss = new WebSocketServer({

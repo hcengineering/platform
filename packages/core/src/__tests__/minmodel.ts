@@ -15,8 +15,8 @@
 
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref, Space } from '../classes'
-import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
+import type { Arr, AttachedDoc, Class, Data, Doc, Interface, Mixin, Obj, Ref, Space } from '../classes'
+import { ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'
 import type { DocumentUpdate, TxCUD, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
@@ -135,14 +135,14 @@ export function genMinModel (): TxCUD<Doc>[] {
       domain: DOMAIN_MODEL
     })
   )
-  txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
+  // txes.push(
+  //   createClass(core.class.Account, {
+  //     label: 'Account' as IntlString,
+  //     extends: core.class.Doc,
+  //     kind: ClassifierKind.CLASS,
+  //     domain: DOMAIN_MODEL
+  //   })
+  // )
 
   txes.push(
     createInterface(test.interface.WithState, {

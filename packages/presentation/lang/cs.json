@@ -6,6 +6,7 @@
     "Save": "Uložit",
     "Saved": "Uloženo...",
     "Download": "Stáhnout",
+    "DownloadOriginal": "Stáhnout originál",
     "Delete": "Smazat",
     "Close": "Zavřít",
     "NotSelected": "Nevybráno",
@@ -29,6 +30,7 @@
     "MakePrivate": "Zneviditelnit",
     "MakePrivateDescription": "Viditelné pouze pro členy",
     "Created": "Vytvořeno",
+    "Selected": "Vybráno",
     "NoResults": "Žádné výsledky k zobrazení",
     "Next": "Další",
     "FailedToPreview": "Náhled se nezdařil",
@@ -38,7 +40,20 @@
     "DrawingHistory": "Čmárání historie",
     "ColorAdd": "Přidejte předvolbu barev",
     "ColorRemove": "Odstraňte předvolbu barev",
-    "ColorReset": "Resetovat předvolby barev"
+    "ColorReset": "Resetovat předvolby barev",
+    "Copy": "Kopírovat",
+    "DocumentUrlCopied": "Zkopírováno!",
+    "CopyLink": "Zkopírovat odkaz",
+    "AccessDenied": "Objekt neexistuje nebo k němu nemáte oprávnění.",
+    "UnableToFollowMention": "Nelze otevřít zmíněný objekt",
+    "Undo": "Zpět",
+    "Redo": "Znovu",
+    "ClearCanvas": "Vyčistit plátno",
+    "PenTool": "Nástroj pero",
+    "EraserTool": "Nástroj guma",
+    "PanTool": "Nástroj posun",
+    "TextTool": "Nástroj text",
+    "PaletteManagementMenu": "Spravovat barevné předvolby"
   },
   "status": {
     "FileTooLarge": "Soubor je příliš velký"

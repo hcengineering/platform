@@ -13,24 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
-  import { AccountRole } from '@hcengineering/core'
-  import { getClient, MultipleDraftController } from '@hcengineering/presentation'
-  import { RecruitEvents } from '@hcengineering/recruit'
-  import { HeaderButton, showPopup } from '@hcengineering/ui'
+  import { MultipleDraftController } from '@hcengineering/presentation'
+  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
-  import view from '@hcengineering/view'
+  import { Analytics } from '@hcengineering/analytics'
+  import { RecruitEvents } from '@hcengineering/recruit'
 
   let draftExists = false
 
-  const client = getClient()
   const draftController = new MultipleDraftController(recruit.mixin.Candidate)
-  const newRecruitKeyBindingPromise = client
-    .findOne(view.class.Action, { _id: recruit.action.CreateTalent })
-    .then((p) => p?.keyBinding)
-
   onDestroy(
     draftController.hasNext((res) => {
       draftExists = res
@@ -41,36 +34,35 @@
     showPopup(CreateCandidate, { shouldSaveDraft: true }, 'top')
     Analytics.handleEvent(RecruitEvents.NewTalentButtonClicked)
   }
-
-  let mainActionId: string | undefined = undefined
-  let visibleActions: string[] = []
-  function updateActions (draft: boolean): void {
-    mainActionId = draft ? recruit.string.ResumeDraft : recruit.string.CreateTalent
-    visibleActions = [mainActionId]
-  }
-
-  $: updateActions(draftExists)
 </script>
 
-<HeaderButton
-  {client}
-  {mainActionId}
-  {visibleActions}
-  actions={[
-    {
-      id: recruit.string.CreateTalent,
-      label: recruit.string.CreateTalent,
-      accountRole: AccountRole.User,
-      keyBindingPromise: newRecruitKeyBindingPromise,
-      callback: newCandidate
-    },
-    {
-      id: recruit.string.ResumeDraft,
-      label: recruit.string.ResumeDraft,
-      draft: true,
-      accountRole: AccountRole.User,
-      keyBindingPromise: newRecruitKeyBindingPromise,
-      callback: newCandidate
-    }
-  ]}
-/>
+<div class="antiNav-subheader">
+  <Button
+    icon={IconAdd}
+    label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
+    justify={'left'}
+    kind={'primary'}
+    width={'100%'}
+    gap={'large'}
+    on:click={newCandidate}
+  >
+    <div slot="content" class="draft-circle-container">
+      {#if draftExists}
+        <div class="draft-circle" />
+      {/if}
+    </div>
+  </Button>
+</div>
+
+<style lang="scss">
+  .draft-circle-container {
+    margin-left: auto;
+  }
+
+  .draft-circle {
+    height: 6px;
+    width: 6px;
+    background-color: var(--primary-bg-color);
+    border-radius: 50%;
+  }
+</style>

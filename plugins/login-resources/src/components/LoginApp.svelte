@@ -34,28 +34,30 @@
   import ConfirmationSend from './ConfirmationSend.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import Join from './Join.svelte'
+  import AutoJoin from './AutoJoin.svelte'
   import LoginForm from './LoginForm.svelte'
+  import ProvidersOnlyForm from './ProvidersOnlyForm.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
+  import { Pages, getAccount, pages } from '..'
+  import login from '../plugin'
 
   import loginBack from '../../img/login_back.png'
   import loginBack2x from '../../img/login_back_2x.png'
-
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
-
-  import { Pages, getAccount, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
-  import login from '../plugin'
   import AdminWorkspaces from './AdminWorkspaces.svelte'
 
   export let page: Pages = 'signup'
 
   const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
+  const localLoginHidden = getMetadata(login.metadata.HideLocalLogin) ?? false
+  const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
 
   onDestroy(location.subscribe(updatePageLoc))
@@ -63,19 +65,24 @@
   function updatePageLoc (loc: Location): void {
     const token = getMetadata(presentation.metadata.Token)
     page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
+    if (page === 'join' && loc.query?.autoJoin !== undefined) {
+      page = 'autoJoin'
+    }
+
     const allowedUnauthPages: Pages[] = [
       'login',
       'signup',
       'password',
       'recovery',
       'join',
+      'autoJoin',
       'confirm',
       'confirmationSend',
       'auth'
     ]
     if (token === undefined ? !allowedUnauthPages.includes(page) : !pages.includes(page)) {
-      const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-      page = tokens != null ? 'login' : 'signup'
+      const account = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      page = account != null ? 'login' : 'signup'
     }
 
     navigateUrl = loc.query?.navigateUrl ?? undefined
@@ -85,21 +92,23 @@
     if (page === 'auth') {
       // token handled by auth page
       return
+    } else if (page === 'autoJoin') {
+      // there's a separate workflow for auto join
+      return
     }
+
     if (getMetadata(presentation.metadata.Token) == null) {
-      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      if (lastToken != null) {
+      const lastAccount = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      if (lastAccount != null) {
         try {
-          const info = await getAccount(false)
-          if (info !== undefined) {
-            setMetadata(presentation.metadata.Token, info.token)
-            setMetadataLocalStorage(login.metadata.LastToken, info.token)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
-            setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
+          const loginInfo = await getAccount(false)
+          if (loginInfo != null) {
+            setMetadata(presentation.metadata.Token, loginInfo.token)
+            setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
             updatePageLoc(getCurrentLocation())
           }
         } catch (err: any) {
-          setMetadataLocalStorage(login.metadata.LastToken, null)
+          // do nothing
         }
       }
     }
@@ -133,7 +142,7 @@
       <div
         style:position="fixed"
         style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
-        style:top={'3rem'}
+        style:top={'calc(3rem + var(--huly-top-indent, 0rem))'}
         class="flex-row-center"
       >
         <LoginIcon /><span class="fs-title ml-2">{getMetadata(workbench.metadata.PlatformTitle)}</span>
@@ -143,9 +152,13 @@
         <Scroller padding={'1rem 0'}>
           <div class="form-content">
             {#if page === 'login'}
-              <LoginForm {navigateUrl} {signUpDisabled} />
+              {#if localLoginHidden}
+                <ProvidersOnlyForm />
+              {:else}
+                <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
+              {/if}
             {:else if page === 'signup'}
-              <SignupForm {signUpDisabled} />
+              <SignupForm {navigateUrl} {signUpDisabled} {localLoginHidden} {useOTP} />
             {:else if page === 'createWorkspace'}
               <CreateWorkspaceForm />
             {:else if page === 'password'}
@@ -156,6 +169,8 @@
               <SelectWorkspace {navigateUrl} />
             {:else if page === 'join'}
               <Join />
+            {:else if page === 'autoJoin'}
+              <AutoJoin />
             {:else if page === 'confirm'}
               <Confirmation />
             {:else if page === 'confirmationSend'}

@@ -14,18 +14,20 @@
 //
 
 import { DocUpdateMessage } from '@hcengineering/activity'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
-  Ref,
   Tx,
   TxCUD,
   TxCreateDoc,
   TxProcessor,
   TxUpdateDoc,
-  type MeasureContext
+  type MeasureContext,
+  Ref,
+  PersonId,
+  AccountUuid,
+  combineAttributes
 } from '@hcengineering/core'
-import notification from '@hcengineering/notification'
+import notification, { NotificationType } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
@@ -34,10 +36,11 @@ import {
   getCollaborators,
   getNotificationProviderControl,
   getNotificationTxes,
-  getTextPresenter,
-  getUsersInfo,
-  toReceiverInfo
+  getReceiversInfo,
+  getSenderInfo,
+  getTextPresenter
 } from '@hcengineering/server-notification-resources'
+import { Person } from '@hcengineering/contact'
 
 /**
  * @public
@@ -155,23 +158,18 @@ async function getRequestNotificationTx (
   const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
-  const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
-  const senderInfo = usersInfo.get(tx.modifiedBy) ?? {
-    _id: tx.modifiedBy
-  }
+  const receiverInfos = await getReceiversInfo(ctx, Array.from(collaborators), control)
+  const senderInfo = await getSenderInfo(ctx, tx.modifiedBy, control)
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
 
-  for (const target of collaborators) {
-    const targetInfo = toReceiverInfo(control.hierarchy, usersInfo.get(target))
-    if (targetInfo === undefined) continue
-
+  for (const receiver of receiverInfos) {
     const txes = await getNotificationTxes(
       ctx,
       control,
       request,
       tx,
-      targetInfo,
+      receiver,
       senderInfo,
       { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
       notifyContexts,
@@ -206,10 +204,54 @@ export async function requestTextPresenter (doc: Doc, control: TriggerControl): 
   return title
 }
 
+export const sendRequestMatch = (
+  tx: TxCreateDoc<Request> | TxUpdateDoc<Request>,
+  doc: Doc,
+  person: Ref<Person>,
+  socialIds: PersonId[],
+  type: NotificationType,
+  control: TriggerControl,
+  account: AccountUuid
+): boolean => {
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<Request>
+    const request = TxProcessor.createDoc2Doc(createTx)
+
+    return request.requested.includes(person)
+  } else if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<Request>
+    const pushed: Ref<Person>[] = combineAttributes([updateTx.operations], 'requested', '$push', '$each') ?? []
+
+    return pushed.includes(person)
+  }
+
+  return false
+}
+
+export const removeRequestMatch = (
+  tx: TxUpdateDoc<Request>,
+  doc: Doc,
+  person: Ref<Person>,
+  socialIds: PersonId[],
+  type: NotificationType,
+  control: TriggerControl,
+  account: AccountUuid
+): boolean => {
+  if (tx._class === core.class.TxUpdateDoc) {
+    const removed: Ref<Person>[] = combineAttributes([tx.operations], 'requested', '$pull', '$in') ?? []
+
+    return removed.includes(person)
+  }
+
+  return false
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
-    RequestTextPresenter: requestTextPresenter
+    RequestTextPresenter: requestTextPresenter,
+    SendRequestMatch: sendRequestMatch,
+    RemoveRequestMatch: removeRequestMatch
   },
   trigger: {
     OnRequest

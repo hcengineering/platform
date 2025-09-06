@@ -4,12 +4,14 @@ _api-extractor-temp/
 temp/
 .idea
 pods/workspace/init/
+pods/workspace/init-scripts/
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*./rush-logs
 *tests/sanity/screenshots
 
 # Runtime data

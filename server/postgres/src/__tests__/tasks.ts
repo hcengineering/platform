@@ -1,17 +1,17 @@
-import {
-  type Account,
+import core, {
   type AttachedDoc,
   type Class,
   ClassifierKind,
   type Data,
   type Doc,
   type Domain,
+  type PersonId,
   type Ref,
   type Space,
   type Tx
 } from '@hcengineering/core'
 import { type IntlString, plugin, type Plugin } from '@hcengineering/platform'
-import { createClass } from './minmodel'
+import { createAttribute, createClass } from './minmodel'
 
 export interface TaskComment extends AttachedDoc {
   message: string
@@ -85,7 +85,7 @@ export const doc1: Task = {
   name: 'my-space',
   description: 'some-value',
   rate: 20,
-  modifiedBy: 'user' as Ref<Account>,
+  modifiedBy: 'user' as PersonId,
   modifiedOn: 10,
   // createdOn: 10,
   space: '' as Ref<Space>
@@ -107,6 +107,15 @@ export function createTaskModel (txes: Tx[]): void {
       kind: ClassifierKind.CLASS,
       label: 'Comment' as IntlString,
       domain: 'test-task' as Domain
+    }),
+    createAttribute({
+      attributeOf: taskPlugin.class.Task,
+      name: 'arr',
+      type: {
+        _class: core.class.ArrOf,
+        label: 'arr' as IntlString,
+        type: core.class.TypeNumber
+      }
     })
   )
 }

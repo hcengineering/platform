@@ -13,30 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, Ref, RefTo } from '@hcengineering/core'
+  import { Card } from '@hcengineering/card'
+  import { AnyAttribute, Ref, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    eventToHTMLElement,
-    IconWithEmoji,
-    Label,
-    showPopup
-  } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
-  import CardsPopup from './CardsPopup.svelte'
   import CardSelector from './CardSelector.svelte'
+  import CardPresenter from './CardPresenter.svelte'
 
   export let value: Ref<Card> | undefined
   export let readonly: boolean = false
   export let label: IntlString = card.string.Card
   export let onChange: (value: any) => void
-  export let attribute: AnyAttribute
+  export let attribute: AnyAttribute | undefined = undefined
+  export let type: Type<any> | undefined = undefined
 
   export let focusIndex: number | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -51,20 +42,24 @@
     onChange(val)
   }
 
-  const _class = (attribute.type as RefTo<Card>).to
+  const _class = (attribute?.type as RefTo<Card>)?.to ?? (type as RefTo<Card>)?.to ?? card.class.Card
 </script>
 
-<CardSelector
-  {value}
-  {readonly}
-  {label}
-  {_class}
-  {focusIndex}
-  {kind}
-  {size}
-  {justify}
-  {width}
-  on:change={(e) => {
-    change(e.detail)
-  }}
-/>
+{#if readonly || attribute?.readonly}
+  <CardPresenter {value} noUnderline />
+{:else}
+  <CardSelector
+    {value}
+    {readonly}
+    {label}
+    {_class}
+    {focusIndex}
+    {kind}
+    {size}
+    {justify}
+    {width}
+    on:change={(e) => {
+      change(e.detail)
+    }}
+  />
+{/if}

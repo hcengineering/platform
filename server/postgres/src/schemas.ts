@@ -1,4 +1,4 @@
-import { DOMAIN_DOC_INDEX_STATE, DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
+import { DOMAIN_COLLABORATOR, DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
 export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
@@ -66,6 +66,25 @@ const defaultSchema: Schema = {
   attachedTo: {
     type: 'text',
     notNull: false,
+    index: true
+  }
+}
+
+const collaboratorSchema: Schema = {
+  ...baseSchema,
+  attachedTo: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  attachedToClass: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  collaborator: {
+    type: 'text',
+    notNull: true,
     index: true
   }
 }
@@ -167,20 +186,6 @@ const userNotificationSchema: Schema = {
     type: 'text',
     notNull: true,
     index: true
-  }
-}
-
-const docIndexStateSchema: Schema = {
-  ...baseSchema,
-  needIndex: {
-    type: 'bool',
-    notNull: true,
-    index: true
-  },
-  objectClass: {
-    type: 'text',
-    notNull: true,
-    index: false
   }
 }
 
@@ -305,13 +310,13 @@ export const domainSchemas: Record<string, Schema> = {
   [translateDomain('time')]: timeSchema,
   [translateDomain('calendar')]: calendarSchema,
   [translateDomain('event')]: eventSchema,
-  [translateDomain(DOMAIN_DOC_INDEX_STATE)]: docIndexStateSchema,
   notification: notificationSchema,
   [translateDomain('notification-dnc')]: dncSchema,
   [translateDomain('notification-user')]: userNotificationSchema,
   [translateDomain('github_sync')]: docSyncInfo,
   [translateDomain('github_user')]: githubLogin,
   [DOMAIN_RELATION]: relationSchema,
+  [DOMAIN_COLLABORATOR]: collaboratorSchema,
   kanban: defaultSchema
 }
 

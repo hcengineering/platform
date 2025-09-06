@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Obsahuje",
+    "NotContains": "Neobsahuje",
     "MoveClass": "Přesunout {class}",
     "SelectToMove": "Vyberte {classLabel}, kam chcete přesunout {class}.",
     "Delete": "Smazat",
@@ -49,6 +50,8 @@
     "CustomizeView": "Přizpůsobit zobrazení",
     "Filter": "Filtr",
     "ClearFilters": "Vymazat filtry",
+    "FilterLessThan": "Méně než",
+    "FilterGreaterThan": "Více než",
     "FilterIsNot": "není",
     "FilterIsEither": "je",
     "FilterIsEitherPlural": "jsou",
@@ -104,8 +107,8 @@
     "Between": "je mezi",
     "ShowColors": "Použít barvy",
     "Show": "Zobrazit",
-    "FilterArrayAll": "zahrnuje vše",
-    "FilterArrayAny": "zahrnuje některé",
+    "FilterArrayAll": "vše",
+    "FilterArrayAny": "některé",
     "Or": "Nebo",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Kopírovat do schránky",
@@ -128,7 +131,22 @@
     "Copied": "Zkopírováno",
     "Title": "Název",
     "HideArchived": "Skrýt archivované",
-    "RemoveRelation": "Odstranit vztah",  
-    "RemoveRelationConfirmation": "Chcete odstranit vztah?"  
+    "RemoveRelation": "Odstranit vztah",
+    "RemoveRelationConfirmation": "Chcete odstranit vztah?",
+    "MasterDetail": "Hlavní-detailní",
+    "Tree": "Strom",
+    "Document": "Dokument",
+    "Loading": "Načítání...",
+    "NoRelations": "Žádné vztahy",
+    "ReadOnlyWarningTitle": "✨ Anonymní hostovská ukázka",
+    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Vyberte si cestu: Připojte se k tomuto prostoru pro spolupráci (jako host) nebo si vytvořte vlastní prostor pro plnou správu projektů — úkoly, termíny, tým!",
+    "ReadOnlyJoinWorkspace": "Připojit se k prostoru",
+    "ReadOnlySignUp": "Vytvořit prostor",
+    "PermissionWarningTitle": "✨ Zvyšte svůj přístup!",
+    "PermissionWarningMessage": "Vaše současná role má omezená oprávnění. Chcete-li odemknout tuto a další pokročilé funkce, požádejte správce svého pracovního prostoru o zvýšení úrovně přístupu!",
+    "Icon": "Ikona",
+    "Color": "Barva",
+    "AutomationOnly": "Pouze automatizace",
+    "CopyLink": "Kopírovat odkaz"
   }
 }

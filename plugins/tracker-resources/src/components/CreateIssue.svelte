@@ -19,36 +19,38 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import core, {
-    Account,
+    AccountRole,
     Class,
     Doc,
     DocData,
-    Ref,
-    SortingOrder,
     fillDefaults,
     generateId,
+    getCurrentAccount,
     makeCollabId,
     makeDocCollabId,
+    type PersonId,
+    Ref,
+    SortingOrder,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
     Card,
+    createMarkup,
+    createQuery,
     DocCreateExtComponent,
     DocCreateExtensionManager,
     DraftController,
+    getClient,
+    getMarkup,
     KeyedAttribute,
     MessageBox,
     MultipleDraftController,
-    SpaceSelector,
-    createMarkup,
-    createQuery,
-    getClient,
-    getMarkup
+    SpaceSelector
   } from '@hcengineering/presentation'
-  import tags, { TagReference, type TagElement } from '@hcengineering/tags'
-  import { TaskType, makeRank } from '@hcengineering/task'
+  import tags, { type TagElement, TagReference } from '@hcengineering/tags'
+  import { makeRank, TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
@@ -65,15 +67,15 @@
     TrackerEvents
   } from '@hcengineering/tracker'
   import {
+    addNotification,
     Button,
     Component,
+    createFocusManager,
     DatePresenter,
     EditBox,
     FocusHandler,
     IconAttachment,
     Label,
-    addNotification,
-    createFocusManager,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -120,6 +122,7 @@
       draft = shouldSaveDraft ? val : undefined
     })
   )
+  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
@@ -276,7 +279,7 @@
       collection: 'labels',
       space: core.space.Workspace,
       modifiedOn: 0,
-      modifiedBy: '' as Ref<Account>,
+      modifiedBy: '' as PersonId,
       title: tag.title,
       tag: tag._id,
       color: tag.color
@@ -310,12 +313,12 @@
         dueDate: null,
         labels:
           p.labels !== undefined
-            ? (p.labels
-                .map((p) => {
-                  const val = tagElements.get(p)
-                  return val !== undefined ? tagAsRef(val) : undefined
-                })
-                .filter((p) => p !== undefined) as TagReference[])
+            ? p.labels
+              .map((p) => {
+                const val = tagElements.get(p)
+                return val !== undefined ? tagAsRef(val) : undefined
+              })
+              .filter((p) => p !== undefined)
             : [],
         status: currentProject?.defaultIssueStatus
       }
@@ -332,12 +335,12 @@
     appliedTemplateId = templateId
     object.labels =
       labels !== undefined
-        ? (labels
-            .map((p) => {
-              const val = tagElements.get(p)
-              return val !== undefined ? tagAsRef(val) : undefined
-            })
-            .filter((p) => p !== undefined) as TagReference[])
+        ? labels
+          .map((p) => {
+            const val = tagElements.get(p)
+            return val !== undefined ? tagAsRef(val) : undefined
+          })
+          .filter((p) => p !== undefined)
         : []
 
     if (object.kind !== undefined) {
@@ -419,6 +422,7 @@
   })
 
   async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    if (me?.role === AccountRole.ReadOnlyGuest || me?.role === AccountRole.Guest) return
     const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
     if (spacePreferences === undefined) {
       await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
@@ -860,7 +864,7 @@
         showButtons={false}
         kind={'indented'}
         isScrollable={false}
-        enableBackReferences={true}
+        kitOptions={{ reference: true }}
         enableAttachments={false}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}

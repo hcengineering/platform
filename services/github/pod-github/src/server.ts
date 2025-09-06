@@ -9,7 +9,7 @@ import cors from 'cors'
 import express from 'express'
 
 import { Analytics } from '@hcengineering/analytics'
-import { Account, BrandingMap, MeasureContext, Ref } from '@hcengineering/core'
+import { PersonId, BrandingMap, MeasureContext } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import serverCore from '@hcengineering/server-core'
@@ -75,19 +75,19 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
   app.post('/api/v1/installation', async (req, res) => {
     const payloadData: {
       installationId: number
-      accountId: Ref<Account>
+      accountId: PersonId
       token: string
     } = req.body
     try {
       const decodedToken = decodeToken(payloadData.token)
       ctx.info('/api/v1/installation', {
-        email: decodedToken.email,
-        workspaceName: decodedToken.workspace.name,
+        email: decodedToken.account,
+        workspaceName: decodedToken.workspace,
         body: req.body
       })
 
       await ctx.with('map-installation', {}, (ctx) =>
-        worker.mapInstallation(ctx, decodedToken.workspace.name, payloadData.installationId, payloadData.accountId)
+        worker.mapInstallation(ctx, decodedToken.workspace, payloadData.installationId, payloadData.accountId)
       )
       res.status(200)
       res.json({})
@@ -95,9 +95,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       Analytics.handleError(err)
       const tok = decodeToken(payloadData.token, false)
       ctx.error('failed to map-installation', {
-        workspace: tok.workspace?.name,
+        workspace: tok.workspace,
         installationid: payloadData.installationId,
-        email: tok?.email
+        email: tok?.account,
+        error: err.message
       })
       res.status(401)
       res.json({ error: err.message })
@@ -110,26 +111,26 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       const payloadData: {
         code: string
         state: string
-        accountId: Ref<Account>
+        accountId: PersonId
         token: string
       } = req.body
 
       const decodedData: {
-        accountId: Ref<Account>
+        accountId: PersonId
         token: string
         op: string
       } = JSON.parse(atob(payloadData.state))
 
       const decodedToken = decodeToken(decodedData.token)
       ctx.info('request github access-token', {
-        workspace: decodedToken.workspace.name,
+        workspace: decodedToken.workspace,
         accountId: payloadData.accountId,
         code: payloadData.code,
         state: payloadData.state
       })
       await ctx.with('request-github-access-token', {}, async (ctx) => {
-        await worker.requestGithubAccessToken({
-          workspace: decodedToken.workspace.name,
+        await worker.requestGithubAccessToken(ctx, {
+          workspace: decodedToken.workspace,
           accountId: payloadData.accountId,
           code: payloadData.code,
           state: payloadData.state
@@ -154,17 +155,17 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
 
       const decodedToken = decodeToken(payloadData.token)
       ctx.info('/api/v1/installation-remove', {
-        email: decodedToken.email,
-        workspaceName: decodedToken.workspace.name,
+        email: decodedToken.account,
+        workspaceName: decodedToken.workspace,
         body: req.body
       })
 
       ctx.info('remove-installation', {
-        workspace: decodedToken.workspace.name,
+        workspace: decodedToken.workspace,
         installationId: payloadData.installationId
       })
       await ctx.with('remove-installation', {}, (ctx) =>
-        worker.removeInstallation(ctx, decodedToken.workspace.name, payloadData.installationId)
+        worker.removeInstallation(ctx, decodedToken.workspace, payloadData.installationId)
       )
       res.status(200)
       res.json({})

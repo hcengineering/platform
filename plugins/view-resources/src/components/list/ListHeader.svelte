@@ -93,6 +93,7 @@
 
   $: selectionIds = new Set($selection.map((it) => it._id))
   $: selected = items.filter((it) => selectionIds.has(it._id))
+  // $: if (itemsProj.length === 0 && !collapsed) collapsed = true
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
@@ -104,7 +105,7 @@
     class="flex-between categoryHeader row"
     class:flat
     class:noDivide={showColors}
-    class:collapsed
+    class:collapsed={collapsed || itemsProj.length === 0}
     class:subLevel={level !== 0}
     class:lastCat
     class:cursor-pointer={items.length > 0}
@@ -124,14 +125,18 @@
   >
     <div class="flex-row-center flex-grow" style:color={headerComponent ? headerTextColor : 'inherit'}>
       <!-- {#if level === 0} -->
-      <div class="chevron"><IconCollapseArrow size={level === 0 ? 'small' : 'tiny'} /></div>
+      <div class="chevron" class:empty={itemsProj.length === 0}>
+        {#if itemsProj.length > 0}
+          <IconCollapseArrow size={level === 0 ? 'small' : 'tiny'} />
+        {/if}
+      </div>
       <!-- {/if} -->
       {#if groupByKey === noCategory}
-        <span class="text-base fs-bold overflow-label pointer-events-none">
+        <span class="fs-bold content-color overflow-label pointer-events-none">
           <Label label={view.string.NoGrouping} />
         </span>
       {:else if category === undefined}
-        <span class="overflow-label pointer-events-none">
+        <span class="fs-bold content-color overflow-label pointer-events-none">
           <Label label={view.string.NotSpecified} />
         </span>
       {:else if headerComponent}
@@ -144,6 +149,7 @@
           colorInherit={!$themeStore.dark && level === 0}
           accent={level === 0}
           disabled
+          shrink
           on:accent-color={(evt) => {
             accentColor = evt.detail
           }}
@@ -217,20 +223,42 @@
     min-height: 2.75rem;
     min-width: 0;
     background: var(--theme-bg-color);
-    border-radius: 0.25rem 0.25rem 0 0;
 
+    &:not(.subLevel) {
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
     .on-hover {
       visibility: hidden;
     }
 
     .chevron {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       flex-shrink: 0;
-      min-width: 0;
+      min-width: 1rem;
+      min-height: 1rem;
       margin-right: 0.75rem;
       color: var(--theme-caption-color);
       transform-origin: center;
       transform: rotate(90deg);
       transition: transform 0.15s ease-in-out;
+
+      &.empty {
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0.375rem;
+          left: 0.375rem;
+          width: 0.25rem;
+          height: 0.25rem;
+          background-color: var(--theme-dark-color);
+          border-radius: 50%;
+        }
+      }
     }
     &::before,
     &::after {
@@ -240,7 +268,8 @@
       left: 0;
       right: 0;
       bottom: 0;
-      border-radius: 0.25rem 0.25rem 0 0;
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
       pointer-events: none;
     }
     &::after {
@@ -270,11 +299,13 @@
       }
     }
     &.subLevel {
-      top: 2.75rem;
+      top: 0;
       padding: 0 2.5rem;
       background: var(--theme-list-subheader-color);
-      border-left: 1px solid var(--theme-list-subheader-divider);
-      border-right: 1px solid var(--theme-list-subheader-divider);
+      border-left: 1px solid transparent;
+      border-right: 1px solid transparent;
+      // border-left: 1px solid var(--theme-list-subheader-divider);
+      // border-right: 1px solid var(--theme-list-subheader-divider);
       border-bottom: 1px solid var(--theme-list-subheader-divider);
       // here should be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
 
@@ -291,9 +322,9 @@
     &.flat {
       background: var(--header-bg-color);
       background-blend-mode: darken;
-      min-height: 2.25rem;
-      height: 2.25rem;
-      padding: 0 0.25rem 0 0.25rem;
+      min-height: 2.5rem;
+      height: 2.5rem;
+      padding: 0 0.375rem 0 0.75rem;
     }
   }
 </style>

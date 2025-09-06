@@ -26,6 +26,7 @@
   export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let shrink: boolean = false
 
   let doc: Card | undefined
   const query = createQuery()
@@ -40,4 +41,4 @@
     )
 </script>
 
-<CardPresenter value={doc} {kind} {type} {icon} />
+<CardPresenter value={doc} {kind} {type} {icon} {shrink} />

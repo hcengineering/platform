@@ -16,7 +16,13 @@
 import activity from '@hcengineering/activity'
 import { type Channel } from '@hcengineering/contact'
 import { type Class, type Domain, IndexKind, type Ref, type Timestamp, type Type } from '@hcengineering/core'
-import type { Message, NewMessage, SharedMessage, SharedMessages } from '@hcengineering/gmail'
+import {
+  type Message,
+  type NewMessage,
+  type SharedMessage,
+  type SharedMessages,
+  gmailIntegrationKind
+} from '@hcengineering/gmail'
 import {
   ArrOf,
   type Builder,
@@ -154,11 +160,14 @@ export function createModel (builder: Builder): void {
       label: gmail.string.IntegrationLabel,
       description: gmail.string.IntegrationDescription,
       icon: gmail.component.IconGmail,
-      allowMultiple: false, // enable in future
+      allowMultiple: true,
       createComponent: gmail.component.Connect,
       onDisconnect: gmail.handler.DisconnectHandler,
+      onDisconnectAll: gmail.handler.DisconnectAllHandler,
       reconnectComponent: gmail.component.Connect,
-      configureComponent: gmail.component.Configure
+      configureComponent: gmail.component.Configure,
+      stateComponent: gmail.component.IntegrationState,
+      kind: gmailIntegrationKind
     },
     gmail.integrationType.Gmail
   )

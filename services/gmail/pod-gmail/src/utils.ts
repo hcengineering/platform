@@ -14,9 +14,21 @@
 // limitations under the License.
 //
 
-import { type Data, type Doc, type DocumentUpdate } from '@hcengineering/core'
+import {
+  type Data,
+  type Doc,
+  type DocumentUpdate,
+  Ref,
+  Space,
+  systemAccountUuid,
+  WorkspaceUuid
+} from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
+import { type KeyValueClient, getClient as getKeyValueClient } from '@hcengineering/kvs-client'
 import { type Token, type User } from './types'
+import config from './config'
+import { Integration } from '@hcengineering/account-client'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -62,4 +74,49 @@ function toUndef (value: any): any {
 
 export function isToken (user: User | Token): user is Token {
   return (user as Token).access_token !== undefined
+}
+
+export function addFooter (message: string): string {
+  if (config.FooterMessage === undefined || config.FooterMessage.trim() === '') return message
+  return message + config.FooterMessage.trim()
+}
+
+export function serviceToken (workspaceId?: WorkspaceUuid): string {
+  return generateToken(systemAccountUuid, workspaceId, { service: 'gmail' })
+}
+
+export async function wait (sec: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, sec * 1000)
+  })
+}
+
+let keyValueClient: KeyValueClient | undefined
+export function getKvsClient (token: string): KeyValueClient {
+  if (keyValueClient !== undefined) return keyValueClient
+  keyValueClient = getKeyValueClient('gmail', config.KvsUrl, token)
+  return keyValueClient
+}
+
+export function createGmailSearchQuery (fromDate: Date, toDate: Date, fromEmail: string): string {
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    return `${year}/${month}/${day}`
+  }
+
+  const afterDate = formatDate(fromDate)
+  // Add one day to toDate for proper before date range (Gmail's before is exclusive)
+  const adjustedToDate = new Date(toDate)
+  adjustedToDate.setDate(adjustedToDate.getDate() + 1)
+  const beforeDate = formatDate(adjustedToDate)
+
+  return `after:${afterDate} before:${beforeDate} from:${fromEmail}`
+}
+
+export function getSpaceId (integration: Integration | null | undefined): Ref<Space> | undefined {
+  return integration?.data?.config?.spaceId
 }

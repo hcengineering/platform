@@ -308,6 +308,7 @@
       <FloorGrid
         bind:floorContainer
         {rows}
+        useResize
         on:resize={(event) => {
           if (event.detail === undefined) return
           const { width, height } = event.detail

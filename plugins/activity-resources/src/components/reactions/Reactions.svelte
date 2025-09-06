@@ -15,12 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
-  import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { EmojiPopup, IconAdd, showPopup, tooltip } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { Doc, getCurrentAccount, PersonId, Ref, Blob } from '@hcengineering/core'
+  import { IconAdd, showPopup, tooltip } from '@hcengineering/ui'
+  import { includesAny } from '@hcengineering/contact'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
+  import { getBlobRef } from '@hcengineering/presentation'
 
   export let reactions: Reaction[] = []
   export let object: Doc | undefined = undefined
@@ -29,18 +31,19 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsAccounts = new Map<string, Ref<Account>[]>()
+  let reactionsPersons = new Map<string, { persons: PersonId[], image?: Ref<Blob> }>()
+  let opened: boolean = false
 
   $: {
-    reactionsAccounts.clear()
+    reactionsPersons.clear()
     reactions.forEach((r) => {
-      const accounts = reactionsAccounts.get(r.emoji) ?? []
-      reactionsAccounts.set(r.emoji, [...accounts, r.createBy])
+      const emojiInfo = reactionsPersons.get(r.emoji) ?? { persons: [], image: r.image }
+      reactionsPersons.set(r.emoji, { persons: [...emojiInfo.persons, r.createBy], image: r.image })
     })
-    reactionsAccounts = reactionsAccounts
+    reactionsPersons = reactionsPersons
   }
 
-  function getClickHandler (emoji: string): ((e: CustomEvent) => void) | undefined {
+  function getClickHandler (emoji: { text: string, image?: Ref<Blob> }): ((e: CustomEvent) => void) | undefined {
     if (readonly) return
     return (e: CustomEvent) => {
       e.stopPropagation()
@@ -53,82 +56,109 @@
     if (readonly) return
     ev.preventDefault()
     ev.stopPropagation()
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: string) => {
-      await updateDocReactions(reactions, object, emoji)
+    opened = true
+    showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji) => {
+      if (emoji?.text !== undefined) {
+        await updateDocReactions(reactions, object, emoji.text, emoji.image)
+      }
+      opened = false
     })
   }
 </script>
 
-<div class="container">
-  {#each [...reactionsAccounts] as [emoji, accounts]}
+<div class="hulyReactions-container">
+  {#each [...reactionsPersons] as [emoji, emojiInfo]}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="item border-radius-1"
-      class:highlight={accounts.includes(me._id)}
+      class="hulyReactions-button"
+      class:highlight={includesAny(emojiInfo.persons, me.socialIds)}
       class:cursor-pointer={!readonly}
-      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
-      on:click={getClickHandler(emoji)}
+      use:tooltip={{ component: ReactionsTooltip, props: { socialIds: emojiInfo.persons } }}
+      on:click={getClickHandler({ text: emoji, image: emojiInfo.image })}
     >
-      <div class="flex-row-center">
-        {emoji}
-        <div class="caption-color counter">{accounts.length}</div>
-      </div>
+      <span class="emoji">
+        {#if emojiInfo.image === undefined || emojiInfo.image == null}
+          {emoji}
+        {:else}
+          {#await getBlobRef(emojiInfo.image) then blobSrc}
+            <img src={blobSrc.src} alt={emoji} />
+          {/await}
+        {/if}
+      </span>
+      <span class="counter">{emojiInfo.persons.length}</span>
     </div>
   {/each}
-  {#if object && reactionsAccounts.size > 0 && !readonly}
+  {#if object && reactionsPersons.size > 0 && !readonly}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="item flex-row-center border-radius-1" class:withoutBackground={true} on:click={openEmojiPalette}>
+    <div class="hulyReactions-button withoutBackground" class:opened on:click={openEmojiPalette}>
       <IconAdd size="small" />
     </div>
   {/if}
 </div>
 
 <style lang="scss">
-  .container {
+  .hulyReactions-container {
     display: flex;
     flex-wrap: wrap;
-    user-select: none;
     column-gap: 0.125rem;
     row-gap: 0.25rem;
-  }
+    min-width: 0;
+    min-height: 0;
+    user-select: none;
 
-  .counter {
-    font-size: 0.75rem;
-    color: var(--global-secondary-TextColor);
-    margin-left: 0.25rem;
-  }
-
-  .item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.625rem;
-    height: 1.5rem;
-    background: var(--button-disabled-BackgroundColor);
-    border: none;
-    cursor: pointer;
-
-    &.highlight {
-      background: var(--global-ui-highlight-BackgroundColor);
-      border: 1px solid var(--global-accent-BackgroundColor);
+    .counter {
+      font-size: 0.75rem;
+      color: var(--global-secondary-TextColor);
+      margin-left: 0.25rem;
     }
 
-    &:hover {
-      background: var(--global-ui-highlight-BackgroundColor);
-      border: 1px solid var(--global-popover-ShadowColor);
+    .hulyReactions-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 0 0.375rem;
+      min-height: 1.5rem;
+      color: var(--theme-caption-color);
+      background: var(--button-disabled-BackgroundColor);
+      border: 1px solid var(--button-secondary-BorderColor);
+      border-radius: 0.75rem;
+      cursor: pointer;
 
-      &.highlight {
-        border: 1px solid var(--global-accent-BackgroundColor);
+      .emoji {
+        font-size: 1rem;
       }
-    }
-
-    &.withoutBackground {
-      background: transparent;
+      .emoji > img {
+        height: 1.05em;
+        margin: 0 0.05em 0.08em 0.1em;
+      }
+      &.highlight {
+        background: var(--global-ui-highlight-BackgroundColor);
+        border-color: var(--global-accent-BackgroundColor);
+      }
 
       &:hover {
         background: var(--global-ui-highlight-BackgroundColor);
+        border-color: var(--button-menu-active-BorderColor);
+
+        &.highlight {
+          border-color: var(--global-focus-BorderColor);
+        }
+      }
+
+      &.withoutBackground {
+        padding: 0;
+        width: 1.5rem;
+        background: transparent;
+        border-color: transparent;
+
+        &.opened,
+        &:hover {
+          background: var(--global-ui-highlight-BackgroundColor);
+          border-color: var(--button-secondary-BorderColor);
+        }
       }
     }
   }

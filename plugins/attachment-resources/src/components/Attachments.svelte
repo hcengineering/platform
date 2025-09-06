@@ -70,11 +70,11 @@
 
     loading++
     try {
+      const target = { objectId, objectClass: object?._class ?? _class }
       const options = {
+        target,
         onFileUploaded,
-        showProgress: {
-          target: { objectId, objectClass: object?._class ?? _class }
-        }
+        showProgress: { target }
       }
       await uploadFiles(list, options)
     } finally {
@@ -156,7 +156,7 @@
       </div>
     </AttachmentDroppable>
   {:else if wSection < 640}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={attachmentClass}
         config={[

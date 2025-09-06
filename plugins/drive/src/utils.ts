@@ -14,8 +14,9 @@
 //
 
 import { type AttachedData, type Data, type Ref, type TxOperations, generateId } from '@hcengineering/core'
+import { type Location } from '@hcengineering/ui'
 
-import drive from './plugin'
+import drive, { driveId } from './plugin'
 import type { Drive, File, FileVersion, Folder } from './types'
 
 /** @public */
@@ -43,7 +44,7 @@ export async function createFile (
   space: Ref<Drive>,
   parent: Ref<Folder>,
   data: Omit<AttachedData<FileVersion>, 'version'>
-): Promise<void> {
+): Promise<Ref<File>> {
   const folder = await client.findOne(drive.class.Folder, { _id: parent })
   const path = folder !== undefined ? [folder._id, ...folder.path] : []
 
@@ -68,6 +69,8 @@ export async function createFile (
     { ...data, version },
     versionId
   )
+
+  return fileId
 }
 
 /** @public */
@@ -114,4 +117,36 @@ export async function restoreFileVersion (
   if (currentFile.file !== version) {
     await client.update(currentFile, { file: version })
   }
+}
+
+export function getDriveLink (loc: Location, _id: Ref<Drive>): Location {
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = driveId
+  loc.path[3] = _id
+
+  return loc
+}
+
+export function getFolderLink (loc: Location, _id: Ref<Folder>): Location {
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = driveId
+  loc.path[3] = 'folder'
+  loc.path[4] = _id
+
+  return loc
+}
+
+export function getFileLink (loc: Location, _id: Ref<File>): Location {
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = driveId
+  loc.path[3] = 'file'
+  loc.path[4] = _id
+
+  return loc
 }

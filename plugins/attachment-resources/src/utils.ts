@@ -14,9 +14,8 @@
 // limitations under the License.
 //
 
-import { type Attachment, type Drawing } from '@hcengineering/attachment'
-import core, {
-  SortingOrder,
+import { type Attachment } from '@hcengineering/attachment'
+import {
   type BlobMetadata,
   type Blob,
   type Class,
@@ -30,19 +29,18 @@ import core, {
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import {
-  type DrawingData,
   type FileOrBlob,
   getClient,
   getFileMetadata,
   getPreviewAlignment,
-  uploadFile,
-  FilePreviewPopup
+  uploadFile
 } from '@hcengineering/presentation'
 import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
 import attachment from './plugin'
+import AttachmentPreviewPopup from './components/AttachmentPreviewPopup.svelte'
 
 export async function createAttachments (
   client: Client,
@@ -157,59 +155,45 @@ export function isAttachment (value: Attachment | BlobType): value is WithLookup
   return (value as Attachment)._id !== undefined
 }
 
-export function showAttachmentPreviewPopup (value: WithLookup<Attachment> | BlobType): PopupResult {
-  const props: Record<string, any> = {}
+export function showAttachmentPreviewPopup (
+  value: WithLookup<Attachment> | BlobType,
+  fullSize: boolean = true
+): PopupResult {
+  closeTooltip()
+  return showPopup(AttachmentPreviewPopup, { value, fullSize }, getPreviewAlignment(value.type ?? ''))
+}
 
-  if (value?.type?.startsWith('image/') && isAttachment(value)) {
-    props.drawingAvailable = true
-    props.loadDrawings = async (): Promise<Drawing[] | undefined> => {
-      const client = getClient()
-      const drawings = await client.findAll(
-        attachment.class.Drawing,
-        {
-          parent: value.file,
-          space: value.space
-        },
-        {
-          sort: {
-            createdOn: SortingOrder.Descending
-          },
-          limit: 1
-        }
-      )
-      const result = []
-      if (drawings !== undefined) {
-        for (const drawing of drawings) {
-          result.push(drawing)
-        }
-      }
-      return result
-    }
-    props.createDrawing = async (data: DrawingData): Promise<DrawingData> => {
-      const client = getClient()
-      const newId = await client.createDoc(attachment.class.Drawing, value.space, {
-        parent: value.file,
-        parentClass: core.class.Blob,
-        content: data.content
-      })
-      const newDrawing = await client.findOne(attachment.class.Drawing, { _id: newId })
-      if (newDrawing === undefined) {
-        throw new Error('Unable to find just created drawing')
-      }
-      return newDrawing
-    }
+interface ImageDimensions {
+  width: number
+  height: number
+  fit: 'cover' | 'contain'
+}
+
+export function getImageDimensions (
+  size: { width: number, height: number },
+  maxRem: { maxWidth: number, minWidth: number, maxHeight: number, minHeight: number }
+): ImageDimensions {
+  const originalWidth = size.width
+  const originalHeight = size.height
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const maxWidthPx = maxRem.maxWidth * fontSize
+  const minWidthPx = maxRem.minWidth * fontSize
+  const maxHeightPx = maxRem.maxHeight * fontSize
+  const minHeightPx = maxRem.minHeight * fontSize
+
+  const ratio = originalHeight / originalWidth
+
+  let width = Math.min(originalWidth, maxWidthPx)
+  let height = Math.ceil(width * ratio)
+
+  const fit = width < minWidthPx || height < minHeightPx ? 'cover' : 'contain'
+
+  if (height > maxHeightPx) {
+    width = maxHeightPx / ratio
+    height = maxHeightPx
+  } else if (height < minHeightPx) {
+    height = minHeightPx
   }
 
-  closeTooltip()
-  return showPopup(
-    FilePreviewPopup,
-    {
-      file: value.file,
-      contentType: value.type,
-      name: value.name,
-      metadata: value.metadata,
-      props
-    },
-    getPreviewAlignment(value.type ?? '')
-  )
+  return { width: Math.round(width), height: Math.round(height), fit }
 }

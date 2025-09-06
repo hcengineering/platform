@@ -13,11 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { setMetadata } from '@hcengineering/platform'
-  import presentation, { closeClient, getClient, createQuery } from '@hcengineering/presentation'
+  import { getClient, createQuery } from '@hcengineering/presentation'
   import settingPlg from '../plugin'
   import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
@@ -28,18 +26,23 @@
     Scroller,
     Separator,
     defineSeparators,
-    fetchMetadataLocalStorage,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
-    setMetadataLocalStorage,
     settingsSeparators,
     showPopup,
     type AnyComponent,
     deviceOptionsStore as deviceInfo,
     deviceWidths
   } from '@hcengineering/ui'
-  import { closeWidget, NavFooter, openWidget, minimizeSidebar, sidebarStore } from '@hcengineering/workbench-resources'
+  import {
+    closeWidget,
+    NavFooter,
+    openWidget,
+    minimizeSidebar,
+    sidebarStore,
+    logOut
+  } from '@hcengineering/workbench-resources'
   import workbench from '@hcengineering/workbench'
   import { ComponentType, onDestroy, onMount } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
@@ -53,7 +56,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as PersonAccount
+  const account = getCurrentAccount()
   let asideComponent: ComponentType | AnyComponent | null = null
   let asideProps: object | null = null
 
@@ -100,20 +103,10 @@
     navigate(loc)
   }
   function signOut (): void {
-    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-    if (tokens !== null) {
-      const loc = getCurrentResolvedLocation()
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete tokens[loc.path[1]]
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-    }
-    setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LastToken, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    void closeClient()
-    Analytics.handleEvent(SettingsEvents.SignOut)
+    void logOut()
     navigate({ path: [loginId] })
+    Analytics.handleEvent(SettingsEvents.SignOut)
+    Analytics.logout()
   }
   function selectWorkspace (): void {
     Analytics.handleEvent(SettingsEvents.SelectWorkspace)
@@ -200,7 +193,7 @@
           label={setting.string.SelectWorkspace}
           on:click={selectWorkspace}
         />
-        {#if hasAccountRole(account, AccountRole.Maintainer)}
+        {#if hasAccountRole(account, AccountRole.User)}
           <NavItem
             icon={setting.icon.InviteWorkspace}
             label={setting.string.InviteWorkspace}

@@ -11,7 +11,6 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 import { type Editor } from '@tiptap/core'
 import documents, {
   ControlledDocumentState,
@@ -20,14 +19,13 @@ import documents, {
   type ControlledDocument,
   type DocumentReviewRequest
 } from '@hcengineering/controlled-documents'
-import { generateId, getCurrentAccount, type Ref } from '@hcengineering/core'
-import { type PersonAccount } from '@hcengineering/contact'
+import { generateId, type Ref } from '@hcengineering/core'
+import { getCurrentEmployee } from '@hcengineering/contact'
 import { RequestStatus } from '@hcengineering/request'
 import { getClient } from '@hcengineering/presentation'
 import { type ActionContext } from '@hcengineering/text-editor'
 import { getNodeElement, selectNode, nodeUuidName } from '@hcengineering/text-editor-resources'
 
-import { getCurrentEmployee } from './utils'
 import { showAddCommentPopupFx } from './stores/editors/document'
 import { $editorMode } from './stores/editors/document/editor'
 
@@ -55,7 +53,7 @@ async function getDocumentStateForCurrentUser (
       return ControlledDocumentState.InReview
     }
 
-    const me = (getCurrentAccount() as PersonAccount).person
+    const me = getCurrentEmployee()
     if (reviewRequest.approved?.includes(me)) {
       return ControlledDocumentState.Reviewed
     }
@@ -129,13 +127,13 @@ async function canAddDocumentComments (doc: ControlledDocument, mode: EditorMode
   return false
 }
 
-function markNodeWithUuid (editor: Editor): string | undefined {
+function setQMSInlineCommentMark (editor: Editor): string | undefined {
   if (editor === undefined) {
     return
   }
 
   const nodeId = generateId()
-  editor.commands.setNodeUuid(nodeId)
+  editor.commands.setQMSInlineCommentMark(nodeId)
 
   return nodeId
 }
@@ -149,7 +147,7 @@ export async function comment (editor: Editor, event: MouseEvent, ctx: ActionCon
   let selectedNodeId = editor.extensionStorage[nodeUuidName].activeNodeUuid
 
   if (selectedNodeId == null) {
-    selectedNodeId = markNodeWithUuid(editor)
+    selectedNodeId = setQMSInlineCommentMark(editor)
   }
 
   if (selectedNodeId == null) {

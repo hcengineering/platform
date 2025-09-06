@@ -28,23 +28,23 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    ButtonIcon,
     Component,
     DropdownLabelsIntl,
-    ModernEditbox,
+    IconCopy,
+    IconDelete,
     Label,
     Modal,
-    ButtonIcon,
-    IconDelete,
-    IconCopy,
-    showPopup
+    ModernEditbox,
+    showPopup,
+    Toggle
   } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
-  import setting from '../plugin'
   import view from '@hcengineering/view'
-  import { clearSettingsStore } from '../store'
   import { IconPicker } from '@hcengineering/view-resources'
+  import setting from '../plugin'
+  import { clearSettingsStore } from '../store'
 
-  export let _id: Ref<Class<Type<PropertyType>>> | undefined = undefined
   export let _class: Ref<Class<Doc>>
   export let isCard: boolean = false
 
@@ -54,6 +54,7 @@
   let index: IndexKind | undefined
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
+  let readonly: boolean = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -67,7 +68,9 @@
       icon,
       isCustom: true,
       type,
-      defaultValue
+      defaultValue,
+      readonly,
+      automationOnly: readonly
     }
     if (index !== undefined) {
       data.index = index
@@ -151,20 +154,18 @@
       <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} autoFocus />
     </div>
   </div>
-  <div class="hulyModal-content__settingsSet">
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={setting.string.Type} />
-      </span>
-      <DropdownLabelsIntl
-        label={setting.string.Type}
-        {items}
-        size={'large'}
-        width="8rem"
-        bind:selected={selectedType}
-        on:selected={handleSelection}
-      />
-    </div>
+  <div class="grid">
+    <span class="label">
+      <Label label={setting.string.Type} />
+    </span>
+    <DropdownLabelsIntl
+      label={setting.string.Type}
+      {items}
+      size={'large'}
+      width={'100%'}
+      bind:selected={selectedType}
+      on:selected={handleSelection}
+    />
     {#if is}
       <Component
         {is}
@@ -172,11 +173,30 @@
           type,
           defaultValue,
           isCard,
+          width: '100%',
           kind: 'regular',
           size: 'large'
         }}
         on:change={handleChange}
       />
     {/if}
+    <span class="label">
+      <Label label={view.string.AutomationOnly} />
+    </span>
+    <Toggle bind:on={readonly} />
   </div>
 </Modal>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    padding: 0.5rem;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

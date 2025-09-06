@@ -58,7 +58,8 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
             objectClass !== core.class.BenchmarkDoc &&
             this.context.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
           ) {
-            txToStore.push(tx)
+            const { meta, ...txData } = tx
+            txToStore.push(txData)
           }
         }
       }
@@ -66,7 +67,7 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
     let txPromise: Promise<TxResult[]> | undefined
     if (txToStore.length > 0) {
       txPromise = ctx.with(
-        'domain-tx',
+        'tx-push',
         {},
         (ctx) => this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
         {

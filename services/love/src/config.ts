@@ -28,8 +28,10 @@ interface Config {
   S3StorageConfig: string
   Secret: string
 
-  MongoUrl: string
+  RecordingPreset: string
+
   BillingUrl: string
+  BillingPollInterval: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -46,8 +48,11 @@ const envMap: { [key in keyof Config]: string } = {
   S3StorageConfig: 'S3_STORAGE_CONFIG',
   Secret: 'SECRET',
   ServiceID: 'SERVICE_ID',
-  MongoUrl: 'MONGO_URL',
-  BillingUrl: 'BILLING_URL'
+
+  RecordingPreset: 'RECORDING_PRESET',
+
+  BillingUrl: 'BILLING_URL',
+  BillingPollInterval: 'BILLING_POLL_INTERVAL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -65,8 +70,9 @@ const config: Config = (() => {
     S3StorageConfig: process.env[envMap.S3StorageConfig],
     Secret: process.env[envMap.Secret],
     ServiceID: process.env[envMap.ServiceID] ?? 'love-service',
-    MongoUrl: process.env[envMap.MongoUrl],
-    BillingUrl: process.env[envMap.BillingUrl] ?? ''
+    RecordingPreset: process.env[envMap.RecordingPreset] ?? '720p',
+    BillingUrl: process.env[envMap.BillingUrl] ?? '',
+    BillingPollInterval: parseNumber(process.env[envMap.BillingPollInterval]) ?? 15
   }
 
   const optional = ['StorageConfig', 'S3StorageConfig', 'LiveKitProject', 'BillingUrl']

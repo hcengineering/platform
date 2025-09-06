@@ -29,10 +29,23 @@
     "EditView": "Editar vista",
     "SelectViewType": "Seleccionar tipo de vista",
     "Document": "Documento",
+    "Documents": "Documentos",
     "ChangeType": "Cambiar tipo",
     "ChangeTypeWarning": "Advertencia: Cambiar el tipo de una tarjeta eliminará todos los datos para cualquier atributo que no exista en el tipo de destino. Los datos previos del atributo pueden ser restaurados cambiando la tarjeta de nuevo a un tipo anterior. El contenido de la tarjeta no será afectado.",
+    "MasterDetailViews": "Vistas Maestro-Detalle",
+    "SelectType": "Seleccionar tipo",
     "CreateSpace": "Crear espacio",
     "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}",
-    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos."
+    "Labels": "Etiquetas",
+    "Properties": "Propiedades",
+    "NoChildren": "No hay hijos",
+    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos.",
+    "AddCollaborators": "Agregar colaboradores",
+    "Home": "Inicio",
+    "WhatDoYouWantToShare": "¿Qué quieres compartir?",
+    "Share": "Compartir",
+    "Compact": "Compacto",
+    "Comfortable": "Confortable",
+    "Comfortable2": "Confortable 2"
   }
 }

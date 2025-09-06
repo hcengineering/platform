@@ -13,19 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
-  import {
-    AccountRole,
-    Data,
-    fillDefaults,
-    getCurrentAccount,
-    hasAccountRole,
-    MarkupBlobRef,
-    Ref,
-    SortingOrder,
-    Space
-  } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { AccountRole, getCurrentAccount, hasAccountRole, Ref, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import {
     Button,
     ButtonWithDropdown,
@@ -39,25 +28,21 @@
     showPopup
   } from '@hcengineering/ui'
 
-  import { Card, CardEvents, MasterTag } from '@hcengineering/card'
-  import { translate } from '@hcengineering/platform'
-  import { makeRank } from '@hcengineering/rank'
+  import { MasterTag } from '@hcengineering/card'
   import card from '../../plugin'
   import CreateSpace from './CreateSpace.svelte'
+  import { createCard } from '../../utils'
 
   export let currentSpace: Ref<Space> | undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createQuery()
-
   const me = getCurrentAccount()
 
   let loading = true
   let hasSpace = false
   query.query(
     card.class.CardSpace,
-    { archived: false, members: me._id },
+    { archived: false, members: me.uuid },
     (res) => {
       hasSpace = res.length > 0
       loading = false
@@ -67,24 +52,9 @@
 
   $: _class = $location.path[4] as Ref<MasterTag>
 
-  async function createCard (): Promise<void> {
+  async function handleCreateCard (): Promise<void> {
     if (_class === undefined || currentSpace === undefined) return
-    const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
-    const title = await translate(card.string.Card, {})
-
-    const data: Data<Card> = {
-      title,
-      rank: makeRank(lastOne?.rank, undefined),
-      content: '' as MarkupBlobRef,
-      parentInfo: [],
-      blobs: {}
-    }
-
-    const filledData = fillDefaults(hierarchy, data, _class)
-
-    const _id = await client.createDoc(_class, currentSpace, filledData)
-
-    Analytics.handleEvent(CardEvents.CardCreated)
+    const _id = await createCard(_class, currentSpace)
     const loc = getCurrentLocation()
 
     loc.path[3] = _id
@@ -98,7 +68,7 @@
 
   async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     if (res === 'card') {
-      await createCard()
+      await handleCreateCard()
     } else if (res === 'space') {
       await newTeamspace()
     }
@@ -117,17 +87,16 @@
 {:else if hasAccountRole(getCurrentAccount(), AccountRole.User) || hasSpace}
   <div class="antiNav-subheader">
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
-      {#if hasSpace}
+      {#if hasSpace && currentSpace !== undefined && _class !== undefined}
         <ButtonWithDropdown
           icon={IconAdd}
           justify={'left'}
           kind={'primary'}
           label={card.string.CreateCard}
-          on:click={createCard}
+          on:click={handleCreateCard}
           mainButtonId={'new-document'}
           dropdownIcon={IconDropdown}
           {dropdownItems}
-          disabled={currentSpace === undefined || _class === undefined}
           on:dropdown-selected={(ev) => {
             void dropdownItemSelected(ev.detail)
           }}
@@ -154,7 +123,7 @@
         kind={'primary'}
         gap={'large'}
         disabled={currentSpace === undefined || _class === undefined}
-        on:click={createCard}
+        on:click={handleCreateCard}
       />
     {/if}
   </div>

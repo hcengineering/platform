@@ -13,23 +13,27 @@
 // limitations under the License.
 //
 
-import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
+import { type SendMailOptions } from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
-import { initStatisticsContext } from '@hcengineering/server-core'
-import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { SplitLogger } from '@hcengineering/analytics-service'
 import { join } from 'path'
 
+import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureContext, newMetrics } from '@hcengineering/core'
+import { initStatisticsContext } from '@hcengineering/server-core'
+
 import config from './config'
-import { createServer, listen } from './server'
 import { MailClient } from './mail'
+import { createServer, listen } from './server'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
+  configureAnalytics('mail', process.env.VERSION ?? '0.7.0')
+  Analytics.setTag('application', 'mail')
   const measureCtx = initStatisticsContext('mail', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'mail',
         {},
         {},
@@ -77,22 +81,33 @@ export async function handleSendMail (
   res: Response,
   ctx: MeasureContext
 ): Promise<void> {
-  // Skip auth check, since service should be internal
-  const { from, to, subject, text, html, attachments } = req.body
+  const { from, to, subject, text, html, attachments, headers, apiKey, password } = req.body
+  if (process.env.API_KEY !== undefined && process.env.API_KEY !== apiKey) {
+    ctx.warn('Unauthorized access attempt to send email', {
+      from,
+      to
+    })
+    res.status(401).send({ err: 'Unauthorized' })
+    return
+  }
   const fromAddress = from ?? config.source
-  if (text === undefined) {
-    res.status(400).send({ err: "'text' is missing" })
+  if (text === undefined && html === undefined) {
+    ctx.warn('Text and html are missing in email request', { from, to })
+    res.status(400).send({ err: "'text' and 'html' are missing" })
     return
   }
   if (subject === undefined) {
+    ctx.warn('Subject is missing in email request', { from, to })
     res.status(400).send({ err: "'subject' is missing" })
     return
   }
   if (to === undefined) {
+    ctx.warn('To address is missing in email request', { from })
     res.status(400).send({ err: "'to' is missing" })
     return
   }
   if (fromAddress === undefined) {
+    ctx.warn('From address is missing in email request', { to })
     res.status(400).send({ err: "'from' is missing" })
     return
   }
@@ -102,14 +117,21 @@ export async function handleSendMail (
     subject,
     text
   }
+  // When sending system message, ensure we enable replying to a different domain as needed
+  if (config.replyTo !== undefined && fromAddress === config.source) {
+    message.replyTo = config.replyTo
+  }
   if (html !== undefined) {
     message.html = html
+  }
+  if (headers !== undefined) {
+    message.headers = headers
   }
   if (attachments !== undefined) {
     message.attachments = getAttachments(attachments)
   }
   try {
-    await client.sendMessage(message, ctx)
+    await client.sendMessage(message, ctx, password)
   } catch (err: any) {
     ctx.error(err.message)
   }

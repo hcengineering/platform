@@ -1,5 +1,4 @@
 import {
-  toWorkspaceString,
   type Doc,
   type DocInfo,
   type Domain,
@@ -7,7 +6,7 @@ import {
   type MeasureContext,
   type Ref,
   type StorageIterator,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 
 export * from '@hcengineering/storage'
@@ -15,11 +14,11 @@ export * from '@hcengineering/storage'
 /**
  * @public
  */
-export function getBucketId (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId)
+export function getBucketId (workspace: WorkspaceUuid): string {
+  return workspace
 }
 
-const chunkSize = 200
+const chunkSize = 50000
 
 /**
  * @public
@@ -46,6 +45,7 @@ export class BackupClientOps {
     idx?: number
   ): Promise<{
       idx: number
+      size?: number
       docs: DocInfo[]
       finished: boolean
     }> {

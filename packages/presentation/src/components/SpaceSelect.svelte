@@ -25,7 +25,6 @@
     ButtonShape,
     ButtonSize,
     IconFolder,
-    IconWithEmoji,
     Label,
     TooltipAlignment,
     eventToHTMLElement,
@@ -41,6 +40,7 @@
   import { ObjectCreate } from '../types'
   import { getClient, reduceCalls } from '../utils'
   import SpacesPopup from './SpacesPopup.svelte'
+  import IconWithEmoji from './IconWithEmoji.svelte'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -143,8 +143,8 @@
         ? undefined
         : {
             fill:
-              selected?.color !== undefined
-                ? getPlatformColorDef(selected?.color, $themeStore.dark).icon
+              selected?.color !== undefined && typeof selected?.color !== 'string'
+                ? getPlatformColorDef(selected?.color ?? 0, $themeStore.dark).icon
                 : getPlatformColorForTextDef(selected?.name ?? '', $themeStore.dark).icon
           }}
     {size}

@@ -14,28 +14,22 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, ArrOf, Ref, RefTo } from '@hcengineering/core'
+  import { AnyAttribute, ArrOf, Class, Ref, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    eventToHTMLElement,
-    IconWithEmoji,
-    Label,
-    showPopup
-  } from '@hcengineering/ui'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
   import CardsPopup from './CardsPopup.svelte'
 
+  export let _class: Ref<Class<Card>> | undefined = undefined
   export let value: Ref<Card>[] | undefined
   export let readonly: boolean = false
   export let label: IntlString | undefined
   export let onChange: ((value: any) => void) | undefined
-  export let attribute: AnyAttribute
+  export let attribute: AnyAttribute | undefined = undefined
+  export let type: Type<any> | undefined = undefined
 
   export let focusIndex: number | undefined = undefined
   export let kind: ButtonKind = 'ghost'
@@ -47,7 +41,12 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: _class = ((attribute?.type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to
+  if (_class === undefined) {
+    _class =
+      ((attribute?.type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
+      ((type as ArrOf<RefTo<Card>>)?.of as RefTo<Card>)?.to ??
+      card.class.Card
+  }
 
   const handleOpen = (event: MouseEvent): void => {
     if (onChange === undefined) {
@@ -80,7 +79,7 @@
     docs = res
   })
 
-  $: clazz = _class !== undefined ? (hierarchy.findClass(_class) as MasterTag) : undefined
+  $: clazz = hierarchy.findClass(_class) as MasterTag
 
   $: icon = clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon
   $: iconProps = clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz?.color } : {}

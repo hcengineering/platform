@@ -13,14 +13,18 @@
 // limitations under the License.
 //
 
+import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import {
   type Account,
-  type BaseWorkspaceInfo,
+  type AccountRole,
+  type AccountUuid,
   type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -29,39 +33,38 @@ import {
   type MeasureContext,
   type ModelDb,
   type Obj,
+  type OperationDomain,
+  type PersonId,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
   type SessionData,
+  type SocialId,
   type Space,
   type Timestamp,
   type Tx,
   type TxFactory,
   type TxResult,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type UserStatus,
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
-import type { ReqId, Request, Response } from '@hcengineering/rpc'
+import type { RateLimitInfo, ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
-import { type Readable } from 'stream'
+
 import type { DbAdapter, DomainHelper } from './adapter'
-import type { StatisticsElement } from './stats'
+import { type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './queue'
+import type { StatisticsElement, WorkspaceStatistics } from './stats'
 import { type StorageAdapter } from './storage'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
-  domain?: Domain // Allow to find for Doc's in specified domain only.
   prefix?: string
 
   skipClass?: boolean
   skipSpace?: boolean
-
-  domainLookup?: {
-    field: string
-    domain: Domain
-  }
 
   // using for join query security
   allowedSpaces?: Ref<Space>[]
@@ -109,18 +112,30 @@ export interface Middleware {
     hash?: string
   ) => Promise<Tx[] | LoadModelResponse>
 
+  // Operation to some specific domain
+  domainRequest: (
+    ctx: MeasureContext<SessionData>,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<DomainResult>
+  closeSession: (ctx: MeasureContext<SessionData>, sessionId: string) => Promise<void>
   close: () => Promise<void>
 }
 
 /**
  * @public
  */
-export type BroadcastFunc = (
-  ctx: MeasureContext<SessionData>,
-  tx: Tx[],
-  targets?: string | string[],
-  exclude?: string[]
-) => void
+export interface BroadcastOps {
+  broadcast: (ctx: MeasureContext, tx: Tx[], targets?: AccountUuid | AccountUuid[], exclude?: AccountUuid[]) => void
+
+  broadcastSessions: (measure: MeasureContext, sessionIds: Record<string, Tx[]>) => void
+}
+
+export interface CommunicationCallbacks {
+  registerAsyncRequest: (ctx: MeasureContext, promise: (ctx: MeasureContext) => Promise<void>) => void
+  broadcast: (ctx: MeasureContext, sessionIds: Record<string, any[]>) => void
+  enqueue: (ctx: MeasureContext, result: any[]) => void
+}
 
 /**
  * @public
@@ -162,7 +177,7 @@ export interface DBAdapterManager {
 }
 
 export interface PipelineContext {
-  workspace: WorkspaceIdWithUrl
+  workspace: WorkspaceIds
 
   lastTx?: string
 
@@ -177,6 +192,8 @@ export interface PipelineContext {
   serviceAdapterManager?: ServiceAdaptersManager
   lowLevelStorage?: LowLevelStorage
   liveQuery?: LiveQuery
+  queue?: PlatformQueue
+  queueProducers?: Map<QueueTopic, PlatformQueueProducer<any>>
 
   // Entry point for derived data procvessing
   derived?: Middleware
@@ -185,6 +202,7 @@ export interface PipelineContext {
   contextVars: Record<string, any>
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+  userStatusMap?: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
 }
 /**
  * @public
@@ -212,6 +230,14 @@ export interface Pipeline {
   ) => Promise<Tx[] | LoadModelResponse>
 
   handleBroadcast: (ctx: MeasureContext<SessionData>) => Promise<void>
+
+  domainRequest: <T>(
+    ctx: MeasureContext<SessionData>,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<DomainResult<T>>
+
+  closeSession: (ctx: MeasureContext<SessionData>, sessionId: string) => Promise<void>
 }
 
 /**
@@ -219,18 +245,23 @@ export interface Pipeline {
  */
 export type PipelineFactory = (
   ctx: MeasureContext,
-  ws: WorkspaceIdWithUrl,
-  upgrade: boolean,
-  broadcast: BroadcastFunc,
+  ws: WorkspaceIds,
+  broadcast: BroadcastOps,
   branding: Branding | null
 ) => Promise<Pipeline>
+
+export type CommunicationApiFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIds,
+  callbacks: CommunicationCallbacks
+) => Promise<CommunicationApi>
 
 /**
  * @public
  */
 export interface TriggerControl {
   ctx: MeasureContext<SessionData>
-  workspace: WorkspaceIdWithUrl
+  workspace: WorkspaceIds
   branding: Branding | null
   txFactory: TxFactory
   findAll: <T extends Doc>(
@@ -243,6 +274,10 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+  userStatusMap: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
+  domainRequest: (ctx: MeasureContext, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
+
+  queue?: PlatformQueue
 
   // Cache per workspace
   cache: Map<string, any>
@@ -307,7 +342,7 @@ export interface IndexedDoc {
   _class: Ref<Class<Doc>>[]
   space: Ref<Space>
   modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
@@ -327,27 +362,44 @@ export interface SearchStringResult {
   total?: number
 }
 
+export interface FulltextListener {
+  onIndexing?: (doc: IndexedDoc) => Promise<void>
+  onClean?: (doc: Ref<Doc>[]) => Promise<void>
+}
+
 /**
  * @public
  */
 export interface FullTextAdapter {
-  index: (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc) => Promise<TxResult>
-  update: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
-  remove: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]) => Promise<void>
+  index: (ctx: MeasureContext, workspace: WorkspaceUuid, doc: IndexedDoc) => Promise<TxResult>
+  update: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    id: Ref<Doc>,
+    update: Record<string, any>
+  ) => Promise<TxResult>
+  remove: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>[]) => Promise<void>
+  removeByQuery: (ctx: MeasureContext, workspace: WorkspaceUuid, query: DocumentQuery<Doc>) => Promise<void>
 
-  clean: (ctx: MeasureContext, workspace: WorkspaceId) => Promise<void>
-  updateMany: (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]) => Promise<TxResult[]>
-  load: (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
+  clean: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<void>
+  updateMany: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: IndexedDoc[]) => Promise<TxResult[]>
+  updateByQuery: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    query: DocumentQuery<Doc>,
+    update: Record<string, any>
+  ) => Promise<TxResult[]>
+  load: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
   searchString: (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     query: SearchQuery,
     options: SearchOptions & { scoring?: SearchScoring[] }
   ) => Promise<SearchStringResult>
 
   search: (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
     size: number | undefined,
@@ -369,7 +421,7 @@ export type FullTextAdapterFactory = (url: string) => Promise<FullTextAdapter>
  * @public
  */
 export interface ContentTextAdapter {
-  content: (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc: Readable) => Promise<string>
+  content: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Buffer) => Promise<string>
 }
 
 /**
@@ -475,6 +527,7 @@ export interface StorageConfig {
   kind: string
   endpoint: string
   port?: number
+  readonly?: string
 }
 
 export class NoSuchKeyError extends Error {
@@ -506,7 +559,13 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-
+  socialStringsToUsers: Map<
+  PersonId,
+  {
+    accontUuid: AccountUuid
+    role: AccountRole
+  }
+  >
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void
@@ -517,7 +576,9 @@ export interface ClientSessionCtx {
  * @public
  */
 export interface Session {
-  workspace: Workspace
+  workspace: WorkspaceIds
+
+  token: Token
   createTime: number
 
   // Session restore information
@@ -544,14 +605,15 @@ export interface Session {
 
   // Client methods
   ping: (ctx: ClientSessionCtx) => Promise<void>
-  getUser: () => string
+  getUser: () => AccountUuid
+
+  getUserSocialIds: () => PersonId[]
+
+  getSocialIds: () => SocialId[]
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
-
   loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
-  getAccount: (ctx: ClientSessionCtx) => Promise<void>
-
-  getRawAccount: (pipeline: Pipeline) => Account
+  getRawAccount: () => Account
   findAll: <T extends Doc>(
     ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
@@ -559,8 +621,7 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<void>
   findAllRaw: <T extends Doc>(
-    ctx: MeasureContext,
-    pipeline: Pipeline,
+    ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -585,6 +646,20 @@ export interface Session {
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
   upload: (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]) => Promise<void>
   clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  includeSessionContext: (ctx: ClientSessionCtx) => void
+
+  updateLast: () => void
+
+  domainRequestRaw: (
+    ctx: ClientSessionCtx,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<{
+    result: DomainResult
+    broadcastPromise: Promise<void>
+    asyncsPromise: Promise<void> | undefined
+  }>
 }
 
 /**
@@ -618,92 +693,52 @@ export function disableLogging (): void {
   LOGGING_ENABLED = false
 }
 
-interface TickHandler {
-  ticks: number
-  operation: () => void
-}
-
-/**
- * @public
- */
-export interface Workspace {
-  context: MeasureContext
-  id: string
-  token: string // Account workspace update token.
-  pipeline: Promise<Pipeline> | Pipeline
-  tickHash: number
-
-  tickHandlers: Map<string, TickHandler>
-
-  sessions: Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>
-  upgrade: boolean
-
-  closing?: Promise<void>
-  softShutdown: number
-  workspaceInitCompleted: boolean
-
-  workspaceId: WorkspaceIdWithUrl
-  workspaceName: string
-  workspaceUuid?: string
-  branding: Branding | null
-}
-
 export interface AddSessionActive {
   session: Session
   context: MeasureContext
-  workspaceId: string
+  workspaceId: WorkspaceUuid
 }
 
-export interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
-  upgrade?: {
-    toProcess: number
-    total: number
-    elapsed: number
-    eta: number
-  }
-  workspaceId: string
-}
-
-export type AddSessionResponse =
-  | AddSessionActive
-  | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
+export type GetWorkspaceResponse =
+  | { upgrade: true, progress?: number }
   | { error: any, terminate?: boolean, specialError?: 'archived' | 'migration' }
+
+export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
+
+export type SessionHealth = 'healthy' | 'degraded' | 'unhealthy'
 
 /**
  * @public
  */
 export interface SessionManager {
-  workspaces: Map<string, Workspace>
+  // workspaces: Map<WorkspaceUuid, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
-
-  createSession: (token: Token, workspace: Workspace) => Session
 
   addSession: (
     ctx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
-    pipelineFactory: PipelineFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
-  broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
+  broadcastAll: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    tx: Tx[],
+    targets?: AccountUuid | AccountUuid[],
+    exclude?: AccountUuid[]
+  ) => void
 
-  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: string) => Promise<void>
+  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
 
-  closeAll: (
-    wsId: string,
-    workspace: Workspace,
-    code: number,
-    reason: 'upgrade' | 'shutdown',
-    ignoreSocket?: ConnectionSocket
-  ) => Promise<void>
+  forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
 
-  forceClose: (wsId: string, ignoreSocket?: ConnectionSocket) => Promise<void>
+  forceMaintenance: (ctx: MeasureContext, workspaceId: WorkspaceUuid) => Promise<void>
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
-  scheduleMaintenance: (timeMinutes: number) => void
+  scheduleMaintenance: (timeMinutes: number, message?: string) => void
 
   profiling?: {
     start: () => void
@@ -715,8 +750,16 @@ export interface SessionManager {
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
-    workspace: string // wsId, toWorkspaceString()
+    workspace: WorkspaceUuid
   ) => Promise<void>
+
+  handleRPC: <S extends Session>(
+    requestCtx: MeasureContext,
+    service: S,
+    method: string,
+    ws: ConnectionSocket,
+    operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
+  ) => Promise<RateLimitInfo | undefined>
 
   createOpContext: (
     ctx: MeasureContext,
@@ -725,41 +768,13 @@ export interface SessionManager {
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket,
-    workspace: WorkspaceId
+    rateLimit?: RateLimitInfo
   ) => ClientSessionCtx
 
-  handleRPC: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx) => Promise<void>
-  ) => Promise<void>
+  getStatistics: () => WorkspaceStatistics[]
+
+  checkHealth: () => SessionHealth
 }
-
-/**
- * @public
- */
-export type HandleRequestFunction = <S extends Session>(
-  rctx: MeasureContext,
-  service: S,
-  ws: ConnectionSocket,
-  msg: Request<any>,
-  workspaceId: string
-) => void
-
-/**
- * @public
- */
-
-export type ServerFactory = (
-  sessions: SessionManager,
-  handleRequest: HandleRequestFunction,
-  ctx: MeasureContext,
-  pipelineFactory: PipelineFactory,
-  port: number,
-  accountsUrl: string,
-  externalStorage: StorageAdapter
-) => () => Promise<void>
 
 export const pingConst = 'ping'
 export const pongConst = 'pong!'

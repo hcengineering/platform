@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -22,13 +22,10 @@ export const serverAiBotId = 'server-ai-bot' as Plugin
 
 export default plugin(serverAiBotId, {
   metadata: {
-    SupportWorkspaceId: '' as Metadata<string>,
     EndpointURL: '' as Metadata<string>
   },
   trigger: {
-    OnMessageSend: '' as Resource<TriggerFunc>,
-    OnMention: '' as Resource<TriggerFunc>,
     OnUserStatus: '' as Resource<TriggerFunc>,
-    OnMessageNotified: '' as Resource<TriggerFunc>
+    OnMessageSend: '' as Resource<TriggerFunc>
   }
 })

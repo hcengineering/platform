@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
+  import { BlobType, WithLookup } from '@hcengineering/core'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { BlobType, WithLookup } from '@hcengineering/core'
   import { AttachmentImageSize } from '../types'
   import { getType, isAttachment, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
@@ -35,14 +35,24 @@
 
   const dispatch = createEventDispatcher()
 
+  let hovered = false
+
   $: type = getType(value.type)
 </script>
 
-{#if type === 'image'}
+{#if type === 'video'}
+  <div class="content buttonContainer flex-center" class:hovered>
+    <AttachmentVideoPreview {value} preload={videoPreload} />
+    <div class="actions">
+      <AttachmentActions bind:hovered attachment={value} {isSaved} {removable} />
+    </div>
+  </div>
+{:else if value.metadata?.thumbnail !== undefined || type === 'image'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="content flex-center buttonContainer cursor-pointer"
+    class:hovered
     on:click={() => {
       if (listProvider !== undefined && isAttachment(value)) listProvider.updateFocus(value)
       const popupInfo = showAttachmentPreviewPopup(value)
@@ -51,28 +61,21 @@
   >
     <AttachmentImagePreview {value} size={imageSize} />
     <div class="actions">
-      <AttachmentActions attachment={value} {isSaved} {removable} />
+      <AttachmentActions bind:hovered attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'audio'}
-  <div class="buttonContainer">
+  <div class="buttonContainer" class:hovered>
     <AudioPlayer {value} />
     <div class="actions" style:padding={'0.125rem 0.25rem'}>
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
-{:else if type === 'video'}
-  <div class="content buttonContainer flex-center">
-    <AttachmentVideoPreview {value} preload={videoPreload} />
-    <div class="actions">
-      <AttachmentActions attachment={value} {isSaved} {removable} />
-    </div>
-  </div>
 {:else}
-  <div class="flex buttonContainer extraWidth">
+  <div class="flex buttonContainer extraWidth" class:hovered>
     <AttachmentPresenter {value} />
     <div class="actions">
-      <AttachmentActions attachment={value} {isSaved} {removable} />
+      <AttachmentActions bind:hovered attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {/if}
@@ -99,9 +102,12 @@
     }
   }
 
-  .buttonContainer:hover {
-    .actions {
-      visibility: visible;
+  .buttonContainer {
+    &:hover,
+    &.hovered {
+      .actions {
+        visibility: visible;
+      }
     }
   }
 

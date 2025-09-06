@@ -1,29 +1,28 @@
-import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
-import {
-  Account,
-  AttachedDoc,
+import { type ActivityMessageControl, type DocAttributeUpdates, type DocUpdateAction } from '@hcengineering/activity'
+import cardPlugin, { type Card, type Tag } from '@hcengineering/card'
+import { type ActivityUpdate, ActivityUpdateType } from '@hcengineering/communication-types'
+import core, {
+  type ArrOf,
+  type AttachedDoc,
   type Attribute,
-  Class,
-  Collection,
-  Doc,
-  Hierarchy,
-  MeasureContext,
-  Mixin,
-  Ref,
-  RefTo,
-  TxCreateDoc,
-  TxCUD,
-  TxMixin,
+  type Class,
+  type Collection,
+  combineAttributes,
+  type Doc,
+  type Hierarchy,
+  type MeasureContext,
+  type Mixin,
+  type Ref,
+  type RefTo,
+  type TxCreateDoc,
+  type TxCUD,
+  type TxMixin,
   TxProcessor,
-  TxUpdateDoc,
-  combineAttributes
+  type TxUpdateDoc
 } from '@hcengineering/core'
-import core from '@hcengineering/core/src/component'
-import notification from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
-import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
-import { TriggerControl } from '@hcengineering/server-core'
-import { getDocCollaborators } from '@hcengineering/server-notification-resources'
+import { type ActivityControl, type DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
+import { type TriggerControl } from '@hcengineering/server-core'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -40,7 +39,12 @@ function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): stri
     const hiddenAttrs = getHiddenAttrs(hierarchy, _class)
 
     return Object.entries(updateTx.operations)
-      .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
+      .flatMap(([id, val]) => {
+        if (['$push', '$pull', '$unset'].includes(id)) {
+          return Object.keys(val)
+        }
+        return id
+      })
       .filter((id) => !id.startsWith('$') && !hiddenAttrs.has(id))
   }
 
@@ -141,55 +145,21 @@ interface AttributeDiff {
   removed: DocAttributeUpdates['removed']
 }
 
-async function getCollaboratorsDiff (
-  control: ActivityControl,
-  doc: Doc,
-  prevDoc: Doc | undefined
-): Promise<AttributeDiff> {
-  const { hierarchy } = control
-  const value = hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
-
-  let prevValue: Ref<Account>[] = []
-
-  if (prevDoc !== undefined && hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
-    prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
-  } else if (prevDoc !== undefined) {
-    const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
-    prevValue =
-      mixin !== undefined
-        ? await getDocCollaborators((control as TriggerControl).ctx, prevDoc, mixin, control as TriggerControl)
-        : []
-  }
-
-  const added = value.filter((item) => !prevValue.includes(item)) as DocAttributeUpdates['added']
-  const removed = prevValue.filter((item) => !value.includes(item)) as DocAttributeUpdates['removed']
-
-  return {
-    added,
-    removed
-  }
-}
-
 export async function getAttributeDiff (
   control: ActivityControl,
   doc: Doc,
   prevDoc: Doc | undefined,
   attrKey: string,
-  attrClass: Ref<Class<Doc>>,
-  isMixin: boolean
+  mixin?: Ref<Mixin<Doc>>
 ): Promise<AttributeDiff> {
   const { hierarchy } = control
 
   let actualDoc: Doc | undefined = doc
   let actualPrevDoc: Doc | undefined = prevDoc
 
-  if (isMixin && hierarchy.isDerived(attrClass, notification.mixin.Collaborators)) {
-    return await getCollaboratorsDiff(control, doc, prevDoc)
-  }
-
-  if (isMixin) {
-    actualDoc = hierarchy.as(doc, attrClass)
-    actualPrevDoc = prevDoc === undefined ? undefined : hierarchy.as(prevDoc, attrClass)
+  if (mixin != null) {
+    actualDoc = hierarchy.as(doc, mixin)
+    actualPrevDoc = prevDoc === undefined ? undefined : hierarchy.as(prevDoc, mixin)
   }
 
   const value = (actualDoc as any)[attrKey] ?? []
@@ -267,6 +237,8 @@ export async function getTxAttributesUpdates (
 
     if (clazz !== undefined && 'to' in clazz.type) {
       attrClass = clazz.type.to as Ref<Class<Doc>>
+    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+      attrClass = (clazz.type as ArrOf<Doc>).of._class
     } else if (clazz !== undefined && 'of' in clazz?.type) {
       attrClass = (clazz.type.of as RefTo<Doc>).to
     }
@@ -284,14 +256,14 @@ export async function getTxAttributesUpdates (
       continue
     }
 
-    if (hierarchy.isDerived(attrClass, core.class.TypeMarkup) || mixin === notification.mixin.Collaborators) {
+    if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
       if (docDiff === undefined) {
         docDiff = await getDocDiff(control, updateObject._class, updateObject._id, tx._id, mixin, objectCache)
       }
     }
 
     if (Array.isArray(attrValue) && docDiff?.doc !== undefined) {
-      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, isMixin)
+      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, mixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []
@@ -392,4 +364,97 @@ export function getCollectionAttribute (
   }
 
   return undefined
+}
+
+function getAttrClass (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  attrKey: string
+): Ref<Class<Doc>> | undefined {
+  const clazz = hierarchy.findAttribute(objectClass, attrKey)
+
+  if (clazz === undefined) return undefined
+
+  if (hierarchy.isDerived(clazz.type._class, core.class.RefTo)) {
+    return (clazz.type as RefTo<Doc>).to
+  } else if (hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+    const of = (clazz.type as ArrOf<AttachedDoc>).of
+    return of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
+  }
+
+  return clazz.type._class
+}
+
+export async function getNewActivityUpdates (
+  control: TriggerControl,
+  originTx: TxCUD<Card>,
+  card: Card
+): Promise<ActivityUpdate[]> {
+  if (![core.class.TxMixin, core.class.TxUpdateDoc].includes(originTx._class)) {
+    return []
+  }
+
+  const tx = originTx as TxUpdateDoc<Card> | TxMixin<Card, Card>
+  const { hierarchy } = control
+
+  const keys = getAvailableAttributesKeys(tx, hierarchy)
+  const result: ActivityUpdate[] = []
+  const mixin = hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Card, Card>).mixin : undefined
+
+  if (mixin != null && Object.keys((tx as TxMixin<Card, Card>).attributes).length === 0) {
+    const clazz = hierarchy.getClass(mixin)
+    if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
+      result.push({
+        type: ActivityUpdateType.Tag,
+        tag: mixin,
+        action: 'add'
+      })
+    }
+  }
+
+  if (keys.length === 0) return result
+  const modifiedAttributes = getModifiedAttributes(tx, hierarchy)
+
+  for (const key of keys) {
+    const attrValue = modifiedAttributes[key]
+
+    const added = combineAttributes([modifiedAttributes], key, '$push', '$each')
+    const removed = combineAttributes([modifiedAttributes], key, '$pull', '$in')
+    const isUnset = combineAttributes([modifiedAttributes], key, '$unset')[0] === true
+
+    if (isUnset && hierarchy.isMixin(key as any)) {
+      const tag = key as Ref<Tag>
+      const clazz = hierarchy.getClass(tag)
+
+      if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
+        result.push({
+          type: ActivityUpdateType.Tag,
+          tag,
+          action: 'remove'
+        })
+      }
+    }
+
+    const attrClass: Ref<Class<Doc>> | undefined = getAttrClass(hierarchy, mixin ?? card._class, key)
+
+    if (attrClass === undefined) continue
+    if (
+      hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
+      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc)
+    ) {
+      continue
+    }
+
+    result.push({
+      type: ActivityUpdateType.Attribute,
+      attrKey: key,
+      attrClass,
+      set: attrValue,
+      added,
+      removed,
+      mixin
+    })
+  }
+
+  return result
 }

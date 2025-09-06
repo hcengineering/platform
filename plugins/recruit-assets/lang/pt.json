@@ -119,9 +119,7 @@
     "HideArchivedVacancies": "Ocultar vagas arquivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vagas arquivadas",
     "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas",
-    "SwapFirstAndLastNames": "Trocar primeiro e último nome",
-    "ForbidCreateVacancyPermission": "Proibir criação de vaga",
-    "ForbidCreateVacancyPermissionDescription": "Proíbe os utilizadores de criar novas vagas"
+    "SwapFirstAndLastNames": "Trocar primeiro e último nome"
   },
   "status": {
     "ApplicationExists": "A candidatura já existe",

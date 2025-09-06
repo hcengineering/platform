@@ -18,24 +18,26 @@ import core, {
   Data,
   MeasureContext,
   Ref,
-  systemAccountEmail,
+  systemAccountUuid,
   TxOperations,
+  type WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
 import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import { getClient } from './client'
+import { RecordingPreset } from './preset'
 
 export class WorkspaceClient {
   private client!: TxOperations
 
   private constructor (
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly ctx: MeasureContext
   ) {}
 
-  static async create (workspace: string, ctx: MeasureContext): Promise<WorkspaceClient> {
+  static async create (workspace: WorkspaceUuid, ctx: MeasureContext): Promise<WorkspaceClient> {
     const instance = new WorkspaceClient(workspace, ctx)
     await instance.initClient(workspace)
     return instance
@@ -45,14 +47,20 @@ export class WorkspaceClient {
     await this.client.close()
   }
 
-  private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(systemAccountEmail, { name: workspace })
+  private async initClient (workspace: WorkspaceUuid): Promise<Client> {
+    const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client
   }
 
-  async saveFile (uuid: string, name: string, blob: Blob, meetingMinutes?: Ref<MeetingMinutes>): Promise<void> {
+  async saveFile (
+    uuid: string,
+    name: string,
+    blob: Blob,
+    preset: RecordingPreset,
+    meetingMinutes?: Ref<MeetingMinutes>
+  ): Promise<void> {
     this.ctx.info('Save recording', { workspace: this.workspace, meetingMinutes })
     const current = await this.client.findOne(drive.class.Drive, { _id: love.space.Drive })
     if (current === undefined) {
@@ -79,8 +87,8 @@ export class WorkspaceClient {
       // hardcoded values from preset we use
       // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
       metadata: {
-        originalHeight: 720,
-        originalWidth: 1280
+        originalHeight: preset.height,
+        originalWidth: preset.width
       }
     }
     await createFile(this.client, love.space.Drive, drive.ids.Root, { ...data, title: name })

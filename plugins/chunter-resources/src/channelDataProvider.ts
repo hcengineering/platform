@@ -14,7 +14,7 @@
 //
 import { createQuery, getClient } from '@hcengineering/presentation'
 import {
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -31,7 +31,6 @@ import activity, { type ActivityMessage, type ActivityReference } from '@hcengin
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import chunter from '@hcengineering/chunter'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -40,7 +39,7 @@ export interface MessageMetadata {
   _class: Ref<Class<ActivityMessage>>
   createdOn?: Timestamp
   modifiedOn: Timestamp
-  createdBy?: Ref<Account>
+  createdBy?: PersonId
 }
 
 interface Chunk {
@@ -309,7 +308,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       _id: {
         attachments: attachment.class.Attachment,
-        inlineButtons: chunter.class.InlineButton,
         reactions: activity.class.Reaction
       }
     }
@@ -550,8 +548,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return -1
     }
 
-    const me = getCurrentAccount()._id
-
     let newTimestamp = 0
 
     if (lastViewedTimestamp !== undefined && firstNotification !== undefined) {
@@ -561,7 +557,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     }
 
     return metadata.findIndex((message) => {
-      if (message.createdBy === me) {
+      if (message.createdBy !== undefined && getCurrentAccount().socialIds.includes(message.createdBy)) {
         return false
       }
 

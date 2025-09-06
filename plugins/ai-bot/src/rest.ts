@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,43 +13,44 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, Markup, Ref, Space, Timestamp } from '@hcengineering/core'
-import { ChatMessage } from '@hcengineering/chunter'
+import { Class, Doc, Markup, PersonId, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Room, RoomLanguage } from '@hcengineering/love'
-import { Person } from '@hcengineering/contact'
-
-export enum AIEventType {
-  Message = 'message',
-  Transfer = 'transfer'
-}
+import { Contact, Person } from '@hcengineering/contact'
+import { ChatMessage } from '@hcengineering/chunter'
 
 export interface AIEventRequest {
-  type: AIEventType
-  collection: string
+  message: string
   messageClass: Ref<Class<ChatMessage>>
   messageId: Ref<ChatMessage>
-  message: string
+  objectClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>
+  objectSpace: Ref<Space>
+  user: PersonId
+  collection: string
   createdOn: Timestamp
 }
 
-export interface AIMessageEventRequest extends AIEventRequest {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  objectSpace: Ref<Space>
-  user: Ref<Account>
-  email: string
-}
-
-export interface AITransferEventRequest extends AIEventRequest {
-  toEmail: string
-  toWorkspace: string
-  fromWorkspace: string
-  fromWorkspaceName: string
-  fromWorkspaceUrl: string
-  parentMessageId?: Ref<ChatMessage>
-}
-
 export interface TranslateRequest {
+  text: Markup
+  lang: string
+}
+
+export interface PersonMessage {
+  personRef: Ref<Contact>
+  personName: string
+
+  time: Timestamp
+  text: string
+}
+
+export interface SummarizeMessagesRequest {
+  lang: string
+
+  target: Ref<Doc>
+  targetClass: Ref<Class<Doc>>
+}
+
+export interface SummarizeMessagesResponse {
   text: Markup
   lang: string
 }

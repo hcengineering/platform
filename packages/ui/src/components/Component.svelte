@@ -20,6 +20,7 @@
   import ErrorPresenter from './ErrorPresenter.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
+  import { clone } from '@hcengineering/core'
 
   // Reference to rendered component instance
   export let innerRef: SvelteComponent | undefined = undefined
@@ -31,7 +32,6 @@
   export let disabled: boolean = false
 
   let _is: AnyComponent | AnySvelteComponent = is
-  let _props: any = props
 
   // See https://github.com/sveltejs/svelte/issues/4068
   // When passing undefined prop value, then Svelte uses default value only first time when
@@ -39,8 +39,14 @@
   // Here we filter out undefined values from props on updates to ensure we don't overwrite them.
   const filterDefaultUndefined = (pnew: any, pold: any): any =>
     pnew != null
-      ? Object.fromEntries(Object.entries(pnew).filter(([k, v]) => v !== undefined || pold?.[k] !== undefined))
+      ? Object.fromEntries(
+        Object.entries(clone(pnew, undefined, undefined, 10)).filter(
+          ([k, v]) => v !== undefined || pold?.[k] !== undefined
+        )
+      )
       : pnew
+
+  let _props: any = filterDefaultUndefined(props, props)
 
   $: if (!deepEqual(_is, is)) {
     _is = is
@@ -120,6 +126,7 @@
           on:validate
           on:submit
           on:select
+          on:loaded
         >
           <slot />
         </svelte:component>
@@ -140,6 +147,7 @@
           on:validate
           on:submit
           on:select
+          on:loaded
         />
       {/if}
     </ErrorBoundary>

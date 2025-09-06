@@ -83,9 +83,14 @@
     "WithAudio": "Systemaudio einschließen",
     "ShareWithAudioTooltip": "Teile deinen Bildschirm mit Systemaudio. Starte die Bildschirmfreigabe neu, um Änderungen anzuwenden.",
     "MicPermission": "Mikrofon nicht gefunden, überprüfen Sie die Browserberechtigungen",
-    "CamPermission": "Kamera nicht gefunden, überprüfen Sie die Browserberechtigungen"
-  },
-  "status": {
-    "RoomRequired": "Raum ist erforderlich"
+    "CamPermission": "Kamera nicht gefunden, überprüfen Sie die Browserberechtigungen",
+    "SearchMeetingMinutes": "Meetingprotokoll suchen...",
+    "Sharing": "Teilen...",
+    "Browser": "Browser",
+    "Monitor": "Monitor",
+    "Window": "Fenster",
+    "MeetingEmptyTitle": "Besprechung beendet?",
+    "MeetingEmptyMessage": "Alle Teilnehmer haben die Besprechung verlassen. Sie werden in 1 Minute automatisch getrennt. Möchten Sie bleiben?",
+    "StayInRoom": "Im Raum bleiben"
   }
 }

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -136,6 +136,8 @@
 {#if savedBoard?.commands !== undefined && savedBoard?.props !== undefined}
   <NodeViewWrapper data-drag-handle="" data-type="drawingBoard" data-id={node.attrs.id}>
     <DrawingBoardEditor
+      boardId={node.attrs.id}
+      document={savedBoard.document}
       savedCmds={savedBoard.commands}
       savedProps={savedBoard.props}
       resizeable={true}
@@ -151,7 +153,7 @@
           disabled={loading}
           noFocus
           on:click={() => {
-            showBoardPopup(savedBoard, editor)
+            showBoardPopup(node.attrs.id, savedBoard, editor)
           }}
         />
       </div>

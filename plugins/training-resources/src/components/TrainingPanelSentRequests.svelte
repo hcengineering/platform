@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import { navigate } from '@hcengineering/ui'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import type { Training } from '@hcengineering/training'
   import training from '../plugin'
   import { trainingRoute, TrainingRouteTab } from '../routing/routes/trainingRoute'

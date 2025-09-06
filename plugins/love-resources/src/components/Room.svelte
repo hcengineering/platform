@@ -13,214 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
-  import { personByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
+  import presentation, { ActionContext } from '@hcengineering/presentation'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
-  import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import {
-    LocalParticipant,
-    LocalTrackPublication,
-    Participant,
-    RemoteParticipant,
-    RemoteTrack,
-    RemoteTrackPublication,
-    RoomEvent,
-    Track,
-    TrackPublication
-  } from 'livekit-client'
-  import { onDestroy, onMount, tick } from 'svelte'
-  import presentation from '@hcengineering/presentation'
-  import aiBot from '@hcengineering/ai-bot'
-  import { Ref } from '@hcengineering/core'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { onDestroy, onMount } from 'svelte'
 
   import love from '../plugin'
-  import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import {
-    awaitConnect,
-    isConnected,
-    isCurrentInstanceConnected,
-    isFullScreen,
-    lk,
-    screenSharing,
-    tryConnect
-  } from '../utils'
-  import ControlBar from './ControlBar.svelte'
-  import ParticipantView from './ParticipantView.svelte'
+  import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { isFullScreen, lk, tryConnect } from '../utils'
+  import ControlBar from './meeting/ControlBar.svelte'
+  import { lkSessionConnected } from '../liveKitClient'
+  import ParticipantsListView from './meeting/ParticipantsListView.svelte'
+  import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
   export let room: TypeRoom
 
-  interface ParticipantData {
-    _id: string
-    name: string
-    connecting: boolean
-    muted: boolean
-    mirror: boolean
-    isAgent: boolean
-  }
-
-  let participants: ParticipantData[] = []
-  const participantElements: ParticipantView[] = []
-  let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
 
-  let aiPersonId: Ref<Person> | undefined = undefined
-  $: aiPersonId = $personIdByAccountId.get(aiBot.account.AIBot as Ref<PersonAccount>)
-
-  function handleTrackSubscribed (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): void {
-    if (track.kind === Track.Kind.Video) {
-      if (track.source === Track.Source.ScreenShare) {
-        track.attach(screen)
-      } else {
-        const element = track.attach()
-        attachTrack(element, participant)
-      }
-      updateStyle(getActiveParticipants(participants).length, $screenSharing)
-    } else {
-      const part = participants.find((p) => p._id === participant.identity)
-      if (part !== undefined) {
-        part.muted = publication.isMuted
-        participants = participants
-      }
-    }
-  }
-
-  function handleTrackUnsubscribed (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): void {
-    if (track.kind === Track.Kind.Video) {
-      if (track.source !== Track.Source.ScreenShare) {
-        const index = participants.findIndex((p) => p._id === participant.identity)
-        if (index !== -1) {
-          participants.splice(index, 1)
-          participants = participants
-        }
-      } else {
-        track.detach(screen)
-      }
-      updateStyle(getActiveParticipants(participants).length, $screenSharing)
-    }
-  }
-
-  function handleLocalTrack (publication: LocalTrackPublication, participant: LocalParticipant): void {
-    if (publication.track?.kind === Track.Kind.Video) {
-      if (publication.track.source === Track.Source.ScreenShare) {
-        publication.track.attach(screen)
-      } else {
-        const element = publication.track.attach()
-        void attachTrack(element, participant)
-      }
-      updateStyle(getActiveParticipants(participants).length, $screenSharing)
-    } else {
-      const part = participants.find((p) => p._id === participant.identity)
-      if (part !== undefined) {
-        part.muted = publication.isMuted
-        participants = participants
-      }
-    }
-  }
-
-  async function attachTrack (element: HTMLMediaElement, participant: Participant): Promise<void> {
-    let index = participants.findIndex((p) => p._id === participant.identity)
-    if (index === -1) {
-      index = participants.push({
-        _id: participant.identity,
-        name: participant.name ?? '',
-        muted: !participant.isMicrophoneEnabled,
-        mirror: participant.isLocal,
-        connecting: false,
-        isAgent: participant.isAgent
-      })
-    }
-    participants = participants
-    for (let attempt = 0; attempt < 10; attempt++) {
-      await tick()
-      index = participants.findIndex((p) => p._id === participant.identity)
-      const el = participantElements[index]
-      if (el != null) {
-        el.appendChild(element)
-        return
-      }
-    }
-    console.error('Failed to attach track after 10 attempts')
-    Analytics.handleError(new Error(`Failed to attach track after 10 attempts, participant: ${participant.identity}`))
-  }
-
-  function attachParticipant (participant: Participant): void {
-    const current = participants.find((p) => p._id === participant.identity)
-    if (current !== undefined) {
-      current.connecting = false
-      current.muted = !participant.isMicrophoneEnabled
-      current.mirror = participant.isLocal
-      participants = participants
-      return
-    }
-    const value: ParticipantData = {
-      _id: participant.identity,
-      name: participant.name ?? '',
-      muted: !participant.isMicrophoneEnabled,
-      mirror: participant.isLocal,
-      connecting: false,
-      isAgent: participant.isAgent
-    }
-    participants.push(value)
-    participants = participants
-    updateStyle(getActiveParticipants(participants).length, $screenSharing)
-  }
-
-  function handleParticipantDisconnected (participant: RemoteParticipant): void {
-    const index = participants.findIndex((p) => p._id === participant.identity)
-    if (index !== -1) {
-      participants.splice(index, 1)
-      participants = participants
-    }
-    updateStyle(getActiveParticipants(participants).length, $screenSharing)
-  }
-
-  function muteHandler (publication: TrackPublication, participant: Participant): void {
-    if (publication.kind === Track.Kind.Video) {
-      if (publication.source === Track.Source.ScreenShare) {
-        return
-      }
-      const index = participants.findIndex((p) => p._id === participant.identity)
-      if (index !== -1 && participantElements[index] != null) {
-        participantElements[index].setTrackMuted(publication.isMuted)
-      }
-    } else {
-      const part = participants.find((p) => p._id === participant.identity)
-      if (part !== undefined) {
-        part.muted = publication.isMuted
-        participants = participants
-      }
-    }
-  }
-
+  let withScreenSharing: boolean = false
   let loading: boolean = false
   let configured: boolean = false
-
-  function handleLocalTrackUnsubscribed (publication: LocalTrackPublication, participant: LocalParticipant): void {
-    if (publication?.track?.kind === Track.Kind.Video) {
-      if (publication.track.source === Track.Source.ScreenShare) {
-        publication.track.detach(screen)
-        updateStyle(getActiveParticipants(participants).length, $screenSharing)
-      } else {
-        const index = participants.findIndex((p) => p._id === participant.identity)
-        if (index !== -1) {
-          participants.splice(index, 1)
-          participants = participants
-        }
-      }
-    }
-  }
 
   onMount(async () => {
     loading = true
@@ -233,50 +48,12 @@
 
     configured = true
 
-    await $storePromise
+    await waitForOfficeLoaded()
 
-    if (
-      !$isConnected &&
-      !$isCurrentInstanceConnected &&
-      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
-    ) {
+    if (!$lkSessionConnected && $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)) {
       const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+      await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
-
-    await awaitConnect()
-    for (const participant of lk.remoteParticipants.values()) {
-      attachParticipant(participant)
-      for (const publication of participant.trackPublications.values()) {
-        if (publication.track !== undefined && publication.track.kind === Track.Kind.Video) {
-          if (publication.track.source === Track.Source.ScreenShare) {
-            publication.track.attach(screen)
-          } else {
-            const element = publication.track.attach()
-            await attachTrack(element, participant)
-          }
-        }
-      }
-    }
-    attachParticipant(lk.localParticipant)
-    for (const publication of lk.localParticipant.trackPublications.values()) {
-      if (publication.track !== undefined && publication.track.kind === Track.Kind.Video) {
-        if (publication.track.source === Track.Source.ScreenShare) {
-          publication.track.attach(screen)
-        } else {
-          const element = publication.track.attach()
-          await attachTrack(element, lk.localParticipant)
-        }
-      }
-    }
-    lk.on(RoomEvent.ParticipantConnected, attachParticipant)
-    lk.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
-    lk.on(RoomEvent.TrackMuted, muteHandler)
-    lk.on(RoomEvent.TrackUnmuted, muteHandler)
-    lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
-    lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
-    lk.on(RoomEvent.LocalTrackPublished, handleLocalTrack)
-    lk.on(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnsubscribed)
     roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
@@ -284,39 +61,8 @@
   let gridStyle = ''
   let columns: number = 0
   let rows: number = 0
-  let roomWidth: number
-  let roomHeight: number
-
-  onDestroy(
-    infos.subscribe((data) => {
-      for (const info of data) {
-        if (info.room !== room._id) continue
-        const current = participants.find((p) => p._id === info.person)
-        if (current !== undefined) continue
-        const value: ParticipantData = {
-          _id: info.person,
-          name: info.name,
-          muted: true,
-          mirror: false,
-          connecting: true,
-          isAgent: aiPersonId === info.person
-        }
-        participants.push(value)
-      }
-      participants = participants
-      updateStyle(getActiveParticipants(participants).length, $screenSharing)
-    })
-  )
 
   onDestroy(() => {
-    lk.off(RoomEvent.ParticipantConnected, attachParticipant)
-    lk.off(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
-    lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
-    lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
-    lk.off(RoomEvent.LocalTrackPublished, handleLocalTrack)
-    lk.off(RoomEvent.TrackMuted, muteHandler)
-    lk.off(RoomEvent.TrackUnmuted, muteHandler)
-    lk.off(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnsubscribed)
     roomEl.removeEventListener('fullscreenchange', handleFullScreen)
   })
 
@@ -379,20 +125,12 @@
   }
 
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
-
-  function getActiveParticipants (participants: ParticipantData[]): ParticipantData[] {
-    return participants.filter((p) => !p.isAgent || $infos.some(({ person }) => person === p._id))
-  }
-
-  $: activeParticipants = getActiveParticipants(participants)
+  $: updateStyle(lk.numParticipants, withScreenSharing)
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
-  {#if $isConnected && !$isCurrentInstanceConnected}
-    <div class="flex justify-center error h-full w-full clear-mins">
-      <Label label={love.string.AnotherWindowError} />
-    </div>
-  {:else if !configured}
+  <ActionContext context={{ mode: 'workbench' }} />
+  {#if !configured}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.ServiceNotConfigured} />
     </div>
@@ -401,34 +139,22 @@
   {/if}
   <div
     class="room-container"
-    class:sharing={$screenSharing}
+    class:sharing={withScreenSharing}
     class:many={columns > 3}
     class:hidden={loading}
     class:mobile={$deviceInfo.isMobile}
   >
     <div class="screenContainer">
-      <video class="screen" bind:this={screen}></video>
+      <ScreenSharingView bind:hasActiveTrack={withScreenSharing} />
     </div>
     {#if withVideo}
-      <div
-        use:resizeObserver={(element) => {
-          roomWidth = element.clientWidth
-          roomHeight = element.clientHeight
-        }}
-        class="videoGrid"
-        style={$screenSharing ? '' : gridStyle}
-        class:scroll-m-0={$screenSharing}
-      >
-        {#each activeParticipants as participant, i (participant._id)}
-          <ParticipantView
-            bind:this={participantElements[i]}
-            {...participant}
-            small={$screenSharing ||
-              (!$screenSharing &&
-                ((columns > 1 && (roomWidth - 16 * (columns - 1)) / columns < 300) ||
-                  (rows > 1 && (roomHeight - 16 * (rows - 1)) / rows < 168)))}
-          />
-        {/each}
+      <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
+        <ParticipantsListView
+          room={room._id}
+          on:participantsCount={(evt) => {
+            updateStyle(evt.detail, withScreenSharing)
+          }}
+        />
       </div>
     {/if}
   </div>

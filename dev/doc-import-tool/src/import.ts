@@ -1,28 +1,28 @@
-import attachment, { Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import { getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
 import documents, {
-  ChangeControl,
-  ControlledDocument,
+  type ChangeControl,
+  type ControlledDocument,
   DEFAULT_PERIODIC_REVIEW_INTERVAL,
-  Document,
-  DocumentCategory,
+  type Document,
+  type DocumentCategory,
   DocumentState,
-  DocumentTemplate,
+  type DocumentTemplate,
   createChangeControl,
   createControlledDocFromTemplate,
   createDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
-  AttachedData,
-  BackupClient,
-  Client as CoreClient,
-  Data,
-  MeasureContext,
-  Ref,
+  type AttachedData,
+  type BackupClient,
+  type Client as CoreClient,
+  type Data,
+  type MeasureContext,
+  type Ref,
   TxOperations,
   generateId,
   makeDocCollabId,
-  systemAccountEmail,
+  systemAccountUuid,
   type Blob
 } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
@@ -30,9 +30,9 @@ import { generateToken } from '@hcengineering/server-token'
 import { findAll, getOuterHTML } from 'domutils'
 import { parseDocument } from 'htmlparser2'
 
-import { Config } from './config'
-import { ExtractedFile } from './extract/extract'
-import { ExtractedSection } from './extract/sections'
+import { type Config } from './config'
+import { type ExtractedFile } from './extract/extract'
+import { type ExtractedSection } from './extract/sections'
 
 export default async function importExtractedFile (
   ctx: MeasureContext,
@@ -40,9 +40,9 @@ export default async function importExtractedFile (
   extractedFile: ExtractedFile
 ): Promise<void> {
   const { workspaceId } = config
-  const token = generateToken(systemAccountEmail, workspaceId)
+  const token = generateToken(systemAccountUuid, workspaceId)
   const transactorUrl = await getTransactorEndpoint(token, 'external')
-  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId.name}')`)
+  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId}')`)
   const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
 
   try {
@@ -167,8 +167,8 @@ async function createTemplateIfNotExist (
     seqNumber: 0,
     sections: 0,
     category,
-    major: 1,
-    minor: 0,
+    major: 0,
+    minor: 1,
     commentSequence: 0,
     state: DocumentState.Draft,
     author: owner,
@@ -252,7 +252,7 @@ export async function processImages (
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { storageAdapter, workspaceId, uploadURL } = config
+  const { storageAdapter, workspaceId, workspaceDataId, uploadURL } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -272,7 +272,12 @@ export async function processImages (
 
     // upload
     const uuid = generateId()
-    await storageAdapter.put(ctx, workspaceId, uuid, fileContents, mimeType, fileSize)
+    const wsIds = {
+      uuid: workspaceId,
+      dataId: workspaceDataId,
+      url: ''
+    }
+    await storageAdapter.put(ctx, wsIds, uuid, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()

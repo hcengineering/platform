@@ -21,8 +21,7 @@
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
 
   import lovePlg from '../plugin'
-  import { currentRoom, floors } from '../stores'
-  import ControlBar from './ControlBar.svelte'
+  import { floors } from '../stores'
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
@@ -39,21 +38,13 @@
 
   let editable: boolean = false
   $: editable = hasAccountRole(me, AccountRole.Maintainer)
-  let canViewMinutes: boolean = false
-  $: canViewMinutes = hasAccountRole(me, AccountRole.User)
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="beforeTitle">
-      <ViewletSelector
-        bind:viewlet
-        bind:preference
-        bind:loading
-        hidden={!canViewMinutes}
-        viewletQuery={{ attachTo: lovePlg.class.Floor }}
-      />
+      <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
     </svelte:fragment>
     <svelte:fragment slot="actions">
       {#if editable}
@@ -71,7 +62,4 @@
       <Component is={viewlet.$lookup.descriptor.component} props={{ floor, rooms }} on:open />
     {/if}
   </div>
-  {#if $currentRoom}
-    <ControlBar room={$currentRoom} />
-  {/if}
 </div>

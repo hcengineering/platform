@@ -3,11 +3,11 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
-  import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
+  import ui, { IconSize } from '@hcengineering/ui'
+  import { employeeByIdStore, PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
-  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
+  import { getPreviewPopup } from './person/utils'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
   export let showPopup: boolean = true
@@ -30,29 +30,16 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
-
+  $: person = typeof value === 'string' ? $employeeByIdStore.get(value as Ref<Employee>) : (value as Person)
   $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
-
   $: active = employeeValue?.active ?? false
-
-  function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
-    if (!active || value === undefined || !showPopup) {
-      return undefined
-    }
-    return {
-      component: EmployeePreviewPopup,
-      props: { employeeId: value._id },
-      timeout: 300
-    }
-  }
 </script>
 
 <PersonPresenter
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
-  customTooltip={getPreviewPopup(active, employeeValue)}
+  customTooltip={getPreviewPopup(employeeValue, showPopup)}
   {shouldShowAvatar}
   {shouldShowName}
   {avatarSize}

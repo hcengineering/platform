@@ -50,6 +50,11 @@
     "RemovedObject": "移除 {object}",
     "ChangedObject": "更改 {object}",
     "UnsetObject": "取消设置 {object}",
-    "UpdatedObject": "更新 {object}"
+    "UpdatedObject": "更新 {object}",
+    "NewObjectType": "新 {type}: {title}",
+    "RemovedObjectType": "移除 {type} : {title}",
+    "AttributeSetTo": "{name} 设置为 {value}",
+    "AddedTag": "添加标签: {title}",
+    "RemovedTag": "移除标签: {title}"
   }
 }

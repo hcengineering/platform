@@ -85,9 +85,14 @@
     "WithAudio": "Inclure l'audio du système",
     "ShareWithAudioTooltip": "Partagez votre écran avec l'audio du système. Redémarrez le partage d’écran pour appliquer les modifications.",
     "MicPermission": "Microphone non trouvé, vérifiez les autorisations du navigateur",
-    "CamPermission": "Caméra non trouvée, vérifiez les autorisations du navigateur"
-  },
-  "status": {
-    "RoomRequired": "La pièce est requise"
+    "CamPermission": "Caméra non trouvée, vérifiez les autorisations du navigateur",
+    "SearchMeetingMinutes": "Rechercher des minutes de réunion...",
+    "Sharing": "Partage...",
+    "Browser": "Navigateur",
+    "Monitor": "Moniteur",
+    "Window": "Fenêtre",
+    "MeetingEmptyTitle": "Réunion terminée ?",
+    "MeetingEmptyMessage": "Tous les participants sont partis. Vous serez déconnecté dans 1 minute. Souhaitez-vous rester ?",
+    "StayInRoom": "Rester dans la salle"
   }
 }

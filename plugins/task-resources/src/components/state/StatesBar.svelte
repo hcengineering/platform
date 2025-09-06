@@ -84,7 +84,9 @@
   ): string {
     const type = _space ? typeStore.get(_space.type) : undefined
     const category = state.category ? categories.get(state.category) : undefined
-    const targetColor = type?.statuses?.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
+    const statusColor = type?.statuses?.find((p) => p._id === state._id)?.color
+    const targetColor =
+      statusColor === undefined || typeof statusColor !== 'string' ? statusColor : state.color ?? category?.color
     return getPlatformColor(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
 </script>

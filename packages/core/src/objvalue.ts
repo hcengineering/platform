@@ -1,5 +1,5 @@
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Doc } from './classes'
+import { type Doc } from './classes'
 import { clone } from './clone'
 import core from './component'
 

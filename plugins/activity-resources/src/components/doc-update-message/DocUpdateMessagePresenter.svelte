@@ -21,9 +21,8 @@
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
+  import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Component, ShowMore } from '@hcengineering/ui'
@@ -37,6 +36,7 @@
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
   import { getIsTextType } from '../../utils'
+  import { Person } from '@hcengineering/contact'
 
   export let value: DisplayDocUpdateMessage
   export let doc: Doc | undefined = undefined
@@ -51,7 +51,7 @@
   export let actions: Action[] = []
   export let skipLabel = false
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
   export let type: ActivityMessageViewType = 'default'
   export let readonly = false
@@ -73,7 +73,6 @@
   $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
-  let person: Person | undefined = undefined
   let viewlet: DocUpdateMessageViewlet | undefined
   let attributeModel: AttributeModel | undefined = undefined
   let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -103,24 +102,13 @@
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: person = getPerson(value.createdBy, $personAccountByIdStore, $personByIdStore)
-
-  function getPerson (
-    _id: Ref<Account> | undefined,
-    accountById: Map<Ref<PersonAccount>, PersonAccount>,
-    personById: Map<Ref<Person>, Person>
-  ): Person | undefined {
-    if (_id === undefined) {
-      return undefined
-    }
-
-    const personAccount = accountById.get(_id as Ref<PersonAccount>)
-
-    if (personAccount === undefined) {
-      return undefined
-    }
-
-    return personById.get(personAccount.person)
+  let person: Person | undefined
+  $: if (value.createdBy !== undefined) {
+    getPersonByPersonIdCb(value.createdBy, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
   }
 
   $: void loadObject(value.objectId, value.objectClass, doc)

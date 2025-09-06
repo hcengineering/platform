@@ -131,6 +131,7 @@
     "ViewingThreadFromArchivedChannel": "Prohlížíte vlákno z archivovaného kanálu",
     "ViewingArchivedChannel": "Prohlížíte archivovaný kanál",
     "OpenChatInSidebar": "Otevřít chat v postranním panelu",
-    "NoThreadsYet": "Zatím nejsou žádné vlákna."
+    "NoThreadsYet": "Zatím nejsou žádné vlákna.",
+    "SummarizeMessages": "Shrnout diskuzi"
   }
 }

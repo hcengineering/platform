@@ -13,62 +13,78 @@
 
 import activity from '@hcengineering/activity'
 import {
-  cardId,
-  type CardSpace,
-  DOMAIN_CARD,
   type Card,
+  cardId,
+  type CardNavigation,
+  type CardSection,
+  type CardSpace,
+  type CardViewDefaults,
+  type CreateCardExtension,
+  type CanCreateCardResource,
+  DOMAIN_CARD,
+  type FavoriteCard,
   type MasterTag,
   type ParentInfo,
+  type Role,
   type Tag
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
+  type Blobs,
   ClassifierKind,
+  type CollectionSize,
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
-  SortingOrder,
-  type Blobs,
-  type CollectionSize,
   type MarkupBlobRef,
+  type MixinData,
   type Rank,
-  type Ref
+  type Ref,
+  SortingOrder
 } from '@hcengineering/core'
 import {
+  type Builder,
   Collection,
+  Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
   TypeCollaborativeDoc,
+  TypeNumber,
   TypeRef,
   TypeString,
-  UX,
-  type Builder
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import { TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
-import view, { createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
-import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import view, { createAction, type Viewlet } from '@hcengineering/model-view'
+import workbench, { WidgetType } from '@hcengineering/model-workbench'
+import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import card from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { cardId } from '@hcengineering/card'
 
 @Model(card.class.MasterTag, core.class.Class)
 export class TMasterTag extends TClass implements MasterTag {
   color?: number
+  background?: number
   removed?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
 export class TTag extends TMixin implements Tag {
   color?: number
+  background?: number
 }
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
@@ -97,6 +113,17 @@ export class TCard extends TDoc implements Card {
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
 
+  @Prop(TypeString(), view.string.Icon)
+  @Hidden()
+    icon?: Asset
+
+  @Prop(TypeNumber(), view.string.Color)
+  @Hidden()
+    color?: number
+
+  @Hidden()
+    readonly?: boolean
+
   children?: number
 
   parentInfo!: ParentInfo[]
@@ -115,39 +142,142 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
   component!: AnyComponent
 }
 
+@Model(card.class.CardSection, core.class.Doc, DOMAIN_MODEL)
+export class TCardSection extends TDoc implements CardSection {
+  label!: IntlString
+  component!: AnyComponent
+  order!: number
+  navigation!: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
+}
+
+@Mixin(card.mixin.CardViewDefaults, card.class.MasterTag)
+export class TCardViewDefaults extends TMasterTag implements CardViewDefaults {
+  defaultSection!: Ref<CardSection>
+  defaultNavigation?: string
+}
+
+@Model(card.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)
+export class TRole extends TAttachedDoc implements Role {
+  name!: string
+  declare attachedTo: Ref<MasterTag | Tag>
+  declare collection: 'roles'
+}
+
+@Model(card.class.FavoriteCard, preference.class.Preference)
+export class TFavoriteCard extends TPreference implements FavoriteCard {
+  declare attachedTo: Ref<Card>
+  application!: string
+}
+
+@Mixin(card.mixin.CreateCardExtension, card.class.MasterTag)
+export class TCreateCardExtension extends TMasterTag implements CreateCardExtension {
+  component?: AnyComponent
+  canCreate?: CanCreateCardResource
+}
+
 export * from './migration'
 
 const listConfig: (BuildModelKey | string)[] = [
-  { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
-  { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+  { key: '' },
+  { key: '_class' },
   { key: '', displayProps: { grow: true } },
   {
     key: '',
-    presenter: view.component.RolePresenter,
+    presenter: card.component.CardTagsColored,
     label: card.string.Tags,
-    props: { fullSize: true },
-    displayProps: { key: 'tags', fixed: 'right' }
+    props: {
+      showType: false
+    },
+    displayProps: { optional: true }
+  },
+  {
+    key: '',
+    presenter: card.component.LabelsPresenter,
+    label: card.string.Labels,
+    props: { fullSize: true }
   },
   {
     key: 'modifiedOn',
-    displayProps: { fixed: 'right', dividerBefore: true }
+    displayProps: { fixed: 'right', key: 'modifiedOn', dividerBefore: true }
+  },
+  {
+    key: 'modifiedBy',
+    props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
+  }
+]
+
+const favoritesViewletConfig: (BuildModelKey | string)[] = [
+  {
+    displayProps: {
+      fixed: 'left',
+      key: '$lookup.attachedTo.createdBy'
+    },
+    key: '$lookup.attachedTo.createdBy'
+  },
+  {
+    displayProps: {
+      fixed: 'left',
+      key: ''
+    },
+    key: '',
+    label: view.string.Title,
+    props: {
+      showParent: false
+    }
+  },
+  { key: '$lookup.attachedTo._class', label: card.string.MasterTag, displayProps: { fixed: 'left', key: '_class' } },
+  {
+    displayProps: {
+      grow: true
+    },
+    key: ''
+  },
+  {
+    displayProps: {
+      fixed: 'left',
+      key: 'tags'
+    },
+    key: '$lookup.attachedTo',
+    label: card.string.Tags,
+    props: {
+      showType: false
+    },
+    presenter: card.component.CardTagsColored
+  },
+  {
+    key: '$lookup.attachedTo',
+    presenter: card.component.LabelsPresenter,
+    label: card.string.Labels,
+    props: { fullSize: true, key: 'labels' }
+  },
+  {
+    key: '$lookup.attachedTo.parent'
+  },
+  {
+    key: '$lookup.attachedTo.createdOn'
   }
 ]
 
 export function createSystemType (
   builder: Builder,
   type: Ref<MasterTag>,
+  icon: Asset = card.icon.MasterTag,
   label: IntlString,
-  icon: Asset = card.icon.MasterTag
+  pluralLabel?: IntlString,
+  viewDefaults?: MixinData<MasterTag, CardViewDefaults>,
+  background?: number
 ): void {
   builder.createDoc(
     card.class.MasterTag,
     core.space.Model,
     {
       label,
+      pluralLabel,
       extends: card.class.Card,
       icon,
-      kind: ClassifierKind.CLASS
+      kind: ClassifierKind.CLASS,
+      background
     },
     type
   )
@@ -163,9 +293,22 @@ export function createSystemType (
       hiddenKeys: ['content', 'title']
     },
     config: [
-      '',
+      { key: '', props: { shrink: true } },
       '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      {
+        key: '',
+        presenter: card.component.CardTagsColored,
+        label: card.string.Tags,
+        props: {
+          showType: false
+        }
+      },
+      {
+        key: '',
+        presenter: card.component.LabelsPresenter,
+        label: card.string.Labels,
+        props: { fullSize: true }
+      },
       'modifiedOn'
     ]
   })
@@ -174,7 +317,7 @@ export function createSystemType (
     attachTo: type,
     descriptor: view.viewlet.List,
     viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
       orderBy: [
         ['modifiedOn', SortingOrder.Descending],
         ['rank', SortingOrder.Ascending]
@@ -186,13 +329,52 @@ export function createSystemType (
     },
     config: listConfig
   })
+
+  if (viewDefaults !== undefined) {
+    builder.mixin(type, card.class.MasterTag, card.mixin.CardViewDefaults, viewDefaults)
+  }
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection, TCardSpace)
+  builder.createModel(
+    TMasterTag,
+    TTag,
+    TCard,
+    MasterTagEditorSection,
+    TCardSpace,
+    TRole,
+    TCardSection,
+    TCardViewDefaults,
+    TFavoriteCard,
+    TCreateCardExtension
+  )
 
-  createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
-  createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
+  defineTabs(builder)
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIcon, {
+    component: card.component.CardIcon
+  })
+
+  createSystemType(
+    builder,
+    card.types.File,
+    card.icon.File,
+    attachment.string.File,
+    attachment.string.Files,
+    undefined,
+    PaletteColorIndexes.Orchid
+  )
+  createSystemType(
+    builder,
+    card.types.Document,
+    card.icon.Document,
+    card.string.Document,
+    card.string.Documents,
+    {
+      defaultSection: card.section.Content
+    },
+    PaletteColorIndexes.Arctic
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: card.class.CardSpace,
@@ -245,7 +427,6 @@ export function createModel (builder: Builder): void {
     {
       label: card.string.CardApplication,
       icon: card.icon.Card,
-      accessLevel: AccountRole.User,
       alias: cardId,
       hidden: false,
       locationResolver: card.resolver.Location,
@@ -254,7 +435,6 @@ export function createModel (builder: Builder): void {
         specials: [
           {
             id: 'browser',
-            accessLevel: AccountRole.User,
             label: core.string.Spaces,
             icon: view.icon.List,
             component: workbench.component.SpecialView,
@@ -272,7 +452,7 @@ export function createModel (builder: Builder): void {
             label: core.string.Spaces,
             spaceClass: card.class.CardSpace,
             addSpaceLabel: core.string.Space,
-            icon: card.icon.Card,
+            icon: card.icon.Space,
             // intentionally left empty in order to make space presenter working
             specials: []
           }
@@ -357,7 +537,14 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         '_class',
-        { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+        {
+          key: '',
+          presenter: card.component.CardTagsColored,
+          label: card.string.Tags,
+          props: {
+            showType: false
+          }
+        },
         'modifiedOn'
       ]
     },
@@ -371,7 +558,7 @@ export function createModel (builder: Builder): void {
       attachTo: card.class.Card,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
@@ -394,7 +581,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       variant: 'child',
       viewOptions: {
-        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
@@ -412,6 +599,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
+  })
+
+  builder.mixin(card.class.FavoriteCard, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: card.component.FavoriteCardPresenter
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
@@ -664,6 +855,144 @@ export function createModel (builder: Builder): void {
     id: 'relations',
     label: core.string.Relations,
     component: card.component.RelationsSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'roles',
+    label: core.string.Roles,
+    component: card.component.RolesSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'views',
+    label: card.string.Views,
+    component: card.component.ViewsSection
+  })
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: card.string.Cards,
+      type: WidgetType.Flexible,
+      icon: card.icon.Card,
+      component: card.component.CardWidget,
+      tabComponent: card.component.CardWidgetTab
+    },
+    card.ids.CardWidget
+  )
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.CustomObjectLinkProvider, {
+    match: card.function.CardCustomLinkMatch,
+    encode: card.function.CardCustomLinkEncode
+  })
+
+  createPublicLinkAction(builder, card.class.Card, card.action.PublicLink)
+}
+
+function defineTabs (builder: Builder): void {
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Properties,
+      component: card.sectionComponent.PropertiesSection,
+      order: 100,
+      navigation: []
+    },
+    card.section.Properties
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Content,
+      component: card.sectionComponent.ContentSection,
+      order: 200,
+      navigation: []
+    },
+    card.section.Content
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Children,
+      component: card.sectionComponent.ChildrenSection,
+      order: 400,
+      navigation: []
+    },
+    card.section.Children
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: attachment.string.Attachments,
+      component: card.sectionComponent.AttachmentsSection,
+      order: 300,
+      navigation: []
+    },
+    card.section.Attachments
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: core.string.Relations,
+      component: card.sectionComponent.RelationsSection,
+      order: 500,
+      navigation: [],
+      checkVisibility: card.function.CheckRelationsSectionVisibility
+    },
+    card.section.Relations
+  )
+
+  builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {
+    attachTo: card.class.FavoriteCard,
+    descriptor: view.viewlet.Table,
+    viewOptions: {
+      groupBy: [],
+      orderBy: [
+        ['$lookup.attachedTo.modifiedOn', SortingOrder.Descending],
+        ['$lookup.attachedTo.title', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['$lookup.attachedTo.content', '$lookup.attachedTo.title', 'attachedTo']
+    },
+    config: favoritesViewletConfig,
+    options: {
+      lookup: {
+        attachedTo: card.class.Card
+      } as any
+    }
+  })
+
+  builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {
+    attachTo: card.class.FavoriteCard,
+    descriptor: view.viewlet.List,
+    configOptions: {
+      hiddenKeys: ['$lookup.attachedTo.content', '$lookup.attachedTo.title', 'attachedTo']
+    },
+    viewOptions: {
+      groupBy: [],
+      orderBy: [
+        ['$lookup.attachedTo.modifiedOn', SortingOrder.Descending],
+        ['$lookup.attachedTo.title', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    config: favoritesViewletConfig,
+    options: {
+      lookup: {
+        attachedTo: card.class.Card
+      } as any
+    }
   })
 }
 

@@ -5,6 +5,7 @@
 export interface Config {
   Port: number
   Secret: string
+  AccountsUrl: string
   AllowedHostnames: string[]
 }
 
@@ -16,6 +17,7 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4005,
     Secret: process.env.SECRET,
+    AccountsUrl: process.env.ACCOUNTS_URL,
     AllowedHostnames: allowedHostnames == null ? [] : allowedHostnames.split(',')
   }
 

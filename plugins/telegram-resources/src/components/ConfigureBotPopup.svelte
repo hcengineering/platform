@@ -102,7 +102,7 @@
           Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ code: event.detail, account: getCurrentAccount()._id })
+        body: JSON.stringify({ code: event.detail, account: getCurrentAccount().primarySocialId })
       })
       isCodeValid = res.ok
       if (!res.ok) {
@@ -135,8 +135,7 @@
         <div class="title overflow-label mb-4">
           <div class="flex-row-center flex-gap-2">
             {#if info.photoId !== ''}
-              {@const photoUrl = concatLink(url, `/photo/${info.photoId}`)}
-              <img class="photo" src={photoUrl} alt="" />
+              <img class="photo" src={concatLink(url, `/photo/${info.photoId}`)} alt="" />
             {:else}
               <Icon icon={TelegramColor} size="x-large" />
             {/if}

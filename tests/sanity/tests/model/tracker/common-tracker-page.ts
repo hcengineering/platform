@@ -181,7 +181,7 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async openLinkFromActivitiesByText (linkText: string): Promise<void> {
-    await this.linkInActivity().filter({ hasText: linkText }).click()
+    await this.linkInActivity().filter({ hasText: linkText }).first().click()
   }
 
   async addCommentWithImage (comment: string, fileName: string): Promise<void> {

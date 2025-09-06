@@ -29,7 +29,8 @@ export default mergeIds(settingId, setting, {
     ManageSpaceTypes: '' as AnyComponent,
     ManageSpaceTypesTools: '' as AnyComponent,
     ManageSpaceTypeContent: '' as AnyComponent,
-    Spaces: '' as AnyComponent
+    Spaces: '' as AnyComponent,
+    AddSocialId: '' as AnyComponent
   },
   string: {
     IntegrationDisabled: '' as IntlString,
@@ -68,6 +69,7 @@ export default mergeIds(settingId, setting, {
     LeaveDescr: '' as IntlString,
     Select: '' as IntlString,
     AddOwner: '' as IntlString,
+    ReadonlyGuest: '' as IntlString,
     User: '' as IntlString,
     Maintainer: '' as IntlString,
     Guest: '' as IntlString,
@@ -114,11 +116,29 @@ export default mergeIds(settingId, setting, {
     DeleteSpaceTypeConfirm: '' as IntlString,
     WorkspaceName: '' as IntlString,
     Workspace: '' as IntlString,
+    Calendar: '' as IntlString,
+    StartOfTheWeek: '' as IntlString,
+    SystemSetupString: '' as IntlString,
+    DefaultString: '' as IntlString,
     WorkspaceNamePattern: '' as IntlString,
     DisablePermissions: '' as IntlString,
     EnablePermissions: '' as IntlString,
     DisablePermissionsConfirmation: '' as IntlString,
     EnablePermissionsConfirmation: '' as IntlString,
-    BetaWarning: '' as IntlString
+    BetaWarning: '' as IntlString,
+    GuestAccess: '' as IntlString,
+    GuestAccessDescription: '' as IntlString,
+    GuestSignUpDescription: '' as IntlString,
+    GuestChannelsDescription: '' as IntlString,
+    GuestChannelsArrayLabel: '' as IntlString,
+    ManageIdentities: '' as IntlString,
+    AddNew: '' as IntlString,
+    Release: '' as IntlString,
+    ReleaseSocialId: '' as IntlString,
+    ReleaseSocialIdConfirm: '' as IntlString,
+    ReleasePrimarySocialId: '' as IntlString,
+    ReleasePrimarySocialIdConfirm: '' as IntlString,
+    Login: '' as IntlString,
+    Primary: '' as IntlString
   }
 })

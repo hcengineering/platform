@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "Connect your Huly mailbox to send, receive, and manage emails",
+    "Connect": "Connect",
+    "ConnectHulyMail": "Connect Huly mailbox",
+    "Cancel": "Cancel",
+    "Email": "Email",
+    "Status": "Status",
+    "FailedToConnect": "Huly mail service is not available",
+    "TotalMessages": "Total messages:",
+    "Configure": "Configure Huly mail",
+    "ChannelSpace": "Space for message channel",
+    "PersonSpaceInfo": "Mail will be available to you",
+    "SharedSpaceInfo": "Mail will be available to all space participants",
+    "Mailbox": "Mailbox",
+    "MailboxesNotConfigured": "No mailboxes found",
+    "ConfigureMailBoxes": "Please add a mailbox in the `Mailboxes` section to get started"
+  }
+}

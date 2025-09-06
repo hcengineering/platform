@@ -42,14 +42,6 @@
 
   const client = getClient()
 
-  let spacePermissions = descriptor.availablePermissions
-  if (spaceType._class === core.class.SpaceType) {
-    const additionalPermissionsQuery = createQuery()
-    additionalPermissionsQuery.query(core.class.Permission, { scope: 'workspace' }, (res) => {
-      spacePermissions = descriptor.availablePermissions.concat(res.map((r) => r._id))
-    })
-  }
-
   let role: Role | undefined
   const roleQuery = createQuery()
   $: roleQuery.query(core.class.Role, { _id: objectId }, (res) => {
@@ -74,7 +66,7 @@
       ObjectBoxPopup,
       {
         _class: core.class.Permission,
-        docQuery: { _id: { $in: spacePermissions } },
+        docQuery: { _id: { $in: descriptor.availablePermissions } },
         multiSelect: true,
         allowDeselect: true,
         selectedObjects: role.permissions

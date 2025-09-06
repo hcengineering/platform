@@ -52,6 +52,7 @@
         set.add(item.id)
       }
       selected = Array.from(set)
+      dispatch('update', selected)
     } else {
       dispatch('close', item.id)
     }

@@ -16,18 +16,22 @@
   import { EditBox, ModernButton } from '@hcengineering/ui'
   import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect, isConnected } from '../utils'
+  import { getRoomName, tryConnect } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
+  import { lkSessionConnected } from '../liveKitClient'
 
   export let object: Room
 
   const dispatch = createEventDispatcher()
 
-  $: roomName = getRoomName(object, $personByIdStore)
+  let roomName: string
+  $: void getRoomName(object).then((name) => {
+    roomName = name
+  })
+
   let connecting = false
 
   onMount(() => {
@@ -40,7 +44,6 @@
     tryConnecting = true
     const place = $selectedRoomPlace
     await tryConnect(
-      $personByIdStore,
       $myInfo,
       object,
       $infos,
@@ -52,7 +55,7 @@
     selectedRoomPlace.set(undefined)
   }
 
-  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$isConnected)
+  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$lkSessionConnected)
 
   let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
     ? love.string.JoinMeeting
@@ -98,7 +101,7 @@
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
-    {#if showConnectionButton(object, connecting, $isConnected, $infos, $myOffice, $currentRoom)}
+    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>

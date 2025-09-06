@@ -17,20 +17,22 @@
 import { type IntlString } from '@hcengineering/platform'
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
+import LoginOtpForm from './components/LoginOtpForm.svelte'
 import {
   changePassword,
-  createMissingEmployee,
   fetchWorkspace,
   getInviteLink,
-  getWorkspaces,
-  leaveWorkspace,
-  resendInvite,
+  getPerson,
   selectWorkspace,
-  sendInvite
+  exchangeGuestToken,
+  getWorkspaces,
+  sendInvite,
+  leaveWorkspace,
+  resendInvite
 } from './utils'
 
 import { type Pages, pages } from '@hcengineering/login'
-export { type Pages, pages }
+export { pages, type Pages }
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -41,14 +43,16 @@ export { type Pages, pages }
 export default async () => ({
   component: {
     LoginApp,
+    LoginOtpForm,
     InviteLink
   },
   function: {
     LeaveWorkspace: leaveWorkspace,
     ChangePassword: changePassword,
     SelectWorkspace: selectWorkspace,
+    ExchangeGuestToken: exchangeGuestToken,
     FetchWorkspace: fetchWorkspace,
-    CreateEmployee: createMissingEmployee,
+    GetPerson: getPerson,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
     ResendInvite: resendInvite,

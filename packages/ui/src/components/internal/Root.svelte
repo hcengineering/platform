@@ -1,16 +1,17 @@
 <script lang="ts">
   import platform, { OK, PlatformEvent, Severity, Status, addEventListener, getMetadata } from '@hcengineering/platform'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { Theme } from '@hcengineering/theme'
+  import { Theme, themeStore } from '@hcengineering/theme'
   import {
     IconArrowLeft,
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    checkAdaptiveMatching,
+    getLocalWeekStart
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -18,12 +19,54 @@
   import Label from '../Label.svelte'
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
-  import FontSizeSelector from './FontSizeSelector.svelte'
-  import LangSelector from './LangSelector.svelte'
   import RootBarExtension from './RootBarExtension.svelte'
-  import ThemeSelector from './ThemeSelector.svelte'
+  import Settings from './Settings.svelte'
+  import { isAppFocusedStore } from '../../stores'
 
   let application: AnyComponent | undefined
+
+  function updateAppFocused (isFocused: boolean): void {
+    const isFocusedCurrent = $isAppFocusedStore
+    const isFocusedNew = isFocused && !document.hidden && document.hasFocus()
+    if (isFocusedCurrent !== isFocusedNew) {
+      isAppFocusedStore.set(isFocusedNew)
+    }
+  }
+  function visibilityChangeHandler (): void {
+    updateAppFocused(!document.hidden)
+  }
+  function handleWindowFocus (): void {
+    updateAppFocused(true)
+  }
+  function handleWindowBlur (): void {
+    updateAppFocused(false)
+  }
+  function handleWindowBeforeUnload (): void {
+    // Many text inputs across the platform rely on the blur event to persist state,
+    // but they don’t account for cases where the tab is forcefully closed, navigated away from, or destroyed.
+    // Handling beforeunload for every input individually is impractical,
+    // so leveraging existing blur behavior is a more maintainable approach.
+    // While not foolproof—since most blur handlers are async and may not complete in time, it’s sufficient for most cases.
+    // A more robust solution, such as tracking pending async mutations to block tab unload,
+    // would require significant reworks across the board.
+    ;(document.activeElement as HTMLElement)?.blur?.()
+  }
+
+  onMount(() => {
+    document.addEventListener('visibilitychange', visibilityChangeHandler)
+    window.addEventListener('wheel', handleWindowFocus)
+    window.addEventListener('focus', handleWindowFocus)
+    window.addEventListener('blur', handleWindowBlur)
+    window.addEventListener('beforeunload', handleWindowBeforeUnload)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('visibilitychange', visibilityChangeHandler)
+    window.removeEventListener('wheel', handleWindowFocus)
+    window.removeEventListener('focus', handleWindowFocus)
+    window.removeEventListener('blur', handleWindowBlur)
+    window.removeEventListener('beforeunload', handleWindowBeforeUnload)
+  })
 
   onDestroy(
     location.subscribe((loc) => {
@@ -63,12 +106,28 @@
   )
 
   let status = OK
+  let readonlyAccount = false
+  let systemAccount = false
   let maintenanceTime = -1
+  let maintenanceMessage: string | undefined
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
     if (_status.code === platform.status.MaintenanceWarning) {
       maintenanceTime = _status.params.time
+      maintenanceMessage = _status.params.message
     } else {
+      if (_status.code === platform.status.RegularAccount) {
+        readonlyAccount = false
+        _status = OK
+      }
+      if (readonlyAccount) return
+      if (_status.code === platform.status.ReadOnlyAccount) {
+        readonlyAccount = true
+      }
+      if (_status.code === platform.status.SystemAccount) {
+        systemAccount = true
+        return
+      }
       status = _status
     }
   })
@@ -88,6 +147,8 @@
   $: $deviceInfo.isMobile = isMobile
   $: $deviceInfo.minWidth = docWidth <= 480
   $: $deviceInfo.twoRows = docWidth <= 680
+  $: $deviceInfo.language = $themeStore.language
+  $: $deviceInfo.fontSize = $themeStore.fontSize
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
 
@@ -141,14 +202,25 @@
     $deviceInfo.isMobile &&
     (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+  $deviceInfo.firstDayOfWeek =
+    parseInt(savedFirstDayOfWeek === 'system' ? weekInfoFirstDay.toString() : savedFirstDayOfWeek, 10) ??
+    weekInfoFirstDay
 </script>
 
-<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
+<svelte:window
+  bind:innerWidth={docWidth}
+  bind:innerHeight={docHeight}
+  on:dragover|preventDefault
+  on:drop|preventDefault
+/>
 
 <Theme>
   <div id="ui-root" class:mobile-theme={isMobile}>
     <div class="antiStatusBar">
-      <div class="flex-row-center h-full content-color gap-3 pl-4">
+      <div class="flex-row-center h-full content-color gap-3 px-4">
         {#if desktopPlatform}
           <div class="history-box flex-row-center gap-3">
             <button
@@ -175,7 +247,7 @@
         {/if}
         {#if !secondRow}
           <div
-            class="flex-row-center left-items flex-gap-0-5"
+            class="flex-row-center left-items flex-gap-1"
             class:ml-14={appsMini}
             style:-webkit-app-region={'no-drag'}
           >
@@ -188,23 +260,29 @@
         >
           {#if maintenanceTime > 0}
             <div class="flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
-              <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
+              {#if maintenanceMessage !== undefined && maintenanceMessage.trim() !== ''}
+                {maintenanceMessage}
+              {:else}
+                <Label label={platform.status.MaintenanceWarning} />
+              {/if}
+              <Label label={platform.status.MaintenanceWarningTime} params={{ time: maintenanceTime }} />
             </div>
           {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
           {/if}
+          {#if systemAccount}
+            <div class="flex-row-center maintenanceScheduled">
+              <Label label={platform.status.SystemAccount} />
+            </div>
+          {/if}
         </div>
-        <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
-          <div class="clock">
-            <Clock />
-          </div>
-          <div class="flex-row-center gap-statusbar">
+        <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
+          <Settings />
+          <Clock />
+          <div class="flex-row-center flex-gap-0-5">
             {#if !secondRow}
               <RootBarExtension position="right" />
             {/if}
-            <FontSizeSelector />
-            <ThemeSelector />
-            <LangSelector />
           </div>
         </div>
       </div>
@@ -237,8 +315,8 @@
     display: flex;
     flex-direction: column;
     // height: 100vh;
-    height: 100%;
-    height: 100dvh;
+    height: calc(100% - var(--huly-top-indent, 0rem));
+    height: calc(100dvh - var(--huly-top-indent, 0rem));
     // height: var(--app-height);
 
     .antiStatusBar {
@@ -250,11 +328,11 @@
       font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
-      // border-bottom: 1px solid var(--theme-navpanel-divider);
+      z-index: 1;
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: 4.625rem;
+        margin-left: var(--huly-history-box-left-indent, 4.625rem);
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;
@@ -275,25 +353,11 @@
         font-size: 14px;
         color: var(--theme-content-color);
       }
-      .clock {
-        margin: 0 12px 0 8px;
-      }
 
       .second-row {
         display: none;
       }
 
-      @media (max-width: 480px) {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 2px 0;
-        width: 100%;
-
-        .second-row {
-          display: flex;
-        }
-      }
       @media print {
         display: none;
       }
@@ -316,5 +380,19 @@
 
   .left-items {
     overflow-x: auto;
+  }
+
+  @media (max-width: 480px) {
+    #ui-root:has(.workbench-container) .antiStatusBar {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 2px 0;
+      width: 100%;
+
+      .second-row {
+        display: flex;
+      }
+    }
   }
 </style>

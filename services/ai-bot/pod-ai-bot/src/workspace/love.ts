@@ -12,21 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
 import chunter from '@hcengineering/chunter'
-import { Person } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
   Markup,
   MeasureContext,
+  PersonId,
   Ref,
   TxCreateDoc,
   TxCUD,
   TxOperations,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  WorkspaceUuid,
+  pickPrimarySocialId,
+  AccountUuid
 } from '@hcengineering/core'
 import love, {
   getFreeRoomPlace,
@@ -46,10 +49,11 @@ export class LoveController {
 
   private participantsInfo: ParticipantInfo[] = []
   private rooms: Room[] = []
-  private readonly meetingMinutes: MeetingMinutes[] = []
+  private readonly socialIdByPerson = new Map<Ref<Person>, PersonId>()
+  private meetingMinutes: MeetingMinutes[] = []
 
   constructor (
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly ctx: MeasureContext,
     private readonly token: string,
     private readonly client: TxOperations,
@@ -167,7 +171,31 @@ export class LoveController {
       await stopTranscription(this.token, getTokenRoomName(this.workspace, room.name, room._id), room.name)
     }
 
+    this.meetingMinutes = this.meetingMinutes.filter((m) => m.attachedTo !== roomId)
     this.connectedRooms.delete(roomId)
+  }
+
+  async getSocialId (person: Ref<Person>): Promise<PersonId | undefined> {
+    if (!this.socialIdByPerson.has(person)) {
+      const identities = await this.client.findAll(contact.class.SocialIdentity, {
+        attachedTo: person,
+        attachedToClass: contact.class.Person,
+        verifiedOn: { $gt: 0 }
+      })
+      if (identities.length > 0) {
+        const id = pickPrimarySocialId(identities)._id
+        this.socialIdByPerson.set(person, id)
+      }
+    }
+
+    const socialId = this.socialIdByPerson.get(person)
+    if (socialId === undefined) {
+      return
+    }
+
+    this.socialIdByPerson.set(person, socialId)
+
+    return socialId
   }
 
   async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {
@@ -178,10 +206,12 @@ export class LoveController {
       return
     }
 
-    const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
-    const doc = await this.getMeetingMinutes(room)
+    const socialId = await this.getSocialId(person)
+    if (socialId === undefined) return
 
+    const doc = await this.getMeetingMinutes(room)
     if (doc === undefined) return
+
     const op = this.client.apply(undefined, undefined, true)
 
     await op.addCollection(
@@ -195,7 +225,7 @@ export class LoveController {
       },
       undefined,
       undefined,
-      personAccount._id
+      socialId
     )
     await op.commit()
   }
@@ -244,6 +274,7 @@ export class LoveController {
       room: room._id,
       person: this.currentPerson._id,
       name: this.currentPerson.name,
+      account: (this.currentPerson.personUuid as AccountUuid) ?? null,
       sessionId: null
     })
   }
@@ -266,7 +297,7 @@ export class LoveController {
   }
 }
 
-function getTokenRoomName (workspace: string, roomName: string, roomId: Ref<Room>): string {
+function getTokenRoomName (workspace: WorkspaceUuid, roomName: string, roomId: Ref<Room>): string {
   return `${workspace}_${roomName}_${roomId}`
 }
 

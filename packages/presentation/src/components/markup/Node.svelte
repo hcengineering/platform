@@ -19,6 +19,7 @@
   import NodeContent from './NodeContent.svelte'
 
   export let node: MarkupNode
+  export let single = true
   export let preview = false
 </script>
 
@@ -27,9 +28,9 @@
 
   {#if marks.length > 0}
     <NodeMarks {marks}>
-      <NodeContent {node} {preview} />
+      <NodeContent {node} {single} {preview} />
     </NodeMarks>
   {:else}
-    <NodeContent {node} {preview} />
+    <NodeContent {node} {single} {preview} />
   {/if}
 {/if}

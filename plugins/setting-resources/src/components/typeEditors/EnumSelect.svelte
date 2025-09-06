@@ -31,11 +31,13 @@
   export let label: IntlString
   export let value: Enum | undefined
   export let focusIndex = -1
+  export let width: string | undefined = undefined
   export let focus = false
   export let create: ObjectCreate | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let shrink: number = 0
 
   const _class: Ref<Class<Enum>> = core.class.Enum
   const query: DocumentQuery<Enum> = {}
@@ -67,9 +69,12 @@
 <Button
   {focus}
   {focusIndex}
+  justify="left"
   icon={IconFolder}
   {size}
+  {width}
   {kind}
+  {shrink}
   showTooltip={{ label, direction: labelDirection }}
   on:click={handleClick}
 >

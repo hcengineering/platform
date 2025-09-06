@@ -26,6 +26,7 @@ import { start } from './server'
 
 export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'collaborator')
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 

@@ -1,14 +1,14 @@
 //
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -115,7 +115,7 @@
       background-color: var(--theme-navpanel-selected);
       border: 1px solid var(--global-subtle-ui-BorderColor);
       border-radius: var(--extra-small-BorderRadius);
-      
+
       &.folder {
         background-color: var(--theme-statusbar-color);
         border-color: var(--global-surface-01-BorderColor);
@@ -131,7 +131,7 @@
       color: var(--global-tertiary-TextColor);
       border-radius: var(--extra-small-BorderRadius);
     }
-    &__tools {
+    &__tools, &__actions {
       display: none;
       align-items: center;
       flex-shrink: 0;
@@ -153,6 +153,11 @@
     &:hover {
       .hulyNavGroup-header__tools { display: flex; }
     }
+
+    &:hover {
+      .hulyNavGroup-header__actions { display: flex; }
+    }
+
     &.showMenu,
     &.highlighted,
     &.selected {
@@ -167,11 +172,17 @@
       &:not(:has(.nested)) { margin-bottom: var(--spacing-1_5); }
     }
   }
-  &.nested .hulyNavGroup-header {
+  &.nested .hulyNavGroup-header,
+  &.selectableHeader .hulyNavGroup-header {
     .hulyNavGroup-header__icon { margin: 0 var(--spacing-0_25) 0 0; }
     .hulyNavGroup-header__label { padding: 0 var(--spacing-0_75) 0 0; }
     &.isOpen .hulyNavGroup-header__label { background-color: var(--global-ui-BackgroundColor); }
   }
+
+  &.selectableHeader.noIcon {
+    .hulyNavGroup-header__label {     padding: var(--spacing-0_25) var(--spacing-0_5); }
+  }
+
   .hulyNavGroup-header:hover,
   &.nested .hulyNavGroup-header:hover {
     .hulyNavGroup-header__chevron { background-color: var(--global-ui-BackgroundColor); }
@@ -179,7 +190,8 @@
     .hulyNavGroup-header__chevron { color: var(--button-subtle-IconColor); }
     .hulyNavGroup-header__label { color: var(--global-primary-TextColor); }
   }
-  &.nested.selectable .hulyNavGroup-header {
+  &.nested.selectable .hulyNavGroup-header,
+  &.selectableHeader .hulyNavGroup-header {
     margin: 0 var(--spacing-1_5) var(--spacing-1_5);
     padding: var(--spacing-0_5) var(--spacing-0_75) var(--spacing-0_5) var(--spacing-0_5);
     min-height: var(--global-small-Size);
@@ -189,7 +201,7 @@
     &.isOpen { margin-bottom: 0; }
   }
 
-  &:not(.nested, .noDivider),
+  &:not(.nested, .selectableHeader, .noDivider),
   &.noDivider + &.noDivider { border-top: 1px solid var(--theme-navpanel-divider); }
 
   .hulyNavGroup-content {
@@ -385,7 +397,7 @@
     &__mobile {
       flex-grow: 1;
     }
-    
+
     &__main {
       flex-grow: 2;
       flex-basis: 760px;
@@ -467,7 +479,7 @@
     &__aside {
       width: 25%;
       min-width: var(--panel-aside-width);
-      
+
       &.float {
         position: absolute;
         flex-direction: row;
@@ -569,7 +581,7 @@
     width: 100%;
     visibility: hidden;
   }
-  
+
   .popupPanel-pageFooter {
     @include watermark;
 

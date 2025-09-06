@@ -18,21 +18,18 @@ import { type FoldersState, FoldersManager, emptyFoldersState } from './folderUt
 
 export { type FoldersState, emptyFoldersState }
 
-export const FoldersStore: Writable<FoldersState> = writable(emptyFoldersState())
-
-export const SelectedFolderStore: Writable<Ref<Doc> | undefined> = writable(undefined)
-
-export function setSelectedFolder (_id: Ref<Doc> | undefined): void {
-  SelectedFolderStore.set(_id)
+export function createFoldersStore (): Writable<FoldersState> {
+  return writable(emptyFoldersState())
 }
 
 export function getFoldersManager (
+  store: Writable<FoldersState>,
   titleKey: string,
   parentKey: string,
   noParentId: Ref<Doc>,
   plainList: boolean
 ): FoldersManager {
   return new FoldersManager(titleKey, parentKey, noParentId, plainList, (state: FoldersState) => {
-    FoldersStore.set(state)
+    store.set(state)
   })
 }

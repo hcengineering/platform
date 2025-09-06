@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
+import { getClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import client, { ClientSocket } from '@hcengineering/client'
 import core, {
-  Account,
+  AccountRole,
+  AccountUuid,
   Blob,
   Class,
   Client,
@@ -23,18 +25,21 @@ import core, {
   DocumentQuery,
   generateId,
   MeasureContext,
+  type PersonId,
   Ref,
   Space,
+  systemAccountUuid,
   TxOperations,
-  WorkspaceId
+  WorkspaceIds
 } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
+import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
-import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { initStatisticsContext, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { decodeToken } from '@hcengineering/server-token'
+import { decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -45,9 +50,9 @@ import { tmpdir } from 'os'
 import { basename, join } from 'path'
 import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
+import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -97,22 +102,29 @@ const extractQueryToken = (queryParams: any): string | null => {
 
 const retrieveToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
   try {
-    const encodedToken =
-      extractCookieToken(headers.cookie) ??
+    const token =
       extractAuthorizationToken(headers.authorization) ??
-      extractQueryToken(queryParams)
+      extractQueryToken(queryParams) ??
+      extractCookieToken(headers.cookie)
 
-    if (encodedToken === null) {
+    if (token === null) {
       throw new ApiError(401)
     }
 
-    return encodedToken
+    return token
   } catch {
     throw new ApiError(401)
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, token: string, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (
+  req: Request,
+  res: Response,
+  wsIds: WorkspaceIds,
+  token: string,
+  socialId: PersonId,
+  next: NextFunction
+) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -121,8 +133,20 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const encodedToken = retrieveToken(req.headers, req.query)
-    await fn(req, res, encodedToken, next)
+    const token = retrieveToken(req.headers, req.query)
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
+    }
+    if (wsLoginInfo.socialId === undefined) {
+      throw new ApiError(401, 'Social ID is missing')
+    }
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
+    await fn(req, res, wsIds, token, wsLoginInfo.socialId, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -143,7 +167,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.post(
     '/exportAsync',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsIds, token, socialId) => {
       const format = req.query.format as ExportFormat
 
       const {
@@ -160,22 +184,48 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         throw new ApiError(400, 'Missing required parameters')
       }
 
-      const platformClient = await createPlatformClient(token)
-      const { email, workspace } = decodeToken(token)
+      const decodedToken = decodeToken(token)
+      if (decodedToken.extra?.readonly !== undefined) {
+        throw new ApiError(403, 'Forbidden')
+      }
+      const isAdmin: boolean = decodedToken.extra?.admin === 'true'
 
-      const account = platformClient.getModel().getAccountByEmail(email)
-      if (account === undefined) {
-        throw new ApiError(401, 'Account not found')
+      const accountClient = getClient(envConfig.AccountsUrl, token)
+
+      try {
+        const info = await accountClient.getLoginWithWorkspaceInfo()
+        const winfo = info.workspaces[decodedToken.workspace]
+        if (!isAdmin) {
+          if (winfo === undefined) {
+            res.status(401).end('Invalid workspace')
+            return
+          } else {
+            if (winfo.role !== AccountRole.Owner) {
+              res.status(401).end('Not an owner of workspace')
+              return
+            }
+          }
+        }
+      } catch (err: any) {
+        res.status(401).end('Invalid workspace')
+        return
       }
 
-      const txOperations = new TxOperations(platformClient, account._id)
+      const sysToken = generateToken(systemAccountUuid, decodedToken.workspace, {
+        service: 'export'
+      })
+
+      const platformClient = await createPlatformClient(sysToken)
+      const account = decodedToken.account
+
+      const txOperations = new TxOperations(platformClient, socialId)
 
       res.status(200).send({ message: 'Export started' })
 
       void (async () => {
         const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
         try {
-          const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace)
+          const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, wsIds)
 
           await exporter.export(_class, exportDir, { format, attributesOnly, query })
 
@@ -183,23 +233,16 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
           const className = hierarchy.getClass(_class).label
 
           const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
-          const archiveName = `export-${workspace.name}-${className}-${format}-${Date.now()}.zip`
+          const archiveName = `export-${wsIds.uuid}-${className}-${format}-${Date.now()}.zip`
           const archivePath = join(archiveDir, archiveName)
 
           await saveToArchive(exportDir, archivePath)
-          const exportDrive = await saveToDrive(
-            measureCtx,
-            txOperations,
-            storageAdapter,
-            workspace,
-            archivePath,
-            account._id
-          )
+          const exportDrive = await saveToDrive(measureCtx, txOperations, storageAdapter, wsIds, archivePath, account)
 
-          await sendSuccessNotification(txOperations, account._id, exportDrive, archiveName)
+          await sendSuccessNotification(txOperations, account, exportDrive, archiveName)
         } catch (err: any) {
           console.error('Export failed:', err)
-          await sendFailureNotification(txOperations, account._id, err.message ?? 'Unknown error when exporting')
+          await sendFailureNotification(txOperations, account, err.message ?? 'Unknown error when exporting')
         } finally {
           await fs.rmdir(exportDir, { recursive: true })
         }
@@ -209,7 +252,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.post(
     '/exportSync',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsIds, token, socialId) => {
       const format = req.query.format as ExportFormat
       const {
         _class,
@@ -228,18 +271,11 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       }
 
       const platformClient = await createPlatformClient(token)
-      const { email, workspace } = decodeToken(token)
-
-      const account = platformClient.getModel().getAccountByEmail(email)
-      if (account === undefined) {
-        throw new ApiError(401, 'Account not found')
-      }
-
-      const txOperations = new TxOperations(platformClient, account._id)
+      const txOperations = new TxOperations(platformClient, socialId)
 
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
       try {
-        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace, config)
+        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, wsIds, config)
         await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
 
         const files = await fs.readdir(exportDir)
@@ -328,27 +364,27 @@ async function saveToDrive (
   ctx: MeasureContext,
   client: TxOperations,
   storage: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   archivePath: string,
-  account: Ref<Account>
+  account: AccountUuid
 ): Promise<Ref<Drive>> {
   const exportDrive = await ensureExportDrive(client, account)
 
   const fileContent = await fs.readFile(archivePath)
   const blobId = uuid() as Ref<Blob>
-  await storage.put(ctx, workspace, blobId, fileContent, 'application/gzip', fileContent.length)
+  await storage.put(ctx, wsIds, blobId, fileContent, 'application/zip', fileContent.length)
 
   await createFile(client, exportDrive, drive.ids.Root, {
     title: basename(archivePath),
     file: blobId,
     size: fileContent.length,
-    type: 'application/gzip',
+    type: 'application/zip',
     lastModified: Date.now()
   })
   return exportDrive
 }
 
-async function ensureExportDrive (client: TxOperations, account: Ref<Account>): Promise<Ref<Drive>> {
+async function ensureExportDrive (client: TxOperations, account: AccountUuid): Promise<Ref<Drive>> {
   const exportDrive = await client.findOne(drive.class.Drive, {
     name: 'Export'
   })
@@ -378,7 +414,7 @@ async function ensureExportDrive (client: TxOperations, account: Ref<Account>): 
 
 async function sendSuccessNotification (
   client: TxOperations,
-  account: Ref<Account>,
+  account: AccountUuid,
   exportDrive: Ref<Drive>,
   archiveName: string
 ): Promise<void> {
@@ -406,10 +442,10 @@ async function sendSuccessNotification (
   })
 }
 
-async function sendFailureNotification (client: TxOperations, account: Ref<Account>, error: string): Promise<void> {
+async function sendFailureNotification (client: TxOperations, account: AccountUuid, error: string): Promise<void> {
   const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId: account,
-    objectClass: core.class.Account,
+    objectId: core.class.Doc,
+    objectClass: core.class.Doc,
     objectSpace: core.space.Space,
     user: account,
     isPinned: false,
@@ -418,8 +454,8 @@ async function sendFailureNotification (client: TxOperations, account: Ref<Accou
 
   await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
     user: account,
-    objectId: account,
-    objectClass: core.class.Account,
+    objectId: core.class.Doc,
+    objectClass: core.class.Doc,
     icon: exportPlugin.icon.Export,
     message: exportPlugin.string.ExportFailed,
     props: {

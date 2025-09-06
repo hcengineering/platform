@@ -14,15 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import { Channel, Contact } from '@hcengineering/contact'
-  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin, { Button, Icon, IconShare, Label, Scroller } from '@hcengineering/ui'
 
-  import { Integration } from '@hcengineering/setting'
   import gmail from '../plugin'
   import { convertMessages } from '../utils'
   import Messages from './Messages.svelte'
@@ -32,7 +31,6 @@
   export let channel: Channel
   export let newMessage: boolean
   export let enabled: boolean
-  export let allIntegrations: Integration[]
 
   let plainMessages: Message[] = []
   let newMessages: Message[] = []
@@ -83,14 +81,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(
-          object,
-          channel,
-          selectedMessages,
-          allIntegrations,
-          $personAccountByIdStore,
-          $employeeByIdStore
-        )
+        messages: await convertMessages(object, channel, selectedMessages)
       }
     )
     await inboxClient.readDoc(channel._id)
@@ -135,24 +126,14 @@
 </div>
 
 {#if messages && messages.length > 0}
-  <div class="antiVSpacer x2" />
-  <Scroller padding={'.5rem 1rem'}>
-    <Messages
-      messages={convertMessages(
-        object,
-        channel,
-        messages,
-        allIntegrations,
-        $personAccountByIdStore,
-        $employeeByIdStore
-      )}
-      {selectable}
-      bind:selected
-      on:select
-    />
+  {#await convertMessages(object, channel, messages) then convertedMessages}
     <div class="antiVSpacer x2" />
-  </Scroller>
-  <div class="antiVSpacer x2" />
+    <Scroller padding={'.5rem 1rem'}>
+      <Messages messages={convertedMessages} {selectable} bind:selected on:select />
+      <div class="antiVSpacer x2" />
+    </Scroller>
+    <div class="antiVSpacer x2" />
+  {/await}
 {:else}
   <div class="flex-col-center justify-center h-full">
     <Icon icon={IconInbox} size={'full'} />

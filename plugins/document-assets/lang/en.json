@@ -39,6 +39,7 @@
     "Description": "Description",
 
     "CopyDocumentUrl": "Copy document URL to clipboard",
+    "DocumentUrlCopied": "Copied!",
 
     "ViewMode": "View",
     "EditMode": "Edit",
@@ -57,8 +58,6 @@
 
     "Icon": "Icon",
     "Color": "Color",
-    "RoleLabel": "Role: {role}",
-    "ForbidCreateTeamspacePermission": "Forbid create teamspace",
-    "ForbidCreateTeamspacePermissionDescription": "Forbid users creating new teamspaces"
+    "RoleLabel": "Role: {role}"
   }
 }

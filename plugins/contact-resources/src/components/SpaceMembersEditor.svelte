@@ -13,28 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountUuid, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import AccountArrayEditor from './AccountArrayEditor.svelte'
 
   export let label: IntlString
-  export let value: Ref<Account>[]
-  export let onChange: ((refs: Ref<Account>[]) => void) | undefined
+  export let value: AccountUuid[]
+  export let onChange: ((refs: AccountUuid[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
+  const myAccUuid = myAcc.uuid
 
-  $: joined = value.includes(me)
+  $: joined = value.includes(myAccUuid)
 
   function join (): void {
-    if (value.includes(me)) return
+    if (value.includes(myAccUuid)) return
     if (onChange === undefined) return
-    onChange([...value, me])
+
+    onChange([...value, myAccUuid])
   }
 </script>
 
@@ -45,7 +47,7 @@
     {label}
     {value}
     {onChange}
-    readonly={readonly || !hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    readonly={readonly || !hasAccountRole(myAcc, AccountRole.User)}
     {kind}
     {size}
     {width}

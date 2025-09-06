@@ -25,7 +25,7 @@ export class DocumentReasonAndImpactPage extends DocumentCommonPage {
     this.textReason = page.locator('//div[contains(@class, "title") and text()="Reason"]/..')
     this.textImpactAnalysis = page.locator('//div[contains(@class, "title") and text()="Impact analysis"]/..')
     this.textImpactedDocuments = page.locator(
-      '//div[contains(@class, "title") and text()="Impacted documents"]/..//a/span'
+      '//div[contains(@class, "title") and text()="Impacted documents"]/..//div/span'
     )
   }
 

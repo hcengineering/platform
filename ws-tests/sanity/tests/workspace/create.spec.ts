@@ -13,7 +13,7 @@ import {
   TrackerNavigationMenuPage,
   UserProfilePage
 } from '@hcengineering/tests-sanity'
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('Workspace tests', () => {
   let loginPage: LoginPage
@@ -193,6 +193,14 @@ test.describe('Workspace tests', () => {
         return url.pathname.startsWith('/login/createWorkspace')
       })
 
+      await page2.waitForURL((url) => {
+        return url.pathname.startsWith('/login/createWorkspace')
+      })
+
+      await page2.waitForURL((url) => {
+        return url.pathname.startsWith('/login/createWorkspace')
+      })
+
       // Ok we signed in, and no workspace present.
       await page2.goto(linkText ?? '')
       const joinPage = new SignInJoinPage(page2)
@@ -205,7 +213,7 @@ test.describe('Workspace tests', () => {
     }
   })
 
-  test('User can leave workspace', async () => {
+  test('User can leave workspace', async ({ page }) => {
     const newUser: SignUpData = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
@@ -224,6 +232,7 @@ test.describe('Workspace tests', () => {
     await userProfilePage.clickLeaveWorkspaceCancelButton()
     await userProfilePage.clickLeaveWorkspaceButton()
     await userProfilePage.clickLeaveWorkspaceConfirmButton()
-    await userProfilePage.checkIfAccountIsDisabled()
+    await expect(page.locator('form')).toContainText('Select workspace')
+    await expect(page.getByText(newWorkspaceName)).toHaveCount(0)
   })
 })

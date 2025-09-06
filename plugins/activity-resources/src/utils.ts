@@ -1,8 +1,7 @@
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space } from '@hcengineering/core'
+import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space, type Blob } from '@hcengineering/core'
 import { getClient, isSpace } from '@hcengineering/presentation'
 import {
-  EmojiPopup,
   closePopup,
   getCurrentResolvedLocation,
   getEventPositionElement,
@@ -10,24 +9,32 @@ import {
   type Location
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
+import emojiPlugin from '@hcengineering/emoji'
 import { get } from 'svelte/store'
 
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
 
-export async function updateDocReactions (reactions: Reaction[], object?: Doc, emoji?: string): Promise<void> {
+export async function updateDocReactions (
+  reactions: Reaction[],
+  object?: Doc,
+  emoji?: string,
+  image?: Ref<Blob>
+): Promise<void> {
   if (emoji === undefined || object === undefined) {
     return
   }
 
   const client = getClient()
   const currentAccount = getCurrentAccount()
-  const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+  const socialStrings = currentAccount.socialIds
+  const reaction = reactions.find((r) => r.emoji === emoji && socialStrings.includes(r.createBy))
 
   if (reaction == null) {
     await client.addCollection(activity.class.Reaction, object.space, object._id, object._class, 'reactions', {
       emoji,
-      createBy: currentAccount._id
+      image,
+      createBy: currentAccount.primarySocialId
     })
   } else {
     await client.remove(reaction)
@@ -59,8 +66,8 @@ export async function addReactionAction (
 
   closePopup()
 
-  showPopup(EmojiPopup, {}, element, (emoji: string) => {
-    void updateDocReactions(reactions, message, emoji)
+  showPopup(emojiPlugin.component.EmojiPopup, {}, element, (emoji) => {
+    if (emoji?.text !== undefined) void updateDocReactions(reactions, message, emoji.text, emoji.image)
     params?.onClose?.()
   })
   params?.onOpen?.()
@@ -166,4 +173,24 @@ export function shouldScrollToActivity (): boolean {
 
 export function getSpace (doc: Doc): Ref<Space> {
   return isSpace(doc) ? doc._id : doc.space
+}
+
+const activityNewestFirstLocalStorageKey = 'activity-newest-first_v1'
+
+export function getActivityNewestFirst (): boolean {
+  try {
+    const value = JSON.parse(localStorage.getItem(activityNewestFirstLocalStorageKey) ?? 'true')
+
+    if (typeof value !== 'boolean') {
+      return true
+    }
+
+    return value
+  } catch (err) {
+    return true
+  }
+}
+
+export function setActivityNewestFirst (value: boolean): void {
+  localStorage.setItem(activityNewestFirstLocalStorageKey, JSON.stringify(value))
 }

@@ -13,16 +13,25 @@
 // limitations under the License.
 //
 
-import { type Class, type Doc, type Markup, type Ref, concatLink, makeCollabId } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type Markup,
+  type Ref,
+  WorkspaceUuid,
+  concatLink,
+  makeCollabId
+} from '@hcengineering/core'
 import { type CollaboratorClient, getClient } from '@hcengineering/collaborator-client'
-import { parseMessageMarkdown, jsonToMarkup, markupToHTML, markupToMarkdown, htmlToMarkup } from '@hcengineering/text'
+import { htmlToJSON, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 
 import { type ServerConfig } from '../config'
 import { type MarkupOperations, type MarkupFormat, type MarkupRef } from './types'
 
 export function createMarkupOperations (
   url: string,
-  workspace: string,
+  workspace: WorkspaceUuid,
   token: string,
   config: ServerConfig
 ): MarkupOperations {
@@ -36,13 +45,13 @@ class MarkupOperationsImpl implements MarkupOperations {
 
   constructor (
     private readonly url: string,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly token: string,
     private readonly config: ServerConfig
   ) {
     this.refUrl = concatLink(this.url, `/browse?workspace=${workspace}`)
     this.imageUrl = concatLink(this.url, `/files?workspace=${workspace}&file=`)
-    this.collaborator = getClient({ name: workspace }, token, config.COLLABORATOR_URL)
+    this.collaborator = getClient(workspace, token, config.COLLABORATOR_URL)
   }
 
   async fetchMarkup (
@@ -54,14 +63,15 @@ class MarkupOperationsImpl implements MarkupOperations {
   ): Promise<string> {
     const collabId = makeCollabId(objectClass, objectId, objectAttr)
     const markup = await this.collaborator.getMarkup(collabId, doc)
+    const json = markupToJSON(markup)
 
     switch (format) {
       case 'markup':
         return markup
       case 'html':
-        return markupToHTML(markup)
+        return jsonToHTML(json)
       case 'markdown':
-        return await markupToMarkdown(markup, this.refUrl, this.imageUrl)
+        return markupToMarkdown(json, { refUrl: this.refUrl, imageUrl: this.imageUrl })
       default:
         throw new Error('Unknown content format')
     }
@@ -81,10 +91,10 @@ class MarkupOperationsImpl implements MarkupOperations {
         markup = value
         break
       case 'html':
-        markup = htmlToMarkup(value)
+        markup = jsonToMarkup(htmlToJSON(value))
         break
       case 'markdown':
-        markup = jsonToMarkup(parseMessageMarkdown(value, this.imageUrl, this.refUrl))
+        markup = jsonToMarkup(markdownToMarkup(value, { refUrl: this.refUrl, imageUrl: this.imageUrl }))
         break
       default:
         throw new Error('Unknown content format')

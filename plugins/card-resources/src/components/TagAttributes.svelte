@@ -27,7 +27,8 @@
     Label,
     navigate,
     showPopup,
-    themeStore
+    themeStore,
+    tooltip
   } from '@hcengineering/ui'
   import CardAttributes from './CardAttributes.svelte'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
@@ -51,16 +52,19 @@
     isCollapsed = false
   }
 
-  $: color = getPlatformColorDef(getColorNumberByText(tag.label), $themeStore.dark).color
+  $: color = getPlatformColorDef(tag.background ?? 0, $themeStore.dark).color
 </script>
 
 <div class="header flex flex-gap-2">
   <div
     class="label flex flex-gap-2"
     style="background: {color + '33'}; border-color: {color}"
+    use:tooltip={{ label }}
     on:click={isCollapsed ? expand : collapse}
   >
-    <Label {label} />
+    <span class="overflow-label">
+      <Label {label} />
+    </span>
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color'} />
   </div>
   {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
@@ -108,6 +112,8 @@
     border: 1px solid;
     border-radius: 6rem;
     color: var(--theme-caption-color);
+    height: 2rem;
+    overflow: hidden;
   }
 
   .header {
@@ -115,6 +121,7 @@
     align-items: center;
     margin-top: 0.5rem;
     margin-bottom: 1rem;
+    max-width: 100%;
 
     &:hover {
       .btns {

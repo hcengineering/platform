@@ -4,7 +4,19 @@
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import { Attachment } from '@hcengineering/attachment'
 import { Person } from '@hcengineering/contact'
-import { Account, AttachedDoc, Class, Data, Doc, Hyperlink, Markup, Mixin, Ref, Timestamp } from '@hcengineering/core'
+import {
+  AttachedDoc,
+  Class,
+  Data,
+  Doc,
+  Hyperlink,
+  IntegrationKind,
+  Markup,
+  Mixin,
+  PersonId,
+  Ref,
+  Timestamp
+} from '@hcengineering/core'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import task, { ProjectTypeDescriptor, TaskStatusFactory, TaskTypeDescriptor } from '@hcengineering/task'
@@ -23,7 +35,7 @@ export interface DocSyncInfo extends Doc {
   url: string
   objectClass: Ref<Class<Doc>>
 
-  lastGithubUser?: Ref<Account> | null
+  lastGithubUser?: PersonId | null
 
   // If repository is null, then document is not yet synced.
   repository: Ref<GithubIntegrationRepository> | null
@@ -146,7 +158,7 @@ export enum GithubReviewDecisionState {
 }
 
 export interface LastReviewState {
-  user: Ref<Account>
+  user: PersonId
   state: GithubPullRequestReviewState
 }
 /**
@@ -255,7 +267,7 @@ export interface GithubReviewThread extends ActivityMessage {
   originalStartLine: number | null
   path: string
   startDiffSide: 'LEFT' | 'RIGHT' | null
-  resolvedBy: Ref<Account> | null
+  resolvedBy: PersonId | null
 }
 
 export interface GithubReviewComment extends AttachedDoc {
@@ -487,6 +499,16 @@ export function makeQuery (obj: Record<string, string | number | boolean | undef
     })
     .join('&')
 }
+
+/**
+ * @public
+ */
+export const githubIntegrationKind = 'github' as IntegrationKind
+
+/**
+ * @public
+ */
+export const githubUserIntegrationKind = 'github-user' as IntegrationKind
 
 /**
  * @public

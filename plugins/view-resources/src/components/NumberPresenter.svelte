@@ -20,7 +20,7 @@
   export let value: number | undefined
   export let label: IntlString
   export let onChange: ((value: number | undefined) => void) | undefined = undefined
-  export let kind: 'no-border' | 'link' | 'button' | 'list' = 'link'
+  export let kind: 'no-border' | 'link' | 'list' = 'link'
   export let readonly = false
 </script>
 

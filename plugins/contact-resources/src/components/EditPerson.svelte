@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, Person, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
+  import { Channel, Person, combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
@@ -33,8 +33,9 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  const account = getCurrentAccount() as PersonAccount
-  $: owner = account.person === object._id
+  const account = getCurrentAccount()
+  const me = getCurrentEmployee()
+  $: owner = me === object._id
 
   function isEditable (owner: boolean, object: Person): boolean {
     if (owner) return true
@@ -71,9 +72,13 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { createdBy: { $in: account.socialIds }, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)

@@ -119,9 +119,7 @@
     "HideArchivedVacancies": "Masquer les postes vacants archivés",
     "HideApplicantsFromArchivedVacancies": "Masquer les candidats des postes vacants archivés",
     "CreateNewSkills": "Créer de nouvelles compétences si les existantes ne sont pas trouvées",
-    "SwapFirstAndLastNames": "Permuter le prénom et le nom",
-    "ForbidCreateVacancyPermission": "Interdire la création de poste vacant",
-    "ForbidCreateVacancyPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux postes vacants"
+    "SwapFirstAndLastNames": "Permuter le prénom et le nom"
   },
   "status": {
     "ApplicationExists": "La candidature existe déjà",

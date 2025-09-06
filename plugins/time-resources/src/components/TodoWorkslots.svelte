@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import calendar, { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { closePopup, showPopup } from '@hcengineering/ui'
@@ -23,6 +23,7 @@
   import time from '../plugin'
   import Workslots from './Workslots.svelte'
   import { Analytics } from '@hcengineering/analytics'
+  import { findPrimaryCalendar } from '../utils'
 
   export let todo: ToDo
 
@@ -55,13 +56,8 @@
     const defaultDuration = 30 * 60 * 1000
     const now = Date.now()
     const date = Math.ceil(now / (30 * 60 * 1000)) * (30 * 60 * 1000)
-    const currentUser = getCurrentAccount() as PersonAccount
-    const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      createdBy: currentUser._id,
-      hidden: false,
-      default: true
-    })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
+    const currentAccount = getCurrentAccount()
+    const _calendar = await findPrimaryCalendar()
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),
@@ -69,11 +65,12 @@
       dueDate,
       calendar: _calendar,
       description: todo.description,
-      participants: [currentUser.person],
+      participants: [getCurrentEmployee()],
       title: todo.title,
+      blockTime: true,
       allDay: false,
-      access: 'owner',
-      user: currentUser._id,
+      access: AccessLevel.Owner,
+      user: currentAccount.primarySocialId,
       visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })

@@ -22,6 +22,7 @@ export class UsersSyncManager implements DocSyncManager {
   }
 
   async sync (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     parent?: DocSyncInfo
@@ -30,6 +31,7 @@ export class UsersSyncManager implements DocSyncManager {
   }
 
   async handleDelete (
+    ctx: MeasureContext,
     existing: Doc | undefined,
     info: DocSyncInfo,
     derivedClient: TxOperations,
@@ -38,9 +40,15 @@ export class UsersSyncManager implements DocSyncManager {
     return false
   }
 
-  async handleEvent<T>(integration: IntegrationContainer, derivedClient: TxOperations, evt: T): Promise<void> {}
+  async handleEvent<T>(
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    derivedClient: TxOperations,
+    evt: T
+  ): Promise<void> {}
 
   async externalSync (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     kind: ExternalSyncField,
@@ -49,11 +57,12 @@ export class UsersSyncManager implements DocSyncManager {
     prj: GithubProject
   ): Promise<void> {}
 
-  repositoryDisabled (integration: IntegrationContainer, repo: GithubIntegrationRepository): void {
+  repositoryDisabled (ctx: MeasureContext, integration: IntegrationContainer, repo: GithubIntegrationRepository): void {
     integration.synchronized.delete(`${repo._id}:users`)
   }
 
   async externalFullSync (
+    ctx: MeasureContext,
     integration: IntegrationContainer,
     derivedClient: TxOperations,
     projects: GithubProject[],

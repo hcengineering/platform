@@ -38,6 +38,7 @@
   export let shouldShowAvatar: boolean = true
   export let accent: boolean = false
   export let inline: boolean = false
+  export let width: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -338,6 +339,7 @@
     class:notSelected={!value}
     class:editable
     class:edit
+    style:width
     on:click={() => {
       if (editable && !opened && withDate) openPopup()
       else if (editable && !opened && mode === DateRangeMode.TIME) edit = true
@@ -521,6 +523,7 @@
     width: min-content;
     white-space: nowrap;
     line-height: 1.5rem;
+    cursor: pointer;
     color: var(--theme-content-color);
     border: 1px solid transparent;
     border-radius: 0.375rem;

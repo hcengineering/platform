@@ -15,14 +15,14 @@
 <script lang="ts">
   import { type WithLookup } from '@hcengineering/core'
   import drive, { type Resource } from '@hcengineering/drive'
-  import { getBlobRef, getClient, sizeToWidth } from '@hcengineering/presentation'
-  import { Icon, IconSize } from '@hcengineering/ui'
+  import { Image, getClient, remToPx } from '@hcengineering/presentation'
+  import { Icon } from '@hcengineering/ui'
 
   import IconFolderThumbnail from './icons/FolderThumbnail.svelte'
 
   export let object: WithLookup<Resource>
-  export let size: IconSize = 'x-large'
 
+  const size = remToPx(20)
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -39,23 +39,24 @@
   $: previewRef = version?.file
   $: isImage = version?.type?.startsWith('image/') ?? false
   $: isFolder = hierarchy.isDerived(object._class, drive.class.Folder)
+  $: canShowThumbnail = isImage || version?.metadata?.thumbnail !== undefined
 </script>
 
 {#if isFolder}
   <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--global-no-priority-PriorityColor)'} />
-{:else if previewRef != null && isImage && !isError}
-  {#await getBlobRef(previewRef, object.title, sizeToWidth(size)) then blobSrc}
-    <img
-      draggable="false"
-      class="img-fit"
-      src={blobSrc.src}
-      srcset={blobSrc.srcset}
-      alt={object.title}
-      on:error={() => {
-        isError = true
-      }}
-    />
-  {/await}
+{:else if previewRef != null && canShowThumbnail && !isError}
+  <Image
+    blob={previewRef}
+    alt={object.title}
+    width={size}
+    height={size}
+    blurhash={version?.metadata?.thumbnail?.blurhash}
+    responsive
+    fit={'cover'}
+    on:error={() => {
+      isError = true
+    }}
+  />
 {:else}
   <div class="flex-center ext-icon">
     {extensionIconLabel(object.title)}
@@ -73,11 +74,5 @@
     background-color: var(--primary-button-default);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.5rem;
-  }
-
-  .img-fit {
-    object-fit: cover;
-    height: 100%;
-    width: 100%;
   }
 </style>

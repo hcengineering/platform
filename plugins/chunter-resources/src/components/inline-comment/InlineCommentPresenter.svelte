@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Markup, Ref } from '@hcengineering/core'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
+  import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Action, IconEdit, IconDelete, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -23,6 +22,7 @@
   import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import { EmptyMarkup } from '@hcengineering/text'
   import { ReferenceInput } from '@hcengineering/text-editor-resources'
+  import { Person } from '@hcengineering/contact'
 
   export let value: any
   export let showNotify: boolean = false
@@ -36,7 +36,7 @@
   export let skipLabel = false
   export let actions: Action[] = []
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
+  export let hoverStyles: 'filledHover' | 'none' = 'filledHover'
   export let withShowMore: boolean = true
   export let hideLink = false
   export let compact = false
@@ -48,17 +48,20 @@
 
   const currentAccount = getCurrentAccount()
 
-  let account: PersonAccount | undefined = undefined
-  let person: Person | undefined = undefined
-
-  $: accountId = value?.createdBy
-  $: account = accountId !== undefined ? $personAccountByIdStore.get(accountId as Ref<PersonAccount>) : undefined
-  $: person = account?.person !== undefined ? $personByIdStore.get(account.person) : undefined
+  $: creatorSocialString = value?.createdBy
+  let person: Person | undefined
+  $: if (creatorSocialString !== undefined) {
+    getPersonByPersonIdCb(creatorSocialString, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   let isEditing = false
   let additionalActions: Action[] = []
 
-  $: isOwn = account !== undefined && account._id === currentAccount._id
+  $: isOwn = creatorSocialString !== undefined && currentAccount.socialIds.includes(creatorSocialString)
 
   $: additionalActions = [
     ...(isOwn

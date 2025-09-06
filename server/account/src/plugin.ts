@@ -1,4 +1,4 @@
-import { IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
+import { type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
 
 /**
  * @public
@@ -12,6 +12,7 @@ export const accountPlugin = plugin(accountId, {
   metadata: {
     FrontURL: '' as Metadata<string>,
     MAIL_URL: '' as Metadata<string>,
+    MAIL_AUTH_TOKEN: '' as Metadata<string>,
     ProductName: '' as Metadata<string>,
     Transactors: '' as Metadata<string>,
     OtpTimeToLiveSec: '' as Metadata<number>,

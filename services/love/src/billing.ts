@@ -13,34 +13,44 @@
 // limitations under the License.
 //
 
-import { concatLink, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { AccessToken, EgressInfo } from 'livekit-server-sdk'
+import { getClient as getBillingClient, LiveKitSessionData } from '@hcengineering/billing-client'
 import config from './config'
 
-// Example:
-//  {
-//    "roomId": "RM_ROOM_ID",
-//    "roomName": "w-room-name",
-//    "numParticipants": 2,
-//    "bandwidth": "1000",
-//    "connectionMinutes": "120",
-//    "startTime": "2025-01-01T12:00:00Z",
-//    "endTime": "2025-01-01T13:00:00Z",
-//    "participants": [ ... ]
-//  }
 interface LiveKitSession {
-  roomId: string
+  sessionId: string
+  createdAt: string
+  lastActive: string
+  bandwidthIn: string
+  bandwidthOut: string
+  numParticipants: string
   roomName: string
-  startTime: string
-  endTime: string
-  bandwidth: string
-  connectionMinutes: string
+  endedAt?: string
 }
 
-async function getLiveKitSession (ctx: MeasureContext, sessionId: string): Promise<LiveKitSession> {
+const processedSessionsCache = new Map<string, number>()
+
+const createAnalyticsToken = async (): Promise<string> => {
+  const at = new AccessToken(config.ApiKey, config.ApiSecret, { ttl: '10m' })
+  at.addGrant({ roomList: true })
+
+  return await at.toJwt()
+}
+
+function cleanupCache (currentDate: number): void {
+  for (const [sessionId, date] of processedSessionsCache) {
+    if (date >= currentDate) continue
+    processedSessionsCache.delete(sessionId)
+  }
+}
+
+async function getLiveKitSessions (ctx: MeasureContext, start: string, page: number): Promise<LiveKitSession[]> {
   const token = await createAnalyticsToken()
-  const endpoint = `https://cloud-api.livekit.io/api/project/${config.LiveKitProject}/sessions/${sessionId}?v=2`
+  const projectId = config.LiveKitProject
+  const endpoint = `https://cloud-api.livekit.io/api/project/${projectId}/sessions?start=${start}&page=${page}&limit=100`
+
   try {
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -51,56 +61,68 @@ async function getLiveKitSession (ctx: MeasureContext, sessionId: string): Promi
     })
 
     if (!response.ok) {
-      ctx.error('failed to get session analytics', { session: sessionId, status: response.status })
+      ctx.error('failed to get sessions list', { status: response.status })
       throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
     }
 
-    return (await response.json()) as LiveKitSession
+    return ((await response.json()) as { sessions: LiveKitSession[] }).sessions ?? []
   } catch (error) {
     throw new Error('Failed to get session analytics')
   }
 }
 
-const createAnalyticsToken = async (): Promise<string> => {
-  const at = new AccessToken(config.ApiKey, config.ApiSecret, { ttl: '10m' })
-  at.addGrant({ roomList: true })
+export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void> {
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
+  const billingClient = getBillingClient(config.BillingUrl, token)
 
-  return await at.toJwt()
-}
+  const startDate = new Date()
+  startDate.setHours(0, 0, 0, 0)
+  startDate.setDate(startDate.getDate() - 1)
+  const year = startDate.getFullYear()
+  const month = String(startDate.getMonth() + 1).padStart(2, '0')
+  const day = String(startDate.getDate()).padStart(2, '0')
+  const start = `${year}-${month}-${day}`
 
-export async function saveLiveKitSessionBilling (ctx: MeasureContext, sessionId: string): Promise<void> {
-  if (config.BillingUrl === '' || config.LiveKitProject === '') {
-    return
-  }
+  cleanupCache(startDate.getTime())
 
-  const session = await getLiveKitSession(ctx, sessionId)
-  const workspace = session.roomName.split('_')[0]
-  const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
+  const sessionsToSend: LiveKitSessionData[] = []
+  const sessionsToCache = new Map<string, number>()
 
-  const token = generateToken(systemAccountEmail, { name: workspace })
+  let liveKitSessions: LiveKitSession[]
+  let page = 0
+  do {
+    liveKitSessions = await getLiveKitSessions(ctx, start, page)
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sessionId,
-        sessionStart: session.startTime,
-        sessionEnd: session.endTime,
-        bandwidth: Number(session.bandwidth),
-        minutes: Number(session.connectionMinutes),
+    for (const session of liveKitSessions) {
+      if (processedSessionsCache.has(session.sessionId)) continue
+      const sessionStart = Date.parse(session.createdAt)
+      const sessionEnd = Date.parse(session.endedAt ?? session.lastActive)
+      const workspace = session.roomName.split('_')[0] as WorkspaceUuid
+
+      sessionsToSend.push({
+        workspace,
+        sessionId: session.sessionId,
+        sessionStart: session.createdAt,
+        sessionEnd: session.endedAt ?? session.lastActive,
+        bandwidth: Math.max(Number(session.bandwidthOut), Number(session.bandwidthIn)),
+        minutes: Math.round((sessionEnd - sessionStart) / (1000 * 60)),
         room: session.roomName
       })
-    })
-    if (!res.ok) {
-      throw new Error(await res.text())
+      if (session.endedAt !== undefined) {
+        sessionsToCache.set(session.sessionId, sessionStart)
+      }
     }
+    page++
+  } while (liveKitSessions.length > 0)
+
+  try {
+    await billingClient.postLiveKitSessions(sessionsToSend)
+
+    sessionsToCache.forEach((value, key, map) => {
+      processedSessionsCache.set(key, value)
+    })
   } catch (err: any) {
-    ctx.error('failed to save session billing', { workspace, session, err })
-    throw new Error('Failed to save session billing: ' + err)
+    ctx.error('failed to save sessions billing', { err })
   }
 }
 
@@ -113,29 +135,21 @@ export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: Egr
   const egressEnd = Number(egress.endedAt) / 1000 / 1000
   const duration = (egressEnd - egressStart) / 1000
 
-  const workspace = egress.roomName.split('_')[0]
-  const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/egress`)
-
-  const token = generateToken(systemAccountEmail, { name: workspace })
+  const workspace = egress.roomName.split('_')[0] as WorkspaceUuid
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
+  const billingClient = getBillingClient(config.BillingUrl, token)
 
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    await billingClient.postLiveKitEgress([
+      {
+        workspace,
         room: egress.roomName,
         egressId: egress.egressId,
         egressStart: new Date(egressStart).toISOString(),
         egressEnd: new Date(egressEnd).toISOString(),
         duration
-      })
-    })
-    if (!res.ok) {
-      throw new Error(await res.text())
-    }
+      }
+    ])
   } catch (err: any) {
     ctx.error('failed to save egress billing', { workspace, egress, err })
     throw new Error('Failed to save egress billing: ' + err)

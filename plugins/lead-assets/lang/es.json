@@ -34,8 +34,6 @@
     "ConfigDescription": "Extensión para la gestión de las relaciones con los Clientes",
     "EditFunnel": "Editar Embudo",
     "FunnelMembers": "Miembros",
-    "RoleLabel": "Role: {role}",
-    "ForbidCreateFunnelPermission": "Prohibir crear embudo",
-    "ForbidCreateFunnelPermissionDescription": "Prohíbe a los usuarios crear nuevos embudos"
+    "RoleLabel": "Role: {role}"
   }
 }

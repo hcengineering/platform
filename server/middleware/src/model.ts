@@ -19,6 +19,7 @@ import core, {
   type DocumentQuery,
   type FindOptions,
   type FindResult,
+  type Hierarchy,
   type LoadModelResponse,
   type MeasureContext,
   type Ref,
@@ -41,10 +42,8 @@ import type {
 import { BaseMiddleware } from '@hcengineering/server-core'
 import crypto from 'node:crypto'
 
-const isUserTx = (it: Tx): boolean =>
-  it.modifiedBy !== core.account.System ||
-  (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
-  (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
+const isAccountTx = (it: TxCUD<Doc>): boolean =>
+  ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
 
 /**
  * @public
@@ -56,7 +55,8 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   constructor (
     context: PipelineContext,
     next: Middleware | undefined,
-    readonly systemTx: Tx[]
+    readonly systemTx: Tx[],
+    readonly filter?: (h: Hierarchy, model: Tx[]) => Tx[]
   ) {
     super(context, next)
   }
@@ -66,23 +66,24 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     ctx: MeasureContext,
     context: PipelineContext,
     next: Middleware | undefined,
-    systemTx: Tx[]
+    systemTx: Tx[],
+    filter?: (h: Hierarchy, model: Tx[]) => Tx[]
   ): Promise<Middleware> {
-    const middleware = new ModelMiddleware(context, next, systemTx)
+    const middleware = new ModelMiddleware(context, next, systemTx, filter)
     await middleware.init(ctx)
     return middleware
   }
 
-  static create (tx: Tx[]): MiddlewareCreator {
+  static create (tx: Tx[], filter?: (h: Hierarchy, model: Tx[]) => Tx[]): MiddlewareCreator {
     return (ctx, context, next) => {
-      return this.doCreate(ctx, context, next, tx)
+      return this.doCreate(ctx, context, next, tx, filter)
     }
   }
 
   @withContext('get-model')
   async getUserTx (ctx: MeasureContext, txAdapter: TxAdapter): Promise<Tx[]> {
     const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
-    return allUserTxes.filter((it) => isUserTx(it))
+    return allUserTxes.filter((it) => !isAccountTx(it as TxCUD<Doc>))
   }
 
   findAll<T extends Doc>(
@@ -113,9 +114,10 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
         ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
       }
     }
-    this.context.modelDb.addTxes(ctx, model, true)
+    const fmodel = this.filter !== undefined ? this.filter(this.context.hierarchy, model) : model
+    this.context.modelDb.addTxes(ctx, fmodel, true)
 
-    this.setModel(model)
+    this.setModel(fmodel)
   }
 
   private addModelTx (tx: Tx): void {

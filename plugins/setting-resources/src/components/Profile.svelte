@@ -13,43 +13,53 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, employeeByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import contact, { combineName, getFirstName, getLastName } from '@hcengineering/contact'
+  import { ChannelsEditor, EditableAvatar, myEmployeeStore } from '@hcengineering/contact-resources'
+  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
+  import login, { loginId } from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import {
+    Breadcrumb,
+    Button,
+    EditBox,
+    FocusHandler,
+    Header,
+    createFocusManager,
+    showPopup,
+    navigate,
+    Scroller
+  } from '@hcengineering/ui'
+  import { logIn, logOut } from '@hcengineering/workbench-resources'
+
   import setting from '../plugin'
+  import SocialIdsEditor from './socialIds/SocialIdsEditor.svelte'
 
   const client = getClient()
+  const account = getCurrentAccount()
+  const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
+
+  let firstName = ''
+  let lastName = ''
+  let initialized = false
+
+  // Initialize names only once when store value changes from undefined
+  // not to interfere with further user editing
+  $: if ($myEmployeeStore !== undefined && !initialized) {
+    firstName = getFirstName($myEmployeeStore.name)
+    lastName = getLastName($myEmployeeStore.name)
+    initialized = true
+  }
 
   let avatarEditor: EditableAvatar
-
-  const account = getCurrentAccount() as PersonAccount
-  const employee = account !== undefined ? $personByIdStore.get(account.person) : undefined
-  let firstName = employee ? getFirstName(employee.name) : ''
-  let lastName = employee ? getLastName(employee.name) : ''
-
-  onDestroy(
-    personByIdStore.subscribe((p) => {
-      const emp = p.get(account.person as Ref<Employee>)
-      if (emp !== undefined) {
-        firstName = getFirstName(emp.name)
-        lastName = getLastName(emp.name)
-      }
-    })
-  )
-
   async function onAvatarDone (e: any): Promise<void> {
-    if (employee === undefined) return
+    if ($myEmployeeStore === undefined) return
 
-    if (employee.avatar != null) {
-      await avatarEditor.removeAvatar(employee.avatar)
+    if ($myEmployeeStore.avatar != null) {
+      await avatarEditor.removeAvatar($myEmployeeStore.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.diffUpdate(employee, avatar)
+    await client.diffUpdate($myEmployeeStore, avatar)
   }
 
   const manager = createFocusManager()
@@ -60,14 +70,22 @@
       message: setting.string.LeaveDescr,
       action: async () => {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        await leaveWorkspace(getCurrentAccount().email)
+        const loginInfo = await leaveWorkspace(account.uuid)
+
+        if (loginInfo?.token != null) {
+          await logIn(loginInfo)
+          navigate({ path: [loginId, 'selectWorkspace'] })
+        } else {
+          await logOut()
+          navigate({ path: [loginId] })
+        }
       }
     })
   }
 
   async function nameChange (): Promise<void> {
-    if (employee !== undefined) {
-      await client.diffUpdate(employee, {
+    if ($myEmployeeStore !== undefined) {
+      await client.diffUpdate($myEmployeeStore, {
         name: combineName(firstName, lastName)
       })
     }
@@ -80,68 +98,77 @@
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body p-10">
-    {#if employee}
-      <div class="flex flex-grow w-full">
-        <div class="mr-8">
-          <EditableAvatar
-            person={employee}
-            email={account.email}
-            size={'x-large'}
-            name={employee.name}
-            bind:this={avatarEditor}
-            on:done={onAvatarDone}
-          />
-        </div>
-        <div class="flex-grow flex-col">
-          <EditBox
-            placeholder={contact.string.PersonFirstNamePlaceholder}
-            bind:value={firstName}
-            kind={'large-style'}
-            autoFocus
-            focusIndex={1}
-            on:change={nameChange}
-          />
-          <EditBox
-            placeholder={contact.string.PersonLastNamePlaceholder}
-            bind:value={lastName}
-            kind={'large-style'}
-            focusIndex={2}
-            on:change={nameChange}
-          />
-          <div class="location">
-            <AttributeEditor
-              maxWidth="20rem"
-              _class={contact.class.Person}
-              object={employee}
-              focusIndex={3}
-              key="city"
+  <Scroller>
+    <div class="ac-body p-10 flex-col max-w-240 content">
+      {#if $myEmployeeStore}
+        <div class="flex flex-grow w-full">
+          <div class="mr-8">
+            <EditableAvatar
+              person={$myEmployeeStore}
+              {email}
+              size={'x-large'}
+              name={$myEmployeeStore.name}
+              bind:this={avatarEditor}
+              on:done={onAvatarDone}
             />
           </div>
-          <div class="separator" />
-          <ChannelsEditor
-            attachedTo={employee._id}
-            attachedClass={employee._class}
-            focusIndex={10}
-            allowOpen={false}
-            restricted={[contact.channelProvider.Email]}
-          />
+          <div class="flex-grow flex-col">
+            <EditBox
+              placeholder={contact.string.PersonFirstNamePlaceholder}
+              bind:value={firstName}
+              kind={'large-style'}
+              autoFocus
+              focusIndex={1}
+              on:change={nameChange}
+            />
+            <EditBox
+              placeholder={contact.string.PersonLastNamePlaceholder}
+              bind:value={lastName}
+              kind={'large-style'}
+              focusIndex={2}
+              on:change={nameChange}
+            />
+            <div class="location">
+              <AttributeEditor
+                maxWidth="20rem"
+                _class={contact.class.Person}
+                object={$myEmployeeStore}
+                focusIndex={3}
+                key="city"
+              />
+            </div>
+            <div class="separator" />
+            <ChannelsEditor
+              attachedTo={$myEmployeeStore._id}
+              attachedClass={$myEmployeeStore._class}
+              focusIndex={10}
+              allowOpen={false}
+              restricted={[contact.channelProvider.Email]}
+            />
+          </div>
         </div>
+      {/if}
+      <div class="separator" />
+      <SocialIdsEditor />
+      <div class="footer">
+        <Button
+          icon={setting.icon.Signout}
+          label={setting.string.Leave}
+          kind="dangerous"
+          on:click={() => {
+            void leave()
+          }}
+        />
       </div>
-    {/if}
-    <div class="footer">
-      <Button
-        icon={setting.icon.Signout}
-        label={setting.string.Leave}
-        on:click={() => {
-          void leave()
-        }}
-      />
     </div>
-  </div>
+  </Scroller>
 </div>
 
 <style lang="scss">
+  .content {
+    flex: 0 0 auto;
+  }
+
   .location {
     margin-top: 0.25rem;
     font-size: 0.75rem;
@@ -154,6 +181,7 @@
   }
 
   .footer {
+    margin-top: 2rem;
     align-self: flex-end;
   }
 </style>

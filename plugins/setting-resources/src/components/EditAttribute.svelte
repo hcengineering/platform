@@ -27,7 +27,8 @@
     Modal,
     ModernEditbox,
     showPopup,
-    themeStore
+    themeStore,
+    Toggle
   } from '@hcengineering/ui'
   import { IconPicker } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
@@ -45,6 +46,7 @@
   let index: IndexKind | undefined = attribute.index
   let defaultValue: any | undefined = attribute.defaultValue
   let icon: Asset | undefined = attribute.icon
+  let automationOnly = attribute.automationOnly ?? false
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -77,6 +79,10 @@
       if (type !== attribute.type) {
         update.type = type
       }
+    }
+    if (automationOnly !== attribute.automationOnly) {
+      update.readonly = automationOnly
+      update.automationOnly = automationOnly
     }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     clearSettingsStore()
@@ -179,25 +185,23 @@
       <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} {disabled} />
     </div>
   </div>
-  <div class="hulyModal-content__settingsSet">
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={setting.string.Type} />
-      </span>
-      {#if exist}
-        <Label label={attribute.type.label} />
-      {:else}
-        <DropdownLabelsIntl
-          label={setting.string.Type}
-          {items}
-          size={'large'}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={handleSelect}
-          {disabled}
-        />
-      {/if}
-    </div>
+  <div class="grid">
+    <span class="label">
+      <Label label={setting.string.Type} />
+    </span>
+    {#if exist}
+      <Label label={attribute.type.label} />
+    {:else}
+      <DropdownLabelsIntl
+        label={setting.string.Type}
+        {items}
+        size={'large'}
+        width={'100%'}
+        bind:selected={selectedType}
+        on:selected={handleSelect}
+        {disabled}
+      />
+    {/if}
     {#if is}
       <Component
         {is}
@@ -205,6 +209,7 @@
           isCard,
           type,
           defaultValue,
+          width: '100%',
           editable: !exist && !disabled,
           kind: 'regular',
           size: 'large'
@@ -213,5 +218,23 @@
         on:change={handleChange}
       />
     {/if}
+    <span class="label">
+      <Label label={view.string.AutomationOnly} />
+    </span>
+    <Toggle bind:on={automationOnly} />
   </div>
 </Modal>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    padding: 0.5rem;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

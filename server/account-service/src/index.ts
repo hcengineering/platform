@@ -3,26 +3,36 @@
 //
 
 import account, {
+  type AccountMethods,
+  type Meta,
+  type ClientNetworkPosition,
   EndpointKind,
   accountId,
-  cleanExpiredOtp,
   getAccountDB,
   getAllTransactors,
-  getMethods
+  getMethods,
+  cleanExpiredOtp
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
+import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
+import type Cookies from 'cookies'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
+import { migrateFromOldAccounts } from './migration/migration'
+
+export * from './migration/utils'
+export * from './migration/types'
+
+const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
 
 const KEEP_ALIVE_HEADERS = {
   'Content-Type': 'application/json',
@@ -41,6 +51,32 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     console.log('Please provide DB_URL')
     process.exit(1)
   }
+
+  if (dbUrl.startsWith('mongodb://')) {
+    if (process.env.PROCEED_V7_MONGO !== 'true') {
+      console.error(`
+        ⚠️ IMPORTANT: MongoDB Deprecation Notice
+
+        MongoDB support is deprecated in v7 and will be removed in future versions. Important details:
+
+        1. New features may not be available with MongoDB
+        2. Testing coverage for MongoDB will be limited
+        3. Upgrading to v7 with MongoDB will PERMANENTLY LOCK your deployment to MongoDB-specific types
+        4. Migration to CockroachDB will NOT be possible after upgrading
+
+        ➡️ Recommended Action:
+        Migrate to CockroachDB before upgrading to v7. See migration instructions at:
+        https://github.com/hcengineering/huly-selfhost
+
+        To proceed with MongoDB (despite these limitations):
+        Set environment variable PROCEED_V7_MONGO=true.
+      `)
+      process.exit(1)
+    }
+  }
+
+  const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
+  const oldAccsNs = process.env.OLD_ACCOUNTS_NS
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -66,6 +102,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
 
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
@@ -88,17 +125,26 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.MAIL_URL, mailUrl)
+  setMetadata(account.metadata.MAIL_AUTH_TOKEN, mailAuthToken)
 
   setMetadata(account.metadata.FrontURL, frontURL)
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  // Force undefied, for user tokens do not include service
+  setMetadata(serverToken.metadata.Service, undefined)
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)
 
   const dbNs = process.env.DB_NS
   const accountsDb = getAccountDB(dbUrl, dbNs)
+  const migrations = accountsDb.then(async ([db]) => {
+    if (oldAccsUrl !== undefined) {
+      await migrateFromOldAccounts(oldAccsUrl, db, oldAccsNs)
+      console.log('Migrations verified/done')
+    }
+  })
 
   const app = new Koa()
   const router = new Router()
@@ -136,12 +182,95 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     )
   })
 
-  const extractToken = (header: IncomingHttpHeaders): string | undefined => {
+  const extractCookieToken = (headers: IncomingHttpHeaders): string | undefined => {
+    if (headers.cookie != null) {
+      const cookies = headers.cookie.split(';')
+      const tokenCookie = cookies.find((cookie) => cookie.includes(AUTH_TOKEN_COOKIE))
+      return tokenCookie?.split('=')[1]
+    }
+
+    return undefined
+  }
+
+  const extractAuthorizationToken = (headers: IncomingHttpHeaders): string | undefined => {
     try {
-      return header.authorization?.slice(7) ?? undefined
+      return headers.authorization?.slice(7) ?? undefined
     } catch {
       return undefined
     }
+  }
+
+  const extractToken = (headers: IncomingHttpHeaders): string | undefined => {
+    return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
+  }
+
+  const getRequestMeta = (headers: IncomingHttpHeaders): Meta => {
+    const meta: Meta = {}
+    if (headers?.['x-timezone'] !== undefined) {
+      meta.timezone = headers['x-timezone'] as string
+    }
+
+    if (headers?.['x-client-network-position'] !== undefined) {
+      const val = headers['x-client-network-position'] as string
+      if (['internal', 'external'].includes(val)) {
+        meta.clientNetworkPosition = val as ClientNetworkPosition
+      }
+    }
+
+    return meta
+  }
+
+  function getBranding (ctx: Koa.Context): Branding | null {
+    let host: string | undefined
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    if (origin !== undefined) {
+      host = new URL(origin).host
+    }
+    return host !== undefined ? brandings[host] : null
+  }
+
+  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption[] {
+    const option = {
+      httpOnly: true,
+      secure: ctx.request.secure,
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
+    }
+
+    const options = []
+
+    const branding = getBranding(ctx)
+
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    const target = ctx.request.href
+
+    const originDomain = origin !== undefined ? getCookieDomain(origin) : undefined
+    const targetDomain = getCookieDomain(target)
+
+    options.push({ ...option, domain: targetDomain })
+    if (originDomain !== undefined && originDomain !== targetDomain && branding !== undefined) {
+      options.push({ ...option, domain: originDomain })
+    }
+
+    return options
+  }
+
+  const getCookieDomain = (url: string): string => {
+    const hostname = new URL(url).hostname
+
+    if (hostname === 'localhost') {
+      return hostname
+    }
+
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      return hostname
+    }
+
+    const parts = hostname.split('.')
+    if (parts.length > 2) {
+      return '.' + parts.slice(1).join('.')
+    }
+
+    return hostname
   }
 
   router.get('/api/v1/statistics', (req, res) => {
@@ -173,9 +302,43 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
   })
 
+  router.put('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    // Ensure we don't set the token with workspace to the cookie
+    const { account, extra } = decodeTokenVerbose(measureCtx, token)
+    const tokenWithoutWorkspace = generateToken(account, undefined, extra)
+
+    const cookieOpts = getCookieOptions(ctx)
+    for (const opt of cookieOpts) {
+      ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, opt)
+    }
+
+    ctx.res.writeHead(204)
+    ctx.res.end()
+  })
+
+  router.delete('/cookie', async (ctx) => {
+    const cookieOpts = getCookieOptions(ctx)
+    for (const opt of cookieOpts) {
+      ctx.cookies.set(AUTH_TOKEN_COOKIE, '', { ...opt, maxAge: 0 })
+    }
+
+    ctx.res.writeHead(204)
+    ctx.res.end()
+  })
+
   router.put('/api/v1/manage', async (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractToken(req.headers)
       const payload = decodeToken(token)
       if (payload.extra?.admin !== 'true') {
         req.res.writeHead(404, {})
@@ -191,8 +354,13 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
           const transactors = getAllTransactors(EndpointKind.Internal)
           for (const tr of transactors) {
             const serverEndpoint = tr.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+            const jsonBody = JSON.stringify(req.request.body as any)
             await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${timeMinutes}`, {
-              method: 'PUT'
+              method: 'PUT',
+              body: jsonBody,
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+              }
             })
           }
 
@@ -213,9 +381,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
+    const meta = getRequestMeta(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = methods[request.method]
+    const method = methods[request.method as AccountMethods]
     if (method === undefined) {
       const response = {
         id: request.id,
@@ -229,18 +398,39 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
 
     const [db] = await accountsDb
+    await migrations
 
-    let host: string | undefined
-    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
-    if (origin !== undefined) {
-      host = new URL(origin).host
+    const branding = getBranding(ctx)
+
+    let source = ''
+    try {
+      source = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
+    } catch (err) {
+      // Ignore
     }
-    const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(request.method, {}, (ctx) => method(ctx, db, branding, request, token))
 
-    const body = JSON.stringify(result)
-    ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
-    ctx.res.end(body)
+    await measureCtx.with(
+      request.method,
+      { source },
+      async (_ctx) => {
+        if (method === undefined || typeof method !== 'function') {
+          const response = {
+            id: request.id,
+            error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+          }
+
+          ctx.body = JSON.stringify(response)
+          return
+        }
+
+        const result = await method(_ctx, db, branding, request, token, meta)
+
+        const body = JSON.stringify(result)
+        ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+        ctx.res.end(body)
+      },
+      { method: request.method }
+    )
   })
 
   app.use(router.routes()).use(router.allowedMethods())

@@ -13,14 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Blob, Class, Doc, Ref } from '@hcengineering/core'
   import { AttrValue, MarkupNode, MarkupNodeType, MarkupMarkType } from '@hcengineering/text'
 
   import LiteNodes from './LiteNodes.svelte'
   import ObjectNode from '../ObjectNode.svelte'
   import NodeMarks from '../NodeMarks.svelte'
+  import { getBlobRef } from '../../../preview'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
+
+  function toRefBlob (blobId: AttrValue): Ref<Blob> {
+    return blobId as Ref<Blob>
+  }
 
   function toRef (objectId: string): Ref<Doc> {
     return objectId as Ref<Doc>
@@ -34,15 +40,7 @@
   }
 
   function toString (value: AttrValue | undefined): string | undefined {
-    return value !== undefined ? `${value}` : undefined
-  }
-
-  function toNumber (value: AttrValue | undefined): number | undefined {
-    if (typeof value === 'boolean') {
-      return value ? 1 : 0
-    }
-
-    return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+    return value != null ? `${value}` : undefined
   }
 </script>
 
@@ -51,15 +49,15 @@
   {@const nodes = node.content ?? []}
 
   {#if node.type === MarkupNodeType.doc}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {:else if node.type === MarkupNodeType.text}
     {node.text}
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={true} style:margin="0">
-      <LiteNodes {nodes} />
+    <p class="p-inline" class:overflow-label={true} style:margin="0" class:contrast={!colorInherit} class:colorInherit>
+      <LiteNodes {nodes} {colorInherit} />
     </p>
   {:else if node.type === MarkupNodeType.blockquote}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {:else if node.type === MarkupNodeType.horizontal_rule}
     <!--  nothing-->
   {:else if node.type === MarkupNodeType.code_block}
@@ -72,7 +70,7 @@
           }
         ]}
       >
-        <LiteNodes {nodes} />
+        <LiteNodes {nodes} {colorInherit} />
       </NodeMarks>
     </p>
   {:else if node.type === MarkupNodeType.reference}
@@ -83,17 +81,35 @@
     {#if objectClass !== undefined && objectId !== undefined}
       <ObjectNode _id={toRef(objectId)} _class={toClassRef(objectClass)} title={objectLabel} />
     {:else}
-      <LiteNodes {nodes} />
+      <LiteNodes {nodes} {colorInherit} />
     {/if}
+  {:else if node.type === MarkupNodeType.emoji}
+    <span class="emoji">
+      {#if node.attrs?.kind === 'image'}
+        {@const blob = toRefBlob(attrs.image)}
+        {@const alt = toString(attrs.emoji)}
+        {#await getBlobRef(blob) then blobSrc}
+          <img src={blobSrc.src} {alt} />
+        {/await}
+      {:else}
+        {node.attrs?.emoji}
+      {/if}
+    </span>
   {:else if node.type === MarkupNodeType.taskList}
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.taskItem}
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.subLink}
     <sub>
-      <LiteNodes {nodes} />
+      <LiteNodes {nodes} {colorInherit} />
     </sub>
   {:else}
-    <LiteNodes {nodes} />
+    <LiteNodes {nodes} {colorInherit} />
   {/if}
 {/if}
+
+<style lang="scss">
+  .colorInherit {
+    color: inherit;
+  }
+</style>

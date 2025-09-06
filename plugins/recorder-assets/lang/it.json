@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Annulla",
+    "Pause": "Pausa",
+    "Stop": "Stop",
+    "Resume": "Riprendi",
+    "Record": "Registra",
+    "Done": "Fatto",
+    "CancelRecording": "Annulla registrazione",
+    "CancelRecordingConfirm": "Sei sicuro di voler annullare la registrazione?",
+    "RestartRecording": "Riavvia registrazione",
+    "RestartRecordingConfirm": "Sei sicuro di voler riavviare la registrazione?",
+    "ScreenRecordingName": "Registrazione schermo {date}",
+    "CameraRecordingName": "Registrazione videocamera {date}",
+    "ClickToSkip": "Fai clic per saltare",
+    "RecordVideo": "Registra video",
+    "ShareWithAudio": "Condividi con audio",
+    "ShareScreen": "Condividi schermo",
+    "StopSharing": "Interrompi condivisione",
+    "SelectVideoToRecord": "Abilita la videocamera o condividi lo schermo per registrare",
+    "CameraSize": "Dimensione della videocamera",
+    "CameraPos": "Posizione della videocamera",
+    "Small": "Piccola",
+    "Medium": "Media",
+    "Large": "Grande",
+    "TopLeft": "In alto a sinistra",
+    "TopRight": "In alto a destra",
+    "BottomLeft": "In basso a sinistra",
+    "BottomRight": "In basso a destra",
+    "Resolution": "Risoluzione",
+    "Original": "Originale"
+  }
+}

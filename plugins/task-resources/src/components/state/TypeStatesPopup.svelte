@@ -39,7 +39,7 @@
   ): Status[] {
     if (type === undefined) return []
 
-    let res = type.statuses.map((p) => statusStore.get(p._id)).filter((p) => p !== undefined) as Status[]
+    let res = type.statuses.map((p) => statusStore.get(p._id)).filter((p) => p !== undefined)
     if (taskType !== undefined) {
       res = res.filter((p) => taskType.statuses.includes(p._id))
     }
@@ -50,7 +50,9 @@
 
   function getColor (state: Status, type: ProjectType | undefined, categories: IdMap<StatusCategory>): ColorDefinition {
     const category = state.category ? categories.get(state.category) : undefined
-    const targetColor = type?.statuses?.find((p) => p._id === state._id)?.color ?? state.color ?? category?.color
+    const statusColor = type?.statuses?.find((p) => p._id === state._id)?.color
+    const targetColor =
+      statusColor === undefined || typeof statusColor !== 'string' ? statusColor : state.color ?? category?.color
     return getPlatformColorDef(targetColor ?? getColorNumberByText(state.name), $themeStore.dark)
   }
 

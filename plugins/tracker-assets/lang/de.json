@@ -287,9 +287,7 @@
     "IssueStatus": "Status",
     "Extensions": "Erweiterungen",
     "RoleLabel": "Rolle: {role}",
-    "UnsetParentIssue": "Übergeordnete Aufgabe entfernen",
-    "ForbidCreateProjectPermission": "Projekterstellung verbieten",
-    "ForbidCreateProjectPermissionDescription": "Verbietet Benutzern das Erstellen neuer Projekte"
+    "UnsetParentIssue": "Übergeordnete Aufgabe entfernen"
   },
   "status": {}
 }

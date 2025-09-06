@@ -1,25 +1,34 @@
-const { join } = require("path")
-const { readFileSync, writeFileSync, existsSync, readdirSync, lstatSync, copyFileSync, mkdirSync, rmSync } = require('fs')
+const { join } = require('path')
+const {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  readdirSync,
+  lstatSync,
+  copyFileSync,
+  mkdirSync,
+  rmSync
+} = require('fs')
 const { spawnSync } = require('child_process')
 
 /**
- * 
- * @param {Record<string, string>} current 
- * @param {Record<string, string>} template 
+ *
+ * @param {Record<string, string>} current
+ * @param {Record<string, string>} template
  * @param {string[]|undefined} skip
- * @returns 
+ * @returns
  */
-function update (current, template, skip) {
+function update(current, template, skip) {
   if (template !== undefined && Object.keys(template).length > 0) {
     let value = current ?? {}
     for (const [k, v] of Object.entries(template)) {
-      if(skip !== undefined) {
+      if (skip !== undefined) {
         console.log('check ', k, 'in', skip)
-        if( skip?.includes(k)) {
+        if (skip?.includes(k)) {
           continue
         }
       }
-      if(value[k] !== v) {
+      if (value[k] !== v) {
         console.log('updating ', k, 'to', v)
       }
       value[k] = v
@@ -35,18 +44,18 @@ function copyFiles(source, target, replaces) {
     const targetFile = join(target, f)
     if (lstatSync(sourceFile).isDirectory()) {
       if (!existsSync(targetFile)) {
-        mkdirSync(targetFile, {recursive: true})
+        mkdirSync(targetFile, { recursive: true })
       }
       copyFiles(sourceFile, targetFile, replaces)
     } else {
-      if( f.startsWith('~')) {
+      if (f.startsWith('~')) {
         // File should be removed from target folder
         const newTargetFile = join(target, f.substring(1))
         if (existsSync(newTargetFile)) {
           rmSync(newTargetFile)
         }
       } else {
-        if( replaces.includes(targetFile) && existsSync(targetFile)) {
+        if (replaces.includes(targetFile) && existsSync(targetFile)) {
           // We need replace content of file as defined.
           rmSync(targetFile)
         }
@@ -66,12 +75,12 @@ function updatePackage(packageRoot, templates) {
 
   let template
   for (const t of templates) {
-    if( t.isDefault && currentPackage.template === undefined) {
+    if (t.isDefault && currentPackage.template === undefined) {
       template = t
     }
 
     // Allow to configure explicit template selection
-    if( currentPackage.template === t.package.name) {
+    if (currentPackage.template === t.package.name) {
       template = t
       break
     }
@@ -80,66 +89,78 @@ function updatePackage(packageRoot, templates) {
       const peers = Object.keys(t.package.peerDependencies)
       const deps = Object.keys(currentPackage.dependencies ?? {})
       const devDeps = Object.keys(currentPackage.devDependencies ?? {})
-      if( peers.length > 0 && (peers.every((v) => deps.includes(v)) || peers.every((v) => devDeps.includes(v)))) {
+      if (peers.length > 0 && (peers.every((v) => deps.includes(v)) || peers.every((v) => devDeps.includes(v)))) {
         // If we had every peer dep in package.
         template = t
       }
     }
   }
-  if( template === undefined) {
+  if (template === undefined) {
     console.warn('No template found for package', currentPackage.template)
     return
   }
 
   console.log('updating => ', currentPackage.name, ' with template', template.package.name)
-  
+
   const packageJson = template.package
 
-  currentPackage.devDependencies = update(currentPackage.devDependencies, packageJson.devDependencies )
-  currentPackage.dependencies = update(currentPackage.dependencies, packageJson.dependencies )
+  currentPackage.devDependencies = update(currentPackage.devDependencies, packageJson.devDependencies)
+  currentPackage.dependencies = update(currentPackage.dependencies, packageJson.dependencies)
 
-  if( template.package['#clean'] !== undefined ) {
-    for( const d of template.package['#clean'] ) {
-      if(currentPackage.devDependencies) {
+  if (template.package['#clean'] !== undefined) {
+    for (const d of template.package['#clean']) {
+      if (currentPackage.devDependencies) {
         delete currentPackage.devDependencies[d]
       }
-      if(currentPackage.dependencies) {
+      if (currentPackage.dependencies) {
         delete currentPackage.dependencies[d]
       }
     }
   }
-  currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'] )
+  currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'])
 
   // Replace files section
   currentPackage.files = packageJson.files
 
-  if( template.package['#overrideKeys'] !== undefined) {
-    for( const k of template.package['#overrideKeys'] ) {
+  if (template.package['#overrideKeys'] !== undefined) {
+    for (const k of template.package['#overrideKeys']) {
       const v = packageJson[k]
       console.log(k, v)
-      if(v) {
+      if (v) {
         currentPackage[k] = v
       }
     }
   }
 
-  const preferedOrder = ['name', 'version', 'main', 'svelte', 'types', 'files', 'author', 'template', 'license', 'scripts', 'devDependencies', 'dependencies', 'repository', 'publishConfig']
+  const preferedOrder = [
+    'name',
+    'version',
+    'main',
+    'svelte',
+    'types',
+    'files',
+    'author',
+    'template',
+    'license',
+    'scripts',
+    'devDependencies',
+    'dependencies',
+    'repository',
+    'publishConfig'
+  ]
 
-  Object.keys(currentPackage).forEach(it => {
-    if( !preferedOrder.includes(it)) [
+  Object.keys(currentPackage).forEach((it) => {
+    if (!preferedOrder.includes(it)) {
       preferedOrder.push(it)
-    ]
+    }
   })
 
-  const ordered = preferedOrder.reduce(
-    (obj, key) => { 
-      if( currentPackage[key] !== undefined) {
-        obj[key] = currentPackage[key] 
-      }
-      return obj
-    }, 
-    {}
-  )
+  const ordered = preferedOrder.reduce((obj, key) => {
+    if (currentPackage[key] !== undefined) {
+      obj[key] = currentPackage[key]
+    }
+    return obj
+  }, {})
 
   const newPackage = JSON.stringify(ordered, undefined, 2)
 
@@ -152,38 +173,47 @@ function updatePackage(packageRoot, templates) {
   let replaces = [...(template.package['#replaces'] ?? [])]
   // We need to remove #ignores from replaces
 
-  if( currentPackage['#ignore']!== undefined ) {
-    replaces = replaces.filter(f =>!currentPackage['#ignore'].includes(f))
+  if (currentPackage['#ignore'] !== undefined) {
+    replaces = replaces.filter((f) => !currentPackage['#ignore'].includes(f))
   }
 
-  copyFiles(template.root, packageRoot, replaces.map(f => join(packageRoot, f)) )
+  copyFiles(
+    template.root,
+    packageRoot,
+    replaces.map((f) => join(packageRoot, f))
+  )
 
   // Clean some folders
-  for( const p of template.package['#removes'] ?? []) {
-    if(existsSync(join(packageRoot, p))) {
+  for (const p of template.package['#removes'] ?? []) {
+    if (existsSync(join(packageRoot, p))) {
       rmSync(join(packageRoot, p), { recursive: true })
     }
   }
 }
 
+const ignoreRoots = ['communication']
+
 function listPackages() {
-  const out = spawnSync('rush', ['list', '--json'], { encoding : 'utf8' }).stdout
+  const out = spawnSync('rush', ['list', '--json'], { encoding: 'utf8' }).stdout
   const projects = JSON.parse(out)
-  return projects.projects.map(it => it.fullPath)
+  return projects.projects.map((it) => it.fullPath).filter((it) => !ignoreRoots.some((qt) => it.includes(qt)))
 }
 
 console.log('running at:', __dirname)
 
 const templates = readdirSync(__dirname)
-  .map(d => join(__dirname, d))
-  .filter(d => lstatSync(d).isDirectory() && existsSync(join(d, 'package.json')) )
-  .map(d => ({
-    root: d, 
+  .map((d) => join(__dirname, d))
+  .filter((d) => lstatSync(d).isDirectory() && existsSync(join(d, 'package.json')))
+  .map((d) => ({
+    root: d,
     isDefault: d.endsWith('default'),
     package: JSON.parse(readFileSync(join(d, 'package.json')))
   }))
 
-console.log('Detected templates:', templates.map(t => (t.package.name + ':' + t.package.version)))
+console.log(
+  'Detected templates:',
+  templates.map((t) => t.package.name + ':' + t.package.version)
+)
 
 const projects = listPackages()
 for (const p of projects) {

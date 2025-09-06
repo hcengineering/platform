@@ -27,8 +27,6 @@
     "Rename": "Переименовать",
     "Restore": "Восстановить",
     "RoleLabel": "Роль",
-    "Root": "/",
-    "ForbidCreateDrivePermission": "Запретить создание диска",
-    "ForbidCreateDrivePermissionDescription": "Запрещает пользователям создавать новые диски"
+    "Root": "/"
   }
 }

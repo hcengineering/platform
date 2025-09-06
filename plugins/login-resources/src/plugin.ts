@@ -38,7 +38,6 @@ export default mergeIds(loginId, login, {
     Password: '' as IntlString,
     PasswordRepeat: '' as IntlString,
     Workspace: '' as IntlString,
-    LogIn: '' as IntlString,
     SignUp: '' as IntlString,
     SelectWorkspace: '' as IntlString,
     DoNotHaveAnAccount: '' as IntlString,
@@ -59,7 +58,6 @@ export default mergeIds(loginId, login, {
     AlreadyJoined: '' as IntlString,
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
-    Slogan: '' as IntlString,
     ContinueWith: '' as IntlString,
     HaventReceivedCode: '' as IntlString,
     ResendCode: '' as IntlString,
@@ -68,6 +66,17 @@ export default mergeIds(loginId, login, {
     SentTo: '' as IntlString,
     CanFindCode: '' as IntlString,
     LoginWithCode: '' as IntlString,
-    LoginWithPassword: '' as IntlString
+    LoginWithPassword: '' as IntlString,
+    LoginAsGuest: '' as IntlString,
+    SignUpWithCode: '' as IntlString,
+    SignUpWithPassword: '' as IntlString,
+    Hello: '' as IntlString,
+    ProcessingInvite: '' as IntlString,
+    SignToProceed: '' as IntlString,
+    Proceed: '' as IntlString,
+    SetPasswordLater: '' as IntlString,
+    SetPasswordNow: '' as IntlString,
+    SignUpToCreateWorkspace: '' as IntlString,
+    WhatIsYourName: '' as IntlString
   }
 })

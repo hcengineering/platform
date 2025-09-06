@@ -25,7 +25,8 @@
     panelSeparators,
     ButtonItem,
     Header,
-    HeaderAdaptive
+    HeaderAdaptive,
+    IHeaderState
   } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
@@ -56,6 +57,7 @@
   export let hideActions: boolean = false
   export let hideExtra: boolean = false
   export let overflowExtra: boolean = false
+  export let element: HTMLElement | undefined = undefined
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -75,17 +77,17 @@
 
   const dispatch = createEventDispatcher()
 
-  let el: HTMLElement
   let asideFloat: boolean = false
   let asideShown: boolean = selectedAside !== false
   let hideAside: boolean = !asideShown
   let fullSize: boolean = false
   let oldAside: string | boolean = selectedAside
+  let headerState: IHeaderState
 
   $: if (typeof selectedAside === 'string' && oldAside !== selectedAside) oldAside = selectedAside
   $: setAside(selectedAside)
-  $: if (el !== undefined) {
-    panelWidth = el.clientWidth
+  $: if (element !== undefined) {
+    panelWidth = element.clientWidth
     checkPanel()
   }
 
@@ -143,6 +145,9 @@
   }
 
   let isPrinting = false
+  afterUpdate(() => {
+    dispatch('resize', { panelWidth, innerWidth, ...headerState })
+  })
 </script>
 
 <svelte:window
@@ -155,7 +160,7 @@
 />
 
 <div
-  bind:this={el}
+  bind:this={element}
   class="popupPanel panel"
   class:withPageHeader={$$slots['page-header'] !== undefined}
   class:withPageFooter={$$slots['page-footer'] !== undefined}
@@ -174,6 +179,10 @@
     {hideActions}
     {hideExtra}
     {overflowExtra}
+    on:resize={(event) => {
+      if (event.detail.headerWidth === undefined) return
+      headerState = event.detail
+    }}
   >
     <svelte:fragment slot="beforeTitle">
       {#if allowClose}

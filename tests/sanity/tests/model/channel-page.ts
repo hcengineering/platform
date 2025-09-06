@@ -12,11 +12,15 @@ export class ChannelPage extends CommonPage {
 
   readonly inputMessage = (): Locator => this.page.locator('div[class~="text-editor-view"]')
   readonly buttonSendMessage = (): Locator => this.page.locator('g#Send')
-  readonly textMessage = (messageText: string): Locator =>
-    this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
+  readonly textMessage = (messageText: string, strict = false): Locator =>
+    strict
+      ? this.page.locator('.hulyComponent .activityMessage div[data-delivered]', { hasText: messageText })
+      : this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
 
-  readonly textMessageInSidebar = (messageText: string): Locator =>
-    this.page.locator('#sidebar .activityMessage', { hasText: messageText })
+  readonly textMessageInSidebar = (messageText: string, strict = false): Locator =>
+    strict
+      ? this.page.locator('#sidebar .activityMessage div[data-delivered]', { hasText: messageText })
+      : this.page.locator('#sidebar .activityMessage', { hasText: messageText })
 
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
@@ -79,7 +83,7 @@ export class ChannelPage extends CommonPage {
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
-  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
 
   readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
@@ -101,9 +105,20 @@ export class ChannelPage extends CommonPage {
     await this.buttonSendMessage().click()
   }
 
-  async sendMention (message: string): Promise<void> {
-    await this.inputMessage().fill(`@${message}`)
-    await this.selectMention(message)
+  async sendMention (message: string, categoryName?: string): Promise<void> {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.inputMessage().fill(`@${message}`)
+        await this.selectMention(message, categoryName)
+        break
+      } catch (error: any) {
+        if (i === 2) {
+          throw error
+        }
+        await this.page.waitForTimeout(1000)
+      }
+    }
+
     await this.buttonSendMessage().click()
   }
 
@@ -186,7 +201,8 @@ export class ChannelPage extends CommonPage {
   }
 
   async clickChooseChannel (channel: string): Promise<void> {
-    await this.chooseChannel(channel).click({ force: true })
+    await expect(this.chooseChannel(channel)).toBeVisible()
+    await this.chooseChannel(channel).click()
   }
 
   async addEmoji (textMessage: string, emoji: string): Promise<void> {
@@ -208,10 +224,12 @@ export class ChannelPage extends CommonPage {
     await expect(this.pinnedMessage(message)).toBeVisible()
   }
 
-  async replyToMessage (message: string, messageReply: string): Promise<void> {
+  async replyMessage (message: string): Promise<void> {
     await this.textMessage(message).hover()
     await this.replyButton().click()
-    await this.page.waitForTimeout(500)
+  }
+
+  async sendReply (messageReply: string): Promise<void> {
     await this.page.keyboard.type(messageReply)
     await this.page.keyboard.press('Enter')
   }
@@ -279,7 +297,7 @@ export class ChannelPage extends CommonPage {
 
   async checkMessageExist (message: string, messageExists: boolean, messageText: string): Promise<void> {
     if (messageExists) {
-      await expect(this.textMessage(messageText)).toBeVisible()
+      await expect(this.textMessage(messageText, true)).toBeVisible()
     } else {
       await expect(this.textMessage(messageText)).toBeHidden()
     }
@@ -287,7 +305,7 @@ export class ChannelPage extends CommonPage {
 
   async checkIfMessageExistInSidebar (messageExists: boolean, messageText: string): Promise<void> {
     if (messageExists) {
-      await expect(this.textMessageInSidebar(messageText)).toBeVisible()
+      await expect(this.textMessageInSidebar(messageText, true)).toBeVisible()
     } else {
       await expect(this.textMessageInSidebar(messageText)).toBeHidden()
     }

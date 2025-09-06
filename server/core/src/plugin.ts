@@ -16,7 +16,7 @@
 
 import { type Metadata, type Plugin, plugin } from '@hcengineering/platform'
 
-import type { Class, Ref, Space, Mixin } from '@hcengineering/core'
+import type { Class, Mixin, Ref } from '@hcengineering/core'
 import type { ObjectDDParticipant, SearchPresenter, Trigger } from './types'
 
 /**
@@ -34,9 +34,6 @@ const serverCore = plugin(serverCoreId, {
   mixin: {
     ObjectDDParticipant: '' as Ref<ObjectDDParticipant>,
     SearchPresenter: '' as Ref<Mixin<SearchPresenter>>
-  },
-  space: {
-    DocIndexState: '' as Ref<Space>
   },
   metadata: {
     FrontUrl: '' as Metadata<string>,

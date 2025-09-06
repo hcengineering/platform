@@ -6,6 +6,7 @@
     "Save": "保存",
     "Saved": "已保存...",
     "Download": "下载",
+    "DownloadOriginal": "下载原文件",
     "Delete": "删除",
     "Close": "关闭",
     "NotSelected": "未选择",
@@ -29,6 +30,7 @@
     "MakePrivate": "设为私有",
     "MakePrivateDescription": "只有成员可以查看",
     "Created": "已创建",
+    "Selected": "已选",
     "NoResults": "没有可显示结果",
     "Next": "下一步",
     "FailedToPreview": "预览失败",
@@ -38,7 +40,20 @@
     "DrawingHistory": "涂鸦的历史",
     "ColorAdd": "添加颜色预设",
     "ColorRemove": "删除颜色预设",
-    "ColorReset": "重置颜色预设"
+    "ColorReset": "重置颜色预设",
+    "Copy": "复制",
+    "DocumentUrlCopied": "已复制",
+    "CopyLink": "复制链接",
+    "AccessDenied": "对象不存在或您无权访问。",
+    "UnableToFollowMention": "无法打开提及的对象",
+    "Undo": "撤销",
+    "Redo": "重做",
+    "ClearCanvas": "清除画布",
+    "PenTool": "画笔工具",
+    "EraserTool": "橡皮擦工具",
+    "PanTool": "移动工具",
+    "TextTool": "文字工具",
+    "PaletteManagementMenu": "管理颜色预设"
   },
   "status": {
     "FileTooLarge": "文件太大"

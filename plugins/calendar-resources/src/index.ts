@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020-2025 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,9 +14,9 @@
 //
 
 import { type ReccuringInstance } from '@hcengineering/calendar'
-import { type Doc, type TxOperations, concatLink } from '@hcengineering/core'
-import { type Resources, getMetadata } from '@hcengineering/platform'
-import presentation, { getClient } from '@hcengineering/presentation'
+import { type Doc, type TxOperations } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import { closePopup, showPopup } from '@hcengineering/ui'
 import CalendarView from './components/CalendarView.svelte'
 import CreateEvent from './components/CreateEvent.svelte'
@@ -42,9 +42,15 @@ import VisibilityEditor from './components/VisibilityEditor.svelte'
 import CalendarSelector from './components/CalendarSelector.svelte'
 import ConnectApp from './components/ConnectApp.svelte'
 import CalendarWidget from './components/CalendarWidget.svelte'
+import ScheduleNavSection from './components/ScheduleNavSection.svelte'
+import CalendarSettings from './components/CalendarSettings.svelte'
+import IntegrationState from './components/IntegrationState.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
+import { eventTitleProvider, configureCalDavAccess } from './utils'
+import { type Integration } from '@hcengineering/account-client'
+import { disconnect, disconnectAll } from './api'
 
 export {
   EventElement,
@@ -56,7 +62,8 @@ export {
   EventReminders,
   VisibilityEditor,
   CalendarSelector,
-  EventPresenter
+  EventPresenter,
+  ScheduleNavSection
 }
 
 export type {
@@ -105,7 +112,8 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         visibility: object.visibility,
         access: object.access,
         timeZone: object.timeZone,
-        user: object.user
+        user: object.user,
+        blockTime: object.blockTime
       },
       object._id
     )
@@ -192,24 +200,24 @@ export default async (): Promise<Resources> => ({
     CalendarEventPresenter,
     IntegrationConfigure,
     ConnectApp,
-    CalendarWidget
+    CalendarWidget,
+    CalendarSettings,
+    IntegrationState
   },
   actionImpl: {
     SaveEventReminder: saveEventReminder,
     DeleteRecEvent: deleteRecEvent
   },
   handler: {
-    DisconnectHandler: async (value: string) => {
-      const url = getMetadata(calendar.metadata.CalendarServiceURL)
-      const token = getMetadata(presentation.metadata.Token)
-      if (url === undefined || token === undefined) return
-      await fetch(concatLink(url, `/signout?value=${value}`), {
-        method: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        }
-      })
+    DisconnectHandler: async (integration: Integration) => {
+      await disconnect(integration)
+    },
+    DisconnectAllHandler: async (integration: Integration): Promise<void> => {
+      await disconnectAll(integration)
     }
+  },
+  function: {
+    ConfigureCalDavAccess: configureCalDavAccess,
+    EventTitleProvider: eventTitleProvider
   }
 })

@@ -14,7 +14,6 @@
 //
 
 import core, {
-  type Account,
   type AttachedDoc,
   type Class,
   ClassifierKind,
@@ -25,10 +24,11 @@ import core, {
   type LowLevelStorage,
   type MeasureContext,
   type Mixin,
+  type PersonId,
   type Ref,
   type SessionData,
   type Tx,
-  TxCUD,
+  type TxCUD,
   TxFactory,
   type TxRemoveDoc,
   type TxUpdateDoc,
@@ -37,17 +37,20 @@ import core, {
   withContext
 } from '@hcengineering/core'
 import { PlatformError, getResource, unknownError } from '@hcengineering/platform'
-import type {
-  Middleware,
-  ObjectDDParticipant,
-  PipelineContext,
-  ServerFindOptions,
-  ServiceAdaptersManager,
-  StorageAdapter,
-  TriggerControl,
-  TxMiddlewareResult
+import serverCore, {
+  type Middleware,
+  type ObjectDDParticipant,
+  type PipelineContext,
+  type ServerFindOptions,
+  type ServiceAdaptersManager,
+  type StorageAdapter,
+  type TriggerControl,
+  type TxMiddlewareResult,
+  BaseMiddleware,
+  SessionDataImpl,
+  type SessionFindAll,
+  Triggers
 } from '@hcengineering/server-core'
-import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers } from '@hcengineering/server-core'
 import { filterBroadcastOnly } from './utils'
 
 /**
@@ -92,7 +95,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     this.triggers.init(this.context.modelDb)
   }
 
-  async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
+  async tx (ctx: MeasureContext<SessionData>, tx: Tx[]): Promise<TxMiddlewareResult> {
     await this.triggers.tx(tx)
     const result = await this.provideTx(ctx, tx)
 
@@ -133,10 +136,15 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.context.serviceAdapterManager as ServiceAdaptersManager,
       findAll,
+      queue: this.context.queue,
       contextCache: ctx.contextData.contextCache,
       modelDb: this.context.modelDb,
       hierarchy: this.context.hierarchy,
       cache: this.cache,
+      userStatusMap: this.context.userStatusMap ?? new Map(),
+      domainRequest: async (ctx, domain, params) => {
+        return (await this.context.head?.domainRequest(ctx, domain, params)) ?? { domain, value: undefined }
+      },
       apply: async (ctx, tx, needResult) => {
         if (needResult === true) {
           return (await this.context.derived?.tx(ctx, tx)) ?? {}
@@ -176,7 +184,9 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     } else {
       ctx.contextData.asyncRequests = [
         ...(ctx.contextData.asyncRequests ?? []),
-        async () => {
+        async (_ctx, id?: string) => {
+          // Just replace id of previous context
+          ctx.id = id
           // In case of async context, we execute both async and sync triggers as sync
           await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
         }
@@ -214,16 +224,17 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   ): Promise<void> {
     const sctx = ctx.contextData
     const asyncContextData: SessionDataImpl = new SessionDataImpl(
-      sctx.userEmail,
+      sctx.account,
       sctx.sessionId,
       sctx.admin,
-      { txes: [], targets: {} },
+      { txes: [], targets: {}, queue: [], sessions: {} },
       this.context.workspace,
-      this.context.branding,
       true,
       sctx.removedMap,
       sctx.contextCache,
-      this.context.modelDb
+      this.context.modelDb,
+      sctx.socialStringsToUsers,
+      sctx.service
     )
     ctx.contextData = asyncContextData
     const aresult = await this.triggers.apply(
@@ -244,6 +255,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         // We need to send all to recipients
         await this.context.head?.handleBroadcast(ctx)
       })
+    } else if (ctx.contextData.hasDomainBroadcast === true) {
+      await ctx.with('broadcast-async-domain-request', {}, async (ctx) => {
+        await this.context.head?.handleBroadcast(ctx)
+      })
     }
   }
 
@@ -258,7 +273,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private getCollectionUpdateTx<D extends Doc>(
     _id: Ref<D>,
     _class: Ref<Class<D>>,
-    modifiedBy: Ref<Account>,
+    modifiedBy: PersonId,
     modifiedOn: number,
     attachedTo: Pick<Doc, '_class' | 'space'>,
     update: DocumentUpdate<D>
@@ -301,8 +316,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
 
         result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll)))
       }
-
-      result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll)))
     }
     return result
   }

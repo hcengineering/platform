@@ -96,7 +96,9 @@ const survey = plugin(surveyId, {
     ValidateFail: '' as IntlString,
     ValidateInfo: '' as IntlString,
     ValidateOk: '' as IntlString,
-    EditAnswers: '' as IntlString
+    EditAnswers: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   component: {
     CreateSurvey: '' as AnyComponent,

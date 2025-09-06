@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "contient",
+    "NotContains": "ne contient pas",
     "MoveClass": "Déplacer {class}",
     "SelectToMove": "Sélectionnez le {classLabel} vers lequel vous souhaitez déplacer {class}.",
     "Delete": "Supprimer",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personnaliser la vue",
     "Filter": "Filtrer",
     "ClearFilters": "Effacer les filtres",
+    "FilterLessThan": "Moins que",
+    "FilterGreaterThan": "Plus que",
     "FilterIsNot": "n'est pas",
     "FilterIsEither": "est",
     "FilterIsEitherPlural": "sont",
@@ -100,8 +103,8 @@
     "Between": "est entre",
     "ShowColors": "Utiliser les couleurs",
     "Show": "Afficher",
-    "FilterArrayAll": "inclut tous",
-    "FilterArrayAny": "inclut n'importe lequel",
+    "FilterArrayAll": "tous",
+    "FilterArrayAny": "n'importe lequel",
     "Or": "Ou",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copier dans le presse-papiers",
@@ -123,7 +126,22 @@
     "Copied": "Copié",
     "Title": "Titre",
     "HideArchived": "Masquer les archives",
-    "RemoveRelation": "Supprimer la relation",  
-    "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?" 
+    "RemoveRelation": "Supprimer la relation",
+    "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?",
+    "MasterDetail": "Maître-détail",
+    "Tree": "Arbre",
+    "Document": "Document",
+    "Loading": "Chargement...",
+    "NoRelations": "Aucune relation",
+    "ReadOnlyWarningTitle": "✨ Démo invité anonyme",
+    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Choisissez votre voie : Rejoignez cet espace pour collaborer (en tant qu'invité) ou créez votre propre espace pour gérer pleinement les projets — tâches, délais, équipe !",
+    "ReadOnlyJoinWorkspace": "Rejoindre l'espace",
+    "ReadOnlySignUp": "Créer un espace",
+    "PermissionWarningTitle": "✨ Améliorez votre accès !",
+    "PermissionWarningMessage": "Votre rôle actuel a des autorisations limitées. Pour débloquer cette fonctionnalité et d'autres fonctionnalités avancées, demandez à l'administrateur de votre espace de travail de mettre à jour votre niveau d'accès !",
+    "Icon": "Icône",
+    "Color": "Couleur",
+    "AutomationOnly": "Automatisation uniquement",
+    "CopyLink": "Copier le lien"
   }
 }

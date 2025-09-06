@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+import { type AccountClient } from '@hcengineering/account-client'
 import core, {
-  Branding,
+  type Branding,
+  type Client,
   coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
@@ -23,32 +25,47 @@ import core, {
   DOMAIN_TX,
   groupByArray,
   Hierarchy,
-  MeasureContext,
-  MigrationState,
+  type MeasureContext,
+  type MigrationState,
   ModelDb,
-  systemAccountEmail,
-  Tx,
-  TxOperations,
-  WorkspaceId,
-  WorkspaceIdWithUrl,
-  type Client,
+  type PersonInfo,
+  platformNow,
+  platformNowDiff,
   type Ref,
-  type WithLookup
+  type Tx,
+  type TxOperations,
+  type WithLookup,
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate, type MigrateMode } from '@hcengineering/model'
-import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
-import { InitScript, WorkspaceInitializer } from './initializer'
+import {
+  consoleModelLogger,
+  type MigrateMode,
+  type MigrateOperation,
+  type ModelLogger,
+  tryMigrate
+} from '@hcengineering/model'
+import {
+  type DbAdapter,
+  DomainIndexHelperImpl,
+  type Pipeline,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage,
+  type StorageAdapter
+} from '@hcengineering/server-core'
+import { type InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
-import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
 import * as yaml from 'js-yaml'
 import path from 'path'
+import { sendTransactorEvent } from './utils'
 
 export * from './connect'
 export * from './plugin'
+export * from './utils'
 export { toolPlugin as default }
 
 export class FileModelLogger implements ModelLogger {
@@ -96,7 +113,7 @@ export function prepareTools (rawTxes: Tx[]): {
  */
 export async function initModel (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   rawTxes: Tx[],
   adapter: DbAdapter,
   storageAdapter: StorageAdapter,
@@ -109,7 +126,7 @@ export async function initModel (
   }
 
   try {
-    logger.log('creating database...', workspaceId)
+    logger.log('creating database...', { workspaceId })
     const firstTx: Tx = {
       _class: core.class.Tx,
       _id: 'first-tx' as Ref<Tx>,
@@ -128,8 +145,8 @@ export async function initModel (
     await progress(60)
 
     logger.log('create storage bucket', { workspaceId })
-
-    await storageAdapter.make(ctx, workspaceId)
+    const wsIds = { uuid: workspaceId, url: '' } // We don't need dataId for new workspaces
+    await storageAdapter.make(ctx, wsIds)
     await progress(100)
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })
@@ -141,7 +158,7 @@ export async function initModel (
 
 export async function updateModel (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   migrateOperations: [string, MigrateOperation][],
   connection: TxOperations,
   pipeline: Pipeline,
@@ -164,11 +181,11 @@ export async function updateModel (
     try {
       let i = 0
       for (const op of migrateOperations) {
-        const st = Date.now()
+        const st = platformNow()
         await ctx.with(op[0], {}, async () => {
           await op[1].upgrade(migrateState, async () => connection as any, mode)
         })
-        const tdelta = Date.now() - st
+        const tdelta = platformNowDiff(st)
         if (tdelta > 0) {
           logger.log('Create', { name: op[0], time: tdelta })
         }
@@ -189,16 +206,16 @@ export async function updateModel (
 export async function initializeWorkspace (
   ctx: MeasureContext,
   branding: Branding | null,
-  wsUrl: WorkspaceIdWithUrl,
+  wsIds: WorkspaceIds,
+  personInfo: PersonInfo,
   storageAdapter: StorageAdapter,
   client: TxOperations,
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-  const initRepoDir = getMetadata(toolPlugin.metadata.InitRepoDir)
+  const initRepoDir = getMetadata(toolPlugin.metadata.InitRepoDir) ?? ''
   ctx.info('Init script details', { initWS, initRepoDir })
-  if (initWS === undefined || initRepoDir === undefined) return
 
   const initScriptFile = path.resolve(initRepoDir, 'script.yaml')
   if (!fs.existsSync(initScriptFile)) {
@@ -221,7 +238,7 @@ export async function initializeWorkspace (
       return
     }
 
-    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client, initRepoDir)
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsIds, client, initRepoDir, personInfo)
     await initializer.processScript(script, logger, progress)
   } catch (err: any) {
     ctx.error('Failed to initialize workspace', { error: err })
@@ -235,11 +252,13 @@ export async function initializeWorkspace (
 export async function upgradeModel (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceIdWithUrl,
+  wsIds: WorkspaceIds,
   txes: Tx[],
   pipeline: Pipeline,
   connection: Client,
   storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>,
@@ -255,12 +274,15 @@ export async function upgradeModel (
 
   const { hierarchy, modelDb, model } = await buildModel(ctx, newModel)
   const { migrateClient: preMigrateClient } = await prepareMigrationClient(
+    ctx,
     pipeline,
     hierarchy,
     modelDb,
     logger,
     storageAdapter,
-    workspaceId
+    accountClient,
+    wsIds,
+    queue
   )
 
   await progress(0)
@@ -273,26 +295,29 @@ export async function upgradeModel (
       }
       const preMigrate = op[1].preMigrate
 
-      const t = Date.now()
+      const t = platformNow()
       try {
         await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger, mode))
       } catch (err: any) {
         logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
         throw err
       }
-      logger.log('pre-migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+      logger.log('pre-migrate:', { workspaceId: wsIds, operation: op[0], time: platformNowDiff(t) })
       await progress(((100 / migrateOperations.length) * i * 10) / 100)
       i++
     }
   })
 
   const { migrateClient, migrateState } = await prepareMigrationClient(
+    ctx,
     pipeline,
     hierarchy,
     modelDb,
     logger,
     storageAdapter,
-    workspaceId
+    accountClient,
+    wsIds,
+    queue
   )
 
   const upgradeIndexes = async (): Promise<void> => {
@@ -304,9 +329,9 @@ export async function upgradeModel (
       modelDb,
       pipeline,
       async (value) => {
-        await progress(90 + (Math.min(value, 100) / 100) * 10)
+        await progress(10 + (Math.min(value, 100) / 100) * 10)
       },
-      workspaceId
+      wsIds.uuid
     )
   }
   if (updateIndexes === 'perform') {
@@ -317,11 +342,11 @@ export async function upgradeModel (
     let i = 0
     for (const op of migrateOperations) {
       try {
-        const t = Date.now()
+        const t = platformNow()
         await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, mode))
-        const tdelta = Date.now() - t
+        const tdelta = platformNowDiff(t)
         if (tdelta > 0) {
-          logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+          logger.log('migrate:', { workspaceId: wsIds, operation: op[0], time: tdelta })
         }
       } catch (err: any) {
         logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
@@ -341,7 +366,7 @@ export async function upgradeModel (
     }
   })
 
-  logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
+  logger.log('Apply upgrade operations', { workspaceId: wsIds })
 
   await ctx.with('upgrade', {}, async (ctx) => {
     let i = 0
@@ -350,7 +375,7 @@ export async function upgradeModel (
       await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, mode))
       const tdelta = Date.now() - t
       if (tdelta > 0) {
-        logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: workspaceId.name })
+        logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: wsIds })
       }
       await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
       i++
@@ -358,31 +383,37 @@ export async function upgradeModel (
   })
 
   // We need to send reboot for workspace
-  ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
-  const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-  const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
-  try {
-    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
-      method: 'PUT'
-    })
-  } catch (err: any) {
-    // Ignore error if transactor is not yet ready
-  }
+  ctx.info('send force close', { workspace: wsIds, transactorUrl })
+
+  await sendTransactorEvent(wsIds.uuid, 'force-close')
   return model
 }
 
 async function prepareMigrationClient (
+  ctx: MeasureContext,
   pipeline: Pipeline,
   hierarchy: Hierarchy,
   model: ModelDb,
   logger: ModelLogger,
   storageAdapter: StorageAdapter,
-  workspaceId: WorkspaceId
+  accountClient: AccountClient,
+  wsIds: WorkspaceIds,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>
 ): Promise<{
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, workspaceId)
+  const migrateClient = new MigrateClientImpl(
+    pipeline,
+    hierarchy,
+    model,
+    logger,
+    storageAdapter,
+    accountClient,
+    wsIds,
+    queue,
+    ctx
+  )
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
 
@@ -421,7 +452,7 @@ async function createUpdateIndexes (
   model: ModelDb,
   pipeline: Pipeline,
   progress: (value: number) => Promise<void>,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
 ): Promise<void> {
   const domainHelper = new DomainIndexHelperImpl(ctx, hierarchy, model, workspaceId)
   let completed = 0

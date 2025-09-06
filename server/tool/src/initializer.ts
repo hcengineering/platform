@@ -1,23 +1,29 @@
 import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
-  AttachedDoc,
-  Class,
-  Data,
-  Doc,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
   generateId,
   makeCollabId,
-  MeasureContext,
-  Mixin,
-  Ref,
-  Space,
-  TxOperations,
-  WorkspaceIdWithUrl
+  type MeasureContext,
+  type Mixin,
+  type Ref,
+  type SocialIdType,
+  type Space,
+  type TxOperations,
+  pickPrimarySocialId,
+  type PersonId,
+  type PersonInfo,
+  type WorkspaceIds,
+  buildSocialIdString
 } from '@hcengineering/core'
-import { ModelLogger } from '@hcengineering/model'
+import { type ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { v4 as uuid } from 'uuid'
 import path from 'path'
 
@@ -105,21 +111,41 @@ export class WorkspaceInitializer {
   private readonly imageUrl = 'image://'
   private readonly nextRank = '#nextRank'
   private readonly now = '#now'
+  private readonly creatorPersonVar = 'creatorPerson'
+  private readonly socialId: PersonId
+  private readonly socialKey: string
+  private readonly socialType: SocialIdType
+  private readonly socialValue: string
 
   constructor (
     private readonly ctx: MeasureContext,
     private readonly storageAdapter: StorageAdapter,
-    private readonly wsUrl: WorkspaceIdWithUrl,
+    private readonly wsIds: WorkspaceIds,
     private readonly client: TxOperations,
-    private readonly initRepoDir: string
-  ) {}
+    private readonly initRepoDir: string,
+    private readonly creator: PersonInfo
+  ) {
+    const primarySocialId = pickPrimarySocialId(creator.socialIds)
+    this.socialId = primarySocialId._id
+    this.socialKey = buildSocialIdString(primarySocialId)
+    this.socialType = primarySocialId.type
+    this.socialValue = primarySocialId.value
+  }
 
   async processScript (
     script: InitScript,
     logger: ModelLogger,
     progress: (value: number) => Promise<void>
   ): Promise<void> {
-    const vars: Record<string, any> = {}
+    const vars: Record<string, any> = {
+      '${creatorName@global}': this.creator.name, // eslint-disable-line no-template-curly-in-string
+      '${creatorUuid@global}': this.creator.personUuid, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialId@global}': this.socialId, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialKey@global}': this.socialKey, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialType@global}': this.socialType, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialValue@global}': this.socialValue // eslint-disable-line no-template-curly-in-string
+    }
+
     const defaults = new Map<Ref<Class<Doc>>, Props<Doc>>()
     for (let index = 0; index < script.steps.length; index++) {
       try {
@@ -163,7 +189,8 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, buffer.length)
+
+      await this.storageAdapter.put(this.ctx, this.wsIds, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
         vars[`\${${step.resultVariable}}`] = id
         vars[`\${${step.resultVariable}_size}`] = buffer.length
@@ -176,9 +203,9 @@ export class WorkspaceInitializer {
 
   private async processImport (step: ImportStep, vars: Record<string, any>, logger: ModelLogger): Promise<void> {
     try {
-      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsUrl)
+      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsIds)
       const initPath = path.resolve(this.initRepoDir, step.path)
-      const importer = new HulyFormatImporter(this.client, uploader, logger)
+      const importer = new HulyFormatImporter(this.client, uploader, logger, vars)
       await importer.importFolder(initPath)
     } catch (error) {
       logger.error('Import failed', error)
@@ -230,15 +257,17 @@ export class WorkspaceInitializer {
     vars: Record<string, any>,
     defaults: Map<Ref<Class<T>>, Props<T>>
   ): Promise<void> {
-    const _id = step.data._id ?? generateId<T>()
-    if (step.resultVariable !== undefined) {
-      vars[`\${${step.resultVariable}}`] = _id
-    }
     const data = await this.fillPropsWithMarkdown(
       { ...(defaults.get(step._class) ?? {}), ...step.data },
       vars,
       step.markdownFields
     )
+
+    const _id = (data._id as Ref<T>) ?? generateId<T>()
+
+    if (step.resultVariable !== undefined) {
+      vars[`\${${step.resultVariable}}`] = _id
+    }
 
     if (step.collabFields !== undefined) {
       for (const field of step.collabFields) {
@@ -249,11 +278,11 @@ export class WorkspaceInitializer {
       }
     }
 
-    await this.create(step._class, data, _id as Ref<T>)
+    await this.create(step._class, data, _id)
   }
 
   private parseMarkdown (text: string): string {
-    const json = parseMessageMarkdown(text ?? '', this.imageUrl)
+    const json = markdownToMarkup(text ?? '', { imageUrl: this.imageUrl })
     return JSON.stringify(json)
   }
 
@@ -317,10 +346,10 @@ export class WorkspaceInitializer {
   ): Promise<string> {
     const doc = makeCollabId(objectClass, objectId, objectAttr)
 
-    const json = parseMessageMarkdown(data ?? '', this.imageUrl)
+    const json = markdownToMarkup(data ?? '', { imageUrl: this.imageUrl })
     const markup = jsonToMarkup(json)
 
-    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsUrl, doc, markup)
+    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

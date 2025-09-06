@@ -1,13 +1,13 @@
 import core, {
-  AccountRole,
+  type AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
-  systemAccountEmail,
+  systemAccount,
   type Account,
+  type AccountUuid,
   type BackupClient,
-  type Branding,
   type BrandingMap,
   type BulkUpdateEvent,
   type Class,
@@ -17,19 +17,23 @@ import core, {
   type DocChunk,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type MeasureContext,
   type ModelDb,
+  type OperationDomain,
+  type PersonId,
   type Ref,
   type SearchResult,
   type SessionData,
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
+import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
 import type { DbAdapter } from './adapter'
@@ -154,46 +158,29 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
   }
 }
 
-export function getUser (modelDb: ModelDb, userEmail: string | undefined, admin?: boolean): Account {
-  if (userEmail === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  const account = modelDb.getAccountByEmail(userEmail)
-  if (account === undefined) {
-    if (userEmail === systemAccountEmail || admin === true) {
-      return {
-        _id: core.account.System,
-        _class: core.class.Account,
-        role: AccountRole.Owner,
-        email: systemAccountEmail,
-        space: core.space.Model,
-        modifiedBy: core.account.System,
-        modifiedOn: 0
-      }
-    }
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  return account
-}
-
 export class SessionDataImpl implements SessionData {
-  _account: Account | undefined
   _removedMap: Map<Ref<Doc>, Doc> | undefined
   _contextCache: Map<string, any> | undefined
   _broadcast: SessionData['broadcast'] | undefined
 
   constructor (
-    readonly userEmail: string,
+    readonly account: Account,
     readonly sessionId: string,
     readonly admin: boolean | undefined,
     _broadcast: SessionData['broadcast'] | undefined,
-    readonly workspace: WorkspaceIdWithUrl,
-    readonly branding: Branding | null,
+    readonly workspace: WorkspaceIds,
     readonly isAsyncContext: boolean,
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
-    readonly rawAccount?: Account
+    readonly socialStringsToUsers: Map<
+    PersonId,
+    {
+      accontUuid: AccountUuid
+      role: AccountRole
+    }
+    >,
+    readonly service: string
   ) {
     this._removedMap = _removedMap
     this._contextCache = _contextCache
@@ -204,7 +191,9 @@ export class SessionDataImpl implements SessionData {
     if (this._broadcast === undefined) {
       this._broadcast = {
         targets: {},
-        txes: []
+        txes: [],
+        queue: [],
+        sessions: {}
       }
     }
     return this._broadcast
@@ -222,15 +211,6 @@ export class SessionDataImpl implements SessionData {
       this._contextCache = new Map()
     }
     return this._contextCache
-  }
-
-  get account (): Account {
-    this._account = this.rawAccount ?? this._account ?? getUser(this.modelDb, this.userEmail, this.admin)
-    return this._account
-  }
-
-  getAccount (account: Ref<Account>): Account | undefined {
-    return this.modelDb.findObject(account)
   }
 }
 
@@ -266,19 +246,21 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
 export function wrapPipeline (
   ctx: MeasureContext,
   pipeline: Pipeline,
-  wsUrl: WorkspaceIdWithUrl
+  wsIds: WorkspaceIds,
+  doBroadcast: boolean = false
 ): Client & BackupClient {
   const contextData = new SessionDataImpl(
-    systemAccountEmail,
+    systemAccount,
     'pipeline',
     true,
-    { targets: {}, txes: [] },
-    wsUrl,
-    null,
+    { targets: {}, txes: [], queue: [], sessions: {} },
+    wsIds,
     true,
     undefined,
     undefined,
-    pipeline.context.modelDb
+    pipeline.context.modelDb,
+    new Map(),
+    'transactor'
   )
   ctx.contextData = contextData
   if (pipeline.context.lowLevelStorage === undefined) {
@@ -290,6 +272,9 @@ export function wrapPipeline (
     findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
     findOne: async (_class, query, options) =>
       (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
+    domainRequest: async (domain, params) => {
+      return await pipeline.domainRequest(ctx, domain, params)
+    },
     clean: (domain, docs) => backupOps.clean(ctx, domain, docs),
     close: () => pipeline.close(),
     closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
@@ -301,7 +286,13 @@ export function wrapPipeline (
     upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
     sendForceClose: async () => {},
-    tx: (tx) => pipeline.tx(ctx, [tx]),
+    tx: async (tx) => {
+      const result = await pipeline.tx(ctx, [tx])
+      if (doBroadcast) {
+        await pipeline.handleBroadcast(ctx)
+      }
+      return result
+    },
     notify: (...tx) => {}
   }
 }
@@ -323,12 +314,18 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       return this.handler
     }
 
+    pushHandler (): void {}
+
     async findAll<T extends Doc>(
       _class: Ref<Class<Doc>>,
       query: DocumentQuery<Doc>,
       options?: FindOptions<Doc>
     ): Promise<FindResult<T>> {
       return (await storageAdapter.findAll(ctx, _class, query, options)) as any
+    }
+
+    async domainRequest<T>(domain: OperationDomain, params: DomainParams): Promise<DomainResult<T>> {
+      return { domain, value: null as any }
     }
 
     async tx (tx: Tx): Promise<TxResult> {
@@ -361,10 +358,6 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
 
     async loadModel (): Promise<Tx[]> {
       return txes
-    }
-
-    async getAccount (): Promise<Account> {
-      return {} as any
     }
 
     async sendForceClose (): Promise<void> {}

@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
-
-  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import { OK, Severity, Status } from '@hcengineering/platform'
+  import { getCurrentLocation } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
+
   import login from '../plugin'
   import { afterConfirm, confirm, goTo } from '../utils'
-  import presentation from '@hcengineering/presentation'
 
   export let status: Status<any> = OK
 
@@ -32,11 +32,8 @@
 
     status = loginStatus
 
-    if (result !== undefined) {
-      setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+    if (result != null) {
+      await logIn(result)
       await afterConfirm()
     } else {
       goTo('login')

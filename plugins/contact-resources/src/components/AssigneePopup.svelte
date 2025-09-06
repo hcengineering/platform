@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, Person, PersonAccount } from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Contact, getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import {
@@ -91,8 +91,8 @@
   const currentUserCategory: AssigneeCategory = {
     label: contact.string.CategoryCurrentUser,
     func: async () => {
-      const account = getCurrentAccount() as PersonAccount
-      return [account.person]
+      const employee = getCurrentEmployee()
+      return [employee]
     }
   }
 

@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Abbrechen",
+    "Pause": "Pause",
+    "Stop": "Stopp",
+    "Resume": "Fortsetzen",
+    "Record": "Aufnehmen",
+    "Done": "Fertig",
+    "CancelRecording": "Aufnahme abbrechen",
+    "CancelRecordingConfirm": "Möchten Sie die Aufnahme abbrechen?",
+    "RestartRecording": "Aufnahme neu starten",
+    "RestartRecordingConfirm": "Möchten Sie die Aufnahme neu starten?",
+    "ScreenRecordingName": "Bildschirmaufnahme {date}",
+    "CameraRecordingName": "Kameraaufnahme {date}",
+    "ClickToSkip": "Zum Überspringen klicken",
+    "RecordVideo": "Video aufnehmen",
+    "ShareWithAudio": "Mit Audio teilen",
+    "ShareScreen": "Bildschirm teilen",
+    "StopSharing": "Teilen stoppen",
+    "SelectVideoToRecord": "Aktivieren Sie die Kamera oder teilen Sie den Bildschirm, um aufzunehmen",
+    "CameraSize": "Kameragröße",
+    "CameraPos": "Kameraposition",
+    "Small": "Klein",
+    "Medium": "Mittel",
+    "Large": "Groß",
+    "TopLeft": "Oben links",
+    "TopRight": "Oben rechts",
+    "BottomLeft": "Unten links",
+    "BottomRight": "Unten rechts",
+    "Resolution": "Auflösung",
+    "Original": "Original"
+  }
+}

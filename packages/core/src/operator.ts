@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import type { Doc, PropertyType } from './classes'
 import type { Position, PullArray, QueryUpdate } from './tx'
 
@@ -43,7 +44,12 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
       if (doc[key] === null || doc[key] === undefined) {
         doc[key] = [kvk]
       } else {
-        doc[key].push(kvk)
+        if (Array.isArray(doc[key])) {
+          doc[key].push(kvk)
+        } else {
+          Analytics.handleError(new Error(`invalid array value: ${JSON.stringify(doc[key])} `))
+          doc[key] = [kvk]
+        }
       }
     }
   }

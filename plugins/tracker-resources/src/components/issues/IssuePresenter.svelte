@@ -40,7 +40,7 @@
 </script>
 
 {#if inline && value}
-  <ObjectMention object={value} {disabled} {noUnderline} {onClick} component={tracker.component.EditIssue} />
+  <ObjectMention object={value} {disabled} {onClick} component={tracker.component.EditIssue} />
 {:else if value}
   {#if type === 'link'}
     <div class="flex-row-center">

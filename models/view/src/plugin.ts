@@ -61,18 +61,13 @@ export default mergeIds(viewId, view, {
     HyperlinkEditorPopup: '' as AnyComponent,
     IntlStringPresenter: '' as AnyComponent,
     FileSizePresenter: '' as AnyComponent,
-    NumberEditor: '' as AnyComponent,
-    NumberPresenter: '' as AnyComponent,
     MarkupDiffPresenter: '' as AnyComponent,
     MarkupPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
-    DateEditor: '' as AnyComponent,
-    DatePresenter: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
-    RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
@@ -89,13 +84,19 @@ export default mergeIds(viewId, view, {
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusRefPresenter: '' as AnyComponent,
+    PersonArrayEditor: '' as AnyComponent,
+    PersonIdFilterValuePresenter: '' as AnyComponent,
     DateFilterPresenter: '' as AnyComponent,
     StringFilterPresenter: '' as AnyComponent,
     AudioViewer: '' as AnyComponent,
     ImageViewer: '' as AnyComponent,
     VideoViewer: '' as AnyComponent,
     PDFViewer: '' as AnyComponent,
-    TextViewer: '' as AnyComponent
+    TextViewer: '' as AnyComponent,
+    BaseDocPresenter: '' as AnyComponent,
+    MasterDetailView: '' as AnyComponent,
+    AssociationPresenter: '' as AnyComponent,
+    TreeView: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -117,7 +118,8 @@ export default mergeIds(viewId, view, {
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
     MarkdownFormatting: '' as IntlString,
-    HideArchived: '' as IntlString
+    HideArchived: '' as IntlString,
+    CopyLink: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,
@@ -150,11 +152,14 @@ export default mergeIds(viewId, view, {
     CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     IsClipboardAvailable: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     BlobImageMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
-    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
+    GetLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>,
+    CanCopyLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
-    AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>
+    AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>,
+    ReadOnlyAccessMiddleware: '' as Ref<PresentationMiddlewareFactory>
   },
   extension: {
     Audio: '' as Ref<FilePreviewExtension>,

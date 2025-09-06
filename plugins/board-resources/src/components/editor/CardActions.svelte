@@ -42,7 +42,7 @@
         const txes = await client.findAll(core.class.Tx, { objectId: value._id })
         while (txes.length) {
           const doc = TxProcessor.buildDoc2Doc<Card>(txes)
-          if (doc === undefined) {
+          if (doc == null) {
             break
           }
           targetState = store.byId.get(doc.status)

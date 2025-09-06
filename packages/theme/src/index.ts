@@ -16,8 +16,11 @@
 import { Analytics } from '@hcengineering/analytics'
 import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { derived, writable } from 'svelte/store'
+import { ThemeVariant, type ThemeVariantType } from './variants'
 
 export { default as Theme } from './Theme.svelte'
+export { default as InvertedTheme } from './InvertedTheme.svelte'
+export { ThemeVariant, type ThemeVariantType } from './variants'
 
 /**
  * @public
@@ -61,11 +64,14 @@ export const getCurrentLanguage = (): string => {
 }
 
 export class ThemeOptions {
+  readonly variant: ThemeVariantType
   constructor (
     readonly fontSize: number,
     readonly dark: boolean,
     readonly language: string
-  ) {}
+  ) {
+    this.variant = dark ? ThemeVariant.Dark : ThemeVariant.Light
+  }
 }
 export const themeStore = writable<ThemeOptions>()
 

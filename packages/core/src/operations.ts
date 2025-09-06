@@ -1,8 +1,16 @@
 import { Analytics } from '@hcengineering/analytics'
 import { deepEqual } from 'fast-equals'
-import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
+import {
+  type DocumentUpdate,
+  DOMAIN_MODEL,
+  Hierarchy,
+  type MixinData,
+  type MixinUpdate,
+  type ModelDb,
+  platformNow,
+  toFindResult
+} from '.'
 import type {
-  Account,
   AnyAttribute,
   AttachedData,
   AttachedDoc,
@@ -10,14 +18,18 @@ import type {
   Data,
   Doc,
   Mixin,
+  OperationDomain,
+  PersonId,
   Ref,
   Space,
   Timestamp
 } from './classes'
-import { Client } from './client'
+import { type Client } from './client'
 import core from './component'
 import type {
   DocumentQuery,
+  DomainParams,
+  DomainResult,
   FindOptions,
   FindResult,
   SearchOptions,
@@ -26,7 +38,7 @@ import type {
   TxResult,
   WithLookup
 } from './storage'
-import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
+import { type DocumentClassQuery, type Tx, type TxApplyResult, type TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
  * @public
@@ -40,7 +52,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
 
   constructor (
     readonly client: Client,
-    readonly user: Ref<Account>,
+    readonly user: PersonId,
     readonly isDerived: boolean = false
   ) {
     this.txFactory = new TxFactory(user, isDerived)
@@ -74,6 +86,10 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.findOne(_class, query, options)
   }
 
+  domainRequest<T>(domain: OperationDomain, params: DomainParams): Promise<DomainResult<T>> {
+    return this.client.domainRequest(domain, params)
+  }
+
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.client.searchFulltext(query, options)
   }
@@ -88,7 +104,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     attributes: Data<T>,
     id?: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<Ref<T>> {
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
@@ -111,7 +127,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     attributes: AttachedData<P>,
     id?: Ref<P>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<Ref<P>> {
     const tx = this.txFactory.createTxCollectionCUD<T, P>(
       attachedToClass,
@@ -136,7 +152,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     operations: DocumentUpdate<P>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<Ref<T>> {
     const tx = this.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -159,7 +175,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<Ref<T>> {
     const tx = this.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -181,7 +197,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     operations: DocumentUpdate<T>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve, modifiedOn, modifiedBy)
     return this.tx(tx)
@@ -192,7 +208,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     space: Ref<Space>,
     objectId: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId, modifiedOn, modifiedBy)
     return this.tx(tx)
@@ -205,7 +221,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     mixin: Ref<Mixin<M>>,
     attributes: MixinData<D, M>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxMixin(
       objectId,
@@ -226,7 +242,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     mixin: Ref<Mixin<M>>,
     attributes: MixinUpdate<D, M>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxMixin(
       objectId,
@@ -245,7 +261,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     update: DocumentUpdate<T>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
     const mixClass = Hierarchy.mixinOrClass(doc)
@@ -296,7 +312,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return await this.updateDoc(doc._class, doc.space, doc._id, update, retrieve, modifiedOn, modifiedBy)
   }
 
-  remove<T extends Doc>(doc: T, modifiedOn?: Timestamp, modifiedBy?: Ref<Account>): Promise<TxResult> {
+  remove<T extends Doc>(doc: T, modifiedOn?: Timestamp, modifiedBy?: PersonId): Promise<TxResult> {
     if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
       return this.removeCollection(
@@ -321,7 +337,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     doc: T,
     update: T | Data<T> | DocumentUpdate<T>,
     date?: Timestamp,
-    account?: Ref<Account>
+    account?: PersonId
   ): Promise<T> {
     const documentUpdate = getDiffUpdate(doc, update)
     if (Object.keys(documentUpdate).length > 0) {
@@ -335,7 +351,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     doc: Doc,
     raw: Doc | Data<Doc>,
     mixin: Ref<Class<Mixin<Doc>>>,
-    modifiedBy: Ref<Account>,
+    modifiedBy: PersonId,
     modifiedOn: Timestamp
   ): Promise<Doc> {
     // We need to update fields if they are different.
@@ -459,6 +475,7 @@ export class ApplyOperations extends TxOperations {
       findOne: (_class, query, options?) => ops.client.findOne(_class, query, options),
       findAll: (_class, query, options?) => ops.client.findAll(_class, query, options),
       searchFulltext: (query, options) => ops.client.searchFulltext(query, options),
+      domainRequest: (domain, params) => ops.client.domainRequest(domain, params),
       tx: async (tx): Promise<TxResult> => {
         if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
@@ -486,10 +503,10 @@ export class ApplyOperations extends TxOperations {
       this.notMatches.length === 0 &&
       this.measureName == null
     ) {
-      const st = Date.now()
+      const st = platformNow()
       // Individual update, no need for apply
       await this.ops.tx(this.txes[0])
-      const time = Date.now() - st
+      const time = platformNow() - st
       this.txes = []
       return {
         result: true,
@@ -498,7 +515,7 @@ export class ApplyOperations extends TxOperations {
       }
     }
     if (this.txes.length > 0) {
-      const st = Date.now()
+      const st = platformNow()
       const aop = this.ops.txFactory.createTxApplyIf(
         core.space.Tx,
         this.scope,
@@ -510,7 +527,7 @@ export class ApplyOperations extends TxOperations {
         extraNotify
       )
       const result = (await this.ops.tx(aop)) as TxApplyResult
-      const dnow = Date.now()
+      const dnow = platformNow()
       if (typeof window === 'object' && window !== null && this.measureName != null) {
         console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
       }
@@ -541,7 +558,7 @@ export class TxBuilder extends TxOperations {
   constructor (
     readonly hierarchy: Hierarchy,
     readonly modelDb: ModelDb,
-    user: Ref<Account>
+    user: PersonId
   ) {
     const txClient: Client = {
       getHierarchy: () => this.hierarchy,
@@ -550,6 +567,7 @@ export class TxBuilder extends TxOperations {
       findOne: async (_class, query, options?) => undefined,
       findAll: async (_class, query, options?) => toFindResult([]),
       searchFulltext: async (query, options) => ({ docs: [] }),
+      domainRequest: async (domain, params) => ({ domain, value: null as any }),
       tx: async (tx): Promise<TxResult> => {
         if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)

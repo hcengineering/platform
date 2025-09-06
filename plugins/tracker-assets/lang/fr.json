@@ -270,9 +270,7 @@
     "IssueStatus": "Statut",
     "Extensions": "Extensions",
     "RoleLabel": "Rôle : {role}",
-    "UnsetParentIssue": "Désélectionner l'issue parent",
-    "ForbidCreateProjectPermission": "Interdire la création de projet",
-    "ForbidCreateProjectPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux projets"
+    "UnsetParentIssue": "Désélectionner l'issue parent"
   },
   "status": {}
 }

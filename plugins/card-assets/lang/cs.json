@@ -29,10 +29,23 @@
     "EditView": "Upravit zobrazení",
     "SelectViewType": "Vybrat typ zobrazení",
     "Document": "Dokument",
+    "Documents": "Dokumenty",
     "ChangeType": "Změnit typ",
     "ChangeTypeWarning": "Varování: Změna typu karty odstraní všechna data pro jakýkoliv atribut, který v cílovém typu neexistuje. Předchozí data atributu mohou být obnoveny změnou karty zpět na předchozí typ. Obsah karty nebude ovlivněn.",
+    "MasterDetailViews": "Zobrazení master-detail",
+    "SelectType": "Vybrat typ",
     "CreateSpace": "Vytvořit prostor",
     "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}",
-    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze."
+    "Labels": "Štítky",
+    "Properties": "Vlastnosti",
+    "NoChildren": "Žádné děti",
+    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
+    "AddCollaborators": "Přidat spolupracovníky",
+    "Home": "Domů",
+    "WhatDoYouWantToShare": "Čím chcete sdílet?",
+    "Share": "Sdílet",
+    "Compact": "Kompaktní",
+    "Comfortable": "Komfortní",
+    "Comfortable2": "Komfortní 2"
   }
 }

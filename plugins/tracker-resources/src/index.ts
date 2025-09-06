@@ -168,7 +168,6 @@ import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
 
 import { get } from 'svelte/store'
-
 import { settingId } from '@hcengineering/setting'
 import type { TaskType } from '@hcengineering/task'
 import { getAllStates } from '@hcengineering/task-resources'
@@ -514,7 +513,7 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
+    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount().uuid),
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
     ComponentFilterFunction: filterComponents,

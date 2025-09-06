@@ -1,12 +1,12 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Account,
   AttachedDoc,
   Class,
   Doc,
   DocumentQuery,
   DocumentUpdate,
   MeasureContext,
+  PersonId,
   Ref,
   SortingOrder,
   Status,
@@ -211,7 +211,7 @@ export async function deleteObjects (
   ctx: MeasureContext,
   client: TxOperations,
   objects: Doc[],
-  account: Ref<Account>
+  account: PersonId
 ): Promise<void> {
   const ops = client.apply()
   for (const object of objects) {

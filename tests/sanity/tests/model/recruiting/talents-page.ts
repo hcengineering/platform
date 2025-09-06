@@ -43,7 +43,7 @@ export class TalentsPage extends CommonRecruitingPage {
 
   talentsTab = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
   newTalentButton = (): Locator => this.page.locator('button:has-text("New Talent")')
-  addSocialLinksButton = (): Locator => this.page.locator('[id="presentation\\:string\\:AddSocialLinks"]')
+  addSocialLinksButton = (): Locator => this.page.locator('[id="presentation\\:string\\:AddSocialLinks"]').last()
   emailSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Email')
   confirmEmailButton = (): Locator => this.page.locator('#channel-ok.antiButton')
   createTalentButton = (): Locator => this.page.locator('.antiCard button:has-text("Create")')

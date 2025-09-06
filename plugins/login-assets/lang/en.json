@@ -3,7 +3,7 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"    
+    "IncorrectValue": "Incorrect value {field}"
   },
   "string": {
     "LogIn": "Log In",
@@ -42,7 +42,6 @@
     "AlreadyJoined": "Already joined?",
     "ConfirmationSent": "A message has been sent to your email containing a link to confirm your address.",
     "ConfirmationSent2": "Please follow the link to complete your sign up.",
-    "Slogan": "A unique place to manage all of your work\nWelcome to the Platform",
     "ContinueWith": "Continue with {provider}",
     "HaventReceivedCode": "Haven't received the code?",
     "ResendCode": "Resend code",
@@ -52,6 +51,8 @@
     "CanFindCode": "Can't find your code? Check your spam folder.",
     "LoginWithPassword": "Login with password",
     "LoginWithCode": "Login with code",
+    "SignUpWithPassword": "Sign up with password",
+    "SignUpWithCode": "Sign up with code",
     "FillInProfile": "Fill in your profile",
     "SetUpPassword": "Set up your password",
     "Next": "Next",
@@ -64,6 +65,15 @@
     "PasswordMinUpperChars": "{count, plural, =1 {Password must contain at least # uppercase letter} other {Password must contain at least # uppercase letters}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Password must contain at least # lowercase letter} other {Password must contain at least # lowercase letters}}",
     "WorkspaceArchivedDesc": "Workspace is archived because of being unused.",
-    "RestoreArchivedWorkspace": "Unarchive"
+    "RestoreArchivedWorkspace": "Unarchive",
+    "Hello": "Hello {name},",
+    "ProcessingInvite": "Processing invite, please wait...",
+    "SignToProceed": "Please sign in to proceed",
+    "Proceed": "Proceed",
+    "SetPasswordLater": "I'll set a password later",
+    "SetPasswordNow": "I'll set a password now",
+    "LoginAsGuest": "Continue as a guest",
+    "SignUpToCreateWorkspace": "There are no workspaces with guest access. Please sign up to create your own.",
+    "WhatIsYourName": "What is your name?"
   }
 }

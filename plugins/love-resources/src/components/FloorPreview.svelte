@@ -107,6 +107,7 @@
   {disabled}
   {kind}
   categoryHeader
+  contentAlign={'center'}
   on:select
 >
   <svelte:fragment slot="actions">

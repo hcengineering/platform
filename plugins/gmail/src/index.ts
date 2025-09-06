@@ -14,7 +14,7 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import type { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp, IntegrationKind } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -48,7 +48,7 @@ export interface BaseMessage extends Doc {
 export interface NewMessage extends BaseMessage {
   status: 'new' | 'sent' | 'error'
   error?: string
-  from?: Ref<Account>
+  from?: PersonId
 }
 
 export * from './analytics'
@@ -79,6 +79,23 @@ export interface SharedMessages extends AttachedDoc {
 /**
  * @public
  */
+export const gmailIntegrationKind = 'gmail' as IntegrationKind
+
+/**
+ * @public
+ */
+export interface GmailSyncState {
+  status: string
+  email: string
+  totalMessages: number | null | undefined
+  lastSynchronization?: Date | null
+  error?: string
+  isConfigured?: boolean
+}
+
+/**
+ * @public
+ */
 export const gmailId = 'gmail' as Plugin
 
 export default plugin(gmailId, {
@@ -87,7 +104,8 @@ export default plugin(gmailId, {
     Connect: '' as AnyComponent,
     IconGmail: '' as AnyComponent,
     NewMessages: '' as AnyComponent,
-    Configure: '' as AnyComponent
+    Configure: '' as AnyComponent,
+    IntegrationState: '' as AnyComponent
   },
   string: {
     From: '' as IntlString,
@@ -98,7 +116,8 @@ export default plugin(gmailId, {
     Gmail: '' as Ref<IntegrationType>
   },
   handler: {
-    DisconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler,
+    DisconnectAllHandler: '' as Handler
   },
   class: {
     Message: '' as Ref<Class<Message>>,

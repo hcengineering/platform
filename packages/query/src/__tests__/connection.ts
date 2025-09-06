@@ -14,10 +14,9 @@
 //
 
 import core, {
-  Account,
-  AccountClient,
   BackupClient,
   Class,
+  Client,
   ClientConnectEvent,
   ClientConnection,
   Doc,
@@ -39,16 +38,22 @@ import core, {
   Timestamp,
   Tx,
   TxDb,
-  TxResult
+  TxResult,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
+  type OperationDomain,
+  type TxHandler
 } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
-AccountClient &
+Client &
 BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
+  pushHandler: (handler: TxHandler) => void
 }
 > {
   const txes = genMinModel()
@@ -78,6 +83,8 @@ FulltextStorage & {
       return true
     }
 
+    pushHandler (): void {}
+
     async findAll<T extends Doc>(
       _class: Ref<Class<T>>,
       query: DocumentQuery<T>,
@@ -96,16 +103,20 @@ FulltextStorage & {
       return (await this.findAll(_class, query, { ...options, limit: 1 })).shift()
     }
 
+    async domainRequest (
+      domain: OperationDomain,
+      params: DomainParams,
+      options?: DomainRequestOptions
+    ): Promise<DomainResult> {
+      return { domain, value: null }
+    }
+
     getHierarchy (): Hierarchy {
       return this.hierarchy
     }
 
     getModel (): ModelDb {
       return this.model
-    }
-
-    async getAccount (): Promise<Account> {
-      return {} as unknown as any
     }
 
     async tx (tx: Tx): Promise<TxResult> {

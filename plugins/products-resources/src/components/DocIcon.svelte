@@ -14,15 +14,8 @@
 -->
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
-  import {
-    AnySvelteComponent,
-    Icon,
-    IconFolder,
-    IconSize,
-    IconWithEmoji,
-    getPlatformColorDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { IconWithEmoji } from '@hcengineering/presentation'
+  import { AnySvelteComponent, Icon, IconFolder, IconSize, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import view, { IconProps } from '@hcengineering/view'
 
   import { ComponentType } from 'svelte'
@@ -39,6 +32,9 @@
   iconProps={value.icon === iconWithEmoji && iconWithEmoji !== undefined
     ? { icon: value.color }
     : {
-        fill: value.color !== undefined ? getPlatformColorDef(value.color, $themeStore.dark).icon : 'currentColor'
+        fill:
+          value.color !== undefined && typeof value.color !== 'string'
+            ? getPlatformColorDef(value.color, $themeStore.dark).icon
+            : 'currentColor'
       }}
 />

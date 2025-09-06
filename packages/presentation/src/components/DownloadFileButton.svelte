@@ -19,9 +19,11 @@
   import { getFileUrl } from '../file'
   import Download from './icons/Download.svelte'
   import presentation from '../plugin'
+  import { IntlString } from '@hcengineering/platform'
 
   export let file: Ref<Blob> | undefined
   export let name: string
+  export let tooltip: IntlString | undefined = presentation.string.Download
 
   let download: HTMLAnchorElement
   $: srcRef = file !== undefined ? getFileUrl(file, name) : undefined
@@ -36,7 +38,7 @@
         on:click={() => {
           download.click()
         }}
-        showTooltip={{ label: presentation.string.Download }}
+        showTooltip={{ label: tooltip ?? presentation.string.Download }}
       />
     </a>
   {/if}

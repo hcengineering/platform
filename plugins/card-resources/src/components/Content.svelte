@@ -22,6 +22,7 @@
   export let doc: Card
   export let readonly: boolean = false
   export let content: HTMLElement
+  export let showToc: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -43,4 +44,4 @@
   />
 {/each}
 
-<Description {doc} {readonly} bind:content minHeight={isFile ? '15vh' : '25vh'} />
+<Description {doc} {readonly} {showToc} bind:content minHeight="4rem" on:loaded on:headings />

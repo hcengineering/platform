@@ -85,9 +85,14 @@
     "WithAudio": "包含系统音频",
     "ShareWithAudioTooltip": "与系统音频一起共享屏幕。重新启动屏幕共享以应用更改。",
     "MicPermission": "未找到麦克风，请检查浏览器权限",
-    "CamPermission": "未找到摄像头，请检查浏览器权限"
-  },
-  "status": {
-    "RoomRequired": "房间是必需的"
+    "CamPermission": "未找到摄像头，请检查浏览器权限",
+    "SearchMeetingMinutes": "搜索会议分钟...",
+    "Sharing": "共享中...",
+    "Browser": "浏览器",
+    "Monitor": "监视器",
+    "Window": "窗口",
+    "MeetingEmptyTitle": "会议已结束？",
+    "MeetingEmptyMessage": "所有参与者已离开。您将在1分钟后断开连接。是否要留在会议中？",
+    "StayInRoom": "留在房间"
   }
 }

@@ -14,23 +14,95 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SearchResultDoc } from '@hcengineering/core'
-  import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
+  import core, { SearchResultDoc, Ref, Class, Doc } from '@hcengineering/core'
+  import presentation, {
+    SearchResult,
+    reduceCalls,
+    searchFor,
+    type SearchItem,
+    getClient
+  } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import contact from '@hcengineering/contact'
   import { getReferenceLabel, getReferenceObject } from './extension/reference'
+  import { translate } from '@hcengineering/platform'
 
   export let query: string = ''
+  export let multipleMentions: boolean = false
+  export let docClass: Ref<Class<Doc>> | undefined = undefined
 
   let items: SearchItem[] = []
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   let list: ListView
   let scrollContainer: HTMLElement
   let selection = 0
 
+  const employeeSearchCategory = client
+    .getModel()
+    .findAllSync(presentation.class.ObjectSearchCategory, { classToSearch: contact.mixin.Employee })[0]
+
+  async function getMultipleEmployeeSearchItems (localQuery: string, lastIndex: number): Promise<SearchItem[]> {
+    if (!multipleMentions) return []
+    const clazz =
+      docClass && client.getHierarchy().hasClass(docClass) ? client.getHierarchy().getClass(docClass) : undefined
+    const docTitle = await translate(clazz?.label ?? core.string.Object, {})
+
+    const everyoneDescription = await translate(contact.string.EveryoneDescription, {
+      title: docTitle.toLowerCase()
+    })
+    const hereDescription = await translate(contact.string.HereDescription, {
+      title: docTitle.toLowerCase()
+    })
+    const everyoneTitle = await translate(contact.string.Everyone, {})
+    const hereTitle = await translate(contact.string.Here, {})
+    return [
+      {
+        num: 0,
+        category: employeeSearchCategory,
+        item: {
+          id: contact.mention.Everyone,
+          title: everyoneTitle,
+          description: everyoneDescription,
+          emojiIcon: '📢',
+          doc: {
+            _id: contact.mention.Everyone,
+            _class: contact.mixin.Employee
+          }
+        }
+      },
+      {
+        num: 0,
+        category: employeeSearchCategory,
+        item: {
+          id: contact.mention.Here,
+          title: hereTitle,
+          description: hereDescription,
+          emojiIcon: '📢',
+          doc: {
+            _id: contact.mention.Here,
+            _class: contact.mixin.Employee
+          }
+        }
+      }
+    ]
+      .filter((it) => it.item.title.toLowerCase().includes(localQuery.toLowerCase()))
+      .map((it, idx) => ({ ...it, num: lastIndex + 1 + idx }))
+  }
+
   async function handleSelectItem (item: SearchResultDoc): Promise<void> {
+    if ([contact.mention.Here, contact.mention.Everyone].includes(item.id as any)) {
+      dispatch('close', {
+        id: item.doc._id,
+        label: item.title?.toLowerCase() ?? '',
+        objectclass: item.doc._class
+      })
+      return
+    }
+
     const obj = (await getReferenceObject(item.doc._class, item.doc._id)) ?? item.doc
     const label = await getReferenceLabel(obj._class, obj._id)
     dispatch('close', {
@@ -73,7 +145,13 @@
   const updateItems = reduceCalls(async function (localQuery: string): Promise<void> {
     const r = await searchFor('mention', localQuery)
     if (r.query === query) {
-      items = r.items
+      const latestIndex = r.items.findLastIndex((it) => it.category.classToSearch === contact.mixin.Employee)
+      const multipleEmployeeSearchItems = await getMultipleEmployeeSearchItems(localQuery, latestIndex)
+
+      items =
+        latestIndex === -1
+          ? [...multipleEmployeeSearchItems, ...r.items]
+          : [...r.items.slice(0, latestIndex + 1), ...multipleEmployeeSearchItems, ...r.items.slice(latestIndex + 1)]
     }
   })
   $: void updateItems(query)

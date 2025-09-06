@@ -12,13 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
+import core from './component'
+
 export * from './classes'
 export * from './client'
 export * from './collaboration'
-export { coreId, systemAccountEmail, default } from './component'
+export {
+  coreId,
+  systemAccountUuid,
+  readOnlyGuestAccountUuid,
+  systemAccountEmail,
+  systemAccount,
+  configUserAccountUuid
+} from './component'
 export * from './hierarchy'
-export * from './measurements'
+export * from '@hcengineering/measurements'
 export * from './memdb'
 export * from './objvalue'
 export * from './operations'
@@ -34,3 +42,5 @@ export * from './clone'
 export * from './common'
 export * from './time'
 export * from './benchmark'
+
+export default core

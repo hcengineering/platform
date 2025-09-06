@@ -58,10 +58,6 @@
     asideFloat = false
     asideShown = false
   }
-  let docWidth: number
-  let docSize: boolean = false
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
 
   const handleViewModeChanged = (newMode: MilestoneViewMode) => {
     if (newMode === undefined || newMode === mode) {

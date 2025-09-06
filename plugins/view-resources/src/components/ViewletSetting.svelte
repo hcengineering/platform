@@ -26,6 +26,7 @@
   import ViewletClassSettings from './ViewletClassSettings.svelte'
 
   export let viewlet: Viewlet
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -98,19 +99,22 @@
   }
 
   function getBaseConfig (viewlet: Viewlet): Config[] {
-    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
+    const config = defaultConfig ?? viewlet.config
+    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, config, viewlet.options?.lookup)
     const result: Config[] = []
     const clazz = hierarchy.getClass(viewlet.attachTo)
     let wasOptional = false
-    for (const param of viewlet.config) {
+
+    for (const param of config) {
       if (typeof param === 'string') {
         if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
         } else {
+          const paramValue = param.startsWith('custom') ? { key: param, displayProps: { optional: true } } : param
           const attrCfg: AttributeConfig = {
             type: 'attribute',
-            value: param,
+            value: paramValue,
             enabled: true,
             label: getKeyLabel(client, viewlet.attachTo, param, lookup),
             _class: viewlet.attachTo,
@@ -163,7 +167,7 @@
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
-    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
       const key = typeof res.value === 'string' ? res.value : res.value?.key
@@ -198,9 +202,12 @@
         result.push(newValue)
       }
     } else {
+      const isCustomAttribute = attribute.name.startsWith('custom')
+      const attributeValue = isCustomAttribute ? { key: value, displayProps: { optional: true } } : value
+
       const newValue: AttributeConfig = {
         type: 'attribute',
-        value: extraProps ? { ...extraProps, key: value } : value,
+        value: extraProps != null ? { ...extraProps, key: value } : attributeValue,
         label: attribute.label,
         enabled: false,
         _class: attribute.attributeOf,
@@ -269,7 +276,13 @@
         ((p.type === 'divider' && typeof p.value === 'object' && p.value.displayProps?.grow) ||
           (p.type === 'attribute' && (p as AttributeConfig).enabled))
     )
-    const config = configValues.map((p) => p.value as string | BuildModelKey)
+    const config = configValues.map((p) => {
+      const value = p.value as string | BuildModelKey
+      if (typeof value === 'string' && value.startsWith('custom')) {
+        return { key: value, displayProps: { optional: true } }
+      }
+      return value
+    })
     const preference = preferences.find((p) => p.attachedTo === viewletId)
     if (preference !== undefined) {
       await client.update(preference, {

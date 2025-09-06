@@ -1,5 +1,6 @@
+import type { WorkspaceInfoWithStatus, WorkspaceLoginInfo } from '@hcengineering/account'
 import { APIRequestContext } from '@playwright/test'
-import { PlatformURI, LocalUrl, DevUrl } from '../utils'
+import { DevUrl, LocalUrl, PlatformURI, PlatformWorkspaceRegion } from '../utils'
 
 export class ApiEndpoint {
   private readonly request: APIRequestContext
@@ -22,11 +23,11 @@ export class ApiEndpoint {
     return headers
   }
 
-  private async loginAndGetToken (username: string, password: string): Promise<string> {
+  private async loginAndGetToken (email: string, password: string): Promise<string> {
     const loginUrl = this.baseUrl
     const loginPayload = {
       method: 'login',
-      params: [username, password]
+      params: { email, password }
     }
     const headers = {
       'Content-Type': 'application/json',
@@ -45,39 +46,81 @@ export class ApiEndpoint {
     workspaceName: string,
     username: string,
     password: string
-  ): Promise<{
-      workspace: string
-      workspaceId: string
-      workspaceName: string
-    }> {
+  ): Promise<WorkspaceLoginInfo> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
       method: 'createWorkspace',
-      params: [workspaceName]
+      params: { workspaceName, region: PlatformWorkspaceRegion }
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })
-    return (await response.json()).result
+
+    const wsResult: WorkspaceLoginInfo = (await response.json()).result
+
+    await this.waitWorkspaceReady(token, wsResult.workspaceUrl)
+
+    return wsResult
   }
 
-  async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {
+  async waitWorkspaceReady (token: string, workspaceUrl: string): Promise<void> {
+    // We need to wait for workspace to be created before we will continue.
+    const headers = this.getDefaultHeaders(token)
+    const url = this.baseUrl
+    const selectWorkspaceResponse: WorkspaceLoginInfo = (
+      await (
+        await this.request.post(url, {
+          data: {
+            method: 'selectWorkspace',
+            params: { workspaceUrl }
+          },
+          headers
+        })
+      ).json()
+    ).result
+
+    const wsToken = selectWorkspaceResponse.token
+    if (wsToken === undefined) {
+      throw new Error('Workspace token is undefined')
+    }
+
+    const headersInfo = this.getDefaultHeaders(wsToken)
+    while (true) {
+      const wsInfo: WorkspaceInfoWithStatus = (
+        await (
+          await this.request.post(url, {
+            data: {
+              method: 'getWorkspaceInfo',
+              params: { updateLastVisit: false }
+            },
+            headers: headersInfo
+          })
+        ).json()
+      ).result
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (wsInfo.status.mode === 'active') {
+        break
+      }
+    }
+  }
+
+  async createAccount (email: string, password: string, firstName: string, lastName: string): Promise<any> {
     const url = this.baseUrl
     const payload = {
-      method: 'createAccount',
-      params: [username, password, firstName, lastName]
+      method: 'signUp',
+      params: { email, password, firstName, lastName }
     }
     const headers = this.getDefaultHeaders()
     const response = await this.request.post(url, { data: payload, headers })
     return await response.json()
   }
 
-  async leaveWorkspace (email: string, username: string, password: string): Promise<any> {
+  async leaveWorkspace (account: string, username: string, password: string): Promise<any> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
       method: 'leaveWorkspace',
-      params: [email]
+      params: { account }
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })

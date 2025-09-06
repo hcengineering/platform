@@ -9,6 +9,7 @@ if (process.env.TESTS_MAX_FAILURES !== undefined) {
 
 const config: PlaywrightTestConfig = {
   projects: [
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: 'Platform',
       use: {
@@ -30,7 +31,8 @@ const config: PlaywrightTestConfig = {
           reducedMotion: 'reduce'
         }
       },
-      fullyParallel: false
+      fullyParallel: false,
+      dependencies: ['setup']
     }
   ],
   retries: 2,
@@ -39,6 +41,7 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 15000
   },
+  globalTimeout: 1_800_000,
   reporter: [
     ['list'],
     ['html'],

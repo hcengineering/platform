@@ -4,9 +4,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
   import { showMenu } from '../actions'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
+  import view from '../plugin'
 
   export let object: Doc
   export let docs: Doc[]
@@ -14,6 +15,7 @@
   export let association: Association
   export let readonly: boolean = false
   export let direction: 'A' | 'B'
+  export let emptyKind: 'create' | 'placeholder' = 'create'
 
   const client = getClient()
 
@@ -24,7 +26,10 @@
       ObjectBoxPopup,
       {
         _class,
-        ignoreObjects: docs.map((p) => p._id)
+        docQuery: { _id: { $nin: docs.map((p) => p._id) } },
+        docProps: {
+          shouldShowAvatar: true
+        }
       },
       'top',
       async (result) => {
@@ -126,12 +131,22 @@
         <DocTable objects={docs} {_class} {config} {onContextMenu} />
       </Scroller>
     {:else if !readonly}
-      <div class="antiSection-empty solid clear-mins mt-3">
+      <div
+        class="antiSection-empty clear-mins mt-3"
+        class:solid={emptyKind === 'create'}
+        class:noBorder={emptyKind === 'placeholder'}
+      >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span class="over-underline content-color" on:click={add}>
-          <Label label={core.string.AddRelation} />
-        </span>
+        {#if emptyKind === 'create'}
+          <span class="over-underline content-color" on:click={add}>
+            <Label label={core.string.AddRelation} />
+          </span>
+        {:else}
+          <span class=" content-color">
+            <Label label={view.string.NoRelations} />
+          </span>
+        {/if}
       </div>
     {/if}
   </svelte:fragment>

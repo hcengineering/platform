@@ -1,5 +1,5 @@
-import { Token, decodeToken } from '@hcengineering/server-token'
-import { IncomingHttpHeaders } from 'http'
+import { type Token, decodeToken } from '@hcengineering/server-token'
+import { type IncomingHttpHeaders } from 'http'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {
@@ -35,7 +35,7 @@ const extractAuthorizationToken = (authorization?: string): Token | null => {
 
 export function extractToken (headers: IncomingHttpHeaders): Token | undefined {
   try {
-    const token = extractCookieToken(headers.cookie) ?? extractAuthorizationToken(headers.authorization)
+    const token = extractAuthorizationToken(headers.authorization) ?? extractCookieToken(headers.cookie)
 
     return token ?? undefined
   } catch {

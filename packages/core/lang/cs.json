@@ -65,6 +65,8 @@
     "BlobContentType": "Typ obsahu",
     "Relation": "Vztah",
     "Relations": "Vztahy",
-    "AddRelation": "Přidat vztah"
+    "AddRelation": "Přidat vztah",
+    "PersonId": "Osoba",
+    "AccountId": "Účet"
   }
 }

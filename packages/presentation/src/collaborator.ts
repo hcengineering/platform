@@ -14,17 +14,21 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import { type Blob, type CollaborativeDoc, type Markup, type Ref, getWorkspaceId } from '@hcengineering/core'
+import { type Blob, type CollaborativeDoc, type Markup, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
 import presentation from './plugin'
 
 function getClient (): CollaboratorClient {
-  const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.WorkspaceId) ?? '')
+  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (workspaceUuid === undefined) {
+    throw new Error('WorkspaceUuid is not defined')
+  }
+
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
-  return getCollaborator(workspaceId, token, collaboratorURL)
+  return getCollaborator(workspaceUuid, token, collaboratorURL)
 }
 
 /** @public */

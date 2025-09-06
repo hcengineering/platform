@@ -19,6 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import github from '../plugin'
   import { onAuthorize } from './utils'
+  import { clientId } from '@hcengineering/client'
 
   export let integration: Integration
 
@@ -66,7 +67,7 @@
   function onConnect (): void {
     const state = btoa(
       JSON.stringify({
-        accountId: getCurrentAccount()._id,
+        accountId: getCurrentAccount().primarySocialId,
         op: 'installation',
         workspace: $location.path[1],
         token: getMetadata(presentation.metadata.Token)

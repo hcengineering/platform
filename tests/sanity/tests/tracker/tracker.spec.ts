@@ -159,9 +159,9 @@ test.describe('Tracker tests', () => {
     await issuesPage.clickAssignee()
     await issuesPage.setEstimation()
     await issuesPage.inputTextPlaceholderFill('1')
-    await issuesPage.setDueDate('24')
+    await issuesPage.setDueDate('19')
     await issuesPage.pressEscapeTwice()
-    await issuesPage.clickOnResumeDraft()
+    await issuesPage.clickOnNewIssue()
     await checkIssueDraft(page, {
       name: issueName,
       description: issueName,
@@ -169,7 +169,7 @@ test.describe('Tracker tests', () => {
       priority: 'Urgent',
       assignee: 'Appleseed John',
       estimation: '1',
-      dueDate: '24'
+      dueDate: '19'
     })
   })
 

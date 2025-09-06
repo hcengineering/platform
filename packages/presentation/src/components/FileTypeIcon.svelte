@@ -30,13 +30,13 @@
   .icon {
     position: relative;
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
     font-weight: 500;
-    font-size: 0.625rem;
+    font-size: 0.5rem;
     color: var(--primary-button-color);
     background-color: var(--primary-button-default);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
   }
 </style>

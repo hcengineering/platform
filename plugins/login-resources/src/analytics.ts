@@ -15,6 +15,7 @@
 
 export const LoginEvents = {
   SignUpEmail: 'signup.viaEmail',
+  SignUpOtp: 'signup.viaOtp',
   SignUpGoogle: 'signup.viaGoogle',
   SignUpGithub: 'signup.viaGitHub',
 
@@ -22,6 +23,10 @@ export const LoginEvents = {
   LoginOtp: 'login.viaOtp',
   LoginGoogle: 'login.viaGoogle',
   LoginGithub: 'login.viaGitHub',
+
+  LoginGuestStarted: 'login.guest.started',
+  LoginGuestCompleted: 'login.guest.completed',
+  LoginGuestError: 'login.guest.error',
 
   CreateWorkspace: 'onboard.createWorkspace',
   SelectWorkspace: 'onboard.selectWorkspace'

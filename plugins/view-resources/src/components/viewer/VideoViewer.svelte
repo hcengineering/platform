@@ -13,12 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
-  import { HlsVideo, Video } from '@hcengineering/ui'
+  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import { HlsVideo } from '@hcengineering/hls'
+  import { Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
+  export let contentType: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
@@ -31,17 +33,23 @@
 </script>
 
 <div
-  style:aspect-ratio={aspectRatio}
+  class="flex justify-center w-full"
+  style:aspect-ratio={fit ? undefined : aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
 >
-  {#await getVideoMeta(value, name) then meta}
-    {#if meta?.hls?.source !== undefined}
-      {@const src = getFileUrl(value, name)}
-      <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
-    {:else}
-      {@const src = getFileUrl(value, name)}
-      <Video {src} {name} />
-    {/if}
-  {/await}
+  {#if contentType.toLowerCase().endsWith('x-mpegurl')}
+    {@const src = getFileUrl(value, '')}
+    <HlsVideo {src} hlsSrc={src} preload />
+  {:else}
+    {#await getVideoMeta(value, name) then meta}
+      {#if meta?.hls?.source !== undefined}
+        {@const src = getFileUrl(value, '')}
+        <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+      {:else}
+        {@const src = getFileUrl(value, '')}
+        <Video {src} {name} preload />
+      {/if}
+    {/await}
+  {/if}
 </div>

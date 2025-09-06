@@ -18,9 +18,6 @@ interface Config {
   EnterpriseHostname: string
   Port: number
 
-  MongoURL: string
-  ConfigurationDB: string
-
   CollaboratorURL: string
 
   BotName: string
@@ -50,9 +47,6 @@ const envMap: { [key in keyof Config]: string } = {
   AllowedWorkspaces: 'ALLOWED_WORKSPACES',
   BotName: 'BOT_NAME',
 
-  MongoURL: 'MONGO_URL',
-  ConfigurationDB: 'MONGO_DB',
-
   CollaboratorURL: 'COLLABORATOR_URL',
 
   SentryDSN: 'SENTRY_DSN',
@@ -74,9 +68,6 @@ const required: Array<keyof Config> = [
   'ClientID',
   'ClientSecret',
   'PrivateKey',
-
-  'MongoURL',
-  'ConfigurationDB',
 
   'CollaboratorURL',
 
@@ -101,14 +92,11 @@ const config: Config = (() => {
     Port: parseInt(process.env[envMap.Port] ?? '3500'),
     BotName: process.env[envMap.BotName] ?? 'ao-huly-dev[bot]',
 
-    MongoURL: process.env[envMap.MongoURL],
-    ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%github',
-
     CollaboratorURL: process.env[envMap.CollaboratorURL],
 
     SentryDSN: process.env[envMap.SentryDSN],
     BrandingPath: process.env[envMap.BrandingPath] ?? '',
-    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '5'), // In days
+    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '3'), // In days
     RateLimit: parseInt(process.env[envMap.RateLimit] ?? '25')
   }
 

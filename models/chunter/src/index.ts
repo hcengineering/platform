@@ -32,14 +32,12 @@ import {
   TChatMessage,
   TChatMessageViewlet,
   TChatSyncInfo,
-  TChunterExtension,
   TChunterSpace,
   TDirectMessage,
-  TInlineButton,
   TObjectChatPanel,
-  TThreadMessage,
-  TTypingInfo
+  TThreadMessage
 } from './types'
+import { AccountRole } from '@hcengineering/core'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -54,10 +52,7 @@ export function createModel (builder: Builder): void {
     TThreadMessage,
     TChatMessageViewlet,
     TObjectChatPanel,
-    TChatSyncInfo,
-    TInlineButton,
-    TTypingInfo,
-    TChunterExtension
+    TChatSyncInfo
   )
 
   builder.createDoc(
@@ -92,6 +87,18 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchTabExtensions,
     component: chunter.component.WorkbenchTabExtension
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
   })
 
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
@@ -159,10 +166,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ThreadMessagePresenter
-  })
-
-  builder.mixin(chunter.class.TypingInfo, core.class.Class, core.mixin.TransientConfiguration, {
-    broadcastOnly: true
   })
 
   builder.createDoc(
@@ -314,11 +317,6 @@ export function createModel (builder: Builder): void {
 
   defineActions(builder)
   defineNotifications(builder)
-
-  builder.mixin(chunter.class.InlineButton, core.class.Class, core.mixin.IndexConfiguration, {
-    indexes: [],
-    searchDisabled: true
-  })
 
   builder.mixin(chunter.class.ChatSyncInfo, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],

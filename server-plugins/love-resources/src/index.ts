@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import contact, { Employee, formatName, getName, Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, formatName, getName, Person } from '@hcengineering/contact'
 import core, {
-  Account,
+  type AccountUuid,
+  combineAttributes,
   concatLink,
   Doc,
+  generateId,
   Ref,
   Timestamp,
   Tx,
@@ -26,8 +28,7 @@ import core, {
   TxMixin,
   TxProcessor,
   TxUpdateDoc,
-  UserStatus,
-  combineAttributes
+  UserStatus
 } from '@hcengineering/core'
 import love, {
   Invite,
@@ -45,14 +46,15 @@ import love, {
 } from '@hcengineering/love'
 import notification from '@hcengineering/notification'
 import { getMetadata, translate } from '@hcengineering/platform'
+import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
   createPushNotification,
   getNotificationProviderControl,
   isAllowed
 } from '@hcengineering/server-notification-resources'
-import { workbenchId } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
 
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
@@ -66,6 +68,15 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     }
     const val = actualTx.attributes.active
     if (val === undefined) {
+      continue
+    }
+    const user = (
+      await control.findAll(control.ctx, contact.mixin.Employee, { _id: actualTx.objectId as Ref<Employee> })
+    )[0]
+    if (user === undefined) {
+      continue
+    }
+    if (user.role === 'GUEST') {
       continue
     }
     if (val) {
@@ -91,33 +102,32 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
   return result
 }
 
-async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<Tx[]> {
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, { _id: acc as Ref<PersonAccount> })[0]
-  if (account === undefined) return []
-  const personId = account.person
+async function createUserInfo (user: AccountUuid, control: TriggerControl): Promise<Tx[]> {
+  const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: user }))[0]
+  if (person === undefined) return []
 
   // we already have participantInfo for this person
-  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person: personId })
+  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person: person._id })
   if (infos.length > 0) return []
 
-  const person = (await control.findAll(control.ctx, contact.class.Person, { _id: personId }))[0]
-  const room = (await control.findAll(control.ctx, love.class.Office, { person: personId }))[0]
+  const room = (await control.findAll(control.ctx, love.class.Office, { person: person._id }))[0]
   const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, core.space.Workspace, {
-    person: personId,
-    name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
+    person: person._id,
+    name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : 'User',
     room: room?._id ?? love.ids.Reception,
     x: 0,
     y: 0,
+    account: user,
     sessionId: null
   })
   const ptx = control.txFactory.createTxApplyIf(
     core.space.Workspace,
-    personId,
+    user,
     [],
     [
       {
         _class: love.class.ParticipantInfo,
-        query: { person: personId }
+        query: { person: person._id }
       }
     ],
     [tx],
@@ -126,16 +136,15 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   return [ptx]
 }
 
-async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<Tx[]> {
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, { _id: acc as Ref<PersonAccount> })[0]
-  if (account === undefined) return []
+async function removeUserInfo (user: AccountUuid, control: TriggerControl): Promise<Tx[]> {
+  const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: user }))[0]
+  if (person === undefined) return []
 
   // recheck that user is still offline
-  const status = (await control.findAll(control.ctx, core.class.UserStatus, { user: acc }))[0]
+  const status = (await control.findAll(control.ctx, core.class.UserStatus, { user }))[0]
   if (status !== undefined && status.online) return []
 
-  const person = account.person
-  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person })
+  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person: person._id })
   const res: Tx[] = []
   for (const info of infos) {
     res.push(control.txFactory.createTxRemoveDoc(info._class, info.space, info._id))
@@ -172,25 +181,113 @@ export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promis
 }
 
 async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const roomInfo = roomInfos.find((ri) => ri.room === info.room)
   if (roomInfo !== undefined && !roomInfo.persons.includes(info.person)) {
-    return [
+    res.push(
       control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, roomInfo._id, {
         $push: { persons: info.person }
       })
-    ]
+    )
   } else {
     const room = (await control.findAll(control.ctx, love.class.Room, { _id: info.room }))[0]
     if (room === undefined) return []
-    return [
+    res.push(
       control.txFactory.createTxCreateDoc(love.class.RoomInfo, core.space.Workspace, {
         persons: [info.person],
         room: info.room,
         isOffice: isOffice(room)
       })
-    ]
+    )
   }
+  if (info.account != null) {
+    const meetingMinutes = (
+      await control.findAll(control.ctx, love.class.MeetingMinutes, {
+        attachedTo: info.room,
+        status: MeetingStatus.Active
+      })
+    )[0]
+    if (meetingMinutes !== undefined) {
+      const colab = await control.findAll(control.ctx, core.class.Collaborator, {
+        attachedTo: meetingMinutes._id,
+        collaborator: info.account
+      })
+      if (colab.length === 0) {
+        res.push(
+          control.txFactory.createTxCreateDoc(core.class.Collaborator, core.space.Workspace, {
+            attachedTo: meetingMinutes._id,
+            attachedToClass: meetingMinutes._class,
+            collection: 'collaborators',
+            collaborator: info.account
+          })
+        )
+      }
+    } else {
+      const room = (await control.findAll(control.ctx, love.class.Room, { _id: info.room }))[0]
+      if (room === undefined) return res
+      if (isOffice(room) && room.person === info.person) return res
+      const _id = generateId<MeetingMinutes>()
+      const date = new Date()
+        .toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+        .replace(',', ' at')
+      const tx = control.txFactory.createTxCreateDoc(
+        love.class.MeetingMinutes,
+        core.space.Workspace,
+        {
+          description: null,
+          attachedTo: info.room,
+          status: MeetingStatus.Active,
+          title: `${await getRoomName(control, info.room)} ${date}`,
+          attachedToClass: love.class.Room,
+          collection: 'meetings'
+        },
+        _id
+      )
+      tx.space = core.space.Tx
+      res.push(tx)
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, core.space.Workspace, {
+          attachedTo: _id,
+          attachedToClass: love.class.MeetingMinutes,
+          collection: 'collaborators',
+          collaborator: info.account
+        })
+      )
+      if (isOffice(room) && room.person !== info.person && room.person !== null) {
+        const person = (
+          await control.findAll(control.ctx, contact.mixin.Employee, { _id: room.person as Ref<Employee> })
+        )[0]
+        if (person?.personUuid !== undefined) {
+          res.push(
+            control.txFactory.createTxCreateDoc(core.class.Collaborator, core.space.Workspace, {
+              attachedTo: _id,
+              attachedToClass: love.class.MeetingMinutes,
+              collection: 'collaborators',
+              collaborator: person.personUuid
+            })
+          )
+        }
+      }
+    }
+  }
+  return res
+}
+
+async function getRoomName (control: TriggerControl, roomId: Ref<Room>): Promise<string> {
+  const room = (await control.findAll(control.ctx, love.class.Room, { _id: roomId }))[0]
+  if (room === undefined) return ''
+  if (isOffice(room) && room.person !== null && room.name === '') {
+    const employee = (await control.findAll(control.ctx, contact.class.Person, { _id: room.person }))[0]
+    if (employee != null) {
+      return getName(control.hierarchy, employee)
+    }
+  }
+  return room.name
 }
 
 async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
@@ -325,20 +422,27 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
 
           const notificationControl = await getNotificationProviderControl(control.ctx, control)
           for (const user of roomInfo.persons) {
-            const userAcc = control.modelDb.getAccountByPersonId(user) as PersonAccount[]
-            if (userAcc.length === 0) continue
-            if (userAcc.some((it) => isAllowed(control, it._id, type, provider, notificationControl))) {
-              const path = [workbenchId, control.workspace.workspaceUrl, loveId]
+            const socialStrings = await getSocialStrings(control, user)
+            if (socialStrings.length === 0) continue
+            if (isAllowed(control, socialStrings, type, provider, notificationControl)) {
+              const path = [workbenchId, control.workspace.url, loveId]
               const title = await translate(love.string.KnockingLabel, {})
               const body = await translate(love.string.IsKnocking, {
                 name: formatName(from.name, control.branding?.lastNameFirst)
               })
+              const employee = await control.findAll(
+                control.ctx,
+                contact.mixin.Employee,
+                { _id: user as Ref<Employee> },
+                { limit: 1 }
+              )
+              const account = employee[0]?.personUuid
+              if (account === undefined) continue
 
               const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-                user: userAcc[0]._id
+                user: account
               })
-              // TODO: Select proper account target
-              await createPushNotification(control, userAcc[0]._id, title, body, request._id, subscriptions, from, path)
+              await createPushNotification(control, account, title, body, request._id, subscriptions, from, path)
             }
           }
         }
@@ -354,12 +458,15 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
     if (actualTx._class === core.class.TxCreateDoc) {
       const invite = TxProcessor.createDoc2Doc(actualTx)
       if (invite.status === RequestStatus.Pending) {
-        const target = (await control.findAll(control.ctx, contact.class.Person, { _id: invite.target }))[0]
+        const target = (
+          await control.findAll(
+            control.ctx,
+            contact.mixin.Employee,
+            { _id: invite.target as Ref<Employee> },
+            { limit: 1 }
+          )
+        )[0]
         if (target === undefined) {
-          continue
-        }
-        const userAcc = control.modelDb.getAccountByPersonId(target._id) as PersonAccount[]
-        if (userAcc.length === 0) {
           continue
         }
         const from = (await control.findAll(control.ctx, contact.class.Person, { _id: invite.from }))[0]
@@ -376,8 +483,9 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
           continue
         }
         const notificationControl = await getNotificationProviderControl(control.ctx, control)
-        if (userAcc.some((it) => isAllowed(control, it._id, type, provider, notificationControl))) {
-          const path = [workbenchId, control.workspace.workspaceUrl, loveId]
+        const socialStrings = await getSocialStrings(control, target._id)
+        if (isAllowed(control, socialStrings, type, provider, notificationControl)) {
+          const path = [workbenchId, control.workspace.url, loveId]
           const title = await translate(love.string.InivitingLabel, {})
           const body =
             from !== undefined
@@ -385,11 +493,12 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
                 name: formatName(from.name, control.branding?.lastNameFirst)
               })
               : await translate(love.string.InivitingLabel, {})
+          const account = target?.personUuid
+          if (account === undefined) continue
           const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-            user: userAcc[0]._id
+            user: account
           })
-          // TODO: Select a proper user
-          await createPushNotification(control, userAcc[0]._id, title, body, invite._id, subscriptions, from, path)
+          await createPushNotification(control, account, title, body, invite._id, subscriptions, from, path)
         }
       }
     }
@@ -403,7 +512,7 @@ export async function meetingMinutesHTMLPresenter (doc: Doc, control: TriggerCon
 
   const panelProps = [view.component.EditDoc, meetingMinutes._id, meetingMinutes._class]
   const fragment = encodeURIComponent(panelProps.join('|'))
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${loveId}#${fragment}`
+  const path = `${workbenchId}/${control.workspace.url}/${loveId}#${fragment}`
   const link = concatLink(front, path)
   return `<a href="${link}">${meetingMinutes.title}</a>`
 }

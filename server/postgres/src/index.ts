@@ -13,21 +13,22 @@
 // limitations under the License.
 //
 
+import { getDBClient, retryTxn } from '@hcengineering/postgres-base'
 import type { WorkspaceDestroyAdapter } from '@hcengineering/server-core'
 import { domainSchemas } from './schemas'
-import { getDBClient, retryTxn } from './utils'
 
-export { createDBClient } from './client'
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
-export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, shutdownPostgres } from './utils'
+export { convertDoc, createTables } from './utils'
+
+export * from '@hcengineering/postgres-base'
 
 export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {
-    deleteWorkspace: async (ctx, contextVars, workspace): Promise<void> => {
-      const client = getDBClient(contextVars, url)
+    deleteWorkspace: async (ctx, workspaceUuid): Promise<void> => {
+      const client = getDBClient(url)
       try {
-        if (workspace.uuid == null) {
+        if (workspaceUuid == null) {
           throw new Error('Workspace uuid is not defined')
         }
         const connection = await client.getClient()
@@ -43,16 +44,14 @@ export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdap
                 {},
                 async (ctx) => {
                   await retryTxn(connection, async (client) => {
-                    await client.unsafe(`delete from ${domain} where "workspaceId" = $1::uuid`, [
-                      workspace.uuid as string
-                    ])
+                    await client.unsafe(`delete from ${domain} where "workspaceId" = $1::uuid`, [workspaceUuid])
                   })
                 },
                 { domain }
               )
             }
           },
-          { url: workspace.uuid }
+          { url: workspaceUuid }
         )
       } catch (err: any) {
         ctx.error('failed to clean workspace data', { err })

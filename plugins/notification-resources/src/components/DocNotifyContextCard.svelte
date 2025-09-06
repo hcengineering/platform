@@ -23,10 +23,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { AccountRole, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { getPersonRefsByPersonIds } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
@@ -40,6 +40,7 @@
 
   const maxNotifications = 3
 
+  const account = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
@@ -85,7 +86,9 @@
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
-  $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
+  $: void groupNotificationsByUser(notifications).then((res) => {
+    groupedNotifications = res
+  })
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
     return hierarchy.isDerived(_class, chunter.class.ChatMessage)
@@ -99,17 +102,17 @@
     return isMentionNotification(it) && isTextMessage(it.mentionedInClass)
   }
 
-  function groupNotificationsByUser (
-    notifications: WithLookup<InboxNotification>[],
-    personAccountById: IdMap<PersonAccount>
-  ): Array<InboxNotification[]> {
+  async function groupNotificationsByUser (
+    notifications: WithLookup<InboxNotification>[]
+  ): Promise<Array<InboxNotification[]>> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
+    const personRefByPersonId = await getPersonRefsByPersonIds(notifications.map((it) => it.createdBy ?? it.modifiedBy))
 
     for (const it of notifications) {
-      const account = it.createdBy ?? it.modifiedBy
-      const curPerson = personAccountById.get(account as Ref<PersonAccount>)?.person
+      const pid = it.createdBy ?? it.modifiedBy
+      const curPerson = personRefByPersonId.get(pid)
       const allowGroup = canGroup(it)
 
       if (!allowGroup || curPerson === undefined) {
@@ -224,7 +227,7 @@
         <div class="flex-center min-w-6">
           {#if isArchiving}
             <Spinner size="small" />
-          {:else}
+          {:else if account.role !== AccountRole.ReadOnlyGuest}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
           {/if}
         </div>

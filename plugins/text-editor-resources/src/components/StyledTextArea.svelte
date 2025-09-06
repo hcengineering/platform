@@ -4,10 +4,8 @@
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor from '@hcengineering/text-editor'
   import { ButtonSize, Label } from '@hcengineering/ui'
-  import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
 
-  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
   export let label: IntlString | undefined = undefined
@@ -21,7 +19,6 @@
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let required = false
-  export let enableBackReferences = false
 
   let rawValue: Markup
   let oldContent: Markup = EmptyMarkup
@@ -50,24 +47,6 @@
     editor.focus()
     needFocus = false
   }
-
-  function configureExtensions (): AnyExtension[] {
-    const completionPlugin = ReferenceExtension.configure({
-      ...referenceConfig,
-      showDoc (event: MouseEvent, _id: string, _class: string) {
-        dispatch('open-document', { event, _id, _class })
-      }
-    })
-
-    const extensions: AnyExtension[] = []
-    if (enableBackReferences) {
-      extensions.push(completionPlugin)
-    }
-
-    return extensions
-  }
-
-  const extensions = configureExtensions()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -92,7 +71,6 @@
     {buttonSize}
     {maxHeight}
     {isScrollable}
-    {extensions}
     bind:content={rawValue}
     bind:this={editor}
     on:blur={() => {

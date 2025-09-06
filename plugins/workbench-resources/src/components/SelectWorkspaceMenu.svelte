@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { isArchivingMode } from '@hcengineering/core'
-  import login, { Workspace } from '@hcengineering/login'
+  import { isArchivingMode, WorkspaceInfoWithStatus } from '@hcengineering/core'
+  import login from '@hcengineering/login'
   import { getMetadata, getResource } from '@hcengineering/platform'
   import presentation, { decodeTokenPayload, isAdminUser } from '@hcengineering/presentation'
   import {
@@ -37,6 +37,7 @@
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
+
   import { workspacesStore } from '../utils'
   // import Drag from './icons/Drag.svelte'
 
@@ -46,30 +47,30 @@
     })
   })
 
-  function getWorkspaceLink (ws: Workspace): string {
+  function getWorkspaceLink (ws: WorkspaceInfoWithStatus): string {
     const loc: Location = {
-      path: [workbenchId, ws.workspace]
+      path: [workbenchId, ws.url]
     }
     return locationToUrl(loc)
   }
 
-  async function clickHandler (e: MouseEvent, ws: string): Promise<void> {
+  async function clickHandler (e: MouseEvent, wsUrl: string): Promise<void> {
     if (!e.metaKey && !e.ctrlKey) {
       e.preventDefault()
       closePopup()
       closePopup()
       const current = getCurrentLocation()
-      if (ws !== current.path[1]) {
+      if (wsUrl !== current.path[1]) {
         let last: Location | undefined
         try {
-          last = JSON.parse(localStorage.getItem(`${locationStorageKeyId}_${ws}`) ?? '')
+          last = JSON.parse(localStorage.getItem(`${locationStorageKeyId}_${wsUrl}`) ?? '')
         } catch (err: any) {
           // Ignore
         }
         if (last != null && isSameSegments(last, current, 2)) {
           navigate(last)
         } else {
-          navigate({ path: [workbenchId, ws] })
+          navigate({ path: [workbenchId, wsUrl] })
         }
       }
     }
@@ -162,16 +163,16 @@
     <div class="ap-scroll">
       <div class="ap-box">
         {#each $workspacesStore
-          .filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search))
+          .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
           .slice(0, 500) as ws, i}
-          {@const wsName = ws.workspaceName ?? ws.workspace}
-          {@const _activeSession = activeSessions[ws.workspaceId]}
-          {@const lastUsageDays = Math.round((Date.now() - ws.lastVisit) / (1000 * 3600 * 24))}
+          {@const wsName = ws.name ?? ws.url}
+          {@const _activeSession = activeSessions[ws.uuid]}
+          {@const lastUsageDays = Math.round((Date.now() - (ws.lastVisit ?? 0)) / (1000 * 3600 * 24))}
           <a
             class="stealth"
             href={getWorkspaceLink(ws)}
             on:click={async (e) => {
-              await clickHandler(e, ws.workspace)
+              await clickHandler(e, ws.url)
             }}
           >
             <button
@@ -215,9 +216,9 @@
                     </div>
                   {/if}
                 </span>
-                {#if isAdmin && wsName !== ws.workspace}
+                {#if isAdmin && wsName !== ws.url}
                   <span class="text-xs">
-                    ({ws.workspace})
+                    ({ws.url})
                   </span>
                 {/if}
                 {#if isAdmin && (_activeSession?.length ?? 0) > 0}
@@ -232,7 +233,7 @@
               <!-- <span class="description overflow-label">Description</span> -->
               <!-- </div> -->
               <div class="ap-check">
-                {#if $resolvedLocationStore.path[1] === ws.workspace}
+                {#if $resolvedLocationStore.path[1] === ws.url}
                   <IconCheck size={'small'} />
                 {/if}
               </div>

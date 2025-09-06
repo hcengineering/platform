@@ -37,7 +37,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+    <ObjectMention object={value} {disabled} />
   {:else}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter" use:tooltip={{ label: testManagement.string.TestResult }}>

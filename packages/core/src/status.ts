@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Asset, IntlString } from '@hcengineering/platform'
-import { Attribute, Doc, Domain, Ref } from './classes'
+import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type Attribute, type Doc, type Domain, type Ref } from './classes'
 
 /**
  * @public
@@ -23,7 +23,7 @@ export interface StatusCategory extends Doc {
   ofAttribute: Ref<Attribute<Status>>
   icon: Asset
   label: IntlString
-  color: number
+  color: number | number[]
   defaultStatusName: string
   order: number // category order
 }
@@ -47,7 +47,7 @@ export interface Status extends Doc {
   name: string
 
   // Optional color
-  color?: number
+  color?: number | number[]
   // Optional description
   description?: string
 }

@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,51 +12,71 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import { setMetadata } from '@hcengineering/platform'
-import serverAiBot from '@hcengineering/server-ai-bot'
-import serverClient, { createAccount } from '@hcengineering/server-client'
-import serverToken from '@hcengineering/server-token'
-import { aiBotAccountEmail } from '@hcengineering/ai-bot'
+import serverClient, { withRetry } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 
-import { AIControl } from './controller'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics, type SocialId } from '@hcengineering/core'
+import { join } from 'path'
 import config from './config'
-import { closeDB, DbStorage, getDB } from './storage'
+import { AIControl } from './controller'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server/server'
+import { getDbStorage } from './storage'
+import { getAccountUuid } from './utils/account'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
-  setMetadata(serverAiBot.metadata.SupportWorkspaceId, config.SupportWorkspace)
+  setMetadata(serverToken.metadata.Service, 'ai-bot-service')
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 
   registerLoaders()
 
-  const ctx = initStatisticsContext('ai-bot-service', {})
+  const ctx = initStatisticsContext('ai-bot-service', {
+    factory: () =>
+      createOpenTelemetryMetricsContext(
+        'ai-bot-service',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('ai-bot-service', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
-  const db = await getDB()
-  const storage = new DbStorage(db)
-  for (let i = 0; i < 5; i++) {
-    ctx.info('Creating bot account', { attempt: i })
-    try {
-      await createAccount(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
-      break
-    } catch (e) {
-      ctx.error('Error during account creation', { error: e })
-    }
-    await new Promise((resolve) => setTimeout(resolve, 3000))
+  const personUuid = await withRetry(
+    async () => await getAccountUuid(ctx),
+    (_, attempt) => attempt >= 5,
+    5000
+  )()
+
+  if (personUuid === undefined) {
+    ctx.error('AI Bot Service failed to start. No person found.')
+    process.exit()
   }
-  const aiControl = new AIControl(storage, ctx)
+  ctx.info('AI person uuid', { personUuid })
+
+  const storage = await getDbStorage()
+  const socialIds: SocialId[] = await getAccountClient(
+    config.AccountsURL,
+    generateToken(personUuid, undefined, { service: 'aibot' })
+  ).getSocialIds()
+
+  const aiControl = new AIControl(personUuid, socialIds, storage, ctx)
 
   const app = createServer(aiControl, ctx)
   const server = listen(app, config.Port)
 
   const onClose = (): void => {
     void aiControl.close()
-    void closeDB()
+    storage.close()
     server.close(() => process.exit())
   }
 

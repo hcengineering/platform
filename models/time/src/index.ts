@@ -16,60 +16,61 @@
 import activity from '@hcengineering/activity'
 import board from '@hcengineering/board'
 import calendarPlugin, { type Visibility } from '@hcengineering/calendar'
-import contactPlugin, { type Person } from '@hcengineering/contact'
+import contactPlugin, { type Employee } from '@hcengineering/contact'
 import {
+  AccountRole,
   DOMAIN_MODEL,
+  DateRangeMode,
+  IndexKind,
   type Class,
+  type ClassCollaborators,
   type Domain,
   type Markup,
   type Ref,
   type Space,
   type Timestamp,
-  type Type,
-  DateRangeMode,
-  IndexKind,
-  AccountRole
+  type Type
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import {
   Collection,
+  Hidden,
+  Index,
   Mixin,
   Model,
   Prop,
+  TypeDate,
   TypeRef,
   TypeString,
   UX,
   type Builder,
-  TypeDate,
-  Hidden,
-  Index
+  TypeMarkup
 } from '@hcengineering/model'
-import textEditor from '@hcengineering/text-editor'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
-import tracker from '@hcengineering/model-tracker'
 import document from '@hcengineering/model-document'
+import tracker from '@hcengineering/model-tracker'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import recruit from '@hcengineering/recruit'
 import tags from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
-  type TodoDoneTester,
   timeId,
   type ItemPresenter,
   type ProjectToDo,
   type ToDo,
   type ToDoPriority,
   type TodoAutomationHelper,
+  type TodoDoneTester,
   type WorkSlot
 } from '@hcengineering/time'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import type { Resource } from '@hcengineering/platform'
 import type { Rank } from '@hcengineering/task'
-import time from './plugin'
 import task from '@hcengineering/task'
+import time from './plugin'
 
 export { timeId } from '@hcengineering/time'
 export { default } from './plugin'
@@ -97,11 +98,12 @@ export class TTypeToDoPriority extends TType {}
 
 @Model(time.class.ToDo, core.class.AttachedDoc, DOMAIN_TIME)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TToDO extends TAttachedDoc implements ToDo {
+export class TToDo extends TAttachedDoc implements ToDo {
   @Prop(TypeDate(DateRangeMode.DATE), task.string.DueDate)
     dueDate?: number | null | undefined
 
   @Prop(TypeToDoPriority(), time.string.Priority)
+  @Index(IndexKind.Indexed)
     priority!: ToDoPriority
 
   visibility!: Visibility
@@ -110,15 +112,18 @@ export class TToDO extends TAttachedDoc implements ToDo {
     attachedSpace?: Ref<Space> | undefined
 
   @Prop(TypeString(), calendarPlugin.string.Title)
+  @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeString(), calendarPlugin.string.Description)
+  @Prop(TypeMarkup(), calendarPlugin.string.Description)
+  @Index(IndexKind.FullText)
     description!: Markup
 
   doneOn?: Timestamp | null
 
-  @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.For)
-    user!: Ref<Person>
+  @Prop(TypeRef(contactPlugin.mixin.Employee), contactPlugin.string.Employee)
+  @Index(IndexKind.Indexed)
+    user!: Ref<Employee>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)
     workslots!: number
@@ -133,7 +138,7 @@ export class TToDO extends TAttachedDoc implements ToDo {
 
 @Model(time.class.ProjectToDo, time.class.ToDo)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TProjectToDo extends TToDO implements ProjectToDo {
+export class TProjectToDo extends TToDo implements ProjectToDo {
   declare attachedSpace: Ref<Space>
 }
 
@@ -144,7 +149,7 @@ export class TTodoAutomationHelper extends TDoc implements TodoAutomationHelper 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TWorkSlot, TItemPresenter, TToDO, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
+  builder.createModel(TWorkSlot, TItemPresenter, TToDo, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
 
   builder.mixin(time.class.ToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
   builder.mixin(time.class.ProjectToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
@@ -198,7 +203,8 @@ export function createModel (builder: Builder): void {
       alias: timeId,
       hidden: false,
       position: 'top',
-      component: time.component.Me
+      component: time.component.Me,
+      order: 300
     },
     time.app.Me
   )
@@ -386,7 +392,8 @@ export function createModel (builder: Builder): void {
     enabledTypes: [time.ids.ToDoCreated]
   })
 
-  builder.mixin(time.class.ToDo, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<ToDo>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: time.class.ToDo,
     fields: ['user']
   })
 
@@ -408,16 +415,6 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 },
       { modifiedOn: 1 }
     ]
-  })
-
-  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 510,
-    create: time.function.CreateTodoItemExtension
-  })
-
-  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 520,
-    create: time.function.CreateTodoListExtension
   })
 }
 
