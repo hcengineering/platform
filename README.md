@@ -57,7 +57,7 @@ You can find API usage examples in the [Huly examples](https://github.com/hcengi
 ## Pre-requisites
 
 - Before proceeding, ensure that your system meets the following requirements:
-  - [Node.js](https://nodejs.org/en/download/) (v20.11.0 is required)
+  - [Node.js](https://nodejs.org/en/download/) (v22 is required)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
 
