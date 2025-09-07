@@ -1,0 +1,12 @@
+import { TickManagerImpl, timeouts, type NetworkClient } from '@hcengineering/network-core'
+import { NetworkClientImpl } from './client'
+
+export * from './types'
+export * from './client'
+export * from './agent'
+
+const tickMgr = new TickManagerImpl(timeouts.pingInterval * 2)
+
+export function createNetworkClient (host: string, port: number): NetworkClient {
+  return new NetworkClientImpl(host, port, tickMgr)
+}
