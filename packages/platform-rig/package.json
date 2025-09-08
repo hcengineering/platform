@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "esbuild": "^0.25.9",
-    "esbuild-svelte": "^0.9.3",
     "esbuild-plugin-copy": "^2.1.1"
   },
   "bin": {

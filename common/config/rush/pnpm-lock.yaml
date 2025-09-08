@@ -154,9 +154,6 @@ importers:
       esbuild-plugin-copy:
         specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.9)
-      esbuild-svelte:
-        specifier: ^0.9.3
-        version: 0.9.3(esbuild@0.25.9)
     devDependencies:
       typescript:
         specifier: ^5.8.3
@@ -1690,13 +1687,6 @@ packages:
     resolution: {integrity: sha512-Bk66jpevTcV8KMFzZI1P7MZKZ+uDcrZm2G2egZ2jNIvVnivDpodZI+/KnpL3Jnap0PBdIHU7HwFGB8r+vV5CVw==}
     peerDependencies:
       esbuild: '>= 0.14.0'
-
-  esbuild-svelte@0.9.3:
-    resolution: {integrity: sha512-CgEcGY1r/d16+aggec3czoFBEBaYIrFOnMxpsO6fWNaNEqHregPN5DLAPZDqrL7rXDNplW+WMu8s3GMq9FqgJA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      esbuild: '>=0.17.0'
-      svelte: '>=4.2.1 <6'
 
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
@@ -4965,11 +4955,6 @@ snapshots:
       esbuild: 0.25.9
       fs-extra: 10.1.0
       globby: 11.1.0
-
-  esbuild-svelte@0.9.3(esbuild@0.25.9):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.30
-      esbuild: 0.25.9
 
   esbuild@0.25.9:
     optionalDependencies:
