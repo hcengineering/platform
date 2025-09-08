@@ -42,11 +42,12 @@
     "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
     "AddCollaborators": "Přidat spolupracovníky",
     "Home": "Domů",
-    "CardTitle": "Zadejte název karty...",
+    "CardTitle": "Název",
     "Post": "Přidat",
     "Compact": "Kompaktní",
     "Comfortable": "Komfortní",
     "Comfortable2": "Komfortní 2",
-    "AdvancedCreateCard": "Přepnout na pokročilé vytváření karet"
+    "AdvancedCreateCard": "Skrýt detaily",
+    "CardContent": "Co chcete sdílet?"
   }
 }
