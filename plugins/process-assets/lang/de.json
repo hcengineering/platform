@@ -97,7 +97,9 @@
     "RemoveFirst": "Erstes entfernen",
     "RemoveLast": "Letztes entfernen",
     "Cancelled": "Abgebrochen",
-    "WaitUntil": "Warten bis"
+    "WaitUntil": "Warten bis",
+    "CurrentUser": "Aktueller Benutzer",
+    "CurrentDate": "Aktuelles Datum"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

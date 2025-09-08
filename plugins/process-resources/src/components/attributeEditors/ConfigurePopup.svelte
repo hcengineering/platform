@@ -187,13 +187,14 @@
     onChange(contextValue)
   }
 
-  function onConfigure (e: MouseEvent, func: ProcessFunction, pos: number): void {
-    if (contextValue.functions === undefined || func.editor === undefined) return
+  function onConfigure (e: MouseEvent, func: Func, pos: number): void {
+    const f = getFunction(func.func)
+    if (contextValue.functions === undefined || f.editor === undefined) return
     const val = contextValue.functions[pos]
     showPopup(
-      func.editor,
+      f.editor,
       {
-        func,
+        func: f,
         masterTag: process.masterTag,
         process,
         context,
@@ -224,6 +225,10 @@
     }
     onChange(contextValue)
   }
+
+  function getFunction (_id: Ref<ProcessFunction>): ProcessFunction {
+    return client.getModel().findAllSync(plugin.class.ProcessFunction, { _id })[0]
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -246,11 +251,13 @@
         options={{ component: plugin.component.FunctionSelector }}
         withHover
       />
-      <div class="menu-separator" />
     {/if}
     {#if availableFunctions.length > 0 || functionsLength > 0}
-      {#each funcs as f, i}
-        {#if reduceFuncs.includes(f._id)}
+      {#if sourceFunc !== undefined}
+        <div class="menu-separator" />
+      {/if}
+      {#each contextValue.functions ?? [] as f, i}
+        {#if reduceFuncs.includes(f.func)}
           <Submenu
             bind:element={elements[i + (sourceFunc !== undefined ? 1 : 0)]}
             on:keydown={(event) => {
@@ -259,7 +266,7 @@
             on:mouseover={() => {
               elements[i + (sourceFunc !== undefined ? 1 : 0)]?.focus()
             }}
-            label={f.label}
+            label={getFunction(f.func)?.label}
             props={{
               availableFunctions: reduceFuncs,
               onSelect: getFunctionChange(i)
@@ -281,10 +288,10 @@
             }}
           >
             <div>
-              <Label label={f.label} />
+              <Label label={getFunction(f.func).label} />
             </div>
             <div>
-              {#if f.editor}
+              {#if getFunction(f.func).editor}
                 <ButtonIcon
                   icon={IconSettings}
                   size="small"
@@ -325,7 +332,9 @@
         />
         <!-- <div class="menu-separator" /> -->
       {/if}
-      <div class="menu-separator" />
+      {#if !forbidValue}
+        <div class="menu-separator" />
+      {/if}
     {/if}
     {#if !forbidValue}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->

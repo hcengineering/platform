@@ -97,7 +97,9 @@
     "RemoveFirst": "Odstranit první",
     "RemoveLast": "Odstranit poslední",
     "Cancelled": "Zrušeno",
-    "WaitUntil": "Čekat do"
+    "WaitUntil": "Čekat do",
+    "CurrentUser": "Aktuální uživatel",
+    "CurrentDate": "Aktuální datum"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

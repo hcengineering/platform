@@ -43,6 +43,7 @@ import TransitionEditor from './components/settings/TransitionEditor.svelte'
 import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
+import MultiArrayElementEditor from './components/transformEditors/MultiArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
@@ -143,6 +144,7 @@ export default async (): Promise<Resources> => ({
   },
   transformEditor: {
     ArrayElementEditor,
+    MultiArrayElementEditor,
     DateOffsetEditor,
     NumberEditor,
     AppendEditor,

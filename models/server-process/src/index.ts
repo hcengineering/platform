@@ -195,6 +195,18 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.RoleContext
   })
 
+  builder.mixin(process.function.CurrentDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentDate
+  })
+
+  builder.mixin(process.function.CurrentEmployee, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
+  })
+
+  builder.mixin(process.function.CurrentUser, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
+  })
+
   builder.mixin(process.function.Insert, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Insert
   })
