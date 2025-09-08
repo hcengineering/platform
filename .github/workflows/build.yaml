@@ -25,7 +25,7 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
-          file: server/Dockerfile
+          file: Dockerfile
           push: true
-          tags: "${{ vars.DOCKER_USER }}/service_hulylake:latest"
+          tags: "${{ vars.DOCKER_USER }}/service_hulylake:${{ env.VERSION }},${{ vars.DOCKER_USER }}/service_hulylake:latest"
           platforms: linux/amd64,linux/arm64

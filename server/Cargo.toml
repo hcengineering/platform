@@ -31,11 +31,6 @@ secrecy = "0.10.3"
 tracing-actix-web = "0.7.19"
 aws-config = { version = "1.8.5" }
 aws-sdk-s3 = "1.103.0"
-reqwest = { version = "0.12.15", default-features = false, features = [
-    "json",
-    "rustls-tls",
-    "stream",
-] }
 futures-util = "0.3.31"
 tokio-stream = "0.1.17"
 thiserror = "2.0.16"
