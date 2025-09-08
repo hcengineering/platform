@@ -5,14 +5,18 @@ WORKDIR /tmp/build
 
 COPY . .
 
+RUN echo build for $TARGETPLATFORM
 RUN \
     if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+        apt-get update && apt-get install -y cmake \
+        && rm -rf /var/lib/apt/lists/* ; \
         cargo build --release --target=x86_64-unknown-linux-gnu ; \
     elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get update && apt-get install -y \
         gcc-aarch64-linux-gnu \
         g++-aarch64-linux-gnu \
         libc6-dev-arm64-cross \
+        cmake \
         && rm -rf /var/lib/apt/lists/* ; \
         rustup target add aarch64-unknown-linux-gnu ; \
         export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc ; \
@@ -29,4 +33,4 @@ ARG TARGET
 COPY --from=builder /tmp/build/target/*/release/hulylake /usr/local/bin/hulylake
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["/usr/local/bin/hulykvs"]
+ENTRYPOINT ["/usr/local/bin/hulylake"]
