@@ -66,6 +66,7 @@
   export let enableAttachments: boolean = true
   export let isScrollable = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let fullWidth = false
 
   export let useDirectAttachDelete = false
   export let boundary: HTMLElement | undefined = undefined
@@ -408,6 +409,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex-col clear-mins"
+  class:w-full={fullWidth}
   on:paste={(ev) => pasteAction(ev)}
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
