@@ -13,35 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, SpaceSelector } from '@hcengineering/presentation'
-  import {
-    ModernButton,
-    ModernEditbox,
-    ButtonIcon,
-    IconSend,
-    IconMinimize,
-    showPopup,
-    getFocusManager
-  } from '@hcengineering/ui'
+  import { getClient, getCommunicationClient, SpaceSelector } from '@hcengineering/presentation'
+  import { ModernButton, ModernEditbox, ButtonIcon, IconSend, IconMinimize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import CreateCardPopup from './CreateCardPopup.svelte'
   import card from '../plugin'
   import { TypeSelector } from '../index'
-  import core, { Data, generateId, Ref } from '@hcengineering/core'
+  import core, { Data, generateId, Markup, Ref } from '@hcengineering/core'
   import { Card, type CardSpace, MasterTag } from '@hcengineering/card'
   import { getResource } from '@hcengineering/platform'
-  import { EmptyMarkup, markupToText, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, markupToText, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
   import { createCard } from '../utils'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { AttachIcon } from '@hcengineering/text-editor-resources'
+  import { AttachmentID, BlobParams } from '@hcengineering/communication-types'
+  import { markupToMarkdown } from '@hcengineering/text-markdown'
 
   const dispatch = createEventDispatcher()
-  const focusManager = getFocusManager()
+  const communicationClient = getCommunicationClient()
+
+  const threadMasterTag = 'chat:masterTag:Thread' as Ref<MasterTag>
 
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined
-  let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
+  let type: Ref<MasterTag> = threadMasterTag
   let description = EmptyMarkup
   let _id = generateId<Card>()
   let isExpanded = false
@@ -60,22 +55,6 @@
         .findAllSync(card.mixin.CreateCardExtension, {})
         .find((it) => hierarchy.isDerived(type, it._id))
       : undefined
-
-  function onExtend (): void {
-    showPopup(
-      CreateCardPopup,
-      { title, type, space, changeType: true, allowChangeSpace: true },
-      'center',
-      async (result) => {
-        if (result !== undefined) {
-          const doc = await getClient().findOne(card.class.Card, { _id: result })
-          if (doc === undefined) return
-          dispatch('selectCard', doc)
-        }
-      }
-    )
-    clear()
-  }
 
   async function okAction (): Promise<void> {
     if (space === undefined || type == null) return
@@ -98,14 +77,46 @@
         }
       }
 
-      const createdCard = await createCard(type, space, data, description, _id)
-      await descriptionBox.createAttachments()
+      const isThread = type === threadMasterTag
+      const cardDescription = isThread ? EmptyMarkup : description
+      const createdCard = await createCard(type, space, data, cardDescription, _id)
+      if (isThread) {
+        if (createdCard == null) {
+          console.error('Failed to create thread card')
+          return
+        }
+        const blobs: BlobParams[] = descriptionBox.getAttachments().map((attachment) => ({
+          blobId: attachment.file,
+          mimeType: attachment.type,
+          fileName: attachment.name,
+          size: attachment.size
+        }))
+        await createMessage(createdCard, description, blobs)
+      } else {
+        await descriptionBox.createAttachments()
+      }
       if (createdCard != null) {
         dispatch('selectCard', createdCard)
       }
       clear()
     } finally {
+      _id = generateId<Card>()
       creating = false
+    }
+  }
+
+  async function createMessage (card: Ref<Card>, markup: Markup, blobs: BlobParams[]): Promise<void> {
+    const markdown = markupToMarkdown(markupToJSON(markup))
+    const { messageId } = await communicationClient.createMessage(card, type, markdown)
+
+    if (blobs.length > 0) {
+      void communicationClient.attachmentPatch<BlobParams>(card, messageId, {
+        add: blobs.map((it) => ({
+          id: it.blobId as any as AttachmentID,
+          type: it.mimeType,
+          params: it
+        }))
+      })
     }
   }
 
@@ -134,15 +145,8 @@
         size="extra-small"
         on:click={() => (isExpanded = false)}
         kind="tertiary"
+        tooltip={{ label: card.string.ShowLess }}
         disabled={creating}
-      />
-      <ButtonIcon
-        icon={card.icon.Expand}
-        size="extra-small"
-        on:click={onExtend}
-        kind="tertiary"
-        disabled={creating}
-        tooltip={{ label: card.string.AdvancedCreateCard }}
       />
     </div>
     <div class="form-row title">
@@ -153,12 +157,6 @@
         kind="transparent"
         width="100%"
         disabled={creating}
-        on:keydown={(evt) => {
-          if (evt.key === 'Enter') {
-            evt.preventDefault()
-            focusManager?.next(1)
-          }
-        }}
       />
     </div>
   {/if}

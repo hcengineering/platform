@@ -374,6 +374,10 @@
     }
   }
 
+  export function getAttachments (): Attachment[] {
+    return Array.from(attachments.values())
+  }
+
   $: dispatch('attachments', {
     size: attachments.size,
     values: attachments.size === 0 ? true : attachments
