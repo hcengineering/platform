@@ -59,9 +59,10 @@ async fn main() -> anyhow::Result<()> {
     let s3 = s3::client().await;
 
     match s3.head_bucket().bucket(&CONFIG.s3_bucket).send().await {
-        Ok(_) => info!("s3 bucket {} OK", &CONFIG.s3_bucket),
-        Err(e) => {
-            panic!("s3 bucket {} not available: {}", &CONFIG.s3_bucket, e);
+        Ok(_) => info!(bucket = &CONFIG.s3_bucket, "s3 bucket exists and available"),
+        Err(_) => {
+            s3.create_bucket().bucket(&CONFIG.s3_bucket).send().await?;
+            info!(bucket = &CONFIG.s3_bucket, "s3 bucket created");
         }
     }
 
