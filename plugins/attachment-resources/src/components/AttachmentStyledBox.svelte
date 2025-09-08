@@ -441,7 +441,9 @@
     on:blur
     on:focus
     {attachFile}
-  />
+  >
+    <slot name="actions" slot="actions" />
+  </StyledTextBox>
   {#if attachments.size > 0 && enableAttachments}
     <AttachmentsGrid
       attachments={Array.from(attachments.values())}

@@ -28,6 +28,10 @@
   import { AttachIcon } from '@hcengineering/text-editor-resources'
   import { AttachmentID, BlobParams } from '@hcengineering/communication-types'
   import { markupToMarkdown } from '@hcengineering/text-markdown'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { defaultMessageInputActions } from '@hcengineering/communication-resources'
+
+  import EditorActions from './EditorActions.svelte'
 
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
@@ -135,6 +139,16 @@
       }, 0)
     }
   }
+
+  const attachAction: RefAction = {
+    label: textEditor.string.Attach,
+    icon: AttachIcon,
+    action: () => {
+      dispatch('focus')
+      descriptionBox.handleAttach()
+    },
+    order: 1000
+  }
 </script>
 
 <div class="create-card rounded-form">
@@ -169,7 +183,7 @@
       _class={type}
       {space}
       alwaysEdit
-      showButtons={false}
+      showButtons={true}
       bind:content={description}
       placeholder={card.string.CardContent}
       kind="indented"
@@ -179,45 +193,41 @@
       enableAttachments={true}
       fullWidth={true}
       on:focus={() => (isExpanded = true)}
-    />
+    >
+      <svelte:fragment slot="actions">
+        {#if isExpanded}
+          <div class="form-row form-row-bottom">
+            <div class="form-dropdowns">
+              <SpaceSelector
+                _class={card.class.CardSpace}
+                query={{ archived: false }}
+                label={core.string.Space}
+                bind:space
+                focus={false}
+                readonly={creating}
+                kind={'regular'}
+                size={'small'}
+              />
+              <TypeSelector size={'small'} bind:value={type} disabled={creating} />
+              <div class="spacer" />
+              <div class="right-divider" />
+              <EditorActions actions={[...defaultMessageInputActions, attachAction]} />
+            </div>
+            <ModernButton
+              label={card.string.Post}
+              icon={IconSend}
+              iconSize="small"
+              size="small"
+              kind="primary"
+              disabled={applyDisabled}
+              loading={creating}
+              on:click={okAction}
+            />
+          </div>
+        {/if}
+      </svelte:fragment>
+    </AttachmentStyledBox>
   </div>
-  {#if isExpanded}
-    <div class="form-row form-row-bottom">
-      <div class="form-dropdowns">
-        <SpaceSelector
-          _class={card.class.CardSpace}
-          query={{ archived: false }}
-          label={core.string.Space}
-          bind:space
-          focus={false}
-          readonly={creating}
-          kind={'regular'}
-          size={'small'}
-        />
-        <TypeSelector size={'small'} bind:value={type} disabled={creating} />
-        <div class="spacer" />
-        <div class="right-divider" />
-        <ButtonIcon
-          icon={AttachIcon}
-          size="small"
-          kind="tertiary"
-          on:click={() => {
-            descriptionBox.handleAttach()
-          }}
-        />
-      </div>
-      <ModernButton
-        label={card.string.Post}
-        icon={IconSend}
-        iconSize="small"
-        size="small"
-        kind="primary"
-        disabled={applyDisabled}
-        loading={creating}
-        on:click={okAction}
-      />
-    </div>
-  {/if}
 </div>
 
 <style lang="scss">
@@ -249,9 +259,7 @@
   .form-row {
     display: flex;
     width: 100%;
-    margin-bottom: 0.5rem;
     &.title {
-      margin-bottom: 0;
       z-index: 1;
     }
     &.description {
@@ -269,8 +277,8 @@
   .form-row-bottom {
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0;
     gap: 1rem;
+    padding-top: 0.5rem;
   }
   .form-dropdowns {
     display: flex;
