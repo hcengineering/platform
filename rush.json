@@ -42,7 +42,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=18.20.3 <19.0.0 || >=20.14.0 <23.0.0",
+  "nodeSupportedVersionRange": ">=18.20.3 <19.0.0 || >=20.14.0 <25.0.0",
 
   /**
    * If the version check above fails, Rush will display a message showing the current

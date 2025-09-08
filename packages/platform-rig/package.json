@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
@@ -10,14 +10,13 @@
     "./profiles/*": "./profiles/*"
   },
   "devDependencies": {
-    "eslint-config-standard-with-typescript": "^40.0.0",
-    "svelte-eslint-parser": "^0.33.1",
-    "esbuild": "^0.24.2",
-    "esbuild-svelte": "^0.9.0",
-    "esbuild-plugin-copy": "~2.1.1",
     "typescript": "^5.8.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "esbuild": "^0.25.9",
+    "esbuild-svelte": "^0.9.3",
+    "esbuild-plugin-copy": "^2.1.1"
+  },
   "bin": {
     "format": "./bin/format.js",
     "compile": "./bin/compile.js",
@@ -25,11 +24,14 @@
     "bump-package-version": "./bin/bump-package-version.js"
   },
   "peerDependencies": {
-    "@typescript-eslint/parser": ">=6.0 <10",
-    "eslint": ">=8 <10",
-    "typescript": ">=4.3 <6",
-    "prettier": ">=2.0 <4",
-    "esbuild": ">=0.14 <1"
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "prettier": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

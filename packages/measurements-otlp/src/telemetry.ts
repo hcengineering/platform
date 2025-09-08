@@ -138,7 +138,7 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
     let _span: Span | undefined
     let childContext: Context | undefined
     if (opt?.span === true || opt?.span === 'inherit') {
-      childContext = opt?.span === 'inherit' ? context.active() : this.context ?? context.active()
+      childContext = opt?.span === 'inherit' ? context.active() : (this.context ?? context.active())
 
       if (opt.meta !== undefined && Object.keys(opt.meta).length > 0) {
         // We need to set meta params
