@@ -148,10 +148,6 @@ importers:
 
   ../../packages/platform-rig:
     dependencies:
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.2
-    devDependencies:
       esbuild:
         specifier: ^0.24.2
         version: 0.24.2
@@ -167,6 +163,9 @@ importers:
       svelte-eslint-parser:
         specifier: ^0.33.1
         version: 0.33.1
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.2
 
   ../../packages/postgres-base:
     dependencies:
