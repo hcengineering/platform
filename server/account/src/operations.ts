@@ -692,12 +692,14 @@ export async function createAccessLink (
   }
 
   const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, AccountRole.User, extra)
   verifyAllowedRole(callerRole, role, extra)
 
   const newUuid = await db.generatePersonUuid()
   const accessToken = generateToken(newUuid, undefined, undefined, undefined, {
     workspace: workspaceUuid,
     role,
+    grantedBy: account,
     firstName,
     lastName,
     extra: extraObj,

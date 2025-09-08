@@ -149,7 +149,8 @@ export class ClientSession implements Session {
     }
 
     return {
-      spaces: this.token.grant?.spaces as Ref<Space>[] | undefined
+      spaces: this.token.grant?.spaces as Ref<Space>[] | undefined,
+      grantedBy: this.token.grant?.grantedBy
     }
   }
 

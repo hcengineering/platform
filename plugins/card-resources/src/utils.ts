@@ -21,6 +21,8 @@ import core, {
   type DocumentQuery,
   fillDefaults,
   generateId,
+  getCurrentAccount,
+  hasAccountRole,
   type Hierarchy,
   makeCollabId,
   type Markup,
@@ -51,7 +53,7 @@ import {
   type ResolvedLocation,
   showPopup
 } from '@hcengineering/ui'
-import view, { encodeObjectURI } from '@hcengineering/view'
+import view, { encodeObjectURI, canCopyLink } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import workbench, { type LocationData, type Widget, type WidgetTab } from '@hcengineering/workbench'
 import { translate, getMetadata } from '@hcengineering/platform'
@@ -359,4 +361,12 @@ export async function getSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<stri
   })
 
   return accessLink
+}
+
+export async function canGetSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<boolean> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    return false
+  }
+
+  return await canCopyLink(doc)
 }

@@ -188,7 +188,8 @@ const cardPlugin = plugin(cardId, {
   },
   function: {
     OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>,
-    GetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>
+    GetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>,
+    CanGetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   label: {
     Subscribed: '' as Ref<Doc>,

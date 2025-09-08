@@ -425,7 +425,7 @@ export function createModel (builder: Builder): void {
     category: view.category.General,
     target: card.class.CardSpace,
     query: {},
-    visibilityTester: view.function.CanCopyLink,
+    visibilityTester: card.function.CanGetSpaceAccessPublicLink,
     context: {
       mode: ['context', 'browser']
     }
