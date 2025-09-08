@@ -1,6 +1,6 @@
 use std::error::Error as StdError;
 
-use aws_sdk_s3::primitives::{ByteStream, SdkBody};
+use aws_sdk_s3::primitives::ByteStream;
 use blake3::Hasher;
 use bytes::{Bytes, BytesMut};
 use futures::stream::StreamExt;

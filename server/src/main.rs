@@ -1,4 +1,3 @@
-use core::panic;
 use std::net::SocketAddr;
 
 use actix_cors::Cors;
