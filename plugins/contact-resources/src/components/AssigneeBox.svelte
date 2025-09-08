@@ -59,6 +59,7 @@
   export let avatarSize: IconSize = kind === 'regular' ? 'small' : 'card'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let height: string | undefined = undefined
   export let shrink: number = 0
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | PersonLabelTooltip | undefined = undefined
@@ -132,7 +133,14 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} style:flex-shrink={shrink}>
+<div
+  {id}
+  bind:this={container}
+  class="min-w-0"
+  class:w-full={width === '100%'}
+  class:h-full={height === '100%'}
+  style:flex-shrink={shrink}
+>
   {#if $$slots.content}
     <div
       class="w-full h-full flex-streatch"
