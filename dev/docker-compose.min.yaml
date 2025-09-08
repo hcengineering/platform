@@ -1,6 +1,6 @@
 services:
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -11,7 +11,7 @@ services:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    image: docker.redpanda.com/redpandadata/redpanda:v25.2.3
     extra_hosts:
       - 'huly.local:host-gateway'
     command:

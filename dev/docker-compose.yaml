@@ -41,7 +41,7 @@ services:
       - 4040:4040
     restart: unless-stopped
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -52,7 +52,7 @@ services:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    image: docker.redpanda.com/redpandadata/redpanda:v25.2.3
     extra_hosts:
       - 'huly.local:host-gateway'
     command:
@@ -84,7 +84,7 @@ services:
       retries: 10
     restart: unless-stopped
   redpanda_console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    image: docker.redpanda.com/redpandadata/console:v2.8.10
     extra_hosts:
       - 'huly.local:host-gateway'
     entrypoint: /bin/sh
