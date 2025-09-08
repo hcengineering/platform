@@ -42,10 +42,11 @@
     "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement.",
     "AddCollaborators": "Mitarbeiter hinzufügen",
     "Home": "Startseite",
-    "WhatDoYouWantToShare": "Was möchten Sie teilen?",
-    "Share": "Teilen",
+    "CardTitle": "Geben Sie einen Kartentitel ein...",
+    "Post": "Beitrag",
     "Compact": "Kompakt",
     "Comfortable": "Komfortabel",
-    "Comfortable2": "Komfortabel 2"
+    "Comfortable2": "Komfortabel 2",
+    "AdvancedCreateCard": "Zum erweiterten Kartenerstellungsmodus wechseln"
   }
 }

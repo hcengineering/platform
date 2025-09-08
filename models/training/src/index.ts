@@ -189,6 +189,10 @@ function defineTraining (builder: Builder): void {
     component: training.component.TrainingPanel
   })
 
+  builder.mixin(training.class.Training, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: training.component.TrainingPresenter
+  })
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: training.class.Training,
     descriptor: view.viewlet.Table,
@@ -201,7 +205,8 @@ function defineTraining (builder: Builder): void {
       },
       {
         ...columns.trainingTitle,
-        key: 'title'
+        key: '',
+        presenter: training.component.TrainingTitlePresenter
       },
       {
         ...columns.trainingRevision,
@@ -890,8 +895,7 @@ const columns = {
   trainingTitle: {
     key: 'title',
     label: training.string.TrainingTitle,
-    props: { accent: true },
-    displayProps: { grow: true, align: 'left' }
+    displayProps: { align: 'left' }
   },
   trainingRevision: {
     key: 'revision',

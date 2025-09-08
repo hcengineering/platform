@@ -111,16 +111,26 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
 
     const emp = control.hierarchy.as(person, contact.mixin.Employee)
     if (emp.role === 'GUEST') {
+      let readOnlyGuestSpaces: Space[] = []
       const readonlyEmployees = await control.findAll(control.ctx, contact.mixin.Employee, {
         personUuid: readOnlyGuestAccountUuid
       })
-      if (readonlyEmployees.length === 0) continue
+      if (readonlyEmployees.length !== 0) {
+        const readonlyEmployee = readonlyEmployees[0]
+        if (readonlyEmployee.active) {
+          readOnlyGuestSpaces = await control.findAll(control.ctx, core.class.Space, {
+            members: readOnlyGuestAccountUuid
+          })
+        }
+      }
 
-      const readonlyEmployee = readonlyEmployees[0]
-      if (!readonlyEmployee.active) continue
+      const grantSpacesRefs = control.ctx.contextData.grant?.spaces
+      const grantSpaces =
+        grantSpacesRefs !== undefined
+          ? await control.findAll(control.ctx, core.class.Space, { _id: { $in: grantSpacesRefs } })
+          : []
 
-      const spaces = await control.findAll(control.ctx, core.class.Space, { members: readOnlyGuestAccountUuid })
-      for (const space of spaces) {
+      for (const space of [...readOnlyGuestSpaces, ...grantSpaces]) {
         if (space._class === contact.class.PersonSpace || space.members.includes(account)) continue
 
         const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
@@ -149,7 +159,12 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     }
 
     const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
-    for (const space of spaces) {
+    const grantSpacesRefs = control.ctx.contextData.grant?.spaces
+    const grantSpaces =
+      grantSpacesRefs !== undefined
+        ? await control.findAll(control.ctx, core.class.Space, { _id: { $in: grantSpacesRefs } })
+        : []
+    for (const space of [...spaces, ...grantSpaces]) {
       if (space.members.includes(account)) continue
 
       const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {

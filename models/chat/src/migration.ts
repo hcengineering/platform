@@ -13,8 +13,15 @@
 // limitations under the License.
 //
 
-import card, { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
-import type { Doc, Ref } from '@hcengineering/core'
+import card, { type Card, cardId, type CardSpace, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
+import core, {
+  type Doc,
+  type Ref,
+  type Class,
+  DOMAIN_MODEL_TX,
+  type TxCreateDoc,
+  DOMAIN_SPACE
+} from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -40,6 +47,16 @@ export const chatOperation: MigrateOperation = {
         state: 'migrate-parent-info',
         mode: 'upgrade',
         func: migrateParentInfo
+      },
+      {
+        state: 'migrate-channel-tags',
+        mode: 'upgrade',
+        func: migrateChannelTags
+      },
+      {
+        state: 'migrate-card-spaces',
+        mode: 'upgrade',
+        func: migrateCardSpaces
       }
     ])
   },
@@ -56,6 +73,34 @@ async function migrateChannelsToThreads (client: MigrationClient): Promise<void>
       _class: chat.masterTag.Thread
     }
   )
+}
+
+async function migrateChannelTags (client: MigrationClient): Promise<void> {
+  const tagTxes = await client.find<TxCreateDoc<Class<Card>>>(DOMAIN_MODEL_TX, {
+    _class: core.class.TxCreateDoc,
+    objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+  })
+  const updates: {
+    filter: MigrationDocumentQuery<TxCreateDoc<Class<Card>>>
+    update: MigrateUpdate<TxCreateDoc<Class<Card>>>
+  }[] = []
+  for (const tagTx of tagTxes) {
+    if (tagTx.attributes.extends !== channelMasterTag) {
+      continue
+    }
+
+    updates.push({
+      filter: { _id: tagTx._id },
+      update: {
+        attributes: {
+          ...tagTx.attributes,
+          extends: chat.masterTag.Thread
+        }
+      }
+    })
+  }
+  await client.bulk(DOMAIN_MODEL_TX, updates)
+  client.logger.log('Migrated channel tags', { allTags: tagTxes.length, updatedTags: updates.length })
 }
 
 async function migrateParentInfo (client: MigrationClient, mode: MigrateMode): Promise<void> {
@@ -105,4 +150,30 @@ export async function performParentInfoMigration (client: MigrationClient, bulkS
   } finally {
     await iterator.close()
   }
+}
+
+async function migrateCardSpaces (client: MigrationClient): Promise<void> {
+  const cardSpaces = await client.find<CardSpace>(DOMAIN_SPACE, {
+    _class: card.class.CardSpace
+  })
+  const updates: {
+    filter: MigrationDocumentQuery<CardSpace>
+    update: MigrateUpdate<CardSpace>
+  }[] = []
+  for (const cs of cardSpaces) {
+    if (cs.types == null || !cs.types.includes(channelMasterTag)) {
+      continue
+    }
+    const types = cs.types.filter((t) => t !== channelMasterTag)
+    if (!types.includes(chat.masterTag.Thread)) {
+      types.push(chat.masterTag.Thread)
+    }
+    updates.push({
+      filter: { _id: cs._id },
+      update: { types }
+    })
+  }
+
+  await client.bulk(DOMAIN_SPACE, updates)
+  client.logger.log('Migrated card spaces', { allSpaces: cardSpaces.length, updatedSpaces: updates.length })
 }

@@ -15,6 +15,7 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
+import ExecutionContextSelector from './components/attributeEditors/ExecutionContextSelector.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
 import RoleEditor from './components/contextEditors/RoleEditor.svelte'
@@ -100,6 +101,7 @@ export default async (): Promise<Resources> => ({
     ProcessPresenter,
     NestedContextSelector,
     RelatedContextSelector,
+    ExecutionContextSelector,
     FunctionSelector,
     Main,
     RunProcessCardPopup,

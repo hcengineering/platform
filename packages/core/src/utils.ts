@@ -990,3 +990,7 @@ export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | u
   return unique(arr).filter(notEmpty)
 }
 export { platformNow, platformNowDiff } from '@hcengineering/measurements'
+
+export interface PermissionsGrant {
+  spaces?: Ref<Space>[]
+}

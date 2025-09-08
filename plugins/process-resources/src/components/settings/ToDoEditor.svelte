@@ -36,13 +36,6 @@
   }
 
   const keys = ['title', 'user', 'dueDate']
-
-  function changeResult (e: CustomEvent<any>): void {
-    if (e.detail !== undefined) {
-      step = e.detail
-      dispatch('change', step)
-    }
-  }
 </script>
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
@@ -60,10 +53,6 @@
     }}
   />
 </div>
-<div class="divider" />
-{#key step._id}
-  <ResultEditor {step} on:change={changeResult} />
-{/key}
 
 <style lang="scss">
   .divider {

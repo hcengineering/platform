@@ -1675,6 +1675,9 @@ importers:
       '@types/express-form-data':
         specifier: ^2.0.5
         version: 2.0.5
+      '@types/heic-decode':
+        specifier: ^1.1.2
+        version: 1.1.2
       '@types/html-to-text':
         specifier: ^8.1.1
         version: 8.1.1
@@ -1813,6 +1816,9 @@ importers:
       blurhash:
         specifier: ^2.0.5
         version: 2.0.5
+      bmp-ts:
+        specifier: ^1.0.9
+        version: 1.0.9
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
@@ -2020,6 +2026,9 @@ importers:
       graphql-binding:
         specifier: ^2.5.2
         version: 2.5.2
+      heic-decode:
+        specifier: ^2.1.0
+        version: 2.1.0
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1
@@ -5569,7 +5578,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
-    resolution: {integrity: sha512-APb+wu9FGvuc2FCTz9nGyrGZwA4+o5uL6WWPdRhg1zeC9UniDdSA2InqNP03CxK8fayAwTMkTN9BF3C2g3w2lQ==, tarball: file:projects/pod-preview.tgz}
+    resolution: {integrity: sha512-67MM8HopF5FhImVD91kHzl4UuyYk8WXHYXG+4Wz+jO1py2l/nvW9kNj9A1vPHXfy6clmsAsUMdAlLLLJE7ilmg==, tarball: file:projects/pod-preview.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
@@ -7162,6 +7171,9 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
+  '@types/heic-decode@1.1.2':
+    resolution: {integrity: sha512-E1Dw+gpIuiHJcTpFBHm+V/6eYsPhtWook1Z6MIG0H1ONWBp9Z6l3FKydUxFw9GL9JqrWB1qa/uQHdbn/KUeXYw==}
+
   '@types/html-minifier-terser@6.1.0':
     resolution: {integrity: sha512-oh/6byDPnL1zeNXFrDXFLyZjkr1MsBG667IM792caf1L2UPOOMf65NFzjUH/ltyfwjAGfs1rsX1eftK0jC/KIg==}
 
@@ -8081,6 +8093,9 @@ packages:
 
   bmp-js@0.1.0:
     resolution: {integrity: sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==}
+
+  bmp-ts@1.0.9:
+    resolution: {integrity: sha512-cTEHk2jLrPyi+12M3dhpEbnnPOsaZuq7C45ylbbQIiWgDFZq4UVYPEY5mlqjvsj/6gJv9qX5sa+ebDzLXT28Vw==}
 
   bn.js@4.12.0:
     resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
@@ -10297,6 +10312,10 @@ packages:
     resolution: {integrity: sha512-trFMIq3PATiFRiQmNNeHtsrkwYRByIXUbYNbotiY9RLVfMkdwZdd2eQ38mGt7BRiCKBaj1DyBAIHmm7mmXPuuw==}
     engines: {node: '>=10.0.0'}
 
+  heic-decode@2.1.0:
+    resolution: {integrity: sha512-0fB3O3WMk38+PScbHLVp66jcNhsZ/ErtQ6u2lMYu/YxXgbBtl+oKOhGQHa4RpvE68k8IzbWkABzHnyAIjR758A==}
+    engines: {node: '>=8.0.0'}
+
   hexoid@1.0.0:
     resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
     engines: {node: '>=8'}
@@ -11284,6 +11303,10 @@ packages:
     resolution: {integrity: sha512-vwztYuUf1uf/1zQxfzRfO5yzfNKhTtgOByCruuiQQxWQXnPb8Itaube5ylofcV0oM0aKal9Mv+S1s1Ky0UYP1w==}
     engines: {node: '>=16'}
     hasBin: true
+
+  libheif-js@1.19.8:
+    resolution: {integrity: sha512-vQJWusIxO7wavpON1dusciL8Go9jsIQ+EUrckauFYAiSTjcmLAsuJh3SszLpvkwPci3JcL41ek2n+LUZGFpPIQ==}
+    engines: {node: '>=8.0.0'}
 
   libphonenumber-js@1.10.56:
     resolution: {integrity: sha512-d0GdKshNnyfl5gM7kZ9rXjGiAbxT/zCXp0k+EAzh8H4zrb2R7GXtMCrULrX7UQxtfx6CLy/vz/lomvW79FAFdA==}
@@ -25626,12 +25649,14 @@ snapshots:
     dependencies:
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
+      '@types/heic-decode': 1.1.2
       '@types/jest': 29.5.12
       '@types/morgan': 1.9.9
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       blurhash: 2.0.5
+      bmp-ts: 1.0.9
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
@@ -25643,6 +25668,7 @@ snapshots:
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
+      heic-decode: 2.1.0
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       lru-cache: 11.1.0
       morgan: 1.10.0
@@ -32109,6 +32135,8 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.10
 
+  '@types/heic-decode@1.1.2': {}
+
   '@types/html-minifier-terser@6.1.0': {}
 
   '@types/html-to-text@8.1.1': {}
@@ -33245,6 +33273,8 @@ snapshots:
   blurhash@2.0.5: {}
 
   bmp-js@0.1.0: {}
+
+  bmp-ts@1.0.9: {}
 
   bn.js@4.12.0: {}
 
@@ -35944,6 +35974,10 @@ snapshots:
 
   heap-js@2.6.0: {}
 
+  heic-decode@2.1.0:
+    dependencies:
+      libheif-js: 1.19.8
+
   hexoid@1.0.0: {}
 
   highlight.js@11.11.1: {}
@@ -37213,6 +37247,8 @@ snapshots:
   lib0@0.2.99:
     dependencies:
       isomorphic.js: 0.2.5
+
+  libheif-js@1.19.8: {}
 
   libphonenumber-js@1.10.56: {}
 

@@ -32,6 +32,7 @@
   export let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
   export let space: CardSpace | undefined = undefined
   export let changeType: boolean = false
+  export let allowChangeSpace: boolean = true
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -183,7 +184,7 @@
         <TypeSelector bind:value={type} />
       </div>
     {/if}
-    {#if space == null && !(extension?.hideSpace ?? false)}
+    {#if (space == null || allowChangeSpace) && !(extension?.hideSpace ?? false)}
       <div class="hulyModal-content__settingsSet-line">
         <span class="label"><Label label={core.string.Space} /></span>
         <SpaceSelector

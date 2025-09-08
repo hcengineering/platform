@@ -21,7 +21,7 @@ import process, {
   Process,
   ProcessContext,
   ProcessToDo,
-  SelectedExecutonContext,
+  SelectedExecutionContext,
   State,
   Transition
 } from '@hcengineering/process'
@@ -267,6 +267,25 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   let changed = false
   let index = 1
   for (const transition of transitions) {
+    if (transition.result?._id != null) {
+      exists.add(transition.result._id)
+      const context = _process.context[transition.result._id]
+      changed = true
+      const ctx: SelectedExecutionContext = {
+        type: 'context',
+        id: transition.result._id,
+        key: ''
+      }
+      _process.context[transition.result._id] = {
+        name: context?.name ?? transition.result.name,
+        isResult: true,
+        type: transition.result.type,
+        _class: transition.result.type._class,
+        index: index++,
+        producer: transition._id,
+        value: ctx
+      }
+    }
     for (const action of transition.actions) {
       if (action.context != null) {
         exists.add(action.context._id)
@@ -274,7 +293,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
         const current = _process.context[action.context._id]
         if (method?.contextClass != null) {
           changed = true
-          const ctx: SelectedExecutonContext = {
+          const ctx: SelectedExecutionContext = {
             type: 'context',
             id: action.context._id,
             key: ''
@@ -287,26 +306,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             producer: transition._id,
             value: ctx
           }
-        }
-      }
-      if (action.result?._id != null) {
-        exists.add(action.result._id)
-        const context = _process.context[action.result._id]
-        changed = true
-        const ctx: SelectedExecutonContext = {
-          type: 'context',
-          id: action.result._id,
-          key: ''
-        }
-        _process.context[action.result._id] = {
-          name: context?.name ?? action.result.name,
-          isResult: true,
-          type: action.result.type,
-          _class: action.result.type._class,
-          action: action._id,
-          index: index++,
-          producer: transition._id,
-          value: ctx
         }
       }
     }
