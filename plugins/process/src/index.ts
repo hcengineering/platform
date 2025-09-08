@@ -285,6 +285,9 @@ export default plugin(processId, {
     Insert: '' as Ref<ProcessFunction>,
     Remove: '' as Ref<ProcessFunction>,
     RemoveFirst: '' as Ref<ProcessFunction>,
-    RemoveLast: '' as Ref<ProcessFunction>
+    RemoveLast: '' as Ref<ProcessFunction>,
+    CurrentEmployee: '' as Ref<ProcessFunction>,
+    CurrentUser: '' as Ref<ProcessFunction>,
+    CurrentDate: '' as Ref<ProcessFunction>
   }
 })

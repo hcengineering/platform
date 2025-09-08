@@ -78,6 +78,7 @@ export default mergeIds(processId, process, {
     RefCriteria: '' as AnyComponent
   },
   transformEditor: {
+    MultiArrayElementEditor: '' as AnyComponent,
     ArrayElementEditor: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
@@ -188,6 +189,8 @@ export default mergeIds(processId, process, {
     ArraySizeGt: '' as IntlString,
     ArraySizeGte: '' as IntlString,
     ArraySizeLt: '' as IntlString,
-    ArraySizeLte: '' as IntlString
+    ArraySizeLte: '' as IntlString,
+    CurrentUser: '' as IntlString,
+    CurrentDate: '' as IntlString
   }
 })

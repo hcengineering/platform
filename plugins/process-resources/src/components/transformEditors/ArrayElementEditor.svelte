@@ -14,12 +14,9 @@
 -->
 <script lang="ts">
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { AnyAttribute, Ref } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { AnyAttribute, Ref } from '@hcengineering/core'
   import presentation, { Card, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Process, ProcessFunction } from '@hcengineering/process'
-  import { AnySvelteComponent } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { getContext } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
@@ -29,6 +26,7 @@
   export let masterTag: Ref<MasterTag | Tag>
   export let attribute: AnyAttribute
   export let props: Record<string, any> = {}
+  export let allowArray: boolean = false
 
   let value: any = props?.value ?? ''
 
@@ -40,28 +38,9 @@
     dispatch('close', { value })
   }
 
-  let editor: AnySvelteComponent | undefined
-
-  function getEditor (): void {
-    try {
-      const inlineEditor = h.as(h.getClass(core.class.ArrOf), view.mixin.AttributeEditor).inlineEditor
-      void getResource(inlineEditor)
-        .then((p) => {
-          editor = p
-        })
-        .catch((e) => {
-          console.error(e)
-        })
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  getEditor()
-
   $: presenterClass = getAttributePresenterClass(h, attribute.type)
 
-  $: elementContext = getContext(client, process, presenterClass.attrClass, 'object')
+  $: elementContext = getContext(client, process, presenterClass.attrClass, 'attribute')
 </script>
 
 <Card on:close width={'x-small'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
@@ -71,12 +50,13 @@
       {masterTag}
       context={elementContext}
       {attribute}
+      editor={undefined}
       presenterClass={{
         attrClass: presenterClass.attrClass,
         category: 'attribute'
       }}
+      {allowArray}
       {value}
-      {editor}
       on:change={(e) => {
         value = e.detail
       }}
