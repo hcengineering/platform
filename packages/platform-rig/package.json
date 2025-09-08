@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
@@ -9,14 +9,13 @@
     "./bin/*": "./bin/*",
     "./profiles/*": "./profiles/*"
   },
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
     "eslint-config-standard-with-typescript": "^40.0.0",
     "svelte-eslint-parser": "^0.33.1",
     "esbuild": "^0.24.2",
     "esbuild-svelte": "^0.9.0",
-    "esbuild-plugin-copy": "~2.1.1"
-  },
-  "dependencies": {
+    "esbuild-plugin-copy": "~2.1.1",
     "typescript": "^5.8.3"
   },
   "bin": {
