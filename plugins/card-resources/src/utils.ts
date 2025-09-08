@@ -355,6 +355,7 @@ export async function getSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<stri
   const accountClient = getAccountClient()
   const navigateUrl = getCurrentLocation()
   navigateUrl.path[2] = cardId
+  navigateUrl.path.length = 3
   const accessLink = await accountClient.createAccessLink(AccountRole.Guest, {
     spaces: [doc._id],
     navigateUrl: JSON.stringify(navigateUrl)
@@ -368,5 +369,5 @@ export async function canGetSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<b
     return false
   }
 
-  return await canCopyLink(doc)
+  return canCopyLink(doc)
 }
