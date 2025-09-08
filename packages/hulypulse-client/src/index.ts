@@ -13,4 +13,4 @@
 // limitations under the License.
 //
 
-export * from "./client";
+export * from './client'

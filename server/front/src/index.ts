@@ -278,6 +278,7 @@ export function start (
     streamUrl?: string
     mailUrl?: string
     billingUrl?: string
+    pulseUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -355,6 +356,7 @@ export function start (
       HIDE_LOCAL_LOGIN: config.hideLocalLogin,
       MAIL_URL: config.mailUrl,
       BILLING_URL: config.billingUrl,
+      PULSE_URL: config.pulseUrl,
       ...(extraConfig ?? {})
     }
     res.status(200)

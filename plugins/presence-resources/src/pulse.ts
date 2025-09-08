@@ -30,12 +30,7 @@ export function getPulseClient(): HulypulseClient | undefined {
 
 export async function createPulseClient(): Promise<HulypulseClient> {
   if(!pulseclient) {
-    /*
-
-    TODO: get from presentation metadata
-
-    */
-    const ws_pulse_url = /*getMetadata(presentation.metadata.PulseUrl) ||*/ "ws://localhost:8099/ws"
+    const ws_pulse_url = getMetadata(presentation.metadata.PulseUrl)
     const token = getMetadata(presentation.metadata.Token)
     pulseclient = await HulypulseClient.connect(`${ws_pulse_url}?token=${token}`)
   }

@@ -200,7 +200,8 @@ export interface Config {
   MAIL_URL?: string,
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string,
-  EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
+  EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string,
+  PULSE_URL?: string
 }
 
 export interface Branding {
@@ -488,6 +489,8 @@ export async function configurePlatform() {
   setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
+
+  setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL ?? '')
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())

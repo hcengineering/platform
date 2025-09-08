@@ -285,6 +285,7 @@ services:
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - PULSE_URL=ws://huly.local:8099/ws
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
