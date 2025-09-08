@@ -60,9 +60,6 @@ import {
   type LocalTrack,
   type LocalTrackPublication,
   LocalVideoTrack,
-  type RemoteParticipant,
-  type RemoteTrack,
-  type RemoteTrackPublication,
   type Room as LKRoom,
   RoomEvent,
   Track
@@ -244,17 +241,7 @@ function parseMetadata (metadata: string | undefined): RoomMetadata {
   }
 }
 
-export async function disconnect (): Promise<void> {
-  await liveKitClient.disconnect()
-}
-
 export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {
-  const me = lk.localParticipant
-  try {
-    await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
-  } catch (err: any) {
-    console.error(err)
-  }
   if (ownInfo !== undefined) {
     const client = getClient()
     if (ownOffice !== undefined && ownInfo.room !== ownOffice._id) {
@@ -263,7 +250,7 @@ export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice
       await client.update(ownInfo, { room: love.ids.Reception, x: 0, y: 0 })
     }
   }
-  await disconnect()
+  await liveKitClient.disconnect()
   closeMeetingMinutes()
 }
 
@@ -346,11 +333,6 @@ async function moveToRoom (
   }
 }
 
-async function connectLK (token: string, room: Room): Promise<void> {
-  const wsURL = getLiveKitEndpoint()
-  await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
-}
-
 async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
   const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
   const comp = panelComponent?.component ?? view.component.EditDoc
@@ -395,10 +377,11 @@ export async function connectRoom (
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
     return
   }
-  await disconnect()
+  await liveKitClient.disconnect()
   const token = await loveClient.getRoomToken(room)
   try {
-    await connectLK(token, room)
+    const wsURL = getLiveKitEndpoint()
+    await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
   } catch (err) {
     console.error(err)
     await leaveRoom(currentInfo, get(myOffice))

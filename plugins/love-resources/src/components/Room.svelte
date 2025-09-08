@@ -27,7 +27,6 @@
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
-  export let withVideo: boolean
   export let canMaximize: boolean = true
   export let room: TypeRoom
 
@@ -147,16 +146,14 @@
     <div class="screenContainer">
       <ScreenSharingView bind:hasActiveTrack={withScreenSharing} />
     </div>
-    {#if withVideo}
-      <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
-        <ParticipantsListView
-          room={room._id}
-          on:participantsCount={(evt) => {
-            updateStyle(evt.detail, withScreenSharing)
-          }}
-        />
-      </div>
-    {/if}
+    <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
+      <ParticipantsListView
+        room={room._id}
+        on:participantsCount={(evt) => {
+          updateStyle(evt.detail, withScreenSharing)
+        }}
+      />
+    </div>
   </div>
   {#if $currentRoom}
     <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} {canMaximize} />

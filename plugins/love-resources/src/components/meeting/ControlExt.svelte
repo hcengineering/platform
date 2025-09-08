@@ -36,10 +36,12 @@
     connectRoom,
     createMeetingVideoWidgetTab,
     createMeetingWidget,
-    disconnect,
     endMeeting,
     getRoomName,
-    leaveRoom
+    leaveRoom,
+
+    liveKitClient
+
   } from '../../utils'
   import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
   import InvitePopup from '../InvitePopup.svelte'
@@ -168,13 +170,13 @@
   ): Promise<void> {
     if (myInfo !== undefined && myInfo.room === (myOffice?._id ?? love.ids.Reception)) {
       if (myOffice === undefined) {
-        await disconnect()
+        await liveKitClient.disconnect()
         return
       }
       const filtered = infos.filter((p) => p.room === myOffice._id && p.person !== myInfo.person)
       if (filtered.length === 0) {
         if (isConnected) {
-          await disconnect()
+          await liveKitClient.disconnect()
         }
       } else if (!isConnected) {
         const myPerson = await getPersonByPersonRef(getCurrentEmployee())
