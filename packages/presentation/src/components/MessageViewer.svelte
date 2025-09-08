@@ -16,9 +16,8 @@
 <script lang="ts">
   import { isEmptyMarkup, markupToJSON } from '@hcengineering/text'
   import Node from './markup/Node.svelte'
-  import emojiPlugin, { ParsedTextWithEmojis } from '@hcengineering/emoji'
+  import { loadParseEmojisFunction, ParsedTextWithEmojis } from '@hcengineering/emoji'
   import { onMount } from 'svelte'
-  import { getResource } from '@hcengineering/platform'
 
   export let message: string
   export let preview = false
@@ -29,11 +28,7 @@
   let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 
   onMount(async () => {
-    try {
-      parseEmojisFunction = await getResource(emojiPlugin.functions.ParseTextWithEmojis)
-    } catch (e) {
-      console.log('Cannot locate emoji parsing function')
-    }
+    parseEmojisFunction = await loadParseEmojisFunction()
   })
 
   export function isEmpty (): boolean {
