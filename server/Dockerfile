@@ -22,6 +22,7 @@ RUN \
         export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc ; \
         export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ ; \
         export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
+        cargo tree --target=aarch64-unknown-linux-gnu ; \
         cargo build --release --target=aarch64-unknown-linux-gnu ; \
     else \
       echo "Unexpected target platform: $TARGETPLATFORM" && exit 1 ; \
