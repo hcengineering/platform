@@ -20,7 +20,7 @@ export interface PermissionsGrant {
   role: AccountRole
 
   // Ideally we shouldn't need this but for now it's the only way to check
-  // if some granted permissions are valid - the ones which can only be vefified in the workspace
+  // if some granted permissions are valid - the ones which can only be verified in the workspace
   grantedBy?: AccountUuid
 
   firstName?: string
