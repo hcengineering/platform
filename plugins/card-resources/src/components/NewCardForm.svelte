@@ -1,22 +1,27 @@
 <script lang="ts">
   import { getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { ModernButton, ModernEditbox, ButtonIcon, IconSend, showPopup } from '@hcengineering/ui'
+  import { ModernButton, ModernEditbox, ButtonIcon, IconSend, showPopup, getFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import CreateCardPopup from './CreateCardPopup.svelte'
   import card from '../plugin'
   import { TypeSelector } from '../index'
-  import core, { Data, Ref } from '@hcengineering/core'
+  import core, { Data, generateId, Ref } from '@hcengineering/core'
   import { Card, type CardSpace, MasterTag } from '@hcengineering/card'
   import { getResource } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
   import { createCard } from '../utils'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
 
   const dispatch = createEventDispatcher()
+  const focusManager = getFocusManager()
 
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined
   let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
+  let description = EmptyMarkup
+  let _id = generateId<Card>()
+  let isExpanded = false
 
   let creating = false
   $: applyDisabled = title.trim() === '' || space == null || type == null || creating
@@ -45,7 +50,7 @@
         }
       }
     )
-    title = ''
+    clear()
   }
 
   async function okAction (): Promise<void> {
@@ -68,14 +73,20 @@
         }
       }
 
-      const createdCard = await createCard(type, space, data, EmptyMarkup)
+      const createdCard = await createCard(type, space, data, description, _id)
       if (createdCard != null) {
         dispatch('selectCard', createdCard)
       }
-      title = ''
+      clear()
     } finally {
       creating = false
     }
+  }
+
+  function clear (): void {
+    title = ''
+    description = EmptyMarkup
+    _id = generateId<Card>()
   }
 </script>
 
@@ -90,20 +101,38 @@
       tooltip={{ label: card.string.AdvancedCreateCard }}
     />
   </div>
-  <div class="form-row">
+  <div class="form-row no-margin">
     <ModernEditbox
       bind:value={title}
       label={card.string.CardTitle}
-      size="medium"
-      kind="ghost"
+      size="large"
+      kind="transparent"
       width="100%"
       disabled={creating}
       autoFocus={true}
       on:keydown={(evt) => {
         if (evt.key === 'Enter') {
-          void okAction()
+          evt.preventDefault()
+          focusManager?.next(1)
         }
       }}
+    />
+  </div>
+  <div class="form-row description">
+    <AttachmentStyledBox
+      objectId={_id}
+      _class={type}
+      {space}
+      alwaysEdit
+      showButtons={false}
+      bind:content={description}
+      placeholder={card.string.CardContent}
+      kind="indented"
+      isScrollable={false}
+      kitOptions={{ reference: true }}
+      enableAttachments={false}
+      focusable
+      focusIndex={0}
     />
   </div>
   <div class="form-row form-row-bottom">
@@ -162,7 +191,16 @@
   .form-row {
     display: flex;
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    &.no-margin {
+      margin-bottom: 0;
+    }
+    &.description {
+      margin-bottom: 0;
+      padding-left: 0.375rem;
+      margin-top: -2rem;
+      padding-top: 1rem;
+    }
   }
   .form-row-bottom {
     align-items: center;

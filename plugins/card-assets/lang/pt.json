@@ -42,11 +42,12 @@
     "ConfigDescription": "Extensão para gerenciamento de conhecimento no estilo de banco de dados.",
     "AddCollaborators": "Adicionar colaboradores",
     "Home": "Início",
-    "CardTitle": "Digite um título para o cartão...",
+    "CardTitle": "Título",
     "Post": "Publicar",
     "Compact": "Compacto",
     "Comfortable": "Confortável",
     "Comfortable2": "Confortável 2",
-    "AdvancedCreateCard": "Mudar para criação avançada de cartão"
+    "AdvancedCreateCard": "Mudar para criação avançada de cartão",
+    "CardContent": "O que você quer compartilhar?"
   }
 }

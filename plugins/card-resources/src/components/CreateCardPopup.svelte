@@ -33,6 +33,7 @@
   export let space: CardSpace | undefined = undefined
   export let changeType: boolean = false
   export let allowChangeSpace: boolean = true
+  export let description: Markup = EmptyMarkup
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -41,16 +42,16 @@
   const me = getCurrentEmployee()
   const _id = generateId<Card>()
 
-  $: extension = type
-    ? client
-      .getModel()
-      .findAllSync(card.mixin.CreateCardExtension, {})
-      .find((it) => hierarchy.isDerived(type, it._id))
-    : undefined
+  $: extension =
+    type != null
+      ? client
+        .getModel()
+        .findAllSync(card.mixin.CreateCardExtension, {})
+        .find((it) => hierarchy.isDerived(type, it._id))
+      : undefined
 
   let data: Partial<Data<Card>> = { title }
   let _space: Ref<CardSpace> | undefined = space?._id
-  let description: Markup = EmptyMarkup
   let collaborators: Ref<Employee>[] = [me]
 
   let creating = false
@@ -73,7 +74,7 @@
     try {
       creating = true
 
-      if (extension?.canCreate) {
+      if (extension?.canCreate != null) {
         const fn = await getResource(extension.canCreate)
         const res = await fn(_space, data)
         if (res === false) {
@@ -156,7 +157,7 @@
     <ModernEditbox
       bind:value={data.title}
       label={view.string.Title}
-      size="large"
+      size="medium"
       kind="ghost"
       disabled={extension?.disableTitle ?? false}
       autoFocus={!(extension?.disableTitle ?? false)}

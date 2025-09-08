@@ -103,6 +103,7 @@ export default mergeIds(cardId, card, {
     AddCollaborators: '' as IntlString,
     Home: '' as IntlString,
     CardTitle: '' as IntlString,
+    CardContent: '' as IntlString,
     Post: '' as IntlString,
     Compact: '' as IntlString,
     Comfortable: '' as IntlString,

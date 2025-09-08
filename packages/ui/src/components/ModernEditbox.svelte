@@ -12,7 +12,7 @@
 
   export let label: IntlString
   export let value: string | undefined = undefined
-  export let kind: 'default' | 'ghost' | 'secondary' = 'default'
+  export let kind: 'default' | 'ghost' | 'secondary' | 'transparent' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let disabled: boolean = false
   export let error: boolean = false
@@ -182,6 +182,23 @@
         input {
           font-weight: 500;
           font-size: 1.5rem;
+        }
+      }
+    }
+    &.transparent {
+      &.small,
+      &.medium {
+        // medium/ghost - not designed
+        padding: var(--spacing-1_5) var(--spacing-2);
+        height: var(--spacing-5);
+      }
+      &.large {
+        padding: var(--spacing-1) var(--spacing-2);
+        height: var(--spacing-6);
+
+        input {
+          font-weight: 500;
+          font-size: 1rem;
         }
       }
     }
