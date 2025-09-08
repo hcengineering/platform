@@ -13,6 +13,7 @@
 
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
 import core, {
+  AccountRole,
   type Class,
   type Client,
   type Data,
@@ -31,14 +32,17 @@ import core, {
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
-import {
+import login from '@hcengineering/login'
+import presentation, {
   createMarkup,
   getClient,
   IconWithEmoji,
   MessageBox,
   type ObjectSearchResult
 } from '@hcengineering/presentation'
+import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import {
+  getCurrentLocation,
   getCurrentResolvedLocation,
   getPanelURI,
   type IconComponent,
@@ -50,7 +54,7 @@ import {
 import view, { encodeObjectURI } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import workbench, { type LocationData, type Widget, type WidgetTab } from '@hcengineering/workbench'
-import { translate } from '@hcengineering/platform'
+import { translate, getMetadata } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 import { Analytics } from '@hcengineering/analytics'
 import { createWidgetTab } from '@hcengineering/workbench-resources'
@@ -331,4 +335,28 @@ export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: Icon
     icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
     props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
   }
+}
+
+export function getAccountClient (): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+
+  return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function getSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<string> {
+  doc = Array.isArray(doc) ? doc[0] : doc
+  if (doc === undefined) {
+    return ''
+  }
+
+  const accountClient = getAccountClient()
+  const navigateUrl = getCurrentLocation()
+  navigateUrl.path[2] = cardId
+  const accessLink = await accountClient.createAccessLink(AccountRole.Guest, {
+    spaces: [doc._id],
+    navigateUrl: JSON.stringify(navigateUrl)
+  })
+
+  return accessLink
 }

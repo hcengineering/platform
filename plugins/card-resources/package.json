@@ -55,6 +55,7 @@
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/login": "^0.6.12",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/tags-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
@@ -71,6 +72,7 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/communication": "^0.6.0",
     "@hcengineering/preference": "^0.6.13",
+    "@hcengineering/account-client": "^0.6.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   }

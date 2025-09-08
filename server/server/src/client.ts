@@ -43,7 +43,8 @@ import {
   type TxCUD,
   type TxResult,
   type WorkspaceDataId,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type Space
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -148,7 +149,7 @@ export class ClientSession implements Session {
     }
 
     return {
-      spaces: this.token.grant?.spaces
+      spaces: this.token.grant?.spaces as Ref<Space>[] | undefined
     }
   }
 

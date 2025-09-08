@@ -1,4 +1,4 @@
-import { AccountRole, AccountUuid, MeasureContext, PersonUuid, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, AccountUuid, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { decode, encode } from 'jwt-simple'
 import { validate } from 'uuid'
@@ -22,7 +22,7 @@ export interface PermissionsGrant {
   firstName?: string
   lastName?: string
 
-  spaces?: Ref<Space>[]
+  spaces?: string[]
 
   extra?: Record<string, any>
 }
