@@ -42,12 +42,13 @@ pub fn validate_put_request(merge_strategy: MergeStrategy, headers: &Headers) ->
 
 pub fn validate_put_body(merge_strategy: MergeStrategy, blob: &Blob) -> HandlerResult<()> {
     match merge_strategy {
-        MergeStrategy::JsonPatch => {
-            from_slice::<Value>(blob.inline.as_ref().unwrap())
-                .map_err(|e| ErrorBadRequest(e.to_string()))?;
-
-            Ok(())
-        }
+        MergeStrategy::JsonPatch => match blob.inline.as_ref() {
+            Some(inline) => {
+                from_slice::<Value>(inline).map_err(|e| ErrorBadRequest(e.to_string()))?;
+                Ok(())
+            }
+            _ => Err(ErrorBadRequest("missing inline body").into()),
+        },
 
         _ => Ok(()),
     }
@@ -71,12 +72,13 @@ pub fn validate_patch_request(
 
 pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> HandlerResult<()> {
     match merge_strategy {
-        MergeStrategy::JsonPatch => {
-            from_slice::<Value>(blob.inline.as_ref().unwrap())
-                .map_err(|x| actix_web::error::ErrorBadRequest(x.to_string()))?;
-
-            Ok(())
-        }
+        MergeStrategy::JsonPatch => match blob.inline.as_ref() {
+            Some(inline) => {
+                from_slice::<Value>(inline).map_err(|e| ErrorBadRequest(e.to_string()))?;
+                Ok(())
+            }
+            _ => Err(ErrorBadRequest("missing inline body").into()),
+        },
 
         _ => Ok(()),
     }
@@ -190,6 +192,180 @@ async fn part_data(s3: &S3Client, part: ObjectPart<PartData>) -> anyhow::Result<
             let bytes = response.body().bytes().unwrap_or_default().to_vec();
 
             Ok(bytes)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use size::Size;
+
+    #[test]
+    fn test_validate_put_request() {
+        let test_cases: Vec<(MergeStrategy, &str, Size, HandlerResult<()>)> = vec![
+            (
+                MergeStrategy::JsonPatch,
+                "application/json",
+                Size::from_bytes(100),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "application/json",
+                Size::from_kb(10),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "application/json",
+                Size::from_mb(1),
+                Err(ErrorBadRequest("invalid content type and length").into()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "text/plain",
+                Size::from_kb(10),
+                Err(ErrorBadRequest("invalid content type and length").into()),
+            ),
+            (
+                MergeStrategy::Concatenate,
+                "text/plain",
+                Size::from_mb(1),
+                Ok(()),
+            ),
+        ];
+
+        for (merge_strategy, content_type, content_length, expected) in test_cases {
+            let headers = Headers {
+                content_length,
+                content_type: Some(content_type.to_string()),
+                huly_headers: Vec::new(),
+                meta: Vec::new(),
+            };
+            let res = validate_put_request(merge_strategy, &headers);
+            match expected {
+                Ok(_) => assert!(res.is_ok()),
+                Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
+            }
+        }
+    }
+
+    #[test]
+    fn test_validate_put_body() {
+        let test_cases: Vec<(MergeStrategy, Option<Bytes>, HandlerResult<()>)> = vec![
+            (
+                MergeStrategy::JsonPatch,
+                Some(Bytes::from(
+                    r#"{ "op": "add", "path": "/foo", "value": "bar" }"#,
+                )),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                None,
+                Err(ErrorBadRequest("missing inline body").into()),
+            ),
+            (MergeStrategy::Concatenate, None, Ok(())),
+        ];
+
+        for (merge_strategy, body, expected) in test_cases {
+            let blob = Blob {
+                s3_key: "key".to_string(),
+                length: body.as_ref().map(|b| b.len()).unwrap_or(0),
+                inline: body,
+                parts_count: None,
+                deduplicated: false,
+            };
+            let res = validate_put_body(merge_strategy, &blob);
+            match expected {
+                Ok(_) => assert!(res.is_ok()),
+                Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
+            }
+        }
+    }
+
+    #[test]
+    fn test_validate_patch_request() {
+        let test_cases: Vec<(MergeStrategy, &str, Size, HandlerResult<()>)> = vec![
+            (
+                MergeStrategy::JsonPatch,
+                "application/json-patch+json",
+                Size::from_bytes(100),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "application/json-patch+json",
+                Size::from_kb(10),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "application/json-patch+json",
+                Size::from_mb(1),
+                Err(ErrorBadRequest("invalid content type and length").into()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                "application/json",
+                Size::from_kb(10),
+                Err(ErrorBadRequest("invalid content type and length").into()),
+            ),
+            (
+                MergeStrategy::Concatenate,
+                "text/plain",
+                Size::from_mb(1),
+                Ok(()),
+            ),
+        ];
+
+        for (merge_strategy, content_type, content_length, expected) in test_cases {
+            let headers = Headers {
+                content_length,
+                content_type: Some(content_type.to_string()),
+                huly_headers: Vec::new(),
+                meta: Vec::new(),
+            };
+            let res = validate_patch_request(merge_strategy, &headers);
+            match expected {
+                Ok(_) => assert!(res.is_ok()),
+                Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
+            }
+        }
+    }
+
+    #[test]
+    fn test_validate_patch_body() {
+        let test_cases: Vec<(MergeStrategy, Option<Bytes>, HandlerResult<()>)> = vec![
+            (
+                MergeStrategy::JsonPatch,
+                Some(Bytes::from(
+                    r#"{ "op": "add", "path": "/foo", "value": "bar" }"#,
+                )),
+                Ok(()),
+            ),
+            (
+                MergeStrategy::JsonPatch,
+                None,
+                Err(ErrorBadRequest("missing inline body").into()),
+            ),
+            (MergeStrategy::Concatenate, None, Ok(())),
+        ];
+
+        for (merge_strategy, body, expected) in test_cases {
+            let blob = Blob {
+                s3_key: "key".to_string(),
+                length: body.as_ref().map(|b| b.len()).unwrap_or(0),
+                inline: body,
+                parts_count: None,
+                deduplicated: false,
+            };
+            let res = validate_patch_body(merge_strategy, &blob);
+            match expected {
+                Ok(_) => assert!(res.is_ok()),
+                Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
+            }
         }
     }
 }
