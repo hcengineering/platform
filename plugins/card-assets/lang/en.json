@@ -42,10 +42,11 @@
     "ConfigDescription": "Extension for database-style knowledge management.",
     "AddCollaborators": "Add collaborators",
     "Home": "Home",
-    "WhatDoYouWantToShare": "What do you want to share?",
-    "Share": "Share",
+    "CardTitle": "Enter a card title...",
+    "Post": "Post",
     "Compact": "Compact",
     "Comfortable": "Comfortable",
-    "Comfortable2": "Comfortable 2"
+    "Comfortable2": "Comfortable 2",
+    "AdvancedCreateCard": "Switch to advanced card creation"
   }
 }

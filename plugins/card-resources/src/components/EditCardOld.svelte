@@ -37,6 +37,7 @@
 
   import card from '../plugin'
   import CardAttributeEditor from './CardAttributeEditor.svelte'
+  import CardIcon from './CardIcon.svelte'
   import CardPresenter from './CardPresenter.svelte'
   import Childs from './Childs.svelte'
   import Content from './Content.svelte'
@@ -139,6 +140,10 @@
     on:open
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="beforeTitle">
+      <CardIcon value={doc} />
+    </svelte:fragment>
+
     <svelte:fragment slot="title">
       <ParentsNavigator element={doc} />
       <CardPresenter value={doc} noUnderline />
