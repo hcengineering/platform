@@ -201,7 +201,8 @@ export default plugin(processId, {
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
     UpdateCard: '' as Ref<Method<Card>>,
     CreateCard: '' as Ref<Method<Card>>,
-    AddRelation: '' as Ref<Method<Association>>
+    AddRelation: '' as Ref<Method<Association>>,
+    AddTag: '' as Ref<Method<Tag>>
   },
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>,

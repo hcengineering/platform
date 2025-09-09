@@ -1052,6 +1052,20 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: card.string.AddTag,
+      objectClass: card.class.Tag,
+      editor: process.component.AddTagEditor,
+      presenter: process.component.AddTagPresenter,
+      contextClass: card.class.Tag,
+      requiredParams: ['_id']
+    },
+    process.method.AddTag
+  )
+
+  builder.createDoc(
     process.class.Trigger,
     core.space.Model,
     {
