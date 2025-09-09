@@ -47,7 +47,8 @@
     "Compact": "Компактный",
     "Comfortable": "Комфортный",
     "Comfortable2": "Комфортный 2",
-    "AdvancedCreateCard": "Скрыть детали",
+    "GetIndividualPublicLink": "Получить персональную публичную ссылку",
+    "ShowLess": "Скрыть детали",
     "CardContent": "Чем вы хотите поделиться?"
   }
 }

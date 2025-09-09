@@ -10,7 +10,7 @@ services:
     command: start-single-node --insecure
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v25.2.3
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
     extra_hosts:
       - 'huly.local:host-gateway'
     command:
@@ -37,7 +37,7 @@ services:
       timeout: 5s
       retries: 10
   redpanda_console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.10
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
     extra_hosts:
       - 'huly.local:host-gateway'
     entrypoint: /bin/sh

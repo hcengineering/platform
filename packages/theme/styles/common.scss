@@ -874,6 +874,14 @@
   .message.outcoming { border-radius: 0.75rem 0.125rem 0.125rem 0.75rem; }
 }
 
+.emoji-system {}
+
+.emoji-noto {
+  .emoji {
+    font-family: "Noto Color Emoji";
+  }
+}
+
 .emoji {
   &.center {
     display: flex;

@@ -29,7 +29,9 @@ import {
   cardCustomLinkEncode,
   cardCustomLinkMatch,
   openCardInSidebar,
-  checkRelationsSectionVisibility
+  checkRelationsSectionVisibility,
+  getSpaceAccessPublicLink,
+  canGetSpaceAccessPublicLink
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -140,6 +142,8 @@ export default async (): Promise<Resources> => ({
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,
     OpenCardInSidebar: openCardInSidebar,
-    CheckRelationsSectionVisibility: checkRelationsSectionVisibility
+    CheckRelationsSectionVisibility: checkRelationsSectionVisibility,
+    GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
+    CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink
   }
 })

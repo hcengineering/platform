@@ -110,7 +110,7 @@ export async function RunSubProcess (
   const target = control.client.getModel().findObject(processId)
   if (target === undefined) return
   const res: Tx[] = []
-  const context: Ref<Execution>[] = []
+  const resultContext: Ref<Execution>[] = []
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -127,7 +127,7 @@ export async function RunSubProcess (
       .getModel()
       .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const emptyContext = {} as ExecutionContext
+    const context = params.context ?? ({} as ExecutionContext)
     const id = generateId<Execution>()
     res.push(
       control.client.txFactory.createTxCreateDoc(
@@ -137,7 +137,7 @@ export async function RunSubProcess (
           process: processId,
           currentState: initTransition.to,
           card: _card,
-          context: emptyContext,
+          context,
           status: ExecutionStatus.Active,
           rollback: [],
           parentId: execution._id
@@ -145,9 +145,9 @@ export async function RunSubProcess (
         id
       )
     )
-    context.push(id)
+    resultContext.push(id)
   }
-  return { txes: res, rollback: undefined, context }
+  return { txes: res, rollback: undefined, context: resultContext }
 }
 
 export async function CreateToDo (

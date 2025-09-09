@@ -47,7 +47,8 @@
     "Compact": "Compact",
     "Comfortable": "Confortable",
     "Comfortable2": "Confortable 2",
-    "AdvancedCreateCard": "Afficher moins",
+    "GetIndividualPublicLink": "Obtenir un lien public personnalisé",
+    "ShowLess": "Afficher moins",
     "CardContent": "Que voulez-vous partager ?"
   }
 }

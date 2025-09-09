@@ -99,10 +99,13 @@ export interface AccountClient {
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   createAccessLink: (
     role: AccountRole,
-    firstName?: string,
-    lastName?: string,
-    navigateUrl?: string,
-    extra?: Record<string, any>
+    options?: {
+      firstName?: string
+      lastName?: string
+      navigateUrl?: string
+      extra?: Record<string, any>
+      spaces?: string[]
+    }
   ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
@@ -426,14 +429,17 @@ class AccountClientImpl implements AccountClient {
 
   async createAccessLink (
     role: AccountRole,
-    firstName?: string,
-    lastName?: string,
-    navigateUrl?: string,
-    extra?: Record<string, any>
+    options?: {
+      firstName?: string
+      lastName?: string
+      navigateUrl?: string
+      extra?: Record<string, any>
+      spaces?: string[]
+    }
   ): Promise<string> {
-    const params: any = { role, firstName, lastName, navigateUrl }
-    if (extra != null) {
-      params.extra = JSON.stringify(extra)
+    const params: any = { ...(options ?? {}), role }
+    if (params.extra != null) {
+      params.extra = JSON.stringify(params.extra)
     }
 
     const request = {

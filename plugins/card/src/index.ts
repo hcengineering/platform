@@ -166,7 +166,8 @@ const cardPlugin = plugin(cardId, {
     Cards: '' as IntlString,
     CardApplication: '' as IntlString,
     Views: '' as IntlString,
-    Labels: '' as IntlString
+    Labels: '' as IntlString,
+    GetIndividualPublicLink: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -186,7 +187,9 @@ const cardPlugin = plugin(cardId, {
     CardArrayEditor: '' as AnyComponent
   },
   function: {
-    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
+    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>,
+    GetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>,
+    CanGetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   label: {
     Subscribed: '' as Ref<Doc>,

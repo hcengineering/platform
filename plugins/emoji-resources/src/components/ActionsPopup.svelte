@@ -86,7 +86,7 @@
                 dispatch('close', getEmojiByTone(emoji, combinedTones))
               }}
             >
-              <span style:font-size={'2.5rem'}>{getEmojiStringByTone(emoji, combinedTones)}</span>
+              <span style:font-size={'2.5rem'} class="emoji">{getEmojiStringByTone(emoji, combinedTones)}</span>
             </ButtonBase>
           {/if}
         {/each}

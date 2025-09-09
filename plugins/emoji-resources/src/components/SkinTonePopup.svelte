@@ -32,7 +32,7 @@
           dispatch('close', index)
         }}
       >
-        <span style:font-size={'1.5rem'}>{skin.emoji}</span>
+        <span style:font-size={'1.5rem'} class="emoji">{skin.emoji}</span>
         {#if label}<span class="hulyPopup-row__label"><Label {label} /></span>{/if}
         {#if disabled}<span class="hulyPopup-row__keys"><ModernCheckbox checked disabled /></span>{/if}
       </button>
