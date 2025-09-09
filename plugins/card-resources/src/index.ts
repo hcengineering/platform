@@ -76,10 +76,13 @@ export { default as Favorites } from './components/Favorites.svelte'
 export { default as CardPresenter } from './components/CardPresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
 export { default as AssociationsSelect } from './components/settings/view/AssociationsSelect.svelte'
-export { default as Home } from './components/Home.svelte'
+export { default as CardTagsColored } from './components/CardTagsColored.svelte'
+export { default as CardPathPresenter } from './components/CardPathPresenter.svelte'
+export { default as CardTimestamp } from './components/CardTimestamp.svelte'
+export { default as NewCardForm } from './components/NewCardForm.svelte'
 
 export * from './types'
-export { getCardIconInfo } from './utils'
+export { getCardIconInfo, openCardInSidebar } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {

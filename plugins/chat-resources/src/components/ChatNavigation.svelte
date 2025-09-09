@@ -44,7 +44,6 @@
     groupBySpace: false,
     hideEmpty: true,
     limit: 5,
-    home: true,
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },

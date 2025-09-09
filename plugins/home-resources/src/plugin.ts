@@ -24,6 +24,9 @@ export default mergeIds(homeId, home, {
   string: {
     All: '' as IntlString,
     CreatedByMe: '' as IntlString,
-    Threads: '' as IntlString
+    Threads: '' as IntlString,
+    Compact: '' as IntlString,
+    Comfortable: '' as IntlString,
+    Comfortable2: '' as IntlString
   }
 })

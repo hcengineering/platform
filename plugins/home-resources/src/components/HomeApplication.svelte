@@ -15,12 +15,12 @@
 <script lang="ts">
   import { Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { Home } from '@hcengineering/card-resources'
   import { type Ref, getCurrentAccount } from '@hcengineering/core'
   import type { MasterTag } from '@hcengineering/card'
   import view from '@hcengineering/view'
 
   import Navigator from './Navigator.svelte'
+  import Home from './Home.svelte'
   import plugin from '../plugin'
   import { Special } from '../types'
 
@@ -46,7 +46,7 @@
       icon: plugin.icon.Thread,
       label: plugin.string.Threads,
       baseQuery: {},
-      baseClass: 'chat:masterTag:Thread' as Ref<MasterTag>
+      baseClass: chat.masterTag.Thread
     },
     {
       _id: 'createdByMe',

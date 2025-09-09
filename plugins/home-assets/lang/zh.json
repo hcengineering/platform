@@ -2,7 +2,10 @@
   "string": {
     "Home": "主页",
     "All": "所有更新",
-    "CreatedByMe": "由我创建",
-    "Threads": "话题"
+    "CreatedByMe": "我创建的",
+    "Threads": "主题",
+    "Compact": "紧凑",
+    "Comfortable": "舒适",
+    "Comfortable2": "舒适2"
   }
 }

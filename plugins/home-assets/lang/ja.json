@@ -2,7 +2,10 @@
   "string": {
     "Home": "ホーム",
     "All": "すべての更新",
-    "CreatedByMe": "自分で作成",
-    "Threads": "スレッド"
+    "CreatedByMe": "自分が作成",
+    "Threads": "スレッド",
+    "Compact": "コンパクト",
+    "Comfortable": "快適",
+    "Comfortable2": "快適2"
   }
 }
