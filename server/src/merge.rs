@@ -133,11 +133,8 @@ pub async fn stream(
             for part in parts {
                 let part_data = part_data(&s3, part).await?;
 
-                use patch::HulyPatchOperation;
-                use serde_json::from_slice;
-
                 if let Some(acc) = &mut acc {
-                    let ops = from_slice::<Vec<HulyPatchOperation>>(&part_data)?;
+                    let ops = patch::from_slice(&part_data)?;
 
                     if let Err(error) = patch::apply(acc, &ops) {
                         error!("json patch error: {error}");

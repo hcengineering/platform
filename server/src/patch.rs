@@ -1,4 +1,4 @@
-use json_patch::PatchOperation;
+use json_patch::PatchOperation as StandardPatchOperation;
 use jsonptr::{Pointer, PointerBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::{Number, Value, json};
@@ -13,7 +13,8 @@ pub struct AddOperationExt {
     /// Value to add to the target location.
     pub value: Value,
     // When enabled, ensures that the operation does not overwrite existing fields
-    pub safe: Option<bool>,
+    #[serde(default)]
+    pub safe: bool,
 }
 
 /// 'inc' operation - increments a numeric value
@@ -25,28 +26,42 @@ pub struct IncOperationExt {
     // Should be a number
     pub value: Value,
     // When enabled, ensures that the operation does not create new fields
-    // Should be a boolean
-    pub safe: Option<bool>,
+    #[serde(default)]
+    pub safe: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "op")]
 #[serde(rename_all = "lowercase")]
 pub enum HulyPatchOperation {
-    /// 'remove' operation
-    Remove(json_patch::RemoveOperation),
-    /// 'replace' operation
-    Replace(json_patch::ReplaceOperation),
-    /// 'move' operation
-    Move(json_patch::MoveOperation),
-    /// 'copy' operation
-    Copy(json_patch::CopyOperation),
-    /// 'test' operation
-    Test(json_patch::TestOperation),
     /// 'add' operation
     Add(AddOperationExt),
     /// 'inc' operation
     Inc(IncOperationExt),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PatchOperation {
+    Huly(HulyPatchOperation),
+    Standard(StandardPatchOperation),
+}
+
+pub fn from_slice(v: &[u8]) -> Result<Vec<PatchOperation>, serde_json::Error> {
+    serde_json::from_slice::<Vec<Value>>(v)?
+        .into_iter()
+        .map(PatchOperation::from_value)
+        .collect()
+}
+
+impl PatchOperation {
+    pub fn from_value(value: Value) -> Result<Self, serde_json::Error> {
+        let op = serde_json::from_value::<StandardPatchOperation>(value.clone());
+        Ok(if let Ok(op) = op {
+            Self::Standard(op)
+        } else {
+            PatchOperation::Huly(serde_json::from_value::<HulyPatchOperation>(value)?)
+        })
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -57,33 +72,18 @@ pub enum HulyPatchError {
     PatchError,
 }
 
-pub fn apply(doc: &mut Value, patches: &[HulyPatchOperation]) -> Result<(), HulyPatchError> {
+pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatchError> {
     for patch in patches {
-        let op = match patch {
-            HulyPatchOperation::Add(op) => {
-                add(doc, &op.path, &op.value, op.safe.unwrap_or_default())
-            }
-            HulyPatchOperation::Inc(op) => {
-                inc(doc, &op.path, &op.value, op.safe.unwrap_or_default())
-            }
-            HulyPatchOperation::Copy(op) => Ok(Some(PatchOperation::Copy(op.clone()))),
-            HulyPatchOperation::Move(op) => Ok(Some(PatchOperation::Move(op.clone()))),
-            HulyPatchOperation::Remove(op) => Ok(Some(PatchOperation::Remove(op.clone()))),
-            HulyPatchOperation::Replace(op) => Ok(Some(PatchOperation::Replace(op.clone()))),
-            HulyPatchOperation::Test(op) => Ok(Some(PatchOperation::Test(op.clone()))),
-        };
-
-        match op {
-            Ok(Some(op)) => {
-                if let Err(_) = json_patch::patch(doc, &[op]) {
-                    return Err(HulyPatchError::PatchError);
-                }
-            }
-            Ok(None) => { /* no-op */ }
-            Err(e) => return Err(e),
+        if let Some(op) = match patch {
+            PatchOperation::Huly(huly_op) => match huly_op {
+                HulyPatchOperation::Add(op) => add(doc, &op.path, &op.value, op.safe),
+                HulyPatchOperation::Inc(op) => inc(doc, &op.path, &op.value, op.safe),
+            },
+            PatchOperation::Standard(standard_op) => Ok(Some(standard_op.clone())),
+        }? {
+            json_patch::patch(doc, &[op]).map_err(|_| HulyPatchError::PatchError)?;
         }
     }
-
     Ok(())
 }
 
@@ -92,13 +92,13 @@ fn add(
     path: &Pointer,
     value: &Value,
     safe: bool,
-) -> Result<Option<json_patch::PatchOperation>, HulyPatchError> {
+) -> Result<Option<StandardPatchOperation>, HulyPatchError> {
     let target = doc.pointer(path.as_str());
     if safe && target.is_some() {
         return Ok(None);
     }
 
-    let op = PatchOperation::Add(json_patch::AddOperation {
+    let op = StandardPatchOperation::Add(json_patch::AddOperation {
         path: path.to_owned(),
         value: value.to_owned(),
     });
@@ -111,7 +111,7 @@ fn inc(
     path: &Pointer,
     value: &Value,
     safe: bool,
-) -> Result<Option<json_patch::PatchOperation>, HulyPatchError> {
+) -> Result<Option<StandardPatchOperation>, HulyPatchError> {
     let target = doc.pointer(path.as_str());
     if safe && target.is_none() {
         return Ok(None);
@@ -127,7 +127,7 @@ fn inc(
                 let new_value = add_json_numbers(target, value.as_number().unwrap())
                     .ok_or(HulyPatchError::InvalidNumber)?;
 
-                let op = PatchOperation::Replace(json_patch::ReplaceOperation {
+                let op = StandardPatchOperation::Replace(json_patch::ReplaceOperation {
                     path: path.to_owned(),
                     value: json!(new_value),
                 });
@@ -137,7 +137,7 @@ fn inc(
             None => Err(HulyPatchError::InvalidNumber),
         },
         None => {
-            let op = PatchOperation::Add(json_patch::AddOperation {
+            let op = StandardPatchOperation::Add(json_patch::AddOperation {
                 path: path.to_owned(),
                 value: value.to_owned(),
             });
@@ -218,10 +218,12 @@ mod tests {
             PointerBuf::from_tokens(["a"]),
             json!(1),
             false,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a"]),
-                value: json!(1),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                    value: json!(1),
+                },
+            ))),
         );
     }
 
@@ -232,10 +234,12 @@ mod tests {
             PointerBuf::from_tokens(["a"]),
             json!(1),
             true,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a"]),
-                value: json!(1),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                    value: json!(1),
+                },
+            ))),
         );
     }
 
@@ -246,10 +250,12 @@ mod tests {
             PointerBuf::from_tokens(["a"]),
             json!(2),
             false,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a"]),
-                value: json!(2),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                    value: json!(2),
+                },
+            ))),
         );
     }
 
@@ -271,10 +277,12 @@ mod tests {
             PointerBuf::from_tokens(["a", "b"]),
             json!(2),
             false,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a", "b"]),
-                value: json!(2),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a", "b"]),
+                    value: json!(2),
+                },
+            ))),
         );
     }
 
@@ -285,10 +293,12 @@ mod tests {
             PointerBuf::from_tokens(["a", "b"]),
             json!(2),
             true,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a", "b"]),
-                value: json!(2),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a", "b"]),
+                    value: json!(2),
+                },
+            ))),
         );
     }
 
@@ -299,7 +309,7 @@ mod tests {
             PointerBuf::from_tokens(["a"]),
             json!(1),
             false,
-            Ok(Some(PatchOperation::Replace(
+            Ok(Some(StandardPatchOperation::Replace(
                 json_patch::ReplaceOperation {
                     path: PointerBuf::from_tokens(["a"]),
                     value: json!(2),
@@ -315,10 +325,12 @@ mod tests {
             PointerBuf::from_tokens(["a"]),
             json!(1),
             false,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a"]),
-                value: json!(1),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                    value: json!(1),
+                },
+            ))),
         );
     }
 
@@ -340,7 +352,7 @@ mod tests {
             PointerBuf::from_tokens(["a", "0"]),
             json!(1),
             false,
-            Ok(Some(PatchOperation::Replace(
+            Ok(Some(StandardPatchOperation::Replace(
                 json_patch::ReplaceOperation {
                     path: PointerBuf::from_tokens(["a", "0"]),
                     value: json!(1),
@@ -356,10 +368,12 @@ mod tests {
             PointerBuf::from_tokens(["a", "3"]),
             json!(3),
             false,
-            Ok(Some(PatchOperation::Add(json_patch::AddOperation {
-                path: PointerBuf::from_tokens(["a", "3"]),
-                value: json!(3),
-            }))),
+            Ok(Some(StandardPatchOperation::Add(
+                json_patch::AddOperation {
+                    path: PointerBuf::from_tokens(["a", "3"]),
+                    value: json!(3),
+                },
+            ))),
         );
     }
 
@@ -428,26 +442,26 @@ mod tests {
         let mut doc = json!({});
 
         let patches = vec![
-            HulyPatchOperation::Add(AddOperationExt {
+            PatchOperation::Huly(HulyPatchOperation::Add(AddOperationExt {
                 path: PointerBuf::from_tokens(["a"]),
                 value: json!([]),
-                safe: Some(false),
-            }),
-            HulyPatchOperation::Inc(IncOperationExt {
+                safe: false,
+            })),
+            PatchOperation::Huly(HulyPatchOperation::Inc(IncOperationExt {
                 path: PointerBuf::from_tokens(["a", "0"]),
                 value: json!(1),
-                safe: Some(true),
-            }),
-            HulyPatchOperation::Add(AddOperationExt {
+                safe: true,
+            })),
+            PatchOperation::Huly(HulyPatchOperation::Add(AddOperationExt {
                 path: PointerBuf::from_tokens(["a", "0"]),
                 value: json!(0),
-                safe: Some(false),
-            }),
-            HulyPatchOperation::Inc(IncOperationExt {
+                safe: false,
+            })),
+            PatchOperation::Huly(HulyPatchOperation::Inc(IncOperationExt {
                 path: PointerBuf::from_tokens(["a", "0"]),
                 value: json!(2),
-                safe: Some(true),
-            }),
+                safe: true,
+            })),
         ];
 
         let res = apply(&mut doc, &patches);
