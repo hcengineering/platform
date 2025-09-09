@@ -1,4 +1,4 @@
-import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { getClient as getAccountClient, type WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import contact, { ensureEmployee, setCurrentEmployee, setCurrentEmployeeSpace } from '@hcengineering/contact'
@@ -17,7 +17,8 @@ import core, {
   type SocialId,
   type Version,
   versionToString,
-  SocialIdType
+  SocialIdType,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import login, { loginId, type Pages } from '@hcengineering/login'
 import platform, {
@@ -95,16 +96,28 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const [, workspaceLoginInfo] = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
+  let workspaceLoginInfo: WorkspaceLoginInfo | undefined
 
-  if (workspaceLoginInfo == null) {
-    console.error(
-      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
-    )
-    // something went wrong with selecting workspace with the selected token
-    await logOut()
-    navigate({ path: [loginId] })
-    return
+  while (true) {
+    const selectResult = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
+    workspaceLoginInfo = selectResult[1] ?? undefined
+    if (!selectResult[2]) {
+      // Connection error happen, wait and retry
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
+
+    // OK but unauthorized - we need to login
+    if (workspaceLoginInfo == null) {
+      console.error(
+        `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+      )
+      // something went wrong with selecting workspace with the selected token
+      await logOut()
+      navigate({ path: [loginId] })
+      return
+    }
+    break
   }
 
   const token = workspaceLoginInfo.token
@@ -114,17 +127,30 @@ export async function connect (title: string): Promise<Client | undefined> {
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-  let workspace = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace())[1])
 
-  if (workspace == null) {
-    // something went wrong, workspace not exist, redirect to login
-    console.error(
-      `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
-    )
-    navigate({
-      path: [loginId]
-    })
-    return
+  let workspace: WorkspaceInfoWithStatus | undefined
+
+  while (true) {
+    const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+
+    if (!fetchResult[2]) {
+      // Connection error happen, wait and retry
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
+
+    workspace = fetchResult[1]
+    if (workspace == null) {
+      // something went wrong, workspace not exist, redirect to login
+      console.error(
+        `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
+      )
+      navigate({
+        path: [loginId]
+      })
+      return
+    }
+    break
   }
 
   setMetadata(presentation.metadata.WorkspaceDataId, workspace.dataId)
@@ -134,7 +160,13 @@ export async function connect (title: string): Promise<Client | undefined> {
       if (wsUrl !== getCurrentLocation().path[1]) return
 
       workspaceCreating.set(workspace.processingProgress ?? 0)
-      workspace = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace())[1])
+      const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+      if (!fetchResult[2]) {
+        // Connection error happen, wait and retry
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        continue
+      }
+      workspace = fetchResult[1]
 
       if (workspace == null) {
         // something went wrong, workspace not exist, redirect to login

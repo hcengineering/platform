@@ -12,6 +12,7 @@
     "Parent": "Parent",
     "Tags": "Étiquettes",
     "Tag": "Étiquette",
+    "AddTag": "Ajouter une étiquette",
     "CardLibrary": "Bibliothèque de cartes",
     "MinimizeAll": "Tout réduire",
     "ExpandAll": "Tout développer",
@@ -47,7 +48,8 @@
     "Compact": "Compact",
     "Comfortable": "Confortable",
     "Comfortable2": "Confortable 2",
-    "AdvancedCreateCard": "Afficher moins",
+    "GetIndividualPublicLink": "Obtenir un lien public personnalisé",
+    "ShowLess": "Afficher moins",
     "CardContent": "Que voulez-vous partager ?"
   }
 }

@@ -59,6 +59,8 @@ import NotifierExtension from './components/NotifierExtension.svelte'
 import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
 import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
 import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
+import AddTagEditor from './components/settings/AddTagEditor.svelte'
+import AddTagPresenter from './components/presenters/AddTagPresenter.svelte'
 import CardUpdateEditor from './components/settings/CardUpdateEditor.svelte'
 import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
 import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
@@ -128,7 +130,9 @@ export default async (): Promise<Resources> => ({
     CardUpdatePresenter,
     ToDoSettingPresenter,
     TimeEditor,
-    TimePresenter
+    TimePresenter,
+    AddTagEditor,
+    AddTagPresenter
   },
   criteriaEditor: {
     DateCriteria,

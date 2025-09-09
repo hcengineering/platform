@@ -64,7 +64,7 @@
     <Label label={attribute.label} />
   </div>
   <Label label={selectedMode.label} />
-  {#if presenter}
+  {#if presenter && !selectedMode.withoutEditor}
     {#if contextValue && context}
       <ContextValuePresenter {contextValue} {context} {process} />
     {:else}

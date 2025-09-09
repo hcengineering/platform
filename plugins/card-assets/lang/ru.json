@@ -12,6 +12,7 @@
     "Parent": "Родитель",
     "Tags": "Теги",
     "Tag": "Тег",
+    "AddTag": "Добавить тег",
     "CardLibrary": "Библиотека карт",
     "MinimizeAll": "Свернуть все",
     "ExpandAll": "Развернуть все",
@@ -47,7 +48,8 @@
     "Compact": "Компактный",
     "Comfortable": "Комфортный",
     "Comfortable2": "Комфортный 2",
-    "AdvancedCreateCard": "Скрыть детали",
+    "GetIndividualPublicLink": "Получить персональную публичную ссылку",
+    "ShowLess": "Скрыть детали",
     "CardContent": "Чем вы хотите поделиться?"
   }
 }

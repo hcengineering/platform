@@ -473,6 +473,11 @@ export async function getTransitionUserInput (
   return changed ? userContext : undefined
 }
 
+function getEmptyContext (): ExecutionContext {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return {} as ExecutionContext
+}
+
 export async function getSubProcessesUserInput (
   transition: Transition,
   userContext: ExecutionContext
@@ -482,7 +487,8 @@ export async function getSubProcessesUserInput (
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
-    const res = await newExecutionUserInput(processId)
+    const context = action.params.context ?? getEmptyContext()
+    const res = await newExecutionUserInput(processId, context)
     if (action.context == null || res === undefined) continue
     userContext[action.context._id] = res
     changed = true
@@ -500,9 +506,7 @@ export async function newExecutionUserInput (
     from: null
   })[0]
   if (initTransition === undefined) return userContext
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const emptyContext: ExecutionContext = {} as ExecutionContext
-  return await requestUserInput(_id, initTransition, userContext ?? emptyContext)
+  return await requestUserInput(_id, initTransition, userContext ?? getEmptyContext())
 }
 
 export async function getNextStateUserInput (
@@ -527,14 +531,12 @@ export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space
     from: null
   })[0]
   if (initTransition === undefined) return
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const emptyContext: ExecutionContext = {} as ExecutionContext
   await client.createDoc(process.class.Execution, space, {
     process: _id,
     currentState: initTransition.to,
     card,
     rollback: [],
-    context: context ?? emptyContext,
+    context: context ?? getEmptyContext(),
     status: ExecutionStatus.Active
   })
 }

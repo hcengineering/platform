@@ -12,6 +12,7 @@
     "Parent": "Eltern",
     "Tags": "Tags",
     "Tag": "Tag",
+    "AddTag": "Tag hinzufügen",
     "CardLibrary": "Kartenbibliothek",
     "MinimizeAll": "Alle minimieren",
     "ExpandAll": "Alle erweitern",
@@ -47,7 +48,8 @@
     "Compact": "Kompakt",
     "Comfortable": "Komfortabel",
     "Comfortable2": "Komfortabel 2",
-    "AdvancedCreateCard": "Weniger anzeigen",
+    "GetIndividualPublicLink": "Personalisierten öffentlichen Link erhalten",
+    "ShowLess": "Weniger anzeigen",
     "CardContent": "Was möchten Sie teilen?"
   }
 }

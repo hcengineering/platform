@@ -27,7 +27,7 @@
   export let attribute: AnyAttribute
   export let baseEditor: AnyComponent | undefined
 
-  const modes: Mode[] = [Modes.Equal, Modes.GT, Modes.LT]
+  const modes: Mode[] = [Modes.Equal, Modes.GT, Modes.LT, Modes.Exists]
 </script>
 
 <BaseCriteria {readonly} {value} {process} {context} {attribute} {baseEditor} {modes} on:change on:delete />

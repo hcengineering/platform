@@ -35,7 +35,7 @@
         closeTooltip()
       }}
     >
-      <span style:font-size={'1.5rem'}>{skin.emoji}</span>
+      <span style:font-size={'1.5rem'} class="emoji">{skin.emoji}</span>
     </ButtonBase>
   {/each}
 </div>

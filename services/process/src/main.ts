@@ -14,7 +14,7 @@
 //
 
 import cardPlugin from '@hcengineering/card'
-import {
+import core, {
   Doc,
   generateId,
   getDiffUpdate,
@@ -22,6 +22,7 @@ import {
   Ref,
   Tx,
   TxProcessor,
+  TxUpdateDoc,
   WorkspaceUuid
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
@@ -255,6 +256,16 @@ async function executeTransition (execution: Execution, transition: Transition, 
         rollback.push(...actionResult.rollback)
       }
       res.push(...actionResult.txes)
+      for (const tx of actionResult.txes) {
+        const updateTx = tx as TxUpdateDoc<Doc>
+        if (updateTx._class === core.class.TxUpdateDoc && updateTx.objectId === execution.card) {
+          const updatedCard = TxProcessor.updateDoc2Doc(
+            control.client.getHierarchy().clone(control.cache.get(execution.card)),
+            updateTx
+          )
+          control.cache.set(execution.card, updatedCard)
+        }
+      }
     }
   }
   if (!disableRollback) {

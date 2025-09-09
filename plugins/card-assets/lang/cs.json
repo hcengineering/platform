@@ -12,6 +12,7 @@
     "Parent": "Nadřazený",
     "Tags": "Štítky",
     "Tag": "Štítek",
+    "AddTag": "Přidat štítek",
     "CardLibrary": "Knihovna karet",
     "MinimizeAll": "Minimalizovat vše",
     "ExpandAll": "Rozbalit vše",
@@ -47,7 +48,8 @@
     "Compact": "Kompaktní",
     "Comfortable": "Komfortní",
     "Comfortable2": "Komfortní 2",
-    "AdvancedCreateCard": "Skrýt detaily",
+    "GetIndividualPublicLink": "Získat personalizovaný veřejný odkaz",
+    "ShowLess": "Skrýt detaily",
     "CardContent": "Co chcete sdílet?"
   }
 }

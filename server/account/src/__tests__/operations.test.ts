@@ -958,7 +958,8 @@ describe('account operations', () => {
       expect(result).toBe(
         `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
           workspace: 'workspace-uuid',
-          role: 'USER'
+          role: 'USER',
+          grantedBy: 'account-uuid'
         })}`
       )
     })
@@ -979,6 +980,7 @@ describe('account operations', () => {
         `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
           workspace: mockWorkspace.uuid,
           role: AccountRole.User,
+          grantedBy: 'account-uuid',
           firstName: 'John',
           lastName: 'Doe'
         })}`
@@ -1001,6 +1003,7 @@ describe('account operations', () => {
         `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
           workspace: mockWorkspace.uuid,
           role: AccountRole.User,
+          grantedBy: 'account-uuid',
           extra: { param1: 'value1', param2: 'value2' }
         })}`
       )
@@ -1021,7 +1024,8 @@ describe('account operations', () => {
       expect(result).toBe(
         `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
           workspace: 'workspace-uuid',
-          role: 'USER'
+          role: 'USER',
+          grantedBy: 'account-uuid'
         })}&navigateUrl=${encodeURIComponent(navigateUrl)}`
       )
     })

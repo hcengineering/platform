@@ -43,7 +43,8 @@ import {
   type TypedSpace,
   type WorkspaceMode,
   type Domain,
-  type PluginConfiguration
+  type PluginConfiguration,
+  type AccountUuid
 } from './classes'
 import core from './component'
 import { type Hierarchy } from './hierarchy'
@@ -993,4 +994,5 @@ export { platformNow, platformNowDiff } from '@hcengineering/measurements'
 
 export interface PermissionsGrant {
   spaces?: Ref<Space>[]
+  grantedBy?: AccountUuid
 }
