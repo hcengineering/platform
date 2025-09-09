@@ -38,7 +38,7 @@ interface GetFullResult<T> {
 interface GetMessage {
   type: 'get'
   key: string
-  correlation?: string | number
+  correlation?: string
 }
 
 interface PutMessage {
@@ -49,36 +49,36 @@ interface PutMessage {
   expiresAt?: number
   ifMatch?: string
   ifNoneMatch?: string
-  correlation?: string | number
+  correlation?: string
 }
 
 interface DeleteMessage {
   type: 'delete'
   key: string
   ifMatch?: string
-  correlation?: string | number
+  correlation?: string
 }
 
 interface SubscribeMessages {
   type: 'sub'
   key: string
-  correlation?: string | number
+  correlation?: string
 }
 
 interface UnsubscribeMessages {
   type: 'unsub'
   key: string
-  correlation?: string | number
+  correlation?: string
 }
 
 interface SubscribesList {
   type: 'list'
-  correlation?: string | number
+  correlation?: string
 }
 
 interface InfoMessage {
   type: 'info'
-  correlation?: string | number
+  correlation?: string
 }
 
 type ProtocolMessage =
@@ -95,7 +95,8 @@ export class HulypulseClient implements Disposable {
   private closed = false
   private reconnectTimeout: any | undefined
   private readonly RECONNECT_INTERVAL_MS = 1000
-  private subscribes: Record<string, Callback[]> = {}
+  
+  private subscribes: Map<string, Callback[]> = new Map()
 
   private pingTimeout: ReturnType<typeof setTimeout> | undefined
   private pingInterval: ReturnType<typeof setInterval> | undefined
@@ -106,7 +107,7 @@ export class HulypulseClient implements Disposable {
   private correlationId = 1
 
   private pending = new Map<
-    number,
+    string,
     {
       resolve: (v: any) => void
       reject: (e: any) => void
@@ -122,7 +123,7 @@ export class HulypulseClient implements Disposable {
       this.ws = ws
 
       ws.onopen = () => {
-        this.resubscribe(reject)
+        this.resubscribe()
         this.startPing()
         resolve()
       }
@@ -150,9 +151,9 @@ export class HulypulseClient implements Disposable {
           const msg = JSON.parse(event.data.toString())
           // Handle incoming messages (Set, Expired, Del)
           if (msg.message) {
-            for (const key in this.subscribes) {
+            for (const [key, callbacks] of this.subscribes) {
               if (msg.key.startsWith(key)) {
-                this.subscribes[key].forEach((cb, index) => {
+                callbacks.forEach((cb, index) => {
                   try {
                     cb(msg.key, msg.message === 'Set' ? msg.value : undefined, {
                       msg: msg,
@@ -168,7 +169,7 @@ export class HulypulseClient implements Disposable {
           }
           // Handle correlation responses
           else if (msg.correlation) {
-            let id = Number(msg.correlation)
+            let id = msg.correlation
             if (id && this.pending.has(id)) {
               clearTimeout(this.pending.get(id)!.send_timeout)
               this.pending.get(id)!.resolve(msg)
@@ -186,7 +187,7 @@ export class HulypulseClient implements Disposable {
     })
   }
 
-  private async resubscribe(reject: (reason?: any) => void): Promise<void> {
+  private resubscribe(): void {
     for (const key in this.subscribes) {
       this.send({ type: 'sub', key }).catch((error) => {
         throw new Error(`Resubscription failed for key=${key}: ${error.message ?? error}`)
@@ -259,7 +260,7 @@ export class HulypulseClient implements Disposable {
     if (reply.error) {
       throw new Error(reply.error)
     }
-    return reply?.result
+    return reply.result || ''
   }
 
   public async list(): Promise<string> {
@@ -267,41 +268,48 @@ export class HulypulseClient implements Disposable {
     if (reply.error) {
       throw new Error(reply.error)
     }
-    return reply?.result
+    return reply.result || ''
   }
 
   public async subscribe<T>(key: string, callback: Callback): Promise<() => Promise<boolean>> {
-    if (!this.subscribes[key]) {
-      this.subscribes[key] = []
+
+    let list = this.subscribes.get(key)
+    if (!list) {
+      list = []
+      this.subscribes.set(key, list)
     }
 
-    if (!this.subscribes[key].includes(callback)) {
+    if (!list.includes(callback)) {
       // Already subscribed?
-      this.subscribes[key].push(callback)
-      if (this.subscribes[key].length === 1) {
+      list.push(callback)
+      if (list.length === 1) {
         const reply = await this.send({ type: 'sub', key })
         if (reply.error) {
           this.reconnect()
         }
       }
     }
+
     return async () => {
       return this.unsubscribe(key, callback)
     }
   }
 
   public async unsubscribe(key: string, callback: Callback): Promise<boolean> {
-    if (!this.subscribes[key] || !this.subscribes[key].includes(callback)) {
+    const list = this.subscribes.get(key)
+    if (!list || !list.includes(callback)) {
       return false
     }
-    this.subscribes[key] = this.subscribes[key].filter((cb) => cb !== callback)
-    if (this.subscribes[key].length === 0) {
-      delete this.subscribes[key]
+    const newList = list.filter((cb) => cb !== callback)
+    if (newList.length === 0) {
+      this.subscribes.delete(key)
       const reply = await this.send({ type: 'unsub', key })
       if (reply.error) {
         this.reconnect()
         return true
       }
+    } else {
+      this.subscribes.set(key, newList)
     }
     return true
   }
@@ -363,7 +371,7 @@ export class HulypulseClient implements Disposable {
   }
 
   private async send<M extends Omit<ProtocolMessage, 'correlation'>>(msg: M): Promise<any> {
-    const id = this.correlationId++
+    const id = String(this.correlationId++)
     const message = { ...msg, correlation: id.toString() } as M
 
     return new Promise((resolve, reject) => {
@@ -371,8 +379,9 @@ export class HulypulseClient implements Disposable {
         return reject(new Error('WebSocket is not open.'))
       }
       const send_timeout = setTimeout(() => {
-        if (this.pending.has(id)) {
-          this.pending.get(id)!.reject(new Error('Timeout waiting for response'))
+        const pending = this.pending.get(id)
+        if (pending !== undefined) {
+          pending.reject(new Error('Timeout waiting for response'))
           this.pending.delete(id)
         }
       }, this.SEND_TIMEOUT_MS)
