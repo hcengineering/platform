@@ -167,7 +167,8 @@ const cardPlugin = plugin(cardId, {
     CardApplication: '' as IntlString,
     Views: '' as IntlString,
     Labels: '' as IntlString,
-    GetIndividualPublicLink: '' as IntlString
+    GetIndividualPublicLink: '' as IntlString,
+    AddTag: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,

@@ -66,7 +66,9 @@ export default mergeIds(processId, process, {
     CardUpdatePresenter: '' as AnyComponent,
     ToDoSettingPresenter: '' as AnyComponent,
     TimeEditor: '' as AnyComponent,
-    TimePresenter: '' as AnyComponent
+    TimePresenter: '' as AnyComponent,
+    AddTagEditor: '' as AnyComponent,
+    AddTagPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     StringCriteria: '' as AnyComponent,
