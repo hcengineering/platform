@@ -15,9 +15,10 @@
 <script lang="ts">
   import { Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { type Ref, getCurrentAccount } from '@hcengineering/core'
-  import type { MasterTag } from '@hcengineering/card'
+  import { getCurrentAccount } from '@hcengineering/core'
   import view from '@hcengineering/view'
+  import chat from '@hcengineering/chat'
+  import { getClient } from '@hcengineering/presentation'
 
   import Navigator from './Navigator.svelte'
   import Home from './Home.svelte'
@@ -31,6 +32,10 @@
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 
   const myAcc = getCurrentAccount()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const threadClass = hierarchy.getClass(chat.masterTag.Thread)
 
   const allSection: Special = {
     _id: 'all',
@@ -43,7 +48,7 @@
     allSection,
     {
       _id: 'threads',
-      icon: plugin.icon.Thread,
+      icon: threadClass.icon ?? plugin.icon.Thread,
       label: plugin.string.Threads,
       baseQuery: {},
       baseClass: chat.masterTag.Thread
