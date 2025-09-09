@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
+import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, { Association, Data, Doc, generateId, Hierarchy, matchQuery, Ref, Relation, Tx } from '@hcengineering/core'
 import process, {
   Execution,
@@ -82,10 +82,10 @@ export async function UpdateCard (
   params: MethodParams<Card>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
-  if (Object.keys(params).length === 0) return
+): Promise<ExecuteResult> {
+  if (Object.keys(params).length === 0) throw processError(process.error.RequiredParamsNotProvided, { params: 'ANY' })
   const target = control.cache.get(execution.card)
-  if (target === undefined) return
+  if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const update: Record<string, any> = {}
   const prevValue: Record<string, any> = {}
   for (const key in params) {
@@ -99,16 +99,39 @@ export async function UpdateCard (
   return { txes: res, rollback, context: null }
 }
 
+export async function AddTag (
+  params: MethodParams<Tag>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const { _id, props } = params
+  if (_id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const res: Tx[] = []
+  const context: Ref<Card>[] = [execution.card]
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
+  res.push(
+    control.client.txFactory.createTxMixin(
+      execution.card,
+      _process.masterTag,
+      core.space.Workspace,
+      _id as Ref<Tag>,
+      props
+    )
+  )
+  return { txes: res, rollback: undefined, context }
+}
+
 export async function RunSubProcess (
   params: MethodParams<Execution>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
-  if (params._id === undefined) return
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const card = params.card ?? execution.card
   const processId = params._id as Ref<Process>
   const target = control.client.getModel().findObject(processId)
-  if (target === undefined) return
+  if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: processId })
   const res: Tx[] = []
   const resultContext: Ref<Execution>[] = []
   for (const _card of Array.isArray(card) ? card : [card]) {
@@ -154,14 +177,14 @@ export async function CreateToDo (
   params: MethodParams<ProcessToDo>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
+): Promise<ExecuteResult> {
   for (const key in { user: params.user, title: params.title }) {
     const val = (params as any)[key]
     if (isEmpty(val)) {
       throw processError(process.error.RequiredParamsNotProvided, { params: key })
     }
   }
-  if (params.user === undefined || params.title === undefined) return
+  if (params.user === undefined || params.title === undefined) return { txes: [], rollback: [], context: null }
   const res: Tx[] = []
   const rollback: Tx[] = []
   const id = generateId<ProcessToDo>()
@@ -194,7 +217,7 @@ export async function CreateCard (
   params: MethodParams<Card>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
+): Promise<ExecuteResult> {
   const { _class, title, ...attrs } = params
   for (const key in { _class, title }) {
     const val = (params as any)[key]
