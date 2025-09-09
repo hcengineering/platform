@@ -2307,6 +2307,7 @@ dependencies = [
  "futures-util",
  "hulyrs",
  "json-patch",
+ "jsonptr",
  "ksuid",
  "md5",
  "mime",

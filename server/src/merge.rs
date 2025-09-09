@@ -11,6 +11,7 @@ use tracing::*;
 
 use crate::handlers::PartData;
 use crate::handlers::{HandlerResult, Headers};
+use crate::patch;
 use crate::postgres::ObjectPart;
 use crate::s3::S3Client;
 use crate::{blob::Blob, config::CONFIG};
@@ -132,13 +133,13 @@ pub async fn stream(
             for part in parts {
                 let part_data = part_data(&s3, part).await?;
 
-                use json_patch::PatchOperation;
+                use patch::HulyPatchOperation;
                 use serde_json::from_slice;
 
                 if let Some(acc) = &mut acc {
-                    let ops = from_slice::<Vec<PatchOperation>>(&part_data)?;
+                    let ops = from_slice::<Vec<HulyPatchOperation>>(&part_data)?;
 
-                    if let Err(error) = json_patch::patch(acc, &ops) {
+                    if let Err(error) = patch::apply(acc, &ops) {
                         error!("json patch error: {error}");
                     }
                 } else {
