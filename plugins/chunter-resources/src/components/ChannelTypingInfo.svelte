@@ -64,7 +64,7 @@
   }
 
   onMount(() => {
-    subscribeTyping(handleTypingInfo)
+    subscribeTyping(handleTypingInfo, 'test_object') // String(object._id))
   })
 </script>
 

@@ -37,20 +37,31 @@ export async function createPulseClient(): Promise<HulypulseClient> {
   return pulseclient
 }
 
-export async function setTyping(me: any): Promise<void> {
+export async function setTyping(me: string, objectId: string): Promise<void> {
     const workspace = getWorkspace()
     const id = getCurrentAccount().socialIds[0];
-    await pulseclient?.put(`${workspace}/typing/${me}`, "typing", typingDelaySeconds)
+    await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, "typing", typingDelaySeconds)
 }
 
-export function subscribeTyping(callback: any): void {
+export function subscribeTyping(  
+  callback: (
+    key: string,
+    value: any,
+    options: {
+      msg: string,
+      subscribed_key: string,
+      run_index: number
+    }
+  ) => void,
+  objectId: string
+): void {
     const workspace = getWorkspace()
-    pulseclient?.subscribe(`${workspace}/typing/`, callback)
+    pulseclient?.subscribe(`${workspace}/typing/${objectId}/`, callback)
 }
 
-export function clearTyping(me: any): void {
+export function clearTyping(me: string, objectId: string): void {
     const workspace = getWorkspace()
-    pulseclient?.delete(`${workspace}/typing/${me}`)
+    pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`)
 }
 
 // export function setOnline(): void { TODO }
