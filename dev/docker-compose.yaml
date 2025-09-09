@@ -52,7 +52,7 @@ services:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    image: docker.redpanda.com/redpandadata/redpanda:v25.2.3
     extra_hosts:
       - 'huly.local:host-gateway'
     command:
