@@ -142,6 +142,7 @@
     "Icon": "アイコン",
     "Color": "色",
     "AutomationOnly": "自動化のみ",
-    "CopyLink": "リンクをコピー"
+    "CopyLink": "リンクをコピー",
+    "ValueIsSet": "値が設定されています"
   }
 }

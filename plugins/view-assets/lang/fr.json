@@ -142,6 +142,7 @@
     "Icon": "Icône",
     "Color": "Couleur",
     "AutomationOnly": "Automatisation uniquement",
-    "CopyLink": "Copier le lien"
+    "CopyLink": "Copier le lien",
+    "ValueIsSet": "La valeur est définie"
   }
 }
