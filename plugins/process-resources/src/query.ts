@@ -20,6 +20,7 @@ export interface Mode {
   label: IntlString
   query: QuerySelector<any> | string
   parse?: (value: any) => any
+  withoutEditor?: boolean
 }
 
 const Equal: Mode = {
@@ -44,6 +45,13 @@ const LT: Mode = {
   id: 'lessThan',
   label: getEmbeddedLabel('<'),
   query: { $lt: '$val' as any }
+}
+
+const Exists: Mode = {
+  id: 'exists',
+  label: view.string.ValueIsSet,
+  query: { $exists: true },
+  withoutEditor: true
 }
 
 const StringContains: Mode = {
@@ -105,6 +113,7 @@ const ArraySizeLte: Mode = {
 }
 
 export const Modes: Record<string, Mode> = {
+  Exists,
   Equal,
   NotEqual,
   StringContains,
@@ -133,7 +142,10 @@ export function parseValue (modes: Mode[], value: any): [any, Mode] {
     while (typeof obj1 === 'object' && typeof obj2 === 'object' && Object.keys(obj1)[0] === Object.keys(obj2)[0]) {
       const key1 = Object.keys(obj1)[0]
       const key2 = Object.keys(obj2)[0]
-      if (typeof obj1[key1] === 'string' && (typeof obj2[key2] !== 'object' || Array.isArray(obj2[key2]))) {
+      if (
+        ['string', 'boolean'].includes(typeof obj1[key1]) &&
+        (typeof obj2[key2] !== 'object' || Array.isArray(obj2[key2]))
+      ) {
         if (mode.parse !== undefined) {
           return [mode.parse(obj2[key2]), mode]
         }
