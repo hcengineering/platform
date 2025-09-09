@@ -1,4 +1,4 @@
-import { AccountRole, AccountUuid, MeasureContext, PersonUuid, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, AccountUuid, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { decode, encode } from 'jwt-simple'
 import { validate } from 'uuid'
@@ -19,10 +19,14 @@ export interface PermissionsGrant {
   workspace: WorkspaceUuid
   role: AccountRole
 
+  // Ideally we shouldn't need this but for now it's the only way to check
+  // if some granted permissions are valid - the ones which can only be verified in the workspace
+  grantedBy?: AccountUuid
+
   firstName?: string
   lastName?: string
 
-  spaces?: Ref<Space>[]
+  spaces?: string[]
 
   extra?: Record<string, any>
 }
@@ -71,6 +75,7 @@ export function generateToken (
       ? {
           workspace: grant.workspace,
           role: grant.role,
+          grantedBy: grant.grantedBy,
           firstName: grant.firstName,
           lastName: grant.lastName,
           spaces: grant.spaces,
