@@ -11,9 +11,9 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
-  import { Card } from '@hcengineering/card'
-  import core, { SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, type MasterTag } from '@hcengineering/card'
+  import core, { type Ref, SortingOrder } from '@hcengineering/core'
   import ui, {
     eventToHTMLElement,
     IconSettings,
@@ -33,6 +33,10 @@
 
   const cardsQuery = createQuery()
   const limitStep = 50
+  const client = getClient()
+
+  export let baseQuery: Record<string, unknown> = {}
+  export let baseClass: Ref<MasterTag> | undefined = undefined
 
   let divScroll: HTMLDivElement
   let limit = limitStep
@@ -40,9 +44,21 @@
   let total = -1
   let isLoading = true
   let search: string = ''
+  let classQuery: Record<string, unknown> = {}
+
+  // Get descendants for baseClass using model hierarchy
+  $: if (baseClass !== undefined) {
+    const hierarchy = client.getHierarchy()
+    const descendants = hierarchy.getDescendants(baseClass)
+    const allClasses = [baseClass, ...descendants]
+    classQuery = allClasses.length > 1 ? { _class: { $in: allClasses } } : { _class: baseClass }
+  } else {
+    classQuery = {}
+  }
 
   $: searchQuery = search != null && search.trim() !== '' ? { $search: search } : {}
-  $: resultQuery = { ...searchQuery }
+  $: filterQuery = {}
+  $: resultQuery = { ...baseQuery, ...classQuery, ...searchQuery, ...filterQuery }
   $: cardsQuery.query(
     card.class.Card,
     resultQuery,
@@ -126,7 +142,7 @@
       _class={card.class.Card}
       query={searchQuery}
       space={undefined}
-      on:change={({ detail }) => (resultQuery = detail)}
+      on:change={({ detail }) => (filterQuery = detail)}
     />
     <NewCardForm />
     <div class="body flex-gap-2">
