@@ -53,14 +53,12 @@ pub enum HulyPatchOperation {
 pub enum HulyPatchError {
     #[error("invalid number")]
     InvalidNumber,
-    #[error("invalid path")]
-    InvalidPath,
     #[error("patch error")]
     PatchError,
 }
 
 pub fn apply(doc: &mut Value, patches: &[HulyPatchOperation]) -> Result<(), HulyPatchError> {
-    for (_, patch) in patches.iter().enumerate() {
+    for patch in patches {
         let op = match patch {
             HulyPatchOperation::Add(op) => {
                 add(doc, &op.path, &op.value, op.safe.unwrap_or_default())
@@ -68,35 +66,11 @@ pub fn apply(doc: &mut Value, patches: &[HulyPatchOperation]) -> Result<(), Huly
             HulyPatchOperation::Inc(op) => {
                 inc(doc, &op.path, &op.value, op.safe.unwrap_or_default())
             }
-            HulyPatchOperation::Copy(op) => {
-                Ok(Some(PatchOperation::Copy(json_patch::CopyOperation {
-                    from: op.from.to_owned(),
-                    path: op.path.to_owned(),
-                })))
-            }
-            HulyPatchOperation::Move(op) => {
-                Ok(Some(PatchOperation::Move(json_patch::MoveOperation {
-                    from: op.from.to_owned(),
-                    path: op.path.to_owned(),
-                })))
-            }
-            HulyPatchOperation::Remove(op) => {
-                Ok(Some(PatchOperation::Remove(json_patch::RemoveOperation {
-                    path: op.path.to_owned(),
-                })))
-            }
-            HulyPatchOperation::Replace(op) => Ok(Some(PatchOperation::Replace(
-                json_patch::ReplaceOperation {
-                    path: op.path.to_owned(),
-                    value: op.value.to_owned(),
-                },
-            ))),
-            HulyPatchOperation::Test(op) => {
-                Ok(Some(PatchOperation::Test(json_patch::TestOperation {
-                    path: op.path.to_owned(),
-                    value: op.value.to_owned(),
-                })))
-            }
+            HulyPatchOperation::Copy(op) => Ok(Some(PatchOperation::Copy(op.clone()))),
+            HulyPatchOperation::Move(op) => Ok(Some(PatchOperation::Move(op.clone()))),
+            HulyPatchOperation::Remove(op) => Ok(Some(PatchOperation::Remove(op.clone()))),
+            HulyPatchOperation::Replace(op) => Ok(Some(PatchOperation::Replace(op.clone()))),
+            HulyPatchOperation::Test(op) => Ok(Some(PatchOperation::Test(op.clone()))),
         };
 
         match op {
@@ -190,8 +164,6 @@ fn add_json_numbers(a: &Number, b: &Number) -> Option<Number> {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-
-    use crate::patch;
 
     use super::*;
 
