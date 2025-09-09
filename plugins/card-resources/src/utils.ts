@@ -369,5 +369,5 @@ export async function canGetSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<b
     return false
   }
 
-  return canCopyLink(doc)
+  return await canCopyLink(doc)
 }
