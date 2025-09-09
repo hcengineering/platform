@@ -15,13 +15,21 @@
 <script lang="ts">
   import { htmlToJSON } from '@hcengineering/text'
   import Node from './markup/Node.svelte'
+  import { loadParseEmojisFunction, ParsedTextWithEmojis } from '@hcengineering/emoji'
+  import { onMount } from 'svelte'
 
   export let value: string
   export let preview = false
 
   $: node = htmlToJSON(value)
+
+  let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
+
+  onMount(async () => {
+    parseEmojisFunction = await loadParseEmojisFunction()
+  })
 </script>
 
 <div class="text-markup-view">
-  <Node {node} {preview} />
+  <Node {parseEmojisFunction} {node} {preview} />
 </div>
