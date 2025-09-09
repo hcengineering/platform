@@ -23,14 +23,11 @@
 
   export let card: Card | undefined = undefined
   export let type: Ref<MasterTag> | undefined = undefined
-  export let special: 'home' | 'favorites' | string | undefined = undefined
+  export let special: 'favorites' | string | undefined = undefined
 
-  function getSpecial (special: 'home' | 'favorites' | string | undefined): string | undefined {
+  function getSpecial (special: 'favorites' | string | undefined): string | undefined {
     if (special === 'favorites') {
       return 'favorites'
-    }
-    if (special === 'home') {
-      return 'home'
     }
     return undefined
   }
@@ -66,5 +63,4 @@
   on:selectType
   on:selectCard
   on:favorites
-  on:home
 />
