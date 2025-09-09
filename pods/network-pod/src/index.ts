@@ -9,6 +9,7 @@ async function main(): Promise<void> {
 
   // Create tick manager
   const tickManager = new TickManagerImpl(20)
+  tickManager.start()
 
   // Create Docker-based network service
   const network = new NetworkImpl(tickManager)
@@ -20,17 +21,21 @@ async function main(): Promise<void> {
 
   console.log(`Network Pod started on port ${port}`)
 
+  const shutdown = async () => {
+    console.log('Shutting down Network Pod...')
+    tickManager.stop()
+    await server.close()
+    network.close()
+    process.exit(0)
+  }
+
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
-    console.log('Shutting down Network Pod...')
-    await server.close()
-    process.exit(0)
+    shutdown()
   })
 
   process.on('SIGTERM', async () => {
-    console.log('Shutting down Network Pod...')
-    await server.close()
-    process.exit(0)
+    shutdown()
   })
 }
 

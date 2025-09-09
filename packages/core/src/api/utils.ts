@@ -4,7 +4,7 @@ export interface TickManager {
   now: () => number
 
   // Interval in seconds
-  register: (handler: TickHandler, interval: number) => void
+  register: (handler: TickHandler, interval: number) => () => void
 
   // Start tick manager
   start: () => void

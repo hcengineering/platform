@@ -61,6 +61,8 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
     await this.rpcServer.close()
   }
 
+  clients = new Set<ClientUuid>()
+
   async requestHandler (client: ClientUuid, method: string, params: any, send: BackRPCResponseSend): Promise<void> {
     switch (method) {
       case opNames.register: {
@@ -110,17 +112,20 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
     }
   }
 
+  lastClients = 0
   async helloHandler (clientId: ClientUuid): Promise<void> {
-    console.log(`Client ${clientId} connected`)
+    if (!this.clients.has(clientId)) {
+      console.log(`Clients connected: ${this.clients.size}`)
+    }
+    this.clients.add(clientId)
     this.network.addClient(clientId, async (event) => {
-      console.log(`Client ${clientId} received container event:`, event)
-
-      await await this.rpcServer.send(clientId, event)
+      await this.rpcServer.send(clientId, event)
     })
   }
 
   async handleTimeout (client: ClientUuid): Promise<void> {
     console.log(`Client ${client} timed out`)
+    this.clients.delete(client)
     this.network.removeClient(client)
   }
 

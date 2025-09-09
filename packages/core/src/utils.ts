@@ -21,7 +21,7 @@ export function groupByArray<T, K> (array: T[], keyProvider: (item: T) => K): Ma
  * Handles a time unification and inform about ticks.
  */
 export class TickManagerImpl implements TickManager {
-  handlers: [TickHandler, number, number][] = []
+  handlers = new Map<number, [TickHandler, number, number]>()
 
   hashCounter: number = 0
 
@@ -41,17 +41,15 @@ export class TickManagerImpl implements TickManager {
     return (globalThis as any).performance?.now?.() ?? Date.now()
   }
 
-  nextHash (): number {
-    // Use post-increment so first hash can be 0, and avoid negative modulo issues.
-    return this.hashCounter++ % this.tps
-  }
-
-  register (handler: TickHandler, interval: number): void {
+  register (handler: TickHandler, interval: number): () => void {
     if (!Number.isFinite(interval) || interval < 1) {
       throw new Error('Interval must be a finite number >= 1 (seconds)')
     }
-    const hash = this.nextHash()
-    this.handlers.push([handler, hash, interval])
+    const handlerId = this.hashCounter++
+    this.handlers.set(handlerId, [handler, handlerId % this.tps, interval])
+    return () => {
+      this.handlers.delete(handlerId)
+    }
   }
 
   async tick (): Promise<void> {
@@ -70,7 +68,7 @@ export class TickManagerImpl implements TickManager {
       }
     }
 
-    for (const [h, hash, interval] of this.handlers) {
+    for (const [h, hash, interval] of this.handlers.values()) {
       try {
         if (this.isMe(hash, interval)) {
           await h()

@@ -45,15 +45,21 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
   private eventQueue: ContainerEvent[] = []
 
+  private readonly stopTick?: () => void
+
   constructor (private readonly tickManager: TickManager) {
     // Register for periodic agent health checks
-    tickManager.register(() => {
+    this.stopTick = tickManager.register(() => {
       void this.checkAlive().catch((err) => {
         console.error('Error during network health check:', err)
       })
       // Check for events on every tick
       void this.sendEvents()
     }, timeouts.aliveTimeout)
+  }
+
+  close (): void {
+    this.stopTick?.()
   }
 
   async agents (): Promise<AgentRecord[]> {

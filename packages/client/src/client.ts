@@ -64,6 +64,12 @@ class ContainerReferenceImpl implements ContainerReference {
   }
 }
 
+interface ContainereRef {
+  ref: ContainerReference
+  request: ContainerRequest
+  endpoint: ContainerEndpointRef
+}
+
 /**
  * Huly Network client
  *
@@ -82,10 +88,7 @@ export class NetworkClientImpl implements NetworkClient {
 
   containerListeners: ContainerUpdateListener[] = []
 
-  references = new Map<
-  ContainerUuid,
-  { ref: ContainerReference, request: ContainerRequest, endpoint: ContainerEndpointRef }
-  >()
+  references = new Map< ContainerUuid, ContainereRef>()
 
   registered: boolean = false
 
@@ -99,10 +102,10 @@ export class NetworkClientImpl implements NetworkClient {
 
   async close (): Promise<void> {
     for (const directConn of this.containerConnections.values()) {
-      void directConn.close()
+      await directConn.close()
     }
     for (const agentConn of this.agentConnections.values()) {
-      void agentConn.close()
+      await agentConn.close()
     }
 
     for (const agent of this._agents.values()) {

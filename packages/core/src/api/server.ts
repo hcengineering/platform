@@ -47,6 +47,8 @@ export interface Network {
 
   // Send some data to container, using proxy connection.
   request: (target: ContainerUuid, operation: string, data?: any) => Promise<any>
+
+  close: () => void
 }
 
 export interface NetworkWithClients {

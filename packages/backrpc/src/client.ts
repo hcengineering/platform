@@ -45,6 +45,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
   setServerId: (serverId: string) => void
 
+  stopTick?: () => void
+
   constructor (
     readonly clientId: ClientT,
     readonly client: BackRPCClientHandler,
@@ -70,7 +72,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     })
     void this.start()
 
-    this.tickMgr.register(() => {
+    this.stopTick = this.tickMgr.register(() => {
       void this.checkAlive()
     }, timeouts.pingInterval)
   }
@@ -206,6 +208,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
   close (): void {
     this.closed = true
+    this.stopTick?.()
     this.dealer.close()
   }
 }

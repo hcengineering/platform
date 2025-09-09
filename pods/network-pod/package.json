@@ -16,7 +16,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "node ../../common/scripts/esbuild.js --entry=src/index.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node --external=bufferutil",
+    "bundle": "node ../../common/scripts/esbuild.js --entry=src/index.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node --external=zeromq",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/network-pod",
     "docker:tbuild": "docker build -t hardcoreeng/network-pod . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/network-pod",
     "docker:abuild": "docker build -t hardcoreeng/network-pod . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/network-pod",

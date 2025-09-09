@@ -3,7 +3,7 @@ import { TickManagerImpl } from '../utils'
 describe('check tickManager', () => {
   it('check ticks', async () => {
     const mgr = new TickManagerImpl(20)
-    const h1 = mgr.nextHash()
+    const h1 = mgr.hashCounter++ % mgr.tps
 
     // await mgr.tick()
     expect(mgr.isMe(h1, 1)).toBe(true)

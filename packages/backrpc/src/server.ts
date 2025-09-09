@@ -57,6 +57,8 @@ export class BackRPCServer<ClientT extends string = ClientId> {
   // A limit of requests per one client.
   requestsLimit: number = 25
 
+  stopTick?: () => void
+
   constructor (
     private readonly handlers: BackRPCServerHandler<ClientT>,
     private readonly tickMgr: TickManager,
@@ -65,8 +67,10 @@ export class BackRPCServer<ClientT extends string = ClientId> {
   ) {
     this.router = new zmq.Router()
 
-    this.tickMgr.register(() => {
-      void this.checkAlive()
+    this.stopTick = this.tickMgr.register(() => {
+      void this.checkAlive().catch(err => {
+        console.error(err)
+      })
     }, timeouts.pingInterval)
 
     void this.start()
@@ -248,6 +252,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
 
   async close (): Promise<void> {
     this.closed = true
+    this.stopTick?.()
     this.router.close()
   }
 }

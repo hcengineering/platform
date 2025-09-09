@@ -148,6 +148,7 @@ import { NetworkServer } from '@hcengineering/network-server'
 
 // Create network components
 const tickManager = new TickManagerImpl(1000) // 1000 ticks per second
+tickManager.start()
 const network = new NetworkImpl(tickManager)
 const server = new NetworkServer(network, tickManager, '*', 3737)
 
