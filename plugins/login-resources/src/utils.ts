@@ -413,7 +413,7 @@ export async function selectWorkspace (
       Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspaceUrl, ok: false })
       await handleStatusError('Select workspace error', err.status)
 
-      return [err.status, null, false]
+      return [err.status, null, true]
     } else {
       Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspaceUrl, ok: false })
       Analytics.handleError(err)
