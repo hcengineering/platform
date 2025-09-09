@@ -25,6 +25,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton } from '@hcengineering/view-resources'
+  import { type IntlString } from '@hcengineering/platform'
 
   import HomeCardPresenter from './HomeCardPresenter.svelte'
   import HomeSettings from './HomeSettings.svelte'
@@ -35,6 +36,7 @@
   const limitStep = 50
   const client = getClient()
 
+  export let header: IntlString = card.string.Home
   export let baseQuery: Record<string, unknown> = {}
   export let baseClass: Ref<MasterTag> | undefined = undefined
 
@@ -129,7 +131,7 @@
   <div class="home">
     <div class="header flex-gap-2">
       <div class="header__title">
-        <Label label={card.string.Home} />
+        <Label label={header} />
       </div>
       <div class="flex flex-gap-2">
         <SearchInput bind:value={search} collapsed />

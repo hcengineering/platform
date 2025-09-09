@@ -52,7 +52,7 @@
       _id: 'createdByMe',
       icon: plugin.icon.Person,
       label: plugin.string.CreatedByMe,
-      baseQuery: { createdBy: { $in: myAcc.socialIds }}
+      baseQuery: { createdBy: { $in: myAcc.socialIds } }
     }
   ]
 
@@ -73,6 +73,10 @@
   {/if}
 
   <div class="hulyComponent" bind:this={replacedPanel}>
-    <Home baseQuery={selectedSpecial?.baseQuery ?? {}} baseClass={selectedSpecial?.baseClass} />
+    <Home
+      baseQuery={selectedSpecial?.baseQuery ?? {}}
+      baseClass={selectedSpecial?.baseClass}
+      header={selectedSpecial?.label}
+    />
   </div>
 </div>

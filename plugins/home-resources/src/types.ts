@@ -13,8 +13,7 @@
 
 import type { Card, MasterTag } from '@hcengineering/card'
 import { type DocumentQuery, type Ref } from '@hcengineering/core'
-import { type IntlString } from '@hcengineering/platform'
-import type { Asset } from '@hcengineering/platform'
+import { type IntlString, type Asset } from '@hcengineering/platform'
 import type { AnySvelteComponent } from '@hcengineering/ui'
 
 export interface Special {
