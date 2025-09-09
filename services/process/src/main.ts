@@ -14,20 +14,17 @@
 //
 
 import cardPlugin from '@hcengineering/card'
-import core, {
-  ArrOf,
+import {
   Doc,
   generateId,
   getDiffUpdate,
-  getObjectValue,
   MeasureContext,
   Ref,
-  RefTo,
   Tx,
   TxProcessor,
   WorkspaceUuid
 } from '@hcengineering/core'
-import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
 import process, {
   Execution,
   ExecutionError,
@@ -38,12 +35,6 @@ import process, {
   parseError,
   processError,
   ProcessError,
-  SelectedContext,
-  SelectedContextFunc,
-  SelectedExecutionContext,
-  SelectedNested,
-  SelectedRelation,
-  SelectedUserRequest,
   State,
   Step,
   Transition
@@ -55,11 +46,12 @@ import serverProcess, {
   ProcessMessage,
   TriggerImpl
 } from '@hcengineering/server-process'
-import { isError } from './errors'
-import { getClient, releaseClient } from './utils'
-import { getTemporalClient } from './temporal'
+import { getContextValue } from '@hcengineering/server-process-resources'
 import { Client as TemporalClient } from '@temporalio/client'
 import config from './config'
+import { isError } from './errors'
+import { getTemporalClient } from './temporal'
+import { getClient, releaseClient } from './utils'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -149,11 +141,13 @@ async function findTransitions (
   if (record.event === process.trigger.OnExecutionContinue) {
     const transition = execution.error?.[0].transition
     if (transition === undefined) return
-    return control.client.getModel().findAllSync(process.class.Transition, {
+    const res = control.client.getModel().findAllSync(process.class.Transition, {
       _id: transition,
-      from: execution.currentState,
       process: execution.process
     })[0]
+    if (res.from === execution.currentState || res.from === null) {
+      return res
+    }
   }
   const transitions = control.client.getModel().findAllSync(process.class.Transition, {
     from: execution.currentState,
@@ -449,130 +443,6 @@ async function executeAction<T extends Doc> (
   }
 }
 
-async function fillValue (
-  value: any,
-  context: SelectedContext,
-  control: ProcessControl,
-  execution: Execution
-): Promise<any> {
-  for (const func of context.functions ?? []) {
-    const transform = control.client.getModel().findObject(func.func)
-    if (transform === undefined) throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
-    if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
-    }
-    const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
-    const f = await getResource(funcImpl.func)
-    value = await f(value, func.props, control, execution)
-  }
-  return value
-}
-
-async function getNestedValue (
-  control: ProcessControl,
-  execution: Execution,
-  context: SelectedNested
-): Promise<any | ExecutionError> {
-  const card = control.cache.get(execution.card)
-  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
-  const attr = control.client.getHierarchy().findAttribute(card._class, context.path)
-  if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: context.path })
-  const nestedValue = getObjectValue(context.path, card)
-  if (nestedValue === undefined) throw processError(process.error.EmptyAttributeContextValue, {}, { attr: attr.label })
-  const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
-  const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
-  const target = await control.client.findAll(targetClass, {
-    _id: { $in: Array.isArray(nestedValue) ? nestedValue : [nestedValue] }
-  })
-  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, {}, { attr: attr.label })
-  const nested = control.client.getHierarchy().findAttribute(targetClass, context.key)
-  if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
-    if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
-    const f = await getResource(funcImpl.func)
-    const reduced = await f(target, {}, control, execution)
-    const val = getObjectValue(context.key, reduced)
-    if (val == null) {
-      throw processError(
-        process.error.EmptyRelatedObjectValue,
-        {},
-        { parent: attr.label, attr: nested?.label ?? getEmbeddedLabel(context.key) }
-      )
-    }
-    return val
-  }
-  const val = getObjectValue(context.key, target[0])
-  if (val == null) {
-    throw processError(
-      process.error.EmptyRelatedObjectValue,
-      {},
-      { parent: attr.label, attr: nested?.label ?? getEmbeddedLabel(context.key) }
-    )
-  }
-  return val
-}
-
-async function getRelationValue (
-  control: ProcessControl,
-  execution: Execution,
-  context: SelectedRelation
-): Promise<any> {
-  const assoc = control.client.getModel().findObject(context.association)
-  if (assoc === undefined) throw processError(process.error.RelationNotExists, {})
-  const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
-  const q = context.direction === 'A' ? { docB: execution.card } : { docA: execution.card }
-  const relations = await control.client.findAll(core.class.Relation, { association: assoc._id, ...q })
-  const name = context.direction === 'A' ? assoc.nameA : assoc.nameB
-  if (relations.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
-  const ids = relations.map((it) => {
-    return context.direction === 'A' ? it.docA : it.docB
-  })
-  const target = await control.client.findAll(targetClass, { _id: { $in: ids } })
-  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
-  const attr = context.key !== '' ? control.client.getHierarchy().findAttribute(targetClass, context.key) : undefined
-  if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
-    if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
-    const f = await getResource(funcImpl.func)
-    const reduced = await f(target, {}, control, execution)
-    const val = Array.isArray(reduced)
-      ? reduced.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, reduced)
-    if (val == null) {
-      throw processError(
-        process.error.EmptyRelatedObjectValue,
-        { parent: name },
-        { attr: attr?.label ?? getEmbeddedLabel(context.name) }
-      )
-    }
-    return val
-  }
-  const val =
-    Array.isArray(target) && target.length > 1
-      ? target.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, target[0])
-  if (val == null) {
-    throw processError(
-      process.error.EmptyRelatedObjectValue,
-      { parent: name },
-      { attr: attr?.label ?? getEmbeddedLabel(context.name) }
-    )
-  }
-  return val
-}
-
 async function fillParams<T extends Doc> (
   params: MethodParams<T>,
   execution: Execution,
@@ -585,124 +455,6 @@ async function fillParams<T extends Doc> (
     ;(res as any)[key] = valueResult
   }
   return res
-}
-
-function getAttributeValue (control: ProcessControl, execution: Execution, context: SelectedContext): any {
-  const card = control.cache.get(execution.card)
-  if (card !== undefined) {
-    const val = getObjectValue(context.key, card)
-    if (val == null) {
-      const attr = control.client.getHierarchy().findAttribute(card._class, context.key)
-      throw processError(
-        process.error.EmptyAttributeContextValue,
-        {},
-        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
-      )
-    }
-    return val
-  } else {
-    throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
-  }
-}
-
-async function getContextValue (value: any, control: ProcessControl, execution: Execution): Promise<any> {
-  const context = parseContext(value)
-  if (context !== undefined) {
-    let value: any | undefined
-    try {
-      if (context.type === 'attribute') {
-        value = getAttributeValue(control, execution, context)
-      } else if (context.type === 'relation') {
-        value = await getRelationValue(control, execution, context)
-      } else if (context.type === 'nested') {
-        value = await getNestedValue(control, execution, context)
-      } else if (context.type === 'userRequest') {
-        value = getUserRequestValue(control, execution, context)
-      } else if (context.type === 'function') {
-        value = await getFunctionValue(control, execution, context)
-      } else if (context.type === 'context') {
-        value = await getExecutionContextValue(control, execution, context)
-      }
-      return await fillValue(value, context, control, execution)
-    } catch (err: any) {
-      if (err instanceof ProcessError && context.fallbackValue !== undefined) {
-        return await fillValue(context.fallbackValue, context, control, execution)
-      }
-      throw err
-    }
-  } else if (typeof value === 'object' && !Array.isArray(value)) {
-    for (const key in value) {
-      value[key] = await getContextValue(value[key], control, execution)
-    }
-    return value
-  } else {
-    return value
-  }
-}
-
-async function getFunctionValue (
-  control: ProcessControl,
-  execution: Execution,
-  context: SelectedContextFunc
-): Promise<any> {
-  const func = control.client.getModel().findObject(context.func)
-  if (func === undefined) throw processError(process.error.MethodNotFound, { methodId: context.func }, {}, true)
-  const impl = control.client.getHierarchy().as(func, serverProcess.mixin.FuncImpl)
-  if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: context.func }, {}, true)
-  const f = await getResource(impl.func)
-  const res = await f(null, context.props, control, execution)
-  if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
-    if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
-    }
-    const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
-    const f = await getResource(funcImpl.func)
-    const val = await f(res, {}, control, execution)
-    if (val == null) {
-      throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
-    }
-    return val
-  }
-  if (res == null) {
-    throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
-  }
-  return res
-}
-
-function getUserRequestValue (control: ProcessControl, execution: Execution, context: SelectedUserRequest): any {
-  const userContext = execution.context[context.id]
-  if (userContext !== undefined) return userContext
-  const attr = control.client.getHierarchy().findAttribute(context._class, context.key)
-  throw processError(
-    process.error.UserRequestedValueNotProvided,
-    {},
-    { attr: attr?.label ?? getEmbeddedLabel(context.key) }
-  )
-}
-
-async function getExecutionContextValue (
-  control: ProcessControl,
-  execution: Execution,
-  context: SelectedExecutionContext
-): Promise<any> {
-  const userContext = execution.context[context.id]
-  const _process = control.client.getModel().findObject(execution.process)
-  const processContext = _process?.context?.[context.id]
-  if (userContext !== undefined) {
-    if (context.key === '' || context.key === '_id') return userContext
-    if (processContext !== undefined) {
-      const contextVal = await control.client.findOne(processContext?._class, { _id: userContext })
-      if (contextVal !== undefined) {
-        const val = getObjectValue(context.key, contextVal)
-        return val
-      }
-    }
-  }
-  throw processError(process.error.ContextValueNotProvided, { name: processContext?.name ?? context.id })
 }
 
 async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {

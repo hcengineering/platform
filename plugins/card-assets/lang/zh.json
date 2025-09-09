@@ -42,11 +42,12 @@
     "ConfigDescription": "用于数据库风格知识管理的扩展。",
     "AddCollaborators": "添加协作者",
     "Home": "主页",
-    "CardTitle": "输入卡片标题...",
+    "CardTitle": "标题",
     "Post": "发布",
     "Compact": "紧凑",
     "Comfortable": "舒适",
     "Comfortable2": "舒适 2",
-    "AdvancedCreateCard": "切换到高级卡片创建"
+    "AdvancedCreateCard": "收起详情",
+    "CardContent": "你想分享什么？"
   }
 }

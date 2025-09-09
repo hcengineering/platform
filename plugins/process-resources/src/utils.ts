@@ -81,7 +81,9 @@ export function getContextMasterTag (
   const model = client.getModel()
   if (context.type === 'attribute') {
     const attr = h.findAttribute(masterTag, context.key)
-    return (attr?.type as RefTo<Doc>)?.to
+    if (attr === undefined) return
+    const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
+    if (parentType._class === core.class.RefTo) return (parentType as RefTo<Doc>).to
   }
   if (context.type === 'nested') {
     const attr = h.findAttribute(masterTag, context.path)
@@ -284,19 +286,6 @@ function getContextFunctions (
   const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'context' })
   for (const func of funcs) {
     switch (category) {
-      case 'object': {
-        if (func.category === 'array') {
-          if (hierarchy.isDerived(func.of, target)) {
-            matched.push(func._id)
-          }
-        }
-        if (func.category === 'object') {
-          if (hierarchy.isDerived(func.of, target)) {
-            matched.push(func._id)
-          }
-        }
-        break
-      }
       case 'array': {
         if (func.category === 'array') {
           if (hierarchy.isDerived(func.of, target)) {
@@ -306,7 +295,7 @@ function getContextFunctions (
         break
       }
       default: {
-        if (func.of === target) {
+        if (hierarchy.isDerived(func.of, target)) {
           matched.push(func._id)
         }
       }
@@ -357,6 +346,12 @@ function getClassAttributes (
       default: {
         if (attr[1].type._class === target) {
           matchedAttributes.push(attr[1])
+        }
+        if (attr[1].type._class === core.class.RefTo) {
+          const to = (attr[1].type as RefTo<Doc>).to
+          if (hierarchy.isDerived(to, target)) {
+            matchedAttributes.push(attr[1])
+          }
         }
       }
     }
@@ -450,13 +445,13 @@ export async function getTransitionUserInput (
   transition: Transition,
   userContext: ExecutionContext
 ): Promise<ExecutionContext | undefined> {
-  const changed = false
+  let changed = false
   for (const action of transition.actions) {
     if (action == null) continue
     for (const key in action.params) {
       const value = (action.params as any)[key]
       const context = parseContext(value)
-      if (context !== undefined && context.type === 'userRequest') {
+      if (context !== undefined && context.type === 'userRequest' && userContext[context.id] === undefined) {
         const promise = new Promise<void>((resolve) => {
           showPopup(
             process.component.RequestUserInput,
@@ -464,6 +459,7 @@ export async function getTransitionUserInput (
             undefined,
             (res) => {
               if (res?.value !== undefined) {
+                changed = true
                 userContext[context.id] = res.value
               }
               resolve()
@@ -481,7 +477,7 @@ export async function getSubProcessesUserInput (
   transition: Transition,
   userContext: ExecutionContext
 ): Promise<ExecutionContext | undefined> {
-  const changed = false
+  let changed = false
   for (const action of transition.actions) {
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
@@ -489,6 +485,7 @@ export async function getSubProcessesUserInput (
     const res = await newExecutionUserInput(processId)
     if (action.context == null || res === undefined) continue
     userContext[action.context._id] = res
+    changed = true
   }
   return changed ? userContext : undefined
 }

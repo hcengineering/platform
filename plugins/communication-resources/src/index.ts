@@ -44,6 +44,7 @@ import { createPoll, getPollTitle } from './poll'
 
 export { isActivityMessage } from './activity'
 export * from './stores'
+export { defaultMessageInputActions } from './utils'
 
 export { default as MessagePresenter } from './components/message/MessagePresenter.svelte'
 export { default as MessageInput } from './components/message/MessageInput.svelte'
