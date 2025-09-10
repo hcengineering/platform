@@ -32,7 +32,7 @@
 
   let _id: Ref<Process> = step.params._id as any
   $: context = parseContext(step.params.card)
-  $: masterTag = getContextMasterTag(client, context, process.masterTag) ?? process.masterTag
+  $: masterTag = getContextMasterTag(client, context, process) ?? process.masterTag
 
   $: executionContext = (step.params.context ?? {}) as ExecutionContext
 
@@ -48,9 +48,7 @@
 
   let thisCard: boolean = step.params.card === undefined
 
-  $: ancestors = hierarchy
-    .getAncestors(masterTag)
-    .filter((it) => !hierarchy.isMixin(it) && hierarchy.isDerived(it, card.class.Card))
+  $: ancestors = hierarchy.getAncestors(masterTag).filter((it) => hierarchy.isDerived(it, card.class.Card))
 
   let processes: Process[] = []
   let items: DropdownTextItem[] = []

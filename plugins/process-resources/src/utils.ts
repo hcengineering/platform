@@ -75,19 +75,19 @@ export function generateContextId (): ContextId {
 export function getContextMasterTag (
   client: Client,
   context: SelectedContext | undefined,
-  masterTag: Ref<MasterTag>
+  process: Process
 ): Ref<MasterTag> | undefined {
   if (context === undefined) return
   const h = client.getHierarchy()
   const model = client.getModel()
   if (context.type === 'attribute') {
-    const attr = h.findAttribute(masterTag, context.key)
+    const attr = h.findAttribute(process.masterTag, context.key)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     if (parentType._class === core.class.RefTo) return (parentType as RefTo<Doc>).to
   }
   if (context.type === 'nested') {
-    const attr = h.findAttribute(masterTag, context.path)
+    const attr = h.findAttribute(process.masterTag, context.path)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
@@ -101,6 +101,11 @@ export function getContextMasterTag (
     if (context.key === '_id') return targetClass as Ref<MasterTag>
     const nested = h.findAttribute(targetClass, context.key)
     return (nested?.type as RefTo<Doc>)?.to
+  }
+  if (context.type === 'context') {
+    const execContext = process.context[context.id]
+    if (execContext === undefined) return
+    return execContext._class
   }
 }
 
