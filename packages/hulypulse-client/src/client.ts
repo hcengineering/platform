@@ -515,9 +515,7 @@ export class HulypulseClient implements Disposable {
   }
 }
 
-
-
-export function escapeString(str: string): string {
+export function escapeString (str: string): string {
   // Escape special characters to '*' | '?' | '[' | ']' | '\\' | '\0'..='\x1F' | '\x7F' | '"' | '\''
   return str.replace(/[\\'"]/g, '\\$&')
 }
