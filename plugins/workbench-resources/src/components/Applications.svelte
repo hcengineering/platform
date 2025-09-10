@@ -69,13 +69,16 @@
   $: topApps = apps
     .filter((it) => it.position === 'top' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
-  $: midApps = apps.filter(
-    (it) =>
-      !hiddenAppsIds.includes(it._id) &&
-      !excludedApps.includes(it.alias) &&
-      it.position !== 'top' &&
-      it.position !== 'bottom'
-  )
+  $: midApps = apps
+    .filter(
+      (it) =>
+        !hiddenAppsIds.includes(it._id) &&
+        !excludedApps.includes(it.alias) &&
+        it.position !== 'top' &&
+        it.position !== 'bottom'
+    )
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+
   $: bottomApps = apps.filter(
     (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
   )
