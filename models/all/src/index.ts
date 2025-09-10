@@ -488,7 +488,11 @@ export default function buildModel (): Builder {
     [mailModel, mailId],
     [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
     [hulyMailModel, hulyMailId],
-    [homeModel, homeId, { label: home.string.Home, enabled: true, beta: true, classFilter: defaultFilter }],
+    [
+      homeModel,
+      homeId,
+      { label: home.string.Home, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
