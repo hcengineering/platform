@@ -23,6 +23,9 @@ use redis::aio::MultiplexedConnection;
 use serde::Serialize;
 use tokio::sync::RwLock;
 
+use crate::config::CONFIG;
+use crate::handlers_ws::WsSession;
+
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
         return true;
@@ -67,16 +70,26 @@ pub struct RedisEvent {
 
 #[derive(Debug, Default)]
 pub struct HubState {
-    sessions: HashMap<SessionId, Recipient<ServerMessage>>,
+    sessions: HashMap<SessionId, Addr<WsSession>>,
     subs: HashMap<String, HashSet<SessionId>>,
+    heartbeats: HashMap<SessionId, std::time::Instant>,
 }
 
 impl HubState {
-    pub fn connect(&mut self, session_id: SessionId, addr: Recipient<ServerMessage>) {
+    pub fn renew_heartbeat(&mut self, session_id: SessionId) {
+        if self.sessions.contains_key(&session_id) {
+            let now = std::time::Instant::now();
+            self.heartbeats.insert(session_id, now);
+        }
+    }
+    pub fn connect(&mut self, session_id: SessionId, addr: Addr<WsSession>) {
         self.sessions.insert(session_id, addr);
+        let now = std::time::Instant::now();
+        self.heartbeats.insert(session_id, now);
     }
     pub fn disconnect(&mut self, session_id: SessionId) {
         self.sessions.remove(&session_id);
+        self.heartbeats.remove(&session_id);
         self.subs.retain(|_, ids| {
             ids.remove(&session_id);
             !ids.is_empty()
@@ -114,7 +127,7 @@ impl HubState {
     pub fn count(&self) -> usize {
         self.sessions.len()
     }
-    pub fn recipients_for_key(&self, key: &str) -> Vec<Recipient<ServerMessage>> {
+    pub fn recipients_for_key(&self, key: &str) -> Vec<Addr<WsSession>> {
         let mut out = Vec::new();
         for (sub_key, set) in &self.subs {
             if subscription_matches(sub_key, key) {
@@ -136,8 +149,7 @@ pub async fn broadcast_event(
     value: Option<String>,
 ) {
     // Collect
-    let recipients: Vec<Recipient<ServerMessage>> =
-        { hub_state.read().await.recipients_for_key(&ev.key) };
+    let recipients: Vec<Addr<WsSession>> = { hub_state.read().await.recipients_for_key(&ev.key) };
     if recipients.is_empty() {
         return;
     }
@@ -168,4 +180,38 @@ pub async fn push_event(
     }
 
     broadcast_event(hub_state, ev, value).await;
+}
+
+pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
+    tokio::spawn(async move {
+        let mut ticker = tokio::time::interval(std::time::Duration::from_secs(2));
+        loop {
+            ticker.tick().await;
+
+            let now = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(CONFIG.heartbeat_timeout);
+            let timelimit = now - timeout;
+
+            let hub = hub_state.read().await;
+            let expired: Vec<Addr<WsSession>> = hub
+                .heartbeats
+                .iter()
+                .filter_map(|(&sid, &last_beat)| {
+                    if last_beat < timelimit {
+                        hub.sessions.get(&sid).cloned()
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            drop(hub);
+
+            if !expired.is_empty() {
+                for addr in &expired {
+                    addr.do_send(crate::handlers_ws::ForceDisconnect);
+                }
+            }
+        }
+    });
 }

@@ -41,8 +41,8 @@ use config::CONFIG;
 mod db;
 mod memory;
 
-use crate::db::Db;
 use crate::memory::MemoryBackend;
+use crate::{db::Db, hub_service::check_heartbeat};
 
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
@@ -113,6 +113,9 @@ async fn main() -> anyhow::Result<()> {
 
     // starting HubService
     let hub_state = Arc::new(RwLock::new(HubState::default()));
+
+    // starting heartbeat checker
+    check_heartbeat(hub_state.clone());
 
     let db_backend = match CONFIG.backend {
         config::BackendType::Memory => {

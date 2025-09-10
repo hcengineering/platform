@@ -56,6 +56,8 @@ pub struct Config {
 
     pub backend: BackendType,
     pub no_authorization: bool,
+
+    pub heartbeat_timeout: u64,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {

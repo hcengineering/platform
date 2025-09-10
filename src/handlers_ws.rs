@@ -143,11 +143,13 @@ impl Actor for WsSession {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         let id = self.id;
-        let recipient = ctx.address().recipient::<ServerMessage>();
+        // let recipient = ctx.address().recipient::<ServerMessage>();
+        let addr = ctx.address();
+
         let hub_state = self.hub_state.clone();
         ctx.spawn(
             actix::fut::wrap_future(async move {
-                hub_state.write().await.connect(id, recipient);
+                hub_state.write().await.connect(id, addr);
             })
             .map(|_, _, _| ()),
         );
@@ -173,10 +175,37 @@ impl actix::Handler<ServerMessage> for WsSession {
     }
 }
 
+// Disconecting
+#[derive(actix::Message)]
+#[rtype(result = "()")]
+pub struct ForceDisconnect;
+
+impl actix::Handler<ForceDisconnect> for WsSession {
+    type Result = ();
+
+    fn handle(&mut self, _msg: ForceDisconnect, ctx: &mut Self::Context) {
+        ctx.close(Some(ws::CloseReason {
+            code: ws::CloseCode::Normal,
+            description: Some("Disconnected by server".to_string()),
+        }));
+        ctx.stop();
+    }
+}
+
 /// StreamHandler External trait: must be in separate impl block
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+        tracing::debug!("WebSocket message: {:?}", msg);
         match msg {
+            // String "ping" - answer "pong"
+            Ok(ws::Message::Text(text)) if text == "ping" => {
+                // renew heartbeat to unixtime
+                let hub_state = self.hub_state.clone();
+                let id = self.id.clone();
+                let fut = async move { hub_state.write().await.renew_heartbeat(id) };
+                ctx.wait(fut::wrap_future(fut).map(|_, _, _| ()));
+                ctx.text("pong");
+            }
             Ok(ws::Message::Text(text)) => match serde_json::from_str::<WsCommand>(&text) {
                 Ok(cmd) => self.handle_command(cmd, ctx),
                 Err(err) => ctx.text(format!("Invalid JSON: {}", err)),
@@ -194,11 +223,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
         }
     }
 }
-
-// fn finished(&mut self, ctx: &mut Self::Context) {
-//     tracing::info!("Stream finished, stopping session");
-//     ctx.stop(); // 🔑 если стрим оборван → закрыть
-// }
 
 /// All logic
 impl WsSession {
@@ -492,7 +516,7 @@ impl WsSession {
                 tracing::info!("SUBLIST"); //  correlation: {:?} , &correlation
                 // w/o Check workspace!
                 let base = serde_json::json!(ReturnBase {
-                    action: "list",
+                    action: "sublist",
                     correlation: correlation.as_deref(),
                     ..Default::default()
                 });

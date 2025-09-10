@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.1.16"
+version = "0.1.20"
 edition = "2024"
 
 [dependencies]

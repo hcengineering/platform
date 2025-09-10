@@ -12,5 +12,7 @@ max_ttl = 3600
 backend = "redis"
 no_authorization = false
 
+heartbeat_timeout = 30
+
 # optional settings
 # max_size = 100

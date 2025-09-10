@@ -67,6 +67,8 @@
 
   <p>
 
+<button onclick="place()" data='ping'>ping</button>
+
 <button onclick="place()" data='{"type":"put", "key":"00000000-0000-0000-0000-000000000001/foo/bar1", "data": "hello 1", "TTL":5, "correlation": "abc123"}'>PUT 1</button>
 <button onclick="place()" data='{"type":"put", "key":"00000000-0000-0000-0000-000000000001/foo/bar2", "data": "hello 2", "TTL":9, "correlation": "abc123"}'>PUT 2</button>
 
@@ -124,6 +126,12 @@
       const json = ( textarea.value || textarea.getAttribute('placeholder') ).trim();
 
       try {
+	if(json=="ping") {
+            ws.send(json);
+	    pr("📤 Sent: ping");
+	    return;
+	}
+
         const parsed = JSON.parse(json); // validate JSON
         ws.send(JSON.stringify(parsed));
         pr("📤 Sent:\n" + JSON.stringify(parsed, null, 2));
