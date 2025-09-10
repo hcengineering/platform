@@ -17,7 +17,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
+  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
@@ -76,7 +76,7 @@
     createdMessageQuery.unsubscribe()
   }
 
-  let typingInfo: Ref<Person>[] = []
+  const typingInfo: Ref<Person>[] = []
 
   function clear (): void {
     currentMessage = getDefault()
@@ -104,19 +104,18 @@
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    clearTyping(me, 'test_object') // String(object._id)
+    clearTyping(me, object._id)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
 
     throttle.call(() => {
-      setTyping(me, 'test_object') // String(object._id))
+      setTyping(me, object._id)
     })
   }
 
   function onUpdate (event: CustomEvent): void {
-
     if (!isEmptyMarkup(event.detail.message)) {
       void updateTypingInfo()
     }
@@ -242,5 +241,5 @@
 />
 
 {#if withTypingInfo}
-  <ChannelTypingInfo {typingInfo} />
+  <ChannelTypingInfo {typingInfo} {object} />
 {/if}

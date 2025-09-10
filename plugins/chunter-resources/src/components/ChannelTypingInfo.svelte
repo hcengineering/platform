@@ -13,41 +13,42 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import chunter from '@hcengineering/chunter'
   import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { subscribeTyping } from '@hcengineering/presence-resources'
-  import { type Ref } from '@hcengineering/core'
+  import { subscribeTyping, TypingInfo } from '@hcengineering/presence-resources'
+  import { Doc, type Ref } from '@hcengineering/core'
 
   const maxTypingPersons = 3
   const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
   let typingPersonsLabel: string = ''
-  let typingPersonsCount = 0  
+  let typingPersonsCount = 0
   let moreCount: number = 0
 
   $: void updateTypingPersons()
 
   export let typingInfo: Ref<Person>[] = []
+  export let object: Doc
 
   async function updateTypingPersons (): Promise<void> {
     const persons = await getPersonsByPersonRefs(typingInfo)
     const names = Array.from(persons.values())
-        .map((person) => getName(hierarchy, person))
-        .sort((name1, name2) => name1.localeCompare(name2))
+      .map((person) => getName(hierarchy, person))
+      .sort((name1, name2) => name1.localeCompare(name2))
     typingPersonsCount = names.length
     typingPersonsLabel = names.slice(0, maxTypingPersons).join(', ')
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  function handleTypingInfo(key: string, value: string): void {
+  function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
     try {
       const id: Ref<Person> = key.split('/').pop() as Ref<Person>
-      if(id === me) {
+      if (id === me) {
         return
       }
       if (value !== undefined) {
@@ -63,8 +64,14 @@
     }
   }
 
-  onMount(() => {
-    subscribeTyping(handleTypingInfo, 'test_object') // String(object._id))
+  let unsubscribe: (() => Promise<boolean>) | undefined
+
+  onMount(async () => {
+    unsubscribe = await subscribeTyping(handleTypingInfo, object._id)
+  })
+
+  onDestroy(() => {
+    void unsubscribe?.()
   })
 </script>
 

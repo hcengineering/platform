@@ -9,64 +9,67 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License
 
-import { HulypulseClient } from '@hcengineering/hulypulse-client'
+import { HulypulseClient, type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { getCurrentAccount } from '@hcengineering/core' 
+import { type Doc, getCurrentAccount, type PersonId, type Ref } from '@hcengineering/core'
+// export type { UnsubscribeCallback }
 
 const typingDelaySeconds = 2
 
-let pulseclient: HulypulseClient | undefined 
+let pulseclient: HulypulseClient | undefined
 
-function getWorkspace(): string | undefined {
+function getWorkspace (): string | undefined {
   return getMetadata(presentation.metadata.WorkspaceUuid)
 }
 
-export function getPulseClient(): HulypulseClient | undefined {
+export function getPulseClient (): HulypulseClient | undefined {
   return pulseclient
 }
 
-export async function createPulseClient(): Promise<HulypulseClient> {
-  if(!pulseclient) {
-    const ws_pulse_url = getMetadata(presentation.metadata.PulseUrl)
+export async function createPulseClient (): Promise<HulypulseClient> {
+  if (pulseclient == null) {
+    const wsPulseUrl = getMetadata(presentation.metadata.PulseUrl)
     const token = getMetadata(presentation.metadata.Token)
-    pulseclient = await HulypulseClient.connect(`${ws_pulse_url}?token=${token}`)
+    pulseclient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
   }
   return pulseclient
 }
 
-export async function setTyping(me: string, objectId: string): Promise<void> {
-    const workspace = getWorkspace()
-    const id = getCurrentAccount().socialIds[0];
-    await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, "typing", typingDelaySeconds)
+export async function setTyping (me: string, objectId: Ref<Doc>): Promise<void> {
+  const workspace = getWorkspace()
+  const id = getCurrentAccount().socialIds[0]
+  const typingInfo: TypingInfo = {
+    socialId: id,
+    objectId
+  }
+  const typingInfoStr = JSON.stringify(typingInfo)
+  await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, typingInfoStr, typingDelaySeconds)
 }
 
-export function subscribeTyping(  
-  callback: (
-    key: string,
-    value: any,
-    options: {
-      msg: string,
-      subscribed_key: string,
-      run_index: number
-    }
-  ) => void,
-  objectId: string
-): void {
-    const workspace = getWorkspace()
-    pulseclient?.subscribe(`${workspace}/typing/${objectId}/`, callback)
+export interface TypingInfo {
+  socialId: PersonId
+  objectId: Ref<Doc>
 }
 
-export function clearTyping(me: string, objectId: string): void {
-    const workspace = getWorkspace()
-    pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`)
+export async function subscribeTyping (
+  callback: Callback<TypingInfo | undefined>,
+  objectId: Ref<Doc>
+): Promise<UnsubscribeCallback> {
+  const workspace = getWorkspace()
+  return (await pulseclient?.subscribe(`${workspace}/typing/${objectId}/`, callback)) ?? (async () => false)
+}
+
+export function clearTyping (me: string, objectId: string): void {
+  const workspace = getWorkspace()
+  void pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`)
 }
 
 // export function setOnline(): void { TODO }
 
-export function closePulseClient(): void {
-    pulseclient?.close()
-    pulseclient = undefined
+export function closePulseClient (): void {
+  pulseclient?.close()
+  pulseclient = undefined
 }

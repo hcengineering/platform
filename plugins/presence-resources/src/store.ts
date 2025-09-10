@@ -51,7 +51,6 @@ export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<D
 )
 
 export function updateMyPresence (room: Room, presence: PresenceData): void {
-
   // lleo console.log('@@@ key: ', room, presence)
 
   myPresence.update((rooms) => {

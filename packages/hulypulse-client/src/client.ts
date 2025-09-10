@@ -15,19 +15,66 @@
 
 const WS_CLOSE_NORMAL = 1000
 
-type Callback = (
-  key: string,
-  data: JSONValue,
-  info: { msg: JSONObject; subscribed_key: string; run_index: number }
-) => void
+export type UnsubscribeCallback = () => Promise<boolean>
 
-const WEBSOCKET_MESSAGE_CONSTANT_PING_REQUEST = 'ping'
-const WEBSOCKET_MESSAGE_CONSTANT_PONG_RESPONSE = 'pong'
+export type Callback<T> = (key: string, data: T | undefined) => void
 
 type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue }
-interface JSONObject {
-  [key: string]: JSONValue
-}
+// type JSONObject = Record<string, JSONValue>
+
+// hulypulse API: incoming messages variants
+
+// interface Ping_Message {
+//   data: 'ping' | 'pong'
+// }
+
+// interface Answer_Message {
+//   data: { answer: string }
+// }
+
+// interface Error_Message {
+//   data: { error: string; reason?: string }
+// }
+
+// interface Subscribe_Message {
+//   data: { key: string; result: { data: JSONValue; etag: string; expiresAt: number } }
+// }
+
+// put:
+// {action: "put", correlation, result:"OK" }
+// {action: "put", correlation, error: "...error" }
+
+// get:
+// {action: "get", correlation, "result":{
+// "data":"hello 1",
+// "etag":"df0649bc4f1be901c85b6183091c1d83",
+// "expires_at":3,
+// "key":"00000000-0000-0000-0000-000000000001/foo/bar1"
+// }}
+// {action: "get", correlation, error: "...error" }
+
+// delete:
+// {action: "delete", correlation, result:"OK" }
+// {action: "delete", correlation, error: "...error" }
+
+// list:
+// {action: "list", correlation, result:[
+// {"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","expires_at":41,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},
+// {"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","expires_at":85,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}
+// ] }
+// {action: "list", correlation, error: "...error" }
+
+// sub:
+// {action: "sub", correlation, result:"OK" }
+// {action: "sub", correlation, error: "...error" }
+
+// unsub:
+// {action: "unsub", correlation, result:"OK" }
+// {action: "unsub", correlation, error: "...error" }
+
+// sublist:
+// {action: "sublist", correlation, result:[keys] }
+// {action: "sublist", correlation, error: "...error" }
 
 interface GetFullResult<T> {
   data: T
@@ -35,10 +82,84 @@ interface GetFullResult<T> {
   expiresAt: number
 }
 
+// interface GetFullResultKey<T> {
+//   data: T
+//   etag: string
+//   expiresAt: number
+//   key: string
+// }
+
+// hulypulse API: subscription messages variants
+
+// {"message":"Expired","key":"00000000-0000-0000-0000-000000000001/foo/bar1"}
+// {"message":"Set","key":"00000000-0000-0000-0000-000000000001/foo/bar1","value":"hello 1"}
+
+type Command = 'sub' | 'unsub' | 'put' | 'get' | 'delete' | 'list' | 'sublist' | 'info'
+
+interface SubscribedMessage {
+  message: 'Set' | 'Del' | 'Unlink' | 'Expired'
+  key: string
+  value?: JSONValue
+}
+
+interface CommandMessage {
+  command: Command
+  correlation: string
+  result: any
+}
+
+interface ErrorCommandMessage {
+  error: string
+  command: Command
+  correlation: string
+}
+
+type PulseIncomingMessage = SubscribedMessage | CommandMessage | ErrorCommandMessage
+
+// hulypulse API: answer messages variants
+
+// interface OkResponse {
+//   result: "OK"
+//   action: "put" | "delete" | "sub" | "unsub"
+//   correlation?: string
+// }
+
+// interface ErrorResponse {
+//   error: string
+//   action: "put" | "get" | "delete" | "list" | "sub" | "unsub" | "sublist" | "info"
+//   correlation?: string
+// }
+
+// interface InfoResponse {
+//   action: "info"
+//   correlation?: string
+//   result: string
+// }
+
+// interface GetResponse {
+//   action: "get"
+//   correlation?: string
+//   result: GetFullResultKey<JSONValue>
+// }
+
+// interface ListResponse {
+//   action: "list"
+//   correlation?: string
+//   result: GetFullResultKey<JSONValue>[]
+// }
+
+// interface SublistResponse {
+//   action: "sublist"
+//   correlation?: string
+//   result: string[]
+// }
+
+// hulypulse API: outcoming messages variants
+
 interface GetMessage {
   type: 'get'
   key: string
-  correlation?: string
+  // correlation: string
 }
 
 interface PutMessage {
@@ -49,36 +170,36 @@ interface PutMessage {
   expiresAt?: number
   ifMatch?: string
   ifNoneMatch?: string
-  correlation?: string
+  // correlation: string
 }
 
 interface DeleteMessage {
   type: 'delete'
   key: string
   ifMatch?: string
-  correlation?: string
+  // correlation: string
 }
 
 interface SubscribeMessages {
   type: 'sub'
   key: string
-  correlation?: string
+  // correlation: string
 }
 
 interface UnsubscribeMessages {
   type: 'unsub'
   key: string
-  correlation?: string
+  // correlation: string
 }
 
 interface SubscribesList {
   type: 'list'
-  correlation?: string
+  // correlation: string
 }
 
 interface InfoMessage {
   type: 'info'
-  correlation?: string
+  // correlation: string
 }
 
 type ProtocolMessage =
@@ -95,8 +216,8 @@ export class HulypulseClient implements Disposable {
   private closed = false
   private reconnectTimeout: any | undefined
   private readonly RECONNECT_INTERVAL_MS = 1000
-  
-  private subscribes: Map<string, Callback[]> = new Map()
+
+  private readonly subscribes = new Map<string, Callback<any>[]>()
 
   private pingTimeout: ReturnType<typeof setTimeout> | undefined
   private pingInterval: ReturnType<typeof setInterval> | undefined
@@ -106,26 +227,26 @@ export class HulypulseClient implements Disposable {
 
   private correlationId = 1
 
-  private pending = new Map<
-    string,
-    {
-      resolve: (v: any) => void
-      reject: (e: any) => void
-      send_timeout: ReturnType<typeof setTimeout>
-    }
+  private readonly pending = new Map<
+  string,
+  {
+    resolve: (v: any) => void
+    reject: (e: any) => void
+    send_timeout: ReturnType<typeof setTimeout>
+  }
   >()
 
-  private constructor(private readonly url: string | URL) {}
+  private constructor (private readonly url: string | URL) {}
 
-  private async connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  private async connect (): Promise<void> {
+    await new Promise((resolve, reject) => {
       const ws = new WebSocket(this.url.toString())
       this.ws = ws
 
       ws.onopen = () => {
         this.resubscribe()
         this.startPing()
-        resolve()
+        resolve(undefined)
       }
 
       ws.onerror = (event) => {
@@ -137,47 +258,45 @@ export class HulypulseClient implements Disposable {
       }
 
       ws.onmessage = (event) => {
+        console.log('@@@@ WebSocket message received:', event.data)
         try {
-          if (event.data === WEBSOCKET_MESSAGE_CONSTANT_PING_REQUEST) {
-            this.ws?.send(WEBSOCKET_MESSAGE_CONSTANT_PONG_RESPONSE)
+          if (event.data === 'ping') {
+            this.ws?.send('pong')
             return
           }
 
-          if (event.data === WEBSOCKET_MESSAGE_CONSTANT_PONG_RESPONSE) {
-            clearTimeout(this.pingTimeout)
-            return
-          }
+          console.log('@@@ Received message:', event.data)
+          const msg: PulseIncomingMessage = JSON.parse(event.data.toString())
+          console.log('@@@ Parsed message:', msg)
 
-          const msg = JSON.parse(event.data.toString())
           // Handle incoming messages (Set, Expired, Del)
-          if (msg.message) {
+          if ('message' in msg) {
             for (const [key, callbacks] of this.subscribes) {
               if (msg.key.startsWith(key)) {
                 callbacks.forEach((cb, index) => {
                   try {
-                    cb(msg.key, msg.message === 'Set' ? msg.value : undefined, {
-                      msg: msg,
-                      subscribed_key: key,
-                      run_index: index
-                    })
+                    cb(msg.key, msg.message === 'Set' ? msg.value : undefined)
                   } catch (err) {
                     console.error(`Error in callback #${index} with key "${key}":`, err)
                   }
                 })
               }
             }
-          }
-          // Handle correlation responses
-          else if (msg.correlation) {
-            let id = msg.correlation
-            if (id && this.pending.has(id)) {
-              clearTimeout(this.pending.get(id)!.send_timeout)
-              this.pending.get(id)!.resolve(msg)
-              this.pending.delete(id)
+          } else if ('correlation' in msg) {
+            const id = msg.correlation
+            if (id !== undefined && this.pending.has(id)) {
+              const pending = this.pending.get(id)
+              if (pending !== undefined) {
+                clearTimeout(pending.send_timeout)
+                this.pending.delete(id)
+                if ('error' in msg) {
+                  pending.reject(new Error(msg.error))
+                } else {
+                  pending.resolve(msg)
+                }
+              }
             }
-          }
-          // Handle unknown
-          else {
+          } else {
             console.warn('Unknown message format:', msg)
           }
         } catch (e) {
@@ -187,7 +306,7 @@ export class HulypulseClient implements Disposable {
     })
   }
 
-  private resubscribe(): void {
+  private resubscribe (): void {
     for (const key in this.subscribes) {
       this.send({ type: 'sub', key }).catch((error) => {
         throw new Error(`Resubscription failed for key=${key}: ${error.message ?? error}`)
@@ -195,11 +314,11 @@ export class HulypulseClient implements Disposable {
     }
   }
 
-  private startPing(): void {
+  private startPing (): void {
     clearInterval(this.pingInterval)
     this.pingInterval = setInterval(() => {
       if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(WEBSOCKET_MESSAGE_CONSTANT_PING_REQUEST)
+        this.ws.send('ping')
       }
       clearTimeout(this.pingTimeout)
       this.pingTimeout = setTimeout(() => {
@@ -212,7 +331,7 @@ export class HulypulseClient implements Disposable {
     }, this.PING_INTERVAL_MS)
   }
 
-  private stopPing(): void {
+  private stopPing (): void {
     clearInterval(this.pingInterval)
     this.pingInterval = undefined
 
@@ -220,12 +339,12 @@ export class HulypulseClient implements Disposable {
     this.pingTimeout = undefined
   }
 
-  [Symbol.dispose](): void {
+  [Symbol.dispose] (): void {
     this.close()
   }
 
-  private reconnect(): void {
-    if (this.reconnectTimeout) {
+  private reconnect (): void {
+    if (this.reconnectTimeout !== undefined) {
       clearTimeout(this.reconnectTimeout)
     }
     this.reconnectTimeout = undefined
@@ -233,14 +352,14 @@ export class HulypulseClient implements Disposable {
 
     if (!this.closed) {
       this.reconnectTimeout = setTimeout(() => {
-        this.connect()
+        void this.connect()
       }, this.RECONNECT_INTERVAL_MS)
     }
   }
 
-  public close(): void {
+  public close (): void {
     this.closed = true
-    if (this.reconnectTimeout) {
+    if (this.reconnectTimeout !== undefined) {
       clearTimeout(this.reconnectTimeout)
     }
     this.reconnectTimeout = undefined
@@ -249,32 +368,31 @@ export class HulypulseClient implements Disposable {
     this.ws?.close()
   }
 
-  static async connect(url: string | URL): Promise<HulypulseClient> {
+  static async connect (url: string | URL): Promise<HulypulseClient> {
     const client = new HulypulseClient(url)
     await client.connect()
     return client
   }
 
-  public async info(): Promise<string> {
+  public async info (): Promise<string> {
     const reply = await this.send({ type: 'info' })
-    if (reply.error) {
+    if (reply.error != null) {
       throw new Error(reply.error)
     }
-    return reply.result || ''
+    return reply.result ?? ''
   }
 
-  public async list(): Promise<string> {
+  public async list (): Promise<string> {
     const reply = await this.send({ type: 'list' })
-    if (reply.error) {
+    if (reply.error != null) {
       throw new Error(reply.error)
     }
-    return reply.result || ''
+    return reply.result ?? ''
   }
 
-  public async subscribe<T>(key: string, callback: Callback): Promise<() => Promise<boolean>> {
-
+  public async subscribe (key: string, callback: Callback<any>): Promise<UnsubscribeCallback> {
     let list = this.subscribes.get(key)
-    if (!list) {
+    if (list == null) {
       list = []
       this.subscribes.set(key, list)
     }
@@ -284,27 +402,27 @@ export class HulypulseClient implements Disposable {
       list.push(callback)
       if (list.length === 1) {
         const reply = await this.send({ type: 'sub', key })
-        if (reply.error) {
+        if (reply.error != null) {
           this.reconnect()
         }
       }
     }
 
     return async () => {
-      return this.unsubscribe(key, callback)
+      return await this.unsubscribe(key, callback)
     }
   }
 
-  public async unsubscribe(key: string, callback: Callback): Promise<boolean> {
+  public async unsubscribe (key: string, callback: Callback<any>): Promise<boolean> {
     const list = this.subscribes.get(key)
-    if (!list || !list.includes(callback)) {
+    if (list?.includes(callback) == null) {
       return false
     }
     const newList = list.filter((cb) => cb !== callback)
     if (newList.length === 0) {
       this.subscribes.delete(key)
       const reply = await this.send({ type: 'unsub', key })
-      if (reply.error) {
+      if (reply.error != null) {
         this.reconnect()
         return true
       }
@@ -314,28 +432,33 @@ export class HulypulseClient implements Disposable {
     return true
   }
 
-  public async put<T extends JSONValue>(key: string, data: T, ttl: number): Promise<void>
-  public async put<T extends JSONValue>(
+  public async put (key: string, data: any, ttl: number): Promise<void>
+  public async put (
     key: string,
-    data: T,
+    data: any,
     options?: Pick<PutMessage, 'ifMatch' | 'ifNoneMatch' | 'TTL' | 'expiresAt'>
   ): Promise<void>
-  public async put<T extends JSONValue>(
+  public async put (
     key: string,
-    data: T,
+    data: any,
     third?: number | Pick<PutMessage, 'ifMatch' | 'ifNoneMatch' | 'TTL' | 'expiresAt'>
   ): Promise<void> {
-    const message: PutMessage = { type: 'put', key, data, ...(typeof third === 'number' ? { TTL: third } : third) }
+    const message: Omit<PutMessage, 'correlation'> = {
+      type: 'put',
+      key,
+      data,
+      ...(typeof third === 'number' ? { TTL: third } : third)
+    }
     const reply = await this.send(message)
-    if (reply.error) {
+    if (reply.error != null) {
       throw new Error(reply.error)
     }
   }
 
   public async get<T>(key: string): Promise<T | undefined> {
     const reply = await this.send({ type: 'get', key })
-    if (reply.error) {
-      if (reply.error == 'not found') {
+    if (reply.error != null) {
+      if (reply.error === 'not found') {
         return undefined
       }
       throw new Error(reply.error)
@@ -345,8 +468,8 @@ export class HulypulseClient implements Disposable {
 
   public async get_full<T>(key: string): Promise<GetFullResult<T> | undefined> {
     const reply = await this.send({ type: 'get', key })
-    if (reply.error) {
-      if (reply.error == 'not found') {
+    if (reply.error != null) {
+      if (reply.error === 'not found') {
         return undefined
       }
       throw new Error(reply.error)
@@ -358,11 +481,11 @@ export class HulypulseClient implements Disposable {
     }
   }
 
-  public async delete(key: string, options?: Pick<DeleteMessage, 'ifMatch'>): Promise<boolean> {
-    const message: DeleteMessage = { type: 'delete', key, ...options }
+  public async delete (key: string, options?: Pick<DeleteMessage, 'ifMatch'>): Promise<boolean> {
+    const message: Omit<DeleteMessage, 'correlation'> = { type: 'delete', key, ...options }
     const reply = await this.send(message)
-    if (reply.error) {
-      if (reply.error == 'not found') {
+    if (reply.error != null) {
+      if (reply.error === 'not found') {
         return false
       }
       throw new Error(reply.error)
@@ -372,21 +495,29 @@ export class HulypulseClient implements Disposable {
 
   private async send<M extends Omit<ProtocolMessage, 'correlation'>>(msg: M): Promise<any> {
     const id = String(this.correlationId++)
-    const message = { ...msg, correlation: id.toString() } as M
+    const message = { ...msg, correlation: id.toString() } satisfies M
 
-    return new Promise((resolve, reject) => {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        return reject(new Error('WebSocket is not open.'))
+    return await new Promise((resolve, reject) => {
+      if (this.ws == null || this.ws.readyState !== WebSocket.OPEN) {
+        reject(new Error('WebSocket is not open.'))
+        return
       }
-      const send_timeout = setTimeout(() => {
+      const sendTimeout = setTimeout(() => {
         const pending = this.pending.get(id)
         if (pending !== undefined) {
           pending.reject(new Error('Timeout waiting for response'))
           this.pending.delete(id)
         }
       }, this.SEND_TIMEOUT_MS)
-      this.pending.set(id, { resolve, reject, send_timeout })
+      this.pending.set(id, { resolve, reject, send_timeout: sendTimeout })
       this.ws.send(JSON.stringify(message))
     })
   }
+}
+
+
+
+export function escapeString(str: string): string {
+  // Escape special characters to '*' | '?' | '[' | ']' | '\\' | '\0'..='\x1F' | '\x7F' | '"' | '\''
+  return str.replace(/[\\'"]/g, '\\$&')
 }
