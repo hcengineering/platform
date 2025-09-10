@@ -20,5 +20,6 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(home.icon, {
   Home: `${icons}#home`,
   Person: `${icons}#person`,
-  Thread: `${icons}#thread`
+  Thread: `${icons}#thread`,
+  All: `${icons}#all`
 })
