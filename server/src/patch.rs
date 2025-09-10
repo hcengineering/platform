@@ -46,21 +46,21 @@ pub enum PatchOperation {
     Standard(StandardPatchOperation),
 }
 
-pub fn from_slice(v: &[u8]) -> Result<Vec<PatchOperation>, serde_json::Error> {
-    serde_json::from_slice::<Vec<Value>>(v)?
-        .into_iter()
-        .map(PatchOperation::from_value)
-        .collect()
-}
+impl<'de> serde::Deserialize<'de> for PatchOperation {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
 
-impl PatchOperation {
-    pub fn from_value(value: Value) -> Result<Self, serde_json::Error> {
         let op = serde_json::from_value::<StandardPatchOperation>(value.clone());
-        Ok(if let Ok(op) = op {
-            Self::Standard(op)
+        if let Ok(op) = op {
+            Ok(Self::Standard(op))
         } else {
-            PatchOperation::Huly(serde_json::from_value::<HulyPatchOperation>(value)?)
-        })
+            serde_json::from_value::<HulyPatchOperation>(value)
+                .map_err(serde::de::Error::custom)
+                .map(Self::Huly)
+        }
     }
 }
 

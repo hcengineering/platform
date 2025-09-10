@@ -134,7 +134,7 @@ pub async fn stream(
                 let part_data = part_data(&s3, part).await?;
 
                 if let Some(acc) = &mut acc {
-                    let ops = patch::from_slice(&part_data)?;
+                    let ops = serde_json::from_slice::<Vec<patch::PatchOperation>>(&part_data)?;
 
                     if let Err(error) = patch::apply(acc, &ops) {
                         error!("json patch error: {error}");
