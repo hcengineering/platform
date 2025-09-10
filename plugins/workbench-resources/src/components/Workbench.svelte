@@ -98,6 +98,7 @@
     ViewConfiguration,
     WorkbenchTab
   } from '@hcengineering/workbench'
+  import communication from '@hcengineering/communication'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
@@ -150,6 +151,7 @@
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
 
   const client = getClient()
 
@@ -157,6 +159,15 @@
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .filter((it) => isAllowedToRole(it.accessLevel, account))
+
+  if (isCommunicationEnabled) {
+    const notificationApp = client
+      .getModel()
+      .findAllSync<Application>(workbench.class.Application, { alias: notificationId })[0]
+    if (notificationApp && !apps.some((a) => a._id === notificationApp._id)) {
+      apps.push(notificationApp)
+    }
+  }
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -832,7 +843,7 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        {#if !isExcludedApp(notificationId)}
+        {#if !isExcludedApp(notificationId) && !isCommunicationEnabled}
           <NavLink
             app={notificationId}
             shrink={0}

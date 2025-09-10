@@ -39,7 +39,7 @@
 
   const allSection: Special = {
     _id: 'all',
-    icon: view.icon.List,
+    icon: plugin.icon.All,
     label: plugin.string.All,
     baseQuery: {}
   }

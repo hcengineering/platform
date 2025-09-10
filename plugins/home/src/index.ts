@@ -24,7 +24,8 @@ const home = plugin(homeId, {
   icon: {
     Home: '' as Asset,
     Person: '' as Asset,
-    Thread: '' as Asset
+    Thread: '' as Asset,
+    All: '' as Asset
   }
 })
 

@@ -31,8 +31,8 @@
     "cross-env": "~7.0.3",
     "css-loader": "^5.2.1",
     "dotenv-webpack": "^8.0.1",
-    "esbuild": "^0.24.2",
-    "esbuild-loader": "^4.0.3",
+    "esbuild": "^0.25.9",
+    "esbuild-loader": "^4.3.0",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "html-webpack-plugin": "^5.5.0",
@@ -288,6 +288,6 @@
     "@sentry/svelte": "^9.22.0",
     "posthog-js": "^1.246.0",
     "readable-stream": "^4.7.0",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   }
 }
