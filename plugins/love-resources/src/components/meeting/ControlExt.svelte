@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Invite, isOffice, JoinRequest, Office, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
+  import { Invite, isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -31,17 +30,11 @@
   import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../../stores'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
   import {
-    connectRoom,
     createMeetingVideoWidgetTab,
     createMeetingWidget,
-    endMeeting,
     getRoomName,
-    leaveRoom,
-
-    liveKitClient
-
   } from '../../utils'
   import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
   import InvitePopup from '../InvitePopup.svelte'
@@ -50,7 +43,7 @@
   import RequestingPopup from '../RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { getPersonByPersonRef } from '@hcengineering/contact-resources'
+  import { leaveMeeting } from '../../meetingController'
   import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
@@ -162,32 +155,6 @@
 
   $: checkInvites($myInvites)
 
-  async function checkOwnRoomConnection (
-    infos: ParticipantInfo[],
-    myInfo: ParticipantInfo | undefined,
-    myOffice: Office | undefined,
-    isConnected: boolean
-  ): Promise<void> {
-    if (myInfo !== undefined && myInfo.room === (myOffice?._id ?? love.ids.Reception)) {
-      if (myOffice === undefined) {
-        await liveKitClient.disconnect()
-        return
-      }
-      const filtered = infos.filter((p) => p.room === myOffice._id && p.person !== myInfo.person)
-      if (filtered.length === 0) {
-        if (isConnected) {
-          await liveKitClient.disconnect()
-        }
-      } else if (!isConnected) {
-        const myPerson = await getPersonByPersonRef(getCurrentEmployee())
-        if (myPerson == null) return
-        await connectRoom(0, 0, myInfo, myPerson, myOffice)
-      }
-    }
-  }
-
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $lkSessionConnected)
-
   const myInvitesCategory = 'myInvites'
 
   let myInvitesPopup: PopupResult | undefined = undefined
@@ -272,11 +239,7 @@
 
   const beforeUnloadListener = () => {
     if ($myInfo !== undefined && $lkSessionConnected) {
-      if ($myOffice !== undefined && $myInfo.room === $myOffice._id) {
-        endMeeting($myOffice, $rooms, $infos, $myInfo)
-      } else {
-        leaveRoom($myInfo, $myOffice)
-      }
+      leaveMeeting()
     }
   }
 

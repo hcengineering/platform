@@ -6,9 +6,10 @@
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice, rooms } from '../stores'
-  import { endMeeting, isSharingEnabled, leaveRoom, liveKitClient } from '../utils'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { liveKitClient } from '../utils'
+  import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
+  import { leaveMeeting } from '../meetingController'
 
   export let limit: number = 4
 
@@ -20,17 +21,14 @@
   let leaving = false
   async function handleLeaveClick (): Promise<void> {
     leaving = true
-    await leaveRoom($myInfo, $myOffice)
+    await leaveMeeting()
     dispatch('close')
   }
 
   let ending = false
   async function handleEndMeetingClick (): Promise<void> {
     ending = true
-    const room = $currentRoom
-    if (room !== undefined && isOffice(room) && $myInfo !== undefined) {
-      await endMeeting(room, $rooms, $infos, $myInfo)
-    }
+    await leaveMeeting()
     dispatch('close')
   }
 
@@ -82,7 +80,7 @@
           {#if allowLeave || leaving}
             <Button
               icon={love.icon.LeaveRoom}
-              kind={$isSharingEnabled ? 'regular' : 'dangerous'}
+              kind={$screenSharingState === ScreenSharingState.Local ? 'regular' : 'dangerous'}
               size={'x-small'}
               label={view.string.Leave}
               showTooltip={{ label: love.string.LeaveRoom }}
@@ -92,7 +90,7 @@
           {:else if isMyOffice || ending}
             <Button
               icon={love.icon.LeaveRoom}
-              kind={$isSharingEnabled ? 'regular' : 'dangerous'}
+              kind={$screenSharingState === ScreenSharingState.Local ? 'regular' : 'dangerous'}
               size={'x-small'}
               label={love.string.EndMeeting}
               showTooltip={{ label: love.string.EndMeeting }}
@@ -100,7 +98,7 @@
               on:click={handleEndMeetingClick}
             />
           {/if}
-          {#if $isSharingEnabled}
+          {#if $screenSharingState === ScreenSharingState.Local}
             <Button
               icon={love.icon.SharingEnabled}
               kind="dangerous"

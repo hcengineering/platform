@@ -25,14 +25,15 @@
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import love from '../plugin'
-  import { currentMeetingMinutes, infos, invites, myInfo, myRequests } from '../stores'
-  import { prepareRoomConnection, tryConnect } from '../utils'
+  import { currentMeetingMinutes, infos, myInfo } from '../stores'
+  import { prepareRoomConnection } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
   import MicrophoneButton from './meeting/controls/MicrophoneButton.svelte'
   import CameraButton from './meeting/controls/CameraButton.svelte'
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
+  import { joinMeeting } from '../meetingController'
 
   export let room: Room
 
@@ -58,7 +59,7 @@
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
-    await tryConnect($myInfo, room, info, $myRequests, $invites)
+    await joinMeeting(room)
     dispatch('close')
   }
 

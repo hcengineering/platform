@@ -3,7 +3,7 @@ import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resourc
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents, type Schedule } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
-import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
+import { getName } from '@hcengineering/contact'
 import core, {
   AccountRole,
   type Client,
@@ -12,7 +12,6 @@ import core, {
   type Doc,
   type DocumentQuery,
   getCurrentAccount,
-  type Hierarchy,
   type Ref,
   type RelatedDocument,
   type Space,
@@ -21,7 +20,6 @@ import core, {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
-  getFreeRoomPlace,
   type Invite,
   isOffice,
   type JoinRequest,
@@ -30,14 +28,9 @@ import {
   type Meeting,
   type MeetingMinutes,
   type MeetingSchedule,
-  MeetingStatus,
-  type Office,
   type ParticipantInfo,
-  RequestStatus,
   type Room,
-  RoomAccess,
   type RoomMetadata,
-  RoomType,
   TranscriptionStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
@@ -70,14 +63,14 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
+import { $myPreferences, currentMeetingMinutes, currentRoom } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
 
-const loveClient = getLoveClient()
+export const loveClient = getLoveClient()
 
 export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTrack<Track.Kind>>>): void {
   lk.localParticipant.createScreenTracks = value
@@ -202,17 +195,9 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
 
 lk.on(RoomEvent.Connected, () => {
   isRecording.set(lk.isRecording)
-  void initRoom()
+  initRoomMetadata(lk.metadata)
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
-
-async function initRoom (): Promise<void> {
-  const room = get(currentRoom)
-  if (room !== undefined) {
-    await initMeetingMinutes(room)
-  }
-  await initRoomMetadata(lk.metadata)
-}
 
 async function initRoomMetadata (metadata: string | undefined): Promise<void> {
   const room = get(currentRoom)
@@ -241,20 +226,7 @@ function parseMetadata (metadata: string | undefined): RoomMetadata {
   }
 }
 
-export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {
-  if (ownInfo !== undefined) {
-    const client = getClient()
-    if (ownOffice !== undefined && ownInfo.room !== ownOffice._id) {
-      await client.update(ownInfo, { room: ownOffice._id, x: 0, y: 0 })
-    } else if (ownOffice === undefined) {
-      await client.update(ownInfo, { room: love.ids.Reception, x: 0, y: 0 })
-    }
-  }
-  await liveKitClient.disconnect()
-  closeMeetingMinutes()
-}
-
-function closeMeetingMinutes (): void {
+export function closeMeetingMinutes (): void {
   const loc = getCurrentLocation()
 
   if (loc.path[2] === loveId) {
@@ -267,20 +239,6 @@ function closeMeetingMinutes (): void {
     }
   }
   currentMeetingMinutes.set(undefined)
-}
-
-function isRoomOpened (room: Room): boolean {
-  const loc = getCurrentLocation()
-
-  if (loc.path[2] === loveId) {
-    const panel = get(panelstore).panel
-    const { _id } = panel ?? {}
-
-    if (_id !== undefined && room._id !== undefined && _id === room._id) {
-      return true
-    }
-  }
-  return false
 }
 
 export async function getRoomName (room: Room): Promise<string> {
@@ -300,40 +258,8 @@ export async function getRoomLabel (room: Room): Promise<IntlString> {
   return isOffice(room) ? love.string.Office : love.string.Room
 }
 
-async function moveToRoom (
-  x: number,
-  y: number,
-  currentInfo: ParticipantInfo | undefined,
-  currentPerson: Person,
-  room: Room,
-  sessionId: string | null
-): Promise<void> {
-  const client = getClient()
-  if (currentInfo !== undefined) {
-    await client.diffUpdate(currentInfo, {
-      x,
-      y,
-      room: room._id,
-      sessionId
-    })
-  } else {
-    await client.createDoc(love.class.ParticipantInfo, core.space.Workspace, {
-      x,
-      y,
-      room: room._id,
-      person: currentPerson._id,
-      name: currentPerson.name,
-      account: getCurrentAccount().uuid,
-      sessionId
-    })
-  }
-
-  if (!isRoomOpened(room)) {
-    await navigateToOfficeDoc(client.getHierarchy(), room)
-  }
-}
-
-async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
+export async function navigateToOfficeDoc (object: Doc): Promise<void> {
+  const hierarchy = getClient().getHierarchy()
   const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
   const comp = panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
@@ -343,53 +269,12 @@ async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<
   navigate(loc)
 }
 
-async function initMeetingMinutes (room: Room): Promise<void> {
-  const client = getClient()
-  const doc = await client.findOne(love.class.MeetingMinutes, {
-    attachedTo: room._id,
-    status: MeetingStatus.Active
-  })
-
-  if (doc !== undefined) {
-    currentMeetingMinutes.set(doc)
-    const loc = getCurrentLocation()
-    if (loc.path[2] === loveId || room.type === RoomType.Video) {
-      await navigateToOfficeDoc(client.getHierarchy(), doc)
-    }
-  }
-}
-
 export async function prepareRoomConnection (room: Room): Promise<void> {
   const roomToken = await loveClient.getRoomToken(room)
   liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
 }
 
-export async function connectRoom (
-  x: number,
-  y: number,
-  currentInfo: ParticipantInfo | undefined,
-  currentPerson: Person,
-  room: Room
-): Promise<void> {
-  liveKitClient.isConnecting = true
-  await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
-  selectedRoomPlace.set(undefined)
-  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
-    return
-  }
-  await liveKitClient.disconnect()
-  const token = await loveClient.getRoomToken(room)
-  try {
-    const wsURL = getLiveKitEndpoint()
-    await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
-  } catch (err) {
-    console.error(err)
-    await leaveRoom(currentInfo, get(myOffice))
-  }
-}
-
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
-const requestsQuery = createQuery(true)
 
 export function calculateFloorSize (_rooms: Room[], preview?: boolean): number {
   let fH: number = 5
@@ -397,147 +282,6 @@ export function calculateFloorSize (_rooms: Room[], preview?: boolean): number {
     if (room.y + room.height + 2 > fH) fH = room.y + room.height + 2
   })
   return fH
-}
-
-function checkPlace (room: Room, info: ParticipantInfo[], x: number, y: number): boolean {
-  return !isOffice(room) && info.find((p) => p.x === x && p.y === y) === undefined
-}
-
-export async function connectToMeeting (
-  currentInfo: ParticipantInfo | undefined,
-  info: ParticipantInfo[],
-  currentRequests: JoinRequest[],
-  currentInvites: Invite[],
-  meetId: string
-): Promise<void> {
-  const client = getClient()
-  const meeting = await client.findOne(love.mixin.Meeting, { _id: meetId as Ref<Meeting> })
-  if (meeting === undefined) return
-  const room = await client.findOne(love.class.Room, { _id: meeting.room })
-  if (room === undefined) return
-
-  // check time (it should be 10 minutes before the meeting or active in roomInfo)
-  const now = new Date()
-  const res = getAllEvents([meeting], now.setMinutes(now.getMinutes() - 10), new Date().getTime())
-  if (res.length === 0) {
-    console.log('Meeting is not active')
-    return
-  }
-
-  await tryConnect(
-    currentInfo,
-    room,
-    info.filter((p) => p.room === room._id),
-    currentRequests,
-    currentInvites
-  )
-}
-
-export async function tryConnect (
-  currentInfo: ParticipantInfo | undefined,
-  room: Room,
-  info: ParticipantInfo[],
-  currentRequests: JoinRequest[],
-  currentInvites: Invite[],
-  place?: { x: number, y: number }
-): Promise<void> {
-  if (liveKitClient.isConnecting) return
-  const me = getCurrentEmployee()
-  const currentPerson = await getPersonByPersonRef(me)
-  if (currentPerson == null) return
-  const client = getClient()
-
-  // guests can't join without invite
-  if (!client.getHierarchy().hasMixin(currentPerson, contact.mixin.Employee)) return
-
-  if (room._id === currentInfo?.room) return
-  if (room.access === RoomAccess.DND) return
-  for (const req of currentRequests) {
-    await client.remove(req)
-  }
-  if (place !== undefined && !checkPlace(room, info, place.x, place.y)) {
-    place = undefined
-  }
-  if (place === undefined) {
-    place = getFreeRoomPlace(room, info, me)
-  }
-  const x: number = place.x
-  const y: number = place.y
-  if (isOffice(room)) {
-    if (room.person === null) return
-    // we should check that office owner in office
-    const owner = room.person
-    if (owner === currentPerson._id) {
-      // it's our office if it's empty let's disconnect
-      if (info.length === 0) {
-        await leaveRoom(currentInfo, room)
-        return
-      }
-    } else {
-      const ownerInfo = info.find((p) => p.person === owner)
-      if (ownerInfo?.room !== room._id) {
-        return
-      }
-    }
-  }
-
-  for (const invite of currentInvites) {
-    await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
-  }
-
-  const isGuest = getCurrentAccount().role === AccountRole.Guest
-  if ((room.access === RoomAccess.Knock || isGuest) && (!isOffice(room) || room.person !== currentPerson._id)) {
-    const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
-      person: currentPerson._id,
-      room: room._id,
-      status: RequestStatus.Pending
-    })
-    requestsQuery.query(love.class.JoinRequest, { person: me, _id }, (res) => {
-      const req = res[0]
-      if (req === undefined) return
-      if (req.status === RequestStatus.Pending) return
-      requestsQuery.unsubscribe()
-      if (req.status === RequestStatus.Approved) {
-        void connectRoom(x, y, currentInfo, currentPerson, room)
-      }
-    })
-    // we should send request to room owner if it ouffice and all participants if not
-  } else {
-    await connectRoom(x, y, currentInfo, currentPerson, room)
-  }
-}
-
-export async function endMeeting (
-  room: Office,
-  rooms: Room[],
-  infos: ParticipantInfo[],
-  currentInfo: ParticipantInfo
-): Promise<void> {
-  const roomInfos = infos.filter((p) => p.room === room._id && room.person !== p.person)
-  for (const roomInfo of roomInfos) {
-    await kick(roomInfo.person, rooms, infos)
-  }
-  await leaveRoom(currentInfo, room)
-}
-
-export async function kick (person: Ref<Person>, rooms: Room[], infos: ParticipantInfo[]): Promise<void> {
-  const personInfo = infos.find((p) => p.person === person)
-  if (personInfo === undefined) return
-  const personOffice = rooms.find((r) => isOffice(r) && r.person === personInfo.person)
-  const client = getClient()
-  await client.update(personInfo, { room: personOffice?._id ?? love.ids.Reception, x: 0, y: 0 })
-}
-
-export async function invite (person: Ref<Person>, room: Ref<Room> | undefined): Promise<void> {
-  if (room === undefined || room === love.ids.Reception) return
-  const client = getClient()
-  const me = getCurrentEmployee()
-  await client.createDoc(love.class.Invite, core.space.Workspace, {
-    target: person,
-    room,
-    status: RequestStatus.Pending,
-    from: me
-  })
 }
 
 async function checkRecordAvailable (): Promise<void> {

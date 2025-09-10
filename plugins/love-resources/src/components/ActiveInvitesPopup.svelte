@@ -15,23 +15,17 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { CombineAvatars } from '@hcengineering/contact-resources'
-  import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus } from '@hcengineering/love'
+  import { Invite } from '@hcengineering/love'
   import love from '../plugin'
+  import { cancelInvites } from '../meetingController'
 
   export let invites: Invite[]
 
   $: persons = invites.map((p) => p.target)
 
-  const client = getClient()
-
   async function cancel () {
-    for (const invite of invites) {
-      if (invite.status === RequestStatus.Pending) {
-        await client.remove(invite)
-      }
-    }
+    await cancelInvites(invites)
   }
 </script>
 

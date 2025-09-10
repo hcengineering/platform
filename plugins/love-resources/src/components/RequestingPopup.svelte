@@ -13,22 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest, RequestStatus } from '@hcengineering/love'
+  import { JoinRequest } from '@hcengineering/love'
   import love from '../plugin'
   import { rooms } from '../stores'
   import { getRoomLabel } from '../utils'
+  import { cancelJoinRequest } from '../meetingController'
 
   export let request: JoinRequest
 
   $: room = $rooms.find((p) => p._id === request.room)
 
   async function cancel (): Promise<void> {
-    if (request.status === RequestStatus.Pending) {
-      const client = getClient()
-      await client.remove(request)
-    }
+    await cancelJoinRequest(request)
   }
 </script>
 

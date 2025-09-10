@@ -1,10 +1,10 @@
 <script lang="ts">
   import love from '../../../plugin'
   import { ModernButton } from '@hcengineering/ui'
-  import { endMeeting, leaveRoom } from '../../../utils'
-  import { infos, myInfo, myOffice, rooms } from '../../../stores'
+  import { myInfo, myOffice} from '../../../stores'
   import { isOffice, Room } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
+  import { leaveMeeting } from '../../../meetingController'
 
   export let room: Room
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
@@ -15,11 +15,7 @@
   $: isMyOffice = isOffice(room) && $myInfo?.room === $myOffice?._id
 
   async function leave (): Promise<void> {
-    if (isMyOffice && isOffice(room) && $myInfo !== undefined) {
-      await endMeeting(room, $rooms, $infos, $myInfo)
-    } else {
-      await leaveRoom($myInfo, $myOffice)
-    }
+    await leaveMeeting()
     dispatch('leave')
   }
 </script>

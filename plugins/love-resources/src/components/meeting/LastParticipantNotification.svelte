@@ -1,20 +1,19 @@
 <script lang="ts">
   import { Button, Notification, NotificationToast } from '@hcengineering/ui'
-  import { myInfo, myOffice } from '../../stores'
-  import { leaveRoom } from '../../utils'
   import love from '../../plugin'
   import { onMount } from 'svelte'
   import { playSound } from '@hcengineering/presentation'
+  import { leaveMeeting } from '../../meetingController'
 
   export let onRemove: () => void
   export let notification: Notification
 
-  function stayInMeeting (e: MouseEvent): void {
+  function stayInMeeting (_e: MouseEvent): void {
     onRemove()
   }
 
-  async function leaveMeeting (e: MouseEvent): Promise<void> {
-    await leaveRoom($myInfo, $myOffice)
+  async function leave (_e: MouseEvent): Promise<void> {
+    await leaveMeeting()
     onRemove()
   }
 
@@ -30,7 +29,7 @@
   <svelte:fragment slot="buttons">
     <div style="width: auto" />
     <div class="flex-between gap-2">
-      <Button label={love.string.LeaveRoom} stopPropagation={false} kind="negative" on:click={leaveMeeting} />
+      <Button label={love.string.LeaveRoom} stopPropagation={false} kind="negative" on:click={leave} />
       <Button label={love.string.StayInRoom} stopPropagation={false} kind="primary" on:click={stayInMeeting} />
     </div>
   </svelte:fragment>

@@ -16,14 +16,14 @@ import { translate } from '@hcengineering/platform'
 import { getMediaDevices, getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
 import { LoveEvents } from '@hcengineering/love'
 import { useMedia } from '@hcengineering/media-resources'
-import { get, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import { Analytics } from '@hcengineering/analytics'
 import { addNotification, NotificationSeverity } from '@hcengineering/ui'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
 import love from './plugin'
-import { leaveRoom } from './utils'
-import { $myPreferences, myInfo, myOffice } from './stores'
+import { $myPreferences } from './stores'
+import { leaveMeeting } from './meetingController'
 
 export enum ScreenSharingState {
   Inactive,
@@ -288,7 +288,7 @@ export class LiveKitClient {
       'love'
     )
     this.lastParticipantDisconnectTimeout = window.setTimeout(() => {
-      void leaveRoom(get(myInfo), get(myOffice))
+      void leaveMeeting()
     }, AUTO_DISCONNECT_DELAY_MS)
   }
 

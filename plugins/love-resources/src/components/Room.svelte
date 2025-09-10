@@ -21,7 +21,7 @@
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import { isFullScreen, lk, tryConnect } from '../utils'
+  import { isFullScreen, lk } from '../utils'
   import ControlBar from './meeting/ControlBar.svelte'
   import { lkSessionConnected } from '../liveKitClient'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
@@ -38,21 +38,15 @@
 
   onMount(async () => {
     loading = true
-
     const wsURL = getMetadata(love.metadata.WebSocketURL)
 
     if (wsURL === undefined) {
       return
     }
-
     configured = true
 
     await waitForOfficeLoaded()
 
-    if (!$lkSessionConnected && $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)) {
-      const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($myInfo, room, info, $myRequests, $invites)
-    }
     roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
