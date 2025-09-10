@@ -20,7 +20,6 @@
   import { createEventDispatcher } from 'svelte'
   import { SavedView } from '@hcengineering/workbench-resources'
   import { getCurrentAccount, SortingOrder, Ref } from '@hcengineering/core'
-  import { TreeItem } from '@hcengineering/view-resources'
 
   import { type NavigatorConfig } from '../../types'
   import NavigatorSpace from './NavigatorSpace.svelte'
@@ -97,28 +96,12 @@
     selectedSpecial = 'favorites'
     dispatch('favorites')
   }
-
-  function onHomeClick (): void {
-    selectedCard = undefined
-    selectedType = undefined
-    selectedSpecial = 'home'
-    dispatch('home')
-  }
 </script>
 
 <Scroller shrink>
   <div class="navigator">
     {#if config.savedViews}
       <SavedView alias={applicationId} />
-    {/if}
-    {#if config.home}
-      <TreeItem
-        _id={'home'}
-        label={cardPlugin.string.Home}
-        selected={selectedSpecial === 'home'}
-        icon={cardPlugin.icon.Home}
-        on:click={onHomeClick}
-      />
     {/if}
     {#if config.groupBySpace}
       {#each spaces as space (space._id)}

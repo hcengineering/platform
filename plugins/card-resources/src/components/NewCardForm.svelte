@@ -30,13 +30,14 @@
   import { markupToMarkdown } from '@hcengineering/text-markdown'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { defaultMessageInputActions } from '@hcengineering/communication-resources'
+  import chat from '@hcengineering/chat'
 
   import EditorActions from './EditorActions.svelte'
 
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
 
-  const threadMasterTag = 'chat:masterTag:Thread' as Ref<MasterTag>
+  const threadMasterTag = chat.masterTag.Thread
 
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined

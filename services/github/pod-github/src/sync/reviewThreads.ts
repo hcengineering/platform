@@ -108,8 +108,13 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     await this.eventSync.get(event.thread.node_id)
     const promise = this.processEvent(ctx, event, derivedClient, repository, integration)
     this.eventSync.set(event.thread.node_id, promise)
-    await promise
-    this.eventSync.delete(event.thread.node_id)
+    try {
+      await promise
+    } catch (err: any) {
+      ctx.error('Error processing event', { error: err })
+    } finally {
+      this.eventSync.delete(event.thread.node_id)
+    }
   }
 
   async handleDelete (
@@ -311,7 +316,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
         await this.createReviewThread(info, messageData, parent, review, account)
 
         // We need trigger comments, if their sync data created before
-        await syncChilds(info, this.client, derivedClient)
+        await syncChilds(ctx, info, this.client, derivedClient)
         return { needSync: githubSyncVersion, current: messageData }
       } catch (err: any) {
         ctx.error('Error', { err })

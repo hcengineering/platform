@@ -101,13 +101,9 @@ export default mergeIds(cardId, card, {
     Properties: '' as IntlString,
     NoChildren: '' as IntlString,
     AddCollaborators: '' as IntlString,
-    Home: '' as IntlString,
     CardTitle: '' as IntlString,
     CardContent: '' as IntlString,
     Post: '' as IntlString,
-    Compact: '' as IntlString,
-    Comfortable: '' as IntlString,
-    Comfortable2: '' as IntlString,
     ShowLess: '' as IntlString
   }
 })

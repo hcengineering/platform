@@ -22,7 +22,8 @@ import core, {
   Ref,
   Space,
   TxOperations,
-  makeDocCollabId
+  makeDocCollabId,
+  withContext
 } from '@hcengineering/core'
 import github, { DocSyncInfo, GithubIntegrationRepository, GithubIssue, GithubProject } from '@hcengineering/github'
 import { IntlString } from '@hcengineering/platform'
@@ -112,6 +113,7 @@ export abstract class IssueSyncManagerBase {
     return socialIds.map((it) => it.attachedTo)
   }
 
+  @withContext('issues-handleUpdate')
   async handleUpdate (
     ctx: MeasureContext,
     external: IssueExternalData,
@@ -135,12 +137,16 @@ export abstract class IssueSyncManagerBase {
 
     syncData =
       syncData ??
-      (await this.client.findOne(github.class.DocSyncInfo, { space: prj._id, url: (external.url ?? '').toLowerCase() }))
+      (await ctx.with('findDocInfo', {}, (ctx) =>
+        this.client.findOne(github.class.DocSyncInfo, { space: prj._id, url: (external.url ?? '').toLowerCase() })
+      ))
 
     if (syncData !== undefined) {
-      const doc: Issue | undefined = await this.client.findOne<Issue>(syncData.objectClass, {
-        _id: syncData._id as unknown as Ref<Issue>
-      })
+      const doc: Issue | undefined = await ctx.with('find pull request', {}, (ctx) =>
+        this.client.findOne<Issue>(syncData.objectClass, {
+          _id: syncData._id as unknown as Ref<Issue>
+        })
+      )
 
       // Use now as modified date for events.
       const lastModified = new Date().getTime()
@@ -153,6 +159,7 @@ export abstract class IssueSyncManagerBase {
         ) {
           try {
             const collabId = makeDocCollabId(doc, 'description')
+
             await this.collaborator.updateMarkup(collabId, update.description)
           } catch (err: any) {
             Analytics.handleError(err)
@@ -184,35 +191,39 @@ export abstract class IssueSyncManagerBase {
           await updateTodos.commit()
         }
 
-        await derivedClient.diffUpdate(
-          syncData,
-          {
-            external,
-            externalVersion: githubExternalSyncVersion,
-            current: { ...syncData.current, ...update },
-            needSync: needSync ? '' : githubSyncVersion, // No need to sync after operation.
-            derivedVersion: '', // Check derived changes
-            lastModified,
-            lastGithubUser: account,
-            ...extraSyncUpdate
-          },
-          lastModified
+        await ctx.with('diffUpdate syncData', {}, (ctx) =>
+          derivedClient.diffUpdate(
+            syncData,
+            {
+              external,
+              externalVersion: githubExternalSyncVersion,
+              current: { ...syncData.current, ...update },
+              needSync: needSync ? '' : githubSyncVersion, // No need to sync after operation.
+              derivedVersion: '', // Check derived changes
+              lastModified,
+              lastGithubUser: account,
+              ...extraSyncUpdate
+            },
+            lastModified
+          )
         )
-        await this.client.diffUpdate(doc, issueData, lastModified, account)
+        await ctx.with('diffUpdate-issue', {}, (ctx) => this.client.diffUpdate(doc, issueData, lastModified, account))
         this.provider.sync()
       } else if (doc === undefined) {
-        await derivedClient.diffUpdate(
-          syncData,
-          {
-            external,
-            externalVersion: githubExternalSyncVersion,
-            needSync: '',
-            derivedVersion: '', // Check derived changes
-            lastModified,
-            lastGithubUser: account,
-            ...extraSyncUpdate
-          },
-          lastModified
+        await ctx.with('diffUpdate-syncData', {}, (ctx) =>
+          derivedClient.diffUpdate(
+            syncData,
+            {
+              external,
+              externalVersion: githubExternalSyncVersion,
+              needSync: '',
+              derivedVersion: '', // Check derived changes
+              lastModified,
+              lastGithubUser: account,
+              ...extraSyncUpdate
+            },
+            lastModified
+          )
         )
       }
     }
@@ -267,6 +278,7 @@ export abstract class IssueSyncManagerBase {
     info: DocSyncInfo
   ): Promise<void>
 
+  @withContext('issues-handleDiffUpdate')
   async handleDiffUpdate (
     ctx: MeasureContext,
     container: ContainerFocus,
@@ -282,7 +294,7 @@ export abstract class IssueSyncManagerBase {
       await ctx.with(
         'create mixin issue: GithubIssue',
         {},
-        async () => {
+        async (ctx) => {
           await this.client.createMixin<Issue, GithubIssue>(
             existing._id as Ref<GithubIssue>,
             existing._class,

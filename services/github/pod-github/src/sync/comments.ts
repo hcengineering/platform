@@ -80,8 +80,14 @@ export class CommentSyncManager implements DocSyncManager {
     await this.eventSync.get(event.issue.url)
     const promise = this.processEvent(ctx, event, derivedClient, integration)
     this.eventSync.set(event.issue.url, promise)
-    await promise
-    this.eventSync.delete(event.issue.url)
+    try {
+      await promise
+      this.eventSync.delete(event.issue.url)
+    } catch (err: any) {
+      ctx.error('Error processing event', { error: err })
+    } finally {
+      this.eventSync.delete(event.issue.url)
+    }
   }
 
   async handleDelete (
