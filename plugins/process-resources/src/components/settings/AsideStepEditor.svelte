@@ -70,7 +70,7 @@
     {/if}
   </svelte:fragment>
   {#if step != null}
-    <StepEditor bind:step {process} on:change={change} />
+    <StepEditor {step} {process} on:change={change} />
   {/if}
   <div slot="footer" class="flex-row-center flex-gap-2 w-full">
     <ContextFooter {process} {step} />

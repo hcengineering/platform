@@ -42,6 +42,9 @@
       props = {}
       params.props = props
       step.params = params
+      if (step.context != null) {
+        step.context._class = _id
+      }
       dispatch('change', step)
     }
   }

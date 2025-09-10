@@ -1060,7 +1060,7 @@ export function createModel (builder: Builder): void {
       objectClass: card.class.Tag,
       editor: process.component.AddTagEditor,
       presenter: process.component.AddTagPresenter,
-      contextClass: card.class.Tag,
+      contextClass: card.class.Card,
       requiredParams: ['_id']
     },
     process.method.AddTag
