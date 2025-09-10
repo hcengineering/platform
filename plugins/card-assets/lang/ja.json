@@ -42,12 +42,8 @@
     "NoChildren": "子がありません",
     "ConfigDescription": "データベーススタイルのナレッジマネジメント用の拡張機能。",
     "AddCollaborators": "コラボレーターを追加",
-    "Home": "ホーム",
     "CardTitle": "タイトル",
     "Post": "投稿",
-    "Compact": "コンパクト",
-    "Comfortable": "コンファンティブ",
-    "Comfortable2": "コンファンティブ 2",
     "GetIndividualPublicLink": "パーソナライズされた公開リンクを取得",
     "ShowLess": "詳細を隠す",
     "CardContent": "何を共有しますか？"

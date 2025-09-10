@@ -42,12 +42,8 @@
     "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
     "ConfigDescription": "Estensione per la gestione della conoscenza in stile database.",
     "AddCollaborators": "Aggiungi collaboratori",
-    "Home": "Home",
     "CardTitle": "Titolo",
     "Post": "Pubblica",
-    "Compact": "Compatto",
-    "Comfortable": "Confortabile",
-    "Comfortable2": "Confortabile 2",
     "GetIndividualPublicLink": "Ottieni link pubblico personalizzato",
     "ShowLess": "Mostra meno",
     "CardContent": "Cosa vuoi condividere?"

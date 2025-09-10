@@ -73,6 +73,7 @@
     "@hcengineering/communication": "^0.6.0",
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/chat": "^0.6.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   }

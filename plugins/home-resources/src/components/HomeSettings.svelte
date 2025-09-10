@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { createFocusManager, FocusHandler, Label, ListView, ModernToggle, resizeObserver } from '@hcengineering/ui'
 
-  import card from '../plugin'
+  import home from '../plugin'
 
   import {
     updateHomeSetting,
@@ -35,15 +35,15 @@
   const items = [
     {
       id: compactSettingId,
-      label: card.string.Compact
+      label: home.string.Compact
     },
     {
       id: comfortableSettingId,
-      label: card.string.Comfortable
+      label: home.string.Comfortable
     },
     {
       id: comfortableSettingId2,
-      label: card.string.Comfortable2
+      label: home.string.Comfortable2
     }
   ]
 
