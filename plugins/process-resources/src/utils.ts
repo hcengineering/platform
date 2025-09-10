@@ -38,6 +38,7 @@ import {
   type Execution,
   type ExecutionContext,
   ExecutionStatus,
+  type Func,
   type Method,
   type NestedContext,
   parseContext,
@@ -364,40 +365,37 @@ export function getRelationObjectReduceFunc (
   association: Ref<Association>,
   direction: 'A' | 'B',
   target: AnyAttribute
-): Ref<ProcessFunction> | undefined {
+): Func | undefined {
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
   if (assoc.type === '1:N' && direction === 'A') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
 export function getRelationReduceFunc (
   client: Client,
   association: Ref<Association>,
   direction: 'A' | 'B'
-): Ref<ProcessFunction> | undefined {
+): Func | undefined {
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
   if (assoc.type === '1:N' && direction === 'A') return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
-export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute): Ref<ProcessFunction> | undefined {
+export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute): Func | undefined {
   if (source.type._class !== core.class.ArrOf) return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
-export function getContextFunctionReduce (
-  func: ProcessFunction,
-  target: AnyAttribute
-): Ref<ProcessFunction> | undefined {
+export function getContextFunctionReduce (func: ProcessFunction, target: AnyAttribute): Func | undefined {
   if (func.category !== 'array') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
 export function showDoneQuery (value: any, query: DocumentQuery<Execution>): DocumentQuery<Execution> {

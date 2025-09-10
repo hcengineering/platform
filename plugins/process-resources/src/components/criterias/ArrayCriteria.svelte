@@ -196,13 +196,7 @@
       </div>
     {/if}
     <div class="button flex-row-center">
-      <Button
-        icon={IconAdd}
-        kind="ghost"
-        on:click={(e) => {
-          selectContext(e)
-        }}
-      />
+      <Button icon={IconAdd} kind="ghost" on:click={selectContext} />
       <Button
         icon={IconClose}
         kind="ghost"

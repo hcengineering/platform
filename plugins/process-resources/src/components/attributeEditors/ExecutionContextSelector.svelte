@@ -47,7 +47,7 @@
       type: 'context',
       key: attr.name,
       id: context.context,
-      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : []
+      functions: valueFunc !== undefined ? [valueFunc] : []
     })
   }
 </script>

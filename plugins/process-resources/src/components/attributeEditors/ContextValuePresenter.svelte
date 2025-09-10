@@ -39,11 +39,14 @@
     {:else if contextValue.type === 'userRequest'}
       <Label label={plugin.string.RequestFromUser} />
     {:else if contextValue.type === 'function'}
-      <FunctionContextPresenter {contextValue} {context} />
+      <FunctionContextPresenter {contextValue} {context} {process} />
     {:else if contextValue.type === 'context'}
       <ExecutionContextPresenter {contextValue} {process} />
     {/if}
   </div>
+  {#if contextValue.sourceFunction}
+    <FunctionPresenter value={contextValue.sourceFunction} {context} {process} />
+  {/if}
   {#each contextValue.functions ?? [] as func}
     <FunctionPresenter value={func} {context} {process} />
   {/each}

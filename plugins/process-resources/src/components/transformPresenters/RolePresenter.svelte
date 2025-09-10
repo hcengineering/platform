@@ -13,22 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Role } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
-  import { Context, Process, SelectedContextFunc } from '@hcengineering/process'
-  import { Component, Label } from '@hcengineering/ui'
+  import { SelectedContextFunc } from '@hcengineering/process'
+  import { Label } from '@hcengineering/ui'
 
-  export let process: Process
   export let contextValue: SelectedContextFunc
-  export let context: Context
 
   const client = getClient()
   const func = client.getModel().findObject(contextValue.func)
+  const role: Role | undefined =
+    contextValue.props?.target !== undefined ? client.getModel().findObject(contextValue.props?.target) : undefined
 </script>
 
-{#if func !== undefined}
-  {#if func.presenter !== undefined}
-    <Component is={func.presenter} props={{ context, contextValue, process }} />
-  {:else}
-    <Label label={func.label} />
-  {/if}
+{#if role !== undefined && func !== undefined}
+  <div>
+    <Label label={func.label} />: {role.name}
+  </div>
 {/if}
