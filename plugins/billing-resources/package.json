@@ -50,6 +50,6 @@
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/love": "^0.6.0",
     "filesize": "^8.0.3",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   }
 }

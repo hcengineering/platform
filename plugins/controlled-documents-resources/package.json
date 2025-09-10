@@ -69,7 +69,7 @@
     "@hcengineering/training-resources": "^0.1.0",
     "@tiptap/core": "^2.11.7",
     "effector": "~22.8.7",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "slugify": "^1.6.6",
     "fast-equals": "^5.2.2",
     "@hcengineering/rank": "^0.6.4",
