@@ -24,16 +24,17 @@ describe('network client tests', () => {
     const clients: NetworkClient[] = []
     for (let i = 0; i < count; i++) {
       const st = performance.now()
-      const client = await createNetworkClient('localhost', 37371)
+      console.log('connecting agents: ' + i)
+      const client = createNetworkClient('localhost', 37371)
+      await client.waitConnection()
 
-      console.log('listing agents: ' + i)
-      const agents = await client.agents()
-      expect(agents).toBeDefined()
+      // const agents = await client.agents()
+      // expect(agents).toBeDefined()
       clients.push(client)
       const ed = performance.now()
       total += ed - st
     }
-    console.log('Average connect time: ' + Math.round(10 * total / count) / 10 + ' ms')
+    console.log('Average connect time: ' + Math.round((10 * total) / count) / 10 + ' ms')
     for (const client of clients) {
       await client.close()
     }

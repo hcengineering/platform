@@ -57,7 +57,6 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     options?: zmq.SocketOptions<zmq.Dealer>
   ) {
     this.dealer = new zmq.Dealer({ ...options, context })
-    this.dealer.connect(`tcp://${host}:${port}`)
 
     this.setServerId = () => {}
     this.serverId = new Promise<string>((resolve) => {
@@ -68,6 +67,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     })
 
     this.observer = new zmq.Observer(this.dealer)
+
+    this.dealer.connect(`tcp://${host}:${port}`)
     this.observer.on('connect', (data) => {
       void this.sendHello().catch((err) => {
         console.error('Failed to send hello', err)
@@ -78,18 +79,33 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     })
 
     this.stopTick = this.tickMgr.register(() => {
-      void this.checkAlive().catch(err => {
+      void this.checkAlive().catch((err) => {
         console.error(err)
       })
     }, timeouts.pingInterval)
   }
 
+  private sendPromise: Promise<void> | undefined
+
+  async doSend (msg: any[]): Promise<void> {
+    while (this.sendPromise !== undefined) {
+      await this.sendPromise
+    }
+    this.sendPromise = this.dealer.send(msg)
+    try {
+      await this.sendPromise
+    } catch (err: any) {
+      console.error('Failed to send message', err)
+    }
+    this.sendPromise = undefined
+  }
+
   async checkAlive (): Promise<void> {
-    await this.dealer.send([backrpcOperations.ping, this.clientId as string, '', ''])
+    await this.doSend([backrpcOperations.ping, this.clientId as string, '', ''])
   }
 
   private async sendHello (): Promise<void> {
-    await this.dealer.send([backrpcOperations.hello, this.clientId as string, '', ''])
+    await this.doSend([backrpcOperations.hello, this.clientId as string, '', ''])
   }
 
   private async start (): Promise<void> {
@@ -120,21 +136,19 @@ export class BackRPCClient<ClientT extends string = ClientId> {
               const [method, params] = JSON.parse(payload.toString())
               void this.client
                 .requestHandler(method, params, async (response: any) => {
-                  await this.dealer.send([backrpcOperations.response, reqId, JSON.stringify(response)])
+                  await this.doSend([backrpcOperations.response, reqId, JSON.stringify(response)])
                 })
                 .catch((error) => {
-                  void this.dealer
-                    .send([
-                      backrpcOperations.responseError,
-                      reqId,
-                      JSON.stringify({
-                        message: error.message ?? '',
-                        stack: error.stack ?? ''
-                      })
-                    ])
-                    .catch((err2) => {
-                      console.error('Failed to send error', err2, err2)
+                  void this.doSend([
+                    backrpcOperations.responseError,
+                    reqId,
+                    JSON.stringify({
+                      message: error.message ?? '',
+                      stack: error.stack ?? ''
                     })
+                  ]).catch((err2) => {
+                    console.error('Failed to send error', err2, err2)
+                  })
                 })
             }
             break
@@ -169,11 +183,11 @@ export class BackRPCClient<ClientT extends string = ClientId> {
             if (req !== undefined) {
               const count = JSON.parse(payload.toString())
               void this.tickMgr.waitTick(count).then(() => {
-                void this.dealer
-                  .send([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])])
-                  .catch((err) => {
+                void this.doSend([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])]).catch(
+                  (err) => {
                     console.error('Failed to resend request', err)
-                  })
+                  }
+                )
               })
             }
           }
@@ -187,14 +201,14 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   private async resendRequests (): Promise<void> {
     for (const [reqId, req] of Array.from(this.requests.entries())) {
       try {
-        await this.dealer.send([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])])
+        await this.doSend([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])])
       } catch (err: any) {
         console.error('Failed to resend request', err)
       }
     }
   }
 
-  async waitConnecting (): Promise<void> {
+  async waitConnection (): Promise<void> {
     if (this.serverId instanceof Promise) {
       await this.serverId
     }
@@ -208,7 +222,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       const reqId = this.clientId + '-' + this.requestCounter++
       this.requests.set(reqId, { resolve, reject, method, params })
 
-      void this.dealer.send([backrpcOperations.request, reqId, JSON.stringify([method, params])]).catch((err) => {
+      void this.doSend([backrpcOperations.request, reqId, JSON.stringify([method, params])]).catch((err) => {
         this.requests.delete(reqId) // Cleanup on failure
         reject(err)
       })
@@ -216,7 +230,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   async send (body: any): Promise<any> {
-    await this.dealer.send([backrpcOperations.event, body])
+    await this.doSend([backrpcOperations.event, body])
   }
 
   close (): void {

@@ -272,7 +272,7 @@ describe('backrpc', () => {
     expect(response).toBe('event-sent')
 
     // Wait a bit for the event to be processed
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(eventsReceived).toHaveLength(1)
     expect(eventsReceived[0]).toEqual({ type: 'test-event', data: 'test-data' })
@@ -338,7 +338,7 @@ describe('backrpc', () => {
     )
 
     // Wait for both clients to connect
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     const client1Id = await client1.request('get-client-id', '')
     const client2Id = await client2.request('get-client-id', '')
@@ -394,7 +394,7 @@ describe('backrpc', () => {
       {
         requestHandler: async (client, method, params, send) => {
           // Simulate some async work
-          await new Promise(resolve => setTimeout(resolve, 50))
+          await new Promise((resolve) => setTimeout(resolve, 50))
           await send(`processed-${params}`)
         },
         helloHandler: async (clientId) => {

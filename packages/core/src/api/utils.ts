@@ -3,6 +3,8 @@ export type TickHandler = () => void | Promise<void>
 export interface TickManager {
   now: () => number
 
+  tps: number
+
   // Interval in seconds
   register: (handler: TickHandler, interval: number) => () => void
 

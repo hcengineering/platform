@@ -16,8 +16,6 @@ process.on('exit', () => {
   shutdownNetworkTickMgr()
 })
 
-export async function createNetworkClient (host: string, port: number): Promise<NetworkClient> {
-  const client = new NetworkClientImpl(host, port, tickMgr)
-  await client.waitingForConnection()
-  return client
+export function createNetworkClient (host: string, port: number): NetworkClient {
+  return new NetworkClientImpl(host, port, tickMgr)
 }

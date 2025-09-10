@@ -4,7 +4,7 @@ import { NetworkServer } from '@hcengineering/network-server'
 /**
  * Main entry point for the network pod
  */
-async function main(): Promise<void> {
+async function main (): Promise<void> {
   console.log('Starting Huly Network Pod...')
 
   // Create tick manager
@@ -21,7 +21,7 @@ async function main(): Promise<void> {
 
   console.log(`Network Pod started on port ${port}`)
 
-  const shutdown = async () => {
+  const shutdown = async (): Promise<void> => {
     console.log('Shutting down Network Pod...')
     tickManager.stop()
     await server.close()
@@ -30,12 +30,12 @@ async function main(): Promise<void> {
   }
 
   // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    shutdown()
+  process.on('SIGINT', (): void => {
+    void shutdown()
   })
 
-  process.on('SIGTERM', async () => {
-    shutdown()
+  process.on('SIGTERM', (): void => {
+    void shutdown()
   })
 }
 

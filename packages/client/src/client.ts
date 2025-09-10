@@ -88,7 +88,7 @@ export class NetworkClientImpl implements NetworkClient {
 
   containerListeners: ContainerUpdateListener[] = []
 
-  references = new Map< ContainerUuid, ContainereRef>()
+  references = new Map<ContainerUuid, ContainereRef>()
 
   registered: boolean = false
 
@@ -100,8 +100,27 @@ export class NetworkClientImpl implements NetworkClient {
     this.client = new BackRPCClient<ClientUuid>(this.clientId, this, host, port, tickMgr)
   }
 
-  waitingForConnection (): Promise<void> {
-    return this.client.waitConnecting()
+  async waitConnection (timeout?: number): Promise<void> {
+    if (timeout !== undefined) {
+      await new Promise<void>((resolve, reject) => {
+        const co = setTimeout(() => {
+          // Timeout reached, we reject the promise by throwing an error
+          reject(new Error('Connection timeout'))
+        }, timeout)
+
+        this.client
+          .waitConnection()
+          .then(() => {
+            resolve()
+            clearTimeout(co)
+          })
+          .catch((err) => {
+            reject(err)
+          })
+      })
+      return
+    }
+    await this.client.waitConnection()
   }
 
   async close (): Promise<void> {

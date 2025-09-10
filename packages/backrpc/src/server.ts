@@ -70,7 +70,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     this.router = new zmq.Router({ context })
 
     this.stopTick = this.tickMgr.register(() => {
-      void this.checkAlive().catch(err => {
+      void this.checkAlive().catch((err) => {
         console.error(err)
       })
     }, timeouts.pingInterval)
@@ -79,16 +79,23 @@ export class BackRPCServer<ClientT extends string = ClientId> {
   }
 
   async checkAlive (): Promise<void> {
+    console.log('check alive:', this.revClientMapping.size, JSON.stringify(this.stats))
+    this.stats.hellos = 0
+    this.stats.pings = 0
+    this.stats.requests = 0
+    this.stats.responses = 0
     const now = this.tickMgr.now()
     // Handle outdated clients
-    for (const [clientId, clientRecord] of this.revClientMapping.entries()) {
+    for (const [clientId, clientRecord] of [...this.revClientMapping.entries()]) {
       const timeSinceLastSeen = now - clientRecord.lastSeen
 
       if (timeSinceLastSeen > timeouts.aliveTimeout * 1000) {
         console.warn(
           `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s, marking as dead`
         )
-        await this.handlers.handleTimeout?.(clientRecord.id)
+        void this.handlers.handleTimeout?.(clientRecord.id).catch((err) => {
+          console.error('Error in handleTimeout', err)
+        })
         this.revClientMapping.delete(clientId)
         this.clientMapping.delete(clientRecord.id)
       }
@@ -110,6 +117,33 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     return port
   }
 
+  private sendPromise: Promise<void> | undefined
+
+  async doSend (msg: any[]): Promise<void> {
+    while (this.sendPromise !== undefined) {
+      await this.sendPromise
+    }
+    this.sendPromise = this.router.send(msg)
+    try {
+      await this.sendPromise
+    } catch (err: any) {
+      console.error('Failed to send message', err)
+    }
+    this.sendPromise = undefined
+  }
+
+  stats: {
+    pings: number
+    requests: number
+    responses: number
+    hellos: number
+  } = {
+      pings: 0,
+      requests: 0,
+      responses: 0,
+      hellos: 0
+    }
+
   private async start (): Promise<void> {
     this.bound = this.router.bind(`tcp://${this.host}:${this.port}`)
     await this.bound
@@ -130,10 +164,9 @@ export class BackRPCServer<ClientT extends string = ClientId> {
         }
         switch (operation) {
           case backrpcOperations.hello: {
+            this.stats.hellos++
             // Remember clientId to be able to do back requests.
-            if (!this.clientMapping.has(reqId.toString() as ClientT)) {
-              await this.handlers.helloHandler?.(reqId.toString() as ClientT)
-            }
+            const needHello = !this.clientMapping.has(reqId.toString() as ClientT)
             this.clientMapping.set(reqId.toString() as ClientT, clientId)
 
             const clientInfo: RPCClientInfo<ClientT> =
@@ -149,19 +182,26 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             clientInfo.helloCounter++
 
             this.revClientMapping.set(clientIdText, clientInfo)
-            void this.router.send([clientId, backrpcOperations.hello, this.uuid, ''])
+            void this.doSend([clientId, backrpcOperations.hello, this.uuid, ''])
+            if (needHello) {
+              void this.handlers.helloHandler?.(reqId.toString() as ClientT).catch((err) => {
+                console.error('Error in helloHandler', err)
+              })
+            }
             break
           }
           case backrpcOperations.ping: {
-            void this.router.send([clientId, backrpcOperations.pong, this.uuid, ''])
-            console.log('ping:' + clientIdText)
+            this.stats.pings++
+            void this.doSend([clientId, backrpcOperations.pong, this.uuid, ''])
+            // console.log('ping:' + clientIdText)
             break
           }
           case backrpcOperations.request:
             {
+              this.stats.requests++
               if (client === undefined) {
                 // No Client, requests are not possible
-                void this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(1)])
+                void this.doSend([clientId, backrpcOperations.retry, reqId, JSON.stringify(1)])
                 continue
               }
               if (client.requests.has(reqId)) {
@@ -170,7 +210,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               }
               if (client.requests.size > this.requestsLimit) {
                 // No Client, requests are not possible
-                void this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(client.requests.size)])
+                void this.doSend([clientId, backrpcOperations.retry, reqId, JSON.stringify(client.requests.size)])
                 continue
               }
 
@@ -179,7 +219,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               const [method, params] = JSON.parse(payload.toString())
 
               const sendError = async (err: Error): Promise<void> => {
-                await this.router.send([
+                void this.doSend([
                   clientId,
                   backrpcOperations.responseError,
                   reqId,
@@ -192,7 +232,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               client.requests.add(reqId)
               void this.handlers
                 .requestHandler(client.id, method, params, async (response: any) => {
-                  await this.router.send([clientId, backrpcOperations.response, reqId, JSON.stringify(response)])
+                  void this.doSend([clientId, backrpcOperations.response, reqId, JSON.stringify(response)])
                 })
                 .catch((err) => {
                   void sendError(err)
@@ -200,6 +240,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             }
             break
           case backrpcOperations.response: {
+            this.stats.responses++
             const reqID = reqId.toString()
             const req = this.backRequests.get(reqID)
             try {
@@ -211,6 +252,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             break
           }
           case backrpcOperations.responseError: {
+            this.stats.responses++
             const reqID = reqId.toString()
             const req = this.backRequests.get(reqID)
             try {
@@ -237,11 +279,11 @@ export class BackRPCServer<ClientT extends string = ClientId> {
       const reqId = clientId + '-' + this.requestCounter++
       this.backRequests.set(reqId, { resolve, reject })
 
-      void this.router
-        .send([clientIdentity, backrpcOperations.request, reqId, JSON.stringify([method, params])])
-        .catch((err) => {
+      void this.doSend([clientIdentity, backrpcOperations.request, reqId, JSON.stringify([method, params])]).catch(
+        (err) => {
           reject(err)
-        })
+        }
+      )
     })
   }
 
@@ -250,7 +292,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     if (clientIdentity === undefined) {
       throw new Error(`Client ${clientId as string} not found`)
     }
-    await this.router.send([clientIdentity, backrpcOperations.event, '', JSON.stringify(body)])
+    await this.doSend([clientIdentity, backrpcOperations.event, '', JSON.stringify(body)])
   }
 
   async close (): Promise<void> {

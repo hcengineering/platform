@@ -14,6 +14,8 @@ export type ContainerUpdateListener = (event: ContainerEvent) => Promise<void>
  * Interface to Huly network.
  *
  * Identification is generated during instantions of client.
+ *
+ * Client is attempt connecting indefinitely, but helper connect method could be used to be sure we connected on time.
  */
 export interface NetworkClient {
   /*
@@ -40,6 +42,10 @@ export interface NetworkClient {
 
   // Register on container update listener
   onContainerUpdate: (listener: ContainerUpdateListener) => void
+
+  // We could wait for a connection for a time period.
+  // If timeout === 0, we wait indefinitely.
+  waitConnection: (timeout?: number) => Promise<void>
 
   close: () => Promise<void>
 }
