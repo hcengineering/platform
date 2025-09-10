@@ -9,6 +9,7 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from "@hcengineering/platform";
 
 const requestsQuery = createQuery(true)
+const invitesQuery = createQuery(true)
 
 export async function createMeeting(room: Room) {
   if (room.access === RoomAccess.DND) return
@@ -82,6 +83,14 @@ export async function acceptInvite (invite: Invite) {
 
   if (room === undefined) return
 
+  const meeting = await client.findOne(love.class.MeetingMinutes, {
+    attachedTo: room._id,
+    status: MeetingStatus.Active
+  })
+  if (meeting !== undefined) {
+    await createMeetingDocument(room)
+  }
+
   connectToMeeting(room)
 }
 
@@ -103,11 +112,22 @@ export async function sendInvite (person: Ref<Person>, room: Ref<Room> | undefin
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
   const me = getCurrentEmployee()
-  await client.createDoc(love.class.Invite, core.space.Workspace, {
+  const _id = await client.createDoc(love.class.Invite, core.space.Workspace, {
     target: person,
     room,
     status: RequestStatus.Pending,
     from: me
+  })
+  invitesQuery.query(love.class.Invite, { from: me, _id }, (res) => {
+    const invite = res[0]
+    if (invite === undefined) return
+    if (invite.status === RequestStatus.Pending) return
+    invitesQuery.unsubscribe()
+    if (invite.status === RequestStatus.Approved) {
+      const room = getRoomById(invite.room)
+      if (room === undefined) return
+      connectToMeeting(room)
+    }
   })
 }
 
