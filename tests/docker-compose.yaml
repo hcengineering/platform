@@ -5,8 +5,8 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
-      - NETWORK_POD_PORT=3737
-      - NETWORK_POD_HOST=*
+      - PORT=3737
+      - HOST=*
     ports:
       - 37371:3737
     restart: unless-stopped

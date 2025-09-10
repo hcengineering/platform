@@ -16,15 +16,17 @@
 import { createNetworkClient, shutdownNetworkTickMgr } from '@hcengineering/network-client'
 import type { NetworkClient } from '@hcengineering/network-core'
 
+jest.setTimeout(6000000)
 describe('network client tests', () => {
   it('check client connect', async () => {
     let total = 0
-    const count = 250
+    const count = 1000
     const clients: NetworkClient[] = []
     for (let i = 0; i < count; i++) {
       const st = performance.now()
-      const client = createNetworkClient('localhost', 37371)
+      const client = await createNetworkClient('localhost', 37371)
 
+      console.log('listing agents: ' + i)
       const agents = await client.agents()
       expect(agents).toBeDefined()
       clients.push(client)

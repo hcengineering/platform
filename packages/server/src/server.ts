@@ -124,9 +124,9 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
   }
 
   async handleTimeout (client: ClientUuid): Promise<void> {
-    console.log(`Client ${client} timed out`)
     this.clients.delete(client)
     this.network.removeClient(client)
+    console.log(`Client ${client} timed out ${this.clients.size}`)
   }
 
   private async handleRegister (

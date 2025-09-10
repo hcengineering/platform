@@ -100,6 +100,10 @@ export class NetworkClientImpl implements NetworkClient {
     this.client = new BackRPCClient<ClientUuid>(this.clientId, this, host, port, tickMgr)
   }
 
+  waitingForConnection (): Promise<void> {
+    return this.client.waitConnecting()
+  }
+
   async close (): Promise<void> {
     for (const directConn of this.containerConnections.values()) {
       await directConn.close()

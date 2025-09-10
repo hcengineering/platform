@@ -14,10 +14,10 @@ async function main(): Promise<void> {
   // Create Docker-based network service
   const network = new NetworkImpl(tickManager)
 
-  const port = process.env.NETWORK_POD_PORT != null ? parseInt(process.env.NETWORK_POD_PORT) : 3737
+  const port = process.env.PORT != null ? parseInt(process.env.PORT) : 3737
 
   // Create and start network server
-  const server = new NetworkServer(network, tickManager, process.env.NETWORK_POD_HOST ?? '*', port)
+  const server = new NetworkServer(network, tickManager, process.env.HOST ?? '*', port)
 
   console.log(`Network Pod started on port ${port}`)
 

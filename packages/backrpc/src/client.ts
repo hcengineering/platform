@@ -16,6 +16,7 @@
 import { timeouts, type TickManager } from '@hcengineering/network-core'
 import * as zmq from 'zeromq'
 import { backrpcOperations, type ClientId } from './types'
+import { context } from './context'
 
 export type BackRPCResponseSend = (response: any) => Promise<void>
 export interface BackRPCClientHandler {
@@ -55,7 +56,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     readonly tickMgr: TickManager,
     options?: zmq.SocketOptions<zmq.Dealer>
   ) {
-    this.dealer = new zmq.Dealer(options)
+    this.dealer = new zmq.Dealer({ ...options, context })
     this.dealer.connect(`tcp://${host}:${port}`)
 
     this.setServerId = () => {}
@@ -68,12 +69,18 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
     this.observer = new zmq.Observer(this.dealer)
     this.observer.on('connect', (data) => {
-      void this.sendHello()
+      void this.sendHello().catch((err) => {
+        console.error('Failed to send hello', err)
+      })
     })
-    void this.start()
+    void this.start().catch((err) => {
+      console.error('Failed to start BackRPCClient', err)
+    })
 
     this.stopTick = this.tickMgr.register(() => {
-      void this.checkAlive()
+      void this.checkAlive().catch(err => {
+        console.error(err)
+      })
     }, timeouts.pingInterval)
   }
 
@@ -184,6 +191,12 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       } catch (err: any) {
         console.error('Failed to resend request', err)
       }
+    }
+  }
+
+  async waitConnecting (): Promise<void> {
+    if (this.serverId instanceof Promise) {
+      await this.serverId
     }
   }
 

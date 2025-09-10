@@ -18,6 +18,8 @@ import { v4 as uuidv4 } from 'uuid'
 import * as zmq from 'zeromq'
 import { backrpcOperations, type ClientId } from './types'
 
+import { context } from './context'
+
 export interface BackRPCServerHandler<ClientT> {
   requestHandler: (
     client: ClientT,
@@ -65,7 +67,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     readonly host: string = '*',
     private readonly port: number = 0
   ) {
-    this.router = new zmq.Router()
+    this.router = new zmq.Router({ context })
 
     this.stopTick = this.tickMgr.register(() => {
       void this.checkAlive().catch(err => {
@@ -87,9 +89,9 @@ export class BackRPCServer<ClientT extends string = ClientId> {
           `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s, marking as dead`
         )
         await this.handlers.handleTimeout?.(clientRecord.id)
+        this.revClientMapping.delete(clientId)
+        this.clientMapping.delete(clientRecord.id)
       }
-      this.revClientMapping.delete(clientId)
-      this.clientMapping.delete(clientRecord.id)
     }
   }
 
@@ -147,18 +149,19 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             clientInfo.helloCounter++
 
             this.revClientMapping.set(clientIdText, clientInfo)
-            await this.router.send([clientId, backrpcOperations.hello, this.uuid, ''])
+            void this.router.send([clientId, backrpcOperations.hello, this.uuid, ''])
             break
           }
           case backrpcOperations.ping: {
-            await this.router.send([clientId, backrpcOperations.pong, this.uuid, ''])
+            void this.router.send([clientId, backrpcOperations.pong, this.uuid, ''])
+            console.log('ping:' + clientIdText)
             break
           }
           case backrpcOperations.request:
             {
               if (client === undefined) {
                 // No Client, requests are not possible
-                await this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(1)])
+                void this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(1)])
                 continue
               }
               if (client.requests.has(reqId)) {
@@ -167,7 +170,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               }
               if (client.requests.size > this.requestsLimit) {
                 // No Client, requests are not possible
-                await this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(client.requests.size)])
+                void this.router.send([clientId, backrpcOperations.retry, reqId, JSON.stringify(client.requests.size)])
                 continue
               }
 

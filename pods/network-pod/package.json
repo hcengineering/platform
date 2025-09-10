@@ -48,7 +48,8 @@
     "@types/node": "^22.15.29",
     "@types/uuid": "^8.3.1",
     "@types/dockerode": "^3.3.19",
-    "esbuild": "^0.24.2"
+    "esbuild": "^0.24.2",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "@hcengineering/network-core": "workspace:^0.7.0",

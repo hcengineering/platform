@@ -184,7 +184,7 @@ await networkClient.register(agent)
 import { createNetworkClient } from '@hcengineering/network-client'
 
 // Connect to network
-const client = createNetworkClient('localhost', 3737)
+const client = await createNetworkClient('localhost', 3737)
 
 // Get or create a container
 const containerRef = await client.get('user-session-1', {
