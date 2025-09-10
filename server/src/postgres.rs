@@ -3,8 +3,9 @@ use std::pin::Pin;
 use bb8_postgres::PostgresConnectionManager;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
-use tokio_postgres::NoTls;
+use tokio_postgres::error::SqlState;
 use tokio_postgres::{self as pg};
+use tokio_postgres::{Error, NoTls};
 use tracing::*;
 
 use crate::config::CONFIG;
@@ -189,4 +190,14 @@ pub async fn set_part<D: serde::Serialize>(
     transaction.commit().await?;
 
     Ok(())
+}
+
+pub fn is_unique_constraint_violation(e: &anyhow::Error) -> bool {
+    get_pg_error_code(e) == Some(&SqlState::UNIQUE_VIOLATION)
+}
+
+fn get_pg_error_code(e: &anyhow::Error) -> Option<&SqlState> {
+    e.downcast_ref::<tokio_postgres::Error>()
+        .and_then(|pg_err| pg_err.as_db_error())
+        .map(|db_err| db_err.code())
 }

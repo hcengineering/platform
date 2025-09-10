@@ -85,10 +85,24 @@ where
                     .send()
                     .await?;
 
-                postgres::insert_blob(&pool, &s3_key, &hash).await?;
+                match make_blob(pool, &s3_key, &hash).await? {
+                    Some(s3_key_found) => {
+                        debug!(s3_key_found, "blob deduplicated");
 
-                debug!("blob created");
-                (s3_key, false)
+                        // delete uploaded
+                        s3.delete_object()
+                            .bucket(s3_bucket)
+                            .key(&s3_key)
+                            .send()
+                            .await?;
+
+                        (s3_key_found, true)
+                    }
+                    None => {
+                        debug!("blob created");
+                        (s3_key, false)
+                    }
+                }
             };
 
         Blob {
@@ -106,23 +120,32 @@ where
 
         let hash = upload.hash.to_hex().to_string();
 
-        let (s3_key, deduplicated) =
-            if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
+        let (s3_key, deduplicated) = match postgres::find_blob_by_hash(&pool, &hash).await? {
+            Some(s3_key_found) => {
                 debug!(s3_key_found, "blob deduplicated");
-
-                // delete uploaded
-                s3.delete_object()
-                    .bucket(s3_bucket)
-                    .key(s3_key)
-                    .send()
-                    .await?;
-
                 (s3_key_found, true)
-            } else {
-                debug!("blob created");
-                postgres::insert_blob(&pool, &s3_key, &hash).await?;
-                (s3_key, false)
-            };
+            }
+            None => {
+                match make_blob(pool, &s3_key, &hash).await? {
+                    Some(s3_key_found) => {
+                        debug!(s3_key_found, "blob deduplicated");
+
+                        // delete uploaded
+                        s3.delete_object()
+                            .bucket(s3_bucket)
+                            .key(&s3_key)
+                            .send()
+                            .await?;
+
+                        (s3_key_found, true)
+                    }
+                    None => {
+                        debug!("blob created");
+                        (s3_key, false)
+                    }
+                }
+            }
+        };
 
         Blob {
             s3_key,
@@ -134,4 +157,35 @@ where
     };
 
     Ok(blob)
+}
+
+async fn make_blob(
+    pool: &Pool,
+    s3_key: &String,
+    hash: &str,
+) -> Result<Option<String>, anyhow::Error> {
+    let mut retries = 3;
+
+    loop {
+        match postgres::insert_blob(&pool, &s3_key, &hash).await {
+            Ok(_) => break Ok(None),
+            Err(e) => {
+                if postgres::is_unique_constraint_violation(&e) {
+                    debug!("concurrent upload detected");
+
+                    if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
+                        break Ok(Some(s3_key_found));
+                    }
+
+                    if retries > 0 {
+                        retries -= 1;
+                        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+                        continue;
+                    }
+                }
+
+                break Err(e);
+            }
+        };
+    }
 }
