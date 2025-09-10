@@ -105,7 +105,7 @@
 
   $: sourceFunc =
     contextValue.sourceFunction !== undefined
-      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction })[0]
+      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction.func })[0]
       : undefined
 
   $: functionButtonIndex = functionsLength + (sourceFunc !== undefined ? 1 : 0)
@@ -161,7 +161,7 @@
   }
 
   function onSourceFunctionSelect (e: Ref<ProcessFunction>): void {
-    contextValue.sourceFunction = e
+    contextValue.sourceFunction = { func: e, props: {} }
     onChange(contextValue)
   }
 
@@ -332,11 +332,11 @@
         />
         <!-- <div class="menu-separator" /> -->
       {/if}
-      {#if !forbidValue}
-        <div class="menu-separator" />
-      {/if}
     {/if}
     {#if !forbidValue}
+      {#if sourceFunc !== undefined || availableFunctions.length > 0 || functionsLength > 0}
+        <div class="menu-separator" />
+      {/if}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
         bind:this={elements[functionButtonIndex + 1]}

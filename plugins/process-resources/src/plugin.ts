@@ -90,7 +90,8 @@ export default mergeIds(processId, process, {
     CutEditor: '' as AnyComponent
   },
   transformPresenter: {
-    NumberPresenter: '' as AnyComponent
+    NumberPresenter: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
