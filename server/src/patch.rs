@@ -94,16 +94,15 @@ fn add(
     safe: bool,
 ) -> Result<Option<StandardPatchOperation>, HulyPatchError> {
     let target = doc.pointer(path.as_str());
-    if safe && target.is_some() {
-        return Ok(None);
-    }
 
-    let op = StandardPatchOperation::Add(json_patch::AddOperation {
-        path: path.to_owned(),
-        value: value.to_owned(),
-    });
-
-    Ok(Some(op))
+    Ok(if safe && target.is_some() {
+        None
+    } else {
+        Some(StandardPatchOperation::Add(json_patch::AddOperation {
+            path: path.to_owned(),
+            value: value.to_owned(),
+        }))
+    })
 }
 
 fn inc(
@@ -113,52 +112,46 @@ fn inc(
     safe: bool,
 ) -> Result<Option<StandardPatchOperation>, HulyPatchError> {
     let target = doc.pointer(path.as_str());
-    if safe && target.is_none() {
-        return Ok(None);
-    }
 
-    if value.as_number().is_none() {
-        return Err(HulyPatchError::InvalidNumber);
-    }
+    match (target, value.as_number()) {
+        (None, _) if safe => Ok(None),
 
-    match target {
-        Some(target) => match target.as_number() {
-            Some(target) => {
-                let new_value = add_json_numbers(target, value.as_number().unwrap())
-                    .ok_or(HulyPatchError::InvalidNumber)?;
-
-                let op = StandardPatchOperation::Replace(json_patch::ReplaceOperation {
-                    path: path.to_owned(),
-                    value: json!(new_value),
-                });
-
-                Ok(Some(op))
-            }
-            None => Err(HulyPatchError::InvalidNumber),
-        },
-        None => {
+        (None, Some(value)) => {
             let op = StandardPatchOperation::Add(json_patch::AddOperation {
                 path: path.to_owned(),
-                value: value.to_owned(),
+                value: serde_json::Value::Number(value.to_owned()),
             });
 
             Ok(Some(op))
         }
+
+        (Some(_), None) => Err(HulyPatchError::InvalidNumber),
+
+        (Some(serde_json::Value::Number(old_value)), Some(increment)) => {
+            let new_value = add_json_numbers(old_value, increment)?;
+
+            let op = StandardPatchOperation::Replace(json_patch::ReplaceOperation {
+                path: path.to_owned(),
+                value: json!(new_value),
+            });
+
+            Ok(Some(op))
+        }
+
+        (Some(_), Some(_)) => Err(HulyPatchError::InvalidNumber),
+        (None, None) => Err(HulyPatchError::InvalidNumber),
     }
 }
 
-fn add_json_numbers(a: &Number, b: &Number) -> Option<Number> {
-    // Try as integers first
-    if let (Some(i1), Some(i2)) = (a.as_i64(), b.as_i64()) {
-        // Check for overflow
-        if let Some(sum) = i1.checked_add(i2) {
-            return Some(Number::from(sum));
-        }
-    }
-
-    // Fall back to floats
-    let sum = a.as_f64()? + b.as_f64()?;
-    Number::from_f64(sum)
+fn add_json_numbers(a: &Number, b: &Number) -> Result<Number, HulyPatchError> {
+    a.as_i64()
+        .and_then(|a| b.as_i64().map(|b| Number::from(a + b)))
+        .or_else(|| {
+            a.as_f64()
+                .and_then(|a| b.as_f64().map(|b| a + b))
+                .and_then(Number::from_f64)
+        })
+        .ok_or(HulyPatchError::InvalidNumber)
 }
 
 #[cfg(test)]
@@ -413,19 +406,19 @@ mod tests {
     #[test]
     fn test_add_json_numbers_i_i() {
         let res = add_json_numbers(&Number::from(1), &Number::from(1));
-        assert_eq!(res, Some(Number::from(2)));
+        assert_eq!(res, Ok(Number::from(2)));
     }
 
     #[test]
     fn test_add_json_numbers_i_f() {
         let res = add_json_numbers(&Number::from(1), &Number::from_f64(1.0).unwrap());
-        assert_eq!(res, Some(Number::from_f64(2.0)).unwrap());
+        assert_eq!(res, Ok(Number::from_f64(2.0).unwrap()));
     }
 
     #[test]
     fn test_add_json_numbers_f_i() {
         let res = add_json_numbers(&Number::from_f64(1.0).unwrap(), &Number::from(1));
-        assert_eq!(res, Some(Number::from_f64(2.0)).unwrap());
+        assert_eq!(res, Ok(Number::from_f64(2.0).unwrap()));
     }
 
     #[test]
@@ -434,7 +427,7 @@ mod tests {
             &Number::from_f64(1.0).unwrap(),
             &Number::from_f64(1.0).unwrap(),
         );
-        assert_eq!(res, Some(Number::from_f64(2.0)).unwrap());
+        assert_eq!(res, Ok(Number::from_f64(2.0).unwrap()));
     }
 
     #[test]
