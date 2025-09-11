@@ -25,7 +25,7 @@ import {
   systemAccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
-import { decodeTokenVerbose } from '@hcengineering/server-token'
+import { decodeToken, decodeTokenVerbose } from '@hcengineering/server-token'
 
 import * as utils from '../utils'
 import { type AccountDB, type SocialId } from '../types'
@@ -66,13 +66,14 @@ jest.mock('@hcengineering/platform', () => {
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
   decodeTokenVerbose: jest.fn(),
-  generateToken: jest.fn().mockImplementation((account, workspace, extra, _, grant) => {
+  decodeToken: jest.fn(),
+  generateToken: jest.fn().mockImplementation((account, workspace, extra, _, options) => {
     let token = `mocked-token-${account}`
     if (workspace != null) {
       token += `-${workspace}`
     }
-    if (grant != null) {
-      token += `-${JSON.stringify(grant)}`
+    if (options != null) {
+      token += `-${JSON.stringify(options)}`
     }
     if (extra != null) {
       token += `-${JSON.stringify(extra)}`
@@ -113,7 +114,8 @@ describe('account operations', () => {
   const mockWorkspace = {
     uuid: 'workspace-uuid' as WorkspaceUuid,
     name: 'Test Workspace',
-    url: 'test-workspace'
+    url: 'test-workspace',
+    region: 'us'
   }
 
   beforeEach(() => {
@@ -529,7 +531,8 @@ describe('account operations', () => {
       },
       getWorkspaceRole: jest.fn(),
       assignWorkspace: jest.fn(),
-      updateWorkspaceRole: jest.fn()
+      updateWorkspaceRole: jest.fn(),
+      generatePersonUuid: jest.fn()
     } as unknown as AccountDB
 
     beforeEach(() => {
@@ -586,7 +589,7 @@ describe('account operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: 'mocked-token-test-person-id-workspace-uuid-{}',
+          token: 'mocked-token-test-person-id-workspace-uuid-{}-{}',
           workspace: mockWorkspaceEu.uuid,
           workspaceUrl: 'test-workspace',
           endpoint: 'ws://external:3000',
@@ -616,7 +619,7 @@ describe('account operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: 'mocked-token-test-person-id-workspace-uuid-{}',
+          token: 'mocked-token-test-person-id-workspace-uuid-{}-{}',
           workspace: mockWorkspaceUs.uuid,
           workspaceUrl: 'test-workspace',
           endpoint: 'ws://internal:3000',
@@ -633,7 +636,7 @@ describe('account operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: 'social-id-1',
-          token: 'mocked-token-test-person-id-workspace-uuid-{}',
+          token: 'mocked-token-test-person-id-workspace-uuid-{}-{}',
           workspace: mockWorkspaceEu.uuid,
           workspaceUrl: 'test-workspace',
           endpoint: 'ws://external:3000',
@@ -663,7 +666,7 @@ describe('account operations', () => {
         account: mockPersonId,
         name: 'John Doe',
         socialId: 'social-id-1',
-        token: 'mocked-token-test-person-id-{}'
+        token: 'mocked-token-test-person-id-{}-{}'
       })
     })
 
@@ -690,6 +693,37 @@ describe('account operations', () => {
           new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: mockWorkspace.uuid })
         )
       )
+    })
+
+    test('should use sub claim as account when provided', async () => {
+      const subAccount = 'sub-account-uuid' as AccountUuid
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount.uuid,
+        workspace: mockWorkspace.uuid,
+        extra: {},
+        sub: subAccount
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+        uuid: subAccount,
+        firstName: 'Sub',
+        lastName: 'User'
+      })
+      ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+
+      const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+      expect(result).toEqual({
+        account: subAccount, // Should use sub instead of account
+        name: 'Sub User',
+        socialId: 'social-id-1',
+        token: expect.stringContaining(`"sub":"${subAccount}"`),
+        workspace: mockWorkspace.uuid,
+        workspaceUrl: mockWorkspace.url,
+        endpoint: expect.any(String),
+        role: AccountRole.User
+      })
     })
 
     describe('with grants', () => {
@@ -800,12 +834,92 @@ describe('account operations', () => {
         expect(mockDb.assignWorkspace).not.toHaveBeenCalled()
       })
 
+      test('should generate UUID and use as sub when grant present without sub', async () => {
+        const generatedUuid = 'generated-uuid' as AccountUuid
+        const grant = {
+          workspace: mockWorkspace.uuid,
+          role: AccountRole.User,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: utils.GUEST_ACCOUNT,
+          extra: {},
+          grant
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.generatePersonUuid as jest.Mock).mockResolvedValue(generatedUuid)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: generatedUuid,
+          firstName: 'John',
+          lastName: 'Doe'
+        })
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(mockDb.generatePersonUuid).toHaveBeenCalled()
+        expect(result).toEqual({
+          account: generatedUuid,
+          name: 'John Doe',
+          socialId: 'social-id-1',
+          token: expect.stringContaining(`"sub":"${generatedUuid}"`),
+          workspace: mockWorkspace.uuid,
+          workspaceUrl: mockWorkspace.url,
+          endpoint: expect.any(String),
+          role: AccountRole.User
+        })
+      })
+
+      test('should use existing sub', async () => {
+        const existingUuid = 'existing-uuid' as AccountUuid
+        const grant = {
+          workspace: mockWorkspace.uuid,
+          role: AccountRole.User,
+          firstName: 'John',
+          lastName: 'Doe'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: utils.GUEST_ACCOUNT,
+          extra: {},
+          grant,
+          sub: existingUuid
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: existingUuid,
+          firstName: 'John',
+          lastName: 'Doe'
+        })
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(mockDb.generatePersonUuid).not.toHaveBeenCalled()
+        expect(result).toEqual({
+          account: existingUuid,
+          name: 'John Doe',
+          socialId: 'social-id-1',
+          token: expect.stringContaining(`"sub":"${existingUuid}"`),
+          workspace: mockWorkspace.uuid,
+          workspaceUrl: mockWorkspace.url,
+          endpoint: expect.any(String),
+          role: AccountRole.User
+        })
+      })
+
       test('should throw error for grant with system account', async () => {
         ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-          account: systemAccountUuid,
+          account: utils.GUEST_ACCOUNT,
           extra: {},
-          grant: { workspace: grantWorkspace.uuid, role: grantRole }
+          grant: { workspace: grantWorkspace.uuid, role: grantRole },
+          sub: systemAccountUuid
         })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
 
         await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -835,6 +949,63 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         )
       })
+    })
+
+    test('should handle token with nbf and exp claims', async () => {
+      const notBefore = Math.floor(Date.now() / 1000) - 3600 // 1 hour ago
+      const expiration = Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount.uuid,
+        workspace: mockWorkspace.uuid,
+        extra: {},
+        nbf: notBefore,
+        exp: expiration
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+        uuid: mockAccount.uuid,
+        firstName: 'John',
+        lastName: 'Doe'
+      })
+      ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+
+      const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+
+      expect(result).toEqual({
+        account: mockAccount.uuid,
+        name: 'John Doe',
+        socialId: 'social-id-1',
+        token: expect.stringContaining(`"nbf":${notBefore},"exp":${expiration}`),
+        workspace: mockWorkspace.uuid,
+        workspaceUrl: mockWorkspace.url,
+        endpoint: expect.any(String),
+        role: AccountRole.User
+      })
+    })
+
+    test('should throw error when token is not yet active', async () => {
+      const futureTime = Math.floor(Date.now() / 1000) + 3600 // 1 hour in the future
+
+      ;(decodeToken as jest.Mock).mockReturnValue({ nbf: futureTime })
+      ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+        throw new Error('Token not yet active')
+      })
+
+      await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.TokenNotActive, { notBefore: futureTime }))
+      )
+    })
+
+    test('should throw error when token has expired', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+        throw new Error('Token expired')
+      })
+
+      await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
+      )
     })
   })
 
@@ -956,10 +1127,13 @@ describe('account operations', () => {
 
       expect(mockDb.generatePersonUuid).toHaveBeenCalled()
       expect(result).toBe(
-        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
-          workspace: 'workspace-uuid',
-          role: 'USER',
-          grantedBy: 'account-uuid'
+        `${frontUrl}/login/auth?token=mocked-token-b6996120-416f-49cd-841e-e4a5d2e49c9b-${JSON.stringify({
+          grant: {
+            workspace: 'workspace-uuid',
+            role: 'USER',
+            grantedBy: 'account-uuid'
+          },
+          sub: 'generated-person-uuid'
         })}`
       )
     })
@@ -977,12 +1151,15 @@ describe('account operations', () => {
 
       expect(mockDb.generatePersonUuid).toHaveBeenCalled()
       expect(result).toBe(
-        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
-          workspace: mockWorkspace.uuid,
-          role: AccountRole.User,
-          grantedBy: 'account-uuid',
-          firstName: 'John',
-          lastName: 'Doe'
+        `${frontUrl}/login/auth?token=mocked-token-b6996120-416f-49cd-841e-e4a5d2e49c9b-${JSON.stringify({
+          grant: {
+            workspace: mockWorkspace.uuid,
+            role: AccountRole.User,
+            grantedBy: 'account-uuid',
+            firstName: 'John',
+            lastName: 'Doe'
+          },
+          sub: 'generated-person-uuid'
         })}`
       )
     })
@@ -1000,11 +1177,14 @@ describe('account operations', () => {
 
       expect(mockDb.generatePersonUuid).toHaveBeenCalled()
       expect(result).toBe(
-        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
-          workspace: mockWorkspace.uuid,
-          role: AccountRole.User,
-          grantedBy: 'account-uuid',
-          extra: { param1: 'value1', param2: 'value2' }
+        `${frontUrl}/login/auth?token=mocked-token-b6996120-416f-49cd-841e-e4a5d2e49c9b-${JSON.stringify({
+          grant: {
+            workspace: mockWorkspace.uuid,
+            role: AccountRole.User,
+            grantedBy: 'account-uuid',
+            extra: { param1: 'value1', param2: 'value2' }
+          },
+          sub: 'generated-person-uuid'
         })}`
       )
     })
@@ -1022,10 +1202,13 @@ describe('account operations', () => {
 
       expect(mockDb.generatePersonUuid).toHaveBeenCalled()
       expect(result).toBe(
-        `${frontUrl}/login/auth?token=mocked-token-generated-person-uuid-${JSON.stringify({
-          workspace: 'workspace-uuid',
-          role: 'USER',
-          grantedBy: 'account-uuid'
+        `${frontUrl}/login/auth?token=mocked-token-b6996120-416f-49cd-841e-e4a5d2e49c9b-${JSON.stringify({
+          grant: {
+            workspace: 'workspace-uuid',
+            role: 'USER',
+            grantedBy: 'account-uuid'
+          },
+          sub: 'generated-person-uuid'
         })}&navigateUrl=${encodeURIComponent(navigateUrl)}`
       )
     })
@@ -1057,6 +1240,86 @@ describe('account operations', () => {
       ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
 
       expect(mockDb.generatePersonUuid).not.toHaveBeenCalled()
+    })
+
+    test('should create non-personalized access link without UUID with notBefore and expiration', async () => {
+      const notBefore = 1703894400 // December 30, 2023 00:00:00 UTC in seconds
+      const expiration = 1704067200 // January 1, 2024 00:00:00 UTC in seconds
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      const result = await createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+        role: AccountRole.User,
+        personalized: false,
+        notBefore,
+        expiration
+      })
+
+      expect(result).toBe(
+        `${frontUrl}/login/auth?token=mocked-token-b6996120-416f-49cd-841e-e4a5d2e49c9b-${JSON.stringify({
+          grant: {
+            workspace: mockWorkspace.uuid,
+            role: AccountRole.User,
+            grantedBy: 'account-uuid'
+          },
+          exp: expiration,
+          nbf: notBefore
+        })}`
+      )
+      expect(mockDb.generatePersonUuid).not.toHaveBeenCalled()
+    })
+
+    test('should throw error when notBefore is in milliseconds', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await expect(
+        createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+          role: AccountRole.User,
+          notBefore: Date.now() // Milliseconds instead of seconds
+        })
+      ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+
+      expect(mockCtx.error).toHaveBeenCalledWith(
+        'Not before appears to be in milliseconds instead of seconds',
+        expect.any(Object)
+      )
+    })
+
+    test('should throw error when expiration is in milliseconds', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await expect(
+        createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+          role: AccountRole.User,
+          expiration: Date.now() // Milliseconds instead of seconds
+        })
+      ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+
+      expect(mockCtx.error).toHaveBeenCalledWith(
+        'Expiration appears to be in milliseconds instead of seconds',
+        expect.any(Object)
+      )
+    })
+
+    test('should throw error when expiration is before notBefore', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await expect(
+        createAccessLink(mockCtx, mockDb, mockBranding, mockToken, {
+          role: AccountRole.User,
+          notBefore: 1000,
+          expiration: 900
+        })
+      ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+
+      expect(mockCtx.error).toHaveBeenCalledWith('Expiration time must be after Not Before time', expect.any(Object))
     })
   })
 
