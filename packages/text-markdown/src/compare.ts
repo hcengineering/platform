@@ -49,20 +49,71 @@ export function calcSørensenDiceCoefficient (a: string, b: string): number {
  * Perform markdown diff/comparison to understand do we have a major differences.
  */
 export function isMarkdownsEquals (source1: string, source2: string): boolean {
-  const normalizeLineEndings = (str: string): string => str.replace(/\r?\n/g, '\n')
+  const normalized1 = normalizeMarkdown(source1)
+  const normalized2 = normalizeMarkdown(source2)
+  return normalized1 === normalized2
+}
 
-  const excludeBlankLines = (str: string): string =>
-    str
-      .split('\n')
-      .map((it) => it.trimEnd())
-      .filter((it) => it.length > 0)
-      .join('\n')
+export function normalizeMarkdown (source: string): string {
+  const tagRegex = /<(\w+)([^>]*?)(\/?)>/g
+  const attrRegex = /(\w+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g
 
-  const norm1 = normalizeLineEndings(source1 ?? '')
-  const lines1 = excludeBlankLines(norm1)
+  // Normalize line endings to LF
+  source = source.replace(/\r?\n/g, '\n')
 
-  const norm2 = normalizeLineEndings(source2 ?? '')
-  const lines2 = excludeBlankLines(norm2)
+  // Remove extra blank lines
+  source = source
+    .split('\n')
+    .map((it) => it.trimEnd())
+    .filter((it) => it.length > 0)
+    .join('\n')
 
-  return lines1 === lines2
+  // Normalize HTML tags
+  source = source.replace(tagRegex, (match, tagName, attributes) => {
+    const attrs: Record<string, string> = {}
+
+    let attrMatch = attrRegex.exec(attributes)
+    while (attrMatch !== null) {
+      const attrName = attrMatch[1]
+      const attrValue = attrMatch[2] ?? attrMatch[3] ?? attrMatch[4] ?? ''
+      attrs[attrName] = attrValue
+      attrMatch = attrRegex.exec(attributes)
+    }
+
+    // Sort attributes by name for consistent order
+    const sortedAttrs = Object.keys(attrs)
+      .sort()
+      .map((key) => {
+        const value = attrs[key]
+        return value !== '' ? `${key}="${value}"` : key
+      })
+      .join(' ')
+
+    // Normalize to self-closing format for void elements
+    const voidElements = [
+      'img',
+      'br',
+      'hr',
+      'input',
+      'meta',
+      'area',
+      'base',
+      'col',
+      'embed',
+      'link',
+      'param',
+      'source',
+      'track',
+      'wbr'
+    ]
+    const isVoidElement = voidElements.includes(tagName.toLowerCase())
+
+    if (sortedAttrs !== '') {
+      return isVoidElement ? `<${tagName} ${sortedAttrs} />` : `<${tagName} ${sortedAttrs}>`
+    } else {
+      return isVoidElement ? `<${tagName} />` : `<${tagName}>`
+    }
+  })
+
+  return source
 }
