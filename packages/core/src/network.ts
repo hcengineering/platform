@@ -109,7 +109,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
     return await agent.api.request(target, operation, data)
   }
 
-  async register (record: AgentRecord, agent: NetworkAgent): Promise<ContainerEndpointRef[]> {
+  async register (record: AgentRecord, agent: NetworkAgent): Promise<ContainerUuid[]> {
     const containers: ContainerRecord[] = record.containers
     const newContainers = new Map<ContainerUuid, ContainerRecordImpl>(
       containers.map((record) => [
@@ -152,17 +152,21 @@ export class NetworkImpl implements Network, NetworkWithClients {
       }
     }
 
-    const containersToShutdown: ContainerEndpointRef[] = []
+    const containersToShutdown: ContainerUuid[] = []
 
     // Update active container registry.
     for (const rec of containers) {
       const oldAgentId = this._containers.get(rec.uuid)
       if (oldAgentId === undefined) {
         containerEvent.added.push(rec)
+        const containerImpl = newContainers.get(rec.uuid)
+        if (containerImpl !== undefined) {
+          this._orphanedContainers.set(rec.endpoint, containerImpl)
+        }
         this._containers.set(rec.uuid, record.agentId)
       }
-      if (oldAgentId !== record.agentId) {
-        containersToShutdown.push(rec.endpoint)
+      if (oldAgentId !== undefined && oldAgentId !== record.agentId) {
+        containersToShutdown.push(rec.uuid)
       }
     }
 
@@ -357,6 +361,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
   async terminate (container: ContainerRecordImpl): Promise<void> {
     this._containers.delete(container.record.uuid) // Remove from active container registry
+    this._orphanedContainers.delete(container.record.endpoint)
     this.eventQueue.push({
       added: [],
       deleted: [container.record],
@@ -365,11 +370,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
     const agent = this._agents.get(container.record.agentId)
     agent?.containers.delete(container.record.uuid)
 
-    let endpoint = container.endpoint
-    if (endpoint instanceof Promise) {
-      endpoint = await endpoint
-    }
-    await agent?.api.terminate(endpoint)
+    await agent?.api.terminate(container.record.uuid)
   }
 
   /**

@@ -29,6 +29,11 @@ export function registerShutdown (): void {
     void shutdown()
   })
 
+  // Handle Ctrl+C in console
+  process.on('SIGBREAK', (): void => {
+    void shutdown()
+  })
+
   process.on('exit', (): void => {
     void shutdown()
   })

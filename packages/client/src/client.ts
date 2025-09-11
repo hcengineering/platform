@@ -157,6 +157,10 @@ export class NetworkClientImpl implements NetworkClient {
       case opNames.sendContainer:
         await send(await agent.request(agentParams[0], agentParams[1], agentParams[2]))
         break
+      case opNames.terminate:
+        await agent.terminate(agentParams[0] as ContainerUuid)
+        await send('')
+        break
       default:
         throw new Error('Unknown method')
     }
@@ -193,8 +197,9 @@ export class NetworkClientImpl implements NetworkClient {
   }
 
   async onRegister (): Promise<void> {
+    // TODO: Add retry in container requests on re-connect to new network.
     for (const [uuid, ref] of this.references.entries()) {
-      await this.handleRefUpdate(uuid, await this.getContainerRef(uuid, ref.request))
+      await this.handleRefUpdate(uuid, await this.retryGetContainerRef(uuid, ref.request))
     }
     this.registered = true
     // We need to re-register all our managed agents
@@ -241,7 +246,7 @@ export class NetworkClientImpl implements NetworkClient {
         lastVisit: container.lastVisit
       } satisfies ContainerRecord)
     }
-    const toClean = await this.client.request<ContainerEndpointRef[]>(opNames.register, {
+    const toClean = await this.client.request<ContainerUuid[]>(opNames.register, {
       uuid: agent.uuid,
       containers,
       kinds: agent.kinds,
@@ -333,6 +338,23 @@ export class NetworkClientImpl implements NetworkClient {
 
   async getContainerRef (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
     return await this.client.request<ContainerEndpointRef>(opNames.getContainer, { uuid, request })
+  }
+
+  async retryGetContainerRef (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
+    let waitTimeout: number = 1
+    while (true) {
+      try {
+        const ref = await this.getContainerRef(uuid, request)
+        if (waitTimeout > 1) {
+          console.log(`Successfully got container ref for ${uuid} after ${waitTimeout - 1} retries.`)
+        }
+        return ref
+      } catch (err) {
+        console.warn(`Error getting container ref for ${uuid}. Will retry...`)
+        await this.tickMgr.waitTick(waitTimeout)
+        waitTimeout++
+      }
+    }
   }
 
   async release (uuid: ContainerUuid): Promise<void> {

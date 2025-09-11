@@ -24,7 +24,7 @@ export class AgentImpl implements NetworkAgent {
   // Own, managed containers
   private readonly _byId = new Map<ContainerUuid, ContainerRecordImpl | Promise<ContainerRecordImpl>>()
 
-  private readonly _containers = new Map<ContainerEndpointRef, ContainerRecordImpl>()
+  private readonly _containers = new Map<ContainerUuid, ContainerRecordImpl>()
 
   endpoint?: AgentEndpointRef | undefined
 
@@ -94,17 +94,22 @@ export class AgentImpl implements NetworkAgent {
     )
     this._byId.set(uuid, container)
     container = await container
-    this._containers.set(container.endpoint, container)
+    this._containers.set(uuid, container)
     this._byId.set(uuid, container)
 
     return container.endpoint
   }
 
-  async terminate (endpoint: ContainerEndpointRef): Promise<void> {
-    const current = this._containers.get(endpoint)
+  async terminate (uuid: ContainerUuid): Promise<void> {
+    const current = this._byId.get(uuid)
     if (current !== undefined) {
-      this._containers.delete(endpoint)
-      await current.container.terminate()
+      this._containers.delete(uuid)
+      this._byId.delete(uuid)
+      if (current instanceof Promise) {
+        await (await current).container.terminate() // Await promise before terminating
+      } else {
+        await current.container.terminate()
+      }
     }
   }
 

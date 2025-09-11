@@ -53,5 +53,5 @@ export interface NetworkAgent {
   request: (target: ContainerUuid, operation: string, data?: any) => Promise<any>
 
   // ask for immediate termination for container
-  terminate: (container: ContainerEndpointRef) => Promise<void>
+  terminate: (container: ContainerUuid) => Promise<void>
 }

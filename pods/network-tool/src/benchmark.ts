@@ -48,6 +48,7 @@ export function registerBenchmark (): void {
       []
     )
     .action(async (cmd: { network: string, label: string[], endpoint: string }) => {
+      console.log('Starting benchmark agent')
       const network = process.env.NETWORK_HOST ?? cmd.network
       const client = createNetworkClient(network)
 

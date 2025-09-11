@@ -37,8 +37,8 @@ class AgentCallbackHandler implements NetworkAgent {
     return await this.rpcServer.request(this.client, opNames.sendContainer, [this.uuid, [target, operation, data]])
   }
 
-  async terminate (): Promise<void> {
-    // Ignore
+  async terminate (containerUuid: ContainerUuid): Promise<void> {
+    return await this.rpcServer.request(this.client, opNames.terminate, [this.uuid, [containerUuid]])
   }
 
   async getContainer (uuid: ContainerUuid): Promise<Container | undefined> {

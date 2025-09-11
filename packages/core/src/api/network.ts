@@ -18,7 +18,7 @@ export interface Network {
    * Register or reregister agent in network.
    * On every network restart agent should reconnect to network.
    */
-  register: (record: AgentRecord, agent: NetworkAgent) => Promise<ContainerEndpointRef[]>
+  register: (record: AgentRecord, agent: NetworkAgent) => Promise<ContainerUuid[]>
 
   // Unregister an agent from the network.
   // Will call terminate for every connection/references.
