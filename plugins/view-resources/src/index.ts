@@ -16,6 +16,7 @@
 
 import { type Resources } from '@hcengineering/platform'
 import { getEventPopupPositionElement, type PopupAlignment } from '@hcengineering/ui'
+import { canCopyLink } from '@hcengineering/view'
 import { actionImpl } from './actionImpl'
 import ActionsPopup from './components/ActionsPopup.svelte'
 import ArrayEditor from './components/ArrayEditor.svelte'
@@ -149,7 +150,7 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
-import { canCopyLink, getLink, openDocFromRef } from './utils'
+import { getLink, openDocFromRef } from './utils'
 import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'

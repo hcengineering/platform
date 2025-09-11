@@ -60,6 +60,7 @@ import {
   type Step,
   type Transition,
   type Trigger,
+  type TriggerResult,
   type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
@@ -131,6 +132,8 @@ export class TTransition extends TDoc implements Transition {
     trigger!: Ref<Trigger>
 
   triggerParams!: Record<string, any>
+
+  result?: TriggerResult | null
 }
 
 @Model(process.class.ExecutionLog, core.class.Doc, DOMAIN_PROCESS_LOG)
@@ -668,7 +671,8 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.Insert,
-      editor: process.transformEditor.ArrayElementEditor,
+      allowMany: true,
+      editor: process.transformEditor.MultiArrayElementEditor,
       type: 'transform'
     },
     process.function.Insert
@@ -681,6 +685,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.Remove,
+      allowMany: true,
       editor: process.transformEditor.ArrayElementEditor,
       type: 'transform'
     },
@@ -694,6 +699,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.RemoveFirst,
+      allowMany: true,
       type: 'transform'
     },
     process.function.RemoveFirst
@@ -706,18 +712,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.RemoveLast,
-      type: 'transform'
-    },
-    process.function.RemoveLast
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.RemoveLast,
+      allowMany: true,
       type: 'transform'
     },
     process.function.RemoveLast
@@ -729,11 +724,48 @@ export function createModel (builder: Builder): void {
     {
       of: contact.mixin.Employee,
       editor: process.component.RoleEditor,
+      presenter: process.transformPresenter.RolePresenter,
       category: 'array',
       label: core.string.Role,
       type: 'context'
     },
     process.function.RoleContext
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.class.Person,
+      category: 'attribute',
+      label: process.string.CurrentUser,
+      type: 'context'
+    },
+    process.function.CurrentUser
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.mixin.Employee,
+      category: 'attribute',
+      label: process.string.CurrentUser,
+      type: 'context'
+    },
+    process.function.CurrentEmployee
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.CurrentDate,
+      type: 'context'
+    },
+    process.function.CurrentDate
   )
 
   builder.mixin(process.class.Process, core.class.Class, view.mixin.AttributePresenter, {
@@ -1018,6 +1050,20 @@ export function createModel (builder: Builder): void {
       requiredParams: ['association', 'direction', '_id']
     },
     process.method.AddRelation
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: card.string.AddTag,
+      objectClass: card.class.Tag,
+      editor: process.component.AddTagEditor,
+      presenter: process.component.AddTagPresenter,
+      contextClass: card.class.Card,
+      requiredParams: ['_id']
+    },
+    process.method.AddTag
   )
 
   builder.createDoc(

@@ -66,6 +66,7 @@
   export let enableAttachments: boolean = true
   export let isScrollable = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let fullWidth = false
 
   export let useDirectAttachDelete = false
   export let boundary: HTMLElement | undefined = undefined
@@ -373,6 +374,10 @@
     }
   }
 
+  export function getAttachments (): Attachment[] {
+    return Array.from(attachments.values())
+  }
+
   $: dispatch('attachments', {
     size: attachments.size,
     values: attachments.size === 0 ? true : attachments
@@ -408,6 +413,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex-col clear-mins"
+  class:w-full={fullWidth}
   on:paste={(ev) => pasteAction(ev)}
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
@@ -435,7 +441,9 @@
     on:blur
     on:focus
     {attachFile}
-  />
+  >
+    <slot name="actions" slot="actions" />
+  </StyledTextBox>
   {#if attachments.size > 0 && enableAttachments}
     <AttachmentsGrid
       attachments={Array.from(attachments.values())}

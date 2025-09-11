@@ -28,7 +28,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { buildResult, Mode, Modes, parseValue } from '../../query'
+  import { buildResult, Mode, parseValue } from '../../query'
   import ContextSelectorPopup from '../attributeEditors/ContextSelectorPopup.svelte'
   import ContextValue from '../attributeEditors/ContextValue.svelte'
 
@@ -78,7 +78,7 @@
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
   function changeResult () {
-    if (val === undefined || val === '') {
+    if (!selectedMode.withoutEditor && (val === undefined || val === '')) {
       dispatch('change', null)
       return
     }
@@ -103,60 +103,61 @@
       changeResult()
     }}
   />
-
-  <div class="text-input" class:context={contextValue}>
-    {#if contextValue}
-      <ContextValue
-        {process}
-        masterTag={process.masterTag}
-        {contextValue}
-        {context}
-        {attribute}
-        category={presenterClass.category}
-        attrClass={presenterClass.attrClass}
-        on:update={(e) => {
-          onSelect(e.detail)
-        }}
-      />
-    {:else}
-      <div class="w-full">
-        {#if baseEditor}
-          <Component
-            is={baseEditor}
-            props={{
-              label: attribute?.label,
-              placeholder: attribute?.label,
-              kind: 'ghost',
-              size: 'large',
-              width: '100%',
-              justify: 'left',
-              readonly,
-              type: attribute?.type,
-              value: val,
-              onChange,
-              focus
-            }}
-          />
-        {/if}
+  {#if !selectedMode.withoutEditor}
+    <div class="text-input" class:context={contextValue}>
+      {#if contextValue}
+        <ContextValue
+          {process}
+          masterTag={process.masterTag}
+          {contextValue}
+          {context}
+          {attribute}
+          category={presenterClass.category}
+          attrClass={presenterClass.attrClass}
+          on:update={(e) => {
+            onSelect(e.detail)
+          }}
+        />
+      {:else}
+        <div class="w-full">
+          {#if baseEditor}
+            <Component
+              is={baseEditor}
+              props={{
+                label: attribute?.label,
+                placeholder: attribute?.label,
+                kind: 'ghost',
+                size: 'large',
+                width: '100%',
+                justify: 'left',
+                readonly,
+                type: attribute?.type,
+                value: val,
+                onChange,
+                focus
+              }}
+            />
+          {/if}
+        </div>
+      {/if}
+      <div class="button flex-row-center">
+        <Button
+          icon={IconAdd}
+          kind="ghost"
+          on:click={(e) => {
+            selectContext(e)
+          }}
+        />
+        <Button
+          icon={IconClose}
+          kind="ghost"
+          on:click={() => {
+            dispatch('delete')
+          }}
+        />
       </div>
-    {/if}
-    <div class="button flex-row-center">
-      <Button
-        icon={IconAdd}
-        kind="ghost"
-        on:click={(e) => {
-          selectContext(e)
-        }}
-      />
-      <Button
-        icon={IconClose}
-        kind="ghost"
-        on:click={() => {
-          dispatch('delete')
-        }}
-      />
     </div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">

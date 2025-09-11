@@ -102,7 +102,9 @@
     "ArraySizeLt": "Tamanho menor que",
     "ArraySizeLte": "Tamanho menor ou igual a",
     "Cancelled": "Cancelado",
-    "WaitUntil": "Aguardar até"
+    "WaitUntil": "Aguardar até",
+    "CurrentUser": "Usuário Atual",
+    "CurrentDate": "Data Atual"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

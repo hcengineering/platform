@@ -12,31 +12,35 @@
 <!-- limitations under the License. -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Card } from '@hcengineering/card'
-  import core, { SortingOrder } from '@hcengineering/core'
+  import { Card, type MasterTag } from '@hcengineering/card'
+  import core, { type Ref, SortingOrder } from '@hcengineering/core'
   import ui, {
     eventToHTMLElement,
     IconSettings,
     Label,
     ModernButton,
-    ModernEditbox,
     Scroller,
     SearchInput,
     Loading,
     showPopup
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { type IntlString } from '@hcengineering/platform'
+  import { NewCardForm } from '@hcengineering/card-resources'
+  import card from '@hcengineering/card'
+  import chat from '@hcengineering/chat'
 
   import HomeCardPresenter from './HomeCardPresenter.svelte'
   import HomeSettings from './HomeSettings.svelte'
-  import CreateCardPopup from './CreateCardPopup.svelte'
-  import card from '../plugin'
+  import home from '../plugin'
 
   const cardsQuery = createQuery()
   const limitStep = 50
+  const client = getClient()
 
-  const dispatch = createEventDispatcher()
+  export let header: IntlString = home.string.Home
+  export let baseQuery: Record<string, unknown> = {}
+  export let baseClass: Ref<MasterTag> | undefined = undefined
 
   let divScroll: HTMLDivElement
   let limit = limitStep
@@ -44,9 +48,21 @@
   let total = -1
   let isLoading = true
   let search: string = ''
+  let classQuery: Record<string, unknown> = {}
+
+  // Get descendants for baseClass using model hierarchy
+  $: if (baseClass !== undefined) {
+    const hierarchy = client.getHierarchy()
+    const descendants = hierarchy.getDescendants(baseClass)
+    const allClasses = [baseClass, ...descendants]
+    classQuery = allClasses.length > 1 ? { _class: { $in: allClasses } } : { _class: baseClass }
+  } else {
+    classQuery = {}
+  }
 
   $: searchQuery = search != null && search.trim() !== '' ? { $search: search } : {}
-  $: resultQuery = { ...searchQuery }
+  $: filterQuery = {}
+  $: resultQuery = { ...baseQuery, ...classQuery, ...searchQuery, ...filterQuery }
   $: cardsQuery.query(
     card.class.Card,
     resultQuery,
@@ -111,26 +127,13 @@
   function onSettings (e: MouseEvent): void {
     showPopup(HomeSettings, {}, eventToHTMLElement(e))
   }
-
-  function onShare (): void {
-    showPopup(CreateCardPopup, { title, changeType: true }, 'center', async (result) => {
-      if (result !== undefined) {
-        const doc = await getClient().findOne(card.class.Card, { _id: result })
-        if (doc === undefined) return
-        dispatch('selectCard', doc)
-      }
-    })
-    title = ''
-  }
-
-  let title: string = ''
 </script>
 
 <Scroller bind:divScroll {onScroll} padding="2rem 4rem">
   <div class="home">
     <div class="header flex-gap-2">
       <div class="header__title">
-        <Label label={card.string.Home} />
+        <Label label={header} />
       </div>
       <div class="flex flex-gap-2">
         <SearchInput bind:value={search} collapsed />
@@ -143,30 +146,9 @@
       _class={card.class.Card}
       query={searchQuery}
       space={undefined}
-      on:change={({ detail }) => (resultQuery = detail)}
+      on:change={({ detail }) => (filterQuery = detail)}
     />
-    <div class="create-card">
-      <ModernEditbox
-        bind:value={title}
-        label={card.string.WhatDoYouWantToShare}
-        size="large"
-        kind="secondary"
-        width="100%"
-        disabled={false}
-        autoFocus={true}
-      >
-        <svelte:fragment slot="after">
-          <ModernButton
-            label={card.string.Share}
-            size="small"
-            kind="primary"
-            disabled={title.trim() === ''}
-            on:click={onShare}
-          />
-        </svelte:fragment>
-      </ModernEditbox>
-    </div>
-
+    <NewCardForm />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}
@@ -209,12 +191,6 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-  }
-
-  .create-card {
-    display: flex;
-    width: 100%;
-    margin: 1rem 0;
   }
 
   .header {

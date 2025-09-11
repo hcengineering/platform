@@ -54,7 +54,7 @@
     "@hcengineering/rank": "^0.6.4",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/process": "^0.6.0",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "fast-equals": "^5.2.2"
   }
 }

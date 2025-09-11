@@ -414,6 +414,23 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(builder, {
+    action: view.actionImpl.CopyTextToClipboard,
+    actionProps: {
+      textProvider: card.function.GetSpaceAccessPublicLink
+    },
+    label: card.string.GetIndividualPublicLink,
+    icon: view.icon.CopyLink,
+    input: 'any',
+    category: view.category.General,
+    target: card.class.CardSpace,
+    query: {},
+    visibilityTester: card.function.CanGetSpaceAccessPublicLink,
+    context: {
+      mode: ['context', 'browser']
+    }
+  })
+
   builder.mixin(card.class.CardSpace, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: card.class.Card,
@@ -452,7 +469,7 @@ export function createModel (builder: Builder): void {
             label: core.string.Spaces,
             spaceClass: card.class.CardSpace,
             addSpaceLabel: core.string.Space,
-            icon: card.icon.Card,
+            icon: card.icon.Space,
             // intentionally left empty in order to make space presenter working
             specials: []
           }

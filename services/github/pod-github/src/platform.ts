@@ -90,7 +90,7 @@ export class PlatformWorker {
     readonly ctx: MeasureContext,
     readonly app: App,
     readonly brandingMap: BrandingMap,
-    readonly periodicSyncInterval = 10 * 60 * 1000 // 10 minutes
+    readonly periodicSyncInterval = 24 * 60 * 60 * 1000 // 24 hours
   ) {
     registerLoaders()
   }
@@ -732,7 +732,7 @@ export class PlatformWorker {
     }
   }
 
-  async checkRefreshToken (ctx: MeasureContext, auth: GithubUserRecord, force: boolean = false): Promise<void> {
+  async checkRefreshToken (ctx: MeasureContext, auth: GithubUserRecord, force: boolean = false): Promise<boolean> {
     if (auth.refreshToken != null && auth.expiresIn != null && auth.expiresIn < Date.now() / 1000) {
       const uri =
         'https://github.com/login/oauth/access_token?' +
@@ -754,6 +754,7 @@ export class PlatformWorker {
       if (resultJson.error !== undefined) {
         // We need to clear github integration info.
         await this.revokeUserAuth(ctx, auth)
+        return false
       } else {
         // Update okit
         const nowTime = Date.now() / 1000
@@ -774,8 +775,10 @@ export class PlatformWorker {
         auth.scope = dta.scope
 
         await this.userManager.updateUser(dta)
+        return true
       }
     }
+    return true
   }
 
   async getAccount (login: string): Promise<GithubUserRecord | undefined> {

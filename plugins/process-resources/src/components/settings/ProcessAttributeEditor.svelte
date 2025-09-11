@@ -17,9 +17,9 @@
   import { getAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { AnySvelteComponent } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import { getContext } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
-  import { createEventDispatcher } from 'svelte'
 
   export let process: Process
   export let _class: Ref<Class<Doc>>
@@ -28,6 +28,7 @@
   export let allowRemove: boolean = false
   export let forbidValue: boolean = false
   export let allowArray: boolean = false
+  export let objectKey: string | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -36,14 +37,14 @@
   function onChange (value: any | undefined): void {
     if (value === undefined) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete (object as any)[key]
+      delete (object as any)[objectKey ?? key]
     } else {
-      ;(object as any)[key] = value
+      ;(object as any)[objectKey ?? key] = value
     }
-    dispatch('change', { value })
+    dispatch('change', { value, object })
   }
 
-  $: value = object[key]
+  $: value = object[objectKey ?? key]
 
   $: attribute = hierarchy.getAttribute(_class, key)
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)

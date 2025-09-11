@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Association, Doc, generateId, Ref, RefTo, Relation } from '@hcengineering/core'
+  import core, { AnyAttribute, Association, generateId, Ref, Relation } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Process, Step } from '@hcengineering/process'
   import { Label, tooltip } from '@hcengineering/ui'

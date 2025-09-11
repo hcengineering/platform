@@ -147,6 +147,7 @@
     "Icon": "图标",
     "Color": "颜色",
     "AutomationOnly": "仅限自动化",
-    "CopyLink": "复制链接"
+    "CopyLink": "复制链接",
+    "ValueIsSet": "值已设置"
   }
 }

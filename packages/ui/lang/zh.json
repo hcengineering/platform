@@ -104,6 +104,9 @@
     "Yesterday": "昨天",
     "ThisWeek": "本周",
     "ThisMonth": "本月",
-    "ThisYear": "今年"
+    "ThisYear": "今年",
+    "EmojiStyle": "表情样式",
+    "EmojiSystem": "系统默认",
+    "EmojiNoto": "Noto Color"
   }
 }

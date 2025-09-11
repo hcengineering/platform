@@ -237,9 +237,44 @@ export class TSessionManager implements SessionManager {
     this.ticks++
   }
 
+  calcWorkspaceStats (sessions: { session: Session }[]): { sys: number, user: number } {
+    let userSessions: number = 0
+    let sysSession: number = 0
+    for (const s of sessions) {
+      if (s.session.getUser() === systemAccountUuid) {
+        sysSession++
+      } else {
+        userSessions++
+      }
+    }
+    return { sys: sysSession, user: userSessions }
+  }
+
   private handleWorkspaceTick (): void {
-    this.ctx.measure('workspaces', this.workspaces.size)
     this.ctx.measure('sessions', this.sessions.size)
+
+    const { sys, user } = this.calcWorkspaceStats(Array.from(this.sessions.values()))
+
+    let userWorkspaces: number = 0
+    let sysOnlyWorkspaces: number = 0
+
+    for (const ws of this.workspaces.values()) {
+      const { sys, user } = this.calcWorkspaceStats(Array.from(ws.sessions.values()))
+      if (user > 0) {
+        userWorkspaces++
+      } else {
+        if (sys > 0) {
+          sysOnlyWorkspaces++
+        }
+      }
+    }
+
+    this.ctx.measure('sessions-user', user)
+    this.ctx.measure('sessions-system', sys)
+
+    this.ctx.measure('workspaces', this.workspaces.size)
+    this.ctx.measure('workspaces-user', userWorkspaces)
+    this.ctx.measure('workspaces-systemonly', sysOnlyWorkspaces)
 
     if (this.ticks % (60 * ticksPerSecond) === 0) {
       const workspacesToUpdate: WorkspaceUuid[] = []

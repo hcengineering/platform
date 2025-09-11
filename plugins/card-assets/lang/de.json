@@ -12,6 +12,7 @@
     "Parent": "Eltern",
     "Tags": "Tags",
     "Tag": "Tag",
+    "AddTag": "Tag hinzufügen",
     "CardLibrary": "Kartenbibliothek",
     "MinimizeAll": "Alle minimieren",
     "ExpandAll": "Alle erweitern",
@@ -41,11 +42,10 @@
     "NoChildren": "Keine Kinder",
     "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement.",
     "AddCollaborators": "Mitarbeiter hinzufügen",
-    "Home": "Startseite",
-    "WhatDoYouWantToShare": "Was möchten Sie teilen?",
-    "Share": "Teilen",
-    "Compact": "Kompakt",
-    "Comfortable": "Komfortabel",
-    "Comfortable2": "Komfortabel 2"
+    "CardTitle": "Titel",
+    "Post": "Beitrag",
+    "GetIndividualPublicLink": "Personalisierten öffentlichen Link erhalten",
+    "ShowLess": "Weniger anzeigen",
+    "CardContent": "Was möchten Sie teilen?"
   }
 }

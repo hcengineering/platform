@@ -22,6 +22,8 @@ import { pipeline } from 'stream/promises'
 import { getImageMetadata } from '../metadata'
 import { TemporaryDir } from '../tempdir'
 import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from '../types'
+import { bmpToPng } from '../utils/bmp'
+import { heicToPng } from '../utils/heic'
 
 export class ImageProvider implements PreviewProvider {
   constructor (
@@ -40,6 +42,20 @@ export class ImageProvider implements PreviewProvider {
       const stream = await this.storage.get(ctx, { uuid: workspace } as any, name)
       await pipeline(stream, createWriteStream(path))
     })
+
+    // Handle HEIC conversion
+    if (contentType === 'image/heic' || contentType === 'image/heif') {
+      const pngFile = await heicToPng(ctx, path)
+      this.tempDir.rm(path)
+      return { mimeType: 'image/png', filePath: pngFile }
+    }
+
+    // Handle BMP conversion
+    if (contentType === 'image/bmp') {
+      const pngFile = await bmpToPng(ctx, path)
+      this.tempDir.rm(path)
+      return { mimeType: 'image/png', filePath: pngFile }
+    }
 
     return { mimeType: contentType, filePath: path }
   }

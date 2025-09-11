@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Context, SelectedContextFunc } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
+  import { Context, Process, SelectedContextFunc } from '@hcengineering/process'
+  import { Component, Label } from '@hcengineering/ui'
 
+  export let process: Process
   export let contextValue: SelectedContextFunc
   export let context: Context
 
@@ -25,5 +26,9 @@
 </script>
 
 {#if func !== undefined}
-  <Label label={func.label} />
+  {#if func.presenter !== undefined}
+    <Component is={func.presenter} props={{ context, contextValue, process }} />
+  {:else}
+    <Label label={func.label} />
+  {/if}
 {/if}

@@ -35,7 +35,7 @@
   function change (e: CustomEvent<any>): void {
     if (readonly || e.detail == null) return
     params = e.detail
-    dispatch('change', params)
+    dispatch('change', { params })
   }
 
   function getKeys (_class: Ref<Class<MasterTag>>): AnyAttribute[] {
@@ -87,7 +87,7 @@
       keys = keys.filter((k) => k !== key)
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (params as any)[key]
-      dispatch('change', params)
+      dispatch('change', { params })
     }
   }
 </script>

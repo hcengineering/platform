@@ -15,6 +15,7 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
+import ExecutionContextSelector from './components/attributeEditors/ExecutionContextSelector.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
 import RoleEditor from './components/contextEditors/RoleEditor.svelte'
@@ -42,6 +43,7 @@ import TransitionEditor from './components/settings/TransitionEditor.svelte'
 import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
+import MultiArrayElementEditor from './components/transformEditors/MultiArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
@@ -57,6 +59,8 @@ import NotifierExtension from './components/NotifierExtension.svelte'
 import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
 import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
 import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
+import AddTagEditor from './components/settings/AddTagEditor.svelte'
+import AddTagPresenter from './components/presenters/AddTagPresenter.svelte'
 import CardUpdateEditor from './components/settings/CardUpdateEditor.svelte'
 import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
 import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
@@ -69,6 +73,7 @@ import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
+import RolePresenter from './components/transformPresenters/RolePresenter.svelte'
 import { ProcessMiddleware } from './middleware'
 import {
   continueExecution,
@@ -100,6 +105,7 @@ export default async (): Promise<Resources> => ({
     ProcessPresenter,
     NestedContextSelector,
     RelatedContextSelector,
+    ExecutionContextSelector,
     FunctionSelector,
     Main,
     RunProcessCardPopup,
@@ -125,7 +131,9 @@ export default async (): Promise<Resources> => ({
     CardUpdatePresenter,
     ToDoSettingPresenter,
     TimeEditor,
-    TimePresenter
+    TimePresenter,
+    AddTagEditor,
+    AddTagPresenter
   },
   criteriaEditor: {
     DateCriteria,
@@ -137,10 +145,12 @@ export default async (): Promise<Resources> => ({
     ArrayCriteria
   },
   transformPresenter: {
-    NumberPresenter
+    NumberPresenter,
+    RolePresenter
   },
   transformEditor: {
     ArrayElementEditor,
+    MultiArrayElementEditor,
     DateOffsetEditor,
     NumberEditor,
     AppendEditor,

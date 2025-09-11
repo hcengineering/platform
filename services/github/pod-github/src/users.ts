@@ -45,6 +45,15 @@ export class UserManager {
   }
 
   failedRefs = new Set<string>()
+
+  cacheRecord (workspace: WorkspaceUuid, ref: PersonId, record: GithubUserRecord): void {
+    if (this.refUserCache.size > 1000) {
+      this.refUserCache.clear()
+    }
+    const key = `${workspace}.${ref}`
+    this.refUserCache.set(key, record)
+  }
+
   async getAccountByRef (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,

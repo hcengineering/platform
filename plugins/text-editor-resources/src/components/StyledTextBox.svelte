@@ -312,6 +312,7 @@
         dispatch('changeContent', evt.detail)
       }}
     >
+      <slot name="actions" slot="actions" />
       {#if !alwaysEdit && !hideExtraButtons}
         <div class="flex flex-reverse flex-grow gap-2 reverse">
           <ActionIcon

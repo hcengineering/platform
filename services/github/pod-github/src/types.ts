@@ -224,4 +224,6 @@ export interface GithubUserRecord {
   scope?: string
   error?: string | null
   accounts: Record<WorkspaceUuid, PersonId>
+
+  octokit?: Octokit
 }

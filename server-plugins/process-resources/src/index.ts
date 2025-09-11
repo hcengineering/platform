@@ -14,14 +14,24 @@
 //
 
 import cardPlugin, { Card } from '@hcengineering/card'
-import core, { Tx, TxCreateDoc, TxCUD, TxProcessor, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  ArrOf,
+  Doc,
+  RefTo,
+  Tx,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import process, {
   ContextId,
   Execution,
   Process,
   ProcessContext,
   ProcessToDo,
-  SelectedExecutonContext,
+  SelectedExecutionContext,
   State,
   Transition
 } from '@hcengineering/process'
@@ -33,6 +43,8 @@ import {
   All,
   Append,
   Ceil,
+  CurrentDate,
+  CurrentUser,
   Cut,
   Divide,
   FirstValue,
@@ -65,6 +77,7 @@ import {
   UpdateCard,
   CreateCard,
   AddRelation,
+  AddTag,
   CheckToDo,
   OnCardUpdateCheck,
   CheckTime
@@ -267,6 +280,30 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   let changed = false
   let index = 1
   for (const transition of transitions) {
+    if (transition.result?._id != null) {
+      exists.add(transition.result._id)
+      const context = _process.context[transition.result._id]
+      changed = true
+      const ctx: SelectedExecutionContext = {
+        type: 'context',
+        id: transition.result._id,
+        key: ''
+      }
+      const parentType =
+        transition.result.type._class === core.class.ArrOf
+          ? (transition.result.type as ArrOf<Doc>).of
+          : transition.result.type
+      const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
+      _process.context[transition.result._id] = {
+        name: context?.name ?? transition.result.name,
+        isResult: true,
+        type: transition.result.type,
+        _class,
+        index: index++,
+        producer: transition._id,
+        value: ctx
+      }
+    }
     for (const action of transition.actions) {
       if (action.context != null) {
         exists.add(action.context._id)
@@ -274,7 +311,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
         const current = _process.context[action.context._id]
         if (method?.contextClass != null) {
           changed = true
-          const ctx: SelectedExecutonContext = {
+          const ctx: SelectedExecutionContext = {
             type: 'context',
             id: action.context._id,
             key: ''
@@ -287,26 +324,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             producer: transition._id,
             value: ctx
           }
-        }
-      }
-      if (action.result?._id != null) {
-        exists.add(action.result._id)
-        const context = _process.context[action.result._id]
-        changed = true
-        const ctx: SelectedExecutonContext = {
-          type: 'context',
-          id: action.result._id,
-          key: ''
-        }
-        _process.context[action.result._id] = {
-          name: context?.name ?? action.result.name,
-          isResult: true,
-          type: action.result.type,
-          _class: action.result.type._class,
-          action: action._id,
-          index: index++,
-          producer: transition._id,
-          value: ctx
         }
       }
     }
@@ -326,6 +343,8 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   }
 }
 
+export * from './utils'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
@@ -334,11 +353,14 @@ export default async () => ({
     UpdateCard,
     CreateCard,
     AddRelation,
+    AddTag,
     CheckToDo,
     OnCardUpdateCheck,
     CheckTime
   },
   transform: {
+    CurrentDate,
+    CurrentUser,
     FirstValue,
     LastValue,
     Random,

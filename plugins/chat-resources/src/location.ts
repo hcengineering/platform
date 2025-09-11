@@ -26,10 +26,6 @@ export function isFavoritesLocation (loc: Location): boolean {
   return loc.path[2] === chatId && loc.path[3] === 'favorites'
 }
 
-export function isHomeLocation (loc: Location): boolean {
-  return loc.path[2] === chatId && loc.path[3] === 'home'
-}
-
 export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   if (loc.path[2] !== chatId) {
     return undefined
@@ -77,16 +73,6 @@ export function navigateToFavorites (): void {
 
   loc.path[2] = chatId
   loc.path[3] = 'favorites'
-  delete loc.query?.message
-
-  navigate(loc)
-}
-
-export function navigateToHome (): void {
-  const loc = getCurrentResolvedLocation()
-
-  loc.path[2] = chatId
-  loc.path[3] = 'home'
   delete loc.query?.message
 
   navigate(loc)

@@ -38,6 +38,7 @@ export default mergeIds(processId, process, {
     ProcessPresenter: '' as AnyComponent,
     ExecutonPresenter: '' as AnyComponent,
     ExecutonProgressPresenter: '' as AnyComponent,
+    ExecutionContextSelector: '' as AnyComponent,
     NestedContextSelector: '' as AnyComponent,
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,
@@ -65,7 +66,9 @@ export default mergeIds(processId, process, {
     CardUpdatePresenter: '' as AnyComponent,
     ToDoSettingPresenter: '' as AnyComponent,
     TimeEditor: '' as AnyComponent,
-    TimePresenter: '' as AnyComponent
+    TimePresenter: '' as AnyComponent,
+    AddTagEditor: '' as AnyComponent,
+    AddTagPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     StringCriteria: '' as AnyComponent,
@@ -77,6 +80,7 @@ export default mergeIds(processId, process, {
     RefCriteria: '' as AnyComponent
   },
   transformEditor: {
+    MultiArrayElementEditor: '' as AnyComponent,
     ArrayElementEditor: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
@@ -86,7 +90,8 @@ export default mergeIds(processId, process, {
     CutEditor: '' as AnyComponent
   },
   transformPresenter: {
-    NumberPresenter: '' as AnyComponent
+    NumberPresenter: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -187,6 +192,8 @@ export default mergeIds(processId, process, {
     ArraySizeGt: '' as IntlString,
     ArraySizeGte: '' as IntlString,
     ArraySizeLt: '' as IntlString,
-    ArraySizeLte: '' as IntlString
+    ArraySizeLte: '' as IntlString,
+    CurrentUser: '' as IntlString,
+    CurrentDate: '' as IntlString
   }
 })

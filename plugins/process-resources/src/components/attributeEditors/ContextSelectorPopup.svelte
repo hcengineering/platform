@@ -19,7 +19,7 @@
   import {
     Context,
     Process,
-    ProcessContext,
+    ProcessExecutionContext,
     ProcessFunction,
     RelatedContext,
     SelectedContext
@@ -54,7 +54,7 @@
     onClick({
       type: 'attribute',
       key: val.name,
-      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : []
+      functions: valueFunc !== undefined ? [valueFunc] : []
     })
   }
 
@@ -83,7 +83,7 @@
     dispatch('close')
   }
 
-  function onProcessContext (ctx: ProcessContext): void {
+  function onProcessContext (ctx: ProcessExecutionContext): void {
     onSelect(ctx.value)
     dispatch('close')
   }
@@ -155,15 +155,30 @@
       <div class="menu-separator" />
     {/if}
     {#if processContext.length > 0}
-      {#each processContext as f}
-        <button
-          on:click={() => {
-            onProcessContext(f)
-          }}
-          class="menu-item"
-        >
-          <ExecutionContextPresenter {process} contextValue={f.value} />
-        </button>
+      {#each processContext as pc}
+        {#if pc.attributes.length > 0}
+          <Submenu
+            component={ExecutionContextPresenter}
+            props={{
+              context: pc,
+              target: attribute,
+              contextValue: pc.value,
+              process,
+              onSelect: onClick
+            }}
+            options={{ component: plugin.component.ExecutionContextSelector }}
+            withHover
+          />
+        {:else}
+          <button
+            on:click={() => {
+              onProcessContext(pc)
+            }}
+            class="menu-item"
+          >
+            <ExecutionContextPresenter {process} contextValue={pc.value} />
+          </button>
+        {/if}
       {/each}
       <div class="menu-separator" />
     {/if}

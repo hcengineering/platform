@@ -14,12 +14,14 @@
 -->
 <script lang="ts">
   import card from '@hcengineering/card'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Execution, parseContext, Process, Step } from '@hcengineering/process'
+  import { Execution, ExecutionContext, parseContext, Process, Step } from '@hcengineering/process'
   import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { getContextMasterTag } from '../../utils'
+  import InitParamsEditor from './InitParamsEditor.svelte'
   import ProcessAttributeEditor from './ProcessAttributeEditor.svelte'
 
   export let process: Process
@@ -28,24 +30,25 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let _id = step.params._id
+  let _id: Ref<Process> = step.params._id as any
   $: context = parseContext(step.params.card)
-  $: masterTag = getContextMasterTag(client, context, process.masterTag) ?? process.masterTag
+  $: masterTag = getContextMasterTag(client, context, process) ?? process.masterTag
+
+  $: executionContext = (step.params.context ?? {}) as ExecutionContext
 
   const dispatch = createEventDispatcher()
 
   function change (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {
       ;(step.params as any)._id = e.detail
+      _id = e.detail
       dispatch('change', step)
     }
   }
 
   let thisCard: boolean = step.params.card === undefined
 
-  $: ancestors = hierarchy
-    .getAncestors(masterTag)
-    .filter((it) => !hierarchy.isMixin(it) && hierarchy.isDerived(it, card.class.Card))
+  $: ancestors = hierarchy.getAncestors(masterTag).filter((it) => hierarchy.isDerived(it, card.class.Card))
 
   let processes: Process[] = []
   let items: DropdownTextItem[] = []
@@ -62,14 +65,19 @@
     .findAllSync(plugin.class.Process, { masterTag: { $in: ancestors }, _id: { $ne: process._id } })
 
   function changeThis (): void {
-    _id = undefined
     step.params = {}
     dispatch('change', step)
   }
 
   function changeTarget (e: CustomEvent<any>): void {
-    _id = undefined
     step.params.card = e.detail.value
+  }
+
+  function changeContext (e: CustomEvent<ExecutionContext>): void {
+    if (e.detail !== undefined) {
+      step.params.context = e.detail
+      dispatch('change', step)
+    }
   }
 </script>
 
@@ -103,8 +111,17 @@
     on:selected={change}
   />
 </div>
+<div class="divider" />
+<div class="grid">
+  <InitParamsEditor {process} targetProcess={_id} context={executionContext} on:change={changeContext} />
+</div>
 
 <style lang="scss">
+  .divider {
+    border-bottom: 1px solid var(--divider-color);
+    margin: 1rem 0;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: 1fr 1.5fr;

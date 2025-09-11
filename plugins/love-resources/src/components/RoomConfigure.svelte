@@ -204,13 +204,14 @@
           if (isOffice(room) && rX === 0 && rY === 0) e.stopPropagation()
         }}
       >
-        {#if isOffice(room) && rX === 0 && rY === 0}
+        {#if isOffice(room) && rX === 0 && rY === 0 && !room.person}
           <AssigneeBox
             _class={contact.class.Person}
             excluded={excludedPersons}
             shouldShowName={false}
             showNavigate={false}
             width={'100%'}
+            height={'100%'}
             label={contact.string.Person}
             value={room.person}
             avatarSize={'full'}

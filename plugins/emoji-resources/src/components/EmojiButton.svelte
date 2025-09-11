@@ -53,7 +53,7 @@
         <span><img src={image.src} alt={displayedEmoji.shortcode} /></span>
       {/await}
     {:else}
-      <span>{displayedEmoji.emoji}</span>
+      <span class="emoji">{displayedEmoji.emoji}</span>
     {/if}
   </button>
 {/if}

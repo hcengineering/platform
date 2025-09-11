@@ -22,12 +22,9 @@
   import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { CardTagsColored, CardPathPresenter, CardTimestamp, openCardInSidebar } from '@hcengineering/card-resources'
 
   import { isHomeSettingEnabled, compactSettingId, homeSettingsStore, comfortableSettingId2 } from '../home'
-  import { openCardInSidebar } from '../utils'
-  import CardTagsColored from './CardTagsColored.svelte'
-  import CardPathPresenter from './CardPathPresenter.svelte'
-  import CardTimestamp from './CardTimestamp.svelte'
   import SystemAvatar from '@hcengineering/contact-resources/src/components/SystemAvatar.svelte'
 
   export let card: WithLookup<Card>

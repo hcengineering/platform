@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import contact, { Employee } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
 import { Doc, Ref, Timestamp } from '@hcengineering/core'
 import { Execution, parseContext } from '@hcengineering/process'
 import { ProcessControl } from '@hcengineering/server-process'
-import { getAttributeValue } from './utils'
+import { getContextValue } from './utils'
 
 // #region ArrayReduce
 
@@ -54,10 +54,8 @@ export async function Insert (
   if (props.value == null) return value
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const addition = getAttributeValue(control, execution, context)
-      value.push(addition)
-    }
+    const val = await getContextValue(props.value, control, execution)
+    Array.isArray(val) ? value.push(...val) : value.push(val)
   } else {
     value.push(props.value)
   }
@@ -74,14 +72,11 @@ export async function Remove (
   if (props.value == null) return value
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const addition = getAttributeValue(control, execution, context)
-      return value.filter((item) => item !== addition)
-    }
+    const val = await getContextValue(props.value, control, execution)
+    return value.filter((item) => item !== val)
   } else {
     return value.filter((item) => item !== props.value)
   }
-  return value
 }
 
 export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
@@ -121,11 +116,9 @@ export async function Prepend (
 ): Promise<string> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const addition = getAttributeValue(control, execution, context)
-      if (typeof addition !== 'string') return value
-      return addition + value
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'string') return value
+    return val + value
   } else if (typeof value === 'string') {
     return props.value + value
   }
@@ -140,11 +133,9 @@ export async function Append (
 ): Promise<string> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const addition = getAttributeValue(control, execution, context)
-      if (typeof addition !== 'string') return value
-      return value + addition
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'string') return value
+    return value + val
   } else if (typeof value === 'string') {
     return value + props.value
   }
@@ -216,10 +207,9 @@ export async function Add (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = getAttributeValue(control, execution, context)
-      return value + offset
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return value + val
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     return value + props.value
   }
@@ -234,10 +224,9 @@ export async function Subtract (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = getAttributeValue(control, execution, context)
-      return value - offset
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return value - val
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     return value - props.value
   }
@@ -252,10 +241,9 @@ export async function Multiply (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const val = getAttributeValue(control, execution, context)
-      return value * val
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return value * val
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     return value * props.value
   }
@@ -270,13 +258,11 @@ export async function Divide (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const val = getAttributeValue(control, execution, context)
-      if (val === 0) {
-        return value // Avoid division by zero
-      }
-      return value / val
+    const val = await getContextValue(props.value, control, execution)
+    if (val === 0 || typeof val !== 'number') {
+      return value // Avoid division by zero
     }
+    return value / val
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     if (props.value === 0) {
       return value // Avoid division by zero
@@ -294,13 +280,11 @@ export async function Modulo (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const val = getAttributeValue(control, execution, context)
-      if (val === 0) {
-        return value // Avoid division by zero
-      }
-      return value % val
+    const val = await getContextValue(props.value, control, execution)
+    if (val === 0 || typeof val !== 'number') {
+      return value // Avoid division by zero
     }
+    return value % val
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     if (props.value === 0) {
       return value // Avoid division by zero
@@ -318,10 +302,9 @@ export async function Power (
 ): Promise<number> {
   const context = parseContext(props.value)
   if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const val = getAttributeValue(control, execution, context)
-      return Math.pow(value, val)
-    }
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return Math.pow(value, val)
   } else if (typeof value === 'number' && typeof props.value === 'number') {
     return Math.pow(value, props.value)
   }
@@ -370,6 +353,19 @@ export async function RoleContext (
   if (targetRole === undefined) return []
   const users = await control.client.findAll(contact.class.UserRole, { role: targetRole })
   return users.map((it) => it.user)
+}
+
+export async function CurrentUser (
+  value: null,
+  props: Record<string, any>,
+  control: ProcessControl
+): Promise<Ref<Person> | undefined> {
+  const socialId = await control.client.findOne(contact.class.SocialIdentity, { _id: control.client.user as any })
+  return socialId?.attachedTo
+}
+
+export async function CurrentDate (): Promise<Timestamp> {
+  return Date.now()
 }
 
 // #endregion
