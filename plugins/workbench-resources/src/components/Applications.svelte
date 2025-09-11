@@ -32,10 +32,13 @@
 
   const dispatch = createEventDispatcher()
 
-  function getClickHandler(app: Application, customProps: any) {
-    return customProps.onClick ?? (() => {
-      if (app._id === active) dispatch('toggleNav')
-    })
+  function getClickHandler (app: Application, customProps: any) {
+    return (
+      customProps.onClick ??
+      (() => {
+        if (app._id === active) dispatch('toggleNav')
+      })
+    )
   }
 
   let loaded: boolean = false
