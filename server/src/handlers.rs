@@ -37,6 +37,9 @@ pub enum ApiError {
     S3(String),
 
     #[error(transparent)]
+    Db(#[from] postgres::DbError),
+
+    #[error(transparent)]
     ActixError(#[from] actix_web::error::Error),
 
     #[error(transparent)]

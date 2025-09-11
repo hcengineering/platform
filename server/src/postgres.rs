@@ -3,16 +3,34 @@ use std::pin::Pin;
 use bb8_postgres::PostgresConnectionManager;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
+use tokio_postgres::NoTls;
 use tokio_postgres::error::SqlState;
 use tokio_postgres::{self as pg};
-use tokio_postgres::{Error, NoTls};
 use tracing::*;
 
 use crate::config::CONFIG;
 
 pub type Pool = bb8::Pool<PostgresConnectionManager<NoTls>>;
 
-pub async fn pool() -> anyhow::Result<Pool> {
+#[derive(thiserror::Error, Debug)]
+pub enum DbError {
+    #[error(transparent)]
+    Pool(#[from] bb8::RunError<tokio_postgres::Error>),
+
+    #[error(transparent)]
+    Db(#[from] tokio_postgres::Error),
+
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Refinery(#[from] refinery::Error),
+
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+}
+
+pub async fn pool() -> anyhow::Result<Pool, DbError> {
     let manager = bb8_postgres::PostgresConnectionManager::new_from_stringlike(
         &CONFIG.db_connection,
         tokio_postgres::NoTls,
@@ -69,7 +87,7 @@ pub async fn pool() -> anyhow::Result<Pool> {
 }
 
 #[instrument(level = "debug", skip_all)]
-pub async fn find_blob_by_hash(pool: &Pool, hash: &str) -> anyhow::Result<Option<String>> {
+pub async fn find_blob_by_hash(pool: &Pool, hash: &str) -> anyhow::Result<Option<String>, DbError> {
     let connection = pool.get().await?;
 
     let blob = connection
@@ -85,7 +103,7 @@ pub async fn find_blob_by_hash(pool: &Pool, hash: &str) -> anyhow::Result<Option
 }
 
 #[instrument(level = "debug", skip_all)]
-pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<()> {
+pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(), DbError> {
     let connection = pool.get().await?;
 
     connection
@@ -108,7 +126,7 @@ pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
-) -> anyhow::Result<Vec<ObjectPart<T>>> {
+) -> anyhow::Result<Vec<ObjectPart<T>>, DbError> {
     let connection = pool.get().await?;
 
     let rows = connection
@@ -138,7 +156,7 @@ pub async fn append_part<D: serde::Serialize>(
     part: u32,
     inline: Option<Bytes>,
     data: &D,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<(), DbError> {
     let connection = pool.get().await?;
 
     let data = serde_json::to_value(data)?;
@@ -160,7 +178,7 @@ pub async fn set_part<D: serde::Serialize>(
     key: &str,
     inline: Option<Bytes>,
     data: &D,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<(), DbError> {
     let mut connection = pool.get().await?;
 
     let transaction = connection.transaction().await?;
@@ -192,12 +210,9 @@ pub async fn set_part<D: serde::Serialize>(
     Ok(())
 }
 
-pub fn is_unique_constraint_violation(e: &anyhow::Error) -> bool {
-    get_pg_error_code(e) == Some(&SqlState::UNIQUE_VIOLATION)
-}
-
-fn get_pg_error_code(e: &anyhow::Error) -> Option<&SqlState> {
-    e.downcast_ref::<tokio_postgres::Error>()
-        .and_then(|pg_err| pg_err.as_db_error())
-        .map(|db_err| db_err.code())
+pub fn is_unique_constraint_violation(e: &DbError) -> bool {
+    match e {
+        DbError::Db(e) => e.code() == Some(&SqlState::UNIQUE_VIOLATION),
+        _ => false,
+    }
 }

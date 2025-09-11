@@ -9,6 +9,7 @@ use size::Size;
 use tracing::*;
 
 use crate::handlers::ApiError;
+use crate::postgres::DbError;
 use crate::s3::S3Client;
 use crate::{
     config::CONFIG,
@@ -159,11 +160,7 @@ where
     Ok(blob)
 }
 
-async fn make_blob(
-    pool: &Pool,
-    s3_key: &String,
-    hash: &str,
-) -> Result<Option<String>, anyhow::Error> {
+async fn make_blob(pool: &Pool, s3_key: &String, hash: &str) -> Result<Option<String>, DbError> {
     let mut retries = 3;
 
     loop {
