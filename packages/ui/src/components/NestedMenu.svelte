@@ -35,7 +35,7 @@
   let filteredItems: [DropdownIntlItem, DropdownIntlItem[]][] = []
   const localizedSearch = new LocalizedSearch()
   let isInitialRender = true
-  let resizeTimeout: number
+  let resizeTimeout: ReturnType<typeof setTimeout>
 
   const dispatch = createEventDispatcher()
 
