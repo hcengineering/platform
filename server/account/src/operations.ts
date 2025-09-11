@@ -707,7 +707,7 @@ export async function createAccessLink (
   }
 
   if (expiration !== undefined && expiration > RECENT_PAST_MS) {
-    ctx.error('Not before appears to be in milliseconds instead of seconds', { exp: expiration })
+    ctx.error('Expiration appears to be in milliseconds instead of seconds', { exp: expiration })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
