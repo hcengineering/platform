@@ -30,7 +30,7 @@
       label={love.string.Invite}
       icon={love.icon.Invite}
       action={() => {
-        sendInvite(person, $myInfo?.room)
+        sendInvite(person)
       }}
     />
     {#if room.access === RoomAccess.Knock}

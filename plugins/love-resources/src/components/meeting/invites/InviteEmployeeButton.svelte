@@ -1,5 +1,6 @@
+
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,46 +14,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ModernButton, getCurrentLocation } from '@hcengineering/ui'
-  import view, { decodeObjectURI } from '@hcengineering/view'
+  import { ModernButton } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
-
-  import chunter from '../plugin'
-  import { createDirect } from '../utils'
-  import { openChannelInSidebar } from '../navigation'
-  import { Asset } from '@hcengineering/platform'
+  import { sendInvite } from '../../../meetingController'
+  import love from '../../../plugin'
 
   export let employee: Employee
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let icon: Asset | undefined = undefined
   export let type: 'type-button' | 'type-button-icon' = 'type-button'
 
-  async function openDirect (): Promise<void> {
-    const dm = await createDirect([employee._id])
-    if (dm === undefined) {
-      return
-    }
-
-    const loc = getCurrentLocation()
-    const [_id] = decodeObjectURI(loc.path[3]) ?? []
-
-    if (_id === dm) {
-      return
-    }
-
-    await openChannelInSidebar(dm, chunter.class.DirectMessage, undefined, undefined, true)
+  async function invite(): Promise<void> {
+    await sendInvite(employee._id)
   }
 </script>
 
 <div class="button-container">
   <ModernButton
-    label={type === 'type-button-icon' ? undefined : chunter.string.Message}
-    icon={icon ?? view.icon.Bubble}
+    label={type === 'type-button-icon' ? undefined : love.string.Invite}
+    icon={love.icon.Invite}
     size="small"
     iconSize="small"
     {type}
     {kind}
-    on:click={openDirect}
+    on:click={invite}
   />
 </div>
 
@@ -63,3 +47,4 @@
     background-color: var(--theme-button-container-color);
   }
 </style>
+

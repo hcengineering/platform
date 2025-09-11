@@ -18,9 +18,9 @@
   import { playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest } from '@hcengineering/love'
-  import love from '../plugin'
+  import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
-  import { acceptJoinRequest, rejectJoinRequest } from '../meetingController'
+  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetingController'
 
   export let request: JoinRequest
 

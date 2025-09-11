@@ -719,6 +719,12 @@ export function createModel (builder: Builder): void {
     love.completion.MeetingMinutesCategory
   )
 
+  // Extensions
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: contact.extension.EmployeePopupActions,
+    component: love.component.InviteEmployeeButton
+  })
+
   createAttributePresenter(
     builder,
     view.component.DateTimePresenter,

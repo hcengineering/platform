@@ -32,7 +32,8 @@ export default mergeIds(loveId, love, {
     WidgetSwitcher: '' as AnyComponent,
     RoomLanguageEditor: '' as AnyComponent,
     MediaPopupItemExt: '' as AnyComponent,
-    SharingStateIndicator: '' as AnyComponent
+    SharingStateIndicator: '' as AnyComponent,
+    InviteEmployeeButton: '' as AnyComponent,
   },
   app: {
     Love: '' as Ref<Doc>

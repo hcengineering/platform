@@ -36,11 +36,11 @@
     createMeetingWidget,
     getRoomName,
   } from '../../utils'
-  import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
-  import InvitePopup from '../InvitePopup.svelte'
+  import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
+  import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
-  import RequestPopup from '../RequestPopup.svelte'
-  import RequestingPopup from '../RequestingPopup.svelte'
+  import RequestPopup from './invites/RequestPopup.svelte'
+  import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
   import { leaveMeeting } from '../../meetingController'

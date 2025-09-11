@@ -108,7 +108,9 @@ export async function cancelInvites (invites: Invite[]): Promise<void> {
   }
 }
 
-export async function sendInvite (person: Ref<Person>, room: Ref<Room> | undefined): Promise<void> {
+export async function sendInvite (person: Ref<Person>): Promise<void> {
+  const myParticipation = get(myInfo)
+  const room = myParticipation?.room
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
   const me = getCurrentEmployee()

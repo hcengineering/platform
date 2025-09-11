@@ -20,8 +20,8 @@
   import { Invite } from '@hcengineering/love'
   import { onDestroy, onMount } from 'svelte'
 
-  import love from '../plugin'
-  import { acceptInvite, rejectInvite } from '../meetingController'
+  import love from '../../../plugin'
+  import { acceptInvite, rejectInvite } from '../../../meetingController'
 
   export let invite: Invite
 
