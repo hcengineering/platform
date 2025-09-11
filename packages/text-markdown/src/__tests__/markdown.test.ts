@@ -36,8 +36,8 @@ expect.extend({
     return {
       message: () =>
         pass
-          ? `Expected markdown strings NOT to be equal:\n Received: ${received}\n Expected: ${expected}`
-          : `Expected markdown strings to be equal:\n Received: ${received}\n Expected: ${expected}`,
+          ? `Expected markdown strings NOT to be equal:\n Received:\n${received}\n Expected:\n${expected}`
+          : `Expected markdown strings to be equal:\n Received:\n${received}\n Expected:\n${expected}`,
       pass
     }
   }
@@ -1032,6 +1032,15 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
     {
       name: 'Image',
       markdown: '<img width="320" height="160" src="http://example.com/image" alt="image">'
+    },
+    {
+      name: 'Images',
+      markdown: `
+<img width="250" height="330" src="https://github.com/user-attachments/assets/f348e016-3f7d-45b1-b8a0-9098e9961885" alt="Screenshot 2025-09-11 at 15 42 40" />
+
+<img width="250" height="230" alt="Screenshot 2025-09-11 at 15 43 42" src="https://github.com/user-attachments/assets/4502eba1-1f55-44df-b691-c4d3d3d3d67d" >
+
+<img src="https://github.com/user-attachments/assets/e21431a3-2062-4b0b-9c8f-d06c92ede741" alt="Screenshot 2025-09-11 at 15 43 50" width="250" height="210" >`
     },
     {
       name: 'Image with multiline alt',
