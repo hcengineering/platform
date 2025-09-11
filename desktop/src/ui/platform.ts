@@ -423,8 +423,8 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
   addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
-  addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
-  addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
+  addLocation(billingId, () => import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources'))
+  addLocation(hulyMailId, () => import(/* webpackChunkName: "huly-mail" */ '@hcengineering/huly-mail-resources'))
   addLocation(homeId, () => import(/* webpackChunkName: "home" */ '@hcengineering/home-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
