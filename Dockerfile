@@ -28,6 +28,8 @@ RUN \
       echo "Unexpected target platform: $TARGETPLATFORM" && exit 1 ; \
     fi
 
+RUN cargo test
+
 FROM debian:12-slim
 
 ARG TARGET
