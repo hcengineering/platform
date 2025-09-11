@@ -28,8 +28,18 @@
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
+  export let customAppProps: Map<string, any> = new Map<string, any>()
 
   const dispatch = createEventDispatcher()
+
+  function getClickHandler (app: Application, customProps: any) {
+    return (
+      customProps.onClick ??
+      (() => {
+        if (app._id === active) dispatch('toggleNav')
+      })
+    )
+  }
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
@@ -96,6 +106,7 @@
       buttons={'union'}
     >
       {#each topApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
@@ -103,9 +114,8 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             notify={app.alias === inboxId && hasNewInboxNotifications}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
+            {...customProps}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
@@ -113,21 +123,22 @@
         <div class="divider" />
       {/if}
       {#each midApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
+            {...customProps}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
       {#if bottomApps.length > 0}
         <div class="divider" />
         {#each bottomApps as app}
+          {@const customProps = customAppProps.get(app.alias) ?? {}}
           <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
             <AppItem
               selected={app._id === active}
@@ -135,9 +146,8 @@
               label={app.label}
               navigator={app._id === active && $deviceInfo.navigator.visible}
               notify={app.alias === inboxId && hasNewInboxNotifications}
-              on:click={() => {
-                if (app._id === active) dispatch('toggleNav')
-              }}
+              {...customProps}
+              on:click={getClickHandler(app, customProps)}
             />
           </NavLink>
         {/each}
