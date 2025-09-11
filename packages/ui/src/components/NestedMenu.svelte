@@ -13,23 +13,57 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Label, Scroller, Submenu } from '..'
   import { resizeObserver } from '../resize'
   import { DropdownIntlItem } from '../types'
+  import { LocalizedSearch } from '../search'
   import NestedMenu from './NestedMenu.svelte'
+  import SearchEdit from './SearchEdit.svelte'
   import Icon from './Icon.svelte'
+  import plugin from '../plugin'
 
   export let items: [DropdownIntlItem, DropdownIntlItem[]][]
   export let nestedFrom: DropdownIntlItem | undefined = undefined
   export let onSelect: ((val: DropdownIntlItem) => void) | undefined = undefined
   export let withIcon: boolean = false
+  export let disableFocusOnMouseover: boolean = false
+  export let withSearch: boolean = false
 
   const elements: HTMLElement[] = []
+  let searchText = ''
+  let filteredItems: [DropdownIntlItem, DropdownIntlItem[]][] = []
+  const localizedSearch = new LocalizedSearch()
+  let isInitialRender = true
+  let resizeTimeout: ReturnType<typeof setTimeout>
 
   const dispatch = createEventDispatcher()
 
   const actionElements: HTMLButtonElement[] = []
+
+  // Update filtered items when search text or items change
+  $: if (withSearch) {
+    void localizedSearch.filter(items, searchText).then((result) => {
+      filteredItems = result
+    })
+  } else {
+    filteredItems = items
+  }
+
+  $: displayItems = withSearch ? filteredItems : items
+
+  // Prevent resize observer from triggering on initial render and debounce rapid changes
+  function handleResize (): void {
+    if (isInitialRender && withSearch) {
+      isInitialRender = false
+      return
+    }
+
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      dispatch('changeContent')
+    }, 50)
+  }
 
   const keyDown = (event: KeyboardEvent, index: number): void => {
     if (event.key === 'ArrowDown') {
@@ -53,10 +87,19 @@
     onSelect?.(val)
     dispatch('close', val)
   }
+
+  onDestroy(() => {
+    clearTimeout(resizeTimeout)
+  })
 </script>
 
-<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+<div class="selectPopup" use:resizeObserver={handleResize}>
   <div class="menu-space" />
+  {#if withSearch}
+    <div class="search-header">
+      <SearchEdit bind:value={searchText} kind="ghost" />
+    </div>
+  {/if}
   <Scroller noFade={false} showOverflowArrows>
     {#if nestedFrom}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -66,7 +109,9 @@
           keyDown(event, -1)
         }}
         on:mouseover={(event) => {
-          event.currentTarget.focus()
+          if (!disableFocusOnMouseover) {
+            event.currentTarget.focus()
+          }
         }}
         on:click={() => {
           if (nestedFrom !== undefined) {
@@ -83,7 +128,7 @@
       </button>
       <div class="divider" />
     {/if}
-    {#each items as item, i}
+    {#each displayItems as item, i}
       {#if item[1].length > 0 && nestedFrom === undefined}
         <Submenu
           bind:element={elements[i]}
@@ -91,7 +136,9 @@
             keyDown(event, i)
           }}
           on:mouseover={() => {
-            elements[i]?.focus()
+            if (!disableFocusOnMouseover) {
+              elements[i]?.focus()
+            }
           }}
           label={item[0].label}
           icon={withIcon ? item[0].icon : undefined}
@@ -102,7 +149,8 @@
             }),
             nestedFrom: item[0],
             onSelect: onNestedSelect,
-            withIcon
+            withIcon,
+            disableFocusOnMouseover
           }}
           options={{ component: NestedMenu }}
         />
@@ -114,7 +162,9 @@
             keyDown(event, i)
           }}
           on:mouseover={(event) => {
-            event.currentTarget.focus()
+            if (!disableFocusOnMouseover) {
+              event.currentTarget.focus()
+            }
           }}
           on:click={() => {
             click(item[0])
@@ -128,7 +178,26 @@
           <div class="overflow-label pr-1"><Label label={item[0].label} /></div>
         </button>
       {/if}
+    {:else}
+      {#if withSearch && searchText.trim() !== ''}
+        <div class="empty-placeholder content-trans-color">
+          <Label label={plugin.string.NoResults} />
+        </div>
+      {/if}
     {/each}
   </Scroller>
   <div class="menu-space" />
 </div>
+
+<style lang="scss">
+  .search-header {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--theme-divider-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .empty-placeholder {
+    padding: 0.5rem;
+    text-align: center;
+  }
+</style>
