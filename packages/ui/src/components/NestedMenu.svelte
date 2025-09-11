@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Label, Scroller, Submenu } from '..'
   import { resizeObserver } from '../resize'
   import { DropdownIntlItem } from '../types'
@@ -34,6 +34,8 @@
   let searchText = ''
   let filteredItems: [DropdownIntlItem, DropdownIntlItem[]][] = []
   const localizedSearch = new LocalizedSearch()
+  let isInitialRender = true
+  let resizeTimeout: number
 
   const dispatch = createEventDispatcher()
 
@@ -49,6 +51,19 @@
   }
 
   $: displayItems = withSearch ? filteredItems : items
+
+  // Prevent resize observer from triggering on initial render and debounce rapid changes
+  function handleResize (): void {
+    if (isInitialRender && withSearch) {
+      isInitialRender = false
+      return
+    }
+
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      dispatch('changeContent')
+    }, 50)
+  }
 
   const keyDown = (event: KeyboardEvent, index: number): void => {
     if (event.key === 'ArrowDown') {
@@ -72,9 +87,13 @@
     onSelect?.(val)
     dispatch('close', val)
   }
+
+  onDestroy(() => {
+    clearTimeout(resizeTimeout)
+  })
 </script>
 
-<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+<div class="selectPopup" use:resizeObserver={handleResize}>
   <div class="menu-space" />
   {#if withSearch}
     <div class="search-header">
