@@ -285,6 +285,7 @@ services:
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - PULSE_URL=ws://huly.local:8099/ws
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
@@ -552,10 +553,10 @@ services:
       redis:
         condition: service_started
     ports:
-      - 8095:8095
+      - 8099:8099
     environment:
       - HULY_REDIS_URLS=redis://redis:6379
-      - HULY_BIND_PORT=8095
+      - HULY_BIND_PORT=8099
     restart: unless-stopped
 
   process-service:
