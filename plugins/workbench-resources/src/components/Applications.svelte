@@ -32,6 +32,12 @@
 
   const dispatch = createEventDispatcher()
 
+  function getClickHandler(app: Application, customProps: any) {
+    return customProps.onClick ?? (() => {
+      if (app._id === active) dispatch('toggleNav')
+    })
+  }
+
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
   let excludedApps: string[] = []
@@ -106,10 +112,7 @@
             navigator={app._id === active && $deviceInfo.navigator.visible}
             notify={app.alias === inboxId && hasNewInboxNotifications}
             {...customProps}
-            on:click={customProps.onClick ??
-              (() => {
-                if (app._id === active) dispatch('toggleNav')
-              })}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
@@ -125,10 +128,7 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             {...customProps}
-            on:click={customProps.onClick ??
-              (() => {
-                if (app._id === active) dispatch('toggleNav')
-              })}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
@@ -144,10 +144,7 @@
               navigator={app._id === active && $deviceInfo.navigator.visible}
               notify={app.alias === inboxId && hasNewInboxNotifications}
               {...customProps}
-              on:click={customProps.onClick ??
-                (() => {
-                  if (app._id === active) dispatch('toggleNav')
-                })}
+              on:click={getClickHandler(app, customProps)}
             />
           </NavLink>
         {/each}
