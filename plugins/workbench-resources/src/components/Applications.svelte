@@ -105,10 +105,11 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             notify={app.alias === inboxId && hasNewInboxNotifications}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
             {...customProps}
+            on:click={customProps.onClick ??
+              (() => {
+                if (app._id === active) dispatch('toggleNav')
+              })}
           />
         </NavLink>
       {/each}
@@ -123,10 +124,11 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
             {...customProps}
+            on:click={customProps.onClick ??
+              (() => {
+                if (app._id === active) dispatch('toggleNav')
+              })}
           />
         </NavLink>
       {/each}
@@ -141,10 +143,11 @@
               label={app.label}
               navigator={app._id === active && $deviceInfo.navigator.visible}
               notify={app.alias === inboxId && hasNewInboxNotifications}
-              on:click={() => {
-                if (app._id === active) dispatch('toggleNav')
-              }}
               {...customProps}
+              on:click={customProps.onClick ??
+                (() => {
+                  if (app._id === active) dispatch('toggleNav')
+                })}
             />
           </NavLink>
         {/each}

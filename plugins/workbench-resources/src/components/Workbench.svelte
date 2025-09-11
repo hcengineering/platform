@@ -872,7 +872,12 @@
               $deviceInfo.navigator.float &&
               currentAppAlias === notificationId}
           >
-            <AppItem icon={notification.icon.Notifications} label={notification.string.Inbox} {...inboxProps} />
+            <AppItem
+              icon={notification.icon.Notifications}
+              label={notification.string.Inbox}
+              {...inboxProps}
+              on:click={inboxProps.onClick}
+            />
           </NavLink>
         {/if}
         <Applications
