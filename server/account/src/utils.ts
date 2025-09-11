@@ -67,7 +67,7 @@ import {
 } from './types'
 import { isAdminEmail } from './admin'
 
-export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
 export async function getAccountDB (
   uri: string,
@@ -612,6 +612,9 @@ export async function selectWorkspace (
   let accountUuid: AccountUuid
   let extra: Record<string, any> | undefined
   let grant: PermissionsGrant | undefined
+  let sub: AccountUuid | undefined
+  let exp: number | undefined
+  let nbf: number | undefined
   try {
     const decodedToken = decodeTokenVerbose(ctx, token ?? '')
     accountUuid = decodedToken.account
@@ -620,6 +623,9 @@ export async function selectWorkspace (
     }
     extra = decodedToken.extra
     grant = decodedToken.grant
+    sub = decodedToken.sub
+    exp = decodedToken.exp
+    nbf = decodedToken.nbf
   } catch (e) {
     if (workspace?.allowReadOnlyGuest === true) {
       accountUuid = readOnlyGuestAccountUuid
@@ -668,7 +674,12 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra, undefined, grant),
+      token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+        grant,
+        sub,
+        exp,
+        nbf
+      }),
       endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
@@ -725,7 +736,12 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra, undefined, grant),
+    token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+      grant,
+      sub,
+      exp,
+      nbf
+    }),
     endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,

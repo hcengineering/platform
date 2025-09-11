@@ -35,7 +35,7 @@ import {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
+import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
@@ -665,14 +665,22 @@ export async function createAccessLink (
     extra?: string
     navigateUrl?: string
     spaces?: string[]
+
+    notBefore?: number
+    expiration?: number
+    personalized?: boolean
   }
 ): Promise<string> {
-  const { role, firstName, lastName, navigateUrl, spaces } = params
+  const { role, firstName, lastName, navigateUrl, spaces, notBefore, expiration, personalized = true } = params
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
+  }
+
+  if (workspaceUuid == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
@@ -691,12 +699,30 @@ export async function createAccessLink (
     }
   }
 
+  const RECENT_PAST_MS = 1577836800000 // January 1, 2020 in milliseconds
+
+  if (notBefore !== undefined && notBefore > RECENT_PAST_MS) {
+    ctx.error('Not before appears to be in milliseconds instead of seconds', { nbf: notBefore })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (expiration !== undefined && expiration > RECENT_PAST_MS) {
+    ctx.error('Not before appears to be in milliseconds instead of seconds', { exp: expiration })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (notBefore !== undefined && expiration !== undefined && expiration <= notBefore) {
+    ctx.error('Expiration time must be after Not Before time', { nbf: notBefore, exp: expiration })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
   verifyAllowedRole(callerRole, AccountRole.User, extra)
   verifyAllowedRole(callerRole, role, extra)
 
-  const newUuid = await db.generatePersonUuid()
-  const accessToken = generateToken(newUuid, undefined, undefined, undefined, {
+  const newUuid = personalized ? await db.generatePersonUuid() : undefined
+
+  const grant = {
     workspace: workspaceUuid,
     role,
     grantedBy: account,
@@ -704,16 +730,28 @@ export async function createAccessLink (
     lastName,
     extra: extraObj,
     spaces
-  })
-  let path = `/login/auth?token=${accessToken}`
-  if (navigateUrl != null) {
-    path += `&navigateUrl=${encodeURIComponent(navigateUrl.trim())}`
   }
 
-  const front = getFrontUrl(branding)
-  const link = concatLink(front, path)
+  try {
+    const accessToken = generateToken(GUEST_ACCOUNT, undefined, undefined, undefined, {
+      grant,
+      sub: newUuid,
+      exp: expiration,
+      nbf: notBefore
+    })
+    let path = `/login/auth?token=${accessToken}`
+    if (navigateUrl != null) {
+      path += `&navigateUrl=${encodeURIComponent(navigateUrl.trim())}`
+    }
 
-  return link
+    const front = getFrontUrl(branding)
+    const link = concatLink(front, path)
+
+    return link
+  } catch (err: any) {
+    ctx.error('Failed to create access link', { err })
+    throw err
+  }
 }
 
 export async function createInviteLink (
@@ -1578,12 +1616,30 @@ export async function getLoginInfoByToken (
   let workspaceUuid: WorkspaceUuid
   let extra: any
   let grant: PermissionsGrant | undefined
+  let sub: AccountUuid | undefined
+  let account: AccountUuid | undefined
+  let nbf: number | undefined
+  let exp: number | undefined
+
   try {
-    ;({ account: accountUuid, workspace: workspaceUuid, extra, grant } = decodeTokenVerbose(ctx, token))
+    ;({ account, workspace: workspaceUuid, extra, grant, nbf, exp, sub } = decodeTokenVerbose(ctx, token))
+    if (grant != null && sub == null) {
+      sub = (await db.generatePersonUuid()) as AccountUuid
+    }
+    accountUuid = sub ?? account
   } catch (err: any) {
     Analytics.handleError(err)
-    ctx.error('Invalid token', { token })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+    ctx.error('Invalid token', { token, errMsg: err.message })
+    switch (err.message) {
+      case 'Token not yet active': {
+        const { nbf } = decodeToken(token, false)
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.TokenNotActive, { notBefore: nbf }))
+      }
+      case 'Token expired':
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
+      default:
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+    }
   }
 
   if (accountUuid == null) {
@@ -1595,7 +1651,6 @@ export async function getLoginInfoByToken (
   const isAdmin = extra?.admin === 'true'
 
   // Check if token has grants and create automatic account if needed
-  // NOTE: grants with open account UUID are not currently supported
   if (grant != null) {
     if (workspaceUuid != null) {
       ctx.error('Grants are not allowed in workspace-specific tokens', { workspaceUuid, grant })
@@ -1690,7 +1745,7 @@ export async function getLoginInfoByToken (
     account: accountUuid,
     name: getPersonName(person),
     socialId: socialId?._id,
-    token: generateToken(accountUuid, workspaceUuid, extra, undefined, grant)
+    token: generateToken(accountUuid, workspaceUuid, extra, undefined, { grant, nbf, exp, sub })
   }
 
   if (!isSystem) {
@@ -1853,7 +1908,8 @@ export async function getSocialIds (
   params: { confirmed: boolean, includeDeleted: boolean }
 ): Promise<SocialId[]> {
   const { confirmed = true, includeDeleted = false } = params
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account: accountUuid, sub } = decodeTokenVerbose(ctx, token)
+  const account = sub ?? accountUuid
 
   // do not expose not-confirmed social ids for now
   if (!confirmed) {
@@ -2180,7 +2236,7 @@ async function exchangeGuestToken (
       )
     }
 
-    return generateToken(GUEST_ACCOUNT as PersonUuid, workspace.uuid, { linkId, guest: 'true' })
+    return generateToken(GUEST_ACCOUNT, workspace.uuid, { linkId, guest: 'true' })
   }
 
   return token

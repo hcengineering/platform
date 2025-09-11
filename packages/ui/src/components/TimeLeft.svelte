@@ -17,13 +17,18 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Timestamp } from '@hcengineering/core'
 
+  import { Label } from '..'
+  import ui from '../plugin'
+
   export let time: Timestamp
+  export let showHours = false
 
   const dispatch = createEventDispatcher()
 
   let displayTime = time
   let notified = false
   let intervalId: any | undefined = undefined
+  const dayMs = 1000 * 60 * 60 * 24
 
   function applyTimer (time: number): void {
     if (intervalId !== undefined) {
@@ -56,11 +61,19 @@
 
   function getDisplayTime (time: number): string {
     const options: Intl.DateTimeFormatOptions = { minute: 'numeric', second: 'numeric' }
+    if (showHours) {
+      options.timeZone = 'UTC'
+      options.hour = 'numeric'
+    }
 
     return new Date(time).toLocaleString('default', options)
   }
 </script>
 
 {#if displayTime > 0}
-  {getDisplayTime(displayTime)}
+  {#if displayTime < dayMs}
+    {getDisplayTime(displayTime)}
+  {:else}
+    <Label label={ui.string.Days} params={{ days: Math.floor(displayTime / dayMs) }} />
+  {/if}
 {/if}
