@@ -55,6 +55,15 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
     port: number = 3737
   ) {
     this.rpcServer = new BackRPCServer<ClientUuid>(this, tickMgr, host, port)
+
+    this.tickMgr.register(async () => {
+      console.log(
+        'check alive:',
+        this.clients.size,
+        (await this.network.agents()).length,
+        (await this.network.list()).length
+      )
+    }, 5)
   }
 
   async close (): Promise<void> {
@@ -71,7 +80,7 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
         break
       }
       case opNames.unregister: {
-        await this.handleUnregister(params, send)
+        await this.handleUnregister(params, client, send)
         break
       }
       case opNames.getAgents: {
@@ -123,10 +132,16 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
     })
   }
 
-  async handleTimeout (client: ClientUuid): Promise<void> {
+  onPing (client: ClientUuid): void {
+    this.network.ping(client)
+  }
+
+  async closeHandler (client: ClientUuid, timeout: boolean = false): Promise<void> {
     this.clients.delete(client)
     this.network.removeClient(client)
-    console.log(`Client ${client} timed out ${this.clients.size}`)
+    if (timeout) {
+      console.log(`Client ${client} timed out ${this.clients.size}`)
+    }
   }
 
   private async handleRegister (
@@ -148,12 +163,18 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
       },
       new AgentCallbackHandler(server, agentUuid, endpoint, kinds, client)
     )
+    this.network.mapAgent(client, agentUuid)
     await send(res)
   }
 
-  private async handleUnregister (params: any, send: (response: any) => Promise<void>): Promise<void> {
+  private async handleUnregister (
+    params: any,
+    client: ClientUuid,
+    send: (response: any) => Promise<void>
+  ): Promise<void> {
     const agentUuid: AgentUuid = params.uuid
     await this.network.unregister(agentUuid)
+    this.network.unmapAgent(client, agentUuid)
     await send('ok')
   }
 }

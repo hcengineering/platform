@@ -234,6 +234,11 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   close (): void {
+    if (!this.closed) {
+      void this.doSend([backrpcOperations.close, '', '']).catch((err) => {
+        console.error('Failed to send close', err)
+      })
+    }
     this.closed = true
     this.stopTick?.()
     this.dealer.close()

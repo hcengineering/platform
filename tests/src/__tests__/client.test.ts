@@ -25,7 +25,7 @@ describe('network client tests', () => {
     for (let i = 0; i < count; i++) {
       const st = performance.now()
       console.log('connecting agents: ' + i)
-      const client = createNetworkClient('localhost', 37371)
+      const client = createNetworkClient('localhost:37371')
       await client.waitConnection()
 
       // const agents = await client.agents()

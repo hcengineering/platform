@@ -28,7 +28,8 @@ export interface BackRPCServerHandler<ClientT> {
     send: (response: any) => Promise<void>
   ) => Promise<void>
   helloHandler?: (client: ClientT) => Promise<void>
-  handleTimeout?: (client: ClientT) => Promise<void>
+  closeHandler?: (client: ClientT, timeout: boolean) => Promise<void>
+  onPing?: (client: ClientT) => void
 }
 
 interface RPCClientInfo<ClientT extends string> {
@@ -79,7 +80,6 @@ export class BackRPCServer<ClientT extends string = ClientId> {
   }
 
   async checkAlive (): Promise<void> {
-    console.log('check alive:', this.revClientMapping.size, JSON.stringify(this.stats))
     this.stats.hellos = 0
     this.stats.pings = 0
     this.stats.requests = 0
@@ -93,13 +93,17 @@ export class BackRPCServer<ClientT extends string = ClientId> {
         console.warn(
           `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s, marking as dead`
         )
-        void this.handlers.handleTimeout?.(clientRecord.id).catch((err) => {
-          console.error('Error in handleTimeout', err)
-        })
-        this.revClientMapping.delete(clientId)
-        this.clientMapping.delete(clientRecord.id)
+        this.handleClose(clientRecord.id, clientId, true)
       }
     }
+  }
+
+  private handleClose (clientRecordId: ClientT, clientId: string, timeout: boolean): void {
+    void this.handlers.closeHandler?.(clientRecordId, timeout).catch((err) => {
+      console.error('Error in handleTimeout', err)
+    })
+    this.revClientMapping.delete(clientId)
+    this.clientMapping.delete(clientRecordId)
   }
 
   async getPort (): Promise<number> {
@@ -190,10 +194,18 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             }
             break
           }
+          case backrpcOperations.close: {
+            if (client !== undefined) {
+              this.handleClose(client.id, clientIdText, false)
+            }
+            break
+          }
           case backrpcOperations.ping: {
             this.stats.pings++
             void this.doSend([clientId, backrpcOperations.pong, this.uuid, ''])
-            // console.log('ping:' + clientIdText)
+            if (client !== undefined) {
+              this.handlers.onPing?.(client?.id)
+            }
             break
           }
           case backrpcOperations.request:

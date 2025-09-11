@@ -35,7 +35,7 @@ export interface NetworkClient {
    */
   get: (uuid: ContainerUuid, request: ContainerRequest) => Promise<ContainerReference>
 
-  list: (kind: ContainerKind) => Promise<ContainerRecord[]>
+  list: (kind?: ContainerKind) => Promise<ContainerRecord[]>
 
   // Send some data to container, using proxy connection.
   request: (target: ContainerUuid, operation: string, data?: any) => Promise<any>

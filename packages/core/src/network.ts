@@ -1,3 +1,6 @@
+import type { AgentRecord, NetworkAgent } from './api/agent'
+import type { Network, NetworkWithClients } from './api/network'
+import { timeouts } from './api/timeouts'
 import type {
   AgentEndpointRef,
   AgentUuid,
@@ -9,11 +12,8 @@ import type {
   ContainerRequest,
   ContainerUuid
 } from './api/types'
-import { timeouts } from './api/timeouts'
 import type { TickManager } from './api/utils'
 import type { ContainerRecordImpl } from './containers'
-import type { AgentRecord, NetworkAgent } from './api/agent'
-import type { Network, NetworkWithClients } from './api/server'
 
 interface AgentRecordImpl {
   api: NetworkAgent
@@ -28,6 +28,8 @@ interface ClientRecordImpl {
   lastSeen: number
   containers: Set<ContainerUuid>
   onContainer?: (event: ContainerEvent) => Promise<void>
+
+  agents: Set<AgentUuid>
 }
 /**
  * Server network implementation.
@@ -68,7 +70,9 @@ export class NetworkImpl implements Network, NetworkWithClients {
         agentId: api.uuid,
         endpoint: api.endpoint,
         kinds: api.kinds,
-        containers: Object.values(containers).map(({ record }) => record)
+        containers: Array.from(containers.values())
+          .filter((it) => !(it.endpoint instanceof Promise))
+          .map(({ record, endpoint }) => ({ ...record, endpoint: endpoint as ContainerEndpointRef }))
       }))
     )
   }
@@ -82,10 +86,10 @@ export class NetworkImpl implements Network, NetworkWithClients {
     )
   }
 
-  async list (kind: ContainerKind): Promise<ContainerRecord[]> {
+  async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
     return Array.from(this._agents.values())
       .flatMap((it) => Array.from(it.containers.values()))
-      .filter((it) => it.record.kind === kind)
+      .filter((it) => kind === undefined || it.record.kind === kind)
       .map((it) => it.record)
   }
 
@@ -223,19 +227,47 @@ export class NetworkImpl implements Network, NetworkWithClients {
   }
 
   addClient (clientUuid: ClientUuid, onContainer?: (event: ContainerEvent) => Promise<void>): void {
-    this._clients.set(clientUuid, { lastSeen: this.tickManager.now(), containers: new Set(), onContainer })
+    const info = this._clients.get(clientUuid) ?? {
+      lastSeen: this.tickManager.now(),
+      containers: new Set(),
+      onContainer,
+      agents: new Set()
+    }
+    info.onContainer = onContainer
+    this._clients.set(clientUuid, info)
   }
 
-  removeClient (clientUuid: ClientUuid): void {
-    this._clients.delete(clientUuid)
+  removeClient (client: ClientUuid): void {
+    // Handle outdated clients
+    const clientRecord = this._clients.get(client)
+    if (clientRecord !== undefined) {
+      for (const uuid of clientRecord.containers) {
+        this.release(client, uuid).catch((err) => {
+          console.error(`Error releasing container ${uuid} for client ${client}:`, err)
+        })
+      }
+    }
+    this._clients.delete(client)
+  }
+
+  mapAgent (clientUuid: ClientUuid, agentUuid: AgentUuid): void {
+    const client = this._clients.get(clientUuid)
+    if (client !== undefined) {
+      client.agents.add(agentUuid)
+    }
+  }
+
+  unmapAgent (clientUuid: ClientUuid, agentUuid: AgentUuid): void {
+    const client = this._clients.get(clientUuid)
+    if (client !== undefined) {
+      client.agents.delete(agentUuid)
+    }
   }
 
   async get (clientUuid: ClientUuid, uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
-    this.ping(clientUuid)
-
     let client = this._clients.get(clientUuid)
     if (client === undefined) {
-      client = { lastSeen: this.tickManager.now(), containers: new Set() }
+      client = { lastSeen: this.tickManager.now(), containers: new Set(), agents: new Set() }
       this._clients.set(clientUuid, client)
     }
     client.containers.add(uuid)
@@ -266,6 +298,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
         return containerImpl
       }
     }
+
     // Select agent using round/robin and register it in agent
     const suitableAgents = Array.from(this._agents.values().filter((it) => it.kinds.includes(request.kind)))
     if (suitableAgents.length === 0) {
@@ -352,18 +385,13 @@ export class NetworkImpl implements Network, NetworkWithClients {
     const client = this._clients.get(id as ClientUuid)
     if (client != null) {
       client.lastSeen = this.tickManager.now()
-    }
-  }
-
-  async handleTimeout (client: ClientUuid): Promise<void> {
-    // Handle outdated clients
-    const clientRecord = this._clients.get(client)
-    if (clientRecord !== undefined) {
-      for (const uuid of clientRecord.containers) {
-        await this.release(client, uuid)
+      for (const agent of client.agents) {
+        const ag = this._agents.get(agent)
+        if (ag != null) {
+          ag.lastSeen = this.tickManager.now()
+        }
       }
     }
-    this._clients.delete(client)
   }
 
   /**

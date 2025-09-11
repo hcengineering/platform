@@ -356,6 +356,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/network-tool",
+      "projectFolder": "pods/network-tool",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/scripts",
       "projectFolder": "common/scripts",
       "shouldPublish": false

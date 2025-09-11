@@ -1,5 +1,5 @@
 import type { NetworkAgent } from './api/agent'
-import type { Network } from './api/server'
+import type { Network } from './api/network'
 import type {
   AgentEndpointRef,
   AgentUuid,

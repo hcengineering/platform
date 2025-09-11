@@ -108,7 +108,7 @@ export class NetworkAgentServer implements BackRPCServerHandler<ClientUuid> {
     console.log(`Client ${clientId} connected`)
   }
 
-  async handleTimeout (client: ClientUuid): Promise<void> {
+  async closeHandler (client: ClientUuid): Promise<void> {
     console.log(`Client ${client} timed out`)
   }
 }

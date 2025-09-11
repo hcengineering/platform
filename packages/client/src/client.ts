@@ -136,7 +136,6 @@ export class NetworkClientImpl implements NetworkClient {
         uuid: agent.agent.uuid
       })
     }
-
     this.client.close()
   }
 
@@ -340,7 +339,7 @@ export class NetworkClientImpl implements NetworkClient {
     await this.client.request<any>(opNames.releaseContainer, { uuid })
   }
 
-  async list (kind: ContainerKind): Promise<ContainerRecord[]> {
+  async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
     return await this.client.request<ContainerRecord[]>(opNames.listContainers, {
       kind
     })

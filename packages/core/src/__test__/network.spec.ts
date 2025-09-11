@@ -1,7 +1,7 @@
 import { AgentImpl } from '../agent'
 import type { AgentUuid, ClientUuid, ContainerEndpointRef, ContainerKind } from '../api/types'
 import type { Container } from '../containers'
-import { NetworkImpl } from '../server'
+import { NetworkImpl } from '../network'
 import { TickManagerImpl } from '../utils'
 
 // class DummyConnectionManager implements ConnectionManager {

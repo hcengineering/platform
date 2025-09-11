@@ -2,7 +2,7 @@ import type { AgentUuid } from '../api/types'
 import { timeouts } from '../api/timeouts'
 import { AgentImpl } from '../agent'
 import { TickManagerImpl } from '../utils'
-import { NetworkImpl } from '../server'
+import { NetworkImpl } from '../network'
 
 class FakeTickManager extends TickManagerImpl {
   time: number = 0

@@ -43,7 +43,7 @@ export interface Network {
    */
   release: (client: ClientUuid, uuid: ContainerUuid) => Promise<void>
 
-  list: (kind: ContainerKind) => Promise<ContainerRecord[]>
+  list: (kind?: ContainerKind) => Promise<ContainerRecord[]>
 
   // Send some data to container, using proxy connection.
   request: (target: ContainerUuid, operation: string, data?: any) => Promise<any>
@@ -54,4 +54,8 @@ export interface Network {
 export interface NetworkWithClients {
   addClient: (clientUuid: ClientUuid, onContainer?: (event: ContainerEvent) => Promise<void>) => void
   removeClient: (clientUuid: ClientUuid) => void
+
+  // When client is registering agent.
+  mapAgent: (clientUuid: ClientUuid, agentUuid: AgentUuid) => void
+  unmapAgent: (clientUuid: ClientUuid, agentUuid: AgentUuid) => void
 }

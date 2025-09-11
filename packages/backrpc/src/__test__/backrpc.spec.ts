@@ -452,7 +452,7 @@ describe('backrpc', () => {
         helloHandler: async (clientId) => {
           console.log(`Client ${clientId} connected`)
         },
-        handleTimeout: async (clientId) => {
+        closeHandler: async (clientId) => {
           timeoutHandlerCalled = true
           console.log(`Timeout for client ${clientId}`)
         }
