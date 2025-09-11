@@ -96,6 +96,8 @@
   {disabled}
   withIcon={true}
   withSelectIcon={false}
+  withSearch={true}
+  disableFocusOnMouseover={true}
   on:selected={(e) => {
     value = e.detail
     dispatch('change', value)
