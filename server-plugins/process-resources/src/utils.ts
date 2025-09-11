@@ -121,12 +121,12 @@ async function getNestedValue (
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, {}, { attr: attr.label })
   const nested = control.client.getHierarchy().findAttribute(targetClass, context.key)
   if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
+    const transform = control.client.getModel().findObject(context.sourceFunction.func)
     if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
@@ -176,12 +176,12 @@ async function getRelationValue (
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
   const attr = context.key !== '' ? control.client.getHierarchy().findAttribute(targetClass, context.key) : undefined
   if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
+    const transform = control.client.getModel().findObject(context.sourceFunction.func)
     if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
@@ -224,12 +224,12 @@ async function getFunctionValue (
   const f = await getResource(impl.func)
   const res = await f(null, context.props, control, execution)
   if (context.sourceFunction !== undefined) {
-    const transform = control.client.getModel().findObject(context.sourceFunction)
+    const transform = control.client.getModel().findObject(context.sourceFunction.func)
     if (transform === undefined) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     if (!control.client.getHierarchy().hasMixin(transform, serverProcess.mixin.FuncImpl)) {
-      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction.func }, {}, true)
     }
     const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)

@@ -39,7 +39,7 @@ interface BaseSelectedContext {
   key: string
 
   // reduce array function for source obj
-  sourceFunction?: Ref<ProcessFunction>
+  sourceFunction?: Func
 
   // process one by one
   functions?: Func[]

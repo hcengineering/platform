@@ -39,12 +39,16 @@
   const hierarchy = client.getHierarchy()
 
   translateCB(cardPlugin.string.Card, {}, undefined, (res) => {
+    setName(res)
+  })
+
+  function setName (name: string): void {
     if (params.title === undefined || params.title === '') {
-      params.title = res
+      params.title = name
       ;(step.params as any) = params
       dispatch('change', step)
     }
-  })
+  }
 
   function change (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {
@@ -106,9 +110,9 @@
     }
   }
 
-  function typeChange (e: CustomEvent<Ref<Class<MasterTag>>>): void {
-    if (e.detail === undefined || e.detail === _class) return
-    allAttrs = getKeys(e.detail)
+  function typeChange (_id: Ref<Class<MasterTag>>): void {
+    if (_id === undefined) return
+    allAttrs = getKeys(_id)
     const oldParams = { ...params }
     params = {}
     for (const attr of allAttrs) {
@@ -117,7 +121,6 @@
         ;(params as any)[key] = oldParams[key]
       }
     }
-    _class = e.detail
     keys = Object.keys(params)
     params._class = _class
     step.params = params
@@ -126,6 +129,8 @@
     }
     dispatch('change', step)
   }
+
+  $: typeChange(_class)
 </script>
 
 <div class="grid">
@@ -137,7 +142,15 @@
   >
     <Label label={cardPlugin.string.MasterTag} />
   </span>
-  <TypeSelector value={_class} width={'100%'} on:change={typeChange} />
+  <TypeSelector
+    value={_class}
+    width={'100%'}
+    on:change={(e) => {
+      if (e.detail !== undefined) {
+        _class = e.detail
+      }
+    }}
+  />
 </div>
 <div class="divider" />
 {#key _class}

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Context, Process, SelectedExecutionContext } from '@hcengineering/process'
+  import { getClient } from '@hcengineering/presentation'
+  import { Process, SelectedExecutionContext } from '@hcengineering/process'
   import ui, { Label } from '@hcengineering/ui'
   import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let contextValue: SelectedExecutionContext
   export let process: Process

@@ -38,6 +38,7 @@ import {
   type Execution,
   type ExecutionContext,
   ExecutionStatus,
+  type Func,
   type Method,
   type NestedContext,
   parseContext,
@@ -74,19 +75,19 @@ export function generateContextId (): ContextId {
 export function getContextMasterTag (
   client: Client,
   context: SelectedContext | undefined,
-  masterTag: Ref<MasterTag>
+  process: Process
 ): Ref<MasterTag> | undefined {
   if (context === undefined) return
   const h = client.getHierarchy()
   const model = client.getModel()
   if (context.type === 'attribute') {
-    const attr = h.findAttribute(masterTag, context.key)
+    const attr = h.findAttribute(process.masterTag, context.key)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     if (parentType._class === core.class.RefTo) return (parentType as RefTo<Doc>).to
   }
   if (context.type === 'nested') {
-    const attr = h.findAttribute(masterTag, context.path)
+    const attr = h.findAttribute(process.masterTag, context.path)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
@@ -100,6 +101,11 @@ export function getContextMasterTag (
     if (context.key === '_id') return targetClass as Ref<MasterTag>
     const nested = h.findAttribute(targetClass, context.key)
     return (nested?.type as RefTo<Doc>)?.to
+  }
+  if (context.type === 'context') {
+    const execContext = process.context[context.id]
+    if (execContext === undefined) return
+    return execContext._class
   }
 }
 
@@ -364,40 +370,37 @@ export function getRelationObjectReduceFunc (
   association: Ref<Association>,
   direction: 'A' | 'B',
   target: AnyAttribute
-): Ref<ProcessFunction> | undefined {
+): Func | undefined {
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
   if (assoc.type === '1:N' && direction === 'A') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
 export function getRelationReduceFunc (
   client: Client,
   association: Ref<Association>,
   direction: 'A' | 'B'
-): Ref<ProcessFunction> | undefined {
+): Func | undefined {
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
   if (assoc.type === '1:N' && direction === 'A') return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
-export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute): Ref<ProcessFunction> | undefined {
+export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute): Func | undefined {
   if (source.type._class !== core.class.ArrOf) return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
-export function getContextFunctionReduce (
-  func: ProcessFunction,
-  target: AnyAttribute
-): Ref<ProcessFunction> | undefined {
+export function getContextFunctionReduce (func: ProcessFunction, target: AnyAttribute): Func | undefined {
   if (func.category !== 'array') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
-  return process.function.FirstValue
+  return { func: process.function.FirstValue, props: {} }
 }
 
 export function showDoneQuery (value: any, query: DocumentQuery<Execution>): DocumentQuery<Execution> {

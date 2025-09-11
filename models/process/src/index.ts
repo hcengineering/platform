@@ -724,6 +724,7 @@ export function createModel (builder: Builder): void {
     {
       of: contact.mixin.Employee,
       editor: process.component.RoleEditor,
+      presenter: process.transformPresenter.RolePresenter,
       category: 'array',
       label: core.string.Role,
       type: 'context'
@@ -1059,7 +1060,7 @@ export function createModel (builder: Builder): void {
       objectClass: card.class.Tag,
       editor: process.component.AddTagEditor,
       presenter: process.component.AddTagPresenter,
-      contextClass: card.class.Tag,
+      contextClass: card.class.Card,
       requiredParams: ['_id']
     },
     process.method.AddTag

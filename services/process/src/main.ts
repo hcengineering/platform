@@ -66,6 +66,7 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
         cache: new Map<string, any>(),
         messageContext: record.context
       }
+      ctx.info('Processing event', { event: record.event, ws, record })
       if (record.execution !== undefined) {
         const execution = await control.client.findOne(process.class.Execution, { _id: record.execution })
         if (execution !== undefined) {
@@ -162,6 +163,12 @@ async function processExecution (control: ProcessControl, record: ProcessMessage
   const transition = await findTransitions(control, record, execution)
   if (transition !== undefined) {
     await execute(execution, transition, control)
+  } else {
+    control.ctx.info('No transition found for event', {
+      event: record.event,
+      execution: execution._id,
+      state: execution.currentState
+    })
   }
 }
 
