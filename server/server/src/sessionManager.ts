@@ -36,6 +36,7 @@ import core, {
   pickPrimarySocialId,
   platformNow,
   platformNowDiff,
+  readOnlyGuestAccountUuid,
   SocialIdType,
   systemAccountUuid,
   type Tx,
@@ -237,23 +238,27 @@ export class TSessionManager implements SessionManager {
     this.ticks++
   }
 
-  calcWorkspaceStats (sessions: { session: Session }[]): { sys: number, user: number } {
-    let userSessions: number = 0
-    let sysSession: number = 0
+  calcWorkspaceStats (sessions: { session: Session }[]): { sys: number, user: number, anonymous: number } {
+    let user: number = 0
+    let sys: number = 0
+    let anonymous: number = 0
     for (const s of sessions) {
       if (s.session.getUser() === systemAccountUuid) {
-        sysSession++
+        sys++
       } else {
-        userSessions++
+        user++
+        if (s.session.getUser() === guestAccount || s.session.getUser() === readOnlyGuestAccountUuid) {
+          anonymous++
+        }
       }
     }
-    return { sys: sysSession, user: userSessions }
+    return { sys, user, anonymous }
   }
 
   private handleWorkspaceTick (): void {
     this.ctx.measure('sessions', this.sessions.size)
 
-    const { sys, user } = this.calcWorkspaceStats(Array.from(this.sessions.values()))
+    const { sys, user, anonymous } = this.calcWorkspaceStats(Array.from(this.sessions.values()))
 
     let userWorkspaces: number = 0
     let sysOnlyWorkspaces: number = 0
@@ -271,6 +276,7 @@ export class TSessionManager implements SessionManager {
 
     this.ctx.measure('sessions-user', user)
     this.ctx.measure('sessions-system', sys)
+    this.ctx.measure('sessions-anonymous', anonymous)
 
     this.ctx.measure('workspaces', this.workspaces.size)
     this.ctx.measure('workspaces-user', userWorkspaces)
@@ -506,6 +512,8 @@ export class TSessionManager implements SessionManager {
         hungSessions += 1
       }
     }
+
+    this.ctx.measure('sessions-hung', hungSessions)
 
     const hungSessionsPercent = totalSessions > 0 ? (100 * hungSessions) / totalSessions : 0
 
