@@ -97,6 +97,14 @@ export interface AccountClient {
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  /**
+   * @param options.personalized
+   * If true, will generate a link with a personalized token for one person access
+   * If false, will generate a link with an open-ended account in the token. Every token use will generate a new account.
+   * When false, notBefore and expiration parameters are mandatory.
+   * @param options.notBefore - not valid before; timestamp in seconds
+   * @param options.expiration - expires after; timestamp in seconds
+   */
   createAccessLink: (
     role: AccountRole,
     options?: {
@@ -105,6 +113,9 @@ export interface AccountClient {
       navigateUrl?: string
       extra?: Record<string, any>
       spaces?: string[]
+      notBefore?: number
+      expiration?: number
+      personalized?: boolean
     }
   ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
@@ -435,6 +446,9 @@ class AccountClientImpl implements AccountClient {
       navigateUrl?: string
       extra?: Record<string, any>
       spaces?: string[]
+      notBefore?: number
+      expiration?: number
+      personalized?: boolean
     }
   ): Promise<string> {
     const params: any = { ...(options ?? {}), role }

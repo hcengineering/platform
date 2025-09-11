@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { getCurrentLocation, Loading } from '@hcengineering/ui'
+  import { getCurrentLocation, Label, Loading, TimeLeft } from '@hcengineering/ui'
   import { logIn } from '@hcengineering/workbench'
   import { trackOAuthCompletion } from '@hcengineering/analytics-providers'
   import { type LoginInfoRequest, type LoginInfoByToken } from '@hcengineering/account-client'
-  import { OK, PlatformError, unknownError } from '@hcengineering/platform'
+  import platform, { OK, PlatformError, Status, unknownError } from '@hcengineering/platform'
 
   import type { Field } from '../types'
   import {
@@ -21,6 +21,7 @@
 
   let request: LoginInfoRequest | undefined
   let fields: Field[]
+  let status: Status = OK
   $: fields =
     request != null
       ? [
@@ -40,7 +41,19 @@
       return
     }
 
-    const result = await getLoginInfoFromQuery()
+    let result: LoginInfoByToken | null = null
+
+    try {
+      result = await getLoginInfoFromQuery()
+    } catch (err: any) {
+      if (
+        err instanceof PlatformError &&
+        [platform.status.TokenExpired, platform.status.TokenNotActive].includes(err.status.code)
+      ) {
+        status = err.status
+        return
+      }
+    }
 
     trackOAuthCompletion(result)
     await handleLoginInfo(result)
@@ -63,8 +76,6 @@
     }
   }
 
-  let status = OK
-
   const action = {
     i18n: login.string.Proceed,
     func: async () => {
@@ -80,10 +91,34 @@
       }
     }
   }
+
+  let timer: TimeLeft | undefined
 </script>
 
-{#if request != null}
+{#if status?.code === platform.status.TokenExpired}
+  <span class="text ml-8">
+    <Label label={login.string.AccessExpired} />
+  </span>
+{:else if status?.code === platform.status.TokenNotActive}
+  <span class="text ml-8">
+    <Label label={login.string.AccessNotActive} />
+    <TimeLeft
+      bind:this={timer}
+      time={status.params.notBefore * 1000}
+      showHours={true}
+      on:timeout={() => {
+        window.location.reload()
+      }}
+    />
+  </span>
+{:else if request != null}
   <Form caption={login.string.WhatIsYourName} {status} {fields} object={formData} {action} ignoreInitialValidation />
 {:else}
   <Loading />
 {/if}
+
+<style>
+  .text {
+    color: var(--theme-caption-color);
+  }
+</style>
