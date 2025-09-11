@@ -21,6 +21,7 @@
   import NestedMenu from './NestedMenu.svelte'
   import SearchEdit from './SearchEdit.svelte'
   import Icon from './Icon.svelte'
+  import plugin from '../plugin'
 
   export let items: [DropdownIntlItem, DropdownIntlItem[]][]
   export let nestedFrom: DropdownIntlItem | undefined = undefined
@@ -76,7 +77,7 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
   {#if withSearch}
-    <div class="menu-header">
+    <div class="search-header">
       <SearchEdit bind:value={searchText} kind="ghost" />
     </div>
   {/if}
@@ -158,7 +159,26 @@
           <div class="overflow-label pr-1"><Label label={item[0].label} /></div>
         </button>
       {/if}
+    {:else}
+      {#if withSearch && searchText.trim() !== ''}
+        <div class="empty-placeholder content-trans-color">
+          <Label label={plugin.string.NoResults} />
+        </div>
+      {/if}
     {/each}
   </Scroller>
   <div class="menu-space" />
 </div>
+
+<style lang="scss">
+  .search-header {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--theme-divider-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .empty-placeholder {
+    padding: 0.5rem;
+    text-align: center;
+  }
+</style>
