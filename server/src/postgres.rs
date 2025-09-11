@@ -4,7 +4,6 @@ use bb8_postgres::PostgresConnectionManager;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use tokio_postgres::NoTls;
-use tokio_postgres::error::SqlState;
 use tokio_postgres::{self as pg};
 use tracing::*;
 
@@ -208,11 +207,4 @@ pub async fn set_part<D: serde::Serialize>(
     transaction.commit().await?;
 
     Ok(())
-}
-
-pub fn is_unique_constraint_violation(e: &DbError) -> bool {
-    match e {
-        DbError::Db(e) => e.code() == Some(&SqlState::UNIQUE_VIOLATION),
-        _ => false,
-    }
 }

@@ -6,6 +6,7 @@ use bytes::{Bytes, BytesMut};
 use futures::stream::StreamExt;
 use futures_util::Stream;
 use size::Size;
+use tokio_postgres::error::SqlState;
 use tracing::*;
 
 use crate::handlers::ApiError;
@@ -167,7 +168,8 @@ async fn make_blob(pool: &Pool, s3_key: &String, hash: &str) -> Result<Option<St
         match postgres::insert_blob(&pool, &s3_key, &hash).await {
             Ok(_) => break Ok(None),
             Err(e) => {
-                if postgres::is_unique_constraint_violation(&e) {
+                if matches!(e, DbError::Db(ref db_err) if db_err.code() == Some(&SqlState::UNIQUE_VIOLATION))
+                {
                     debug!("concurrent upload detected");
 
                     if let Some(s3_key_found) = postgres::find_blob_by_hash(&pool, &hash).await? {
