@@ -28,6 +28,7 @@
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
+  export let customAppProps: Map<string, any> = new Map<string, any>()
 
   const dispatch = createEventDispatcher()
 
@@ -96,6 +97,7 @@
       buttons={'union'}
     >
       {#each topApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
@@ -106,6 +108,7 @@
             on:click={() => {
               if (app._id === active) dispatch('toggleNav')
             }}
+            {...customProps}
           />
         </NavLink>
       {/each}
@@ -113,6 +116,7 @@
         <div class="divider" />
       {/if}
       {#each midApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
@@ -122,12 +126,14 @@
             on:click={() => {
               if (app._id === active) dispatch('toggleNav')
             }}
+            {...customProps}
           />
         </NavLink>
       {/each}
       {#if bottomApps.length > 0}
         <div class="divider" />
         {#each bottomApps as app}
+          {@const customProps = customAppProps.get(app.alias) ?? {}}
           <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
             <AppItem
               selected={app._id === active}
@@ -138,6 +144,7 @@
               on:click={() => {
                 if (app._id === active) dispatch('toggleNav')
               }}
+              {...customProps}
             />
           </NavLink>
         {/each}
