@@ -149,7 +149,7 @@ export function parseValue (modes: Mode[], value: any): [any, Mode] {
         if (mode.parse !== undefined) {
           return [mode.parse(obj2[key2]), mode]
         }
-        return [obj2[key2], mode]
+        return [mode.withoutEditor === true ? undefined : obj2[key2], mode]
       }
       obj1 = obj1[key1]
       obj2 = obj2[key2]
@@ -168,10 +168,10 @@ export function buildResult (mode: Mode, value: any): any {
       const key = Object.keys(q)[0]
       const v: any = (q as any)[key]
       if (typeof v !== 'object') {
-        if (typeof value === 'string') {
+        if (typeof value === 'string' && typeof v === 'string') {
           res[key] = v.replace('$val', value)
         } else {
-          res[key] = value
+          res[key] = mode.withoutEditor === true ? v : value ?? v
         }
         return result
       }

@@ -529,13 +529,12 @@ export async function pickTransition (
   for (const tr of transitions) {
     const trigger = control.client.getModel().findObject(tr.trigger)
     if (trigger === undefined) continue
-    if (trigger.checkFunction === undefined) return tr
     const impl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
     if (impl?.serverCheckFunc === undefined) return tr
     const filled = await fillParams(tr.triggerParams, execution, control)
     const checkFunc = await getResource(impl.serverCheckFunc)
     if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, context, control.client.getHierarchy())
+    const res = await checkFunc(control, execution, filled, context)
     if (res) return tr
   }
 }

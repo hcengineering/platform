@@ -80,6 +80,7 @@ import {
   AddTag,
   CheckToDo,
   OnCardUpdateCheck,
+  CheckSubProcessesDone,
   CheckTime
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
@@ -356,6 +357,7 @@ export default async () => ({
     AddTag,
     CheckToDo,
     OnCardUpdateCheck,
+    CheckSubProcessesDone,
     CheckTime
   },
   transform: {

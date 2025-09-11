@@ -80,7 +80,8 @@ import {
   showDoneQuery,
   timeTransitionCheck,
   todoTranstionCheck,
-  updateCardTranstionCheck
+  updateCardTranstionCheck,
+  subProcessesDoneCheck
 } from './utils'
 
 export * from './query'
@@ -160,6 +161,7 @@ export default async (): Promise<Resources> => ({
   },
   triggerCheck: {
     UpdateCheck: updateCardTranstionCheck,
+    SubProcessesDoneCheck: subProcessesDoneCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck
   },
