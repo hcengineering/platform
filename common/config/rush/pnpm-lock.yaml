@@ -5785,7 +5785,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presence-resources@file:projects/presence-resources.tgz':
-    resolution: {integrity: sha512-JcTvcHzpJMGqqM4qgQ5kYm/EryFbAxyV6mwSxd65LzwEYZABRuvxt20eApmh80pmgXhJ9yV0ai+2p86uGhknRA==, tarball: file:projects/presence-resources.tgz}
+    resolution: {integrity: sha512-9SQDLglhsLQIlg6LbqiXUhWWkQEaCGenf8rSbG7SYYM5owhJUXRSG0bN6ooWLxyagVZDVcgnfoM5dJc2d90zsg==, tarball: file:projects/presence-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/presence@file:projects/presence.tgz':
