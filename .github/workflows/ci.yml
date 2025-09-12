@@ -28,7 +28,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v0.7.')
+    if: startsWith(github.ref, 'refs/tags/v0.7.') || startsWith(github.ref, 'refs/tags/s0.7.')
     steps:
       - uses: actions/checkout@v3
         with:
