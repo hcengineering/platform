@@ -25,7 +25,7 @@ import serverProcess, {
   type MethodImpl,
   type TransformFunc,
   type TriggerImpl,
-  CheckFunc
+  type CheckFunc
 } from '@hcengineering/server-process'
 
 export { serverProcessId } from '@hcengineering/server-process'
