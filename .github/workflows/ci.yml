@@ -5,6 +5,7 @@ on:
     branches: ['main']
     tags:
       - 'v0.7.*'
+      - 's0.7.*'
   pull_request:
     branches: ['main']
 
