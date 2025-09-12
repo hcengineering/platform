@@ -147,6 +147,7 @@
     "Icon": "Symbol",
     "Color": "Farbe",
     "AutomationOnly": "Nur Automatisierung",
-    "CopyLink": "Link kopieren"
+    "CopyLink": "Link kopieren",
+    "ValueIsSet": "Wert ist gesetzt"
   }
 }

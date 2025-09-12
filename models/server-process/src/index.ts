@@ -91,6 +91,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.AddRelation
   })
 
+  builder.mixin(process.method.AddTag, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.AddTag
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })
@@ -193,6 +197,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.RoleContext, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.RoleContext
+  })
+
+  builder.mixin(process.function.CurrentDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentDate
+  })
+
+  builder.mixin(process.function.CurrentEmployee, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
+  })
+
+  builder.mixin(process.function.CurrentUser, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
   })
 
   builder.mixin(process.function.Insert, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {

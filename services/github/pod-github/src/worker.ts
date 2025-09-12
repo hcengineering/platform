@@ -560,13 +560,19 @@ export class GithubWorker implements IntegrationManager {
 
   async syncUserData (ctx: MeasureContext): Promise<void> {
     // Let's sync information about users and send some details
-    const accounts = await this._client.findAll(contact.class.SocialIdentity, {
-      type: SocialIdType.GITHUB
-    })
-    const userAuths = await this._client.findAll(github.class.GithubAuthentication, {})
-    const persons = await this._client.findAll(contact.class.Person, {
-      _id: { $in: accounts.map((it) => it.attachedTo) }
-    })
+    const accounts = await ctx.with('find-social-id', {}, () =>
+      this._client.findAll(contact.class.SocialIdentity, {
+        type: SocialIdType.GITHUB
+      })
+    )
+    const userAuths = await ctx.with('find-github-auths', {}, () =>
+      this._client.findAll(github.class.GithubAuthentication, {})
+    )
+    const persons = await ctx.with('find-persons', {}, () =>
+      this._client.findAll(contact.class.Person, {
+        _id: { $in: accounts.map((it) => it.attachedTo) }
+      })
+    )
     for (const account of accounts) {
       const userAuth = userAuths.find((it) => it.login === account.value)
       const person = persons.find((it) => account?.attachedTo)
@@ -611,13 +617,18 @@ export class GithubWorker implements IntegrationManager {
   async getOctokit (ctx: MeasureContext, account: PersonId): Promise<Octokit | undefined> {
     let record = await this.platform.getAccountByRef(this.workspace.uuid, account)
 
-    const accountRef = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
     if (record === undefined) {
+      const accountRef = await ctx.with('find-social-id', {}, () =>
+        this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+      )
       if (accountRef !== undefined) {
-        const accounts = await this._client.findAll(contact.class.SocialIdentity, { attachedTo: accountRef.attachedTo })
+        const accounts = await ctx.with('find-accounts', {}, () =>
+          this._client.findAll(contact.class.SocialIdentity, { attachedTo: accountRef.attachedTo })
+        )
         for (const aa of accounts) {
           record = await this.platform.getAccountByRef(this.workspace.uuid, aa._id)
           if (record !== undefined) {
+            this.platform.userManager.cacheRecord(this.workspace.uuid, account, record)
             break
           }
         }
@@ -625,33 +636,55 @@ export class GithubWorker implements IntegrationManager {
     }
     // Check and refresh token if required.
     if (record !== undefined) {
-      this.ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
-      await this.platform.checkRefreshToken(ctx, record)
-      return new Octokit({
-        auth: record.token,
-        client_id: config.ClientID,
-        client_secret: config.ClientSecret
-      })
+      ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
+      if (!(await this.platform.checkRefreshToken(ctx, record))) {
+        record.octokit = undefined
+      }
+      if (record.octokit !== undefined) {
+        return record.octokit
+      }
+
+      record.octokit = ctx.withSync(
+        'create-octokit',
+        {},
+        () =>
+          new Octokit({
+            auth: record.token,
+            client_id: config.ClientID,
+            client_secret: config.ClientSecret
+          })
+      )
+      return record.octokit
     }
 
     // We need to inform user, he need to authorize this account with github.
     // TODO: Inform user it need authenticsion
     if (!this.authRequestSend.has(account)) {
       this.authRequestSend.add(account)
-      const socialId = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+      const socialId = await ctx.with('find-social-id', {}, () =>
+        this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+      )
       if (socialId !== undefined) {
-        const personSpace = await this.liveQuery.findOne(contact.class.PersonSpace, { person: socialId.attachedTo })
-        const person = await this._client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+        const personSpace = await ctx.with('find-person-space', {}, () =>
+          this.liveQuery.findOne(contact.class.PersonSpace, { person: socialId.attachedTo })
+        )
+        const person = await ctx.with('find-person', {}, () =>
+          this._client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+        )
         if (personSpace !== undefined && person !== undefined) {
           // We need to remove if user has authentication in workspace but doesn't have a record.
 
-          const allSocialId = await this._client.findAll(contact.class.SocialIdentity, {
-            attachedTo: personSpace.person
-          })
+          const allSocialId = await ctx.with('find-all-social-ids', {}, () =>
+            this._client.findAll(contact.class.SocialIdentity, {
+              attachedTo: personSpace.person
+            })
+          )
 
-          const authentications = await this.liveQuery.findAll(github.class.GithubAuthentication, {
-            createdBy: { $in: allSocialId.map((it) => it._id) }
-          })
+          const authentications = await ctx.with('find-authentications', {}, () =>
+            this.liveQuery.findAll(github.class.GithubAuthentication, {
+              createdBy: { $in: allSocialId.map((it) => it._id) }
+            })
+          )
           for (const auth of authentications) {
             await this._client.remove(auth)
           }
@@ -1026,7 +1059,7 @@ export class GithubWorker implements IntegrationManager {
         continue
       }
 
-      this.ctx.info('External Syncing', {
+      ctx.info('External Syncing', {
         name: repo.name,
         prj: prj.name,
         field,
@@ -1042,7 +1075,7 @@ export class GithubWorker implements IntegrationManager {
           await mapper?.externalSync(ctx, integration, derivedClient, field, _docs, repo, prj)
         } catch (err: any) {
           Analytics.handleError(err)
-          this.ctx.error('failed to perform external sync', err)
+          ctx.error('failed to perform external sync', err)
         }
       }
     }
@@ -1578,10 +1611,10 @@ export class GithubWorker implements IntegrationManager {
       if (this.closing) {
         break
       }
-      await this.ctx.with(
+      await ctx.with(
         'external sync',
         {},
-        async () => {
+        async (ctx) => {
           const enabled = integration.enabled && integration.octokit !== undefined
 
           const upd: DocumentUpdate<GithubIntegration> = {}
@@ -1622,10 +1655,8 @@ export class GithubWorker implements IntegrationManager {
             if (this.closing) {
               break
             }
-            const withError = await derivedClient.findAll<any>(
-              github.class.DocSyncInfo,
-              { error: { $ne: null }, url: null },
-              { limit: 50 }
+            const withError = await ctx.with('find-docSyncInfo', {}, () =>
+              derivedClient.findAll<any>(github.class.DocSyncInfo, { error: { $ne: null }, url: null }, { limit: 50 })
             )
 
             if (withError.length === 0) {
@@ -1642,10 +1673,8 @@ export class GithubWorker implements IntegrationManager {
             if (this.closing) {
               break
             }
-            const withError = await derivedClient.findAll<any>(
-              github.class.DocSyncInfo,
-              { error: { $ne: null } },
-              { limit: 50 }
+            const withError = await ctx.with('find-docSyncInfo-errors', {}, () =>
+              derivedClient.findAll<any>(github.class.DocSyncInfo, { error: { $ne: null } }, { limit: 50 })
             )
 
             if (withError.length === 0) {
@@ -1666,17 +1695,17 @@ export class GithubWorker implements IntegrationManager {
 
               await ops.update(d, { error: null, needSync: skipError ? githubSyncVersion : '' })
             }
-            await ops.commit()
+            await ctx.with('commit-errors-docsync-info', {}, () => ops.commit())
           }
 
           for (const { _class, mapper } of this.mappers) {
             if (this.closing) {
               break
             }
-            await this.ctx.with(
-              'external sync',
-              { _class: _class.join(', ') },
-              async () => {
+            await ctx.with(
+              'mapper external sync',
+              {},
+              async (ctx) => {
                 await mapper.externalFullSync(ctx, integration, derivedClient, _projects, _repositories)
               },
               { installation: integration.installationName, workspace: this.workspace.uuid },
@@ -1810,11 +1839,14 @@ export async function syncUser (
   client: TxOperations,
   account: PersonId
 ): Promise<void> {
-  const okit = new Octokit({
-    auth: record.token,
-    client_id: config.ClientID,
-    client_secret: config.ClientSecret
-  })
+  const okit =
+    record.octokit ??
+    new Octokit({
+      auth: record.token,
+      client_id: config.ClientID,
+      client_secret: config.ClientSecret
+    })
+  record.octokit = okit
 
   const details = await fetchViewerDetails(okit)
 

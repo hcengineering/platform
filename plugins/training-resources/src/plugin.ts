@@ -21,6 +21,7 @@ import type IncomingRequestStatePresenter from './components/IncomingRequestStat
 import type SentRequestCompletionPresenter from './components/SentRequestCompletionPresenter.svelte'
 import type SentRequestPresenter from './components/SentRequestPresenter.svelte'
 import type SentRequestStatePresenter from './components/SentRequestStatePresenter.svelte'
+import type TrainingPresenter from './components/TrainingPresenter.svelte'
 import type TrainingAttemptNumberPresenter from './components/TrainingAttemptNumberPresenter.svelte'
 import type TrainingAttemptPanel from './components/TrainingAttemptPanel.svelte'
 import type TrainingAttemptPresenter from './components/TrainingAttemptPresenter.svelte'
@@ -40,6 +41,7 @@ import type TrainingRequestPanel from './components/TrainingRequestPanel.svelte'
 import type TrainingRequestTraineesEditor from './components/TrainingRequestTraineesEditor.svelte'
 import type TrainingStateFilterPresenter from './components/TrainingStateFilterPresenter.svelte'
 import type TrainingStatePresenter from './components/TrainingStatePresenter.svelte'
+import type TrainingTitlePresenter from './components/TrainingTitlePresenter.svelte'
 import type ViewAllTrainings from './components/ViewAllTrainings.svelte'
 import type ViewIncomingRequests from './components/ViewIncomingRequests.svelte'
 import type ViewMyResults from './components/ViewMyResults.svelte'
@@ -56,6 +58,7 @@ export default mergeIds(trainingId, training, {
     SentRequestCompletionPresenter: '' as Resource<ComponentType<SentRequestCompletionPresenter>>,
     SentRequestPresenter: '' as Resource<ComponentType<SentRequestPresenter>>,
     SentRequestStatePresenter: '' as Resource<ComponentType<SentRequestStatePresenter>>,
+    TrainingPresenter: '' as Resource<ComponentType<TrainingPresenter>>,
     TrainingAttemptNumberPresenter: '' as Resource<ComponentType<TrainingAttemptNumberPresenter>>,
     TrainingAttemptPanel: '' as Resource<ComponentType<TrainingAttemptPanel>>,
     TrainingAttemptPresenter: '' as Resource<ComponentType<TrainingAttemptPresenter>>,
@@ -74,6 +77,7 @@ export default mergeIds(trainingId, training, {
     TrainingRequestTraineesEditor: '' as Resource<ComponentType<TrainingRequestTraineesEditor>>,
     TrainingStateFilterPresenter: '' as Resource<ComponentType<TrainingStateFilterPresenter>>,
     TrainingStatePresenter: '' as Resource<ComponentType<TrainingStatePresenter>>,
+    TrainingTitlePresenter: '' as Resource<ComponentType<TrainingTitlePresenter>>,
     ViewAllTrainings: '' as Resource<ComponentType<ViewAllTrainings>>,
     ViewIncomingRequests: '' as Resource<ComponentType<ViewIncomingRequests>>,
     ViewMyTrainings: '' as Resource<ComponentType<ViewMyTrainings>>,

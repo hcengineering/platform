@@ -18,10 +18,12 @@
   import { resizeObserver } from '../resize'
   import { DropdownIntlItem } from '../types'
   import NestedMenu from './NestedMenu.svelte'
+  import Icon from './Icon.svelte'
 
   export let items: [DropdownIntlItem, DropdownIntlItem[]][]
   export let nestedFrom: DropdownIntlItem | undefined = undefined
   export let onSelect: ((val: DropdownIntlItem) => void) | undefined = undefined
+  export let withIcon: boolean = false
 
   const elements: HTMLElement[] = []
 
@@ -72,6 +74,11 @@
           }
         }}
       >
+        {#if withIcon && nestedFrom.icon}
+          <div class="icon">
+            <Icon icon={nestedFrom.icon} iconProps={nestedFrom.iconProps} size={'small'} />
+          </div>
+        {/if}
         <div class="overflow-label pr-1"><Label label={nestedFrom.label} /></div>
       </button>
       <div class="divider" />
@@ -87,12 +94,15 @@
             elements[i]?.focus()
           }}
           label={item[0].label}
+          icon={withIcon ? item[0].icon : undefined}
+          iconProps={item[0].iconProps}
           props={{
             items: item[1].map((p) => {
               return [p, []]
             }),
             nestedFrom: item[0],
-            onSelect: onNestedSelect
+            onSelect: onNestedSelect,
+            withIcon
           }}
           options={{ component: NestedMenu }}
         />
@@ -110,6 +120,11 @@
             click(item[0])
           }}
         >
+          {#if withIcon && item[0].icon}
+            <div class="icon">
+              <Icon icon={item[0].icon} iconProps={item[0].iconProps} size={'small'} />
+            </div>
+          {/if}
           <div class="overflow-label pr-1"><Label label={item[0].label} /></div>
         </button>
       {/if}

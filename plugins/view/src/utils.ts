@@ -22,3 +22,13 @@ export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
 export function encodeObjectURI (_id: string, _class: Ref<Class<Doc>>): string {
   return [_id, _class].join('|')
 }
+
+export async function canCopyLink (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc) && doc.length !== 1) {
+    return false
+  }
+  return true
+}

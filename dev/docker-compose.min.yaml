@@ -1,6 +1,6 @@
 services:
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:

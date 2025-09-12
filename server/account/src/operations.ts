@@ -664,9 +664,10 @@ export async function createAccessLink (
     lastName?: string
     extra?: string
     navigateUrl?: string
+    spaces?: string[]
   }
 ): Promise<string> {
-  const { role, firstName, lastName, navigateUrl } = params
+  const { role, firstName, lastName, navigateUrl, spaces } = params
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -691,15 +692,18 @@ export async function createAccessLink (
   }
 
   const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, AccountRole.User, extra)
   verifyAllowedRole(callerRole, role, extra)
 
   const newUuid = await db.generatePersonUuid()
   const accessToken = generateToken(newUuid, undefined, undefined, undefined, {
     workspace: workspaceUuid,
     role,
+    grantedBy: account,
     firstName,
     lastName,
-    extra: extraObj
+    extra: extraObj,
+    spaces
   })
   let path = `/login/auth?token=${accessToken}`
   if (navigateUrl != null) {

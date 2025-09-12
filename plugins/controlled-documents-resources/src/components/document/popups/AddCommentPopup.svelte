@@ -23,6 +23,7 @@
 
 <div class="text-editor-popup w-85">
   <ReferenceInput
+    autofocus
     focusable
     kindSend="primary"
     placeholder={chunter.string.AddCommentPlaceholder}

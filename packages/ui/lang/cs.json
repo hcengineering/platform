@@ -103,6 +103,9 @@
     "Yesterday": "Včera",
     "ThisWeek": "Tento týden",
     "ThisMonth": "Tento měsíc",
-    "ThisYear": "Tento rok"
+    "ThisYear": "Tento rok",
+    "EmojiStyle": "Styl emoji",
+    "EmojiSystem": "Výchozí systémové",
+    "EmojiNoto": "Noto Color"
   }
 }

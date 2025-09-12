@@ -12,6 +12,7 @@
     "Parent": "Nadřazený",
     "Tags": "Štítky",
     "Tag": "Štítek",
+    "AddTag": "Přidat štítek",
     "CardLibrary": "Knihovna karet",
     "MinimizeAll": "Minimalizovat vše",
     "ExpandAll": "Rozbalit vše",
@@ -41,11 +42,10 @@
     "NoChildren": "Žádné děti",
     "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
     "AddCollaborators": "Přidat spolupracovníky",
-    "Home": "Domů",
-    "WhatDoYouWantToShare": "Čím chcete sdílet?",
-    "Share": "Sdílet",
-    "Compact": "Kompaktní",
-    "Comfortable": "Komfortní",
-    "Comfortable2": "Komfortní 2"
+    "CardTitle": "Název",
+    "Post": "Přidat",
+    "GetIndividualPublicLink": "Získat personalizovaný veřejný odkaz",
+    "ShowLess": "Skrýt detaily",
+    "CardContent": "Co chcete sdílet?"
   }
 }

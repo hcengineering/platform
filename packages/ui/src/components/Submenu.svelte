@@ -27,6 +27,7 @@
   export let focusIndex = -1
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> = {}
   export let text: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let labelProps: Record<string, any> = {}
@@ -58,7 +59,7 @@
     {/if}
   {:else}
     {#if icon}
-      <div class="icon"><Icon {icon} size={'small'} /></div>
+      <div class="icon"><Icon {icon} {iconProps} size={'small'} /></div>
     {/if}
     <span class="overflow-label pr-1">
       {#if label}<Label {label} params={labelProps} />

@@ -43,7 +43,8 @@ import {
   type TypedSpace,
   type WorkspaceMode,
   type Domain,
-  type PluginConfiguration
+  type PluginConfiguration,
+  type AccountUuid
 } from './classes'
 import core from './component'
 import { type Hierarchy } from './hierarchy'
@@ -990,3 +991,8 @@ export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | u
   return unique(arr).filter(notEmpty)
 }
 export { platformNow, platformNowDiff } from '@hcengineering/measurements'
+
+export interface PermissionsGrant {
+  spaces?: Ref<Space>[]
+  grantedBy?: AccountUuid
+}

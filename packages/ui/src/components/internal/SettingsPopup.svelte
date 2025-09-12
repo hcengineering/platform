@@ -31,6 +31,7 @@
     modalStore,
     eventToHTMLElement
   } from '../..'
+  import EmojiStyle from './icons/EmojiStyle.svelte'
 
   const { currentFontSize, setFontSize } = getContext<{
     currentFontSize: Readable<string>
@@ -46,6 +47,11 @@
     setLanguage: (language: string) => void
   }>('lang')
 
+  const { currentEmoji, setEmoji } = getContext<{
+    currentEmoji: Readable<string>
+    setEmoji: (emoji: string) => void
+  }>('emoji')
+
   const fontsizes: Array<{ id: string, label: IntlString, size: number }> = [
     { id: 'normal-font', label: ui.string.Spacious, size: 16 },
     { id: 'small-font', label: ui.string.Compact, size: 14 }
@@ -55,6 +61,11 @@
     { id: 'theme-light', label: ui.string.ThemeLight },
     { id: 'theme-dark', label: ui.string.ThemeDark },
     { id: 'theme-system', label: ui.string.ThemeSystem }
+  ]
+
+  const emojis: Array<{ id: string, label: IntlString }> = [
+    { id: 'emoji-system', label: ui.string.EmojiSystem },
+    { id: 'emoji-noto', label: ui.string.EmojiNoto }
   ]
 
   const uiLangs = new Set(getMetadata(ui.metadata.Languages))
@@ -99,9 +110,15 @@
     setLanguage(language)
   }
 
+  function selectEmoji (emoji: string): void {
+    if ($currentEmoji === emoji) return
+    setEmoji(emoji)
+  }
+
   $: $deviceInfo.theme = $currentTheme
   $: fontsize = fontsizes.find((fs) => fs.id === $currentFontSize) ?? fontsizes[0]
   $: language = langs.find((lang) => lang.id === $currentLanguage) ?? langs[0]
+  $: emoji = emojis.find((e) => e.id === $currentEmoji) ?? emojis[0]
 </script>
 
 <div class="antiPopup thinStyle">
@@ -157,6 +174,34 @@
           </div>
           <div class="flex-row-center pr-4">
             <Label label={fontsize.label} />
+          </div>
+        </div>
+      </button>
+
+      <div class="ap-menuItem separator halfMargin" />
+
+      <button
+        class="ap-menuItem antiPopup-submenu withIcon noMargin flex-row-center flex-grow"
+        on:click={(ev) => {
+          const items = emojis.map((p) => {
+            return {
+              ...p
+            }
+          })
+          showPopup(ModernPopup, { items, selected: emoji.id }, eventToHTMLElement(ev), (id) => {
+            if (id !== undefined) {
+              selectEmoji(id)
+            }
+          })
+        }}
+      >
+        <div class="flex-between flex-grow">
+          <div class="flex-row-center">
+            <div class="icon mr-2"><EmojiStyle size={'16px'} /></div>
+            <span class="label font-medium"><Label label={ui.string.EmojiStyle} /></span>
+          </div>
+          <div class="flex-row-center pr-4">
+            <Label label={emoji.label} />
           </div>
         </div>
       </button>

@@ -41,7 +41,7 @@ services:
       - 4040:4040
     restart: unless-stopped
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -498,6 +498,25 @@ services:
       - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  hulylake:
+    image: hardcoreeng/hulylake
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+    ports:
+      - 8096:8096
+    environment:
+      - HULY_TOKEN_SECRET=secret
+      - HULY_DB_CONNECTION=${DB_CR_URL}
+      - AWS_ENDPOINT_URL=http://minio:9000
+      - AWS_REGION=local
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
     restart: unless-stopped
   hulykvs:
     image: hardcoreeng/hulykvs

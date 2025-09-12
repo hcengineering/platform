@@ -14,7 +14,17 @@
 //
 
 import cardPlugin, { Card } from '@hcengineering/card'
-import core, { Tx, TxCreateDoc, TxCUD, TxProcessor, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  ArrOf,
+  Doc,
+  RefTo,
+  Tx,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import process, {
   ContextId,
   Execution,
@@ -33,6 +43,8 @@ import {
   All,
   Append,
   Ceil,
+  CurrentDate,
+  CurrentUser,
   Cut,
   Divide,
   FirstValue,
@@ -65,6 +77,7 @@ import {
   UpdateCard,
   CreateCard,
   AddRelation,
+  AddTag,
   CheckToDo,
   OnCardUpdateCheck,
   CheckTime
@@ -276,11 +289,16 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
         id: transition.result._id,
         key: ''
       }
+      const parentType =
+        transition.result.type._class === core.class.ArrOf
+          ? (transition.result.type as ArrOf<Doc>).of
+          : transition.result.type
+      const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
       _process.context[transition.result._id] = {
         name: context?.name ?? transition.result.name,
         isResult: true,
         type: transition.result.type,
-        _class: transition.result.type._class,
+        _class,
         index: index++,
         producer: transition._id,
         value: ctx
@@ -325,6 +343,8 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   }
 }
 
+export * from './utils'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
@@ -333,11 +353,14 @@ export default async () => ({
     UpdateCard,
     CreateCard,
     AddRelation,
+    AddTag,
     CheckToDo,
     OnCardUpdateCheck,
     CheckTime
   },
   transform: {
+    CurrentDate,
+    CurrentUser,
     FirstValue,
     LastValue,
     Random,

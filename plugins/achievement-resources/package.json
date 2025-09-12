@@ -30,7 +30,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "typescript": "^5.8.3",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "svelte-check": "^3.6.9",
     "svelte-preprocess": "^5.1.3",
     "svelte-loader": "^3.2.0",
@@ -46,6 +46,6 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/achievement": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   }
 }
