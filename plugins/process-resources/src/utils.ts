@@ -21,9 +21,7 @@ import core, {
   type Doc,
   type DocumentQuery,
   generateId,
-  type Hierarchy,
   matchQuery,
-  type ModelDb,
   type Ref,
   type RefTo,
   type Space,
@@ -110,20 +108,19 @@ export function getContextMasterTag (
 }
 
 export async function pickTransition (
-  model: ModelDb,
-  hierarchy: Hierarchy,
+  client: Client,
   execution: Execution,
   transitions: Transition[],
   doc: Doc
 ): Promise<Transition | undefined> {
   for (const tr of transitions) {
-    const trigger = model.findObject(tr.trigger)
+    const trigger = client.getModel().findObject(tr.trigger)
     if (trigger === undefined) continue
     if (trigger.checkFunction === undefined) return tr
     const filled = fillParams(tr.triggerParams, execution)
     const checkFunc = await getResource(trigger.checkFunction)
     if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, doc, hierarchy)
+    const res = await checkFunc(client, execution, filled, doc)
     if (res) return tr
   }
 }
@@ -596,19 +593,47 @@ export async function requestResult (
   })
 }
 
-export function todoTranstionCheck (params: Record<string, any>, doc: Doc): boolean {
+export function todoTranstionCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  doc: Doc
+): boolean {
   if (params._id === undefined) return false
   return doc._id === params._id
 }
 
-export function timeTransitionCheck (params: Record<string, any>): boolean {
+export function timeTransitionCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
   if (params.value === undefined) return false
   return params.value <= Date.now()
 }
 
-export function updateCardTranstionCheck (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy): boolean {
-  const res = matchQuery([doc], params, doc._class, hierarchy, true)
+export function updateCardTranstionCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  doc: Doc
+): boolean {
+  const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
+}
+
+export async function subProcessesDoneCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  const res = client.findOne(process.class.Execution, {
+    parentId: execution._id,
+    status: ExecutionStatus.Active
+  })
+  return res === undefined
 }
 
 export function getCirteriaEditor (of: Ref<Class<Doc>>, category: AttributeCategory): AnyComponent | undefined {

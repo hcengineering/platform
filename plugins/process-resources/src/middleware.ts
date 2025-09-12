@@ -88,13 +88,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
           from: execution.currentState,
           trigger: process.trigger.OnCardUpdate
         })
-        const transition = await pickTransition(
-          this.client.getModel(),
-          this.client.getHierarchy(),
-          execution,
-          transitions,
-          updated
-        )
+        const transition = await pickTransition(this.client, execution, transitions, updated)
         if (transition === undefined) return
         const context = await getNextStateUserInput(execution, transition, execution.context)
         const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
@@ -158,13 +152,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         from: execution.currentState,
         trigger: process.trigger.OnToDoClose
       })
-      const transition = await pickTransition(
-        this.client.getModel(),
-        this.client.getHierarchy(),
-        execution,
-        transitions,
-        todo
-      )
+      const transition = await pickTransition(this.client, execution, transitions, todo)
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
       const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)

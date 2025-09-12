@@ -1118,6 +1118,7 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
+      checkFunction: process.triggerCheck.SubProcessesDoneCheck,
       requiredParams: [],
       init: false,
       auto: true

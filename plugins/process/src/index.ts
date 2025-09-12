@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
-import { Association, Class, Doc, DocumentUpdate, Hierarchy, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
+import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -84,9 +84,10 @@ export enum ExecutionLogAction {
 }
 
 export type CheckFunc = (
+  client: Client,
+  execution: Execution,
   params: Record<string, any>,
-  context: Record<string, any>,
-  hierarchy: Hierarchy
+  context: Record<string, any>
 ) => Promise<boolean>
 
 export enum ExecutionStatus {
@@ -216,6 +217,7 @@ export default plugin(processId, {
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
     UpdateCheck: '' as Resource<CheckFunc>,
+    SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>
   },
   string: {
