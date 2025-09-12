@@ -24,7 +24,7 @@
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace } from '@hcengineering/activity-resources'
-  import { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { getChannelSpace } from '../../utils'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
@@ -75,8 +75,6 @@
   } else {
     createdMessageQuery.unsubscribe()
   }
-
-  const typingInfo: Ref<Person>[] = []
 
   function clear (): void {
     currentMessage = getDefault()
@@ -241,5 +239,5 @@
 />
 
 {#if withTypingInfo}
-  <ChannelTypingInfo {typingInfo} {object} />
+  <ChannelTypingInfo {object} />
 {/if}

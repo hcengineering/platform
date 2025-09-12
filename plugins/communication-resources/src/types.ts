@@ -16,8 +16,7 @@
 import { type IntlString } from '@hcengineering/platform'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { type LinkPreviewParams, type BlobParams, type AppletType } from '@hcengineering/communication-types'
-import type { Markup, Ref, Timestamp } from '@hcengineering/core'
-import type { Person } from '@hcengineering/contact'
+import type { Markup, Ref } from '@hcengineering/core'
 import type { IconComponent } from '@hcengineering/ui'
 import { type Applet } from '@hcengineering/communication'
 
@@ -38,11 +37,6 @@ export interface Action {
   action: (event: MouseEvent) => void
   order: number
   disabled?: boolean
-}
-
-export interface PresenceTyping {
-  person: Ref<Person>
-  lastTyping: Timestamp
 }
 
 export interface AppletDraft {

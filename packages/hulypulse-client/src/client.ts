@@ -19,9 +19,6 @@ export type UnsubscribeCallback = () => Promise<boolean>
 
 export type Callback<T> = (key: string, data: T | undefined) => void
 
-type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue }
-// type JSONObject = Record<string, JSONValue>
-
 // hulypulse API: incoming messages variants
 
 // interface Ping_Message {
@@ -99,7 +96,7 @@ type Command = 'sub' | 'unsub' | 'put' | 'get' | 'delete' | 'list' | 'sublist' |
 interface SubscribedMessage {
   message: 'Set' | 'Del' | 'Unlink' | 'Expired'
   key: string
-  value?: JSONValue
+  value?: string
 }
 
 interface CommandMessage {
@@ -165,7 +162,7 @@ interface GetMessage {
 interface PutMessage {
   type: 'put'
   key: string
-  data: JSONValue
+  data: string
   TTL?: number
   expiresAt?: number
   ifMatch?: string
@@ -258,16 +255,13 @@ export class HulypulseClient implements Disposable {
       }
 
       ws.onmessage = (event) => {
-        console.log('@@@@ WebSocket message received:', event.data)
         try {
           if (event.data === 'ping') {
             this.ws?.send('pong')
             return
           }
 
-          console.log('@@@ Received message:', event.data)
           const msg: PulseIncomingMessage = JSON.parse(event.data.toString())
-          console.log('@@@ Parsed message:', msg)
 
           // Handle incoming messages (Set, Expired, Del)
           if ('message' in msg) {
@@ -275,7 +269,8 @@ export class HulypulseClient implements Disposable {
               if (msg.key.startsWith(key)) {
                 callbacks.forEach((cb, index) => {
                   try {
-                    cb(msg.key, msg.message === 'Set' ? msg.value : undefined)
+                    const value = msg.message === 'Set' && msg.value !== undefined ? JSON.parse(msg.value) : undefined
+                    cb(msg.key, value)
                   } catch (err) {
                     console.error(`Error in callback #${index} with key "${key}":`, err)
                   }
@@ -446,7 +441,7 @@ export class HulypulseClient implements Disposable {
     const message: Omit<PutMessage, 'correlation'> = {
       type: 'put',
       key,
-      data,
+      data: JSON.stringify(data),
       ...(typeof third === 'number' ? { TTL: third } : third)
     }
     const reply = await this.send(message)
