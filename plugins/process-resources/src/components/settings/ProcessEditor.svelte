@@ -165,7 +165,7 @@
           </div>
           <div class="hulyComponent-content flex-col-center flex-gap-4">
             <StatesInlineEditor {states} {readonly} process={value} />
-            <TransitionsInlineEditor {transitions} {readonly} process={value} />
+            <TransitionsInlineEditor {readonly} process={value} />
           </div>
         </div>
       </Scroller>
