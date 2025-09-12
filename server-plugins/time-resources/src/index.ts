@@ -634,6 +634,7 @@ async function getIssueToDoData (
     visibility: 'public',
     title: issue.title,
     user: employee._id,
+    doneOn: null,
     rank
   }
   return data

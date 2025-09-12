@@ -817,6 +817,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         attachedSpace: pullRequest.space,
         user: employee._id,
         workslots: 0,
+        doneOn: null,
         priority: ToDoPriority.High,
         visibility: 'public',
         rank: makeRank(undefined, latestTodo?.rank)
@@ -872,6 +873,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         title: 'Resolve ' + pullRequest.title,
         description: external.url,
         user: employee._id,
+        doneOn: null,
         workslots: 0,
         priority: ToDoPriority.High,
         visibility: 'public',

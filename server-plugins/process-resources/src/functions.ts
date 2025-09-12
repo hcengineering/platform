@@ -204,6 +204,7 @@ export async function CreateToDo (
         dueDate: params.dueDate,
         priority: params.priority ?? ToDoPriority.NoPriority,
         visibility: 'public',
+        doneOn: null,
         rank: '',
         withRollback: params.withRollback ?? false
       },
