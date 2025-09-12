@@ -20,6 +20,7 @@ import core, {
   getDiffUpdate,
   MeasureContext,
   Ref,
+  SortingOrder,
   Tx,
   TxProcessor,
   TxUpdateDoc,
@@ -134,10 +135,14 @@ async function findTransitions (
   execution: Execution
 ): Promise<Transition | undefined> {
   if (record.event === process.trigger.OnExecutionStart) {
-    const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-      process: execution.process,
-      trigger: record.event
-    })
+    const transitions = control.client.getModel().findAllSync(
+      process.class.Transition,
+      {
+        process: execution.process,
+        trigger: record.event
+      },
+      { sort: { rank: SortingOrder.Ascending } }
+    )
     return await pickTransition(control, execution, transitions, record.context)
   }
   if (record.event === process.trigger.OnExecutionContinue) {
@@ -487,11 +492,17 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
   const _process = control.client.getModel().findObject(parent.process)
   if (_process === undefined) return
   if (parent.status !== ExecutionStatus.Active) return
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: parent.currentState,
-    process: parent.process,
-    trigger: process.trigger.OnSubProcessesDone
-  })
+  const transitions = control.client.getModel().findAllSync(
+    process.class.Transition,
+    {
+      from: parent.currentState,
+      process: parent.process,
+      trigger: process.trigger.OnSubProcessesDone
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
   const transition = await pickTransition(control, execution, transitions, {})
   if (transition === undefined) return
   await executeTransition(parent, transition, control)
@@ -499,11 +510,15 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
 
 async function checkNext (control: ProcessControl, execution: Execution): Promise<boolean> {
   const autoTriggers = control.client.getModel().findAllSync(process.class.Trigger, { auto: true })
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: { $in: autoTriggers.map((it) => it._id) }
-  })
+  const transitions = control.client.getModel().findAllSync(
+    process.class.Transition,
+    {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: { $in: autoTriggers.map((it) => it._id) }
+    },
+    { sort: { rank: SortingOrder.Ascending } }
+  )
   if (transitions.length > 0) {
     const doc = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
     if (doc !== undefined) {

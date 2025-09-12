@@ -60,7 +60,7 @@
 
   let presenter: typeof SvelteComponent | undefined
   let objectFactory: ObjectFactory | undefined
-  let items: FindResult<Doc> | undefined
+  let items: Doc[] = []
 
   let draggingIndex: number | null = null
   let hoveringIndex: number | null = null
@@ -163,9 +163,13 @@
   $: isLoading = isPresenterLoading || areItemsloading
   $: isSortable = hierarchy.getAllAttributes(_class).has('rank')
   $: itemsCount = items?.length ?? 0
+
+  $: isVertical = direction === 'column'
+
+  $: isDraggable = isSortable && items.length > 1 && !areItemsSorting
 </script>
 
-<div class="flex-col">
+<div class="flex-col" class:w-full={isVertical}>
   {#if label || !isAddButtonHidden}
     <div class="flex mb-4">
       {#if icon}
@@ -199,10 +203,8 @@
   {#if isLoading}
     <Loading />
   {:else if ($$slots.object ?? presenter) && items}
-    {@const isVertical = direction === 'column'}
     <div class="flex-gap-1" class:flex-col={isVertical} class:flex={!isVertical} class:flex-wrap={!isVertical}>
       {#each items as item, index (item._id)}
-        {@const isDraggable = isSortable && items.length > 1 && !areItemsSorting}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="item"

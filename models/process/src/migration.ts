@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type Client, type Doc, TxOperations } from '@hcengineering/core'
+import core, { type Client, type Doc, type Rank, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -21,6 +21,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import process, { type State, type Step } from '@hcengineering/process'
+import { makeRank } from '@hcengineering/rank'
 import { processId } from '.'
 
 export const processOperation: MigrateOperation = {
@@ -31,6 +32,11 @@ export const processOperation: MigrateOperation = {
         state: 'migrateActionsFromStates',
         mode: 'upgrade',
         func: migrateActionsFromStates
+      },
+      {
+        state: 'fillStatesRanks',
+        mode: 'upgrade',
+        func: fillStatesRanks
       }
     ])
   }
@@ -38,6 +44,23 @@ export const processOperation: MigrateOperation = {
 
 interface OldState extends State {
   actions: Step<Doc>[]
+}
+
+async function fillStatesRanks (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const states = await client.findAll(process.class.State, { rank: { $exists: false } })
+  let prevRank: Rank | undefined
+  for (const state of states) {
+    prevRank = makeRank(prevRank, undefined)
+    await txOp.update(state, { rank: prevRank })
+  }
+
+  const transitions = await client.findAll(process.class.Transition, { rank: { $exists: false } })
+  prevRank = undefined
+  for (const transition of transitions) {
+    prevRank = makeRank(prevRank, undefined)
+    await txOp.update(transition, { rank: prevRank })
+  }
 }
 
 async function migrateActionsFromStates (client: Client): Promise<void> {
@@ -54,10 +77,12 @@ async function migrateActionsFromStates (client: Client): Promise<void> {
     arr.push(transition)
     transitionsMap.set(transition.to, arr)
   }
+  let prevRank: Rank | undefined
   for (const state of states) {
     if (state.actions?.length > 0) {
       const transitions = transitionsMap.get(state._id) ?? []
       if (transitions.length === 0) {
+        prevRank = makeRank(prevRank, undefined)
         await txOp.createDoc(
           process.class.Transition,
           core.space.Model,
@@ -65,6 +90,7 @@ async function migrateActionsFromStates (client: Client): Promise<void> {
             from: null,
             to: state._id,
             actions: state.actions,
+            rank: prevRank,
             trigger: process.trigger.OnExecutionStart,
             triggerParams: {},
             process: state.process

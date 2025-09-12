@@ -20,6 +20,7 @@
   import { Process, State } from '@hcengineering/process'
   import { ButtonIcon, getCurrentLocation, Icon, IconAdd, Label, navigate } from '@hcengineering/ui'
   import process from '../plugin'
+  import { makeRank } from '@hcengineering/rank'
 
   export let masterTag: MasterTag
 
@@ -38,6 +39,7 @@
       core.space.Model,
       {
         process: id,
+        rank: makeRank(undefined, undefined),
         title: await translate(process.string.NewState, {})
       },
       initState
@@ -47,6 +49,7 @@
       from: null,
       to: initState,
       trigger: process.trigger.OnExecutionStart,
+      rank: makeRank(undefined, undefined),
       actions: [],
       triggerParams: {}
     })
