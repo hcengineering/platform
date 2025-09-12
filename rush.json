@@ -213,17 +213,17 @@
      * your PR branch, and in this situation "rush change" will also automatically invoke "git fetch"
      * to retrieve the latest activity for the remote main branch.
      */
-    // "url": "https://github.com/microsoft/rush-example",
+    "url": "https://github.com/hcengineering/huly.net",
     /**
      * The default branch name. This tells "rush change" which remote branch to compare against.
      * The default value is "main"
      */
-    // "defaultBranch": "main",
+    "defaultBranch": "main",
     /**
      * The default remote. This tells "rush change" which remote to compare against if the remote URL is
      * not set or if a remote matching the provided remote URL is not found.
      */
-    // "defaultRemote": "origin"
+    "defaultRemote": "origin"
   },
 
   /**
