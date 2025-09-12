@@ -2682,6 +2682,11 @@
       "packageName": "@hcengineering/pod-worker",
       "projectFolder": "services/worker",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/hulylake-client",
+      "projectFolder": "packages/hulylake-client",
+      "shouldPublish": false
     }
   ]
 }
