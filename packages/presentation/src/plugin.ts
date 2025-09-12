@@ -179,7 +179,8 @@ export default plugin(presentationId, {
     SessionId: '' as Metadata<string>,
     StatsUrl: '' as Metadata<string>,
     MailUrl: '' as Metadata<string>,
-    PreviewUrl: '' as Metadata<string>
+    PreviewUrl: '' as Metadata<string>,
+    PulseUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

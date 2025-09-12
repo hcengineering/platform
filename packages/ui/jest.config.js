@@ -1,5 +1,8 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
-  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)']
+  testEnvironment: 'jsdom',
+  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(svelte)/)'
+  ]
 }

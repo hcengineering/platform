@@ -32,7 +32,8 @@ import core, {
   type TxResult,
   type TxWorkspaceEvent,
   type WorkspaceIds,
-  type PermissionsGrant
+  type PermissionsGrant,
+  toFindResult
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -271,9 +272,24 @@ export function wrapPipeline (
   const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
 
   return {
-    findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
-    findOne: async (_class, query, options) =>
-      (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
+    findAll: async (_class, query, options) => {
+      const result = await pipeline.findAll(ctx, _class, query, options)
+      return toFindResult(
+        result.map((v) => {
+          return pipeline.context.hierarchy.updateLookupMixin(_class, v, options)
+        }),
+        result.total
+      )
+    },
+    findOne: async (_class, query, options) => {
+      const result = await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })
+      return toFindResult(
+        result.map((v) => {
+          return pipeline.context.hierarchy.updateLookupMixin(_class, v, options)
+        }),
+        result.total
+      )[0]
+    },
     domainRequest: async (domain, params) => {
       return await pipeline.domainRequest(ctx, domain, params)
     },

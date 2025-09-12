@@ -23,6 +23,7 @@ import { getFollowee, publishData, followeeDataSubscribe, followeeDataUnsubscrib
 export { Presence, PresenceAvatars }
 export { updateMyPresence, removeMyPresence, presenceByObjectId } from './store'
 
+export * from './pulse'
 export * from './types'
 
 export default async (): Promise<Resources> => ({
