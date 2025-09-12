@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import core, { Doc } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Process, State } from '@hcengineering/process'
   import { Button, IconAdd, Label } from '@hcengineering/ui'
   import plugin from '../../plugin'
   import StateInlineEditor from './StateInlineEditor.svelte'
+  import { makeRank } from '@hcengineering/rank'
+  import { SortableList } from '@hcengineering/view-resources'
 
   export let process: Process
   export let states: State[]
@@ -28,10 +30,16 @@
   const client = getClient()
 
   async function addState (): Promise<void> {
+    const rank = makeRank(states.length > 0 ? states[states.length - 1].rank : undefined, undefined)
     await client.createDoc(plugin.class.State, core.space.Model, {
       process: process._id,
-      title: await translate(plugin.string.NewState, {})
+      title: await translate(plugin.string.NewState, {}),
+      rank
     })
+  }
+
+  function toState (doc: Doc): State {
+    return doc as State
   }
 </script>
 
@@ -41,9 +49,11 @@
   <div class="header w-full p-4">
     <Label label={plugin.string.States} />
   </div>
-  {#each states as state (state._id)}
-    <StateInlineEditor value={state} />
-  {/each}
+  <SortableList _class={plugin.class.State} query={{ process: process._id }} isAddButtonHidden>
+    <svelte:fragment slot="object" let:value>
+      <StateInlineEditor value={toState(value)} />
+    </svelte:fragment>
+  </SortableList>
   {#if !readonly}
     <Button kind={'ghost'} width={'100%'} icon={IconAdd} label={plugin.string.AddState} on:click={addState} />
   {/if}

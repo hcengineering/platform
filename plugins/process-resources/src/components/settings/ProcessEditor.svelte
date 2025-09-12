@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { Process, State, Transition } from '@hcengineering/process'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
@@ -68,13 +68,27 @@
     }
   })
 
-  $: statesQuery.query(process.class.State, { process: _id }, (res) => {
-    states = res
-  })
+  $: statesQuery.query(
+    process.class.State,
+    { process: _id },
+    (res) => {
+      states = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
-  $: transitionsQ.query(process.class.Transition, { process: _id }, (res) => {
-    transitions = res
-  })
+  $: transitionsQ.query(
+    process.class.Transition,
+    { process: _id },
+    (res) => {
+      transitions = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   async function saveName (): Promise<void> {
     if (value !== undefined) {

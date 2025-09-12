@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
-import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
+import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Rank, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -67,6 +67,7 @@ export interface Transition extends Doc {
   trigger: Ref<Trigger>
   triggerParams: Record<string, any>
   result?: TriggerResult | null
+  rank: Rank
 }
 
 export interface ExecutionLog extends Doc {
@@ -131,6 +132,7 @@ Record<string, any>
 export interface State extends Doc {
   process: Ref<Process>
   title: string
+  rank: Rank
 }
 
 export type StepId = string & { __stepId: true }
