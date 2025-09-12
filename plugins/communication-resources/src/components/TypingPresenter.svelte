@@ -11,40 +11,31 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { getName, getCurrentEmployee } from '@hcengineering/contact'
+  import { onDestroy, onMount } from 'svelte'
+  import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
-  import { notEmpty } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { presenceByObjectId } from '@hcengineering/presence-resources'
+  import { subscribeTyping, TypingInfo } from '@hcengineering/presence-resources'
   import { CardID } from '@hcengineering/communication-types'
 
   import communication from '../plugin'
-  import { type PresenceTyping } from '../types'
 
   export let cardId: CardID
-  const typingDelay = 2000
   const maxTypingPersons = 3
   const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
+  let typingInfo = new Map<string, Ref<Person>>()
   let typingPersonsLabel: string = ''
   let typingPersonsCount = 0
   let moreCount: number = 0
 
-  let typing: PresenceTyping[] = []
-  $: presence = $presenceByObjectId.get(cardId) ?? []
-  $: typing = presence.map((p) => p.presence.typing).filter(notEmpty)
+  $: void updateTypingPersons(typingInfo)
 
-  $: void updateTypingPersons(typing)
-
-  async function updateTypingPersons (typingInfo: PresenceTyping[]): Promise<void> {
-    const now = Date.now()
-    const personIds = new Set(
-      typingInfo.filter((info) => info.person !== me && now - info.lastTyping < typingDelay).map((info) => info.person)
-    )
-    const persons = await getPersonsByPersonRefs(Array.from(personIds))
+  async function updateTypingPersons (typingInfo: Map<string, Ref<Person>>): Promise<void> {
+    const persons = await getPersonsByPersonRefs(Array.from(typingInfo.values()))
     const names = Array.from(persons.values())
       .map((person) => getName(hierarchy, person))
       .sort((name1, name2) => name1.localeCompare(name2))
@@ -54,13 +45,29 @@
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  onMount(() => {
-    const interval = setInterval(() => {
-      void updateTypingPersons(typing)
-    }, typingDelay)
-    return () => {
-      clearInterval(interval)
+  function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
+    if (value === undefined) {
+      typingInfo.delete(key)
+      typingInfo = typingInfo
+      return
     }
+
+    if (typingInfo.has(key) || value.personId === me) {
+      return
+    }
+
+    typingInfo.set(key, value.personId)
+    typingInfo = typingInfo
+  }
+
+  let unsubscribe: (() => Promise<boolean>) | undefined
+
+  onMount(async () => {
+    unsubscribe = await subscribeTyping(cardId, handleTypingInfo)
+  })
+
+  onDestroy(() => {
+    void unsubscribe?.()
   })
 </script>
 

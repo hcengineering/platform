@@ -11,18 +11,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
+import { type Person, getCurrentEmployee } from '@hcengineering/contact'
 import { HulypulseClient, type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { type Doc, getCurrentAccount, type PersonId, type Ref } from '@hcengineering/core'
-// export type { UnsubscribeCallback }
+import { type Doc, type Ref } from '@hcengineering/core'
 
 const typingDelaySeconds = 2
 
 let pulseclient: HulypulseClient | undefined
 
-function getWorkspace (): string | undefined {
-  return getMetadata(presentation.metadata.WorkspaceUuid)
+function getWorkspace (): string {
+  return getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
 }
 
 export function getPulseClient (): HulypulseClient | undefined {
@@ -38,36 +38,36 @@ export async function createPulseClient (): Promise<HulypulseClient> {
   return pulseclient
 }
 
-export async function setTyping (me: string, objectId: Ref<Doc>): Promise<void> {
-  const workspace = getWorkspace()
-  const id = getCurrentAccount().socialIds[0]
-  const typingInfo: TypingInfo = {
-    socialId: id,
-    objectId
-  }
-  const typingInfoStr = JSON.stringify(typingInfo)
-  await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, typingInfoStr, typingDelaySeconds)
-}
-
 export interface TypingInfo {
-  socialId: PersonId
+  personId: Ref<Person>
   objectId: Ref<Doc>
 }
 
 export async function subscribeTyping (
-  callback: Callback<TypingInfo | undefined>,
-  objectId: Ref<Doc>
+  objectId: Ref<Doc>,
+  callback: Callback<TypingInfo | undefined>
 ): Promise<UnsubscribeCallback> {
   const workspace = getWorkspace()
   return (await pulseclient?.subscribe(`${workspace}/typing/${objectId}/`, callback)) ?? (async () => false)
 }
 
-export function clearTyping (me: string, objectId: string): void {
+export async function setTyping (me: string, objectId: Ref<Doc>): Promise<void> {
   const workspace = getWorkspace()
-  void pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`)
+  const personId = getCurrentEmployee()
+  const typingInfo: TypingInfo = { personId, objectId }
+  try {
+    await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, typingInfo, typingDelaySeconds)
+  } catch (error) {
+    console.warn('failed to put typing info:', error)
+  }
 }
 
-// export function setOnline(): void { TODO }
+export function clearTyping (me: string, objectId: string): void {
+  const workspace = getWorkspace()
+  void pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`).catch((error) => {
+    console.warn('failed to delete typing info:', error)
+  })
+}
 
 export function closePulseClient (): void {
   pulseclient?.close()
