@@ -51,12 +51,12 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMethodImpl, TFuncImpl, TTriggerImpl)
 
   builder.mixin(process.trigger.OnToDoClose, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoDone,
     rollbackFunc: serverProcess.rollbacks.ToDoCloseRollback
   })
 
   builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoCancelled,
     rollbackFunc: serverProcess.rollbacks.ToDoCancellRollback
   })
 

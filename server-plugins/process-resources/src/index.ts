@@ -78,7 +78,8 @@ import {
   CreateCard,
   AddRelation,
   AddTag,
-  CheckToDo,
+  CheckToDoDone,
+  CheckToDoCancelled,
   OnCardUpdateCheck,
   CheckSubProcessesDone,
   CheckTime
@@ -355,7 +356,8 @@ export default async () => ({
     CreateCard,
     AddRelation,
     AddTag,
-    CheckToDo,
+    CheckToDoDone,
+    CheckToDoCancelled,
     OnCardUpdateCheck,
     CheckSubProcessesDone,
     CheckTime

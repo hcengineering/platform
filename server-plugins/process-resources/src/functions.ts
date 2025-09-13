@@ -27,15 +27,36 @@ import process, {
 import { ExecuteResult, ProcessControl } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 
-export function CheckToDo (
+export async function CheckToDoDone (
   control: ProcessControl,
   execution: Execution,
   params: Record<string, any>,
   context: Record<string, any>
-): boolean {
+): Promise<boolean> {
   if (params._id === undefined) return false
-  if (context.todo === undefined) return false
-  return context.todo._id === params._id
+  if (context.todo !== undefined) {
+    return context.todo._id === params._id
+  } else {
+    const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id })
+    if (todo === undefined) return false
+    return todo.doneOn !== null
+  }
+}
+
+export async function CheckToDoCancelled (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  if (params._id === undefined) return false
+  if (context.todo !== undefined) {
+    return context.todo._id === params._id
+  } else {
+    const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id })
+    if (todo === undefined) return false
+    return todo.doneOn === null
+  }
 }
 
 export async function CheckSubProcessesDone (control: ProcessControl, execution: Execution): Promise<boolean> {
