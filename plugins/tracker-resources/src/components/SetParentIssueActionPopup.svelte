@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedData, FindOptions, type Rank, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { AttachedData, Doc, FindOptions, type Rank, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/task'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
@@ -65,7 +65,32 @@
   }
 
   $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
-  $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
+  $: ignoreObjects = getIgnoreObjects(value)
+
+  function getIgnoreObjects (issues: Issue | AttachedData<Issue> | Issue[] | IssueDraft): Ref<Issue>[] {
+    if (!Array.isArray(issues)) {
+      const own = '_id' in issues ? issues._id : undefined
+      const childs = 'childInfo' in issues ? issues.childInfo.map((c) => c.childId) : []
+      return own !== undefined ? [own, ...childs] : childs
+    } else {
+      const res = new Set<Ref<Issue>>()
+      for (const issue of issues) {
+        const own = '_id' in issue ? issue._id : undefined
+        const childs = 'childInfo' in issue ? issue.childInfo.map((c) => c.childId) : []
+        if (own !== undefined) {
+          res.add(own)
+          for (const child of childs) {
+            res.add(child)
+          }
+        } else {
+          for (const child of childs) {
+            res.add(child)
+          }
+        }
+      }
+      return [...res]
+    }
+  }
 </script>
 
 <ObjectPopup
