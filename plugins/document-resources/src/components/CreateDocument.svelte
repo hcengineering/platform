@@ -114,7 +114,7 @@
       kind={'regular'}
       size={'small'}
       label={document.string.NoParentDocument}
-      searchField={'name'}
+      searchField={'title'}
       allowDeselect={true}
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}

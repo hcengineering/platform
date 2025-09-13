@@ -116,7 +116,7 @@
       docQuery={{ space }}
       kind={'regular'}
       size={'small'}
-      searchField={'name'}
+      searchField={'title'}
       allowDeselect={true}
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}

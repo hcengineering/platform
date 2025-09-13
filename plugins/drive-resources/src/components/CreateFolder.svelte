@@ -95,7 +95,7 @@
       kind={'regular'}
       size={'small'}
       label={drive.string.Root}
-      searchField={'name'}
+      searchField={'title'}
       allowDeselect
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}
