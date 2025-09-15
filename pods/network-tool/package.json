@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-tool",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -52,8 +52,8 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.0",
-    "@hcengineering/network-client": "workspace:^0.7.0",
+    "@hcengineering/network-core": "workspace:^0.7.1",
+    "@hcengineering/network-client": "workspace:^0.7.1",
     "uuid": "^8.3.2",
     "commander": "^14.0.0",
     "zeromq": "^6.5.0"

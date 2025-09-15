@@ -41,7 +41,7 @@
     "@types/morgan": "~1.9.9"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.0",
-    "@hcengineering/network-client": "workspace:^0.7.0"
+    "@hcengineering/network-core": "workspace:^0.7.1",
+    "@hcengineering/network-client": "workspace:^0.7.1"
   }
 }

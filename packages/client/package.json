@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-client",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,8 +36,8 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.0",
-    "@hcengineering/network-backrpc": "workspace:^0.7.0",
+    "@hcengineering/network-core": "workspace:^0.7.1",
+    "@hcengineering/network-backrpc": "workspace:^0.7.1",
     "uuid": "^8.3.2"
   },
   "publishConfig": {

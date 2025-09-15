@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-backrpc",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,7 +36,7 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.0",
+    "@hcengineering/network-core": "workspace:^0.7.1",
     "zeromq": "^6.5.0",
     "uuid": "^8.3.2"
   },
