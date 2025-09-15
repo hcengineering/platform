@@ -26,17 +26,17 @@
   const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
+  export let object: Doc
+
+  let typingInfo = new Map<string, Ref<Person>>()
   let typingPersonsLabel: string = ''
   let typingPersonsCount = 0
   let moreCount: number = 0
 
-  $: void updateTypingPersons()
+  $: void updateTypingPersons(typingInfo)
 
-  export let typingInfo: Ref<Person>[] = []
-  export let object: Doc
-
-  async function updateTypingPersons (): Promise<void> {
-    const persons = await getPersonsByPersonRefs(typingInfo)
+  async function updateTypingPersons (typingInfo: Map<string, Ref<Person>>): Promise<void> {
+    const persons = await getPersonsByPersonRefs(Array.from(typingInfo.values()))
     const names = Array.from(persons.values())
       .map((person) => getName(hierarchy, person))
       .sort((name1, name2) => name1.localeCompare(name2))
@@ -46,28 +46,24 @@
   }
 
   function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
-    try {
-      const id: Ref<Person> = key.split('/').pop() as Ref<Person>
-      if (id === me) {
-        return
-      }
-      if (value !== undefined) {
-        if (!typingInfo.includes(id)) {
-          typingInfo.push(id)
-        }
-      } else {
-        typingInfo = typingInfo.filter((x) => x !== id)
-      }
-      void updateTypingPersons()
-    } catch (error) {
-      console.error('handleTypingInfo Error', error)
+    if (value === undefined) {
+      typingInfo.delete(key)
+      typingInfo = typingInfo
+      return
     }
+
+    if (typingInfo.has(key) || value.personId === me) {
+      return
+    }
+
+    typingInfo.set(key, value.personId)
+    typingInfo = typingInfo
   }
 
   let unsubscribe: (() => Promise<boolean>) | undefined
 
   onMount(async () => {
-    unsubscribe = await subscribeTyping(handleTypingInfo, object._id)
+    unsubscribe = await subscribeTyping(object._id, handleTypingInfo)
   })
 
   onDestroy(() => {

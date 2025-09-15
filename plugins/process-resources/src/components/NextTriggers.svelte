@@ -39,10 +39,12 @@
 {:else if execution.status === ExecutionStatus.Cancelled}
   <Label label={plugin.string.Cancelled} />
 {:else if process !== undefined}
-  {#each transitions as transition}
-    <div class="flex-row-center flex-gap-2">
-      <TransitionPresenter {transition} direction={'from'} />
-      <TriggerPresenter value={transition.trigger} {process} params={transition.triggerParams} withLabel={true} />
-    </div>
-  {/each}
+  <div class="flex-col flex-gap-2">
+    {#each transitions as transition}
+      <div class="flex-row-center flex-gap-2">
+        <TransitionPresenter {transition} direction={'from'} />
+        <TriggerPresenter value={transition.trigger} {process} params={transition.triggerParams} withLabel={true} />
+      </div>
+    {/each}
+  </div>
 {/if}

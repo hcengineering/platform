@@ -188,8 +188,6 @@ export class TExecution extends TDoc implements Execution {
 export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 
-  state!: Ref<State>
-
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
 }
@@ -823,6 +821,12 @@ export function createModel (builder: Builder): void {
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
         },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
+        },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
@@ -880,6 +884,12 @@ export function createModel (builder: Builder): void {
           key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
+        },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
@@ -1118,6 +1128,7 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
+      checkFunction: process.triggerCheck.SubProcessesDoneCheck,
       requiredParams: [],
       init: false,
       auto: true

@@ -1,9 +1,9 @@
 import { Doc, Mixin, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { CheckFunc, Method, ProcessFunction, Trigger } from '@hcengineering/process'
+import { Execution, Method, ProcessFunction, Trigger } from '@hcengineering/process'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { ExecuteFunc, RollbackFunc, TransformFunc } from './types'
+import { ExecuteFunc, ProcessControl, RollbackFunc, TransformFunc } from './types'
 
 export * from './types'
 
@@ -11,6 +11,13 @@ export * from './types'
  * @public
  */
 export const serverProcessId = 'server-process' as Plugin
+
+export type CheckFunc = (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+) => Promise<boolean>
 
 export interface TriggerImpl extends Trigger {
   serverCheckFunc?: Resource<CheckFunc>
@@ -49,6 +56,7 @@ export default plugin(serverProcessId, {
     AddTag: '' as Resource<ExecuteFunc>,
     CheckToDo: '' as Resource<CheckFunc>,
     OnCardUpdateCheck: '' as Resource<CheckFunc>,
+    CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>
   },
   transform: {

@@ -14,7 +14,7 @@
 //
 
 import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
-import core, { Association, Data, Doc, generateId, Hierarchy, matchQuery, Ref, Relation, Tx } from '@hcengineering/core'
+import core, { Association, Data, Doc, generateId, matchQuery, Ref, Relation, Tx } from '@hcengineering/core'
 import process, {
   Execution,
   ExecutionContext,
@@ -27,23 +27,37 @@ import process, {
 import { ExecuteResult, ProcessControl } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 
-export function CheckToDo (params: Record<string, any>, context: Record<string, any>): boolean {
+export function CheckToDo (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
   if (params._id === undefined) return false
   if (context.todo === undefined) return false
   return context.todo._id === params._id
 }
 
+export async function CheckSubProcessesDone (control: ProcessControl, execution: Execution): Promise<boolean> {
+  const res = control.client.findOne(process.class.Execution, {
+    parentId: execution._id,
+    status: ExecutionStatus.Active
+  })
+  return res === undefined
+}
+
 export function OnCardUpdateCheck (
+  control: ProcessControl,
+  execution: Execution,
   params: Record<string, any>,
-  context: Record<string, any>,
-  hierarchy: Hierarchy
+  context: Record<string, any>
 ): boolean {
   if (context.card === undefined) return false
-  const res = matchQuery([context.card], params, context.card._class, hierarchy, true)
+  const res = matchQuery([context.card], params, context.card._class, control.client.getHierarchy(), true)
   return res.length > 0
 }
 
-export function CheckTime (params: Record<string, any>): boolean {
+export function CheckTime (control: ProcessControl, execution: Execution, params: Record<string, any>): boolean {
   if (params.value === undefined) return false
   return params.value <= Date.now()
 }
@@ -204,6 +218,7 @@ export async function CreateToDo (
         dueDate: params.dueDate,
         priority: params.priority ?? ToDoPriority.NoPriority,
         visibility: 'public',
+        doneOn: null,
         rank: '',
         withRollback: params.withRollback ?? false
       },
