@@ -1,0 +1,11 @@
+{
+  "string": {
+    "IntegrationLabel": "KI-Assistent",
+    "IntegrationDescription": "Ihr KI-unterstützter persönlicher Assistent, der hilft, Ihren täglichen Arbeitsablauf auf der Plattform zu organisieren, automatisieren und zu optimieren",
+    "Connect": "Verbinden",
+    "Cancel": "Abbrechen",
+    "Status": "Status",
+    "FailedToConnect": "KI-Assistent-Service ist nicht verfügbar",
+    "Configure": "KI-Assistent konfigurieren"
+  }
+}
