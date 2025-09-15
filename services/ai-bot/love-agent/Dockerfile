@@ -1,4 +1,4 @@
-FROM hardcoreeng/base:v20250902
+FROM hardcoreeng/base-slim:v20250915
 WORKDIR /usr/src/app
 
 RUN npm install -g pnpm
