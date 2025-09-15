@@ -1,4 +1,4 @@
-FROM hardcoreeng/base:v20250310
+FROM hardcoreeng/base:v20250902
 WORKDIR /usr/src/app
 
 COPY bundle/model.json ./

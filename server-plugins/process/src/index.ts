@@ -54,7 +54,8 @@ export default plugin(serverProcessId, {
     AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
     AddTag: '' as Resource<ExecuteFunc>,
-    CheckToDo: '' as Resource<CheckFunc>,
+    CheckToDoDone: '' as Resource<CheckFunc>,
+    CheckToDoCancelled: '' as Resource<CheckFunc>,
     OnCardUpdateCheck: '' as Resource<CheckFunc>,
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>
