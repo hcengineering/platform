@@ -142,3 +142,95 @@ async fn get_json_patch() -> eyre::Result<()> {
 
     Ok(())
 }
+
+#[tanu::test]
+async fn get_json_patch_unsafe() -> eyre::Result<()> {
+    let key = random_key();
+
+    let http = Client::new();
+
+    let initial = json!({
+        "a": {
+            "b": 1
+        }
+    });
+
+    // create new blob
+    let res = http
+        .key_put(&key)
+        .body(json::to_string(&initial)?)
+        .header("huly-merge-strategy", "jsonpatch")
+        .header("content-type", "application/json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let patch = json!([
+        { "op": "add", "path": "/a/b", "value": 0, "safe": false },
+        { "op": "inc", "path": "/a/c", "value": 1, "safe": false }
+    ]);
+
+    let res = http
+        .key_patch(&key)
+        .body(json::to_string(&patch)?)
+        .header("content-type", "application/json-patch+json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let res = http.key_get(&key).send().await?;
+
+    let json = res.json::<Value>().await?;
+
+    assert_eq!(json, json!({ "a": { "b": 0, "c": 1 }}));
+
+    Ok(())
+}
+
+#[tanu::test]
+async fn get_json_patch_safe() -> eyre::Result<()> {
+    let key = random_key();
+
+    let http = Client::new();
+
+    let initial = json!({
+        "a": {
+            "b": 1
+        }
+    });
+
+    // create new blob
+    let res = http
+        .key_put(&key)
+        .body(json::to_string(&initial)?)
+        .header("huly-merge-strategy", "jsonpatch")
+        .header("content-type", "application/json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let patch = json!([
+        { "op": "add", "path": "/a/b", "value": 0, "safe": true },
+        { "op": "inc", "path": "/a/c", "value": 1, "safe": true }
+    ]);
+
+    let res = http
+        .key_patch(&key)
+        .body(json::to_string(&patch)?)
+        .header("content-type", "application/json-patch+json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let res = http.key_get(&key).send().await?;
+
+    let json = res.json::<Value>().await?;
+
+    assert_eq!(json, json!({ "a": { "b": 1 }}));
+
+    Ok(())
+}
