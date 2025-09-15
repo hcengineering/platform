@@ -717,10 +717,12 @@ async function checkRecordAvailable (): Promise<void> {
       setTimeout(() => {
         void checkRecordAvailable()
       }, 500)
-    } else {
+    } else if (endpoint !== '') {
       const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
       const result = await res.json()
       isRecordingAvailable.set(result)
+    } else {
+      console.info('office recording is not configured')
     }
   } catch (err: any) {
     Analytics.handleError(err)
