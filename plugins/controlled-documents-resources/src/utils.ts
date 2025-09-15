@@ -1016,18 +1016,6 @@ export function createDocumentHierarchyQuery (): DocumentHiearchyQuery {
   return new DocumentHiearchyQuery()
 }
 
-export async function syncDocumentMetaTitle (
-  client: Client & TxOperations,
-  _id: Ref<DocumentMeta>,
-  code: string,
-  title: string
-): Promise<void> {
-  const meta = await client.findOne(documents.class.DocumentMeta, { _id })
-  if (meta !== undefined) {
-    await client.update(meta, { title: `${code} ${title}` })
-  }
-}
-
 export async function extractValidationWorkflow (
   hierarchy: Hierarchy,
   bundle: DocumentBundle
