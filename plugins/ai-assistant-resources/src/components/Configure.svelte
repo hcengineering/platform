@@ -53,7 +53,7 @@
       dispatch('close')
     } catch (err) {
       isLoading = false
-      console.error('Failed to find/create huly assistant social id:', err)
+      console.error('Failed to find/create huly assistant social id/integration:', err)
     }
   })
 
