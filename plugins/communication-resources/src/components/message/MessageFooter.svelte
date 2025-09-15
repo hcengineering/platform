@@ -46,9 +46,10 @@
     await toggleReaction(message, emoji)
   }
 
-  async function handleReply (): Promise<void> {
+  async function handleReply (event: CustomEvent<Ref<Card> | undefined>): Promise<void> {
     if (!canReply()) return
-    const threadID = `${message.cardId}_${message.id}` as Ref<Card>
+    const threadID = event.detail
+    if (threadID === undefined) return
     const t = message.threads.find((it) => it.threadId === threadID)
     if (t === undefined) return
     const _id = t.threadId
@@ -151,9 +152,10 @@
     margin-left: -0.5rem;
     padding-bottom: 0;
     display: flex;
-    align-items: flex-start;
-    align-self: stretch;
+    flex-direction: column;
+    gap: 0.5rem;
     overflow: hidden;
+    width: 100%;
   }
 
   .message__files {

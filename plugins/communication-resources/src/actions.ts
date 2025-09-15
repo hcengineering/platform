@@ -77,7 +77,7 @@ export const replyInThread: MessageActionFunction = async (message: Message, par
     parentCard,
     createThreadTitle(message, parentCard),
     chat.masterTag.Thread,
-    `${parentCard._id}_message.id` as Ref<Card>
+    `${parentCard._id}_${message.id}` as Ref<Card>
   )
 }
 
@@ -102,7 +102,7 @@ export async function attachCardToMessage (
     return
   }
 
-  const threadCardID = generateId<Card>()
+  const threadCardID = _id ?? generateId<Card>()
 
   await communicationClient.attachThread(parentCard._id, message.id, threadCardID, type)
 

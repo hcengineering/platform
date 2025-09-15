@@ -17,6 +17,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Thread } from '@hcengineering/communication-types'
   import cardPlugin, { Card } from '@hcengineering/card'
+  import { createEventDispatcher } from 'svelte'
 
   import ThreadCollaborators from './ThreadCollaborators.svelte'
   import ThreadRepliesCount from './ThreadRepliesCount.svelte'
@@ -25,6 +26,8 @@
   import ThreadTitle from './ThreadTitle.svelte'
 
   export let thread: Thread
+
+  const dispatch = createEventDispatcher()
   const threadCardQuery = createQuery()
 
   let threadCard: Card | undefined
@@ -52,7 +55,7 @@
 <div class="replies-container flex-grow" bind:clientWidth>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="replies" on:click style:max-width={`${clientWidth}px`}>
+  <div class="replies" on:click={() => dispatch('click', threadCard?._id)} style:max-width={`${clientWidth}px`}>
     <ThreadCollaborators persons={thread.repliedPersons} />
 
     {#if thread.repliesCount > 0}

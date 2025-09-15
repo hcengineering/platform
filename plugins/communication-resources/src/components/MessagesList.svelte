@@ -29,7 +29,7 @@
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
-  import { isAppFocusedStore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, isAppFocusedStore } from '@hcengineering/ui'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
