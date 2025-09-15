@@ -1101,7 +1101,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoClose
   )
@@ -1116,7 +1117,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoRemove
   )
