@@ -14,6 +14,6 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 RUN apt-get update --fix-missing
 RUN apt-get install -y gnupg wget libxss1
 RUN apt-get install -y fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf
-RUN apt-get install -y chromium-common/stable  --no-install-recommends
-RUN apt-get install -y chromium/stable  --no-install-recommends
+RUN apt-get install -y chromium-common  --no-install-recommends
+RUN apt-get install -y chromium  --no-install-recommends
 RUN apt-get clean
