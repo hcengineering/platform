@@ -493,7 +493,7 @@ export async function configurePlatform() {
 
   setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
 
-  setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL ?? '')
+  setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL)
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())
