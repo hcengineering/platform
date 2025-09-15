@@ -1,4 +1,4 @@
-FROM hardcoreeng/base-slim:latest
+FROM hardcoreeng/base-slim:v20250915
 
 WORKDIR /usr/src/app
 
