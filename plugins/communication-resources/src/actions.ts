@@ -72,20 +72,27 @@ export const replyInThread: MessageActionFunction = async (message: Message, par
     await showForbidden()
     return
   }
-  await attachCardToMessage(message, parentCard, createThreadTitle(message, parentCard), chat.masterTag.Thread)
+  await attachCardToMessage(
+    message,
+    parentCard,
+    createThreadTitle(message, parentCard),
+    chat.masterTag.Thread,
+    `${parentCard._id}_message.id` as Ref<Card>
+  )
 }
 
 export async function attachCardToMessage (
   message: Message,
   parentCard: Card,
   title: string,
-  type: Ref<MasterTag>
+  type: Ref<MasterTag>,
+  _id?: Ref<Card>
 ): Promise<void> {
   const client = getClient()
   const communicationClient = getCommunicationClient()
   const hierarchy = client.getHierarchy()
 
-  const thread = message.thread
+  const thread = _id != null ? message.threads.find((it) => it.threadId === _id) : undefined
   if (thread != null) {
     const _id = thread.threadId
     const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
@@ -140,11 +147,7 @@ function createThreadTitle (message: Message, parent: Card): string {
 }
 
 export const canReplyInThread: MessageActionVisibilityTester = (message: Message): boolean => {
-  return (
-    message.type === MessageType.Message &&
-    message.extra?.threadRoot !== true &&
-    (!message.removed || message.thread != null)
-  )
+  return message.type === MessageType.Text && message.extra?.threadRoot !== true
 }
 
 export const translateMessage: MessageActionFunction = async (message: Message): Promise<void> => {
@@ -183,7 +186,7 @@ export const translateMessage: MessageActionFunction = async (message: Message):
 export const canTranslateMessage: MessageActionVisibilityTester = (message: Message): boolean => {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   if (url === '') return false
-  return message.type === MessageType.Message && !message.removed
+  return message.type === MessageType.Text
 }
 
 export const showOriginalMessage: MessageActionFunction = async (message: Message): Promise<void> => {
@@ -205,19 +208,18 @@ export const editMessage: MessageActionFunction = async (message: Message): Prom
 }
 
 export const canEditMessage: MessageActionVisibilityTester = (message: Message): boolean => {
-  if (message.type !== MessageType.Message || message.removed) return false
+  if (message.type !== MessageType.Text) return false
   const me = getCurrentAccount()
   return me.socialIds.includes(message.creator)
 }
 
 export const removeMessage: MessageActionFunction = async (message: Message): Promise<void> => {
   const communicationClient = getCommunicationClient()
-  message.removed = true
   await communicationClient.removeMessage(message.cardId, message.id)
 }
 
 export const canRemoveMessage: MessageActionVisibilityTester = (message: Message): boolean => {
-  if (message.type !== MessageType.Message || message.removed) return false
+  if (message.type !== MessageType.Text) return false
   const me = getCurrentAccount()
   return me.socialIds.includes(message.creator)
 }
@@ -234,7 +236,7 @@ export const createCard: MessageActionFunction = async (message: Message, card: 
 }
 
 export const canCreateCard: MessageActionVisibilityTester = (message: Message): boolean => {
-  return canReplyInThread(message) && message.thread == null
+  return canReplyInThread(message)
 }
 
 let allMessageActions: MessageAction[] | undefined

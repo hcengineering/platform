@@ -21,7 +21,7 @@ import { type Card } from '@hcengineering/card'
 import { AccountRole, type Data, getCurrentAccount, type Ref, type Space, type Markup } from '@hcengineering/core'
 import { getMetadata, translate } from '@hcengineering/platform'
 import { addNotification, languageStore, NotificationSeverity, showPopup } from '@hcengineering/ui'
-import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
+import { type Emoji, type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
 import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
@@ -102,12 +102,11 @@ export function toMarkup (markdown: string): Markup {
   return jsonToMarkup(markdownToMarkup(markdown))
 }
 
-export async function toggleReaction (message: Message, emoji: string): Promise<void> {
+export async function toggleReaction (message: Message, emoji: Emoji): Promise<void> {
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
-  const { socialIds } = me
-  const reaction = message.reactions.find((it) => it.reaction === emoji && socialIds.includes(it.creator))
-  if (reaction !== undefined) {
+  const alreadyAdded = (message.reactions[emoji] ?? []).some((it) => it.person === me.uuid)
+  if (alreadyAdded) {
     await communicationClient.removeReaction(message.cardId, message.id, emoji)
   } else {
     await communicationClient.addReaction(message.cardId, message.id, emoji)

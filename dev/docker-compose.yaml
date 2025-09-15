@@ -286,6 +286,7 @@ services:
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - PULSE_URL=ws://huly.local:8099/ws
+      - HULYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
@@ -327,6 +328,7 @@ services:
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
       - COMMUNICATION_API_ENABLED=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HYLYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -365,6 +367,7 @@ services:
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HULYLAKE_URL=http://huly.local:8096
   print:
     image: hardcoreeng/print
     extra_hosts:

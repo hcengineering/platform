@@ -101,22 +101,29 @@
 
   $: reinit(position)
 
-  $: query.query(queryDef, (res: Window<Message>) => {
-    window = res
-    messages = (queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()).filter(
-      (it) => !it.removed || it.thread != null
-    )
+  $: query.query(
+    queryDef,
+    (res: Window<Message>) => {
+      window = res
+      messages = queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
 
-    if (messages.length < limit && res.hasNextPage()) {
-      void window.loadNextPage()
-    } else if (messages.length < limit && res.hasPrevPage()) {
-      void window.loadPrevPage()
+      if (messages.length < limit && res.hasNextPage()) {
+        void window.loadNextPage()
+      } else if (messages.length < limit && res.hasPrevPage()) {
+        void window.loadPrevPage()
+      }
+
+      groups = groupMessagesByDay(messages)
+      isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
+      void onUpdate(messages)
+    },
+    {
+      autoExpand: true,
+      threads: true,
+      attachments: true,
+      reactions: true
     }
-
-    groups = groupMessagesByDay(messages)
-    isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
-    void onUpdate(messages)
-  })
+  )
 
   $: if (context !== undefined) {
     void notificationsQuery.query(
@@ -194,9 +201,6 @@
     if (position === MessagesNavigationAnchors.ConversationStart) {
       return {
         cardId: card._id,
-        replies: true,
-        attachments: true,
-        reactions: true,
         order: SortingOrder.Ascending,
         limit
       }
@@ -207,9 +211,6 @@
     const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
       cardId: card._id,
-      replies: true,
-      attachments: true,
-      reactions: true,
       order,
       limit,
       from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined

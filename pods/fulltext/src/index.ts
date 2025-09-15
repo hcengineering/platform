@@ -104,6 +104,13 @@ if (accountsUrl === undefined) {
   process.exit(1)
 }
 
+const hulylakeUrl = process.env.HULYLAKE_URL
+
+if (hulylakeUrl === undefined) {
+  console.error('please provide hulylake url')
+  process.exit(1)
+}
+
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 const externalStorage = buildStorageFromConfig(storageConfig)
 
@@ -116,6 +123,7 @@ const onClose = startIndexer(metricsContext, {
   externalStorage,
   elasticIndexName,
   dbURL,
+  hulylakeUrl,
   port: servicePort,
   serverSecret,
   accountsUrl

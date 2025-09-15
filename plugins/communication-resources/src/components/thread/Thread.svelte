@@ -53,12 +53,12 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="replies" on:click style:max-width={`${clientWidth}px`}>
-    <ThreadCollaborators threadId={thread.threadId} />
+    <ThreadCollaborators persons={thread.repliedPersons} />
 
     {#if thread.repliesCount > 0}
       <span class="text overflow-label">
         <ThreadRepliesCount count={thread.repliesCount} />
-        <ThreadLastReply lastReply={thread.lastReply} />
+        <ThreadLastReply lastReply={thread.lastReplyDate} />
       </span>
     {/if}
 
