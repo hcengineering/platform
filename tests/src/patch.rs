@@ -167,8 +167,8 @@ async fn get_json_patch_unsafe() -> eyre::Result<()> {
     check!(res.status().is_success(), "{:#?}", res);
 
     let patch = json!([
-        { "op": "add", "path": "/a/b", "value": 0, "safe": false },
-        { "op": "inc", "path": "/a/c", "value": 1, "safe": false }
+        { "hop": "add", "path": "/a/b", "value": 0, "safe": false },
+        { "hop": "inc", "path": "/a/c", "value": 1, "safe": false }
     ]);
 
     let res = http
@@ -213,8 +213,8 @@ async fn get_json_patch_safe() -> eyre::Result<()> {
     check!(res.status().is_success(), "{:#?}", res);
 
     let patch = json!([
-        { "op": "add", "path": "/a/b", "value": 0, "safe": true },
-        { "op": "inc", "path": "/a/c", "value": 1, "safe": true }
+        { "hop": "add", "path": "/a/b", "value": 0, "safe": true },
+        { "hop": "inc", "path": "/a/c", "value": 1, "safe": true }
     ]);
 
     let res = http

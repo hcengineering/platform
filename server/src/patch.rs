@@ -31,7 +31,7 @@ pub struct IncOperationExt {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "op")]
+#[serde(tag = "hop")]
 #[serde(rename_all = "lowercase")]
 pub enum HulyPatchOperation {
     /// 'add' operation
@@ -53,13 +53,13 @@ impl<'de> serde::Deserialize<'de> for PatchOperation {
     {
         let value = Value::deserialize(deserializer)?;
 
-        let op = serde_json::from_value::<HulyPatchOperation>(value.clone());
+        let op = serde_json::from_value::<StandardPatchOperation>(value.clone());
         if let Ok(op) = op {
-            Ok(Self::Huly(op))
+            Ok(Self::Standard(op))
         } else {
-            serde_json::from_value::<StandardPatchOperation>(value)
+            serde_json::from_value::<HulyPatchOperation>(value)
                 .map_err(serde::de::Error::custom)
-                .map(Self::Standard)
+                .map(Self::Huly)
         }
     }
 }
@@ -469,7 +469,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_add_safe() {
-        let patch = r#"{ "op": "add", "path": "/a", "value": 1, "safe": true }"#;
+        let patch = r#"{ "hop": "add", "path": "/a", "value": 1, "safe": true }"#;
         let res = serde_json::from_str::<PatchOperation>(patch);
         assert!(res.is_ok());
         assert_eq!(
@@ -483,8 +483,23 @@ mod tests {
     }
 
     #[test]
+    fn test_deserialize_add_unsafe() {
+        let patch = r#"{ "hop": "add", "path": "/a", "value": 1 }"#;
+        let res = serde_json::from_str::<PatchOperation>(patch);
+        assert!(res.is_ok());
+        assert_eq!(
+            res.unwrap(),
+            PatchOperation::Huly(HulyPatchOperation::Add(AddOperationExt {
+                path: PointerBuf::from_tokens(["a"]),
+                value: json!(1),
+                safe: false,
+            }))
+        );
+    }
+
+    #[test]
     fn test_deserialize_inc_safe() {
-        let patch = r#"{ "op": "inc", "path": "/a", "value": 1, "safe": true }"#;
+        let patch = r#"{ "hop": "inc", "path": "/a", "value": 1, "safe": true }"#;
         let res = serde_json::from_str::<PatchOperation>(patch);
         assert!(res.is_ok());
         assert_eq!(
@@ -493,6 +508,21 @@ mod tests {
                 path: PointerBuf::from_tokens(["a"]),
                 value: json!(1),
                 safe: true,
+            }))
+        );
+    }
+
+    #[test]
+    fn test_deserialize_inc_unsafe() {
+        let patch = r#"{ "hop": "inc", "path": "/a", "value": 1 }"#;
+        let res = serde_json::from_str::<PatchOperation>(patch);
+        assert!(res.is_ok());
+        assert_eq!(
+            res.unwrap(),
+            PatchOperation::Huly(HulyPatchOperation::Inc(IncOperationExt {
+                path: PointerBuf::from_tokens(["a"]),
+                value: json!(1),
+                safe: false,
             }))
         );
     }
