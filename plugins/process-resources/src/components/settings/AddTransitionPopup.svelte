@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, State, Trigger, TriggerResult } from '@hcengineering/process'
+  import { Process, State, Transition, Trigger, TriggerResult } from '@hcengineering/process'
   import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
+  import { makeRank } from '@hcengineering/rank'
 
   export let process: Process
 
@@ -28,9 +29,16 @@
   let result: TriggerResult | null = null
 
   const query = createQuery()
-  query.query(plugin.class.State, { process: process._id }, (res) => {
-    states = res
-  })
+  query.query(
+    plugin.class.State,
+    { process: process._id },
+    (res) => {
+      states = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   let statesItems: ListItem[] = []
 
@@ -55,18 +63,39 @@
 
   let params: Record<string, any> = {}
 
+  const transitionsQ = createQuery()
+
+  let transitions: Transition[] = []
+
+  transitionsQ.query(
+    plugin.class.Transition,
+    { process: process._id },
+    (res) => {
+      transitions = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
+
   const triggersItems: DropdownIntlItem[] = triggers.map((p) => ({ label: p.label, id: p._id, icon: p.icon }))
 
   async function save (): Promise<void> {
     if (to === undefined || trigger === undefined) {
       return
     }
+    const prevTransitions =
+      transitions.findLast((p) => p.from === from) ?? transitions.length > 0
+        ? transitions[transitions.length - 1]
+        : undefined
+    const rank = makeRank(prevTransitions?.rank, undefined)
     await client.createDoc(plugin.class.Transition, core.space.Model, {
       from,
       to,
       trigger,
       triggerParams: params,
       process: process._id,
+      rank,
       result,
       actions: []
     })
