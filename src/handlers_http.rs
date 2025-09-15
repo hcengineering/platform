@@ -48,6 +48,7 @@ pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
 #[derive(Deserialize, Debug)]
 pub struct PathParams {
     key: String,
+    workspace: String,
 }
 
 /// list
@@ -55,8 +56,8 @@ pub async fn list(
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let key = path.into_inner().key;
-
+    let params = path.into_inner();
+    let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
     async move || -> anyhow::Result<HttpResponse> {
@@ -72,8 +73,8 @@ pub async fn get(
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    let key = path.into_inner().key;
-
+    let params = path.into_inner();
+    let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
 
     async move || -> anyhow::Result<HttpResponse> {
@@ -97,8 +98,8 @@ pub async fn put(
     body: web::Bytes,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    let key: String = path.into_inner().key;
-
+    let params = path.into_inner();
+    let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "put request");
 
     async move || -> anyhow::Result<HttpResponse> {
@@ -157,8 +158,8 @@ pub async fn delete(
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    let key: String = path.into_inner().key;
-
+    let params = path.into_inner();
+    let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
 
     async move || -> anyhow::Result<HttpResponse> {
