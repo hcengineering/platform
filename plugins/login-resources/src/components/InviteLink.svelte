@@ -123,12 +123,6 @@
           on:keypress={() => (link = undefined)}
           disabled={useDefault || !isOwnerOrMaintainer}
         />
-        <EditBox
-          label={login.string.EmailMask}
-          bind:value={emailMask}
-          on:keypress={() => (link = undefined)}
-          disabled={useDefault || !isOwnerOrMaintainer}
-        />
         <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
         {#if !noLimit}
           <EditBox
