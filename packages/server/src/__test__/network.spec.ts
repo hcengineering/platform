@@ -2,6 +2,7 @@ import {
   AgentImpl,
   composeCID,
   containerOnAgentEndpointRef,
+  containerUuid,
   EndpointKind,
   NetworkImpl,
   parseEndpointRef,
@@ -29,13 +30,19 @@ const kinds = {
 
 function createAgent1 (tickMgr: TickManagerImpl, networkClient: NetworkClient): AgentImpl {
   const agent: AgentImpl = new AgentImpl(agents.agent1, {
-    [kinds.session]: async (uuid) => {
-      return [new DummySessionContainer(), containerOnAgentEndpointRef(agent.endpoint as AgentEndpointRef, uuid)]
+    [kinds.session]: async (options) => {
+      const uuid = options.uuid ?? containerUuid()
+      return {
+        uuid,
+        container: new DummySessionContainer(),
+        endpoint: containerOnAgentEndpointRef(agent.endpoint as AgentEndpointRef, uuid)
+      }
     },
-    [kinds.workspace]: async (uuid) => {
+    [kinds.workspace]: async (options) => {
+      const uuid = options.uuid ?? containerUuid()
       const container = new DummyWorkspaceContainer(uuid, agent.uuid, networkClient)
       const endpoint = await container.start(tickMgr)
-      return [container, endpoint]
+      return { uuid, container, endpoint }
     }
   })
   return agent
@@ -59,6 +66,7 @@ describe('check network server is working fine', () => {
 
     await networkClient.close()
     await network.close()
+    tickMgr.stop()
   })
 
   it('check routed connection and requests', async () => {
@@ -83,10 +91,10 @@ describe('check network server is working fine', () => {
     const _agents = await networkClient.agents()
     expect(_agents.length).toEqual(1)
     expect(_agents[0].agentId).toEqual(agents.agent1)
-    expect(_agents[0].containers.length).toEqual(0)
+    expect(_agents[0].containers).toEqual(0)
 
     // Start a new container and check if messaging works
-    const containerRef = await networkClient.get(composeCID('session', 'user1'), { kind: kinds.session })
+    const containerRef = await networkClient.get(kinds.session, { uuid: composeCID('session', 'user1') })
 
     const data = parseEndpointRef(containerRef.endpoint)
     expect(data.kind).toEqual(EndpointKind.routed)
@@ -113,8 +121,9 @@ describe('check network server is working fine', () => {
     expect(events.length).toEqual(1)
     expect(events[0]).toEqual('event')
 
-    await agentServer.close()
     await networkClient.close()
+    await agentServer.close()
     await network.close()
+    tickMgr.stop()
   })
 })

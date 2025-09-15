@@ -66,9 +66,15 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     private readonly handlers: BackRPCServerHandler<ClientT>,
     private readonly tickMgr: TickManager,
     readonly host: string = '*',
-    private readonly port: number = 0
+    private readonly port: number = 0,
+    private readonly options: zmq.SocketOptions<zmq.Router> = {}
   ) {
-    this.router = new zmq.Router({ context })
+    this.router = new zmq.Router({
+      ...options,
+      context,
+      // linger: 0,
+      tcpKeepalive: 1
+    })
 
     this.stopTick = this.tickMgr.register(() => {
       void this.checkAlive().catch((err) => {

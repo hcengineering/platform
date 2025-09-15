@@ -6,7 +6,7 @@ import {
   type ContainerEndpointRef,
   type ContainerKind,
   type ContainerRecord,
-  type ContainerRequest,
+  type GetOptions,
   type ContainerUuid,
   type Network,
   type NetworkAgent,
@@ -25,8 +25,8 @@ class AgentCallbackHandler implements NetworkAgent {
     readonly client: ClientUuid
   ) {}
 
-  async get (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
-    return await this.rpcServer.request(this.client, opNames.getContainer, [this.uuid, [uuid, request]])
+  async get (kind: ContainerKind, request: GetOptions): Promise<[ContainerUuid, ContainerEndpointRef]> {
+    return await this.rpcServer.request(this.client, opNames.getContainer, [this.uuid, [kind, request]])
   }
 
   async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
@@ -92,9 +92,9 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
         break
       }
       case opNames.getContainer: {
-        const uuid: ContainerUuid = params.uuid
-        const request: ContainerRequest = params.request
-        await send(await this.network.get(client, uuid, request))
+        const kind: ContainerKind = params.kind
+        const request: GetOptions = params.request
+        await send(await this.network.get(client, kind, request))
         break
       }
       case opNames.releaseContainer: {
@@ -164,6 +164,7 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
       new AgentCallbackHandler(server, agentUuid, endpoint, kinds, client)
     )
     this.network.mapAgent(client, agentUuid)
+    console.log('Client registered agent', agentUuid, 'with containers', containers.length, 'kinds', kinds)
     await send(res)
   }
 
@@ -175,6 +176,7 @@ export class NetworkServer implements BackRPCServerHandler<ClientUuid> {
     const agentUuid: AgentUuid = params.uuid
     await this.network.unregister(agentUuid)
     this.network.unmapAgent(client, agentUuid)
+    console.log('Client unregistered agent', agentUuid)
     await send('ok')
   }
 }

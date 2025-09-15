@@ -1,13 +1,13 @@
-import type { AgentRecord, NetworkAgent } from './agent'
+import type { AgentRecord, AgentRecordInfo, NetworkAgent } from './agent'
 import type {
-  ContainerEndpointRef,
   AgentUuid,
   ClientUuid,
+  ContainerEndpointRef,
+  NetworkEvent,
   ContainerKind,
-  ContainerUuid,
-  ContainerRequest,
   ContainerRecord,
-  ContainerEvent
+  ContainerUuid,
+  GetOptions
 } from './types'
 
 /**
@@ -27,7 +27,7 @@ export interface Network {
   // Mark an agent as alive (updates lastSeen timestamp)
   ping: (agentId: AgentUuid | ClientUuid) => void
 
-  agents: () => Promise<AgentRecord[]>
+  agents: () => Promise<AgentRecordInfo[]>
 
   // A full uniq set of supported container kinds.
   kinds: () => Promise<ContainerKind[]>
@@ -36,7 +36,7 @@ export interface Network {
    * Get/Start of required container kind on agent
    * Will start a required container on agent, if not already started.
    */
-  get: (client: ClientUuid, uuid: ContainerUuid, request: ContainerRequest) => Promise<ContainerEndpointRef>
+  get: (client: ClientUuid, kind: ContainerKind, options: GetOptions) => Promise<[ContainerUuid, ContainerEndpointRef]>
 
   /**
    * Release a container for a client, if container is not used anymore it will be shutdown with a shutdown delay.
@@ -52,7 +52,7 @@ export interface Network {
 }
 
 export interface NetworkWithClients {
-  addClient: (clientUuid: ClientUuid, onContainer?: (event: ContainerEvent) => Promise<void>) => void
+  addClient: (clientUuid: ClientUuid, onContainer?: (event: NetworkEvent) => Promise<void>) => void
   removeClient: (clientUuid: ClientUuid) => void
 
   // When client is registering agent.

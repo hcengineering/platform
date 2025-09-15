@@ -17,7 +17,6 @@ export * from './client'
 export * from './types'
 
 const tickMgr = new TickManagerImpl(timeouts.pingInterval * 2)
-tickMgr.start()
 
 export function shutdownNetworkTickMgr (): void {
   tickMgr.stop()
@@ -30,6 +29,7 @@ process.on('exit', () => {
 export function createNetworkClient (url: string): NetworkClient {
   const [host, portStr] = url.split(':')
   const port = portStr != null ? parseInt(portStr, 10) : 3737
+  tickMgr.start()
   return new NetworkClientImpl(host, port, tickMgr)
 }
 
@@ -42,6 +42,7 @@ export async function createAgent (
   const [host, portStr] = endpointUrl.split(':')
   const port = portStr != null ? parseInt(portStr, 10) : 3738
 
+  tickMgr.start()
   const server = new NetworkAgentServer(tickMgr, host, '*', port)
 
   await server.start(agent)

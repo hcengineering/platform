@@ -13,10 +13,7 @@ export function registerAgentOperations (): void {
       const agents = await client.agents()
       console.log(`Active agents: ${agents.length}`)
       for (const agent of agents) {
-        console.log(` - Agent: ${agent.agentId} at ${agent.endpoint} with ${agent.containers.length} containers\n`)
-        for (const container of agent.containers) {
-          console.log(`   - Container: ${container.uuid} kind: ${container.kind} endpoint: ${container.endpoint}\n`)
-        }
+        console.log(` - Agent: ${agent.agentId} at ${agent.endpoint} with ${agent.containers} containers\n`)
       }
 
       await client.close()

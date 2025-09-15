@@ -29,6 +29,8 @@ export class TickManagerImpl implements TickManager {
 
   tickListeners = new Map<number, (() => void)[]>()
 
+  started: boolean = false
+
   constructor (readonly tps: number) {
     if (tps > 1000 || tps < 1) {
       throw new Error('Ticks per second has an invalid value: must be >= 1 && <= 1000')
@@ -88,6 +90,10 @@ export class TickManagerImpl implements TickManager {
   stop: () => void = () => {}
 
   start (): void {
+    if (this.started) {
+      return
+    }
+    this.started = true
     const to = setInterval(
       () => {
         this.tick().catch((err) => {
@@ -97,6 +103,7 @@ export class TickManagerImpl implements TickManager {
       Math.round(1000 / this.tps)
     )
     this.stop = () => {
+      this.started = false
       clearInterval(to)
     }
   }

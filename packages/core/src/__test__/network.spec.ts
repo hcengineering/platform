@@ -1,6 +1,6 @@
 import { AgentImpl } from '../agent'
-import type { AgentUuid, ClientUuid, ContainerEndpointRef, ContainerKind } from '../api/types'
-import type { Container } from '../containers'
+import type { AgentUuid, ClientUuid, ContainerEndpointRef, ContainerKind, GetOptions } from '../api/types'
+import { containerUuid, type Container } from '../containers'
 import { NetworkImpl } from '../network'
 import { TickManagerImpl } from '../utils'
 
@@ -55,12 +55,16 @@ describe('network tests', () => {
     const network = new NetworkImpl(tickManager)
 
     const agent1 = new AgentImpl(agents.agent1, {
-      [kinds.session]: () => Promise.resolve([new DummyContainer(), '' as ContainerEndpointRef])
+      [kinds.session]: async (opt: GetOptions) => ({
+        uuid: opt.uuid ?? containerUuid(),
+        container: new DummyContainer(),
+        endpoint: '' as ContainerEndpointRef
+      })
     })
     await agent1.register(network)
     expect((network as any)._agents.size).toBe(1)
 
-    const s1 = await network.get(agents.agent1 as any, 's1' as any, { kind: kinds.session })
+    const s1 = await network.get(agents.agent1 as any, kinds.session, { uuid: 's1' as any })
     expect(s1).toBeDefined()
   })
 })

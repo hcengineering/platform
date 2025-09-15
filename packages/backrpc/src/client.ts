@@ -68,12 +68,13 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
     this.observer = new zmq.Observer(this.dealer)
 
-    this.dealer.connect(`tcp://${host}:${port}`)
     this.observer.on('connect', (data) => {
+      console.log('Connected to server', data)
       void this.sendHello().catch((err) => {
         console.error('Failed to send hello', err)
       })
     })
+    this.dealer.connect(`tcp://${host}:${port}`)
     void this.start().catch((err) => {
       console.error('Failed to start BackRPCClient', err)
     })
@@ -101,7 +102,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   async checkAlive (): Promise<void> {
-    await this.doSend([backrpcOperations.ping, this.clientId as string, '', ''])
+    await this.doSend([backrpcOperations.ping, '', '', ''])
   }
 
   private async sendHello (): Promise<void> {
@@ -199,6 +200,10 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   private async resendRequests (): Promise<void> {
+    if (this.closed) {
+      console.error('Client is closed, cannot resend requests')
+      return
+    }
     for (const [reqId, req] of Array.from(this.requests.entries())) {
       try {
         await this.doSend([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])])
@@ -213,6 +218,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       await this.serverId
     }
   }
+
+  rCount = 0
 
   async request<T>(method: string, params: any): Promise<T> {
     if (this.serverId instanceof Promise) {

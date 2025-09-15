@@ -2,7 +2,7 @@ import {
   agentDirectRef,
   type ClientUuid,
   type ContainerConnection,
-  type ContainerEvent,
+  type NetworkEvent,
   type ContainerUuid,
   type NetworkAgent,
   type TickManager
@@ -42,7 +42,7 @@ export class NetworkAgentServer implements BackRPCServerHandler<ClientUuid> {
     await this.agent.onAgentUpdate?.()
   }
 
-  async onContainerUpdate (event: ContainerEvent): Promise<void> {
+  async onContainerUpdate (event: NetworkEvent): Promise<void> {
     // Handle container update
   }
 

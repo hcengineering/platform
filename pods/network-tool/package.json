@@ -22,6 +22,7 @@
     "docker:abuild": "docker build -t hardcoreeng/network-tool . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/network-tool",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/network-tool staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/network-tool",
+    "run": "(rushx bundle || true) && node bundle/bundle.js",
     "build:watch": "compile",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",

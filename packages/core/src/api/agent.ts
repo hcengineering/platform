@@ -3,11 +3,11 @@ import type {
   AgentEndpointRef,
   AgentUuid,
   ContainerEndpointRef,
-  ContainerEvent,
+  NetworkEvent,
   ContainerKind,
   ContainerRecord,
-  ContainerRequest,
-  ContainerUuid
+  ContainerUuid,
+  GetOptions
 } from './types'
 
 export interface AgentRecord {
@@ -21,6 +21,8 @@ export interface AgentRecord {
   containers: ContainerRecord[]
   kinds: ContainerKind[]
 }
+export type AgentRecordInfo = Omit<AgentRecord, 'containers'> & { containers: number }
+
 /**
  * Interface to Huly Agent on agent.
  */
@@ -35,13 +37,13 @@ export interface NetworkAgent {
   kinds: ContainerKind[]
 
   // event handled from agent to network events.
-  onUpdate?: (event: ContainerEvent) => Promise<void>
+  onUpdate?: (event: NetworkEvent) => Promise<void>
 
   // Send agent update info to network, if applicable.
   onAgentUpdate?: () => Promise<void>
 
   // Get/Start of required container kind on agent
-  get: (uuid: ContainerUuid, request: ContainerRequest) => Promise<ContainerEndpointRef>
+  get: (kind: ContainerKind, options: GetOptions) => Promise<[ContainerUuid, ContainerEndpointRef]>
 
   // A low level reference to container
   getContainer: (uuid: ContainerUuid) => Promise<Container | undefined>

@@ -20,7 +20,8 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "PORT": "37371"
+        "PORT": "37371",
+        "DEVELOPMENT": "true"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "22",
@@ -34,7 +35,7 @@
       "name": "Debug Tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "list-agents"],
+      "args": ["src/index.ts", "bench-agent"],
       "env": {
         "NETWORK_HOST": "localhost:37371"
       },

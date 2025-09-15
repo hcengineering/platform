@@ -1,23 +1,32 @@
-import type { AgentRecord, NetworkAgent } from './api/agent'
+import type { AgentRecord, AgentRecordInfo, NetworkAgent } from './api/agent'
 import type { Network, NetworkWithClients } from './api/network'
 import { timeouts } from './api/timeouts'
+import { NetworkEventKind } from './api/types'
 import type {
   AgentEndpointRef,
   AgentUuid,
   ClientUuid,
   ContainerEndpointRef,
-  ContainerEvent,
+  NetworkEvent,
   ContainerKind,
   ContainerRecord,
-  ContainerRequest,
-  ContainerUuid
+  ContainerUuid,
+  GetOptions
 } from './api/types'
 import type { TickManager } from './api/utils'
-import type { ContainerRecordImpl } from './containers'
+
+export interface ContainerRecordImpl {
+  record: ContainerRecord
+  endpoint: ContainerEndpointRef
+  agent: AgentRecordImpl
+
+  clients: Set<ClientUuid>
+}
 
 interface AgentRecordImpl {
+  id: AgentUuid
   api: NetworkAgent
-  containers: Map<ContainerUuid, ContainerRecordImpl>
+  containers: Set<ContainerUuid>
   endpoint?: AgentEndpointRef
   kinds: ContainerKind[]
 
@@ -27,9 +36,17 @@ interface AgentRecordImpl {
 interface ClientRecordImpl {
   lastSeen: number
   containers: Set<ContainerUuid>
-  onContainer?: (event: ContainerEvent) => Promise<void>
+  onContainer?: (event: NetworkEvent) => Promise<void>
 
   agents: Set<AgentUuid>
+}
+
+interface PendingContainer {
+  agent: AgentUuid
+  kind: ContainerKind
+  options: GetOptions
+  promise: Promise<ContainerRecordImpl>
+  clients: Set<ClientUuid>
 }
 /**
  * Server network implementation.
@@ -39,13 +56,17 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
   private readonly _agents = new Map<AgentUuid, AgentRecordImpl>()
 
-  private readonly _containers = new Map<ContainerUuid, AgentUuid>()
+  private readonly _containers = new Map<ContainerUuid, ContainerRecordImpl>()
+
+  private pidCounter: number = 0
+
+  private readonly pending = new Map<number, PendingContainer>()
 
   private readonly _clients = new Map<ClientUuid, ClientRecordImpl>()
 
-  private readonly _orphanedContainers = new Map<ContainerEndpointRef, ContainerRecordImpl>()
+  private readonly _orphanedContainers = new Map<ContainerUuid, { container: ContainerRecordImpl, time: number }>()
 
-  private eventQueue: ContainerEvent[] = []
+  private eventQueue: NetworkEvent[] = []
 
   private readonly stopTick?: () => void
 
@@ -64,15 +85,13 @@ export class NetworkImpl implements Network, NetworkWithClients {
     this.stopTick?.()
   }
 
-  async agents (): Promise<AgentRecord[]> {
+  async agents (): Promise<AgentRecordInfo[]> {
     return Array.from(
       this._agents.values().map(({ api, containers }) => ({
         agentId: api.uuid,
         endpoint: api.endpoint,
         kinds: api.kinds,
-        containers: Array.from(containers.values())
-          .filter((it) => !(it.endpoint instanceof Promise))
-          .map(({ record, endpoint }) => ({ ...record, endpoint: endpoint as ContainerEndpointRef }))
+        containers: containers.size
       }))
     )
   }
@@ -87,99 +106,100 @@ export class NetworkImpl implements Network, NetworkWithClients {
   }
 
   async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
-    return Array.from(this._agents.values())
-      .flatMap((it) => Array.from(it.containers.values()))
+    return Array.from(this._containers.values())
       .filter((it) => kind === undefined || it.record.kind === kind)
       .map((it) => it.record)
   }
 
   async request (target: ContainerUuid, operation: string, data?: any): Promise<any> {
-    const agentId = this._containers.get(target)
-    if (agentId === undefined) {
+    const container = this._containers.get(target)
+    if (container === undefined) {
       throw new Error(`Container ${target} not found`)
     }
-    const agent = this._agents.get(agentId)
-    if (agent === undefined) {
-      throw new Error(`Agent ${agentId} not found for container ${target}`)
-    }
-    const container = agent.containers.get(target)
-    if (container === undefined) {
-      throw new Error(`Container ${target} not registered on agent ${agentId}`)
-    }
-    return await agent.api.request(target, operation, data)
+    return await container.agent?.api.request(target, operation, data)
   }
 
   async register (record: AgentRecord, agent: NetworkAgent): Promise<ContainerUuid[]> {
-    const containers: ContainerRecord[] = record.containers
-    const newContainers = new Map<ContainerUuid, ContainerRecordImpl>(
-      containers.map((record) => [
+    const newContainers: ContainerRecord[] = record.containers
+    const newContainersMap = new Map<ContainerUuid, ContainerRecordImpl>(
+      newContainers.map((record) => [
         record.uuid,
         {
           record,
           request: { kind: record.kind },
           endpoint: record.endpoint,
-          clients: new Set<ClientUuid>([])
+          clients: new Set<ClientUuid>([]),
+          agent: null as any // Temporarily
         }
       ])
     )
 
-    const containerEvent: ContainerEvent = {
-      added: [],
-      deleted: [],
-      updated: []
-    }
-
-    // Register agent record
-    const oldAgent = this._agents.get(record.agentId)
-    if (oldAgent !== undefined) {
-      // In case re-register or reconnect is happened.
-      // Check if some of container changed endpoints.
-      for (const rec of containers) {
-        const oldRec = oldAgent.containers.get(rec.uuid)
-        if (oldRec !== undefined) {
-          if (oldRec.record.endpoint !== rec.endpoint) {
-            oldRec.endpoint = rec.endpoint // Update endpoint
-            containerEvent.updated.push(rec)
-          }
-        }
-      }
-      // Handle remove of containers
-      for (const oldC of oldAgent.containers.values()) {
-        if (newContainers.get(oldC.record.uuid) === undefined) {
-          containerEvent.deleted.push(oldC.record)
-          this._containers.delete(oldC.record.uuid) // Remove from active container registry
-        }
-      }
-    }
-
-    const containersToShutdown: ContainerUuid[] = []
-
-    // Update active container registry.
-    for (const rec of containers) {
-      const oldAgentId = this._containers.get(rec.uuid)
-      if (oldAgentId === undefined) {
-        containerEvent.added.push(rec)
-        const containerImpl = newContainers.get(rec.uuid)
-        if (containerImpl !== undefined) {
-          this._orphanedContainers.set(rec.endpoint, containerImpl)
-        }
-        this._containers.set(rec.uuid, record.agentId)
-      }
-      if (oldAgentId !== undefined && oldAgentId !== record.agentId) {
-        containersToShutdown.push(rec.uuid)
-      }
+    const containerEvent: NetworkEvent = {
+      agents: [],
+      containers: []
     }
 
     // update agent record
-
-    this._agents.set(record.agentId, {
+    const agentRecord: AgentRecordImpl = {
+      id: record.agentId,
       api: agent,
-      containers: newContainers,
+      containers: new Set(),
       endpoint: record.endpoint,
       kinds: record.kinds,
       lastSeen: this.tickManager.now()
-    })
+    }
 
+    const oldAgent = this._agents.get(record.agentId)
+    this._agents.set(record.agentId, agentRecord)
+
+    const containersToShutdown: ContainerUuid[] = []
+
+    // Find removed containers
+    for (const cid of oldAgent?.containers ?? []) {
+      if (!newContainersMap.has(cid)) {
+        const container = this._containers.get(cid)
+        if (container !== undefined) {
+          containerEvent.containers.push({
+            container: container.record,
+            event: NetworkEventKind.removed
+          })
+          this._containers.delete(cid)
+        }
+      }
+    }
+
+    // Update active container registry.
+    for (const containerImpl of newContainersMap.values()) {
+      containerImpl.agent = agentRecord
+
+      const existingContainer = this._containers.get(containerImpl.record.uuid)
+      if (existingContainer === undefined) {
+        containerEvent.containers.push({
+          container: containerImpl.record,
+          event: NetworkEventKind.added
+        })
+        this._containers.set(containerImpl.record.uuid, containerImpl)
+        agentRecord.containers.add(containerImpl.record.uuid)
+      } else {
+        if (existingContainer.agent.id !== record.agentId) {
+          // Container already started on different agent, need to shutdown old one.
+          containersToShutdown.push(containerImpl.record.uuid)
+        }
+
+        if (existingContainer.record.endpoint !== containerImpl.record.endpoint) {
+          containerEvent.containers.push({
+            container: containerImpl.record,
+            event: NetworkEventKind.updated
+          })
+        }
+      }
+    }
+
+    containerEvent.agents.push({
+      id: agent.uuid,
+      kinds: record.kinds,
+      event: oldAgent !== undefined ? NetworkEventKind.updated : NetworkEventKind.added
+    })
     this.eventQueue.push(containerEvent)
 
     // Send notification to all agents about containers update.
@@ -191,7 +211,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
     if (agent === undefined) {
       return // Fine to ignore
     }
-    await this.processDeadAgent(agentId)
+    await this.processAgentRemove(agentId)
   }
 
   async sendEvents (): Promise<void> {
@@ -202,27 +222,38 @@ export class NetworkImpl implements Network, NetworkWithClients {
     }
     // Combine events
 
-    const finalEvent: ContainerEvent = {
-      added: [],
-      deleted: [],
-      updated: []
-    }
+    const agents = new Map<AgentUuid, NetworkEvent['agents'][0]>()
+    const containers = new Map<ContainerUuid, NetworkEvent['containers'][0]>()
+
     for (const event of events) {
-      finalEvent.added.push(...event.added)
-      finalEvent.deleted.push(...event.deleted)
-      finalEvent.updated.push(...event.updated)
+      for (const agent of event.agents) {
+        if (agent.event === NetworkEventKind.removed) {
+          agents.delete(agent.id)
+        } else {
+          agents.set(agent.id, agent)
+        }
+      }
+      for (const container of event.containers) {
+        if (container.event === NetworkEventKind.removed) {
+          containers.delete(container.container.uuid)
+        } else {
+          containers.set(container.container.uuid, container)
+        }
+      }
     }
 
-    // Skip deleted events.
-    const deletedIds = finalEvent.deleted.map((c) => c.uuid)
-    finalEvent.added = finalEvent.added.filter((c) => !deletedIds.includes(c.uuid))
-    finalEvent.updated = finalEvent.updated.filter((c) => !deletedIds.includes(c.uuid))
+    const finalEvent: NetworkEvent = {
+      agents: Array.from(agents.values()),
+      containers: Array.from(containers.values())
+    }
 
-    for (const [clientUuid, client] of Object.entries(this._clients)) {
+    for (const [clientUuid, client] of this._clients.entries()) {
       if (client.onContainer !== undefined) {
         try {
           // We should not block on broadcast to clients.
-          void client.onContainer(finalEvent)
+          void client.onContainer?.(finalEvent)?.catch((err) => {
+            console.error(`Error in client ${clientUuid} onContainer callback:`, err)
+          })
         } catch (err: any) {
           console.error(`Error in client ${clientUuid} onContainer callback:`, err)
         }
@@ -230,7 +261,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
     }
   }
 
-  addClient (clientUuid: ClientUuid, onContainer?: (event: ContainerEvent) => Promise<void>): void {
+  addClient (clientUuid: ClientUuid, onContainer?: (event: NetworkEvent) => Promise<void>): void {
     const info = this._clients.get(clientUuid) ?? {
       lastSeen: this.tickManager.now(),
       containers: new Set(),
@@ -268,77 +299,111 @@ export class NetworkImpl implements Network, NetworkWithClients {
     }
   }
 
-  async get (clientUuid: ClientUuid, uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
+  async get (
+    clientUuid: ClientUuid,
+    kind: ContainerKind,
+    options: GetOptions
+  ): Promise<[ContainerUuid, ContainerEndpointRef]> {
     let client = this._clients.get(clientUuid)
     if (client === undefined) {
       client = { lastSeen: this.tickManager.now(), containers: new Set(), agents: new Set() }
       this._clients.set(clientUuid, client)
     }
-    client.containers.add(uuid)
 
-    const record = await this.getContainer(uuid, request, [clientUuid])
-    if (record.endpoint instanceof Promise) {
-      return await record.endpoint
-    }
-    return record.endpoint
+    const record: ContainerRecordImpl = await this.getContainer(kind, options, [clientUuid])
+    client.containers.add(record.record.uuid)
+    return [record.record.uuid, record.endpoint]
   }
 
-  async getContainer (
-    uuid: ContainerUuid,
-    request: ContainerRequest,
-    clients: ClientUuid[]
-  ): Promise<ContainerRecordImpl> {
-    const existing = this._containers.get(uuid)
-    if (existing !== undefined) {
-      const agent = this._agents.get(existing)
-      const containerImpl = agent?.containers?.get(uuid)
-      if (containerImpl !== undefined) {
-        if (!(containerImpl.endpoint instanceof Promise)) {
-          this._orphanedContainers.delete(containerImpl.endpoint)
-        }
+  async getContainer (kind: ContainerKind, options: GetOptions, clients: ClientUuid[]): Promise<ContainerRecordImpl> {
+    // Reuse existing container if uuid is provided and container exists
+    if (options.uuid !== undefined) {
+      const existing = this._containers.get(options.uuid)
+      if (existing !== undefined) {
+        this._orphanedContainers.delete(existing.record.uuid)
         for (const cl of clients) {
-          containerImpl.clients.add(cl)
+          existing.clients.add(cl)
         }
-        return containerImpl
+        return existing
+      }
+      // Find if container is pending starting for our it
+      for (const p of this.pending.values()) {
+        if (p.kind === kind && p.options.uuid === options.uuid) {
+          // Add to pendings list to properly track orphaned
+          for (const cl of clients) {
+            p.clients.add(cl)
+          }
+          const containerImpl = await p.promise
+          for (const cl of clients) {
+            containerImpl.clients.add(cl)
+          }
+          return containerImpl
+        }
+      }
+    } else {
+      // Check if we have a container pending if no uuid is provided
+      for (const p of this.pending.values()) {
+        if (
+          p.kind === kind &&
+          (options.labels === undefined ||
+            (p.options.labels !== undefined && options.labels.every((l) => (p.options.labels ?? []).includes(l))))
+        ) {
+          // Add to pendings list to properly track orphaned
+          for (const cl of clients) {
+            p.clients.add(cl)
+          }
+          const containerImpl = await p.promise
+          for (const cl of clients) {
+            containerImpl.clients.add(cl)
+          }
+          return containerImpl
+        }
       }
     }
 
     // Select agent using round/robin and register it in agent
-    const suitableAgents = Array.from(this._agents.values().filter((it) => it.kinds.includes(request.kind)))
+    const suitableAgents = Array.from(this._agents.values().filter((it) => it.kinds.includes(kind)))
     if (suitableAgents.length === 0) {
-      throw new Error(`No suitable agents found for container ${uuid}`)
+      throw new Error(`No suitable agents found for container ${kind}`)
     }
     const agent = Array.from(suitableAgents)[++this.idx % suitableAgents.length]
 
-    const record: ContainerRecordImpl = {
+    const record: Promise<ContainerRecordImpl> = agent.api.get(kind, options).then(([uuid, endpoint]) => ({
+      agent,
       record: {
         uuid,
         agentId: agent.api.uuid,
-        kind: request.kind,
+        kind,
         lastVisit: this.tickManager.now(),
         endpoint: '' as ContainerEndpointRef, // Placeholder, will be updated later
-        labels: request.labels,
-        extra: request.extra
+        labels: options.labels,
+        extra: options.extra
       },
       clients: new Set(clients),
-      endpoint: agent.api.get(uuid, request)
-    }
-    agent.containers.set(uuid, record)
-    this._containers.set(uuid, agent.api.uuid)
+      endpoint
+    }))
+
+    const pid = ++this.pidCounter
+    this.pending.set(pid, { agent: agent.id, kind, options, promise: record, clients: new Set(clients) })
 
     // Wait for endpoint to be established
     try {
-      const endpointRef = await record.endpoint
-      record.endpoint = endpointRef
+      const recordImpl = await record
+
+      agent.containers.add(recordImpl.record.uuid)
+
       this.eventQueue.push({
-        added: [record.record],
-        deleted: [],
-        updated: []
+        agents: [],
+        containers: [{ container: recordImpl.record, event: NetworkEventKind.added }]
       })
-      return record
+
+      // TODO:  What if container started with same id?
+      this._containers.set(recordImpl.record.uuid, recordImpl)
+      return recordImpl
     } catch (err: any) {
-      this._containers.delete(uuid) // Remove from active container registry
-      throw new Error(`Failed to get endpoint for container ${uuid}: ${err.message}`)
+      throw new Error(`Failed to get endpoint for container ${kind}: ${err.message}`)
+    } finally {
+      this.pending.delete(pid)
     }
   }
 
@@ -348,29 +413,26 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
     const existing = this._containers.get(uuid)
     if (existing !== undefined) {
-      const agent = this._agents.get(existing)
-      const containerImpl = agent?.containers?.get(uuid)
-      if (containerImpl !== undefined) {
-        containerImpl.clients.delete(client)
-        if (containerImpl.clients.size === 0 && !(containerImpl.endpoint instanceof Promise)) {
-          this._orphanedContainers.set(containerImpl.endpoint, containerImpl)
-        }
+      existing.clients.delete(client)
+      if (existing.clients.size === 0) {
+        this._orphanedContainers.set(existing.record.uuid, {
+          container: existing,
+          time: this.tickManager.now()
+        })
       }
     }
   }
 
   async terminate (container: ContainerRecordImpl): Promise<void> {
     this._containers.delete(container.record.uuid) // Remove from active container registry
-    this._orphanedContainers.delete(container.record.endpoint)
+    this._orphanedContainers.delete(container.record.uuid)
     this.eventQueue.push({
-      added: [],
-      deleted: [container.record],
-      updated: []
+      agents: [],
+      containers: [{ container: container.record, event: NetworkEventKind.removed }]
     })
-    const agent = this._agents.get(container.record.agentId)
-    agent?.containers.delete(container.record.uuid)
+    container.agent.containers.delete(container.record.uuid)
 
-    await agent?.api.terminate(container.record.uuid)
+    await container.agent.api.terminate(container.record.uuid)
   }
 
   /**
@@ -414,49 +476,60 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
     // Remove dead agents and their containers
     for (const agentId of deadAgents) {
-      await this.processDeadAgent(agentId)
+      await this.processAgentRemove(agentId)
     }
 
     // Handle termination of orphaned containers
-    for (const container of [...this._orphanedContainers.values()]) {
-      void this.terminate(container).catch((err) => {
-        console.error(`Failed to terminate orphaned container ${container.record.uuid}: ${err.message}`)
-      })
+    for (const { container, time } of [...this._orphanedContainers.values()]) {
+      if (now - time > timeouts.unusedContainerTimeout * 1000) {
+        void this.terminate(container).catch((err) => {
+          console.error(`Failed to terminate orphaned container ${container.record.uuid}: ${err.message}`)
+        })
+      }
     }
   }
 
   /**
    * Remove a dead agent and clean up its containers
    */
-  private async processDeadAgent (agentId: AgentUuid): Promise<void> {
+  private async processAgentRemove (agentId: AgentUuid): Promise<void> {
     const agent = this._agents.get(agentId)
     if (agent == null) {
       return
     }
 
-    console.log(`Removing dead agent ${agentId} and its ${agent.containers.size} containers`)
+    console.log(`Removing agent ${agentId} and its ${agent.containers.size} containers`)
 
     // Collect containers to remove
     const affectedContainers: ContainerRecordImpl[] = []
-    for (const [containerId, containerRecord] of agent.containers.entries()) {
-      affectedContainers.push(containerRecord)
+    for (const containerId of agent.containers.values()) {
+      const c = this._containers.get(containerId)
+      if (c !== undefined) {
+        affectedContainers.push(c)
+      }
       this._containers.delete(containerId)
+    }
+
+    // We need to clean pending ones
+    for (const [pid, p] of this.pending.entries()) {
+      if (p.agent === agentId) {
+        this.pending.delete(pid)
+      }
     }
 
     // Remove agent
     this._agents.delete(agentId)
 
-    const containerEvent: ContainerEvent = {
-      added: [],
-      deleted: [],
-      updated: []
+    const containerEvent: NetworkEvent = {
+      agents: [{ id: agentId, kinds: agent.kinds, event: NetworkEventKind.removed }],
+      containers: []
     }
 
     // We need to add requests for all used containers
     for (const container of affectedContainers) {
-      this._orphanedContainers.delete(container.record.endpoint)
+      this._orphanedContainers.delete(container.record.uuid)
       // We just send container is deleted, so clients should re-request whem again.
-      containerEvent.deleted.push(container.record)
+      containerEvent.containers.push({ container: container.record, event: NetworkEventKind.removed })
     }
     if (affectedContainers.length > 0) {
       this.eventQueue.push(containerEvent)

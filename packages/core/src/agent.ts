@@ -6,7 +6,7 @@ import type {
   ContainerEndpointRef,
   ContainerKind,
   ContainerRecord,
-  ContainerRequest,
+  GetOptions,
   ContainerUuid
 } from './api/types'
 import type { Container, ContainerFactory } from './containers'
@@ -17,14 +17,25 @@ interface ContainerRecordImpl {
   endpoint: ContainerEndpointRef
   kind: ContainerKind
 
+  labels?: string[]
+
   lastVisit: number
+}
+
+interface AgentPendingContainer {
+  kind: ContainerKind
+  options: GetOptions
+  promise: Promise<ContainerRecordImpl>
 }
 
 export class AgentImpl implements NetworkAgent {
   // Own, managed containers
-  private readonly _byId = new Map<ContainerUuid, ContainerRecordImpl | Promise<ContainerRecordImpl>>()
+  private readonly _byId = new Map<ContainerUuid, ContainerRecordImpl>()
+  private readonly _byKind = new Map<ContainerKind, Map<ContainerUuid, ContainerRecordImpl>>()
 
-  private readonly _containers = new Map<ContainerUuid, ContainerRecordImpl>()
+  // Containers pending startup
+  pidCounter: number = 0
+  private readonly pendings = new Map<number, AgentPendingContainer>()
 
   endpoint?: AgentEndpointRef | undefined
 
@@ -49,7 +60,7 @@ export class AgentImpl implements NetworkAgent {
   }
 
   async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
-    return Array.from(this._containers.values())
+    return Array.from(kind !== undefined ? (this._byKind.get(kind)?.values() ?? []) : this._byId.values())
       .filter((it) => !(it instanceof Promise) && (kind === undefined || it.kind === kind))
       .map((it) => ({
         agentId: this.uuid,
@@ -64,47 +75,86 @@ export class AgentImpl implements NetworkAgent {
     return Object.keys(this.factory) as ContainerKind[]
   }
 
-  async getContainerImpl (uuid: ContainerUuid): Promise<ContainerRecordImpl | undefined> {
-    let current = this._byId.get(uuid)
-    if (current instanceof Promise) {
-      current = await current
-      this._byId.set(uuid, current)
+  selectContainer (kind: ContainerKind, labels?: string[]): ContainerRecordImpl | undefined {
+    const list = this._byKind.get(kind)
+    if (list !== undefined) {
+      let l = list.values()
+      if (labels !== undefined) {
+        l = l.filter((it) => it.labels !== undefined && labels.every((l) => (it.labels ?? []).includes(l)))
+      }
+      return l.next()?.value
     }
-    return current
   }
 
   async getContainer (uuid: ContainerUuid): Promise<Container | undefined> {
-    return (await this.getContainerImpl(uuid))?.container
+    return this._byId.get(uuid)?.container
   }
 
-  async get (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
-    const current = await this.getContainerImpl(uuid)
-    if (current !== undefined) {
-      return current.endpoint
+  async get (kind: ContainerKind, options: GetOptions): Promise<[ContainerUuid, ContainerEndpointRef]> {
+    // If uuid is fixed, we must return that one
+
+    if (options.uuid !== undefined) {
+      const current = this._byId.get(options.uuid)
+      if (current !== undefined) {
+        return [current.uuid, current.endpoint]
+      }
+      // Check pending requests
+      for (const p of this.pendings.values()) {
+        if (p.kind === kind && p.options.uuid === options.uuid) {
+          const containerImpl = await p.promise
+          return [containerImpl.uuid, containerImpl.endpoint]
+        }
+      }
+    } else {
+      // If we have one with kind, return it.
+      const existing = this.selectContainer(kind, options.labels)
+      if (existing !== undefined) {
+        return [existing.uuid, existing.endpoint]
+      }
     }
 
-    let container: ContainerRecordImpl | Promise<ContainerRecordImpl> = this.factory[request.kind](uuid, request).then(
-      (r) => ({
-        container: r[0],
-        endpoint: r[1],
-        kind: request.kind,
-        lastVisit: Date.now(),
-        uuid
-      })
-    )
-    this._byId.set(uuid, container)
-    container = await container
-    this._containers.set(uuid, container)
-    this._byId.set(uuid, container)
+    // Check pending container by kind
+    for (const p of this.pendings.values()) {
+      if (
+        p.kind === kind &&
+        (options.labels === undefined ||
+          (p.options.labels !== undefined && options.labels.every((l) => (p.options.labels ?? []).includes(l))))
+      ) {
+        const containerImpl = await p.promise
+        return [containerImpl.uuid, containerImpl.endpoint]
+      }
+    }
 
-    return container.endpoint
+    const pendingId = this.pidCounter++
+
+    const container = this.factory[kind](options).then(({ uuid, container, endpoint }) => ({
+      container,
+      endpoint,
+      kind,
+      lastVisit: Date.now(),
+      uuid
+    }))
+
+    this.pendings.set(pendingId, { kind, promise: container, options })
+    const containerImpl = await container
+    this.pendings.delete(pendingId)
+
+    this._byId.set(containerImpl.uuid, containerImpl)
+    const byKind = this._byKind.get(kind)
+    if (byKind !== undefined) {
+      byKind.set(containerImpl.uuid, containerImpl)
+    } else {
+      this._byKind.set(kind, new Map([[containerImpl.uuid, containerImpl]]))
+    }
+
+    return [containerImpl.uuid, containerImpl.endpoint]
   }
 
   async terminate (uuid: ContainerUuid): Promise<void> {
     const current = this._byId.get(uuid)
     if (current !== undefined) {
-      this._containers.delete(uuid)
       this._byId.delete(uuid)
+      this._byKind.get(current.kind)?.delete(uuid)
       if (current instanceof Promise) {
         await (await current).container.terminate() // Await promise before terminating
       } else {

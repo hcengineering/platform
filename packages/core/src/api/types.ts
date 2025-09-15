@@ -17,14 +17,19 @@ export interface ContainerRecord {
 
   labels?: string[]
 }
-export interface ContainerEvent {
-  added: ContainerRecord[]
-  deleted: ContainerRecord[]
-  updated: ContainerRecord[]
+export enum NetworkEventKind {
+  added = 0,
+  updated = 1,
+  removed = 2
+}
+export interface NetworkEvent {
+  agents: { id: AgentUuid, kinds: ContainerKind[], event: NetworkEventKind }[]
+  containers: { container: ContainerRecord, event: NetworkEventKind }[]
 }
 
-export interface ContainerRequest {
-  kind: ContainerKind
+export interface GetOptions {
+  uuid?: ContainerUuid
+
   extra?: Record<string, any> // Extra parameters for container start
 
   labels?: string[]

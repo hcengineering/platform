@@ -1,14 +1,14 @@
-import type { AgentRecord, NetworkAgent } from './agent'
+import type { AgentRecordInfo, NetworkAgent } from './agent'
 import type {
   ContainerEndpointRef,
-  ContainerEvent,
+  NetworkEvent,
   ContainerKind,
   ContainerRecord,
-  ContainerRequest,
-  ContainerUuid
+  ContainerUuid,
+  GetOptions
 } from './types'
 
-export type ContainerUpdateListener = (event: ContainerEvent) => Promise<void>
+export type NetworkUpdateListener = (event: NetworkEvent) => Promise<void>
 
 /**
  * Interface to Huly network.
@@ -24,7 +24,7 @@ export interface NetworkClient {
    */
   register: (agent: NetworkAgent) => Promise<void>
 
-  agents: () => Promise<AgentRecord[]>
+  agents: () => Promise<AgentRecordInfo[]>
 
   // A full uniq set of supported container kinds.
   kinds: () => Promise<ContainerKind[]>
@@ -33,7 +33,7 @@ export interface NetworkClient {
    * Get/Start of required container kind on agent
    * Will start a required container on agent, if not already started.
    */
-  get: (uuid: ContainerUuid, request: ContainerRequest) => Promise<ContainerReference>
+  get: (kind: ContainerKind, options: GetOptions) => Promise<ContainerReference>
 
   list: (kind?: ContainerKind) => Promise<ContainerRecord[]>
 
@@ -41,7 +41,8 @@ export interface NetworkClient {
   request: (target: ContainerUuid, operation: string, data?: any) => Promise<any>
 
   // Register on container update listener
-  onContainerUpdate: (listener: ContainerUpdateListener) => void
+  // Return unsubscribe function
+  onUpdate: (listener: NetworkUpdateListener) => () => void
 
   // We could wait for a connection for a time period.
   // If timeout === 0, we wait indefinitely.

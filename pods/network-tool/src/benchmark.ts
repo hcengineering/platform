@@ -1,12 +1,14 @@
 import { createAgent, createNetworkClient } from '@hcengineering/network-client'
 import {
   containerOnAgentEndpointRef,
+  containerUuid,
   type AgentEndpointRef,
   type ClientUuid,
   type Container,
   type ContainerKind,
   type ContainerReference,
-  type ContainerUuid
+  type ContainerUuid,
+  type GetOptions
 } from '@hcengineering/network-core'
 import { program } from 'commander'
 import { addShutdownHandler, tickManager } from './utils'
@@ -53,9 +55,14 @@ export function registerBenchmark (): void {
       const client = createNetworkClient(network)
 
       const { agent, server } = await createAgent(cmd.endpoint, {
-        [benchmarkContainer]: async (uuid: ContainerUuid) => {
+        [benchmarkContainer]: async (options: GetOptions) => {
           console.log('Starting bench container')
-          return [new BenchmarkContainer(uuid), containerOnAgentEndpointRef(agent.endpoint as AgentEndpointRef, uuid)]
+          const uuid = options.uuid ?? containerUuid()
+          return {
+            uuid,
+            container: new BenchmarkContainer(uuid),
+            endpoint: containerOnAgentEndpointRef(agent.endpoint as AgentEndpointRef, uuid)
+          }
         }
       })
 
@@ -82,12 +89,16 @@ export function registerBenchmark (): void {
     .option('-e, --exit <exit>', 'Exit after <exit>. If 1 exit on end', '0')
     .action(async (cmd: { network: string, count: number, requests: number, exit: number }) => {
       const network = process.env.NETWORK_HOST ?? cmd.network
+      console.log('Benchmark agent')
       const client = createNetworkClient(network)
+
+      console.log('Connected to network')
 
       const st = tickManager.now()
       const containers: ContainerReference[] = []
       for (let i = 0; i < cmd.count; i++) {
-        const container = await client.get(`benchmark-${i}` as ContainerUuid, { kind: benchmarkContainer })
+        console.log('request container:' + i)
+        const container = await client.get(benchmarkContainer, { uuid: `benchmark-${i}` as ContainerUuid })
         console.log('container obtained', container.endpoint)
         containers.push(container)
       }

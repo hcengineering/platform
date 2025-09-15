@@ -1,25 +1,28 @@
+import { BackRPCClient, type BackRPCResponseSend } from '@hcengineering/network-backrpc'
 import {
+  agentDirectRef,
+  EndpointKind,
+  parseEndpointRef,
   type AgentEndpointRef,
-  type AgentRecord,
+  type AgentRecordInfo,
   type AgentUuid,
   type ClientUuid,
   type ContainerConnection,
   type ContainerEndpointRef,
-  type ContainerEvent,
+  type NetworkEvent,
   type ContainerKind,
   type ContainerRecord,
   type ContainerReference,
-  type ContainerRequest,
-  type ContainerUpdateListener,
+  type NetworkUpdateListener,
   type ContainerUuid,
+  type GetOptions,
   type NetworkAgent,
   type NetworkClient,
-  type TickManager
+  type TickManager,
+  NetworkEventKind
 } from '@hcengineering/network-core'
 import { v4 as uuidv4 } from 'uuid'
 import { ContainerConnectionImpl, NetworkDirectConnectionImpl, RoutedNetworkAgentConnectionImpl } from './agent'
-import { BackRPCClient, type BackRPCResponseSend } from '@hcengineering/network-backrpc'
-import { agentDirectRef, EndpointKind, parseEndpointRef } from '@hcengineering/network-core'
 import { opNames } from './types'
 
 interface ClientAgentRecord {
@@ -31,8 +34,7 @@ interface ClientAgentRecord {
 class ContainerReferenceImpl implements ContainerReference {
   constructor (
     readonly uuid: ContainerUuid,
-    private readonly client: NetworkClientImpl,
-    private readonly _request: ContainerRequest
+    private readonly client: NetworkClientImpl
   ) {}
 
   get endpoint (): ContainerEndpointRef {
@@ -57,16 +59,16 @@ class ContainerReferenceImpl implements ContainerReference {
     if (conn !== undefined) {
       return conn
     }
-    const endpoint = await this.client.getContainerRef(this.uuid, this._request)
-    conn = this.client.establishConnection(this.uuid, endpoint)
+    conn = this.client.establishConnection(this.uuid, this.endpoint)
     await conn.connect()
     return conn
   }
 }
 
-interface ContainereRef {
+interface ContainerRef {
   ref: ContainerReference
-  request: ContainerRequest
+  kind: ContainerKind
+  request: GetOptions
   endpoint: ContainerEndpointRef
 }
 
@@ -86,9 +88,10 @@ export class NetworkClientImpl implements NetworkClient {
   containerConnections = new Map<ContainerUuid, ContainerConnectionImpl>()
   agentConnections = new Map<AgentEndpointRef, RoutedNetworkAgentConnectionImpl<ClientUuid>>()
 
-  containerListeners: ContainerUpdateListener[] = []
+  cid: number = 0
+  containerListeners = new Map<number, NetworkUpdateListener>()
 
-  references = new Map<ContainerUuid, ContainereRef>()
+  references = new Map<ContainerUuid, ContainerRef>()
 
   registered: boolean = false
 
@@ -124,6 +127,9 @@ export class NetworkClientImpl implements NetworkClient {
   }
 
   async close (): Promise<void> {
+    for (const refs of this.references.values()) {
+      await refs.ref.close()
+    }
     for (const directConn of this.containerConnections.values()) {
       await directConn.close()
     }
@@ -166,12 +172,12 @@ export class NetworkClientImpl implements NetworkClient {
     }
   }
 
-  async onEvent (event: ContainerEvent): Promise<void> {
+  async onEvent (event: NetworkEvent): Promise<void> {
     // Handle container events
     // In case of container stopped, agent stopped or endpoint changed, we need to update direct connections to be re-established.
     await this.handleConnectionUpdates(event)
 
-    for (const listener of this.containerListeners) {
+    for (const listener of this.containerListeners.values()) {
       try {
         await listener(event)
       } catch (error) {
@@ -180,31 +186,51 @@ export class NetworkClientImpl implements NetworkClient {
     }
   }
 
-  async handleRefUpdate (
-    uuid: ContainerUuid,
-    endpoint: ContainerEndpointRef | Promise<ContainerEndpointRef>
-  ): Promise<void> {
+  async handleRefUpdate (uuid: ContainerUuid, endpoint: ContainerEndpointRef): Promise<void> {
     const ref = this.references.get(uuid)
     if (ref !== undefined) {
-      const refEndpoint = endpoint instanceof Promise ? await endpoint : endpoint
       const conn = this.containerConnections.get(ref.ref.uuid)
-      if (conn !== undefined && ref.endpoint !== refEndpoint) {
-        conn.setConnection(this.establishConnection(ref.ref.uuid, refEndpoint))
+      if (conn !== undefined && ref.endpoint !== endpoint) {
+        conn.setConnection(this.establishConnection(ref.ref.uuid, endpoint))
       } else {
-        ref.endpoint = refEndpoint
+        ref.endpoint = endpoint
       }
     }
   }
 
-  async onRegister (): Promise<void> {
-    // TODO: Add retry in container requests on re-connect to new network.
-    for (const [uuid, ref] of this.references.entries()) {
-      await this.handleRefUpdate(uuid, await this.retryGetContainerRef(uuid, ref.request))
+  async handleNewContainer (oldUuid: ContainerUuid, uuid: ContainerUuid, endpoint: ContainerEndpointRef): Promise<void> {
+    const ref = this.references.get(oldUuid)
+    this.references.delete(oldUuid)
+    if (ref !== undefined) {
+      const conn = this.containerConnections.get(oldUuid)
+      this.containerConnections.delete(oldUuid)
+      if (conn !== undefined) {
+        this.containerConnections.set(uuid, conn)
+        if (ref.endpoint !== endpoint) {
+          conn.setConnection(this.establishConnection(uuid, endpoint))
+        }
+      }
+      ref.ref.uuid = uuid
+      ref.endpoint = endpoint
+
+      this.references.set(uuid, ref)
     }
+  }
+
+  async onRegister (): Promise<void> {
     this.registered = true
-    // We need to re-register all our managed agents
+    // We need to re-register all our managed agents, since we could provide containers we request to our selfs
     for (const agent of this._agents.values()) {
       await this.doRegister(agent.agent)
+    }
+
+    for (const [uuid, ref] of this.references.entries()) {
+      const [newUuid, newEndpoint] = await this.retryGetContainerRef(ref.kind, ref.request)
+      if (uuid !== newUuid) {
+        await this.handleNewContainer(uuid, newUuid, newEndpoint)
+      } else {
+        await this.handleRefUpdate(uuid, newEndpoint)
+      }
     }
   }
 
@@ -258,23 +284,27 @@ export class NetworkClientImpl implements NetworkClient {
     this._agents.get(agent.uuid)?.resolve()
   }
 
-  async agents (): Promise<AgentRecord[]> {
+  async agents (): Promise<AgentRecordInfo[]> {
     // Return actual list of agents
-    return await this.client.request<AgentRecord[]>(opNames.getAgents, {})
+    return await this.client.request<AgentRecordInfo[]>(opNames.getAgents, {})
   }
 
   async kinds (): Promise<ContainerKind[]> {
     return await this.client.request<ContainerKind[]>(opNames.getKinds, {})
   }
 
-  async get (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerReference> {
-    const existing = this.references.get(uuid)
-    if (existing !== undefined) {
-      return existing.ref
+  async get (kind: ContainerKind, request: GetOptions): Promise<ContainerReference> {
+    // TODO: Wait for all pending requests to finish
+
+    if (request.uuid !== undefined) {
+      const existing = this.references.get(request.uuid)
+      if (existing !== undefined) {
+        return existing.ref
+      }
     }
-    const endpoint = await this.getContainerRef(uuid, request)
-    const ref: ContainerReference = new ContainerReferenceImpl(uuid, this, request)
-    this.references.set(uuid, { ref, request, endpoint })
+    const [uuid, endpoint] = await this.retryGetContainerRef(kind, request)
+    const ref: ContainerReference = new ContainerReferenceImpl(uuid, this)
+    this.references.set(uuid, { kind, ref, request, endpoint })
     return ref
   }
 
@@ -325,35 +355,56 @@ export class NetworkClientImpl implements NetworkClient {
     return conn
   }
 
-  async handleConnectionUpdates (event: ContainerEvent): Promise<void> {
+  async handleConnectionUpdates (event: NetworkEvent): Promise<void> {
     // Handle connection updates
-    for (const updated of event.updated) {
-      await this.handleRefUpdate(updated.uuid, updated.endpoint)
-    }
-
-    for (const deleted of event.deleted) {
-      await this.handleRefUpdate(deleted.uuid, deleted.endpoint)
-    }
-  }
-
-  async getContainerRef (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
-    return await this.client.request<ContainerEndpointRef>(opNames.getContainer, { uuid, request })
-  }
-
-  async retryGetContainerRef (uuid: ContainerUuid, request: ContainerRequest): Promise<ContainerEndpointRef> {
-    let waitTimeout: number = 1
-    while (true) {
-      try {
-        const ref = await this.getContainerRef(uuid, request)
-        if (waitTimeout > 1) {
-          console.log(`Successfully got container ref for ${uuid} after ${waitTimeout - 1} retries.`)
-        }
-        return ref
-      } catch (err) {
-        console.warn(`Error getting container ref for ${uuid}. Will retry...`)
-        await this.tickMgr.waitTick(waitTimeout)
-        waitTimeout++
+    for (const e of event.containers ?? []) {
+      if (e.event === NetworkEventKind.removed || e.event === NetworkEventKind.updated) {
+        await this.handleRefUpdate(e.container.uuid, e.container.endpoint)
       }
+    }
+  }
+
+  private async getContainerRef (
+    kind: ContainerKind,
+    request: GetOptions
+  ): Promise<[ContainerUuid, ContainerEndpointRef]> {
+    return await this.client.request<[ContainerUuid, ContainerEndpointRef]>(opNames.getContainer, { kind, request })
+  }
+
+  async retryGetContainerRef (kind: ContainerKind, request: GetOptions): Promise<[ContainerUuid, ContainerEndpointRef]> {
+    let waitTimeout: number = 1
+    let earlyRetry = (): void => {}
+    const stop = this.onUpdate(async (event) => {
+      // We agent is appear with a required kind, we can retry immediately
+      if (event.agents.some((e) => e.event === NetworkEventKind.added && e.kinds.includes(kind))) {
+        waitTimeout = 0
+        earlyRetry()
+      }
+    })
+    try {
+      while (true) {
+        try {
+          const ref = await this.getContainerRef(kind, request)
+          if (waitTimeout > 1) {
+            console.log(`Successfully got container ref for ${kind} after ${waitTimeout - 1} retries.`)
+          }
+          return ref
+        } catch (err) {
+          console.warn(`Error getting container ref for ${kind}. Will retry...`)
+
+          await Promise.any([
+            this.tickMgr.waitTick(waitTimeout),
+            new Promise<void>((resolve) => {
+              earlyRetry = resolve
+            })
+          ])
+          if (waitTimeout < this.tickMgr.tps * 5) {
+            waitTimeout++
+          }
+        }
+      }
+    } finally {
+      stop()
     }
   }
 
@@ -372,7 +423,11 @@ export class NetworkClientImpl implements NetworkClient {
     return await this.client.request<any>(opNames.sendContainer, [target, operation, data])
   }
 
-  onContainerUpdate (listener: ContainerUpdateListener): void {
-    this.containerListeners.push(listener)
+  onUpdate (listener: NetworkUpdateListener): () => void {
+    const cid = this.cid++
+    this.containerListeners.set(cid, listener)
+    return () => {
+      this.containerListeners.delete(cid)
+    }
   }
 }
