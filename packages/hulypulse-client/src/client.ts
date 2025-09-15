@@ -261,6 +261,10 @@ export class HulypulseClient implements Disposable {
             return
           }
 
+          if (event.data === 'pong') {
+            return
+          }
+
           const msg: PulseIncomingMessage = JSON.parse(event.data.toString())
 
           // Handle incoming messages (Set, Expired, Del)
