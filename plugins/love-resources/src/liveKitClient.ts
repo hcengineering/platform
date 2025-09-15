@@ -4,13 +4,13 @@ import {
   Room as LKRoom,
   RoomEvent,
   type VideoCaptureOptions,
-  RemoteTrack,
-  RemoteTrackPublication,
+  type RemoteTrack,
+  type RemoteTrackPublication,
   Track,
-  LocalTrackPublication,
-  LocalParticipant,
-  TrackPublication,
-  Participant
+  type LocalTrackPublication,
+  type LocalParticipant,
+  type TrackPublication,
+  type Participant
 } from 'livekit-client'
 import { translate } from '@hcengineering/platform'
 import { getMediaDevices, getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
@@ -37,7 +37,7 @@ export const lkSessionConnected = writable<boolean>(false)
 const LAST_PARTICIPANT_NOTIFICATION_DELAY_MS = 2 * 60 * 1000
 const AUTO_DISCONNECT_DELAY_MS = 60 * 1000
 
-export function getLiveKitClient(): LiveKitClient {
+export function getLiveKitClient (): LiveKitClient {
   return new LiveKitClient()
 }
 
@@ -59,7 +59,7 @@ export class LiveKitClient {
   private lastParticipantNotificationTimeout: number = -1
   private lastParticipantDisconnectTimeout: number = -1
 
-  constructor() {
+  constructor () {
     const lkRoom = new LKRoom({
       adaptiveStream: true,
       dynacast: true,
@@ -86,11 +86,11 @@ export class LiveKitClient {
     this.liveKitRoom = lkRoom
   }
 
-  async prepareConnection(wsUrl: string, token: string): Promise<void> {
+  async prepareConnection (wsUrl: string, token: string): Promise<void> {
     await this.liveKitRoom.prepareConnection(wsUrl, token)
   }
 
-  async connect(wsURL: string, token: string, withVideo: boolean): Promise<void> {
+  async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
     this.isConnecting = true
     this.currentSessionSupportsVideo = withVideo
     try {
@@ -142,7 +142,7 @@ export class LiveKitClient {
     }
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect (): Promise<void> {
     screenSharingState.set(ScreenSharingState.Inactive)
     clearTimeout(this.lastParticipantNotificationTimeout)
     const me = this.liveKitRoom.localParticipant
@@ -154,7 +154,7 @@ export class LiveKitClient {
     this.currentMediaSession = undefined
   }
 
-  async awaitConnect(): Promise<void> {
+  async awaitConnect (): Promise<void> {
     await new Promise<void>((resolve) => {
       if (this.liveKitRoom.state === ConnectionState.Connected) {
         resolve()
@@ -241,7 +241,7 @@ export class LiveKitClient {
       session?.setMicrophone({ enabled: true, track, deviceId })
     }
   }
-  
+
   onLocalTrackUnpublished = (publication: LocalTrackPublication, _participant: LocalParticipant) => {
     const session = this.currentMediaSession
     if (publication.track?.kind === Track.Kind.Video) {
@@ -255,7 +255,7 @@ export class LiveKitClient {
       session?.setMicrophone({ enabled: false })
     }
   }
-  
+
   onTrackMuted = (publication: TrackPublication, participant: Participant) => {
     if (!participant.isLocal) return
     const session = this.currentMediaSession
@@ -265,7 +265,7 @@ export class LiveKitClient {
       session?.setMicrophone({ enabled: false })
     }
   }
-  
+
   onTrackUnmuted = (publication: TrackPublication, participant: Participant) => {
     if (!participant.isLocal) return
     const session = this.currentMediaSession
@@ -278,7 +278,7 @@ export class LiveKitClient {
     }
   }
 
-  async showLastParticipantNotification(): Promise<void> {
+  async showLastParticipantNotification (): Promise<void> {
     addNotification(
       await translate(love.string.MeetingEmptyTitle, {}, getCurrentLanguage()),
       await translate(love.string.MeetingEmptyMessage, {}, getCurrentLanguage()),
@@ -292,25 +292,25 @@ export class LiveKitClient {
     }, AUTO_DISCONNECT_DELAY_MS)
   }
 
-  async updateActiveDevices(): Promise<void> {
+  async updateActiveDevices (): Promise<void> {
     await this.setActiveCamera(this.currentMediaSession?.state.camera?.deviceId)
     await this.setActiveMicrophone(this.currentMediaSession?.state.microphone?.deviceId)
     await this.setCameraEnabled(this.currentMediaSession?.state.camera?.enabled ?? false)
     await this.setMicrophoneEnabled(this.currentMediaSession?.state.microphone?.enabled ?? false)
   }
 
-  async setActiveCamera(deviceId: string | undefined): Promise<void> {
+  async setActiveCamera (deviceId: string | undefined): Promise<void> {
     if (deviceId === undefined || deviceId === null) return
     if (!this.currentSessionSupportsVideo) return
     await this.liveKitRoom.switchActiveDevice('videoinput', deviceId, true)
   }
 
-  async setActiveMicrophone(deviceId: string | undefined): Promise<void> {
+  async setActiveMicrophone (deviceId: string | undefined): Promise<void> {
     if (deviceId === undefined || deviceId === null) return
     await this.liveKitRoom.switchActiveDevice('audioinput', deviceId, true)
   }
 
-  async setActiveSpeaker(deviceId: string | undefined): Promise<void> {
+  async setActiveSpeaker (deviceId: string | undefined): Promise<void> {
     if (deviceId === undefined || deviceId === null) return
     try {
       await this.liveKitRoom.switchActiveDevice('audiooutput', deviceId, true)
@@ -319,7 +319,7 @@ export class LiveKitClient {
     }
   }
 
-  async setCameraEnabled(value: boolean): Promise<void> {
+  async setCameraEnabled (value: boolean): Promise<void> {
     if (!this.currentSessionSupportsVideo) return
     try {
       await this.liveKitRoom.localParticipant.setCameraEnabled(value)
@@ -334,7 +334,7 @@ export class LiveKitClient {
     }
   }
 
-  async setMicrophoneEnabled(value: boolean): Promise<void> {
+  async setMicrophoneEnabled (value: boolean): Promise<void> {
     try {
       await this.liveKitRoom.localParticipant.setMicrophoneEnabled(value)
     } catch (e) {
@@ -348,7 +348,7 @@ export class LiveKitClient {
     }
   }
 
-  async setScreenShareEnabled(value: boolean, withAudio: boolean = false): Promise<void> {
+  async setScreenShareEnabled (value: boolean, withAudio: boolean = false): Promise<void> {
     try {
       await this.liveKitRoom.localParticipant.setScreenShareEnabled(value, { audio: withAudio })
     } catch (e) {

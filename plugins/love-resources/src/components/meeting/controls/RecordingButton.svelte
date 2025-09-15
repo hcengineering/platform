@@ -8,7 +8,6 @@
 
   export let room: Room
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
-
 </script>
 
 {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}

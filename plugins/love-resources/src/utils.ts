@@ -1,7 +1,7 @@
 import aiBot from '@hcengineering/ai-bot'
 import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
 import { Analytics } from '@hcengineering/analytics'
-import calendar, { type Event, getAllEvents, type Schedule } from '@hcengineering/calendar'
+import calendar, { type Event, type Schedule } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
 import { getName } from '@hcengineering/contact'
 import core, {
@@ -20,7 +20,6 @@ import core, {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
-  type Invite,
   isOffice,
   type JoinRequest,
   LoveEvents,
@@ -28,7 +27,6 @@ import {
   type Meeting,
   type MeetingMinutes,
   type MeetingSchedule,
-  type ParticipantInfo,
   type Room,
   type RoomMetadata,
   TranscriptionStatus
@@ -36,7 +34,6 @@ import {
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
   copyTextToClipboard,
-  createQuery,
   type DocCreatePhase,
   getClient,
   type ObjectSearchResult
@@ -195,7 +192,7 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
 
 lk.on(RoomEvent.Connected, () => {
   isRecording.set(lk.isRecording)
-  initRoomMetadata(lk.metadata)
+  void initRoomMetadata(lk.metadata)
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 
@@ -271,12 +268,12 @@ export async function navigateToOfficeDoc (object: Doc): Promise<void> {
 
 export async function prepareRoomConnection (room: Room): Promise<void> {
   const roomToken = await loveClient.getRoomToken(room)
-  liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
+  await liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
 }
 
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
 
-export function calculateFloorSize (_rooms: Room[], preview?: boolean): number {
+export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
   let fH: number = 5
   _rooms.forEach((room) => {
     if (room.y + room.height + 2 > fH) fH = room.y + room.height + 2
@@ -308,7 +305,7 @@ export async function createMeeting (
   client: TxOperations,
   _id: Ref<Event>,
   space: Space,
-  data: Data<Event>,
+  _data: Data<Event>,
   store: Record<string, any>,
   phase: DocCreatePhase
 ): Promise<void> {
@@ -336,7 +333,7 @@ export async function createMeetingSchedule (
   client: TxOperations,
   _id: Ref<Schedule>,
   space: Space,
-  data: Data<Schedule>,
+  _data: Data<Schedule>,
   store: Record<string, any>,
   phase: DocCreatePhase
 ): Promise<void> {

@@ -21,7 +21,7 @@
     showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
   }
 
-  $: localScreenShare = $screenSharingState === ScreenSharingState.Local 
+  $: localScreenShare = $screenSharingState === ScreenSharingState.Local
 </script>
 
 <SplitButton

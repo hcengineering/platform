@@ -5,7 +5,7 @@
   import { ActionIcon } from '@hcengineering/ui'
   import love from '../plugin'
   import { myInfo } from '../stores'
-  import { joinMeeting, kick, sendInvite } from '../meetingController'
+  import { joinMeeting, kick, sendInvites } from '../meetingController'
 
   export let room: Room
   export let person: Ref<Person>
@@ -20,7 +20,7 @@
       label={love.string.Kick}
       icon={love.icon.Kick}
       action={() => {
-        kick(person)
+        void kick(person)
       }}
     />
   {/if}
@@ -30,7 +30,7 @@
       label={love.string.Invite}
       icon={love.icon.Invite}
       action={() => {
-        sendInvite(person)
+        void sendInvites([person])
       }}
     />
     {#if room.access === RoomAccess.Knock}
@@ -39,7 +39,7 @@
         label={love.string.KnockAction}
         icon={love.icon.Knock}
         action={() => {
-          joinMeeting(room)
+          void joinMeeting(room)
         }}
       />
     {/if}

@@ -1,4 +1,3 @@
-
 <!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
@@ -14,26 +13,57 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ModernButton } from '@hcengineering/ui'
+  import { ButtonBaseSize, IconSize, ModernButton, showPopup } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
-  import { sendInvite } from '../../../meetingController'
+  import { sendInvites } from '../../../meetingController'
   import love from '../../../plugin'
+  import { SelectUsersPopup } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
+  import { createEventDispatcher } from 'svelte'
 
-  export let employee: Employee
+  export let employee: Employee | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let type: 'type-button' | 'type-button-icon' = 'type-button'
+  export let size: ButtonBaseSize = 'small'
+  export let iconSize: IconSize = 'small'
+  export let withBackground: boolean = true
 
-  async function invite(): Promise<void> {
-    await sendInvite(employee._id)
+  const dispatch = createEventDispatcher()
+
+  async function invite (): Promise<void> {
+    if (employee !== undefined) {
+      await sendInvites([employee._id])
+    } else {
+      openSelectUsersPopup()
+    }
+  }
+
+  function openSelectUsersPopup (): void {
+    showPopup(
+      SelectUsersPopup,
+      {
+        okLabel: love.string.Invite,
+        skipCurrentAccount: true,
+        skipInactive: true,
+        showStatus: true
+      },
+      'top',
+      (result?: Ref<Employee>[]) => {
+        if (result != null) {
+          void sendInvites(result)
+        }
+        dispatch('close')
+      }
+    )
   }
 </script>
 
-<div class="button-container">
+<div class:button-container={withBackground}>
   <ModernButton
     label={type === 'type-button-icon' ? undefined : love.string.Invite}
     icon={love.icon.Invite}
-    size="small"
-    iconSize="small"
+    {size}
+    {iconSize}
     {type}
     {kind}
     on:click={invite}
@@ -47,4 +77,3 @@
     background-color: var(--theme-button-container-color);
   }
 </style>
-

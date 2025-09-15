@@ -31,6 +31,7 @@
   import ControlBarContainer from '../ControlBarContainer.svelte'
   import SendReactionButton from '../controls/SendReactionButton.svelte'
   import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
+  import InviteEmployeeButton from '../invites/InviteEmployeeButton.svelte'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -110,6 +111,13 @@
   <ControlBarContainer>
     <svelte:fragment slot="right">
       <RoomAccessButton {room} size="small" />
+      <InviteEmployeeButton
+        kind="secondary"
+        type="type-button-icon"
+        size="small"
+        iconSize="medium"
+        withBackground={false}
+      />
     </svelte:fragment>
     <svelte:fragment slot="center">
       <SendReactionButton size="small" />

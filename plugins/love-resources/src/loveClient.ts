@@ -13,7 +13,7 @@ interface RoomToken {
   issuedOn: number
   token: string
 }
-export function getLoveClient () {
+export function getLoveClient (): LoveClient {
   return new LoveClient()
 }
 

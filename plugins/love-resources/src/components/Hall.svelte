@@ -18,12 +18,7 @@
   import { Floor as FloorType, Office, Room, isOffice } from '@hcengineering/love'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import {
-    activeFloor,
-    floors,
-    rooms,
-    selectedFloor,
-  } from '../stores'
+  import { activeFloor, floors, rooms, selectedFloor } from '../stores'
   import Floor from './Floor.svelte'
   import FloorConfigure from './FloorConfigure.svelte'
 

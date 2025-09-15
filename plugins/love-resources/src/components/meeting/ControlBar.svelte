@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Room, RoomType } from '@hcengineering/love'
+  import { Room } from '@hcengineering/love'
   import { IconMaximize, ModernButton, Popup, showPopup, TooltipInstance } from '@hcengineering/ui'
 
   import love from '../../plugin'
@@ -31,6 +31,7 @@
   import MicrophoneButton from './controls/MicrophoneButton.svelte'
   import CameraButton from './controls/CameraButton.svelte'
   import ShareScreenButton from './controls/ShareScreenButton.svelte'
+  import InviteEmployeeButton from './invites/InviteEmployeeButton.svelte'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -52,6 +53,13 @@
     <svelte:fragment slot="right">
       {#if room._id !== love.ids.Reception && $lkSessionConnected}
         <RoomAccessButton {room} />
+        <InviteEmployeeButton
+          kind={'secondary'}
+          type={'type-button-icon'}
+          size={'large'}
+          iconSize={'medium'}
+          withBackground={false}
+        />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="center">

@@ -31,11 +31,7 @@
 
   import love from '../../plugin'
   import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
-  import {
-    createMeetingVideoWidgetTab,
-    createMeetingWidget,
-    getRoomName,
-  } from '../../utils'
+  import { createMeetingVideoWidgetTab, createMeetingWidget, getRoomName } from '../../utils'
   import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
   import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
@@ -162,7 +158,7 @@
   function checkActiveInvites (invites: Invite[]): void {
     if (invites.length > 0) {
       if (myInvitesPopup === undefined) {
-        myInvitesPopup = showPopup(ActiveInvitesPopup, { invites }, undefined, undefined, undefined, {
+        myInvitesPopup = showPopup(ActiveInvitesPopup, {}, undefined, undefined, undefined, {
           category: myInvitesCategory,
           overlay: false,
           fixed: true

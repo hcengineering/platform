@@ -16,16 +16,14 @@
   import contact from '@hcengineering/contact'
   import { CombineAvatars } from '@hcengineering/contact-resources'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite } from '@hcengineering/love'
   import love from '../../../plugin'
   import { cancelInvites } from '../../../meetingController'
+  import { activeInvites } from '../../../stores'
 
-  export let invites: Invite[]
+  $: persons = $activeInvites.map((p) => p.target)
 
-  $: persons = invites.map((p) => p.target)
-
-  async function cancel () {
-    await cancelInvites(invites)
+  async function cancel (): Promise<void> {
+    await cancelInvites($activeInvites)
   }
 </script>
 

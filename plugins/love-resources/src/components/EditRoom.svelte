@@ -40,7 +40,7 @@
     dispatch('open', { ignoreKeys: ['name'] })
   })
 
-  let tryConnecting = false
+  const tryConnecting = false
 
   async function connect (): Promise<void> {
     await createMeeting(object)

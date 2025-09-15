@@ -1,29 +1,46 @@
-import core, { AccountRole, getCurrentAccount, type Ref } from "@hcengineering/core";
-import love, { getFreeRoomPlace, MeetingStatus, type Room, RoomType, isOffice, RoomAccess, RequestStatus, type JoinRequest, type Invite } from "@hcengineering/love";
-import presentation, { createQuery, getClient } from "@hcengineering/presentation";
-import { closeMeetingMinutes, getLiveKitEndpoint, getRoomName, liveKitClient, loveClient, navigateToOfficeDoc } from "./utils";
-import { get } from "svelte/store";
-import { infos, myInfo, myOffice, rooms } from "./stores";
-import { getCurrentEmployee, type Person } from "@hcengineering/contact";
+import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
+import love, {
+  getFreeRoomPlace,
+  MeetingStatus,
+  type Room,
+  RoomType,
+  isOffice,
+  RoomAccess,
+  RequestStatus,
+  type JoinRequest,
+  type Invite
+} from '@hcengineering/love'
+import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import {
+  closeMeetingMinutes,
+  getLiveKitEndpoint,
+  getRoomName,
+  liveKitClient,
+  loveClient,
+  navigateToOfficeDoc
+} from './utils'
+import { get } from 'svelte/store'
+import { infos, myInfo, myOffice, rooms } from './stores'
+import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
-import { getMetadata } from "@hcengineering/platform";
+import { getMetadata } from '@hcengineering/platform'
 
 const requestsQuery = createQuery(true)
 const invitesQuery = createQuery(true)
 
-export async function createMeeting(room: Room) {
+export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const me = getCurrentEmployee()
   const currentPerson = await getPersonByPersonRef(me)
 
   if (isOffice(room) && room.person !== currentPerson?._id) {
-    sendJoinRequest(room)
+    await sendJoinRequest(room)
     return
   }
 
   const client = getClient()
-  let meeting = await client.findOne(love.class.MeetingMinutes, {
+  const meeting = await client.findOne(love.class.MeetingMinutes, {
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
@@ -49,7 +66,7 @@ export async function leaveMeeting (): Promise<void> {
     if (currentParticipationInfo.room !== office._id) {
       await client.update(currentParticipationInfo, { room: office._id, x: 0, y: 0 })
     } else {
-      //kick all participants in case of own office
+      // kick all participants in case of own office
       const allRooms = get(rooms)
       const participantsInfo = get(infos)
       const otherParticipants = participantsInfo.filter((p) => p.room === office._id && p !== currentParticipationInfo)
@@ -61,22 +78,21 @@ export async function leaveMeeting (): Promise<void> {
   }
   await liveKitClient.disconnect()
   closeMeetingMinutes()
-
 }
 
-export async function joinMeeting (room: Room) {
+export async function joinMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const isGuest = getCurrentAccount().role === AccountRole.Guest
   if (room.access === RoomAccess.Knock || isOffice(room) || isGuest) {
-    sendJoinRequest(room)
+    await sendJoinRequest(room)
     return
   }
 
-  connectToMeeting(room)
+  await connectToMeeting(room)
 }
 
-export async function acceptInvite (invite: Invite) {
+export async function acceptInvite (invite: Invite): Promise<void> {
   const client = getClient()
   await client.update(invite, { status: RequestStatus.Approved })
   const room = getRoomById(invite.room)
@@ -91,7 +107,7 @@ export async function acceptInvite (invite: Invite) {
     await createMeetingDocument(room)
   }
 
-  connectToMeeting(room)
+  await connectToMeeting(room)
 }
 
 export async function rejectInvite (invite: Invite): Promise<void> {
@@ -108,19 +124,24 @@ export async function cancelInvites (invites: Invite[]): Promise<void> {
   }
 }
 
-export async function sendInvite (person: Ref<Person>): Promise<void> {
+export async function sendInvites (persons: Array<Ref<Person>>): Promise<void> {
   const myParticipation = get(myInfo)
   const room = myParticipation?.room
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
   const me = getCurrentEmployee()
-  const _id = await client.createDoc(love.class.Invite, core.space.Workspace, {
-    target: person,
-    room,
-    status: RequestStatus.Pending,
-    from: me
-  })
-  invitesQuery.query(love.class.Invite, { from: me, _id }, (res) => {
+  const inviteIds: Array<Ref<Invite>> = []
+  for (const person of persons) {
+    inviteIds.push(
+      await client.createDoc(love.class.Invite, core.space.Workspace, {
+        target: person,
+        room,
+        status: RequestStatus.Pending,
+        from: me
+      })
+    )
+  }
+  invitesQuery.query(love.class.Invite, { from: me, _id: { $in: inviteIds } }, (res) => {
     const invite = res[0]
     if (invite === undefined) return
     if (invite.status === RequestStatus.Pending) return
@@ -128,14 +149,14 @@ export async function sendInvite (person: Ref<Person>): Promise<void> {
     if (invite.status === RequestStatus.Approved) {
       const room = getRoomById(invite.room)
       if (room === undefined) return
-      connectToMeeting(room)
+      void connectToMeeting(room)
     }
   })
 }
 
-export async function acceptJoinRequest (request: JoinRequest) {
+export async function acceptJoinRequest (request: JoinRequest): Promise<void> {
   const client = getClient()
-  const room = getRoomById(request.room) 
+  const room = getRoomById(request.room)
 
   if (room === undefined) return
 
@@ -152,7 +173,7 @@ export async function acceptJoinRequest (request: JoinRequest) {
 }
 
 export async function rejectJoinRequest (request: JoinRequest): Promise<void> {
-  const client = getClient() 
+  const client = getClient()
   await client.update(request, { status: RequestStatus.Rejected })
 }
 
@@ -163,7 +184,7 @@ export async function cancelJoinRequest (request: JoinRequest): Promise<void> {
   }
 }
 
-async function sendJoinRequest (room: Room) {
+async function sendJoinRequest (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const me = getCurrentEmployee()
@@ -189,17 +210,18 @@ async function sendJoinRequest (room: Room) {
     if (req.status === RequestStatus.Pending) return
     requestsQuery.unsubscribe()
     if (req.status === RequestStatus.Approved) {
-      connectToMeeting(room)
+      void connectToMeeting(room)
     }
   })
 }
 
 export async function kick (person: Ref<Person>): Promise<void> {
-  //TODO: Office kick participant
+  // TODO: Office kick participant
 }
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
+  if (get(myInfo)?.room === room._id) return
 
   await navigateToOfficeDoc(room)
   await moveToMeetingRoom(room)
@@ -248,20 +270,17 @@ async function moveToMeetingRoom (room: Room): Promise<void> {
 
 async function createMeetingDocument (room: Room): Promise<void> {
   const client = getClient()
-  await client.createDoc(
-    love.class.MeetingMinutes,
-    core.space.Workspace,
-    {
-      description: null,
-      attachedTo: room._id,
-      status: MeetingStatus.Active,
-      title: await getNewMeetingTitle(room),
-      attachedToClass: love.class.Room,
-      collection: 'meetings'
-    })
+  await client.createDoc(love.class.MeetingMinutes, core.space.Workspace, {
+    description: null,
+    attachedTo: room._id,
+    status: MeetingStatus.Active,
+    title: await getNewMeetingTitle(room),
+    attachedToClass: love.class.Room,
+    collection: 'meetings'
+  })
 }
 
-async function getNewMeetingTitle (room: Room): Promise<string> { 
+async function getNewMeetingTitle (room: Room): Promise<string> {
   const date = new Date()
     .toLocaleDateString('en-GB', {
       day: 'numeric',
