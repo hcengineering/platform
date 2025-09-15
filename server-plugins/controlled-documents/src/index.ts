@@ -21,7 +21,8 @@ export default plugin(serverDocumentsId, {
     OnDocEnteredNonActionableState: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
-    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>
+    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
+    OnDocTitleChanged: '' as Resource<TriggerFunc>
   },
   function: {
     ControlledDocumentTextPresenter: '' as Resource<Presenter>,
