@@ -152,7 +152,8 @@ const cardPlugin = plugin(cardId, {
     Document: '' as Asset,
     Home: '' as Asset,
     Space: '' as Asset,
-    Expand: '' as Asset
+    Expand: '' as Asset,
+    Feed: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -168,7 +169,8 @@ const cardPlugin = plugin(cardId, {
     Views: '' as IntlString,
     Labels: '' as IntlString,
     GetIndividualPublicLink: '' as IntlString,
-    AddTag: '' as IntlString
+    AddTag: '' as IntlString,
+    Feed: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -185,7 +187,8 @@ const cardPlugin = plugin(cardId, {
     CardTagColored: '' as AnyComponent,
     CardTagsColored: '' as AnyComponent,
     CardIcon: '' as AnyComponent,
-    CardArrayEditor: '' as AnyComponent
+    CardArrayEditor: '' as AnyComponent,
+    CardFeedView: '' as AnyComponent
   },
   function: {
     OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>,

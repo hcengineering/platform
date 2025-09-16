@@ -46,6 +46,7 @@
     "Post": "Publier",
     "GetIndividualPublicLink": "Obtenir un lien public personnalisé",
     "ShowLess": "Afficher moins",
-    "CardContent": "Que voulez-vous partager ?"
+    "CardContent": "Que voulez-vous partager ?",
+    "Feed": "Flux"
   }
 }

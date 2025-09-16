@@ -8,6 +8,12 @@
     "MessageIn": "Сообщение в #{title}",
     "Thread": "Тред",
     "Threads": "Треды",
-    "Title": "Название"
+    "Title": "Название",
+    "All": "Все",
+    "Inbox": "Входящие",
+    "ReactedToYourMessage": "отреагировал(а) на ваше сообщение",
+    "ClearAll": "Очистить всё",
+    "InboxIsClear": "Входящие пусты",
+    "YouDontHaveAnyNewMessages": "У вас нет новых сообщений"
   }
 }

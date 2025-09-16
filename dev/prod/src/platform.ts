@@ -72,13 +72,11 @@ import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
-import {inboxId} from '@hcengineering/inbox'
 import {achievementId} from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import {emojiId} from '@hcengineering/emoji'
 import billingPlugin, {billingId} from '@hcengineering/billing'
 import { hulyMailId } from '@hcengineering/huly-mail'
-import {homeId} from '@hcengineering/home'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -128,7 +126,6 @@ import '@hcengineering/media-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/chat-assets'
-import '@hcengineering/inbox-assets'
 import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
 import '@hcengineering/achievement-assets'
@@ -136,7 +133,6 @@ import '@hcengineering/communication-assets'
 import '@hcengineering/emoji-assets'
 import '@hcengineering/billing-assets'
 import '@hcengineering/huly-mail-assets'
-import '@hcengineering/home-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, {
@@ -374,13 +370,11 @@ function configureI18n(): void {
   addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
   addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
   addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
-  addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
   addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
   addStringsLoader(communicationId, async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`))
   addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
   addStringsLoader(hulyMailId, async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`))
-  addStringsLoader(homeId, async (lang: string) => await import(`@hcengineering/home-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -587,13 +581,11 @@ export async function configurePlatform() {
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
-  addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
   addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
   addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
   addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
-  addLocation(homeId, () => import(/* webpackChunkName: "home" */ '@hcengineering/home-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
