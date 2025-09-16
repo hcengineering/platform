@@ -17,16 +17,7 @@ import { WorkspaceUuid } from '@hcengineering/core'
 import { RetryOptions } from '@hcengineering/retry'
 
 import { fetchSafe, unwrapContentLength, unwrapEtag, unwrapLastModified } from './utils'
-import {
-  HulyHeaders,
-  HulylakeClient,
-  HulyMeta,
-  HulyResponse,
-  JsonPatch,
-  PatchOptions,
-  PutOptions,
-  Body
-} from './types'
+import { HulyHeaders, HulylakeClient, HulyMeta, HulyResponse, JsonPatch, PatchOptions, PutOptions, Body } from './types'
 
 export function getClient (baseUrl: string, workspace: WorkspaceUuid, token: string): HulylakeClient {
   return new Client(baseUrl, workspace, token)
