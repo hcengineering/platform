@@ -49,14 +49,6 @@
   <span class="overflow-label"><Label label={chat.string.Inbox} /></span>
   <div class="flex-row-center flex-gap-2">
     <ModernButton
-      label={chat.string.Chat}
-      icon={chat.icon.ChatBubble}
-      size="small"
-      iconSize="small"
-      on:click={goToChat}
-    />
-    <div class="spacer" />
-    <ModernButton
       tooltip={{ label: chat.string.ClearAll }}
       icon={IconDelete}
       size="small"
@@ -65,6 +57,14 @@
       loading={clearing}
     />
     <ModernButton icon={IconSettings} on:click={click} size="small" iconSize="small" />
+    <div class="spacer" />
+    <ModernButton
+      label={chat.string.Chat}
+      icon={chat.icon.ChatBubble}
+      size="small"
+      iconSize="small"
+      on:click={goToChat}
+    />
   </div>
 </div>
 
