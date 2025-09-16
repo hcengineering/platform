@@ -59,6 +59,7 @@ export interface PatchOptions {
 }
 
 export type JsonPatch =
+  | { op: 'add', path: string, value: any }
   | { op: 'replace', path: string, value: any }
   | { op: 'remove', path: string }
   | { op: 'move', from: string, path: string }
