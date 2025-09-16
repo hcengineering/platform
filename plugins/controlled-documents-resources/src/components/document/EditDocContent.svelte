@@ -25,7 +25,8 @@
     TableOfContents,
     TableOfContentsContent,
     getNodeElement,
-    highlightUpdateCommand
+    highlightUpdateCommand,
+    selectNode
   } from '@hcengineering/text-editor-resources'
   import { EditBox, Label, Scroller } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
@@ -41,8 +42,8 @@
     $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
-    documentCommentsHighlightUpdated,
     documentCommentsLocationNavigateRequested,
+    documentCommentsAddCanceled,
     $isEditable as isEditable
   } from '../../stores/editors/document'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
@@ -65,12 +66,8 @@
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
 
-  function handleRefreshHighlight () {
-    if (!textEditor) {
-      return
-    }
-
-    textEditor.commands()?.command(highlightUpdateCommand())
+  function handleRefreshHighlight (): void {
+    textEditor?.commands()?.command(highlightUpdateCommand())
   }
 
   const unsubscribeHighlightRefresh = merge([documentCommentHighlightedLocation, documentComments.updates]).subscribe({
@@ -82,21 +79,28 @@
   const unsubscribeNavigateToLocation = documentCommentsLocationNavigateRequested.subscribe({
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     next: async ({ nodeId }) => {
-      if (!nodeId) {
+      if (nodeId == null) {
         handleRefreshHighlight()
         return
       }
 
-      if (!textEditor) {
-        return
+      selectedNodeId = nodeId
+
+      if (editor !== undefined) {
+        await tick()
+
+        const element = getNodeElement(editor, nodeId)
+        element?.scrollIntoView({ behavior: 'smooth' })
       }
+    }
+  })
 
-      await tick()
-
-      const element = getNodeElement(editor, nodeId)
-
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
+  const unsubscribeCommentsAddCanceled = documentCommentsAddCanceled.subscribe({
+    next: ({ nodeId }) => {
+      if (editor !== undefined && nodeId != null) {
+        if (selectNode(editor, nodeId)) {
+          editor.commands.unsetQMSInlineCommentMark()
+        }
       }
     }
   })
@@ -104,6 +108,7 @@
   onDestroy(() => {
     unsubscribeHighlightRefresh()
     unsubscribeNavigateToLocation()
+    unsubscribeCommentsAddCanceled()
   })
 
   const handleUpdateTitle = async () => {
@@ -137,15 +142,9 @@
     return null
   }
 
-  function handleShowDocumentComments (uuid: string) {
-    if (!uuid) {
-      return
-    }
-
-    documentCommentsDisplayRequested({
-      element: getNodeElement(editor, uuid),
-      nodeId: uuid
-    })
+  function handleShowDocumentComments (nodeId: string): void {
+    const element = getNodeElement(editor, nodeId)
+    documentCommentsDisplayRequested({ element, nodeId })
   }
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
@@ -241,19 +240,8 @@
               qmsInlineComment: {
                 isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
                 getNodeHighlight: handleNodeHighlight,
-                onNodeSelected: (uuid) => {
-                  if (selectedNodeId !== uuid) {
-                    selectedNodeId = uuid
-                  }
-                  if (isFocused) {
-                    documentCommentsHighlightUpdated(selectedNodeId !== null ? { nodeId: selectedNodeId } : null)
-                  }
-                },
-                onNodeClicked: (uuid) => {
-                  if (selectedNodeId !== uuid) {
-                    selectedNodeId = uuid
-                  }
-
+                onNodeClicked: (uuids) => {
+                  selectedNodeId = Array.isArray(uuids) ? uuids[0] : uuids
                   if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
                     handleShowDocumentComments(selectedNodeId)
                   }

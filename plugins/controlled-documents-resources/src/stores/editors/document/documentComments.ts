@@ -19,9 +19,10 @@ import { type CompAndProps, type PopupAlignment, popupstore, showPopup } from '@
 import documents, { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../../utils'
 import {
-  DocumentCommentPopupCategory,
   type DocumentCommentsFilter,
+  DocumentCommentPopupCategory,
   documentCommentPopupsOpened,
+  documentCommentsAddCanceled,
   documentCommentsDisplayRequested,
   documentCommentsHighlightCleared,
   documentCommentsHighlightUpdated,
@@ -120,6 +121,7 @@ export const showAddCommentPopupFx = createEffect((payload: { element?: PopupAli
     payload.element,
     (result) => {
       if (result === null || result === undefined) {
+        documentCommentsAddCanceled({ nodeId: payload.nodeId })
         documentCommentsHighlightCleared()
       } else {
         documentCommentsDisplayRequested(payload)

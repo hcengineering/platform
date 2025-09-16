@@ -11,11 +11,9 @@
 
   const dispatch = createEventDispatcher()
 
-  let messageId: Ref<ChatMessage> = generateId()
-
   async function handleMessage (event: CustomEvent<string>): Promise<void> {
+    const messageId: Ref<ChatMessage> = generateId()
     const comment = await addDocumentCommentFx({ content: event.detail, messageId, nodeId })
-    messageId = generateId()
 
     dispatch('close', comment)
   }
