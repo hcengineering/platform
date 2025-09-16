@@ -8,6 +8,13 @@
     "MessageIn": "Mensaje en #{title}",
     "Thread": "Hilo",
     "Threads": "Hilos",
-    "Title": "Título"
+    "Title": "Título",
+    "All": "Todo",
+    "Inbox": "Bande",
+    "ReactedToYourMessage": "reaccionó a tu mensaje",
+    "ClearAll": "Borrar todo",
+    "InboxIsClear": "Bande está vacía",
+    "YouDontHaveAnyNewMessages": "No tienes ninguna nueva mensaje"
+
   }
 }

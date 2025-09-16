@@ -14,11 +14,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Card, type MasterTag } from '@hcengineering/card'
   import core, { DocumentQuery, type Ref, SortingOrder } from '@hcengineering/core'
-  import ui, {
-    Label,
-    Scroller,
-    Loading
-  } from '@hcengineering/ui'
+  import ui, { Label, Scroller, Loading } from '@hcengineering/ui'
   import card from '@hcengineering/card'
 
   import HomeCardPresenter from './FeedCardPresenter.svelte'
