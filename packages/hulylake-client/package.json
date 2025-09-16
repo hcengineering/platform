@@ -40,7 +40,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32"
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/retry": "^0.6.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

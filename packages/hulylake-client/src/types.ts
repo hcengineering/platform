@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { RetryOptions } from '@hcengineering/retry'
+
 export interface HulylakeClient {
   head: (key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
   get: (key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<ReadableStream<Uint8Array>>>
@@ -76,9 +78,4 @@ export interface HulyResponse<Body = ArrayBuffer | string | any> {
   lastModified?: number
   headers: Headers
   body?: Body
-}
-
-export interface RetryOptions {
-  retries: number
-  delay?: number
 }

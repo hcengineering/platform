@@ -14,6 +14,7 @@
 //
 
 import { WorkspaceUuid } from '@hcengineering/core'
+import { RetryOptions } from '@hcengineering/retry'
 
 import { fetchSafe, unwrapContentLength, unwrapEtag, unwrapLastModified } from './utils'
 import {
@@ -24,7 +25,6 @@ import {
   JsonPatch,
   PatchOptions,
   PutOptions,
-  RetryOptions,
   Body
 } from './types'
 

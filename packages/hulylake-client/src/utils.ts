@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
+import {RetryOptions, withRetry } from '@hcengineering/retry'
 import { HulylakeError, NetworkError, NotFoundError } from './error'
-import { RetryOptions } from './types'
 
 async function innerFetchSafe (url: string | URL, init?: RequestInit): Promise<Response> {
   let response
@@ -39,7 +39,7 @@ async function innerFetchSafe (url: string | URL, init?: RequestInit): Promise<R
 
 export async function fetchSafe (url: string | URL, init?: RequestInit, retryOptions?: RetryOptions): Promise<Response> {
   if (retryOptions != null) {
-    return await retry(async () => await innerFetchSafe(url, init), retryOptions)
+    return await withRetry(async () => await innerFetchSafe(url, init), retryOptions)
   }
   return await innerFetchSafe(url, init)
 }
@@ -72,20 +72,4 @@ export function unwrapLastModified (lastModified: string | null | undefined): nu
     return undefined
   }
   return Date.parse(lastModified)
-}
-
-export async function retry<T> (op: () => Promise<T>, { retries, delay }: RetryOptions): Promise<T> {
-  let error: any
-  while (retries > 0) {
-    retries--
-    try {
-      return await op()
-    } catch (err: any) {
-      error = err
-      if (retries !== 0 && delay !== undefined && delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay))
-      }
-    }
-  }
-  throw error
 }
