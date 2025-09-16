@@ -20,7 +20,7 @@
   import chat, { chatId } from '@hcengineering/chat'
   import { Navigator } from '@hcengineering/card-resources'
   import communication from '@hcengineering/communication'
-  import { Button, ModernButton } from '@hcengineering/ui'
+  import { ModernButton, NavGroup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import { createNotificationsQuery } from '@hcengineering/presentation'
@@ -32,7 +32,7 @@
 
   export let card: Card | undefined = undefined
   export let type: Ref<MasterTag> | undefined = undefined
-  export let special: 'favorites' | string | undefined = undefined
+  export let special: 'favorites' | 'all' | string | undefined = undefined
   export let mode: 'chat' | 'inbox' = 'chat'
 
   const dispatch = createEventDispatcher()
@@ -90,14 +90,16 @@
         </ModernButton>
       </div>
     </NavigationHeader>
-    <div class="after-header">
-      <Button
+    <div class="navigation-section">
+      <NavGroup
+        _id="all"
+        categoryName="all"
+        type="selectable-header"
         icon={chat.icon.All}
         label={chat.string.All}
-        kind="ghost"
-        size="medium"
-        width="100%"
-        justify="left"
+        empty={true}
+        selected={special === 'all'}
+        noDivider
         on:click={handleAllUpdatesClick}
       />
     </div>
@@ -136,8 +138,9 @@
 {/if}
 
 <style lang="scss">
-  .after-header {
+  .navigation-section {
     display: flex;
-    padding: 0.5rem 0.5rem 0 0.5rem;
+    padding-top: 1rem;
+    margin-bottom: -1rem;
   }
 </style>

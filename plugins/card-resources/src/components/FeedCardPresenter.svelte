@@ -76,7 +76,9 @@
     <div class="card__header">
       <div class="flex-presenter">
         {#if hasNewMessages($labelsStore, card._id)}
-          <span class="notifyMarker" />
+          <div class="flex pr-1">
+            <span class="notifyMarker" />
+          </div>
         {/if}
         <span
           class="card__title overflow-label"
