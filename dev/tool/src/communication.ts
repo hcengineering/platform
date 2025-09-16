@@ -67,15 +67,15 @@ export async function migrateWorkspaceMessages (
   personUuidBySocialId: Map<PersonId, PersonUuid>
 ): Promise<void> {
   const initializedCards = new Set<CardID>()
+
   await migrateMessagesGroups(ctx, ws, db, storage, hulylake, accountClient, personUuidBySocialId, initializedCards)
-  await migrateMessages(ctx, ws, db, storage, hulylake, accountClient, personUuidBySocialId, initializedCards)
+  await migrateMessages(ctx, ws, db, hulylake, accountClient, personUuidBySocialId, initializedCards)
 }
 
 async function migrateMessages (
   ctx: MeasureContext,
   ws: Workspace,
   db: postgres.Sql,
-  storage: StorageAdapter,
   hulylake: HulylakeClient,
   accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>,
@@ -84,25 +84,28 @@ async function migrateMessages (
   const cards = await getMessagesCards(ws.uuid, db)
 
   for (const card of cards) {
-    if (!initializedCards.has(card)) {
-      await initializeCardGroups(ctx, ws, hulylake, card)
-      initializedCards.add(card)
-    }
+    try {
+      if (!initializedCards.has(card)) {
+        await initializeCardGroups(ctx, ws, hulylake, card)
+        initializedCards.add(card)
+      }
 
-    console.log(`Migrating messages for card ${card}`)
-    const cursor = getMessagesCursor(ws.uuid, card, db)
+      ctx.info(`Migrating messages for card ${card}`)
+      const cursor = getMessagesCursor(ws.uuid, card, db)
 
-    for await (const messages of cursor) {
-      if (messages.length === 0) continue
-      const oldMessages = messages.map(deserializeOldMessage).filter(notEmpty)
-      await migrateMessagesBatch(ctx, ws, card, hulylake, accountClient, personUuidBySocialId, oldMessages)
+      for await (const messages of cursor) {
+        if (messages.length === 0) continue
+        const oldMessages = messages.map(deserializeOldMessage).filter(notEmpty)
+        await migrateMessagesBatch(card, hulylake, accountClient, personUuidBySocialId, oldMessages)
+      }
+    } catch (e) {
+      ctx.error('Failed to migrate messages for card', card)
+      ctx.error('Error', { error: e })
     }
   }
 }
 
 async function migrateMessagesBatch (
-  ctx: MeasureContext,
-  ws: Workspace,
   cardId: CardID,
   hulylake: HulylakeClient,
   accountClient: AccountClient,
@@ -141,8 +144,20 @@ async function migrateMessagesBatch (
     } as const
   ]
 
-  await hulylake.patchJson(`${cardId}/messages/groups`, jsonPatches, undefined, { retries: 3, delay: 1000 })
-  await hulylake.putJson(`${cardId}/messages/${blobId}`, newMessagesDoc, undefined, { retries: 3, delay: 1000 })
+  await hulylake.patchJson(`${cardId}/messages/groups`, jsonPatches, undefined, {
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 1000
+    }
+  })
+  await hulylake.putJson(`${cardId}/messages/${blobId}`, newMessagesDoc, undefined, {
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 1000
+    }
+  })
 }
 
 async function migrateMessagesGroups (
@@ -160,13 +175,17 @@ async function migrateMessagesGroups (
   for await (const groups of cursor) {
     for (const _g of groups) {
       const group: MessagesGroup = deserializeMessagesGroup(_g)
+      try {
+        if (!initializedCards.has(group.cardId)) {
+          await initializeCardGroups(ctx, ws, hulylake, group.cardId)
+          initializedCards.add(group.cardId)
+        }
 
-      if (!initializedCards.has(group.cardId)) {
-        await initializeCardGroups(ctx, ws, hulylake, group.cardId)
-        initializedCards.add(group.cardId)
+        await migrateMessagesGroup(ctx, ws, db, group, storage, hulylake, accountClient, personUuidBySocialId)
+      } catch (e) {
+        ctx.error('Failed to migrate messages group', group)
+        ctx.error('error', { error: e })
       }
-
-      await migrateMessagesGroup(ctx, ws, db, group, storage, hulylake, accountClient, personUuidBySocialId)
     }
   }
 }
@@ -177,10 +196,22 @@ async function initializeCardGroups (
   hulylake: HulylakeClient,
   cardId: CardID
 ): Promise<void> {
-  const res = await hulylake.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, { retries: 3, delay: 500 })
+  const res = await hulylake.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, {
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 500
+    }
+  })
   if (res.body != null) return
 
-  await hulylake.putJson(`${cardId}/messages/groups`, {}, undefined, { retries: 3, delay: 1000 })
+  await hulylake.putJson(`${cardId}/messages/groups`, {}, undefined, {
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 1000
+    }
+  })
 }
 
 async function migrateMessagesGroup (
@@ -230,10 +261,19 @@ async function migrateMessagesGroup (
     } as const
   ]
 
-  await hulylake.patchJson(`${group.cardId}/messages/groups`, jsonPatches, undefined, { retries: 3, delay: 1000 })
+  await hulylake.patchJson(`${group.cardId}/messages/groups`, jsonPatches, undefined, {
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 1000
+    }
+  })
   await hulylake.putJson(`${group.cardId}/messages/${group.blobId}`, newMessagesDoc, undefined, {
-    retries: 3,
-    delay: 1000
+    maxRetries: 3,
+    isRetryable: () => true,
+    delayStrategy: {
+      getDelay: () => 1000
+    }
   })
 }
 
@@ -345,7 +385,7 @@ async function loadMessagesGroupBlob (
         .filter(notEmpty)
     }
   } catch (e) {
-    console.error('Error:', { error: e })
+    ctx.error('Error:', { error: e })
   }
 }
 

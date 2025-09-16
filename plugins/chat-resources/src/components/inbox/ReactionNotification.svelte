@@ -54,21 +54,21 @@
       </svelte:fragment>
     </PreviewTemplate>
 
-  <div class="reaction-notification__body">
-    <div class="reaction-notification__emoji">
-      <EmojiPresenter emoji={content.emoji} fitSize center />
+    <div class="reaction-notification__body">
+      <div class="reaction-notification__emoji">
+        <EmojiPresenter emoji={content.emoji} fitSize center />
+      </div>
+      <NotificationPreview
+        {card}
+        {message}
+        creator={notification.creator}
+        date={notification.created}
+        kind="column"
+        padding="0"
+      />
     </div>
-    <NotificationPreview
-      {card}
-      {message}
-      creator={notification.creator}
-      date={notification.created}
-      kind="column"
-      padding="0"
-    />
   </div>
-</div>
-  {/if}
+{/if}
 
 <style lang="scss">
   .reaction-notification {
