@@ -38,8 +38,10 @@
     getCardIdFromLocation,
     navigateToType,
     getTypeIdFromLocation,
+    isAllLocation,
     isFavoritesLocation,
-    navigateToFavorites
+    navigateToFavorites,
+    navigateToAll
   } from '../location'
   import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
 
@@ -55,6 +57,7 @@
       doc: MasterTag
     }
     | { type: 'favorites' }
+    | { type: 'all' }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -74,9 +77,15 @@
     const typeId = getTypeIdFromLocation(loc)
     const cardId = getCardIdFromLocation(loc)
     const isFavorites = isFavoritesLocation(loc)
+    const isAll = isAllLocation(loc)
 
     if (isFavorites) {
       selection = { type: 'favorites' }
+      return
+    }
+
+    if (isAll) {
+      selection = { type: 'all' }
       return
     }
 
@@ -127,6 +136,13 @@
     navigateToFavorites()
   }
 
+  function selectAll (): void {
+    if (selection?.type === 'all') return
+    closePanel(false)
+    selection = { type: 'all' }
+    navigateToAll()
+  }
+
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
     if (selection?.type !== 'card') return undefined
     return selection.doc
@@ -168,6 +184,7 @@
           on:selectCard={selectCard}
           on:selectType={selectType}
           on:favorites={selectFavorites}
+          on:selectAll={selectAll}
         />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
@@ -194,6 +211,8 @@
       <Component is={comp} props={{ _id: selectedCard._id, readonly: false, embedded: true, allowClose: false }} />
     {:else if selectedType}
       <ChatNavigationCategoryList type={selectedType} />
+    {:else if selection?.type === 'all'}
+      <Component is={cardPlugin.component.CardFeedView} />
     {/if}
   </div>
 </div>

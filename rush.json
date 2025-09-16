@@ -2494,26 +2494,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/inbox",
-      "projectFolder": "plugins/inbox",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/inbox-assets",
-      "projectFolder": "plugins/inbox-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/inbox-resources",
-      "projectFolder": "plugins/inbox-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-inbox",
-      "projectFolder": "models/inbox",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-mail-worker",
       "projectFolder": "services/mail/pod-mail-worker",
       "shouldPublish": false
@@ -2702,26 +2682,6 @@
       "packageName": "@hcengineering/pod-worker",
       "projectFolder": "services/worker",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/home",
-      "projectFolder": "plugins/home",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/home-assets",
-      "projectFolder": "plugins/home-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/home-resources",
-      "projectFolder": "plugins/home-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-home",
-      "projectFolder": "models/home",
-      "shouldPublish": false
-    },
+    }
   ]
 }

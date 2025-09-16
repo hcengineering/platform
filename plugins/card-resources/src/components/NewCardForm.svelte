@@ -39,9 +39,10 @@
 
   const threadMasterTag = chat.masterTag.Thread
 
+  export let type: Ref<MasterTag> = threadMasterTag
+
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined
-  let type: Ref<MasterTag> = threadMasterTag
   let description = EmptyMarkup
   let _id = generateId<Card>()
   let isExpanded = false
