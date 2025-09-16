@@ -1,5 +1,5 @@
 
-FROM hardcoreeng/print-base:v20250310
+FROM hardcoreeng/print-base:v20250916
 WORKDIR /usr/src/app
 COPY bundle/bundle.js ./
 
