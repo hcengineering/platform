@@ -45,22 +45,22 @@
     hasNewInboxNotifications = res.getResult().length > 0
   })
 
-  function getSpecial(special: 'favorites' | string | undefined): string | undefined {
+  function getSpecial (special: 'favorites' | string | undefined): string | undefined {
     if (special === 'favorites') {
       return 'favorites'
     }
     return undefined
   }
 
-  function handleInboxClick(): void {
+  function handleInboxClick (): void {
     mode = 'inbox'
   }
 
-  function handleAllUpdatesClick(): void {
-    dispatch('allUpdates')
+  function handleAllUpdatesClick (): void {
+    dispatch('selectAll')
   }
 
-  function selectInboxCard(event: CustomEvent): void {
+  function selectInboxCard (event: CustomEvent): void {
     const card = event.detail?.card
     if (card != null) {
       dispatch('selectCard', card)
