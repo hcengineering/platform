@@ -4544,7 +4544,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-client-query@file:projects/communication-client-query.tgz':
-    resolution: {integrity: sha512-6OA/sAql1ZLhhDX9J2yZOAEgfXqSxYh6yxpH/YGrC3PfYyhVAoe7piCjpB+JpKR5wL1kzpl1eP7Bj0IEq2jNJQ==, tarball: file:projects/communication-client-query.tgz}
+    resolution: {integrity: sha512-+68bXbpIU6XTujL5Dj3pFCdFelV7mE+Ln6zZEvf2NPHhAcJqy3+KjHQyIbytnWhCFsGyk+HE3S08ps6Kl6TKtw==, tarball: file:projects/communication-client-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-cockroach@file:projects/communication-cockroach.tgz':
@@ -4552,7 +4552,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz':
-    resolution: {integrity: sha512-9SzD+dldotfQ1jS+ZVwN3E0cKRGRdeJMjZ7vxy44Ic0ckJI3ilcJkriwM4r8xk6GvGV4kiC4N33ypc6FeOalrw==, tarball: file:projects/communication-query.tgz}
+    resolution: {integrity: sha512-KMDSFpLNW1ekFoAf+BbRxPeRYnMUjYu+l80F+fgtvkKsX/6oKtb6xRhQyVh4EQiRlQBaMV//1b2d7cBwuF5HDw==, tarball: file:projects/communication-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
@@ -4568,11 +4568,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-jogTqX8bJOL9nXCJmDoTwXqInv5tv2TCC3M2du2cms98ipPgWfmFwT+hbJmjWvj8u76gcYyHel6Z+15/sio10A==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-HfKzdbndaS3opK1inqcTOrVnKvU7PS2asLmKuR4JHooiTTvFFCHcXXYO++t1QmdGmankZRn3Qsq59CIt/UPgsA==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
-    resolution: {integrity: sha512-SustnNpr/eopCXmm0ZahvUZXZPcD7psSWM+CkWVwiPlLVPGWMVUURFOcnC94F3OhY+7qu9N0Rgr3gDvr4VKXWA==, tarball: file:projects/communication-shared.tgz}
+    resolution: {integrity: sha512-/ZUh5sviGQkQGJnOe6ImJHpKCcn7xNyyMeOcl4Tr3TqXjsH+uOQ0MAFI0Ul4f1LI+dGIrp1QsZWSVWvEVprRQQ==, tarball: file:projects/communication-shared.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-types@file:projects/communication-types.tgz':
@@ -4792,7 +4792,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/hulylake-client@file:projects/hulylake-client.tgz':
-    resolution: {integrity: sha512-Oa6Lzz3ZCoPuU+BAO3IvxxiYdgp45AKWndYXhxPRb7rvEuswKZLjKzunt8Dsx0hT5GAQ3XmPNquwntBKIGwZBg==, tarball: file:projects/hulylake-client.tgz}
+    resolution: {integrity: sha512-/F3MrczVMIzh5pDXJ+PiuM2zWNxODAcVttg6u/845ec4mcpXxUffEkB1Cnlc+kXR9YsbGq0qNPIpV0bBEmUHgg==, tarball: file:projects/hulylake-client.tgz}
     version: 0.0.0
 
   '@rush-temp/hulypulse-client@file:projects/hulypulse-client.tgz':
@@ -5380,7 +5380,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
-    resolution: {integrity: sha512-0G3FKVxHWnyPuHWVBiR3Xtns3rLxGTC6ferQCX8NSC3dGOGOvk4TZgB8leohmJavwwxdZQKk1QFJqmXvHux10A==, tarball: file:projects/pod-fulltext.tgz}
+    resolution: {integrity: sha512-kPi4ermTxQtUKZ5xzbJgT07rLj2gG6m4YQgArWiONz47ooSoizi/Sg8Pu2FFyVV0klzQwqUOseuoVqgdySnFNg==, tarball: file:projects/pod-fulltext.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
@@ -5476,7 +5476,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-nMn7FUSF2F6YuJAstYbvV8Yi9upkKqeSccsU3EOrKjJm1c57sa7x8i4K3Z6l4RoSQk86/F5CrzZVgqIMKCjF0w==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-yUvZa29zEHKk183hweT+OqJYrQtt4WwtYd6X4Y5WknLTG4fnd0kDEyFyOT9LgUUFF0/vW2iVYWLcMU93+W8PUg==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5756,7 +5756,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-indexer@file:projects/server-indexer.tgz':
-    resolution: {integrity: sha512-nNw1EB76Of8ZC2s73KAwHFCc7oPiR++HnCtzXhJ3IB7rpHVOV1pkQbSnI18GcDb0QDbbzM5CEWDgGU7DbU4prQ==, tarball: file:projects/server-indexer.tgz}
+    resolution: {integrity: sha512-InjSApXF2jmClorioQIIV+JxbKtuYjl3a9i4eetEWuG2z7R+Ya7L6f98cqhEhYkdA4hM5TTZYbS+BcRLWlSqQg==, tarball: file:projects/server-indexer.tgz}
     version: 0.0.0
 
   '@rush-temp/server-inventory-resources@file:projects/server-inventory-resources.tgz':
@@ -6068,7 +6068,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-bsqWzFX5qr02kfG1zQZOgHsGWzR/Z66VC16ZoQnXs6mkdHFSmQ2p2l8eNL/aYPu2qfrRkMNAnI8cu6aULfKuDg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-RQFbb0YGcuuAzNtGrbYDMyFE5VKDEsPA+bylES+hRUvKKBou2icVHwzDbFWrdSwGwfrr0ZhXVFQfTwSKOM18Bw==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -30110,6 +30110,7 @@ snapshots:
       '@elastic/elasticsearch': 7.17.14
       '@faker-js/faker': 8.4.1
       '@types/jest': 29.5.12
+      '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
       '@types/node': 22.15.29
@@ -30130,6 +30131,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      js-yaml: 4.1.0
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
       mongodb: 6.16.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
