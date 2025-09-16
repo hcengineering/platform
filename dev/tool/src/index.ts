@@ -2862,9 +2862,6 @@ export function devTool (
         throw new Error('HULYLAKE_URL should be specified')
       }
 
-      console.log('storageConfig', storageConfig)
-      console.log('dbUrl', dbUrl)
-      console.log('hulylakeUrl', hulylakeUrl)
       const storage: StorageAdapter = buildStorageFromConfig(storageConfig)
       const token = generateToken(systemAccountUuid, undefined, {
         service: 'tool'
