@@ -25,13 +25,10 @@ function getWorkspace (): string {
   return getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
 }
 
-export function getPulseClient (): HulypulseClient | undefined {
-  return pulseclient
-}
-
-export async function createPulseClient (): Promise<HulypulseClient> {
+export async function createPulseClient (): Promise<HulypulseClient | undefined> {
   if (pulseclient == null) {
     const wsPulseUrl = getMetadata(presentation.metadata.PulseUrl)
+    if (wsPulseUrl == null || wsPulseUrl.trim().length === 0) return undefined
     const token = getMetadata(presentation.metadata.Token)
     pulseclient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
   }

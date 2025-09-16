@@ -1,4 +1,4 @@
-FROM hardcoreeng/preview-base:v20250902
+FROM hardcoreeng/preview-base:v20250915
 
 WORKDIR /app
 

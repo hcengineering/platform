@@ -1022,15 +1022,15 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
   // TODO: consider not using RegExp with user input as some regexes might
   // be slow or even cause catastrophic backtracking
-  if (
-    invite.emailPattern != null &&
-    invite.emailPattern.trim().length > 0 &&
-    !new RegExp(invite.emailPattern).test(email)
-  ) {
-    ctx.error("Invite doesn't allow this email address", { email, ...invite })
-    Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  // if (
+  //   invite.emailPattern != null &&
+  //   invite.emailPattern.trim().length > 0 &&
+  //   !new RegExp(invite.emailPattern).test(email)
+  // ) {
+  //   ctx.error("Invite doesn't allow this email address", { email, ...invite })
+  //   Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
+  //   throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  // }
 
   if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
     ctx.error("Invite doesn't allow this email address", { email, ...invite })

@@ -49,6 +49,14 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverDocuments.trigger.OnDocTitleChanged,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: documents.class.ControlledDocument
+    }
+  })
+
   builder.mixin(documents.class.DocumentMeta, core.class.Class, serverCore.mixin.SearchPresenter, {
     iconConfig: {
       component: documents.component.DocumentIcon

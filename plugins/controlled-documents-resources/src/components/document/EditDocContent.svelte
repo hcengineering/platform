@@ -43,10 +43,8 @@
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
     documentCommentsLocationNavigateRequested,
-    $documentReleasedVersions as documentReleasedVersions,
     $isEditable as isEditable
   } from '../../stores/editors/document'
-  import { syncDocumentMetaTitle } from '../../utils'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
 
@@ -116,9 +114,6 @@
 
     if (titleTrimmed.length > 0 && titleTrimmed !== $controlledDocument.title) {
       await client.update($controlledDocument, { title: titleTrimmed })
-      if ($documentReleasedVersions.length === 0 && $controlledDocument.state === DocumentState.Draft) {
-        await syncDocumentMetaTitle(client, $controlledDocument.attachedTo, $controlledDocument.code, titleTrimmed)
-      }
     }
   }
 
