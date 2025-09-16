@@ -72,75 +72,73 @@
   <InboxHeader bind:mode />
   <InboxNavigation {card} on:select={selectInboxCard} />
 {:else}
-  <div class="chat-navigator">
-    <NavigationHeader label={chat.string.Chat}>
-      <div slot="actions" class="flex-row-center">
-        <ModernButton
-          icon={chat.icon.Inbox}
-          label={chat.string.Inbox}
-          size="small"
-          iconSize="small"
-          on:click={handleInboxClick}
-        >
-          {#if hasNewInboxNotifications}
-            <div class="flex pl-0-5">
-              <NotifyMarker kind="simple" size="xx-small" />
-            </div>
-          {/if}
-        </ModernButton>
-      </div>
-    </NavigationHeader>
-    <div class="navigation-section">
-      <NavGroup
-        _id="all"
-        categoryName="all"
-        type="selectable-header"
-        icon={chat.icon.All}
-        label={chat.string.All}
-        empty={true}
-        selected={special === 'all'}
-        noDivider
-        on:click={handleAllUpdatesClick}
-      />
+  <NavigationHeader label={chat.string.Chat}>
+    <div slot="actions" class="flex-row-center">
+      <ModernButton
+        icon={chat.icon.Inbox}
+        label={chat.string.Inbox}
+        size="small"
+        iconSize="small"
+        on:click={handleInboxClick}
+      >
+        {#if hasNewInboxNotifications}
+          <div class="flex pl-0-5">
+            <NotifyMarker kind="simple" size="xx-small" />
+          </div>
+        {/if}
+      </ModernButton>
     </div>
-    <Navigator
-      config={{
-        variant: 'cards',
-        types: [cardPlugin.class.Card],
-        savedViews: true,
-        groupBySpace: false,
-        hideEmpty: true,
-        limit: 5,
-        labelFilter: [SubscriptionLabelID],
-        preorder: [
-          { type: chat.masterTag.Thread, order: 1 },
-          { type: communication.type.Direct, order: 2 }
-        ],
-        fixedTypes: [chat.masterTag.Thread, communication.type.Direct],
-        specialSorting: {
-          [communication.type.Direct]: 'alphabetical'
-        },
-        allowCreate: true,
-        defaultSorting: 'recent',
-        lookback: '2w',
-        showTypeIcon: false,
-        showCardIcon: true
-      }}
-      applicationId={chatId}
-      selectedType={type}
-      selectedCard={card?._id}
-      selectedSpecial={getSpecial(special)}
-      on:selectType
-      on:selectCard
-      on:favorites
+  </NavigationHeader>
+  <div class="navigation-section">
+    <NavGroup
+      _id="all"
+      categoryName="all"
+      type="selectable-header"
+      icon={chat.icon.All}
+      label={chat.string.All}
+      empty={true}
+      selected={special === 'all'}
+      noDivider
+      on:click={handleAllUpdatesClick}
     />
   </div>
+  <Navigator
+    config={{
+      variant: 'cards',
+      types: [cardPlugin.class.Card],
+      savedViews: true,
+      groupBySpace: false,
+      hideEmpty: true,
+      limit: 5,
+      labelFilter: [SubscriptionLabelID],
+      preorder: [
+        { type: chat.masterTag.Thread, order: 1 },
+        { type: communication.type.Direct, order: 2 }
+      ],
+      fixedTypes: [chat.masterTag.Thread, communication.type.Direct],
+      specialSorting: {
+        [communication.type.Direct]: 'alphabetical'
+      },
+      allowCreate: true,
+      defaultSorting: 'recent',
+      lookback: '2w',
+      showTypeIcon: false,
+      showCardIcon: true
+    }}
+    applicationId={chatId}
+    selectedType={type}
+    selectedCard={card?._id}
+    selectedSpecial={getSpecial(special)}
+    on:selectType
+    on:selectCard
+    on:favorites
+  />
 {/if}
 
 <style lang="scss">
   .navigation-section {
     display: flex;
     padding-top: 1rem;
-    margin-bottom: -1rem;
+    margin-bottom: -0.5rem;
   }
 </style>
