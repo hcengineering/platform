@@ -20,7 +20,7 @@
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
-  import { inboxId } from '@hcengineering/inbox'
+  import { chatId } from '@hcengineering/chat'
   import { getMetadata } from '@hcengineering/platform'
 
   import AppItem from './AppItem.svelte'
@@ -113,7 +113,7 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            notify={app.alias === inboxId && hasNewInboxNotifications}
+            notify={app.alias === chatId && hasNewInboxNotifications}
             {...customProps}
             on:click={getClickHandler(app, customProps)}
           />
@@ -145,7 +145,7 @@
               icon={app.icon}
               label={app.label}
               navigator={app._id === active && $deviceInfo.navigator.visible}
-              notify={app.alias === inboxId && hasNewInboxNotifications}
+              notify={app.alias === chatId && hasNewInboxNotifications}
               {...customProps}
               on:click={getClickHandler(app, customProps)}
             />

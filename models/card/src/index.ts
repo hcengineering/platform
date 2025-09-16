@@ -614,6 +614,28 @@ export function createModel (builder: Builder): void {
     card.viewlet.CardChildList
   )
 
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: card.string.Feed,
+      icon: card.icon.Feed,
+      component: card.component.CardFeedView
+    },
+    card.viewlet.CardFeedDescriptor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: card.viewlet.CardFeedDescriptor,
+      config: []
+    },
+    card.viewlet.CardFeed
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
   })

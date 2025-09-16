@@ -8,6 +8,12 @@
     "MessageIn": "Mensagem em #{title}",
     "Thread": "Tópico",
     "Threads": "Tópicos",
-    "Title": "Título"
+    "Title": "Título",
+    "All": "Tudo",
+    "Inbox": "Caixa de entrada",
+    "ReactedToYourMessage": "reacionou ao seu mensagem",
+    "ClearAll": "Limpar tudo",
+    "InboxIsClear": "Caixa de entrada está vazia",
+    "YouDontHaveAnyNewMessages": "Não tem nenhuma nova mensagem"
   }
 }
