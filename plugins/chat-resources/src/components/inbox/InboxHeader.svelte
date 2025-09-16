@@ -57,7 +57,7 @@
     />
     <div class="spacer" />
     <ModernButton
-      label={chat.string.ClearAll}
+      tooltip={{ label: chat.string.ClearAll }}
       icon={IconDelete}
       size="small"
       iconSize="small"
