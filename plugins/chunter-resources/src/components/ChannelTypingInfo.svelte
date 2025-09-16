@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { onDestroy } from 'svelte'
   import chunter from '@hcengineering/chunter'
   import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
@@ -62,9 +62,12 @@
 
   let unsubscribe: (() => Promise<boolean>) | undefined
 
-  onMount(async () => {
-    unsubscribe = await subscribeTyping(object._id, handleTypingInfo)
-  })
+  async function updateTypingSub (objectId: Ref<Doc>): Promise<void> {
+    await unsubscribe?.()
+    unsubscribe = await subscribeTyping(objectId, handleTypingInfo)
+  }
+
+  $: void updateTypingSub(object._id)
 
   onDestroy(() => {
     void unsubscribe?.()
