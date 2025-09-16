@@ -134,7 +134,7 @@ async function migrateMessagesBatch (
 
   const jsonPatches: JsonPatch[] = [
     {
-      op: 'add',
+      hop: 'add',
       path: `/${blobId}`,
       value: newGroupDoc,
       safe: true
@@ -223,7 +223,7 @@ async function migrateMessagesGroup (
 
   const jsonPatches: JsonPatch[] = [
     {
-      op: 'add',
+      hop: 'add',
       path: `/${group.blobId}`,
       value: newGroupDoc,
       safe: true
