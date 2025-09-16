@@ -56,7 +56,6 @@
     "@hcengineering/workbench-resources": "^0.6.1",
     "@hcengineering/communication-resources": "^0.6.0",
     "@hcengineering/communication-shared": "^0.1.0",
-    "@hcengineering/inbox": "^0.6.0",
     "@hcengineering/rank": "^0.6.4",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-markdown": "^0.6.0",

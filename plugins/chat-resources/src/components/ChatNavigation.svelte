@@ -15,8 +15,8 @@
 
 <script lang="ts">
   import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { NotificationType, SubscriptionLabelID } from '@hcengineering/communication-types'
+  import { Ref } from '@hcengineering/core'
+  import { SubscriptionLabelID } from '@hcengineering/communication-types'
   import chat, { chatId } from '@hcengineering/chat'
   import { Navigator } from '@hcengineering/card-resources'
   import communication from '@hcengineering/communication'
