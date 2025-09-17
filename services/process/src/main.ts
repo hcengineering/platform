@@ -449,7 +449,11 @@ async function executeAction<T extends Doc> (
     const f = await getResource(impl.func)
     const res = await f(params, execution, control)
     if (!isError(res) && action.context?._id != null && res.context != null) {
-      execution.context[action.context._id] = res.context
+      execution.context[action.context._id] =
+        res.context.length === 1 ? res.context[0]._id : res.context.map((it) => it._id)
+      for (const ctx of res.context) {
+        control.cache.set(ctx._id, ctx.value)
+      }
     }
     return res
   } catch (err) {

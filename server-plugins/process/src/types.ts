@@ -13,7 +13,12 @@ export type ExecuteResult = SuccessExecutionResult | ExecutionError
 export interface SuccessExecutionResult {
   txes: Tx[]
   rollback: Tx[] | undefined
-  context: any | null
+  context: SuccessExecutionContext[] | null
+}
+
+export interface SuccessExecutionContext {
+  _id: string
+  value: any
 }
 
 export type TransformFunc = (
