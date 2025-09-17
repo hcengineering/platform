@@ -65,13 +65,11 @@
        * "This monorepo consumes packages from an Artifactory private NPM registry."
        */
       // "introduction": "",
-
       /**
        * Overrides the message that normally says:
        * "Please contact the repository maintainers for help with setting up an Artifactory user account."
        */
       // "obtainAnAccount": "",
-
       /**
        * Overrides the message that normally says:
        * "Please open this URL in your web browser:"
@@ -79,26 +77,22 @@
        * The "artifactoryWebsiteUrl" string is printed after this message.
        */
       // "visitWebsite": "",
-
       /**
        * Overrides the message that normally says:
        * "Your user name appears in the upper-right corner of the JFrog website."
        */
       // "locateUserName": "",
-
       /**
        * Overrides the message that normally says:
        * "Click 'Edit Profile' on the JFrog website.  Click the 'Generate API Key'
        * button if you haven't already done so previously."
        */
       // "locateApiKey": ""
-
       /**
        * Overrides the message that normally prompts:
        * "What is your Artifactory user name?"
        */
       // "userNamePrompt": ""
-
       /**
        * Overrides the message that normally prompts:
        * "What is your Artifactory API key?"

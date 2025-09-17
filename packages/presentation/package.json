@@ -70,6 +70,6 @@
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }
