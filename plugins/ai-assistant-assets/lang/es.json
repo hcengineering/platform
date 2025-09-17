@@ -2,6 +2,8 @@
   "string": {
     "IntegrationLabel": "Asistente de IA",
     "IntegrationDescription": "Tu asistente personal impulsado por IA que ayuda a organizar, automatizar y optimizar tu flujo de trabajo diario en toda la plataforma",
+    "ConfigLabel": "Asistente de IA",
+    "ConfigDescription": "Asistente personal impulsado por IA",
     "Connect": "Conectar",
     "Cancel": "Cancelar",
     "Status": "Estado",

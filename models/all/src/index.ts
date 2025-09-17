@@ -108,7 +108,7 @@ import testManagement, {
 } from '@hcengineering/model-test-management'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
-import { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
+import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
 
 import {
   serverDocumentsId,
@@ -482,7 +482,18 @@ export default function buildModel (): Builder {
     [mailModel, mailId],
     [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
     [hulyMailModel, hulyMailId],
-    [aiAssistantModel, aiAssistantId],
+    [
+      aiAssistantModel,
+      aiAssistantId,
+      {
+        label: aiAssistant.string.ConfigLabel,
+        description: aiAssistant.string.ConfigDescription,
+        hidden: true,
+        enabled: false,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
     [
       homeModel,
       homeId,

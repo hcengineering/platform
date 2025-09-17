@@ -2,6 +2,8 @@
   "string": {
     "IntegrationLabel": "AI Assistant",
     "IntegrationDescription": "Your AI-powered personal assistant that helps organize, automate, and streamline your daily workflow across the platform",
+    "ConfigLabel": "AI Assistant",
+    "ConfigDescription": "AI-powered personal assistant",
     "Connect": "Connect",
     "Cancel": "Cancel",
     "Status": "Status",

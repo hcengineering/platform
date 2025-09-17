@@ -19,6 +19,8 @@ import aiAssistant from '@hcengineering/ai-assistant-resources/src/plugin'
 
 export default mergeIds(aiAssistantId, aiAssistant, {
   string: {
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString,
     IntegrationLabel: '' as IntlString,
     IntegrationDescription: '' as IntlString
   }
