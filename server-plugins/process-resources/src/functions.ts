@@ -16,14 +16,6 @@
 import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
-  Data,
-  Doc,
-  generateId,
-  matchQuery,
-  Ref,
-  Relation,
-  Tx,
-  TxProcessor
   checkMixinKey,
   Data,
   Doc,
@@ -33,7 +25,8 @@ import core, {
   Ref,
   Relation,
   splitMixinUpdate,
-  Tx
+  Tx,
+  TxProcessor
 } from '@hcengineering/core'
 import process, {
   Execution,
