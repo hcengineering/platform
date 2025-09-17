@@ -22,7 +22,7 @@
   export let context: Context
 
   const client = getClient()
-  const func = client.getModel().findObject(contextValue.func)
+  $: func = client.getModel().findObject(contextValue.func)
 </script>
 
 {#if func !== undefined}
