@@ -11,7 +11,7 @@ pub async fn set_object(
 ) -> anyhow::Result<()> {
     let s3_bucket = &CONFIG.s3_bucket;
 
-    let key = format!("object/{}/{}", workspace, key);
+    let key = format!("blob/{}/{}", workspace, key);
     let body = Bytes::from(serde_json::to_string(&parts)?);
 
     s3.put_object()
@@ -28,7 +28,7 @@ pub async fn set_object(
 pub async fn set_blob(s3: &S3Client, key: &str, hash: &str) -> anyhow::Result<()> {
     let s3_bucket = &CONFIG.s3_bucket;
 
-    let key = format!("blob/{}", key);
+    let key = format!("hash/{}", key);
     let body = Bytes::from(hash.to_string());
 
     s3.put_object()
