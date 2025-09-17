@@ -14,13 +14,13 @@
 //
 
 use serde::Deserialize;
+use std::str::FromStr;
 use tracing::*;
 
 use actix_web::{
     Error, HttpResponse,
-    http::header::{
-        self, HeaderName, HeaderValue, IfMatch, IfNoneMatch, TryIntoHeaderValue, from_one_raw_str,
-    },
+    error::ParseError,
+    http::header::{self, HeaderName, HeaderValue, IfMatch, IfNoneMatch, TryIntoHeaderValue},
     web,
 };
 
@@ -53,8 +53,8 @@ pub struct PathParams {
     workspace: String,
 }
 
-pub struct TtlSecsHeader(usize);
-pub struct TtlExpiresAtHeader(u64);
+pub struct TtlSecsHeader(Option<usize>);
+pub struct TtlExpiresAtHeader(Option<u64>);
 
 /// list
 pub async fn list(
@@ -94,8 +94,8 @@ pub async fn put(
     body: web::Bytes,
     db: web::Data<Db>,
     (secs, expires_at): (
-        Option<web::Header<TtlSecsHeader>>,
-        Option<web::Header<TtlExpiresAtHeader>>,
+        Result<web::Header<TtlSecsHeader>, ParseError>,
+        Result<web::Header<TtlExpiresAtHeader>, ParseError>,
     ),
     (if_match, if_none_match): (
         web::Header<header::IfMatch>,
@@ -107,13 +107,10 @@ pub async fn put(
     trace!(key, "put request");
 
     // TTL logic
-    let ttl = match (
-        secs.map(web::Header::into_inner),
-        expires_at.map(web::Header::into_inner),
-    ) {
+    let ttl = match (secs?.into_inner().0, expires_at?.into_inner().0) {
         (None, None) => None,
-        (Some(TtlSecsHeader(secs)), None) => Some(Ttl::Sec(secs)),
-        (None, Some(TtlExpiresAtHeader(timestamp))) => Some(Ttl::At(timestamp)),
+        (Some(secs), None) => Some(Ttl::Sec(secs)),
+        (None, Some(timestamp)) => Some(Ttl::At(timestamp)),
         _ => {
             return Err(actix_web::error::ErrorBadRequest("Multiple ttl specified"));
         }
@@ -188,17 +185,31 @@ impl TryIntoHeaderValue for TtlSecsHeader {
     type Error = std::convert::Infallible;
 
     fn try_into_value(self) -> Result<header::HeaderValue, Self::Error> {
-        Ok(HeaderValue::from(self.0))
+        Ok(self
+            .0
+            .map(HeaderValue::from)
+            .unwrap_or(HeaderValue::from_static("")))
     }
 }
 
-impl actix_web::http::header::Header for TtlSecsHeader {
+impl header::Header for TtlSecsHeader {
     fn name() -> HeaderName {
         HeaderName::from_static("huly-ttl")
     }
 
-    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, actix_web::error::ParseError> {
-        let val = from_one_raw_str(msg.headers().get(Self::name()))?;
+    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, ParseError> {
+        let mut values = msg.headers().get_all(Self::name());
+        let val = if let Some(value) = values.next() {
+            Some(
+                usize::from_str(value.to_str().map_err(|_| ParseError::Header)?.trim())
+                    .map_err(|_| ParseError::Header)?,
+            )
+        } else {
+            None
+        };
+        if values.next().is_some() {
+            return Err(ParseError::TooLarge);
+        }
         Ok(Self(val))
     }
 }
@@ -207,17 +218,31 @@ impl TryIntoHeaderValue for TtlExpiresAtHeader {
     type Error = std::convert::Infallible;
 
     fn try_into_value(self) -> Result<header::HeaderValue, Self::Error> {
-        Ok(HeaderValue::from(self.0))
+        Ok(self
+            .0
+            .map(HeaderValue::from)
+            .unwrap_or(HeaderValue::from_static("")))
     }
 }
 
-impl actix_web::http::header::Header for TtlExpiresAtHeader {
+impl header::Header for TtlExpiresAtHeader {
     fn name() -> HeaderName {
         HeaderName::from_static("huly-expire-at")
     }
 
-    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, actix_web::error::ParseError> {
-        let val = from_one_raw_str(msg.headers().get(Self::name()))?;
+    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, ParseError> {
+        let mut values = msg.headers().get_all(Self::name());
+        let val = if let Some(value) = values.next() {
+            Some(
+                u64::from_str(value.to_str().map_err(|_| ParseError::Header)?.trim())
+                    .map_err(|_| ParseError::Header)?,
+            )
+        } else {
+            None
+        };
+        if values.next().is_some() {
+            return Err(ParseError::TooLarge);
+        }
         Ok(Self(val))
     }
 }
