@@ -33,6 +33,7 @@ export function createModel (builder: Builder): void {
       icon: aiAssistant.component.IconHulyAssistant,
       allowMultiple: false,
       createComponent: aiAssistant.component.Connect,
+      configureComponent: aiAssistant.component.Connect,
       onDisconnect: aiAssistant.handler.DisconnectHandler,
       onDisconnectAll: aiAssistant.handler.DisconnectAllHandler,
       reconnectComponent: aiAssistant.component.Connect,
