@@ -11,7 +11,7 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { onDestroy } from 'svelte'
   import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
@@ -62,9 +62,12 @@
 
   let unsubscribe: (() => Promise<boolean>) | undefined
 
-  onMount(async () => {
+  async function updateTypingSub (cardId: CardID): Promise<void> {
+    await unsubscribe?.()
     unsubscribe = await subscribeTyping(cardId, handleTypingInfo)
-  })
+  }
+
+  $: void updateTypingSub(cardId)
 
   onDestroy(() => {
     void unsubscribe?.()
