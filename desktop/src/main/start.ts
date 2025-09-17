@@ -32,8 +32,12 @@ import { generateId } from '@hcengineering/core'
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { rebuildJumpList, setupWindowsSpecific } from './windowsSpecificSetup'
 import { readPackedConfig } from './config'
+import { Settings } from './settings'
+import { TrayController } from './tray'
+import { getFileInPublicBundledFolder } from './path'
 
 let mainWindow: BrowserWindow | undefined
+let isQuiting = false
 let winBadge: any
 
 const isMac = process.platform === 'darwin'
@@ -41,7 +45,7 @@ const isWindows = process.platform === 'win32'
 const isDev = process.env.NODE_ENV === 'development'
 
 const sessionPartition = !isDev ? 'persist:huly' : 'persist:huly_dev'
-const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', isWindows ? 'AppIcon.ico' : 'AppIcon.png')
+const iconKey = getFileInPublicBundledFolder(isWindows ? 'AppIcon.ico' : 'AppIcon.png')
 const preloadScriptPath = path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
 
 const defaultWidth = 1440
@@ -62,23 +66,15 @@ const containerPagePath = path.join('dist', 'ui', containerPageFileName)
 
 // Note: using electron-store here as local storage is not available in the main process
 // before the window is created
-const settings = new Store()
-const oldFront = readServerUrl()
+const settings = new Settings(new Store(), isDev, packedConfig)
+const oldFront = settings.readServerUrl()
 
 if (options.server !== undefined) {
-  ;(settings as any).set('server', options.server)
+  settings.setServerUrl(options.server)
 }
 
-const FRONT_URL = readServerUrl()
+const FRONT_URL = settings.readServerUrl()
 const serverChanged = oldFront !== FRONT_URL
-
-function readServerUrl (): string {
-  if (isDev) {
-    return process.env.FRONT_URL ?? 'http://huly.local:8087'
-  }
-
-  return ((settings as any).get('server') as string) ?? packedConfig?.server ?? process.env.FRONT_URL ?? 'https://huly.app'
-}
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup') === true) {
@@ -229,8 +225,7 @@ function handleWillDownload (window: BrowserWindow): void {
 }
 
 const createWindow = async (): Promise<void> => {
-  // Restore window position if available
-  const restoredBounds: any = settings.get('windowBounds')
+  const restoredBounds: any = settings.getWindowBounds()
   const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: restoredBounds?.width ?? defaultWidth,
     height: restoredBounds?.height ?? defaultHeight,
@@ -243,7 +238,6 @@ const createWindow = async (): Promise<void> => {
       devTools: true,
       sandbox: false,
       nodeIntegration: true,
-      // backgroundThrottling: false,
       partition: sessionPartition,
       preload: preloadScriptPath
     }
@@ -251,7 +245,6 @@ const createWindow = async (): Promise<void> => {
   setupWindowTitleBar(windowOptions)
   mainWindow = new BrowserWindow(windowOptions)
   app.dock?.setIcon(nativeImage.createFromPath(iconKey))
-  // await mainWindow.webContents.openDevTools()
   if (isDev) {
     mainWindow.webContents.openDevTools()
   }
@@ -268,7 +261,7 @@ const createWindow = async (): Promise<void> => {
   mainWindow.on('close', () => {
     const bounds = mainWindow?.getBounds()
     if (bounds !== undefined) {
-      settings.set('windowBounds', bounds)
+      settings.setWindowBounds(bounds)
     }
   })
 
@@ -282,6 +275,22 @@ const createWindow = async (): Promise<void> => {
 
   mainWindow.on('maximize', () => {
     sendWindowMaximizedMessage(true)
+  })
+
+  mainWindow.on('minimize', () => {
+    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
+      mainWindow?.hide()
+    }
+  })
+
+  mainWindow.on('close', (event: Electron.Event) => {
+    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
+      if (!isQuiting) {
+        event.preventDefault()
+        mainWindow?.hide()
+        return false
+      }
+    }
   })
 
   mainWindow.on('unmaximize', () => {
@@ -325,6 +334,17 @@ function activateWindow (): void {
     mainWindow.focus()
   }
 }
+
+function quitApplication (): void {
+  isQuiting = true
+  app.quit()
+}
+
+let trayController: TrayController | undefined
+
+void app.whenReady().then(() => {
+  trayController = new TrayController(settings, activateWindow, quitApplication)
+})
 
 if (isWindows) {
   setupWindowsSpecific(activateWindow, sendCommand)
@@ -455,7 +475,7 @@ ipcMain.handle('get-is-os-using-dark-theme', () => {
 })
 
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
-  dispatchMenuBarAction(mainWindow, action)
+  dispatchMenuBarAction(mainWindow, action, trayController)
 })
 
 if (isWindows) {
@@ -481,6 +501,10 @@ ipcMain.handle('get-screen-sources', () => {
       }
     })
   })
+})
+
+ipcMain.handle('get-minimize-to-tray-enabled', () => {
+  return settings.isMinimizeToTrayEnabled()
 })
 
 async function onReady (): Promise<void> {
@@ -509,12 +533,17 @@ if (isMac) {
   })
 }
 app.on('before-quit', () => {
+  isQuiting = true
+
   if (mainWindow !== undefined && !mainWindow.isDestroyed()) {
     const bounds = mainWindow.getBounds()
-    settings.set('windowBounds', bounds)
+    settings.setWindowBounds(bounds)
   }
+
   // Note: in case the app is exited by auto-updater all windows will be destroyed at this point
-  if (mainWindow === undefined || mainWindow.isDestroyed()) return
+  if (mainWindow === undefined || mainWindow.isDestroyed()) {
+    return
+  }
 
   if (isMac) {
     mainWindow?.removeAllListeners('close')

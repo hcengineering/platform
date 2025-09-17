@@ -12,22 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import * as path from 'path'
-import * as fs from 'fs'
 
-export interface PackedConfig {
-  server?: string
-  updatesChannelKey?: string
-}
+import { app } from 'electron'
+import path from 'path'
 
-const configPath = path.join(process.resourcesPath, 'config', 'config.json')
-
-export function readPackedConfig (): PackedConfig | undefined {
-  if (fs.existsSync(configPath)) {
-    try {
-      return JSON.parse(fs.readFileSync(configPath, 'utf8')) as PackedConfig
-    } catch (err) {
-      console.log('Failed to read packed config', err)
-    }
-  }
+export function getFileInPublicBundledFolder (fileName: string): string {
+  return path.join(app.getAppPath(), 'dist', 'ui', 'public', fileName)
 }

@@ -14,7 +14,7 @@
 //
 
 import { app, JumpListItem, JumpListCategory } from 'electron'
-import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenApplication, JumpListSpares } from '../ui/types'
+import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenApplication, JumpListSpares, WindowAction, SendCommandDelegate } from '../ui/types'
 import * as path from 'path'
 
 const JUMP_COMMANDS = {
@@ -81,7 +81,7 @@ export function rebuildJumpList (spares: JumpListSpares): void {
   app.setJumpList([category])
 }
 
-export function setupWindowsSpecific (activateWindow: () => void, sendCommand: (cmd: Command, ...args: any[]) => void): void {
+export function setupWindowsSpecific (activateWindow: WindowAction, sendCommand: SendCommandDelegate): void {
   app.setAppUserModelId(app.getName())
 
   app.on('second-instance', (_event: any, commandLine: any, _workingDirectory: any) => {

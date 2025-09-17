@@ -181,6 +181,13 @@ const expose: IPCMainExposed = {
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
   startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) },
 
-  rebuildJumpList: (spares: JumpListSpares) => { ipcRenderer.send('rebuild-user-jump-list', spares) }
+  rebuildJumpList: (spares: JumpListSpares) => { ipcRenderer.send('rebuild-user-jump-list', spares) },
+
+  isMinimizeToTrayEnabled: async () => {
+    return await ipcRenderer.invoke('get-minimize-to-tray-enabled')
+  },
+  onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => {
+    ipcRenderer.on('minimize-to-tray-setting-changed', (_event, enabled: boolean) => { callback(enabled) })
+  }
 }
 contextBridge.exposeInMainWorld('electron', expose)
