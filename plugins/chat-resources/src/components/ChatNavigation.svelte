@@ -116,9 +116,6 @@
         { type: communication.type.Direct, order: 2 }
       ],
       fixedTypes: [chat.masterTag.Thread, communication.type.Direct],
-      specialSorting: {
-        [communication.type.Direct]: 'alphabetical'
-      },
       allowCreate: true,
       defaultSorting: 'recent',
       lookback: '2w',
