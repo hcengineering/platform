@@ -18,3 +18,12 @@
 #
 #   //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}
 #
+
+# Explicitly specify the NPM registry that "rush publish" will use by default:
+registry=https://registry.npmjs.org/
+
+# Optionally provide an authentication token for the above registry URL (if it is a private registry):
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
+
+# Change this to "true" if your registry requires authentication for read-only operations:
+always-auth=false
