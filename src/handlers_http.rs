@@ -98,8 +98,8 @@ pub async fn put(
         Option<web::Header<TtlExpiresAtHeader>>,
     ),
     (if_match, if_none_match): (
-        Option<web::Header<header::IfMatch>>,
-        Option<web::Header<header::IfNoneMatch>>,
+        web::Header<header::IfMatch>,
+        web::Header<header::IfNoneMatch>,
     ),
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let params = path.into_inner();
@@ -120,16 +120,19 @@ pub async fn put(
     };
 
     // MODE logic
-    let mode = match (
-        if_match.map(web::Header::into_inner),
-        if_none_match.map(web::Header::into_inner),
-    ) {
-        (None, None) => SaveMode::Upsert,
-        (Some(IfMatch::Any), None) => SaveMode::Update,
-        (Some(IfMatch::Items(etags)), None) if etags.len() == 1 => {
+    let mode = match (if_match.into_inner(), if_none_match.into_inner()) {
+        (IfMatch::Items(items), IfNoneMatch::Items(nitems))
+            if items.is_empty() && nitems.is_empty() =>
+        {
+            SaveMode::Upsert
+        }
+        (IfMatch::Any, IfNoneMatch::Items(nitems)) if nitems.is_empty() => SaveMode::Update,
+        (IfMatch::Items(etags), IfNoneMatch::Items(nitems))
+            if etags.len() == 1 && nitems.is_empty() =>
+        {
             SaveMode::Equal(etags[0].tag().to_string())
         }
-        (None, Some(IfNoneMatch::Any)) => SaveMode::Insert,
+        (IfMatch::Items(items), IfNoneMatch::Any) if items.is_empty() => SaveMode::Insert,
         _ => {
             return Err(actix_web::error::ErrorBadRequest(
                 "Unsupported combination of If-Match and If-None-Match",
@@ -147,23 +150,25 @@ pub async fn put(
 pub async fn delete(
     path: web::Path<PathParams>,
     db: web::Data<Db>,
-    if_match: Option<web::Header<header::IfMatch>>,
+    if_match: web::Header<header::IfMatch>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
 
     // MODE logic
-    let mode = match if_match.map(web::Header::into_inner) {
-        Some(IfMatch::Any) => SaveMode::Update,
-        Some(IfMatch::Items(etags)) if etags.len() == 1 => {
-            SaveMode::Equal(etags[0].tag().to_string())
-        }
-        None => SaveMode::Upsert,
-        _ => {
-            return Err(actix_web::error::ErrorBadRequest(
-                "Multiple If-Match are not supported",
-            ));
+    let mode = match if_match.into_inner() {
+        IfMatch::Any => SaveMode::Update,
+        IfMatch::Items(etags) => {
+            if etags.len() == 1 {
+                SaveMode::Equal(etags[0].tag().to_string())
+            } else if etags.is_empty() {
+                SaveMode::Upsert
+            } else {
+                return Err(actix_web::error::ErrorBadRequest(
+                    "Multiple If-Match are not supported",
+                ));
+            }
         }
     };
 
