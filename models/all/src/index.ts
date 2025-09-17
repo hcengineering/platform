@@ -494,11 +494,6 @@ export default function buildModel (): Builder {
         classFilter: defaultFilter
       }
     ],
-    [
-      homeModel,
-      homeId,
-      { label: home.string.Home, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
-    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
