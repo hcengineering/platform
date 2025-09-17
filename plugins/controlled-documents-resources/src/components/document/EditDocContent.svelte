@@ -66,6 +66,8 @@
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
 
+  $: commentUuids = $documentComments.map((p) => p.nodeId).filter((id) => id != null)
+
   function handleRefreshHighlight (): void {
     textEditor?.commands()?.command(highlightUpdateCommand())
   }
@@ -241,8 +243,16 @@
                 isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
                 getNodeHighlight: handleNodeHighlight,
                 onNodeClicked: (uuids) => {
-                  selectedNodeId = Array.isArray(uuids) ? uuids[0] : uuids
-                  if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
+                  // filter out those uuids that are not in comments
+                  uuids = Array.isArray(uuids) ? uuids : [uuids]
+                  uuids = uuids.filter((id) => commentUuids.includes(id)).sort()
+
+                  // scroll through the comments as user clicks on the same node
+                  const currIndex = selectedNodeId != null ? uuids.indexOf(selectedNodeId) : -1
+                  const nextIndex = currIndex === -1 ? 0 : (currIndex + 1) % uuids.length
+                  selectedNodeId = uuids[nextIndex]
+
+                  if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId != null) {
                     handleShowDocumentComments(selectedNodeId)
                   }
                 }
