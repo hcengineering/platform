@@ -17,11 +17,11 @@
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Process, State } from '@hcengineering/process'
+  import { makeRank } from '@hcengineering/rank'
   import { Button, IconAdd, Label } from '@hcengineering/ui'
+  import { SortableDocList } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
   import StateInlineEditor from './StateInlineEditor.svelte'
-  import { makeRank } from '@hcengineering/rank'
-  import { SortableList } from '@hcengineering/view-resources'
 
   export let process: Process
   export let states: State[]
@@ -49,11 +49,11 @@
   <div class="header w-full p-4">
     <Label label={plugin.string.States} />
   </div>
-  <SortableList _class={plugin.class.State} query={{ process: process._id }} isAddButtonHidden>
+  <SortableDocList _class={plugin.class.State} query={{ process: process._id }}>
     <svelte:fragment slot="object" let:value>
       <StateInlineEditor value={toState(value)} />
     </svelte:fragment>
-  </SortableList>
+  </SortableDocList>
   {#if !readonly}
     <Button kind={'ghost'} width={'100%'} icon={IconAdd} label={plugin.string.AddState} on:click={addState} />
   {/if}
