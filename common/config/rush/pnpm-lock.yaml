@@ -1894,6 +1894,9 @@ importers:
       effector:
         specifier: ~22.8.7
         version: 22.8.8
+      electron:
+        specifier: ^38.1.1
+        version: 38.1.1
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
@@ -5537,7 +5540,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz':
-    resolution: {integrity: sha512-euhJQtYB9bi4EajhGq+TYdDJkmGP5CyFcaAVBLPkmhhKENYJFcLd+E/QbDkWPAZZu7lP9EQ88yFHL5oRBOzyrw==, tarball: file:projects/qms-desktop.tgz}
+    resolution: {integrity: sha512-Ovno/T0s/QbkFGK+7olnz2h6NvbmUNmXuNNJFXHhI869c3V3Eyh9PDSmLlzR/xM3mQo5hP260Ksv9icoEqxDgw==, tarball: file:projects/qms-desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
@@ -9160,11 +9163,6 @@ packages:
 
   electron-windows-badge@1.1.0:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
-
-  electron@36.3.1:
-    resolution: {integrity: sha512-LeOZ+tVahmctHaAssLCGRRUa2SAO09GXua3pKdG+WzkbSDMh+3iOPONNVPTqGp8HlWnzGj4r6mhsIbM2RgH+eQ==}
-    engines: {node: '>= 12.20.55'}
-    hasBin: true
 
   electron@38.1.1:
     resolution: {integrity: sha512-LTFGxXpbIdU07AwSHLoVYVLbZHDiauT1KgTX1fgCPgPDoQIAGnYft/ABx6PkA+9ulQfBEEqg0mYTWaoReHG8Ag==}
@@ -26357,7 +26355,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 36.3.1
+      electron: 38.1.1
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -34360,14 +34358,6 @@ snapshots:
       - supports-color
 
   electron-windows-badge@1.1.0: {}
-
-  electron@36.3.1:
-    dependencies:
-      '@electron/get': 2.0.3
-      '@types/node': 22.15.29
-      extract-zip: 2.0.1
-    transitivePeerDependencies:
-      - supports-color
 
   electron@38.1.1:
     dependencies:
