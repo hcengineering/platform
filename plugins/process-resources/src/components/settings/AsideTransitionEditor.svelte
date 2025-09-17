@@ -78,7 +78,7 @@
           items={triggersItems}
           bind:selected={selectedTrigger}
           label={plugin.string.Trigger}
-          on:change={() => {
+          on:selected={() => {
             params = {}
             result = null
           }}

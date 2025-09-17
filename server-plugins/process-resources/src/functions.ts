@@ -73,7 +73,7 @@ export async function CheckToDoCancelled (
 }
 
 export async function CheckSubProcessesDone (control: ProcessControl, execution: Execution): Promise<boolean> {
-  const res = control.client.findOne(process.class.Execution, {
+  const res = await control.client.findOne(process.class.Execution, {
     parentId: execution._id,
     status: ExecutionStatus.Active
   })

@@ -629,7 +629,7 @@ export async function subProcessesDoneCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): Promise<boolean> {
-  const res = client.findOne(process.class.Execution, {
+  const res = await client.findOne(process.class.Execution, {
     parentId: execution._id,
     status: ExecutionStatus.Active
   })
