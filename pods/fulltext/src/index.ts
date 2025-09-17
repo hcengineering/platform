@@ -104,12 +104,7 @@ if (accountsUrl === undefined) {
   process.exit(1)
 }
 
-const hulylakeUrl = process.env.HULYLAKE_URL
-
-if (hulylakeUrl === undefined) {
-  console.error('please provide hulylake url')
-  process.exit(1)
-}
+const hulylakeUrl = process.env.HULYLAKE_URL ?? ''
 
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 const externalStorage = buildStorageFromConfig(storageConfig)
