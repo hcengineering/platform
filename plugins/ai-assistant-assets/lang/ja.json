@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "AIアシスタント",
+    "IntegrationDescription": "プラットフォーム全体で日常のワークフローを整理、自動化、効率化するAI搭載のパーソナルアシスタント",
+    "ConfigLabel": "AIアシスタント",
+    "ConfigDescription": "AI搭載のパーソナルアシスタント",
+    "Connect": "接続",
+    "Cancel": "キャンセル",
+    "Status": "ステータス",
+    "FailedToConnect": "AIアシスタントサービスは利用できません",
+    "Configure": "AIアシスタント設定"
+  }
+}

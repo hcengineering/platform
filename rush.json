@@ -2597,6 +2597,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-ai-assistant",
+      "projectFolder": "models/ai-assistant",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant",
+      "projectFolder": "plugins/ai-assistant",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant-assets",
+      "projectFolder": "plugins/ai-assistant-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant-resources",
+      "projectFolder": "plugins/ai-assistant-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-worker",
       "projectFolder": "services/worker",
       "shouldPublish": false
