@@ -18,6 +18,7 @@ mod blob;
 mod config;
 mod handlers;
 mod merge;
+mod recovery;
 mod patch;
 mod postgres;
 mod s3;

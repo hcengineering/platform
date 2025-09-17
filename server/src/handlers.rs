@@ -17,13 +17,13 @@ use size::Size;
 use tracing::*;
 use uuid::Uuid;
 
-use crate::merge::MergeStrategy;
 use crate::s3::S3Client;
 use crate::{blob, merge};
 use crate::{
     config::CONFIG,
     postgres::{self, Pool},
 };
+use crate::{merge::MergeStrategy, recovery};
 
 #[derive(Deserialize, Debug)]
 pub struct ObjectPath {
@@ -212,6 +212,9 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         }
     });
 
+    let obj_parts = vec![&part_data];
+    recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts).await?;
+
     postgres::set_part(&pool, path.workspace, &part_data.key, inline, &part_data).await?;
 
     let mut response = HttpResponse::Created();
@@ -279,6 +282,13 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
             meta: None,
             merge_strategy: None,
         };
+
+        let obj_parts = parts
+            .iter()
+            .map(|p| &p.data)
+            .chain(std::iter::once(&part_data))
+            .collect::<Vec<&PartData>>();
+        recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts).await?;
 
         postgres::append_part(
             &pool,

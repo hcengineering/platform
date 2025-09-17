@@ -11,6 +11,7 @@ use tracing::*;
 
 use crate::handlers::ApiError;
 use crate::postgres::DbError;
+use crate::recovery;
 use crate::s3::S3Client;
 use crate::{
     config::CONFIG,
@@ -20,6 +21,7 @@ use crate::{
 #[derive(Debug)]
 pub struct Blob {
     pub s3_key: String,
+    pub hash: String,
     pub length: usize,
     pub inline: Option<Bytes>,
     pub parts_count: Option<usize>,
@@ -66,7 +68,7 @@ where
 
         let buffer = buffer.freeze();
 
-        let hash = hash.update(&buffer).finalize().to_hex();
+        let hash = hash.update(&buffer).finalize().to_hex().to_string();
         let length = buffer.len();
 
         let inline = Some(buffer.clone());
@@ -108,6 +110,7 @@ where
             };
 
         Blob {
+            hash,
             s3_key,
             length,
             inline,
@@ -150,6 +153,7 @@ where
         };
 
         Blob {
+            hash,
             s3_key,
             length: upload.length,
             inline: None,
@@ -157,6 +161,10 @@ where
             deduplicated,
         }
     };
+
+    if !blob.deduplicated {
+        recovery::set_blob(&s3, &blob.s3_key, &blob.hash).await?;
+    }
 
     Ok(blob)
 }
