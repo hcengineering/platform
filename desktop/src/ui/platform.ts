@@ -295,6 +295,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL ?? '')
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
+  setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL ?? '')
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
 
