@@ -24,6 +24,16 @@ import core, {
   Relation,
   Tx,
   TxProcessor
+  checkMixinKey,
+  Data,
+  Doc,
+  generateId,
+  getObjectValue,
+  matchQuery,
+  Ref,
+  Relation,
+  splitMixinUpdate,
+  Tx
 } from '@hcengineering/core'
 import process, {
   Execution,
@@ -84,7 +94,9 @@ export function OnCardUpdateCheck (
   context: Record<string, any>
 ): boolean {
   if (context.card === undefined) return false
-  const res = matchQuery([context.card], params, context.card._class, control.client.getHierarchy(), true)
+  const process = control.client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
 
@@ -141,16 +153,49 @@ export async function UpdateCard (
   if (Object.keys(params).length === 0) throw processError(process.error.RequiredParamsNotProvided, { params: 'ANY' })
   const target = control.cache.get(execution.card)
   if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const hierarchy = control.client.getHierarchy()
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
   const update: Record<string, any> = {}
   const prevValue: Record<string, any> = {}
   for (const key in params) {
-    prevValue[key] = target[key]
+    const prevKey = checkMixinKey(key, _process.masterTag, hierarchy)
+    prevValue[key] = getObjectValue(prevKey, target)
     update[key] = (params as any)[key]
   }
-  const res: Tx[] = [control.client.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update)]
-  const rollback: Tx[] = [
-    control.client.txFactory.createTxUpdateDoc(target._class, target.space, target._id, prevValue)
-  ]
+
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  if (hierarchy.isMixin(_process.masterTag)) {
+    const baseClass = hierarchy.getBaseClass(target._class)
+    const byClass = splitMixinUpdate(control.client.getHierarchy(), update, _process.masterTag, baseClass)
+    for (const it of byClass) {
+      if (hierarchy.isMixin(it[0])) {
+        res.push(control.client.txFactory.createTxMixin(target._id, baseClass, target.space, it[0], it[1]))
+        const rollbackData: Record<string, any> = {}
+        for (const key in it[1]) {
+          rollbackData[key] = prevValue[key]
+        }
+        if (Object.keys(rollbackData).length > 0) {
+          rollback.push(
+            control.client.txFactory.createTxMixin(target._id, baseClass, target.space, it[0], rollbackData)
+          )
+        }
+      } else {
+        res.push(control.client.txFactory.createTxUpdateDoc(baseClass, target.space, target._id, it[1]))
+        const rollbackData: Record<string, any> = {}
+        for (const key in it[1]) {
+          rollbackData[key] = prevValue[key]
+        }
+        if (Object.keys(rollbackData).length > 0) {
+          rollback.push(control.client.txFactory.createTxUpdateDoc(baseClass, target.space, target._id, rollbackData))
+        }
+      }
+    }
+  } else {
+    res.push(control.client.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update))
+    rollback.push(control.client.txFactory.createTxUpdateDoc(target._class, target.space, target._id, prevValue))
+  }
   return { txes: res, rollback, context: null }
 }
 

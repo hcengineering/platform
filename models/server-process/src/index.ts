@@ -269,7 +269,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnCardUpdate,
     txMatch: {
-      _class: core.class.TxUpdateDoc,
+      _class: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] },
       objectClass: cardPlugin.class.Card
     }
   })

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { ArrOf, Doc, getObjectValue, RefTo } from '@hcengineering/core'
+import core, { ArrOf, checkMixinKey, Doc, getObjectValue, RefTo } from '@hcengineering/core'
 import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
 import process, {
   Execution,
@@ -65,10 +65,18 @@ export async function getContextValue (value: any, control: ProcessControl, exec
   }
 }
 
+function getValue (control: ProcessControl, execution: Execution, rawKey: string, card: Doc): any {
+  const hierarchy = control.client.getHierarchy()
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
+  const key = checkMixinKey(rawKey, _process.masterTag, hierarchy)
+  return getObjectValue(key, card)
+}
+
 function getAttributeValue (control: ProcessControl, execution: Execution, context: SelectedContext): any {
   const card = control.cache.get(execution.card)
   if (card !== undefined) {
-    const val = getObjectValue(context.key, card)
+    const val = getValue(control, execution, context.key, card)
     if (val == null) {
       const attr = control.client.getHierarchy().findAttribute(card._class, context.key)
       throw processError(
@@ -111,7 +119,7 @@ async function getNestedValue (
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
   const attr = control.client.getHierarchy().findAttribute(card._class, context.path)
   if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: context.path })
-  const nestedValue = getObjectValue(context.path, card)
+  const nestedValue = getValue(control, execution, context.path, card)
   if (nestedValue === undefined) throw processError(process.error.EmptyAttributeContextValue, {}, { attr: attr.label })
   const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
   const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
@@ -132,8 +140,8 @@ async function getNestedValue (
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
     const val = Array.isArray(reduced)
-      ? reduced.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, reduced)
+      ? reduced.map((v) => getValue(control, execution, context.key, v))
+      : getValue(control, execution, context.key, reduced)
     if (val == null) {
       throw processError(
         process.error.EmptyRelatedObjectValue,
@@ -145,8 +153,8 @@ async function getNestedValue (
   }
   const val =
     Array.isArray(target) && target.length > 1
-      ? target.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, target[0])
+      ? target.map((v) => getValue(control, execution, context.key, v))
+      : getValue(control, execution, context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
@@ -187,8 +195,8 @@ async function getRelationValue (
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
     const val = Array.isArray(reduced)
-      ? reduced.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, reduced)
+      ? reduced.map((v) => getValue(control, execution, context.key, v))
+      : getValue(control, execution, context.key, reduced)
     if (val == null) {
       throw processError(
         process.error.EmptyRelatedObjectValue,
@@ -200,8 +208,8 @@ async function getRelationValue (
   }
   const val =
     Array.isArray(target) && target.length > 1
-      ? target.map((v) => getObjectValue(context.key, v))
-      : getObjectValue(context.key, target[0])
+      ? target.map((v) => getValue(control, execution, context.key, v))
+      : getValue(control, execution, context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
@@ -270,7 +278,7 @@ async function getExecutionContextValue (
       const contextVal =
         control.cache.get(userContext) ?? (await control.client.findOne(processContext?._class, { _id: userContext }))
       if (contextVal !== undefined) {
-        const val = getObjectValue(context.key, contextVal)
+        const val = getValue(control, execution, context.key, contextVal)
         return val
       }
     }
