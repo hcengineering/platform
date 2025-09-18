@@ -26,8 +26,9 @@ import { getClient } from '@hcengineering/presentation'
 import { type ActionContext } from '@hcengineering/text-editor'
 import { getNodeElement, selectNode } from '@hcengineering/text-editor-resources'
 
-import { showAddCommentPopupFx } from './stores/editors/document'
+import { DocumentCommentPopupCategory, showAddCommentPopupFx } from './stores/editors/document'
 import { $editorMode } from './stores/editors/document/editor'
+import { findPopup } from '@hcengineering/ui'
 
 async function getCurrentReviewRequest (doc: ControlledDocument): Promise<DocumentReviewRequest | undefined> {
   const client = getClient()
@@ -131,6 +132,11 @@ export async function comment (editor: Editor, event: MouseEvent, ctx: ActionCon
   const { objectId, objectClass } = ctx
 
   if (editor === undefined || objectId === undefined || objectClass === undefined) {
+    return
+  }
+
+  const current = findPopup(DocumentCommentPopupCategory)
+  if (current !== undefined) {
     return
   }
 

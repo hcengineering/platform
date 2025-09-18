@@ -148,6 +148,11 @@ export function showPopup (
   }
 }
 
+export function findPopup (category: string): CompAndProps | undefined {
+  const popups = get(modalStore)
+  return popups.find((p): p is CompAndProps => p.type === 'popup' && p.options.category === category)
+}
+
 export function closePopup (category?: string): void {
   modalStore.update((popups) => {
     if (category !== undefined) {
