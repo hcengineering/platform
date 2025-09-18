@@ -14,7 +14,7 @@
 //
 
 import { config as dotenvConfig } from 'dotenv'
-import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
+import { Event, BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
 import Store from 'electron-store'
@@ -257,11 +257,23 @@ const createWindow = async (): Promise<void> => {
   // All other urls will be blocked.
   hookOpenWindow(mainWindow)
 
-  // Save window position on close
-  mainWindow.on('close', () => {
+  mainWindow.on('close', (event: Event) => {
     const bounds = mainWindow?.getBounds()
-    if (bounds !== undefined) {
+    if (bounds != null) {
       settings.setWindowBounds(bounds)
+    }
+
+    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
+      if (!isQuiting) {
+        event.preventDefault()
+        mainWindow?.hide()
+        return false
+      }
+    }
+
+    if (isMac) {
+      event.preventDefault()
+      mainWindow?.hide()
     }
   })
 
@@ -283,16 +295,6 @@ const createWindow = async (): Promise<void> => {
     }
   })
 
-  mainWindow.on('close', (event: Electron.Event) => {
-    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
-      if (!isQuiting) {
-        event.preventDefault()
-        mainWindow?.hide()
-        return false
-      }
-    }
-  })
-
   mainWindow.on('unmaximize', () => {
     sendWindowMaximizedMessage(false)
   })
@@ -307,14 +309,7 @@ const createWindow = async (): Promise<void> => {
     }
   })
 
-  if (isMac) {
-    mainWindow.on('close', (event) => {
-      // Prevent the default behavior (which would quit the app)
-      event.preventDefault()
-      // Hide the window
-      mainWindow?.hide()
-    })
-  } else if (isWindows) {
+  if (isWindows) {
     winBadge = new WinBadge(mainWindow, {
       font: '14px arial'
     })
