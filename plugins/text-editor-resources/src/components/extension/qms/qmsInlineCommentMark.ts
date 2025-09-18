@@ -13,25 +13,16 @@
 // limitations under the License.
 //
 
-import {
-  type CommandProps,
-  type Editor,
-  Mark,
-  getMarkRange,
-  getMarkType,
-  getMarksBetween,
-  mergeAttributes
-} from '@tiptap/core'
-import { type Node, type Mark as ProseMirrorMark } from '@tiptap/pm/model'
-import { type EditorState, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import { type CommandProps, type Editor, Mark, getMarkRange, mergeAttributes } from '@tiptap/core'
+import { type Node, type Mark as ProseMirrorMark, Fragment, Slice } from '@tiptap/pm/model'
+import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 
 export const qmsInlineCommentMarkName = 'node-uuid'
 export const nodeElementQuerySelector = (nodeUuid: string): string => `span[${qmsInlineCommentMarkName}='${nodeUuid}']`
 
 export interface QMSInlineCommentMarkOptions {
   HTMLAttributes: Record<string, any>
-  onNodeSelected?: (uuid: string | null) => void
-  onNodeClicked?: (uuid: string) => void
+  onNodeClicked?: (uuid: string | string[]) => void
 }
 
 declare module '@tiptap/core' {
@@ -41,32 +32,6 @@ declare module '@tiptap/core' {
       unsetQMSInlineCommentMark: () => ReturnType
     }
   }
-}
-
-export interface QMSInlineCommentMarkStorage {
-  activeQMSInlineComment: string | null
-}
-
-const findSelectionQMSInlineCommentMark = (state: EditorState): ProseMirrorMark | undefined => {
-  const { doc, selection } = state
-
-  if (selection === null || selection === undefined) {
-    return
-  }
-
-  let nodeUuidMark: ProseMirrorMark | undefined
-  for (const range of selection.ranges) {
-    if (nodeUuidMark === undefined) {
-      doc.nodesBetween(range.$from.pos, range.$to.pos, (node) => {
-        if (nodeUuidMark !== undefined) {
-          return false
-        }
-        nodeUuidMark = findQMSInlineCommentMark(node)
-      })
-    }
-  }
-
-  return nodeUuidMark
 }
 
 export const findQMSInlineCommentMark = (node: Node): ProseMirrorMark | undefined => {
@@ -85,13 +50,14 @@ export function getNodeElement (editor: Editor, uuid: string): Element | null {
   return editor.view.dom.querySelector(nodeElementQuerySelector(uuid))
 }
 
-export function selectNode (editor: Editor, uuid: string): void {
+export function selectNode (editor: Editor, uuid: string): boolean {
   if (editor === undefined) {
-    return
+    return false
   }
 
-  const { doc, schema, tr } = editor.view.state
   let foundNode = false
+
+  const { doc, schema, tr } = editor.view.state
   doc.descendants((node, pos) => {
     if (foundNode) {
       return false
@@ -118,12 +84,17 @@ export function selectNode (editor: Editor, uuid: string): void {
     editor?.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
     editor.commands.focus()
   })
+
+  return foundNode
 }
 
-export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions, QMSInlineCommentMarkStorage>({
+export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions>({
   name: qmsInlineCommentMarkName,
   exitable: true,
   inclusive: false,
+  // set to empty string to allow multiple marks of the same type
+  // https://prosemirror.net/docs/ref/#model.MarkSpec.excludes
+  excludes: '',
   addOptions () {
     return {
       HTMLAttributes: {}
@@ -161,37 +132,28 @@ export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions, QMS
 
   addProseMirrorPlugins () {
     const options = this.options
-    const storage: QMSInlineCommentMarkStorage = this.storage
+
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
         key: new PluginKey('handle-qms-inline-comment-click-plugin'),
         props: {
           handleClick (view, pos) {
-            const from = Math.max(0, pos - 1)
-            const to = Math.min(view.state.doc.content.size, pos + 1)
-            const markRanges =
-              getMarksBetween(from, to, view.state.doc)?.filter(
-                (markRange) =>
-                  markRange.mark.type.name === qmsInlineCommentMarkName && markRange.from <= pos && markRange.to >= pos
-              ) ?? []
-            let nodeUuid: string | null = null
+            const marks = view.state.selection.$head
+              .marks()
+              .filter((mark) => mark.type.name === qmsInlineCommentMarkName)
 
-            if (markRanges.length > 0) {
-              nodeUuid = markRanges[0].mark.attrs[qmsInlineCommentMarkName]
-            }
+            const uuids = marks
+              .map((mark) => mark.attrs[qmsInlineCommentMarkName])
+              .filter((uuid) => uuid !== null && uuid !== undefined && uuid.length > 0)
 
-            if (nodeUuid !== null) {
-              options.onNodeClicked?.(nodeUuid)
-            }
-
-            if (storage.activeQMSInlineComment !== nodeUuid) {
-              storage.activeQMSInlineComment = nodeUuid
-              options.onNodeSelected?.(storage.activeQMSInlineComment)
+            if (uuids.length !== 0) {
+              options.onNodeClicked?.(uuids)
             }
           }
         }
-      })
+      }),
+      QmsInlineCommentPastePlugin()
     ]
 
     return plugins
@@ -202,14 +164,9 @@ export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions, QMS
       setQMSInlineCommentMark:
         (uuid: string) =>
           ({ commands, state }: CommandProps) => {
-            const { doc, selection } = state
-            if (selection.empty) {
+            if (state.selection.empty) {
               return false
             }
-            if (doc.rangeHasMark(selection.from, selection.to, getMarkType(qmsInlineCommentMarkName, state.schema))) {
-              return false
-            }
-
             return commands.setMark(this.name, { [qmsInlineCommentMarkName]: uuid })
           },
       unsetQMSInlineCommentMark:
@@ -217,24 +174,68 @@ export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions, QMS
           ({ commands }: CommandProps) =>
             commands.unsetMark(this.name)
     }
-  },
-
-  addStorage () {
-    return {
-      activeQMSInlineComment: null
-    }
-  },
-
-  onSelectionUpdate () {
-    const activeQMSInlineCommentMark = findSelectionQMSInlineCommentMark(this.editor.state)
-    const activeQMSInlineComment =
-      activeQMSInlineCommentMark !== null && activeQMSInlineCommentMark !== undefined
-        ? activeQMSInlineCommentMark.attrs[qmsInlineCommentMarkName]
-        : null
-
-    if (this.storage.activeQMSInlineComment !== activeQMSInlineComment) {
-      this.storage.activeQMSInlineComment = activeQMSInlineComment
-      this.options.onNodeSelected?.(this.storage.activeQMSInlineComment)
-    }
   }
 })
+
+function removeMarkFromNode (node: Node, name: string): Node {
+  if (node.isText) {
+    return node.mark(node.marks.filter((mark) => mark.type.name !== name))
+  }
+
+  if (node.content.size > 0) {
+    const nodes: Node[] = []
+    node.content.forEach((child) => {
+      nodes.push(removeMarkFromNode(child, name))
+    })
+    return node.copy(Fragment.fromArray(nodes))
+  }
+
+  return node
+}
+
+export function getMarkUuid (mark: ProseMirrorMark): string | undefined {
+  return mark.type.name === qmsInlineCommentMarkName ? mark.attrs[qmsInlineCommentMarkName] : undefined
+}
+
+export function QmsInlineCommentPastePlugin (): Plugin {
+  return new Plugin({
+    key: new PluginKey('qms-inline-comment-paste-plugin'),
+    props: {
+      transformPasted: (slice, view) => {
+        const pastedUuids = new Set<string>()
+        slice.content.forEach((node) => {
+          node.descendants((descendant) => {
+            descendant.marks.forEach((mark) => {
+              const uuid = getMarkUuid(mark)
+              if (uuid !== undefined) {
+                pastedUuids.add(uuid)
+              }
+            })
+          })
+        })
+
+        let hasDuplicatedUuids = false
+        view.state.doc.descendants((node) => {
+          if (hasDuplicatedUuids) return false
+          for (const mark of node.marks) {
+            const uuid = getMarkUuid(mark)
+            if (uuid !== undefined && pastedUuids.has(uuid)) {
+              hasDuplicatedUuids = true
+              break
+            }
+          }
+        })
+
+        if (hasDuplicatedUuids) {
+          const nodes: Node[] = []
+          slice.content.forEach((node) => {
+            nodes.push(removeMarkFromNode(node, qmsInlineCommentMarkName))
+          })
+          return new Slice(Fragment.fromArray(nodes), slice.openStart, slice.openEnd)
+        }
+
+        return slice
+      }
+    }
+  })
+}
