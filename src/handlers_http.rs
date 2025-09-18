@@ -29,7 +29,7 @@ use crate::{
     redis::{SaveMode, Ttl},
 };
 
-pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
+pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
 
     if let Some(detail) = msg.split(" - ExtensionError: ").nth(1) {
@@ -65,7 +65,7 @@ pub async fn list(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
-    let entries = db.list(&key).await.map_err(map_handler_error)?;
+    let entries = db.list(&key).await.map_err(map_redis_error)?;
     Ok(HttpResponse::Ok().json(entries))
 }
 
@@ -78,7 +78,7 @@ pub async fn get(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
 
-    let entry_opt = db.read(&key).await.map_err(map_handler_error)?;
+    let entry_opt = db.read(&key).await.map_err(map_redis_error)?;
     let resp = match entry_opt {
         Some(entry) => HttpResponse::Ok()
             .insert_header((header::ETAG, entry.etag.clone()))
@@ -139,7 +139,7 @@ pub async fn put(
 
     db.save(&key, &body[..], ttl, Some(mode))
         .await
-        .map_err(map_handler_error)?;
+        .map_err(map_redis_error)?;
     Ok(HttpResponse::Ok().body("DONE"))
 }
 
@@ -169,10 +169,7 @@ pub async fn delete(
         }
     };
 
-    let deleted = db
-        .delete(&key, Some(mode))
-        .await
-        .map_err(map_handler_error)?;
+    let deleted = db.delete(&key, Some(mode)).await.map_err(map_redis_error)?;
     let response = match deleted {
         true => HttpResponse::NoContent().finish(),
         false => HttpResponse::NotFound().body("not found"),
