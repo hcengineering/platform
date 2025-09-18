@@ -32,7 +32,8 @@ import {
   documentCommentsSortByChanged,
   documentCommentsUpdated,
   controlledDocumentClosed,
-  savedAttachmentsUpdated
+  savedAttachmentsUpdated,
+  controlledDocumentOpened
 } from './actions'
 
 export const $areDocumentCommentPopupsOpened = createStore(false).on(
@@ -189,4 +190,5 @@ export const $savedAttachments = createStore<Array<Ref<Attachment>>>([])
   .on(savedAttachmentsUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
+forward({ from: controlledDocumentOpened, to: documentCommentsHighlightCleared })
 forward({ from: documentCommentsLocationNavigateRequested, to: documentCommentsHighlightUpdated })

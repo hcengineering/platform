@@ -59,7 +59,6 @@
   let headings: Heading[] = []
   let textEditor: CollaboratorEditor
   let selectedNodeId: string | null | undefined = undefined
-  let isFocused = false
   let editor: Editor
   let title = $controlledDocument?.title ?? ''
 
@@ -255,13 +254,6 @@
                   if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId != null) {
                     handleShowDocumentComments(selectedNodeId)
                   }
-                }
-              }
-            },
-            hooks: {
-              focus: {
-                onFocus: (focused) => {
-                  isFocused = focused
                 }
               }
             },
