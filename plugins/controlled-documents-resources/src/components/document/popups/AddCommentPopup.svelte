@@ -17,9 +17,24 @@
 
     dispatch('close', comment)
   }
+
+  let popup: HTMLDivElement | undefined
+
+  function handleClick (event: MouseEvent): void {
+    if (event.target instanceof Node) {
+      if (popup !== undefined && !popup.contains(event.target)) {
+        event.preventDefault()
+        event.stopPropagation()
+        dispatch('close', undefined)
+      }
+    }
+  }
+
 </script>
 
-<div class="text-editor-popup w-85">
+<svelte:window on:click|capture={handleClick} />
+
+<div class="text-editor-popup w-85" bind:this={popup}>
   <ReferenceInput
     autofocus
     focusable
