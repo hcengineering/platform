@@ -15,6 +15,7 @@
   import { Card } from '@hcengineering/card'
   import {
     type Message,
+    MessageType,
     Notification,
     NotificationContext,
     NotificationType,
@@ -34,6 +35,7 @@
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
   import MessagesLoading from './message/MessagesLoading.svelte'
+  import { messageEditingStore } from '../stores'
 
   export let card: Card
   export let context: NotificationContext | undefined = undefined
@@ -610,6 +612,36 @@
   onMount(() => {
     scrollDiv.addEventListener('scroll', handleScroll, { passive: true })
   })
+
+  export function editLastMessage (): void {
+    if (window == null || window.hasNextPage()) return
+    if (!atBottom) return
+
+    const me = getCurrentAccount()
+
+    let lastMessage: Message | undefined = undefined
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i]
+      if (message.removed || message.type === MessageType.Activity) continue
+      if (!me.socialIds.includes(message.creator)) continue
+      lastMessage = message
+      break
+    }
+    if (lastMessage == null) return
+
+    messageEditingStore.set(lastMessage.id)
+    const messagesElement = contentDiv.querySelector(`[id="${lastMessage.id}"]`)
+    if (messagesElement == null) return
+
+    const containerRect = scrollDiv.getBoundingClientRect()
+    const rect = messagesElement.getBoundingClientRect()
+
+    const isVisible = rect.top < containerRect.bottom && rect.bottom > containerRect.top
+
+    if (!isVisible) {
+      messagesElement.scrollIntoView({ behavior: 'instant', block: 'end' })
+    }
+  }
 </script>
 
 {#if window !== undefined && window.hasPrevPage()}
