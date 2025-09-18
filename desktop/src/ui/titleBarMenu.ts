@@ -157,7 +157,7 @@ export class MenuBuilder {
     label: string,
     action: MenuBarAction,
     shortcut?: string,
-    acceleratorChar: string | null = null
+    acceleratorChar: string | undefined = undefined
   ): this {
     if (topLevelMenuIndex >= 0 && topLevelMenuIndex < this.menus.length) {
       const item: MenuItem = {

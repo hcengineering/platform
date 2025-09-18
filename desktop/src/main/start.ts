@@ -365,6 +365,7 @@ ipcMain.on('set-badge', (_event: any, badge: number) => {
   if (isWindows && winBadge !== undefined) {
     winBadge.update(badge)
   }
+  trayController?.updateTrayBadge(badge)
 })
 
 ipcMain.on('dock-bounce', (_event: any) => {
