@@ -359,28 +359,36 @@ async function updateTimers (control: ProcessControl, record: ProcessMessage): P
 }
 
 async function updateExecutionTimers (control: ProcessControl, execution: Execution): Promise<void> {
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: process.trigger.OnTime
-  })
-  if (transitions.length === 0) return
-  const temporalClient = await getTemporalClient()
-  for (const transition of transitions) {
-    await setTimer(control, execution, transition, temporalClient)
+  try {
+    const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: process.trigger.OnTime
+    })
+    if (transitions.length === 0) return
+    const temporalClient = await getTemporalClient()
+    for (const transition of transitions) {
+      await setTimer(control, execution, transition, temporalClient)
+    }
+  } catch (err) {
+    control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
 async function setNextTimers (control: ProcessControl, execution: Execution): Promise<void> {
-  const temporalClient = await getTemporalClient()
-  await cleanTimers(execution, temporalClient)
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: process.trigger.OnTime
-  })
-  for (const transition of transitions) {
-    await setTimer(control, execution, transition, temporalClient)
+  try {
+    const temporalClient = await getTemporalClient()
+    await cleanTimers(execution, temporalClient)
+    const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: process.trigger.OnTime
+    })
+    for (const transition of transitions) {
+      await setTimer(control, execution, transition, temporalClient)
+    }
+  } catch (err) {
+    control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
@@ -449,7 +457,11 @@ async function executeAction<T extends Doc> (
     const f = await getResource(impl.func)
     const res = await f(params, execution, control)
     if (!isError(res) && action.context?._id != null && res.context != null) {
-      execution.context[action.context._id] = res.context
+      execution.context[action.context._id] =
+        res.context.length === 1 ? res.context[0]._id : res.context.map((it) => it._id)
+      for (const ctx of res.context) {
+        control.cache.set(ctx._id, ctx.value)
+      }
     }
     return res
   } catch (err) {
@@ -481,31 +493,35 @@ async function fillParams<T extends Doc> (
 }
 
 async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {
-  const subProcesses = await control.client.findAll(process.class.Execution, {
-    parentId: execution.parentId,
-    status: ExecutionStatus.Active
-  })
-  const filtered = subProcesses.filter((it) => it._id !== execution._id)
-  if (filtered.length !== 0) return
-  const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
-  if (parent === undefined) return
-  const _process = control.client.getModel().findObject(parent.process)
-  if (_process === undefined) return
-  if (parent.status !== ExecutionStatus.Active) return
-  const transitions = control.client.getModel().findAllSync(
-    process.class.Transition,
-    {
-      from: parent.currentState,
-      process: parent.process,
-      trigger: process.trigger.OnSubProcessesDone
-    },
-    {
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
-  const transition = await pickTransition(control, execution, transitions, {})
-  if (transition === undefined) return
-  await executeTransition(parent, transition, control)
+  try {
+    const subProcesses = await control.client.findAll(process.class.Execution, {
+      parentId: execution.parentId,
+      status: ExecutionStatus.Active
+    })
+    const filtered = subProcesses.filter((it) => it._id !== execution._id)
+    if (filtered.length !== 0) return
+    const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
+    if (parent === undefined) return
+    const _process = control.client.getModel().findObject(parent.process)
+    if (_process === undefined) return
+    if (parent.status !== ExecutionStatus.Active) return
+    const transitions = control.client.getModel().findAllSync(
+      process.class.Transition,
+      {
+        from: parent.currentState,
+        process: parent.process,
+        trigger: process.trigger.OnSubProcessesDone
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const transition = await pickTransition(control, parent, transitions, {})
+    if (transition === undefined) return
+    await executeTransition(parent, transition, control)
+  } catch (err) {
+    control.ctx.error('Error checking parent execution:', { error: err, execution: execution._id })
+  }
 }
 
 async function checkNext (control: ProcessControl, execution: Execution): Promise<boolean> {

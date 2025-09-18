@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "Assistente AI",
+    "IntegrationDescription": "Il tuo assistente personale basato sull'AI che aiuta a organizzare, automatizzare e snellire il tuo flusso di lavoro quotidiano sulla piattaforma",
+    "ConfigLabel": "Assistente AI",
+    "ConfigDescription": "Assistente personale basato sull'AI",
+    "Connect": "Connetti",
+    "Cancel": "Annulla",
+    "Status": "Stato",
+    "FailedToConnect": "Il servizio Assistente AI non è disponibile",
+    "Configure": "Configura Assistente AI"
+  }
+}

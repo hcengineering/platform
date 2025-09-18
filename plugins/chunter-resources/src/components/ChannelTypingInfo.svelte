@@ -64,6 +64,7 @@
 
   async function updateTypingSub (objectId: Ref<Doc>): Promise<void> {
     await unsubscribe?.()
+    typingInfo = new Map<string, Ref<Person>>()
     unsubscribe = await subscribeTyping(objectId, handleTypingInfo)
   }
 

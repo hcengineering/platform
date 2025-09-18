@@ -223,6 +223,7 @@ export interface AccountClient {
   mergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<void>
   mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
   addEmailSocialId: (email: string) => Promise<OtpInfo>
+  addHulyAssistantSocialId: () => Promise<PersonId>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1093,6 +1094,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'addEmailSocialId' as const,
       params: { email }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async addHulyAssistantSocialId (): Promise<PersonId> {
+    const request = {
+      method: 'addHulyAssistantSocialId' as const,
+      params: {}
     }
 
     return await this.rpc(request)
