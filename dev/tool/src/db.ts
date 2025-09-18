@@ -1319,9 +1319,41 @@ async function migrateAccount (
   accountDB: AccountDB,
   dryRun = true
 ): Promise<AccountUuid | undefined> {
-  const primaryKey: SocialKey = {
-    type: SocialIdType.EMAIL,
-    value: account.email
+  let primaryKey: SocialKey
+  let secondaryKey: SocialKey | undefined
+
+  if (account.githubId != null) {
+    if (account.githubUser == null) {
+      console.log('No github user found for github id', account.githubId)
+      return
+    }
+
+    primaryKey = {
+      type: SocialIdType.GITHUB,
+      value: account.githubUser
+    }
+    secondaryKey = !account.email.startsWith('github:')
+      ? {
+          type: SocialIdType.EMAIL,
+          value: account.email
+        }
+      : undefined
+  } else if (account.openId != null) {
+    primaryKey = {
+      type: SocialIdType.OIDC,
+      value: account.openId
+    }
+    secondaryKey = !account.email.startsWith('openid:')
+      ? {
+          type: SocialIdType.EMAIL,
+          value: account.email
+        }
+      : undefined
+  } else {
+    primaryKey = {
+      type: SocialIdType.EMAIL,
+      value: account.email
+    }
   }
 
   let personUuid: PersonUuid
@@ -1385,6 +1417,21 @@ async function migrateAccount (
         } else {
           console.log('Updating account password', { personUuid })
         }
+      }
+    }
+  }
+
+  if (secondaryKey != null) {
+    const existingSecondary = await accountDB.socialId.findOne(secondaryKey)
+    if (existingSecondary == null) {
+      if (!dryRun) {
+        await accountDB.socialId.insertOne({
+          ...secondaryKey,
+          personUuid,
+          ...verified
+        })
+      } else {
+        console.log('Creating secondary social id', { personUuid, confirmed: account.confirmed, secondaryKey })
       }
     }
   }
