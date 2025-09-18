@@ -16,7 +16,6 @@
 import { Settings } from '../../main/settings'
 import { PackedConfig } from '../../main/config'
 
-// Create a mock store that behaves like a real store
 const createMockStore = (): { get: jest.Mock, set: jest.Mock } => {
   const store: Record<string, any> = {}
   return {

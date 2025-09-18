@@ -257,13 +257,17 @@ const createWindow = async (): Promise<void> => {
   // All other urls will be blocked.
   hookOpenWindow(mainWindow)
 
+  function minimizeToTrayIsOn (): boolean {
+    return settings.isMinimizeToTrayEnabled() && trayController != null
+  }
+
   mainWindow.on('close', (event: Event) => {
     const bounds = mainWindow?.getBounds()
     if (bounds != null) {
       settings.setWindowBounds(bounds)
     }
 
-    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
+    if (minimizeToTrayIsOn()) {
       if (!isQuiting) {
         event.preventDefault()
         mainWindow?.hide()
@@ -290,7 +294,7 @@ const createWindow = async (): Promise<void> => {
   })
 
   mainWindow.on('minimize', () => {
-    if (settings.isMinimizeToTrayEnabled() && trayController != null) {
+    if (minimizeToTrayIsOn()) {
       mainWindow?.hide()
     }
   })
