@@ -48,6 +48,8 @@ use redis::{
 };
 use serde::Serialize;
 
+static MAX_LOOP_COUNT: usize = 1000; // to avoid infinite loops
+
 #[derive(Debug, Serialize)]
 pub struct RedisArray {
     pub key: String,
@@ -85,28 +87,16 @@ pub fn deprecated_symbol_error(s: &str) -> redis::RedisResult<()> {
     }
 }
 
-// if CONFIG.memory_mode == Some(true) {
-
-//     // memory_status
-//     let map = hub_state.read().await;
-//     let memory_keys = format!("{} keys in memory", map.len());
-//     let memory_bytes = format!("{} bytes used", map.values().map(|v| v.data.len()).sum::<usize>());
-//     format!("{} keys, {} bytes", memory_keys, memory_bytes)
-// } else {
-//     let mut conn = db_backend.redis_connection.lock().await;
-// };
-
 /// redis_info(&connection)
 pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<String> {
     let info: String = redis::cmd("INFO").query_async(conn).await?;
 
-    // Разбираем её построчно
     let mut redis_keys: Option<usize> = None;
     let mut redis_bytes: Option<usize> = None;
 
     for line in info.lines() {
         if line.starts_with("db0:") {
-            // db0:keys=152,expires=10,avg_ttl=456789
+            // parsing: db0:keys=152,expires=10,avg_ttl=456789
             if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys=")) {
                 if let Some(val) = keys_part.strip_prefix("keys=") {
                     redis_keys = val.parse::<usize>().ok();
@@ -200,14 +190,11 @@ pub async fn redis_read(
     };
 
     let ttl: i64 = redis::cmd("TTL").arg(key).query_async(conn).await?;
-    if ttl == -1 {
-        return error(500, "TTL not set");
-    }
-    if ttl == -2 {
-        return error(500, "Key not found");
-    }
-    if ttl < 0 {
-        return error(500, "Unknown TTL error");
+    match ttl {
+        -1 => return error(500, "TTL not set"),
+        -2 => return error(500, "Key not found"),
+        x if x < 0 => return error(500, "Unknown TTL error"),
+        _ => {} // ttl >= 0, ок
     }
 
     Ok(Some(RedisArray {
@@ -218,16 +205,7 @@ pub async fn redis_read(
     }))
 }
 
-/// TTL sec
-/// redis_save(&mut conn, "key", "val", Some(Ttl::Sec(300)), Some(SaveMode::Insert)).await?;
-///
-/// TTL at
-/// let at_unixtime: u64 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + 600;
-/// redis_save(&mut conn, "key", "val", Some(Ttl::At(at_unixtime)), Some(SaveMode::Update)).await?;
-///
-/// w/o TTL (CONFIG.max_ttl)
-/// redis_save(&mut conn, "key", "val", None, None).await?;
-
+/// redis_save(&connection,key,value,[ttl?],[mode?])
 pub async fn redis_save<T: ToRedisArgs>(
     conn: &mut MultiplexedConnection,
     key: &str,
@@ -272,30 +250,49 @@ pub async fn redis_save<T: ToRedisArgs>(
         return error(412, "TTL exceeds MAX_TTL");
     }
 
-    let mut cmd = redis::cmd("SET");
-    cmd.arg(key).arg(value).arg("EX").arg(sec);
-
-    // Mode variants
     let mode = mode.unwrap_or(SaveMode::Upsert);
 
     match mode {
-        SaveMode::Upsert => {} // none
-
-        SaveMode::Insert => {
-            cmd.arg("NX");
-        } // if NOT Exist
-
-        SaveMode::Update => {
-            cmd.arg("XX");
-        } // if Exist
+        SaveMode::Upsert | SaveMode::Insert | SaveMode::Update => {
+            let mut cmd = redis::cmd("SET");
+            cmd.arg(key).arg(value).arg("EX").arg(sec);
+            match mode {
+                SaveMode::Insert => {
+                    cmd.arg("NX");
+                } // if NOT Exist
+                SaveMode::Update => {
+                    cmd.arg("XX");
+                } // if Exist
+                _ => {}
+            };
+            let result: Option<String> = cmd.query_async(conn).await?;
+            if result.is_none() {
+                return match mode {
+                    SaveMode::Insert => error(412, "Insert: key already exists"),
+                    SaveMode::Update => error(404, "Update: key does not exist"),
+                    _ => error(500, "Unexpected Redis SET failure"),
+                };
+            }
+            Ok(())
+        }
 
         SaveMode::Equal(ref expected_md5) => {
-            // if md5 === actual_md5
-            let current_value: Option<String> =
-                redis::cmd("GET").arg(key).query_async(conn).await?;
-            if let Some(existing) = current_value {
+            let mut loop_count = 0;
+            loop {
+                let _: () = redis::cmd("WATCH").arg(key).query_async(conn).await?;
+
+                let current: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
+                let existing = match current {
+                    None => {
+                        let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
+                        return error(404, "Equal: key does not exist");
+                    }
+                    Some(v) => v,
+                };
+                // check md5
                 let actual_md5 = hex::encode(md5::compute(&existing).0);
                 if &actual_md5 != expected_md5 {
+                    let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
                     return error(
                         412,
                         format!(
@@ -304,31 +301,38 @@ pub async fn redis_save<T: ToRedisArgs>(
                         ),
                     );
                 }
-            } else {
-                return error(404, "Equal: key does not exist");
+
+                // MULTI/EXEC
+                let mut pipe = redis::pipe();
+                pipe.atomic()
+                    .cmd("SET")
+                    .arg(key)
+                    .arg(value.to_redis_args())
+                    .arg("EX")
+                    .arg(sec);
+
+                let result: Option<String> = pipe.query_async(conn).await?;
+                if result.is_some() {
+                    break;
+                }
+                // None -> key was changed -> repeat loop
+                loop_count += 1;
+                if loop_count > MAX_LOOP_COUNT {
+                    let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
+                    return error(500, "Something wrong: too many retries on Equal mode");
+                }
             }
+
+            Ok(())
         }
     }
-
-    // execute
-    let result: Option<String> = cmd.query_async(conn).await?;
-
-    if result.is_none() {
-        match mode {
-            SaveMode::Insert => return error(412, "Insert: key already exists"),
-            SaveMode::Update => return error(404, "Update: key does not exist"),
-            _ => return error(500, "Unexpected Redis SET failure"),
-        }
-    }
-
-    Ok(())
 }
 
 /// redis_delete(&connection,key)
 pub async fn redis_delete(
     conn: &mut MultiplexedConnection,
     key: &str,
-    mode: Option<SaveMode>, // <— добавили
+    mode: Option<SaveMode>,
 ) -> RedisResult<bool> {
     deprecated_symbol_error(key)?;
 
@@ -339,37 +343,58 @@ pub async fn redis_delete(
     let mode = mode.unwrap_or(SaveMode::Upsert);
 
     match mode {
+        SaveMode::Update | SaveMode::Upsert => {
+            let deleted: i32 = redis::cmd("DEL").arg(key).query_async(conn).await?;
+            return Ok(deleted > 0);
+        }
+
         SaveMode::Equal(ref expected_md5) => {
-            let current: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
-            match current {
-                None => return error(404, "Equal: key does not exist"),
-                Some(val) => {
-                    let actual_md5 = hex::encode(md5::compute(&val).0);
-                    if &actual_md5 != expected_md5 {
-                        return error(
-                            412,
-                            format!(
-                                "md5 mismatch, current: {}, expected: {}",
-                                actual_md5, expected_md5
-                            ),
-                        );
+            let mut loop_count = 0;
+            loop {
+                let _: () = redis::cmd("WATCH").arg(key).query_async(conn).await?;
+
+                let current: Option<String> = redis::cmd("GET").arg(key).query_async(conn).await?;
+                let existing = match current {
+                    None => {
+                        let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
+                        return error(404, "Equal: key does not exist");
                     }
+                    Some(val) => val,
+                };
+
+                // check md5
+                let actual_md5 = hex::encode(md5::compute(&existing).0);
+                if &actual_md5 != expected_md5 {
+                    let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
+                    return error(
+                        412,
+                        format!(
+                            "md5 mismatch, current: {}, expected: {}",
+                            actual_md5, expected_md5
+                        ),
+                    );
+                }
+
+                let mut pipe = redis::pipe();
+                pipe.atomic().cmd("DEL").arg(key);
+
+                let deleted: Option<i32> = pipe.query_async(conn).await?;
+                if let Some(n) = deleted {
+                    return Ok(n > 0);
+                }
+                // None -> key was changed -> repeat loop
+                loop_count += 1;
+                if loop_count > MAX_LOOP_COUNT {
+                    let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
+                    return error(500, "Something wrong: too many retries on Equal mode");
                 }
             }
         }
+
         SaveMode::Insert => {
             return error(412, "Insert mode is not supported for delete");
         }
-        SaveMode::Update | SaveMode::Upsert => {}
     }
-
-    let deleted: i32 = redis::cmd("DEL").arg(key).query_async(conn).await?;
-
-    if deleted == 0 && matches!(mode, SaveMode::Equal(_)) {
-        return error(404, "Delete: key does not exist");
-    }
-
-    Ok(deleted > 0)
 }
 
 impl TryFrom<Msg> for RedisEvent {
@@ -389,7 +414,7 @@ impl TryFrom<Msg> for RedisEvent {
             }
         };
 
-        // "__keyevent@0__:set" → event="set", db=0; payload = key
+        // parsing: "__keyevent@0__:set" → event="set", db=0; payload = key
         let event = channel.rsplit(':').next().unwrap_or("");
         let message = match event {
             "set" => RedisEventAction::Set,
@@ -398,13 +423,6 @@ impl TryFrom<Msg> for RedisEvent {
             "expired" => RedisEventAction::Expired,
             other => RedisEventAction::Other(other.to_string()),
         };
-
-        // let db = channel
-        //     .find('@')
-        //     .and_then(|at| channel.get(at + 1..))
-        //     .and_then(|rest| rest.find("__:").map(|end| &rest[..end]))
-        //     .and_then(|s| s.parse::<u32>().ok())
-        //     .unwrap_or(0);
 
         Ok(RedisEvent {
             // db,
@@ -416,7 +434,6 @@ impl TryFrom<Msg> for RedisEvent {
 
 pub async fn receiver(
     redis_client: Client,
-    // hub: HubServiceHandle
     hub_state: Arc<RwLock<HubState>>,
 ) -> anyhow::Result<()> {
     let mut redis = redis_client.get_multiplexed_async_connection().await?;
@@ -443,8 +460,6 @@ pub async fn receiver(
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-                // debug!("redis event: {ev:#?}");
-
                 push_event(&hub_state, &mut redis, ev).await;
             }
             Err(e) => {

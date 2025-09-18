@@ -1,4 +1,4 @@
-bind_port = 8095
+bind_port = 8099
 bind_host = "0.0.0.0"
 
 token_secret = "secret"

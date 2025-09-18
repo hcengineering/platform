@@ -67,7 +67,9 @@ async fn extract_claims(
         token: Option<String>,
     }
 
+    println!("CONFIG.no_authorization = {}", CONFIG.no_authorization);
     if !CONFIG.no_authorization {
+        println!("Extracting claims...");
         let query = request.extract::<Query<QueryString>>().await?.into_inner();
 
         let claims = if let Some(token) = query.token {
@@ -175,7 +177,14 @@ async fn main() -> anyhow::Result<()> {
             ) // WebSocket
             .route(
                 "/status",
+                // web::get().to(|req: actix_web::HttpRequest| async move {
+                //     for (name, value) in req.headers() {
+                //         println!("HEADER {:?}: {:?}", name, value);
+                //     }
+                //     HttpResponse::Ok().finish()
+                // }),
                 web::get().to({
+                    // println!("S T A T U S");
                     move |hub_state: web::Data<Arc<RwLock<HubState>>>, db_backend: web::Data<Db>| {
                         let hub_state = hub_state.clone();
                         async move {

@@ -7,6 +7,7 @@ commit.sh
 /src/GO.sh
 /src/GOT.sh
 GO.sh
+TEST.sh
 DROP_DB.sh
 TODO.txt
 DOCKER.sh
