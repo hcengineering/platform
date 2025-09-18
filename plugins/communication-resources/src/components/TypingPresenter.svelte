@@ -64,6 +64,7 @@
 
   async function updateTypingSub (cardId: CardID): Promise<void> {
     await unsubscribe?.()
+    typingInfo = new Map<string, Ref<Person>>()
     unsubscribe = await subscribeTyping(cardId, handleTypingInfo)
   }
 
