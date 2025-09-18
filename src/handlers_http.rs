@@ -13,13 +13,15 @@
 // limitations under the License.
 //
 
-use anyhow::anyhow;
 use serde::Deserialize;
+use std::str::FromStr;
 use tracing::*;
 
 use actix_web::{
-    Error, HttpRequest, HttpResponse,
-    web::{self},
+    Error, HttpResponse,
+    error::ParseError,
+    http::header::{self, HeaderName, HeaderValue, IfMatch, IfNoneMatch, TryIntoHeaderValue},
+    web,
 };
 
 use crate::{
@@ -27,7 +29,7 @@ use crate::{
     redis::{SaveMode, Ttl},
 };
 
-pub fn map_handler_error(err: impl std::fmt::Display) -> Error {
+pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
 
     if let Some(detail) = msg.split(" - ExtensionError: ").nth(1) {
@@ -51,6 +53,9 @@ pub struct PathParams {
     workspace: String,
 }
 
+pub struct TtlSecsHeader(Option<usize>);
+pub struct TtlExpiresAtHeader(Option<u64>);
+
 /// list
 pub async fn list(
     path: web::Path<PathParams>,
@@ -60,12 +65,8 @@ pub async fn list(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
-    async move || -> anyhow::Result<HttpResponse> {
-        let entries = db.list(&key).await?;
-        Ok(HttpResponse::Ok().json(entries))
-    }()
-    .await
-    .map_err(map_handler_error)
+    let entries = db.list(&key).await.map_err(map_redis_error)?;
+    Ok(HttpResponse::Ok().json(entries))
 }
 
 /// get
@@ -77,114 +78,168 @@ pub async fn get(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
 
-    async move || -> anyhow::Result<HttpResponse> {
-        let entry_opt = db.read(&key).await?;
-        let resp = match entry_opt {
-            Some(entry) => HttpResponse::Ok()
-                .insert_header(("ETag", entry.etag.clone()))
-                .json(entry),
-            None => HttpResponse::NotFound().body("empty"),
-        };
-        Ok(resp)
-    }()
-    .await
-    .map_err(map_handler_error)
+    let entry_opt = db.read(&key).await.map_err(map_redis_error)?;
+    let resp = match entry_opt {
+        Some(entry) => HttpResponse::Ok()
+            .insert_header((header::ETAG, entry.etag.clone()))
+            .json(entry),
+        None => HttpResponse::NotFound().body("empty"),
+    };
+    Ok(resp)
 }
 
 /// put
 pub async fn put(
-    req: HttpRequest,
     path: web::Path<PathParams>,
     body: web::Bytes,
     db: web::Data<Db>,
+    (secs, expires_at): (
+        Result<web::Header<TtlSecsHeader>, ParseError>,
+        Result<web::Header<TtlExpiresAtHeader>, ParseError>,
+    ),
+    (if_match, if_none_match): (
+        web::Header<header::IfMatch>,
+        web::Header<header::IfNoneMatch>,
+    ),
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "put request");
 
-    async move || -> anyhow::Result<HttpResponse> {
-        // TTL logic
-        let mut ttl = None;
-        if let Some(x) = req.headers().get("HULY-TTL") {
-            let s = x.to_str().map_err(|_| anyhow!("Invalid HULY-TTL header"))?;
-            let secs = s
-                .parse::<usize>()
-                .map_err(|_| anyhow!("Invalid TTL value in HULY-TTL header"))?;
-            ttl = Some(Ttl::Sec(secs));
-        } else if let Some(x) = req.headers().get("HULY-EXPIRE-AT") {
-            let s = x
-                .to_str()
-                .map_err(|_| anyhow!("Invalid HULY-EXPIRE-AT header"))?;
-            let ts = s
-                .parse::<u64>()
-                .map_err(|_| anyhow!("Invalid EXPIRE-AT value in HULY-EXPIRE-AT header"))?;
-            ttl = Some(Ttl::At(ts));
+    // TTL logic
+    let ttl = match (secs?.into_inner().0, expires_at?.into_inner().0) {
+        (None, None) => None,
+        (Some(secs), None) => Some(Ttl::Sec(secs)),
+        (None, Some(timestamp)) => Some(Ttl::At(timestamp)),
+        _ => {
+            return Err(actix_web::error::ErrorBadRequest("Multiple ttl specified"));
         }
+    };
 
-        // MODE logic
-        let mut mode = Some(SaveMode::Upsert);
-        if let Some(h) = req.headers().get("If-Match") {
-            // `If-Match: *` - update only if the key exists
-            let s = h.to_str().map_err(|_| anyhow!("Invalid If-Match header"))?;
-            if s == "*" {
-                mode = Some(SaveMode::Update);
-            }
-            // `If-Match: *` — update only if exist
-            else {
-                mode = Some(SaveMode::Equal(s.to_string()));
-            } // `If-Match: <md5>` — update only if current
-        } else if let Some(h) = req.headers().get("If-None-Match") {
-            // `If-None-Match: *` — insert only if does not exist
-            let s = h
-                .to_str()
-                .map_err(|_| anyhow!("Invalid If-None-Match header"))?;
-            if s == "*" {
-                mode = Some(SaveMode::Insert);
-            } else {
-                return Err(anyhow!("If-None-Match must be '*'"));
-            }
+    // MODE logic
+    let mode = match (if_match.into_inner(), if_none_match.into_inner()) {
+        (IfMatch::Items(items), IfNoneMatch::Items(nitems))
+            if items.is_empty() && nitems.is_empty() =>
+        {
+            SaveMode::Upsert
         }
+        (IfMatch::Any, IfNoneMatch::Items(nitems)) if nitems.is_empty() => SaveMode::Update,
+        (IfMatch::Items(etags), IfNoneMatch::Items(nitems))
+            if etags.len() == 1 && nitems.is_empty() =>
+        {
+            SaveMode::Equal(etags[0].tag().to_string())
+        }
+        (IfMatch::Items(items), IfNoneMatch::Any) if items.is_empty() => SaveMode::Insert,
+        _ => {
+            return Err(actix_web::error::ErrorBadRequest(
+                "Unsupported combination of If-Match and If-None-Match",
+            ));
+        }
+    };
 
-        db.save(&key, &body[..], ttl, mode).await?;
-        Ok(HttpResponse::Ok().body("DONE"))
-    }()
-    .await
-    .map_err(map_handler_error)
+    db.save(&key, &body[..], ttl, Some(mode))
+        .await
+        .map_err(map_redis_error)?;
+    Ok(HttpResponse::Ok().body("DONE"))
 }
 
 /// delete
 pub async fn delete(
-    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
+    if_match: web::Header<header::IfMatch>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
 
-    async move || -> anyhow::Result<HttpResponse> {
-        // MODE logic
-        let mut mode = Some(SaveMode::Upsert);
-        if let Some(h) = req.headers().get("If-Match") {
-            // `If-Match: *` - delete only if the key exists
-            let s = h.to_str().map_err(|_| anyhow!("Invalid If-Match header"))?;
-            if s == "*" {
-                mode = Some(SaveMode::Update);
+    // MODE logic
+    let mode = match if_match.into_inner() {
+        IfMatch::Any => SaveMode::Update,
+        IfMatch::Items(etags) => {
+            if etags.len() == 1 {
+                SaveMode::Equal(etags[0].tag().to_string())
+            } else if etags.is_empty() {
+                SaveMode::Upsert
+            } else {
+                return Err(actix_web::error::ErrorBadRequest(
+                    "Multiple If-Match are not supported",
+                ));
             }
-            // `If-Match: *` — return error if not exist
-            else {
-                mode = Some(SaveMode::Equal(s.to_string()));
-            } // `If-Match: <md5>` — delete only if current
         }
+    };
 
-        let deleted = db.delete(&key, mode).await?;
-        let response = match deleted {
-            true => HttpResponse::NoContent().finish(),
-            false => HttpResponse::NotFound().body("not found"),
+    let deleted = db.delete(&key, Some(mode)).await.map_err(map_redis_error)?;
+    let response = match deleted {
+        true => HttpResponse::NoContent().finish(),
+        false => HttpResponse::NotFound().body("not found"),
+    };
+
+    Ok(response)
+}
+
+impl TryIntoHeaderValue for TtlSecsHeader {
+    type Error = std::convert::Infallible;
+
+    fn try_into_value(self) -> Result<header::HeaderValue, Self::Error> {
+        Ok(self
+            .0
+            .map(HeaderValue::from)
+            .unwrap_or(HeaderValue::from_static("")))
+    }
+}
+
+impl header::Header for TtlSecsHeader {
+    fn name() -> HeaderName {
+        HeaderName::from_static("huly-ttl")
+    }
+
+    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, ParseError> {
+        let mut values = msg.headers().get_all(Self::name());
+        let val = if let Some(value) = values.next() {
+            Some(
+                usize::from_str(value.to_str().map_err(|_| ParseError::Header)?.trim())
+                    .map_err(|_| ParseError::Header)?,
+            )
+        } else {
+            None
         };
+        if values.next().is_some() {
+            return Err(ParseError::TooLarge);
+        }
+        Ok(Self(val))
+    }
+}
 
-        Ok(response)
-    }()
-    .await
-    .map_err(map_handler_error)
+impl TryIntoHeaderValue for TtlExpiresAtHeader {
+    type Error = std::convert::Infallible;
+
+    fn try_into_value(self) -> Result<header::HeaderValue, Self::Error> {
+        Ok(self
+            .0
+            .map(HeaderValue::from)
+            .unwrap_or(HeaderValue::from_static("")))
+    }
+}
+
+impl header::Header for TtlExpiresAtHeader {
+    fn name() -> HeaderName {
+        HeaderName::from_static("huly-expire-at")
+    }
+
+    fn parse<M: actix_web::HttpMessage>(msg: &M) -> Result<Self, ParseError> {
+        let mut values = msg.headers().get_all(Self::name());
+        let val = if let Some(value) = values.next() {
+            Some(
+                u64::from_str(value.to_str().map_err(|_| ParseError::Header)?.trim())
+                    .map_err(|_| ParseError::Header)?,
+            )
+        } else {
+            None
+        };
+        if values.next().is_some() {
+            return Err(ParseError::TooLarge);
+        }
+        Ok(Self(val))
+    }
 }
