@@ -269,6 +269,7 @@ mod tests {
 
         for (merge_strategy, body, expected) in test_cases {
             let blob = Blob {
+                hash: "hash".to_string(),
                 s3_key: "key".to_string(),
                 length: body.as_ref().map(|b| b.len()).unwrap_or(0),
                 inline: body,
@@ -353,6 +354,7 @@ mod tests {
 
         for (merge_strategy, body, expected) in test_cases {
             let blob = Blob {
+                hash: "hash".to_string(),
                 s3_key: "key".to_string(),
                 length: body.as_ref().map(|b| b.len()).unwrap_or(0),
                 inline: body,
