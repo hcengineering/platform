@@ -226,7 +226,7 @@ export class LiveKitClient {
     }
   }
 
-  onLocalTrackPublished = (publication: LocalTrackPublication, _participant: LocalParticipant) => {
+  onLocalTrackPublished = (publication: LocalTrackPublication, _participant: LocalParticipant): void => {
     const session = this.currentMediaSession
     const track = publication.track?.mediaStreamTrack
     const deviceId = track?.getSettings().deviceId
@@ -242,7 +242,7 @@ export class LiveKitClient {
     }
   }
 
-  onLocalTrackUnpublished = (publication: LocalTrackPublication, _participant: LocalParticipant) => {
+  onLocalTrackUnpublished = (publication: LocalTrackPublication, _participant: LocalParticipant): void => {
     const session = this.currentMediaSession
     if (publication.track?.kind === Track.Kind.Video) {
       if (publication.track.source === Track.Source.ScreenShare) {
@@ -256,7 +256,7 @@ export class LiveKitClient {
     }
   }
 
-  onTrackMuted = (publication: TrackPublication, participant: Participant) => {
+  onTrackMuted = (publication: TrackPublication, participant: Participant): void => {
     if (!participant.isLocal) return
     const session = this.currentMediaSession
     if (publication.track?.kind === Track.Kind.Video && publication.track.source === Track.Source.Camera) {
@@ -266,7 +266,7 @@ export class LiveKitClient {
     }
   }
 
-  onTrackUnmuted = (publication: TrackPublication, participant: Participant) => {
+  onTrackUnmuted = (publication: TrackPublication, participant: Participant): void => {
     if (!participant.isLocal) return
     const session = this.currentMediaSession
     const track = publication.track?.mediaStreamTrack

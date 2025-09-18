@@ -33,7 +33,7 @@ export default mergeIds(loveId, love, {
     RoomLanguageEditor: '' as AnyComponent,
     MediaPopupItemExt: '' as AnyComponent,
     SharingStateIndicator: '' as AnyComponent,
-    InviteEmployeeButton: '' as AnyComponent,
+    InviteEmployeeButton: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>

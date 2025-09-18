@@ -27,11 +27,11 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
-  import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
+  import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
   import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
-  import { createMeetingVideoWidgetTab, createMeetingWidget, getRoomName } from '../../utils'
+  import { createMeetingWidget, getRoomName } from '../../utils'
   import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
   import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
@@ -39,7 +39,7 @@
   import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { leaveMeeting } from '../../meetingController'
+  import { leaveMeeting, currentMeetingRoom } from '../../meetingController'
   import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
@@ -176,7 +176,7 @@
 
   $: checkActiveInvites($activeInvites)
 
-  function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
+  function checkActiveMeeting (loc: Location, meetingSessionConnected: boolean, room: Ref<Room> | undefined): void {
     const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
     const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
@@ -186,17 +186,18 @@
       }
       return
     }
+    console.log(meetingSessionConnected, room, currentMeetingRoom, isMeetingWidgetCreated)
 
-    if ($lkSessionConnected) {
+    if (meetingSessionConnected) {
+      if (currentMeetingRoom !== undefined && room !== currentMeetingRoom) {
+        void leaveMeeting()
+        return
+      }
       const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
       if (widget === undefined) return
 
       if (!isMeetingWidgetCreated) {
-        createMeetingWidget(widget, room, video)
-      } else if (video && !meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
-        createMeetingVideoWidgetTab(widget)
-      } else if (!video && meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
-        void closeWidgetTab(widget, 'video')
+        createMeetingWidget(widget, room, meetingSessionConnected)
       }
     } else {
       if (isMeetingWidgetCreated) {
@@ -205,7 +206,7 @@
     }
   }
 
-  $: checkActiveVideo($location, $lkSessionConnected, $currentRoom?._id)
+  $: checkActiveMeeting($location, $lkSessionConnected, $currentRoom?._id)
 
   $: joined = activeRooms.filter((r) => $myInfo?.room === r._id)
 

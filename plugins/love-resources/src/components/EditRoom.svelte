@@ -22,7 +22,7 @@
   import { getRoomName, prepareRoomConnection } from '../utils'
   import { infos, myOffice, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
-  import { createMeeting } from '../meetingController'
+  import { createMeeting, joinMeeting } from '../meetingController'
 
   export let object: Room
 
@@ -36,14 +36,20 @@
   let connecting = false
 
   onMount(() => {
-    prepareRoomConnection(object)
+    void prepareRoomConnection(object)
     dispatch('open', { ignoreKeys: ['name'] })
   })
 
   const tryConnecting = false
 
   async function connect (): Promise<void> {
-    await createMeeting(object)
+    if ($infos.some(({ room }) => room === object._id)) {
+      console.log('join')
+      await joinMeeting(object)
+    } else {
+      console.log('create')
+      await createMeeting(object)
+    }
   }
 
   $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$lkSessionConnected)

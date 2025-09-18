@@ -1,4 +1,4 @@
-import { concatLink, type Ref } from '@hcengineering/core'
+import { concatLink } from '@hcengineering/core'
 import love, { type Room } from '@hcengineering/love'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
@@ -9,30 +9,13 @@ import { Analytics } from '@hcengineering/analytics'
 import { currentMeetingMinutes } from './stores'
 import { get } from 'svelte/store'
 
-interface RoomToken {
-  issuedOn: number
-  token: string
-}
 export function getLoveClient (): LoveClient {
   return new LoveClient()
 }
 
 export class LoveClient {
-  private readonly tokens: Map<Ref<Room>, RoomToken>
-
-  constructor () {
-    this.tokens = new Map<Ref<Room>, RoomToken>()
-  }
-
   async getRoomToken (room: Room): Promise<string> {
-    const currentTime = Date.now()
-    let roomToken: RoomToken | undefined = this.tokens.get(room._id)
-    // refresh token after 8 minutes, server sets token ttl to 10 minutes
-    if (roomToken === undefined || currentTime - roomToken.issuedOn >= 8 * 60 * 1000) {
-      roomToken = { issuedOn: currentTime, token: await this.refreshRoomToken(room) }
-      this.tokens.set(room._id, roomToken)
-    }
-    return roomToken.token
+    return await this.refreshRoomToken(room)
   }
 
   async updateSessionLanguage (room: Room): Promise<void> {
@@ -97,6 +80,7 @@ export class LoveClient {
   private async refreshRoomToken (room: Room): Promise<string> {
     const sessionName = this.getTokenRoomName(room)
     const endpoint = this.getLoveEndpoint()
+    console.log('refresh room token')
     if (endpoint === undefined) {
       throw new Error('Love service endpoint not found')
     }
@@ -105,6 +89,7 @@ export class LoveClient {
       throw new Error('Cannot find current person')
     }
     const platformToken = getPlatformToken()
+    console.log(platformToken)
     const res = await fetch(concatLink(endpoint, '/getToken'), {
       method: 'POST',
       headers: {

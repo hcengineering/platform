@@ -27,6 +27,7 @@ import { getMetadata } from '@hcengineering/platform'
 
 const requestsQuery = createQuery(true)
 const invitesQuery = createQuery(true)
+export let currentMeetingRoom: Ref<Room> | undefined
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
@@ -78,6 +79,7 @@ export async function leaveMeeting (): Promise<void> {
   }
   await liveKitClient.disconnect()
   closeMeetingMinutes()
+  currentMeetingRoom = undefined
 }
 
 export async function joinMeeting (room: Room): Promise<void> {
@@ -103,7 +105,7 @@ export async function acceptInvite (invite: Invite): Promise<void> {
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
-  if (meeting !== undefined) {
+  if (meeting === undefined) {
     await createMeetingDocument(room)
   }
 
@@ -142,11 +144,11 @@ export async function sendInvites (persons: Array<Ref<Person>>): Promise<void> {
     )
   }
   invitesQuery.query(love.class.Invite, { from: me, _id: { $in: inviteIds } }, (res) => {
-    const invite = res[0]
-    if (invite === undefined) return
-    if (invite.status === RequestStatus.Pending) return
-    invitesQuery.unsubscribe()
-    if (invite.status === RequestStatus.Approved) {
+    for (const invite of res) {
+      if (invite === undefined || invite.status !== RequestStatus.Approved) {
+        continue
+      }
+      invitesQuery.unsubscribe()
       const room = getRoomById(invite.room)
       if (room === undefined) return
       void connectToMeeting(room)
@@ -164,7 +166,7 @@ export async function acceptJoinRequest (request: JoinRequest): Promise<void> {
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
-  if (meeting !== undefined) {
+  if (meeting === undefined) {
     await createMeetingDocument(room)
   }
 
@@ -216,12 +218,24 @@ async function sendJoinRequest (room: Room): Promise<void> {
 }
 
 export async function kick (person: Ref<Person>): Promise<void> {
-  // TODO: Office kick participant
+  const client = getClient()
+  const allRooms = get(rooms)
+  const participantsInfo = get(infos)
+  const participantInfo = participantsInfo.find((p) => p.person === person)
+  if (participantInfo === undefined) return
+  const participantOffice = allRooms.find((r) => isOffice(r) && r.person === person)
+  await client.update(participantInfo, { room: participantOffice?._id ?? love.ids.Reception, x: 0, y: 0 })
 }
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-  if (get(myInfo)?.room === room._id) return
+  if (currentMeetingRoom === room._id) return
+
+  if (currentMeetingRoom !== undefined) {
+    await leaveMeeting()
+  }
+
+  currentMeetingRoom = room._id
 
   await navigateToOfficeDoc(room)
   await moveToMeetingRoom(room)

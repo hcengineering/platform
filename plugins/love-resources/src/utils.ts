@@ -63,6 +63,7 @@ import love from './plugin'
 import { $myPreferences, currentMeetingMinutes, currentRoom } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
+import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
@@ -405,8 +406,19 @@ async function getRoomGuestLink (room: Room): Promise<string> {
       sessionId: roomInfo._id
     }
 
-    const func = await getResource(login.function.GetInviteLink)
-    return await func(24, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
+    const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+    const token = getMetadata(presentation.metadata.Token)
+
+    console.log('Create link')
+    const accountClient = getAccountClientRaw(accountsUrl, token)
+    return await accountClient.createAccessLink(
+      AccountRole.Guest,
+      undefined,
+      undefined,
+      encodeURIComponent(JSON.stringify(navigateUrl))
+    )
+    // const func = await getResource(login.function.GetInviteLink)
+    // return await func(24, '', -1, AccountRole.Guest, )
   }
   return ''
 }
