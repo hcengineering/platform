@@ -29,7 +29,6 @@
       }
     }
   }
-
 </script>
 
 <svelte:window on:click|capture={handleClick} />
