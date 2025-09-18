@@ -104,7 +104,11 @@
     "Cancelled": "Отменено",
     "WaitUntil": "Ждать до",
     "CurrentUser": "Текущий пользователь",
-    "CurrentDate": "Текущая дата"
+    "CurrentDate": "Текущая дата",
+    "AddResult": "Добавить результат",
+    "For": "Для",
+    "Context": "Контекст",
+    "Attribute": "Аттрибут"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

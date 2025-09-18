@@ -66,7 +66,6 @@ export interface Transition extends Doc {
   actions: Step<Doc>[]
   trigger: Ref<Trigger>
   triggerParams: Record<string, any>
-  result?: TriggerResult | null
   rank: Rank
 }
 
@@ -115,13 +114,15 @@ export interface ExecutionError {
   error: IntlString
   props: Record<string, any>
   intlProps: Record<string, IntlString>
-  transition: Ref<Transition>
+  transition: Ref<Transition> | undefined
 }
 
 export interface ProcessToDo extends ToDo {
   execution: Ref<Execution>
 
   withRollback: boolean
+
+  results?: UserResult[]
 }
 
 export type MethodParams<T extends Doc> = {
@@ -142,6 +143,7 @@ export interface Step<T extends Doc> {
   context: StepContext | null
   methodId: Ref<Method<T>>
   params: MethodParams<T>
+  results?: UserResult[]
 }
 
 export interface StepContext {
@@ -149,9 +151,10 @@ export interface StepContext {
   _class?: Ref<Class<Doc>> // class of the context
 }
 
-export interface TriggerResult {
+export interface UserResult {
   _id: ContextId // context id
   name: string
+  key?: string
   type: Type<any>
 }
 

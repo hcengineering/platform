@@ -35,7 +35,8 @@ import process, {
   MethodParams,
   Process,
   processError,
-  ProcessToDo
+  ProcessToDo,
+  UserResult
 } from '@hcengineering/process'
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
@@ -282,7 +283,8 @@ export async function RunSubProcess (
 export async function CreateToDo (
   params: MethodParams<ProcessToDo>,
   execution: Execution,
-  control: ProcessControl
+  control: ProcessControl,
+  results: UserResult[] | undefined
 ): Promise<ExecuteResult> {
   for (const key in { user: params.user, title: params.title }) {
     const val = (params as any)[key]
@@ -311,7 +313,8 @@ export async function CreateToDo (
       visibility: 'public',
       doneOn: null,
       rank: '',
-      withRollback: params.withRollback ?? false
+      withRollback: params.withRollback ?? false,
+      results
     },
     id
   )
