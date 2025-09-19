@@ -18,9 +18,14 @@ import { isMenuBarAction } from './typesUtils'
 import { TitleBarMenuState } from './titleBarMenuState'
 import { ThemeVariant, type ThemeVariantType } from '@hcengineering/theme'
 
-export function setupTitleBarMenu (ipcMain: IPCMainExposed, root: HTMLElement): MenuBar {
+const ToggleMinimizeToTrayAction: MenuBarAction = 'toggle-minimize-to-tray'
+
+const LabelMinimizeToTrayEnabled = '☑ Minimize to tray'
+const LabelMinimizeToTrayDisabled = '☐ Minimize to tray'
+
+export async function setupTitleBarMenu (ipcMain: IPCMainExposed, root: HTMLElement): Promise<MenuBar> {
   const themeManager = new ThemeManager(ThemeVariant.Light)
-  const menuManager = new MenuBarManager(root)
+  const menuManager = new MenuBarManager(root, await ipcMain.isMinimizeToTrayEnabled())
 
   const menuBar = menuManager.getView()
 
@@ -34,6 +39,13 @@ export function setupTitleBarMenu (ipcMain: IPCMainExposed, root: HTMLElement): 
   }
 
   menuManager.attachEventListeners(ipcMain)
+
+  ipcMain.onMinimizeToTraySettingChanged((enabled) => {
+    const toggle = root.querySelector(`[data-action="${ToggleMinimizeToTrayAction}"]`)
+    if (toggle != null) {
+      toggle.textContent = enabled ? LabelMinimizeToTrayEnabled : LabelMinimizeToTrayDisabled
+    }
+  })
 
   ipcMain.onWindowStateChange((_event, state) => {
     const maximizeButton = root.querySelector('#maximize-button')
@@ -58,7 +70,7 @@ export class MenuBar {
   }
 }
 
-export function buildHulyApplicationMenu (): HTMLElement {
+export function buildHulyApplicationMenu (minimizeToTrayEnabled: boolean): HTMLElement {
   const menuBuilder = new MenuBuilder()
 
   const MenuFileIndex = 0
@@ -92,6 +104,11 @@ export function buildHulyApplicationMenu (): HTMLElement {
     .addMenuItem(MenuViewIndex, 'Actual Size', 'restore-size', 'Ctrl+0', 'a')
     .addSeparator(MenuViewIndex)
     .addMenuItem(MenuViewIndex, 'Toggle Fullscreen', 'toggle-fullscreen', 'F11', 'l')
+
+  const MenuWindowIndex = 3
+  const ToggleMinimizeToTrayLabel = minimizeToTrayEnabled ? LabelMinimizeToTrayEnabled : LabelMinimizeToTrayDisabled
+  menuBuilder.addTopLevelMenu('Window', 'w')
+    .addMenuItem(MenuWindowIndex, ToggleMinimizeToTrayLabel, 'toggle-minimize-to-tray', undefined, 'm')
 
   return menuBuilder.build()
 }
@@ -140,7 +157,7 @@ export class MenuBuilder {
     label: string,
     action: MenuBarAction,
     shortcut?: string,
-    acceleratorChar: string | null = null
+    acceleratorChar: string | undefined = undefined
   ): this {
     if (topLevelMenuIndex >= 0 && topLevelMenuIndex < this.menus.length) {
       const item: MenuItem = {
@@ -281,7 +298,7 @@ class MenuBarManager {
   private readonly StateStyleKeyboardSelected = 'desktop-app-keyboard-selected'
   private readonly StateStyleAltModeActive = 'desktop-app-alt-active'
 
-  constructor (private readonly root: HTMLElement) {
+  constructor (private readonly root: HTMLElement, minimizeToTrayEnabled: boolean) {
     this.state = new TitleBarMenuState(
       () => this.topLevelMenus().length,
       (topLevelMenuIndex: number) => {
@@ -290,7 +307,7 @@ class MenuBarManager {
       }
     )
 
-    this.view = buildHulyApplicationMenu()
+    this.view = buildHulyApplicationMenu(minimizeToTrayEnabled)
   }
 
   public getView (): HTMLElement {
