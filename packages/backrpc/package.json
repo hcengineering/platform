@@ -2,13 +2,19 @@
   "name": "@hcengineering/network-backrpc",
   "version": "0.7.1",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "compile",
+    "prepublishOnly": "npm run build",
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
@@ -39,6 +45,14 @@
     "@hcengineering/network-core": "workspace:^0.7.1",
     "zeromq": "^6.5.0",
     "uuid": "^8.3.2"
+  },
+  "repository": "https://github.com/hcengineering/huly.net",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    }
   },
   "publishConfig": {
     "access": "public"

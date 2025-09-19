@@ -2,17 +2,23 @@
   "name": "@hcengineering/network-tool",
   "version": "0.7.1",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Huly Platform Contributors",
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "start": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 node --inspect bundle/bundle.js",
     "start-cr": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 FULLTEXT_URL=http://huly.local:4702 SERVER_PORT=3332 node --inspect bundle/bundle.js",
     "start-flame": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret MODEL_JSON=../../models/all/bundle/model.json clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts",
     "start-raw": "ts-node src/__start.ts",
     "build": "compile",
+    "prepublishOnly": "npm run build",
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
@@ -58,12 +64,12 @@
     "commander": "^14.0.0",
     "zeromq": "^6.5.0"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": "https://github.com/hcengineering/huly.net",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "require": "./lib/index.js",
-      "import": "./lib/index.js"
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
     }
   },
   "publishConfig": {
