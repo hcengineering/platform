@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Process, ProcessToDo, Step } from '@hcengineering/process'
+  import { Process, ProcessToDo, Step, UserResult } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ParamsEditor from './ParamsEditor.svelte'
-  import ResultEditor from './ResultEditor.svelte'
   import { Label, Toggle } from '@hcengineering/ui'
+  import ResultsEditor from './ResultsEditor.svelte'
 
   export let process: Process
   export let step: Step<ProcessToDo>
@@ -31,6 +31,13 @@
     if (e.detail !== undefined) {
       params = e.detail
       ;(step.params as any) = params
+      dispatch('change', step)
+    }
+  }
+
+  function changeResults (e: CustomEvent<UserResult[]>): void {
+    if (e.detail !== undefined) {
+      step.results = e.detail
       dispatch('change', step)
     }
   }
@@ -53,6 +60,8 @@
     }}
   />
 </div>
+<div class="divider" />
+<ResultsEditor {process} result={step.results} on:change={changeResults} />
 
 <style lang="scss">
   .divider {

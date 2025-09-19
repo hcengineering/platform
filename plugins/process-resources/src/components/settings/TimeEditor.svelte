@@ -70,7 +70,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="grid">
+<div class="editor-grid">
   <ProcessAttribute
     {process}
     masterTag={process.masterTag}
@@ -88,17 +88,3 @@
     }}
   />
 </div>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    margin-top: 0.5rem;
-    height: min-content;
-  }
-</style>

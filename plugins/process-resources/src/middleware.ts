@@ -95,7 +95,6 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         await txop.update(execution, {
           context
         })
-        await requestResult(txop, execution, transition, execution.context)
       }
     }
   }
@@ -147,6 +146,8 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: todo.execution
       })
       if (execution === undefined) return
+      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+      await requestResult(txop, execution, todo.results, execution.context)
       const transitions = this.client.getModel().findAllSync(process.class.Transition, {
         process: execution.process,
         from: execution.currentState,
@@ -155,13 +156,11 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       const transition = await pickTransition(this.client, execution, transitions, todo)
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
       if (context !== undefined) {
         await txop.update(execution, {
           context
         })
       }
-      await requestResult(txop, execution, transition, execution.context)
     }
   }
 }

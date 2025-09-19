@@ -40,7 +40,8 @@ import process, {
   ProcessToDo,
   State,
   Step,
-  Transition
+  Transition,
+  UserResult
 } from '@hcengineering/process'
 import serverProcess, {
   ExecuteResult,
@@ -165,7 +166,83 @@ async function findTransitions (
   return await pickTransition(control, execution, transitions, record.context)
 }
 
+async function checkToDoResult (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+  if (record.event !== process.trigger.OnToDoClose) return
+  const todo = record.context.todo as ProcessToDo
+  if (todo === undefined) return
+  if (todo.results == null) return
+  const results = todo.results.filter((it) => it.key != null)
+  if (results.length === 0) return
+  const res = await executeResultSet(control, results, execution)
+  if (!isError(res)) {
+    for (const tx of res.txes) {
+      const updateTx = tx as TxUpdateDoc<Doc>
+      if (updateTx._class === core.class.TxUpdateDoc && updateTx.objectId === execution.card) {
+        const updatedCard = TxProcessor.updateDoc2Doc(
+          control.client.getHierarchy().clone(control.cache.get(execution.card)),
+          updateTx
+        )
+        control.cache.set(execution.card, updatedCard)
+      }
+    }
+    for (const tx of res.txes) {
+      const timeout = setTimeout(() => {
+        control.ctx.warn('TX HANG', tx)
+      }, 30000)
+      await control.client.tx(tx)
+      clearTimeout(timeout)
+    }
+    if (res.rollback != null) {
+      execution.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
+      await control.client.update(execution, { rollback: execution.rollback })
+    }
+  }
+}
+
+async function executeResultSet (
+  control: ProcessControl,
+  results: UserResult[],
+  execution: Execution
+): Promise<ExecuteResult> {
+  try {
+    const method = control.client.getModel().findObject(process.method.UpdateCard)
+    if (method === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: process.method.UpdateCard }, {}, true)
+    }
+    const impl = control.client.getHierarchy().as(method, serverProcess.mixin.MethodImpl) as MethodImpl<any>
+    if (impl === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: process.method.UpdateCard }, {}, true)
+    }
+    const params = {}
+    for (const res of results) {
+      if (res.key == null) continue
+      ;(params as any)[res.key] = execution.context[res._id]
+    }
+    if (!control.cache.has(execution.card)) {
+      const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+      if (card !== undefined) {
+        control.cache.set(execution.card, card)
+      }
+    }
+    const f = await getResource(impl.func)
+    const res = await f(params, execution, control, undefined)
+    return res
+  } catch (err) {
+    if (err instanceof ProcessError) {
+      if (err.shouldLog) {
+        control.ctx.error(err.message, { props: err.props })
+      }
+      return parseError(err, undefined)
+    } else {
+      const errorId = generateId()
+      control.ctx.error(err instanceof Error ? err.message : String(err), { errorId })
+      return parseError(processError(process.error.InternalServerError, { errorId }), undefined)
+    }
+  }
+}
+
 async function processExecution (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+  await checkToDoResult(control, record, execution)
   const transition = await findTransitions(control, record, execution)
   if (transition !== undefined) {
     await execute(execution, transition, control)
@@ -476,7 +553,7 @@ async function executeAction<T extends Doc> (
     if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
     const params = await fillParams(action.params, execution, control)
     const f = await getResource(impl.func)
-    const res = await f(params, execution, control)
+    const res = await f(params, execution, control, action.results)
     if (!isError(res) && action.context?._id != null && res.context != null) {
       execution.context[action.context._id] =
         res.context.length === 1 ? res.context[0]._id : res.context.map((it) => it._id)

@@ -99,7 +99,11 @@
     "Cancelled": "Zrušeno",
     "WaitUntil": "Čekat do",
     "CurrentUser": "Aktuální uživatel",
-    "CurrentDate": "Aktuální datum"
+    "CurrentDate": "Aktuální datum",
+    "AddResult": "Přidat výsledek",
+    "For": "Pro",
+    "Context": "Kontext",
+    "Attribute": "Atribut"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
