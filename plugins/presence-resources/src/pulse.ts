@@ -11,19 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-import { type Person, getCurrentEmployee } from '@hcengineering/contact'
-import { HulypulseClient, type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
+import { HulypulseClient } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { type Doc, type Ref } from '@hcengineering/core'
-
-const typingDelaySeconds = 2
 
 let pulseclient: HulypulseClient | undefined
-
-function getWorkspace (): string {
-  return getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
-}
 
 export async function createPulseClient (): Promise<HulypulseClient | undefined> {
   if (pulseclient == null) {
@@ -33,37 +25,6 @@ export async function createPulseClient (): Promise<HulypulseClient | undefined>
     pulseclient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
   }
   return pulseclient
-}
-
-export interface TypingInfo {
-  personId: Ref<Person>
-  objectId: Ref<Doc>
-}
-
-export async function subscribeTyping (
-  objectId: Ref<Doc>,
-  callback: Callback<TypingInfo | undefined>
-): Promise<UnsubscribeCallback> {
-  const workspace = getWorkspace()
-  return (await pulseclient?.subscribe(`${workspace}/typing/${objectId}/`, callback)) ?? (async () => false)
-}
-
-export async function setTyping (me: string, objectId: Ref<Doc>): Promise<void> {
-  const workspace = getWorkspace()
-  const personId = getCurrentEmployee()
-  const typingInfo: TypingInfo = { personId, objectId }
-  try {
-    await pulseclient?.put(`${workspace}/typing/${objectId}/${me}`, typingInfo, typingDelaySeconds)
-  } catch (error) {
-    console.warn('failed to put typing info:', error)
-  }
-}
-
-export function clearTyping (me: string, objectId: string): void {
-  const workspace = getWorkspace()
-  void pulseclient?.delete(`${workspace}/typing/${objectId}/${me}`).catch((error) => {
-    console.warn('failed to delete typing info:', error)
-  })
 }
 
 export function closePulseClient (): void {

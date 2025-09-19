@@ -14,20 +14,43 @@
 -->
 
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
-  import { onDestroy, onMount } from 'svelte'
+  import { type Doc } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { onMount } from 'svelte'
 
-  import { updateMyPresence, removeMyPresence } from '../store'
+  import { updatePresence, deletePresence } from '../presence'
 
   export let object: Doc
+  export let presenceTtlSeconds: number = 5
+
+  const personId = getCurrentEmployee()
+
+  async function doUpdatePresence (): Promise<void> {
+    const presence = { personId, objectId: object._id, objectClass: object._class }
+    await updatePresence(presence, presenceTtlSeconds)
+  }
+
+  async function doDeletePresence (object: Doc): Promise<void> {
+    const presence = { personId, objectId: object._id, objectClass: object._class }
+    await deletePresence(presence)
+  }
 
   onMount(() => {
-    updateMyPresence({ objectId: object._id, objectClass: object._class }, {})
+    void doUpdatePresence()
+    const interval = setInterval(doUpdatePresence, presenceTtlSeconds * 1000)
+    return () => {
+      clearInterval(interval)
+      void doDeletePresence(object)
+    }
   })
 
-  onDestroy(() => {
-    removeMyPresence({ objectId: object._id, objectClass: object._class })
-  })
+  let previousObject: Doc = object
+
+  $: if (object !== undefined && (object._id !== previousObject._id || object._class !== previousObject._class)) {
+    void doDeletePresence(previousObject)
+    previousObject = object
+    void doUpdatePresence()
+  }
 </script>
 
 <slot />
