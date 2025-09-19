@@ -93,28 +93,30 @@
   }
 </script>
 
-<div class="editor-grid">
-  <span
-    class="labelOnPanel"
-    use:tooltip={{
-      props: { label: cardPlugin.string.Tag }
-    }}
-  >
-    <Label label={cardPlugin.string.Tag} />
-  </span>
-  <TagSelector {process} tag={_id} on:change={changeTag} />
-</div>
-<ParamsEditor
-  {process}
-  _class={_id}
-  allowRemove
-  bind:params={props}
-  {keys}
-  on:change={change}
-  on:remove={removeParam}
-/>
-{#if possibleAttrs.length > 0}
-  <div class="flex-center">
-    <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+<div class="flex-col flex-gap-2">
+  <div class="editor-grid">
+    <span
+      class="labelOnPanel"
+      use:tooltip={{
+        props: { label: cardPlugin.string.Tag }
+      }}
+    >
+      <Label label={cardPlugin.string.Tag} />
+    </span>
+    <TagSelector {process} tag={_id} on:change={changeTag} />
   </div>
-{/if}
+  <ParamsEditor
+    {process}
+    _class={_id}
+    allowRemove
+    bind:params={props}
+    {keys}
+    on:change={change}
+    on:remove={removeParam}
+  />
+  {#if possibleAttrs.length > 0}
+    <div class="flex-center mx-8">
+      <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+    </div>
+  {/if}
+</div>
