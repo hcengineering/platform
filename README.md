@@ -28,6 +28,17 @@ If you want to interact with Huly programmatically, check out our [API Client](.
 
 You can find API usage examples in the [Huly examples](https://github.com/hcengineering/huly-examples) repository.
 
+## Huly Virtual Network
+
+The platform features a distributed network architecture that enables scalable, fault-tolerant communication between accounts, workspaces, and nodes. The [Huly Network](http://github.com/hcengineering/huly.net) provides:
+
+- **Distributed Load Balancing**: Intelligent routing across multiple nodes
+- **Multi-Tenant Architecture**: Secure workspace isolation
+- **Fault Tolerance**: Automatic failover and recovery mechanisms
+- **Real-time Communication**: Event-driven architecture with broadcast capabilities
+
+For detailed information about the network architecture, deployment, and API reference, see the [Network Documentation](http://github.com/hcengineering/huly.net).
+
 ## Table of Contents
 
 - [Huly Platform](#huly-platform)
@@ -35,6 +46,7 @@ You can find API usage examples in the [Huly examples](https://github.com/hcengi
   - [Self-Hosting](#self-hosting)
   - [Activity](#activity)
   - [API Client](#api-client)
+  - [Huly Virtual Network](#huly-virtual-network)
   - [Table of Contents](#table-of-contents)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
@@ -106,6 +118,7 @@ This project uses GitHub Packages for dependency management. To successfully dow
 Follow these steps:
 
 1. Generate a GitHub Token:
+
 - Log in to your GitHub account
 - Go to **Settings** > **Developer settings** > **Personal access tokens** (https://github.com/settings/personal-access-tokens)
 - Click **Generate new token**
@@ -113,12 +126,12 @@ Follow these steps:
 - Generate the token and copy it
 
 2. Authenticate with npm:
+
 ```bash
 npm login --registry=https://npm.pkg.github.com
 ```
 
 When prompted, enter your GitHub username, use the generated token as your password
-
 
 ## Fast start
 
@@ -280,6 +293,7 @@ This guide describes the nuances of building and running the application from so
 #### Disk Space Requirements
 
 Ensure you have sufficient disk space available:
+
 - A fully deployed local application in clean Docker will consume slightly more than **35 GB** of WSL virtual disk space
 - The application folder after build (sources + artifacts) will occupy **4.5 GB**
 
@@ -303,6 +317,7 @@ Make sure Docker is accessible from WSL:
 Windows Git often automatically replaces line endings. Since most build scripts are `.sh` files, ensure your Windows checkout doesn't break them.
 
 **Solution options:**
+
 - Checkout from WSL instead of Windows
 - Configure Git on Windows to disable auto-replacement:
   ```bash
@@ -343,6 +358,7 @@ After these preparations, the build instructions should work without issues.
 When starting the application (`rush docker:up`), some network ports in Windows might be occupied. You can fix port mapping in the `\dev\docker-compose.yaml` file.
 
 **Important:** Depending on which port you change, you'll need to:
+
 1. Find what's using that port
 2. Update the new address in the corresponding service configuration
 
