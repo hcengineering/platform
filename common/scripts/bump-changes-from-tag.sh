@@ -326,4 +326,6 @@ echo "  5. For publishable packages, run: rush publish"
 # Cleanup
 rm -rf "$TEMP_DIR"
 
+rush update
+
 print_success "Done!"
