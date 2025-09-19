@@ -33,7 +33,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV12Migration(ns),
     getV13Migration(ns),
     getV14Migration(ns),
-    getV15Migration(ns)
+    getV15Migration(ns),
+    getV16Migration(ns)
   ]
 }
 
@@ -433,6 +434,15 @@ function getV15Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.workspace_status
     ADD COLUMN IF NOT EXISTS target_region STRING;
+    `
+  ]
+}
+
+function getV16Migration (ns: string): [string, string] {
+  return [
+    'account_db_v16_add_huly_assistant_social_id_type',
+    `
+    ALTER TYPE ${ns}.social_id_type ADD VALUE 'huly-assistant' AFTER 'telegram';
     `
   ]
 }

@@ -14,18 +14,16 @@
 -->
 
 <script lang="ts">
-  import { Process, TriggerResult } from '@hcengineering/process'
+  import { Process } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
-  import ResultEditor from './ResultEditor.svelte'
 
   export let readonly: boolean
   export let process: Process
   export let params: Record<string, any>
   export let skipRollback: boolean = false
-  export let result: TriggerResult | null = null
 
   const dispatch = createEventDispatcher()
 
@@ -34,39 +32,9 @@
     params._id = e.detail
     dispatch('change', { params })
   }
-
-  function changeResult (e: CustomEvent<any>): void {
-    if (e.detail !== undefined) {
-      result = e.detail
-      dispatch('change', { result })
-    }
-  }
 </script>
 
-<div class="grid">
+<div class="editor-grid">
   <Label label={plugin.string.ToDo} />
   <ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
 </div>
-{#if !skipRollback}
-  <div class="divider" />
-  <ResultEditor {result} on:change={changeResult} />
-{/if}
-
-<style lang="scss">
-  .divider {
-    border-bottom: 1px solid var(--divider-color);
-    margin: 1rem 0;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    margin-top: 0.5rem;
-    height: min-content;
-  }
-</style>

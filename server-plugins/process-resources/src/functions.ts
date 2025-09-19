@@ -25,7 +25,8 @@ import core, {
   Ref,
   Relation,
   splitMixinUpdate,
-  Tx
+  Tx,
+  TxProcessor
 } from '@hcengineering/core'
 import process, {
   Execution,
@@ -34,9 +35,10 @@ import process, {
   MethodParams,
   Process,
   processError,
-  ProcessToDo
+  ProcessToDo,
+  UserResult
 } from '@hcengineering/process'
-import { ExecuteResult, ProcessControl } from '@hcengineering/server-process'
+import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 
 export async function CheckToDoDone (
@@ -72,7 +74,7 @@ export async function CheckToDoCancelled (
 }
 
 export async function CheckSubProcessesDone (control: ProcessControl, execution: Execution): Promise<boolean> {
-  const res = control.client.findOne(process.class.Execution, {
+  const res = await control.client.findOne(process.class.Execution, {
     parentId: execution._id,
     status: ExecutionStatus.Active
   })
@@ -122,9 +124,19 @@ export async function AddRelation (
     docA,
     docB
   }
-  const res: Tx[] = [control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)]
+  const resTx = control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)
+  const res: Tx[] = [resTx]
   const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(core.class.Relation, core.space.Workspace, _id)]
-  return { txes: res, rollback, context: _id }
+  return {
+    txes: res,
+    rollback,
+    context: [
+      {
+        _id,
+        value: TxProcessor.createDoc2Doc(resTx, true)
+      }
+    ]
+  }
 }
 
 export async function UpdateCard (
@@ -189,19 +201,29 @@ export async function AddTag (
   const { _id, props } = params
   if (_id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const res: Tx[] = []
-  const context: Ref<Card>[] = [execution.card]
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
-  res.push(
-    control.client.txFactory.createTxMixin(
-      execution.card,
-      _process.masterTag,
-      core.space.Workspace,
-      _id as Ref<Tag>,
-      props
-    )
+  const tx = control.client.txFactory.createTxMixin(
+    execution.card,
+    _process.masterTag,
+    core.space.Workspace,
+    _id as Ref<Tag>,
+    props
   )
-  return { txes: res, rollback: undefined, context }
+  res.push(tx)
+  const card = control.cache.get(execution.card)
+  const cardWithMixin =
+    card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
+  return {
+    txes: res,
+    rollback: undefined,
+    context: [
+      {
+        _id: execution.card,
+        value: cardWithMixin
+      }
+    ]
+  }
 }
 
 export async function RunSubProcess (
@@ -215,7 +237,7 @@ export async function RunSubProcess (
   const target = control.client.getModel().findObject(processId)
   if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: processId })
   const res: Tx[] = []
-  const resultContext: Ref<Execution>[] = []
+  const resultContext: SuccessExecutionContext[] = []
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -233,24 +255,27 @@ export async function RunSubProcess (
       .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = params.context ?? ({} as ExecutionContext)
-    const id = generateId<Execution>()
-    res.push(
-      control.client.txFactory.createTxCreateDoc(
-        process.class.Execution,
-        core.space.Workspace,
-        {
-          process: processId,
-          currentState: initTransition.to,
-          card: _card,
-          context,
-          status: ExecutionStatus.Active,
-          rollback: [],
-          parentId: execution._id
-        },
-        id
-      )
+    const _id = generateId<Execution>()
+    const tx = control.client.txFactory.createTxCreateDoc(
+      process.class.Execution,
+      core.space.Workspace,
+      {
+        process: processId,
+        currentState: initTransition.to,
+        card: _card,
+        context,
+        status: ExecutionStatus.Active,
+        rollback: [],
+        parentId: execution._id
+      },
+      _id
     )
-    resultContext.push(id)
+
+    res.push(tx)
+    resultContext.push({
+      _id,
+      value: TxProcessor.createDoc2Doc(tx, true)
+    })
   }
   return { txes: res, rollback: undefined, context: resultContext }
 }
@@ -258,7 +283,8 @@ export async function RunSubProcess (
 export async function CreateToDo (
   params: MethodParams<ProcessToDo>,
   execution: Execution,
-  control: ProcessControl
+  control: ProcessControl,
+  results: UserResult[] | undefined
 ): Promise<ExecuteResult> {
   for (const key in { user: params.user, title: params.title }) {
     const val = (params as any)[key]
@@ -270,30 +296,39 @@ export async function CreateToDo (
   const res: Tx[] = []
   const rollback: Tx[] = []
   const id = generateId<ProcessToDo>()
-  res.push(
-    control.client.txFactory.createTxCreateDoc(
-      process.class.ProcessToDo,
-      time.space.ToDos,
-      {
-        attachedTo: execution.card,
-        attachedToClass: cardPlugin.class.Card,
-        collection: 'todos',
-        workslots: 0,
-        execution: execution._id,
-        title: params.title,
-        user: params.user,
-        description: params.description ?? '',
-        dueDate: params.dueDate,
-        priority: params.priority ?? ToDoPriority.NoPriority,
-        visibility: 'public',
-        doneOn: null,
-        rank: '',
-        withRollback: params.withRollback ?? false
-      },
-      id
-    )
+  const tx = control.client.txFactory.createTxCreateDoc(
+    process.class.ProcessToDo,
+    time.space.ToDos,
+    {
+      attachedTo: execution.card,
+      attachedToClass: cardPlugin.class.Card,
+      collection: 'todos',
+      workslots: 0,
+      execution: execution._id,
+      title: params.title,
+      user: params.user,
+      description: params.description ?? '',
+      dueDate: params.dueDate,
+      priority: params.priority ?? ToDoPriority.NoPriority,
+      visibility: 'public',
+      doneOn: null,
+      rank: '',
+      withRollback: params.withRollback ?? false,
+      results
+    },
+    id
   )
-  return { txes: res, rollback, context: id }
+  res.push(tx)
+  return {
+    txes: res,
+    rollback,
+    context: [
+      {
+        _id: id,
+        value: TxProcessor.createDoc2Doc(tx, true)
+      }
+    ]
+  }
 }
 
 export async function CreateCard (
@@ -313,9 +348,19 @@ export async function CreateCard (
     title,
     ...attrs
   } as any
-  const res: Tx[] = [control.client.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)]
+  const tx = control.client.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)
+  const res: Tx[] = [tx]
   const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(_class as Ref<MasterTag>, execution.space, _id)]
-  return { txes: res, rollback, context: _id }
+  return {
+    txes: res,
+    rollback,
+    context: [
+      {
+        _id,
+        value: TxProcessor.createDoc2Doc(tx, true)
+      }
+    ]
+  }
 }
 
 function isEmpty (value: any): boolean {

@@ -2293,6 +2293,17 @@ async function addEmailSocialId (
   return await sendOtp(ctx, db, branding, targetSocialId)
 }
 
+async function addHulyAssistantSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<PersonId> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  return await addSocialIdBase(db, account, SocialIdType.HULY_ASSISTANT, account, true)
+}
+
 export async function releaseSocialId (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2421,6 +2432,7 @@ export type AccountMethods =
   | 'getAccountInfo'
   | 'isReadOnlyGuest'
   | 'addEmailSocialId'
+  | 'addHulyAssistantSocialId'
   | 'releaseSocialId'
   | 'deleteAccount'
 
@@ -2464,6 +2476,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     ensurePerson: wrap(ensurePerson),
     exchangeGuestToken: wrap(exchangeGuestToken),
     addEmailSocialId: wrap(addEmailSocialId),
+    addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
 

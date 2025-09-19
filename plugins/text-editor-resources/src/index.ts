@@ -95,8 +95,7 @@ export {
   QMSInlineCommentMark as NodeUuidExtension,
   qmsInlineCommentMarkName as nodeUuidName,
   selectNode,
-  type QMSInlineCommentMarkOptions as NodeUuidOptions,
-  type QMSInlineCommentMarkStorage as NodeUuidStorage
+  type QMSInlineCommentMarkOptions as NodeUuidOptions
 } from './components/extension/qms/qmsInlineCommentMark'
 export { referenceConfig, ReferenceExtension } from './components/extension/reference'
 export { type Provider } from './provider/types'

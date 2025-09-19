@@ -24,13 +24,23 @@
   export let step: Step<Doc>
 
   $: currentContext = step.context ? process.context[step.context._id] : undefined
+
+  $: resultContext =
+    step.results != null ? step.results.map((r) => process.context[r._id]).filter((ctx) => ctx != null) : []
 </script>
 
-{#if currentContext}
-  <Label label={processPlugin.string.Result} />
-  <div class="container">
-    <ProcessContextPresenter context={currentContext} />
-  </div>
+{#if currentContext || resultContext.length > 0}
+  <Label label={processPlugin.string.Result} />:
+  {#if currentContext}
+    <div class="container">
+      <ProcessContextPresenter context={currentContext} />
+    </div>
+  {/if}
+  {#each resultContext as ctx}
+    <div class="container">
+      <ProcessContextPresenter context={ctx} />
+    </div>
+  {/each}
 {/if}
 
 <style lang="scss">

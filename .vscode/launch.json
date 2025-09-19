@@ -617,6 +617,7 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "nodeVersionHint": 22,
       "cwd": "${workspaceRoot}/services/github/pod-github",
       "protocol": "inspector",
       "outputCapture": "std"

@@ -37,9 +37,11 @@ import process, {
   parseError,
   processError,
   ProcessError,
+  ProcessToDo,
   State,
   Step,
-  Transition
+  Transition,
+  UserResult
 } from '@hcengineering/process'
 import serverProcess, {
   ExecuteResult,
@@ -164,17 +166,114 @@ async function findTransitions (
   return await pickTransition(control, execution, transitions, record.context)
 }
 
+async function checkToDoResult (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+  if (record.event !== process.trigger.OnToDoClose) return
+  const todo = record.context.todo as ProcessToDo
+  if (todo === undefined) return
+  if (todo.results == null) return
+  const results = todo.results.filter((it) => it.key != null)
+  if (results.length === 0) return
+  const res = await executeResultSet(control, results, execution)
+  if (!isError(res)) {
+    for (const tx of res.txes) {
+      const updateTx = tx as TxUpdateDoc<Doc>
+      if (updateTx._class === core.class.TxUpdateDoc && updateTx.objectId === execution.card) {
+        const updatedCard = TxProcessor.updateDoc2Doc(
+          control.client.getHierarchy().clone(control.cache.get(execution.card)),
+          updateTx
+        )
+        control.cache.set(execution.card, updatedCard)
+      }
+    }
+    for (const tx of res.txes) {
+      const timeout = setTimeout(() => {
+        control.ctx.warn('TX HANG', tx)
+      }, 30000)
+      await control.client.tx(tx)
+      clearTimeout(timeout)
+    }
+    if (res.rollback != null) {
+      execution.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
+      await control.client.update(execution, { rollback: execution.rollback })
+    }
+  }
+}
+
+async function executeResultSet (
+  control: ProcessControl,
+  results: UserResult[],
+  execution: Execution
+): Promise<ExecuteResult> {
+  try {
+    const method = control.client.getModel().findObject(process.method.UpdateCard)
+    if (method === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: process.method.UpdateCard }, {}, true)
+    }
+    const impl = control.client.getHierarchy().as(method, serverProcess.mixin.MethodImpl) as MethodImpl<any>
+    if (impl === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: process.method.UpdateCard }, {}, true)
+    }
+    const params = {}
+    for (const res of results) {
+      if (res.key == null) continue
+      ;(params as any)[res.key] = execution.context[res._id]
+    }
+    if (!control.cache.has(execution.card)) {
+      const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+      if (card !== undefined) {
+        control.cache.set(execution.card, card)
+      }
+    }
+    const f = await getResource(impl.func)
+    const res = await f(params, execution, control, undefined)
+    return res
+  } catch (err) {
+    if (err instanceof ProcessError) {
+      if (err.shouldLog) {
+        control.ctx.error(err.message, { props: err.props })
+      }
+      return parseError(err, undefined)
+    } else {
+      const errorId = generateId()
+      control.ctx.error(err instanceof Error ? err.message : String(err), { errorId })
+      return parseError(processError(process.error.InternalServerError, { errorId }), undefined)
+    }
+  }
+}
+
 async function processExecution (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+  await checkToDoResult(control, record, execution)
   const transition = await findTransitions(control, record, execution)
   if (transition !== undefined) {
     await execute(execution, transition, control)
   } else {
+    if (record.event === process.trigger.OnToDoRemove) {
+      const rollbackResult = await checkRollback(control, record, execution)
+      if (rollbackResult) return
+    }
     control.ctx.info('No transition found for event', {
       event: record.event,
       execution: execution._id,
       state: execution.currentState
     })
   }
+}
+
+async function checkRollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<boolean> {
+  const todo = record.context.todo as ProcessToDo
+  if (!todo?.withRollback) return false
+  const rollbackTxes = execution.rollback.pop() ?? []
+  for (const tx of rollbackTxes) {
+    const timeout = setTimeout(() => {
+      control.ctx.warn('TX HANG', tx)
+    }, 30000)
+    await control.client.tx(tx)
+    clearTimeout(timeout)
+  }
+  await control.client.update(execution, {
+    rollback: execution.rollback
+  })
+  return true
 }
 
 async function getTriggerRollback (triggger: TriggerImpl, control: ProcessControl): Promise<Tx | undefined> {
@@ -284,13 +383,12 @@ async function executeTransition (execution: Execution, transition: Transition, 
     execution.rollback.push(rollback)
   }
   const executionUpdate = getDiffUpdate(execution, {
-    rollback: execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback,
-    context: execution.context,
     currentState: state._id,
     status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active,
     error: null
   })
   executionUpdate.context = execution.context
+  executionUpdate.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
   res.push(client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, executionUpdate))
   res.push(
     client.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
@@ -359,28 +457,36 @@ async function updateTimers (control: ProcessControl, record: ProcessMessage): P
 }
 
 async function updateExecutionTimers (control: ProcessControl, execution: Execution): Promise<void> {
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: process.trigger.OnTime
-  })
-  if (transitions.length === 0) return
-  const temporalClient = await getTemporalClient()
-  for (const transition of transitions) {
-    await setTimer(control, execution, transition, temporalClient)
+  try {
+    const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: process.trigger.OnTime
+    })
+    if (transitions.length === 0) return
+    const temporalClient = await getTemporalClient()
+    for (const transition of transitions) {
+      await setTimer(control, execution, transition, temporalClient)
+    }
+  } catch (err) {
+    control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
 async function setNextTimers (control: ProcessControl, execution: Execution): Promise<void> {
-  const temporalClient = await getTemporalClient()
-  await cleanTimers(execution, temporalClient)
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: process.trigger.OnTime
-  })
-  for (const transition of transitions) {
-    await setTimer(control, execution, transition, temporalClient)
+  try {
+    const temporalClient = await getTemporalClient()
+    await cleanTimers(execution, temporalClient)
+    const transitions = control.client.getModel().findAllSync(process.class.Transition, {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: process.trigger.OnTime
+    })
+    for (const transition of transitions) {
+      await setTimer(control, execution, transition, temporalClient)
+    }
+  } catch (err) {
+    control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
@@ -447,9 +553,13 @@ async function executeAction<T extends Doc> (
     if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
     const params = await fillParams(action.params, execution, control)
     const f = await getResource(impl.func)
-    const res = await f(params, execution, control)
+    const res = await f(params, execution, control, action.results)
     if (!isError(res) && action.context?._id != null && res.context != null) {
-      execution.context[action.context._id] = res.context
+      execution.context[action.context._id] =
+        res.context.length === 1 ? res.context[0]._id : res.context.map((it) => it._id)
+      for (const ctx of res.context) {
+        control.cache.set(ctx._id, ctx.value)
+      }
     }
     return res
   } catch (err) {
@@ -481,31 +591,35 @@ async function fillParams<T extends Doc> (
 }
 
 async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {
-  const subProcesses = await control.client.findAll(process.class.Execution, {
-    parentId: execution.parentId,
-    status: ExecutionStatus.Active
-  })
-  const filtered = subProcesses.filter((it) => it._id !== execution._id)
-  if (filtered.length !== 0) return
-  const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
-  if (parent === undefined) return
-  const _process = control.client.getModel().findObject(parent.process)
-  if (_process === undefined) return
-  if (parent.status !== ExecutionStatus.Active) return
-  const transitions = control.client.getModel().findAllSync(
-    process.class.Transition,
-    {
-      from: parent.currentState,
-      process: parent.process,
-      trigger: process.trigger.OnSubProcessesDone
-    },
-    {
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
-  const transition = await pickTransition(control, execution, transitions, {})
-  if (transition === undefined) return
-  await executeTransition(parent, transition, control)
+  try {
+    const subProcesses = await control.client.findAll(process.class.Execution, {
+      parentId: execution.parentId,
+      status: ExecutionStatus.Active
+    })
+    const filtered = subProcesses.filter((it) => it._id !== execution._id)
+    if (filtered.length !== 0) return
+    const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
+    if (parent === undefined) return
+    const _process = control.client.getModel().findObject(parent.process)
+    if (_process === undefined) return
+    if (parent.status !== ExecutionStatus.Active) return
+    const transitions = control.client.getModel().findAllSync(
+      process.class.Transition,
+      {
+        from: parent.currentState,
+        process: parent.process,
+        trigger: process.trigger.OnSubProcessesDone
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const transition = await pickTransition(control, parent, transitions, {})
+    if (transition === undefined) return
+    await executeTransition(parent, transition, control)
+  } catch (err) {
+    control.ctx.error('Error checking parent execution:', { error: err, execution: execution._id })
+  }
 }
 
 async function checkNext (control: ProcessControl, execution: Execution): Promise<boolean> {

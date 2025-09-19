@@ -133,6 +133,15 @@ importers:
       '@rush-temp/activity-resources':
         specifier: file:./projects/activity-resources.tgz
         version: file:projects/activity-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/ai-assistant':
+        specifier: file:./projects/ai-assistant.tgz
+        version: file:projects/ai-assistant.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/ai-assistant-assets':
+        specifier: file:./projects/ai-assistant-assets.tgz
+        version: file:projects/ai-assistant-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/ai-assistant-resources':
+        specifier: file:./projects/ai-assistant-resources.tgz
+        version: file:projects/ai-assistant-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/ai-bot':
         specifier: file:./projects/ai-bot.tgz
         version: file:projects/ai-bot.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -556,6 +565,9 @@ importers:
       '@rush-temp/model-activity':
         specifier: file:./projects/model-activity.tgz
         version: file:projects/model-activity.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/model-ai-assistant':
+        specifier: file:./projects/model-ai-assistant.tgz
+        version: file:projects/model-ai-assistant.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/model-ai-bot':
         specifier: file:./projects/model-ai-bot.tgz
         version: file:projects/model-ai-bot.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -1886,14 +1898,14 @@ importers:
         specifier: ~22.8.7
         version: 22.8.8
       electron:
-        specifier: ^36.3.1
-        version: 36.3.1
+        specifier: ^38.1.1
+        version: 38.1.1
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
       electron-context-menu:
         specifier: ^4.0.4
-        version: 4.0.4
+        version: 4.1.1
       electron-log:
         specifier: ^5.1.7
         version: 5.1.7
@@ -2803,8 +2815,8 @@ packages:
     resolution: {integrity: sha512-6uQ1pVXutwz1Krwooo67W+3K8BwH1ASMh1WoHTpomUzw8EXecXN5lHIJ9EPqTHuv1WqR2LKkSJyagcq0HYUJpg==}
     engines: {node: '>=12'}
 
-  '@electron/asar@3.2.10':
-    resolution: {integrity: sha512-mvBSwIBUeiRscrCeJE1LwctAriBj65eUDm0Pc11iE5gRwzkmsdbS7FnZ1XUWjpSeQWL1L5g12Fc/SchPM9DUOw==}
+  '@electron/asar@3.2.18':
+    resolution: {integrity: sha512-2XyvMe3N3Nrs8cV39IKELRHTYUWFKrmqqSY1U+GMlc0jvqjIVnoxhNd2H4JolWQncbJi1DCvb5TNxZuI2fEjWg==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -4367,6 +4379,18 @@ packages:
     resolution: {integrity: sha512-6ZhlPiyVd+TRx0o0qdULlvoalPU0FlX8HS5NAkSgjhkdKMHuvDNDNpIhPjTZ4DZrXPpNBZZyXSiarXAKD4G8Qw==, tarball: file:projects/activity.tgz}
     version: 0.0.0
 
+  '@rush-temp/ai-assistant-assets@file:projects/ai-assistant-assets.tgz':
+    resolution: {integrity: sha512-xMeqPY9WNH6VNmUx0H+MYd+6a7X9/p+ETR+1kFr/NN5TAALQqG4+7POW8a1z/YQESI0aEt1MXqzbpCXdN6MRSg==, tarball: file:projects/ai-assistant-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/ai-assistant-resources@file:projects/ai-assistant-resources.tgz':
+    resolution: {integrity: sha512-aDNUOd/pe/cLE9TuPx2N0b8qPbYLWui5iCYXUs32W7WAYbrXJDOZj2tYJlZR0kl0j4ydoHeJzn3x6uE1WteM7w==, tarball: file:projects/ai-assistant-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/ai-assistant@file:projects/ai-assistant.tgz':
+    resolution: {integrity: sha512-zV980Axii2zE/l6RXcue6zoj267Mh2GIg8G+4Ih/+vzBtPP2gjojU7kg2jvxUlTAp/ovYd2PALmutDTUShw60A==, tarball: file:projects/ai-assistant.tgz}
+    version: 0.0.0
+
   '@rush-temp/ai-bot-resources@file:projects/ai-bot-resources.tgz':
     resolution: {integrity: sha512-Ne8uj1rTTgpgWHs/SZ9wwZQacLv4LLKx0n7qVcgBoR2rl5kRcjChiUlEA2+NLMTXfwqoUBJORNQSRnpLZkUp8g==, tarball: file:projects/ai-bot-resources.tgz}
     version: 0.0.0
@@ -4616,7 +4640,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
-    resolution: {integrity: sha512-MJ+6X/Ribex9FwxKHOU07v1aOI3VDEo0LWusEzSdTQm7xk/Gf8Aztvf/tvB5RIfClR4ub5nqgkohYZnOfLeo3Q==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-dPp96/9DSN+gU39n7ynlwyGH7CpOQz+sZ4Z5S4dSGhv+incEDzyOQQUZJYNz3jFL3OOUiWiEI22lJ0nlyoLpJA==, tarball: file:projects/desktop-1.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-downloads-assets@file:projects/desktop-downloads-assets.tgz':
@@ -4644,7 +4668,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-LB9wCmyPPqzwihsL8yWC+gk92v4/VkKdooa0q0ylkChu46c0b5QdH40QoWSDJgNqqSO5XRFwM5jpmtRlMm29lg==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-kMVLNqalurSBKidY00TqK2GIBSaEvgAKScF/32N4vsmx+pzMBkE6U63HiW+RxsqVC/ig9QikeohoDXx7Ps9kHg==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4925,6 +4949,10 @@ packages:
 
   '@rush-temp/model-activity@file:projects/model-activity.tgz':
     resolution: {integrity: sha512-ZNulrcnrHfqoQt8d2s3Ef83wxd1DeX+r9HDWpOclei6CuuebWnNGVSEIXmJ9fr9DQj6yJVbkj481qLgI7e3K5g==, tarball: file:projects/model-activity.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-ai-assistant@file:projects/model-ai-assistant.tgz':
+    resolution: {integrity: sha512-H9B1vpwWN8SAb94yJbs6Kh+klMeefGcf4blEAHefllxpeSY4lRIUsKabraQ9/oKLTnWX6IA5CcYb4c/3+qgLzQ==, tarball: file:projects/model-ai-assistant.tgz}
     version: 0.0.0
 
   '@rush-temp/model-ai-bot@file:projects/model-ai-bot.tgz':
@@ -5520,7 +5548,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/qms-desktop@file:projects/qms-desktop.tgz':
-    resolution: {integrity: sha512-euhJQtYB9bi4EajhGq+TYdDJkmGP5CyFcaAVBLPkmhhKENYJFcLd+E/QbDkWPAZZu7lP9EQ88yFHL5oRBOzyrw==, tarball: file:projects/qms-desktop.tgz}
+    resolution: {integrity: sha512-Ovno/T0s/QbkFGK+7olnz2h6NvbmUNmXuNNJFXHhI869c3V3Eyh9PDSmLlzR/xM3mQo5hP260Ksv9icoEqxDgw==, tarball: file:projects/qms-desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
@@ -8482,6 +8510,10 @@ packages:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
 
+  cross-spawn@7.0.6:
+    resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
+    engines: {node: '>= 8'}
+
   crypt@0.0.2:
     resolution: {integrity: sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==}
 
@@ -9103,8 +9135,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  electron-context-menu@4.0.4:
-    resolution: {integrity: sha512-XPGj35npL8+MG9Lx5ukmK/h8KLmjYJ3e1GvwWKrNZvf2ocv746WXIyltoV1yWtkEPT7g2kQ8hFmu0ZupK5KieA==}
+  electron-context-menu@4.1.1:
+    resolution: {integrity: sha512-kebXha4K2DmR7zrKpO8muzXlUAdhgqQIT7DpPeT4cAKZugwCB/NbuEuT+1SDjOH9vXJYjWK2UQuFvnVw0u0lHg==}
     engines: {node: '>=18'}
 
   electron-dl@4.0.0:
@@ -9137,8 +9169,8 @@ packages:
   electron-windows-badge@1.1.0:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
 
-  electron@36.3.1:
-    resolution: {integrity: sha512-LeOZ+tVahmctHaAssLCGRRUa2SAO09GXua3pKdG+WzkbSDMh+3iOPONNVPTqGp8HlWnzGj4r6mhsIbM2RgH+eQ==}
+  electron@38.1.1:
+    resolution: {integrity: sha512-LTFGxXpbIdU07AwSHLoVYVLbZHDiauT1KgTX1fgCPgPDoQIAGnYft/ABx6PkA+9ulQfBEEqg0mYTWaoReHG8Ag==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -13580,8 +13612,8 @@ packages:
   tar-stream@3.1.7:
     resolution: {integrity: sha512-qJj60CXt7IU1Ffyc3NJMjh6EkuCFej46zUqJ4J7pqYlThyd9bO0XBTmcOIhSzZJVWfsLks0+nle/j538YAW9RQ==}
 
-  tar@6.2.0:
-    resolution: {integrity: sha512-/Wo7DcT0u5HUV486xg675HtjNd3BXZ6xDbzsCUZPt5iw8bTQ63bP0Raut3mvro9u+CUyq7YQd8Cx55fsZXxqLQ==}
+  tar@6.2.1:
+    resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
 
   tar@7.4.3:
@@ -15333,7 +15365,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/asar@3.2.10':
+  '@electron/asar@3.2.18':
     dependencies:
       commander: 5.1.0
       glob: 7.2.3
@@ -15372,7 +15404,7 @@ snapshots:
   '@electron/osx-sign@1.3.1':
     dependencies:
       compare-version: 0.1.2
-      debug: 4.3.5
+      debug: 4.4.0
       fs-extra: 10.1.0
       isbinaryfile: 4.0.10
       minimist: 1.2.8
@@ -15384,8 +15416,8 @@ snapshots:
     dependencies:
       '@malept/cross-spawn-promise': 2.0.0
       chalk: 4.1.2
-      debug: 4.3.5
-      detect-libc: 2.0.2
+      debug: 4.4.0
+      detect-libc: 2.0.4
       fs-extra: 10.1.0
       got: 11.8.6
       node-abi: 3.55.0
@@ -15394,16 +15426,16 @@ snapshots:
       ora: 5.4.1
       read-binary-file-arch: 1.0.6
       semver: 7.7.2
-      tar: 6.2.0
+      tar: 6.2.1
       yargs: 17.7.2
     transitivePeerDependencies:
       - supports-color
 
   '@electron/universal@2.0.1':
     dependencies:
-      '@electron/asar': 3.2.10
+      '@electron/asar': 3.2.18
       '@malept/cross-spawn-promise': 2.0.0
-      debug: 4.3.5
+      debug: 4.4.0
       dir-compare: 4.2.0
       fs-extra: 11.2.0
       minimatch: 9.0.5
@@ -16234,11 +16266,11 @@ snapshots:
 
   '@malept/cross-spawn-promise@2.0.0':
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
 
   '@malept/flatpak-bundler@0.4.0':
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       fs-extra: 9.1.0
       lodash: 4.17.21
       tmp-promise: 3.0.3
@@ -17506,6 +17538,96 @@ snapshots:
       - ts-node
 
   '@rush-temp/activity@file:projects/activity.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/ai-assistant-assets@file:projects/ai-assistant-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/ai-assistant-resources@file:projects/ai-assistant-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.20)
+      sass: 1.71.1
+      svelte: 4.2.20
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.20)
+      svelte-loader: 3.2.0(svelte@4.2.20)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.8.3)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/ai-assistant@file:projects/ai-assistant.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -19414,7 +19536,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 36.3.1
+      electron: 38.1.1
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -19623,8 +19745,8 @@ snapshots:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 36.3.1
-      electron-context-menu: 4.0.4
+      electron: 38.1.1
+      electron-context-menu: 4.1.1
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
       electron-store: 8.2.0
@@ -21844,6 +21966,31 @@ snapshots:
       - ts-node
 
   '@rush-temp/model-activity@file:projects/model-activity.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/model-ai-assistant@file:projects/model-ai-assistant.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
@@ -26260,7 +26407,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 36.3.1
+      electron: 38.1.1
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -32573,7 +32720,7 @@ snapshots:
       builder-util-runtime: 9.2.10
       chromium-pickle-js: 0.2.0
       config-file-ts: 0.2.8-rc1
-      debug: 4.3.5
+      debug: 4.4.0
       dmg-builder: 25.1.8
       dotenv: 16.4.5
       dotenv-expand: 11.0.6
@@ -32591,7 +32738,7 @@ snapshots:
       resedit: 1.7.1
       sanitize-filename: 1.6.3
       semver: 7.7.2
-      tar: 6.2.0
+      tar: 6.2.1
       temp-file: 3.4.0
     transitivePeerDependencies:
       - supports-color
@@ -33019,7 +33166,7 @@ snapshots:
 
   builder-util-runtime@9.2.10:
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       sax: 1.3.0
     transitivePeerDependencies:
       - supports-color
@@ -33039,8 +33186,8 @@ snapshots:
       bluebird-lst: 1.0.9
       builder-util-runtime: 9.2.10
       chalk: 4.1.2
-      cross-spawn: 7.0.3
-      debug: 4.3.5
+      cross-spawn: 7.0.6
+      debug: 4.4.0
       fs-extra: 10.1.0
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
@@ -33082,7 +33229,7 @@ snapshots:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 9.0.1
-      tar: 6.2.0
+      tar: 6.2.1
       unique-filename: 2.0.1
 
   cache-content-type@1.0.1:
@@ -33550,6 +33697,12 @@ snapshots:
       which: 1.3.1
 
   cross-spawn@7.0.3:
+    dependencies:
+      path-key: 3.1.1
+      shebang-command: 2.0.0
+      which: 2.0.2
+
+  cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
       shebang-command: 2.0.0
@@ -34204,7 +34357,7 @@ snapshots:
       - electron-builder-squirrel-windows
       - supports-color
 
-  electron-context-menu@4.0.4:
+  electron-context-menu@4.1.1:
     dependencies:
       cli-truncate: 4.0.0
       electron-dl: 4.0.0
@@ -34258,7 +34411,7 @@ snapshots:
 
   electron-windows-badge@1.1.0: {}
 
-  electron@36.3.1:
+  electron@38.1.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.15.29
@@ -37520,7 +37673,7 @@ snapshots:
       npmlog: 6.0.2
       rimraf: 3.0.2
       semver: 7.7.2
-      tar: 6.2.0
+      tar: 6.2.1
       which: 2.0.2
     transitivePeerDependencies:
       - supports-color
@@ -39534,7 +39687,7 @@ snapshots:
       fast-fifo: 1.3.2
       streamx: 2.16.1
 
-  tar@6.2.0:
+  tar@6.2.1:
     dependencies:
       chownr: 2.0.0
       fs-minipass: 2.1.0

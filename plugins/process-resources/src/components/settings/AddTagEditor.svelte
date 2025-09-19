@@ -93,7 +93,7 @@
   }
 </script>
 
-<div class="grid">
+<div class="editor-grid">
   <span
     class="labelOnPanel"
     use:tooltip={{
@@ -118,18 +118,3 @@
     <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
   </div>
 {/if}
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    width: calc(100% - 4rem);
-    align-items: center;
-    margin: 0.25rem 2rem 0.5rems;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    height: min-content;
-  }
-</style>

@@ -22,7 +22,8 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import {
   QMSInlineCommentMark,
   type QMSInlineCommentMarkOptions,
-  findQMSInlineCommentMark
+  findQMSInlineCommentMark,
+  getMarkUuid
 } from './qmsInlineCommentMark'
 
 export enum CommentHighlightType {
@@ -233,24 +234,24 @@ const createDecorations = (
 ): DecorationSet => {
   const decorations: Decoration[] = []
 
-  doc.descendants((node, pos) => {
-    const qmsInlineCommentMark = findQMSInlineCommentMark(node)
+  doc.descendants((descendant, pos) => {
+    descendant.marks.forEach((mark) => {
+      const uuid = getMarkUuid(mark)
+      if (uuid !== undefined) {
+        const attributes = generateAttributes(uuid, options)
+        if (attributes === null || attributes === undefined) {
+          return
+        }
 
-    if (qmsInlineCommentMark !== null && qmsInlineCommentMark !== undefined) {
-      const nodeUuid = qmsInlineCommentMark.attrs[QMSInlineCommentMark.name]
-      const attributes = generateAttributes(nodeUuid, options)
-      if (attributes === null || attributes === undefined) {
-        return
+        // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
+        const range = getMarkRange(doc.resolve(pos + 1), markType, mark.attrs)
+        if (!isRange(range)) {
+          return
+        }
+
+        decorations.push(Decoration.inline(range.from, range.to, attributes))
       }
-
-      // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
-      const range = getMarkRange(doc.resolve(pos + 1), markType, qmsInlineCommentMark.attrs)
-      if (!isRange(range)) {
-        return
-      }
-
-      decorations.push(Decoration.inline(range.from, range.to, attributes))
-    }
+    })
   })
 
   return DecorationSet.create(doc, decorations)
