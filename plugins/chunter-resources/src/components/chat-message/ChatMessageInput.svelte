@@ -102,14 +102,14 @@
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    clearTyping(me, object._id)
+    void clearTyping(me, object._id)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
 
     throttle.call(() => {
-      setTyping(me, object._id)
+      void setTyping(me, object._id)
     })
   }
 
