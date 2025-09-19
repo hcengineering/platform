@@ -20,7 +20,7 @@
   import AddTransitionPopup from './AddTransitionPopup.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
-  import { SortableList } from '@hcengineering/view-resources'
+  import { SortableDocList } from '@hcengineering/view-resources'
 
   export let process: Process
   export let readonly: boolean
@@ -47,7 +47,7 @@
   <div class="header w-full p-4">
     <Label label={plugin.string.Transitions} />
   </div>
-  <SortableList _class={plugin.class.Transition} query={{ process: process._id }} isAddButtonHidden>
+  <SortableDocList _class={plugin.class.Transition} query={{ process: process._id }}>
     <svelte:fragment slot="object" let:value>
       {@const transition = toTransition(value)}
       <Button
@@ -66,7 +66,7 @@
         </svelte:fragment>
       </Button>
     </svelte:fragment>
-  </SortableList>
+  </SortableDocList>
   {#if !readonly}
     <Button kind={'ghost'} width={'100%'} icon={IconAdd} label={plugin.string.AddTransition} on:click={addTransition} />
   {/if}

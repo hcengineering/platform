@@ -37,6 +37,7 @@ import process, {
   parseError,
   processError,
   ProcessError,
+  ProcessToDo,
   State,
   Step,
   Transition
@@ -169,12 +170,33 @@ async function processExecution (control: ProcessControl, record: ProcessMessage
   if (transition !== undefined) {
     await execute(execution, transition, control)
   } else {
+    if (record.event === process.trigger.OnToDoRemove) {
+      const rollbackResult = await checkRollback(control, record, execution)
+      if (rollbackResult) return
+    }
     control.ctx.info('No transition found for event', {
       event: record.event,
       execution: execution._id,
       state: execution.currentState
     })
   }
+}
+
+async function checkRollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<boolean> {
+  const todo = record.context.todo as ProcessToDo
+  if (!todo?.withRollback) return false
+  const rollbackTxes = execution.rollback.pop() ?? []
+  for (const tx of rollbackTxes) {
+    const timeout = setTimeout(() => {
+      control.ctx.warn('TX HANG', tx)
+    }, 30000)
+    await control.client.tx(tx)
+    clearTimeout(timeout)
+  }
+  await control.client.update(execution, {
+    rollback: execution.rollback
+  })
+  return true
 }
 
 async function getTriggerRollback (triggger: TriggerImpl, control: ProcessControl): Promise<Tx | undefined> {
@@ -284,13 +306,12 @@ async function executeTransition (execution: Execution, transition: Transition, 
     execution.rollback.push(rollback)
   }
   const executionUpdate = getDiffUpdate(execution, {
-    rollback: execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback,
-    context: execution.context,
     currentState: state._id,
     status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active,
     error: null
   })
   executionUpdate.context = execution.context
+  executionUpdate.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
   res.push(client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, executionUpdate))
   res.push(
     client.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {

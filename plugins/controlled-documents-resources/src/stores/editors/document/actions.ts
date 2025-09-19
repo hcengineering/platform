@@ -96,6 +96,10 @@ export const savedAttachmentsUpdated = createEvent<Array<Ref<Attachment>>>(
   generateActionName('savedAttachmentsUpdated')
 )
 
+export const documentCommentsAddCanceled = createEvent<{
+  nodeId?: string | null
+}>(generateActionName('documentCommentsAddCanceled'))
+
 export const documentCommentsDisplayRequested = createEvent<{
   nodeId?: string | null
   element?: PopupAlignment

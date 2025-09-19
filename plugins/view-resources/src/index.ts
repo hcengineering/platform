@@ -90,6 +90,7 @@ import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelt
 import DividerPresenter from './components/list/DividerPresenter.svelte'
 import GrowPresenter from './components/list/GrowPresenter.svelte'
 import ListView from './components/list/ListView.svelte'
+import SortableDocList from './components/list/SortableDocList.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
 import TreeElement from './components/navigator/TreeElement.svelte'
@@ -236,6 +237,7 @@ export {
   ObjectIcon,
   ObjectMention,
   SortableList,
+  SortableDocList,
   SortableListItem,
   SpaceHeader,
   SpacePresenter,
