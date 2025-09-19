@@ -93,11 +93,11 @@
     &__emoji {
       display: flex;
       align-items: center;
-      font-size: 2rem;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      min-height: 2.5rem;
-      height: 2.5rem;
+      font-size: 1.5rem;
+      width: 2rem;
+      min-width: 2rem;
+      min-height: 2rem;
+      height: 2rem;
       overflow: hidden;
     }
   }
