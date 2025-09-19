@@ -2367,11 +2367,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-msg2file",
-      "projectFolder": "services/msg2file",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/process",
       "projectFolder": "plugins/process",
       "shouldPublish": false
@@ -2509,11 +2504,6 @@
     {
       "packageName": "@hcengineering/communication-shared",
       "projectFolder": "communication/packages/shared",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-yaml",
-      "projectFolder": "communication/packages/yaml",
       "shouldPublish": false
     },
     {

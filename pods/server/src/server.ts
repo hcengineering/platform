@@ -113,15 +113,14 @@ export function start (
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
     if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
       return {
-        findMessages: async () => [],
-        findMessagesGroups: async () => [],
+        findMessagesMeta: async () => [],
         findNotificationContexts: async () => [],
         findCollaborators: async () => [],
         findNotifications: async () => [],
         findLabels: async () => [],
-        findThreads: async () => [],
         findPeers: async () => [],
-        unsubscribeQuery: async () => {},
+        subscribeCard: () => {},
+        unsubscribeCard: () => {},
         event: async () => {
           return {}
         },

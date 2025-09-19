@@ -61,10 +61,6 @@
 
 {#if isActivityMessage(message)}
   <ActivityMessageViewer {message} {card} {author} />
-{:else if message.removed}
-  <span class="overflow-label removed-label">
-    <Label label={communication.string.MessageWasRemoved} />
-  </span>
 {:else}
   <MarkupMessageViewer message={displayMarkup} />
 {/if}

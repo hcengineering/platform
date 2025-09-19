@@ -12,32 +12,23 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { AccountUuid, Ref } from '@hcengineering/core'
-  import { Card } from '@hcengineering/card'
+  import { AccountUuid, PersonUuid } from '@hcengineering/core'
   import { Avatar, employeeByAccountStore } from '@hcengineering/contact-resources'
-  import { createCollaboratorsQuery } from '@hcengineering/presentation'
-  import { Collaborator } from '@hcengineering/communication-types'
   import { Person } from '@hcengineering/contact'
 
-  export let threadId: Ref<Card>
+  export let persons: Record<PersonUuid, number> = {}
 
   const displayPersonsNumber = 4
 
-  const collaboratorsQuery = createCollaboratorsQuery()
+  let _persons: Person[] = []
 
-  let collaborators: Collaborator[] = []
-  let persons: Person[] = []
+  $: updatePersons(persons, $employeeByAccountStore)
 
-  $: collaboratorsQuery.query({ card: threadId }, (res) => {
-    collaborators = res
-  })
-
-  $: updatePersons(collaborators, $employeeByAccountStore)
-
-  function updatePersons (collaborators: Collaborator[], employeeByAccount: Map<AccountUuid, Person>): void {
+  function updatePersons (persons: Record<PersonUuid, number>, employeeByAccount: Map<AccountUuid, Person>): void {
     const newPersons: Person[] = []
-    for (const collaborator of collaborators) {
-      const person = employeeByAccount.get(collaborator.account)
+    for (const [personUuid, count] of Object.entries(persons)) {
+      if (count < 1) continue
+      const person = employeeByAccount.get(personUuid as AccountUuid)
       if (person !== undefined) {
         newPersons.push(person)
       }
@@ -47,19 +38,21 @@
       }
     }
 
-    persons = newPersons
+    _persons = newPersons
   }
+
+  $: count = Object.entries(persons).filter(([, count]) => count > 0).length
 </script>
 
-{#if persons.length > 0}
+{#if _persons.length > 0}
   <div class="thread__avatars">
-    {#each persons as person}
+    {#each _persons as person}
       <Avatar size="x-small" {person} name={person.name} />
     {/each}
   </div>
 
-  {#if collaborators.length > displayPersonsNumber}
-    +{collaborators.length - displayPersonsNumber}
+  {#if count > displayPersonsNumber}
+    +{count - displayPersonsNumber}
   {/if}
 {/if}
 

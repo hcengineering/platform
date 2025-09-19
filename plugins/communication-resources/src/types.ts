@@ -41,7 +41,7 @@ export interface Action {
 
 export interface AppletDraft {
   id: string
-  type: AppletType
+  mimeType: AppletType
   appletId: Ref<Applet>
   params: Record<string, any>
 }
@@ -49,7 +49,7 @@ export interface AppletDraft {
 export interface MessageDraft {
   _id: string
   content: Markup
-  blobs: BlobParams[]
+  blobs: Array<BlobParams & { mimeType: string }>
   links: LinkPreviewParams[]
   applets: AppletDraft[]
 }

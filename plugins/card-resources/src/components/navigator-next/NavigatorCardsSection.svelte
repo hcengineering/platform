@@ -105,7 +105,7 @@
   $: if (cards.length > 0) {
     notificationContextsQuery.query(
       {
-        card: cards.map((it) => it._id),
+        cardId: cards.map((it) => it._id),
         notifications: {
           type: NotificationType.Message,
           order: SortingOrder.Descending,

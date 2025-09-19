@@ -163,7 +163,7 @@
     if (toAttach.length > 0) {
       void communicationClient.attachmentPatch<AppletParams>(card._id, messageId, {
         add: toAttach.map((it) => ({
-          type: it.type,
+          mimeType: it.mimeType,
           params: it.params
         }))
       })
@@ -172,7 +172,7 @@
 
   async function createMessage (
     markdown: string,
-    blobs: BlobParams[],
+    blobs: (BlobParams & { mimeType: string })[],
     links: LinkPreviewParams[],
     urlsToLoad: string[],
     appletDrafts: AppletDraft[]
@@ -186,7 +186,7 @@
       void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
         add: blobs.map((it) => ({
           id: it.blobId as any as AttachmentID,
-          type: it.mimeType,
+          mimeType: it.mimeType,
           params: it
         }))
       })
@@ -195,7 +195,7 @@
     if (links.length > 0) {
       void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
         add: links.map((it) => ({
-          type: linkPreviewType,
+          mimeType: linkPreviewType,
           params: it
         }))
       })
@@ -210,7 +210,7 @@
       void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
         add: [
           {
-            type: linkPreviewType,
+            mimeType: linkPreviewType,
             params
           }
         ]
@@ -221,7 +221,7 @@
   async function editMessage (
     message: Message,
     markdown: string,
-    blobs: BlobParams[],
+    blobs: (BlobParams & { mimeType: string })[],
     links: LinkPreviewParams[],
     appletDrafts: AppletDraft[]
   ): Promise<void> {
@@ -240,7 +240,7 @@
       void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
         add: attachBlobs.map((it) => ({
           id: it.blobId as any as AttachmentID,
-          type: it.mimeType,
+          mimeType: it.mimeType,
           params: it
         }))
       })
@@ -274,7 +274,7 @@
 
     void communicationClient.attachmentPatch(card._id, message.id, {
       add: attachLinks.map((it) => ({
-        type: linkPreviewType,
+        mimeType: linkPreviewType,
         params: it
       }))
     })
@@ -495,7 +495,10 @@
           if (result != null) {
             draft = {
               ...draft,
-              applets: [...draft.applets, { id: generateId(), type: applet.type, appletId: applet._id, params: result }]
+              applets: [
+                ...draft.applets,
+                { id: generateId(), mimeType: applet.type, appletId: applet._id, params: result }
+              ]
             }
           }
         })

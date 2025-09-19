@@ -39,6 +39,7 @@ import { FullTextIndexPipeline } from '@hcengineering/server-indexer'
 import { getConfig } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { Api as CommunicationApi } from '@hcengineering/communication-server'
+import { type HulylakeClient } from '@hcengineering/hulylake-client'
 
 import { fulltextModelFilter } from './utils'
 
@@ -61,6 +62,7 @@ export class WorkspaceIndexer {
     externalStorage: StorageAdapter,
     ftadapter: FullTextAdapter,
     contentAdapter: ContentTextAdapter,
+    hulylake: HulylakeClient,
     endpointProvider: (token: string) => Promise<string | undefined>,
     listener?: FulltextListener
   ): Promise<WorkspaceIndexer> {
@@ -147,6 +149,7 @@ export class WorkspaceIndexer {
           })
         }
       },
+      hulylake,
       communicationApi,
       listener
     )

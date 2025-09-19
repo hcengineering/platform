@@ -38,7 +38,6 @@ import core, {
   type ModelDb,
   platformNow,
   type Ref,
-  SortingOrder,
   type Space,
   systemAccount,
   toIdMap,
@@ -88,9 +87,14 @@ import {
   type Message,
   type MessageID
 } from '@hcengineering/communication-types'
-import { parseYaml } from '@hcengineering/communication-yaml'
-import { applyPatches, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+import {
+  isBlobAttachment,
+  isLinkPreviewAttachment,
+  loadMessages,
+  loadMessagesGroups
+} from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { type HulylakeClient } from '@hcengineering/hulylake-client'
 
 export * from './types'
 export * from './utils'
@@ -98,9 +102,6 @@ export * from './utils'
 const printThresholdMs = 2500
 
 const textLimit = 500 * 1024
-
-const messageGroupsLimit = 100
-const messagesLimit = 1000
 
 // Inner presentation in message queue differs from sdk-types,
 // also date is always filled at the output queue
@@ -237,6 +238,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
+    readonly hulylake: HulylakeClient,
     readonly communicationApi?: CommunicationApi,
     readonly listener?: FulltextListener
   ) {
@@ -586,10 +588,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const rateLimit = new RateLimiter(10)
     let lastPrint = platformNow()
     await ctx.with('process-message-groups', {}, async (ctx) => {
-      let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
-        limit: messageGroupsLimit,
-        order: SortingOrder.Ascending
-      })
+      // let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
+      //   limit: messageGroupsLimit,
+      //   order: SortingOrder.Ascending
+      // })
+      let groups = [] as any[]
       while (groups.length > 0) {
         if (this.cancelling) {
           return processed
@@ -608,27 +611,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
               cardsInfo.set(group.cardId, cardInfo)
             }
-            const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
-            const messagesFile = Buffer.concat(blob as any).toString()
-            const messagesParsedFile = parseYaml(messagesFile)
-            let patchedMessages
-            if (group.patches !== undefined && group.patches.length > 0) {
-              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
-              patchedMessages = messagesParsedFile.messages.map((message) => {
-                const patches = patchesByMessage.get(message.id) ?? []
-                if (patches.length === 0) {
-                  return message
-                } else {
-                  return applyPatches(message, patches)
-                }
-              })
-            } else {
-              patchedMessages = messagesParsedFile.messages
-            }
-            for (const message of patchedMessages) {
-              if (message.removed) {
-                continue
-              }
+            // const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+            // const messagesFile = Buffer.concat(blob as any).toString()
+            // const messagesParsedFile = parseYaml(messagesFile)
+            // const messages = messagesParsedFile.messages
+            const messages = [] as Message[]
+
+            for (const message of messages) {
               await rateLimit.add(async () => {
                 await this.processCommunicationMessage(
                   ctx,
@@ -662,21 +651,22 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         if (this.cancelling) {
           return processed
         }
-        groups = await communicationApi.findMessagesGroups(this.communicationSession, {
-          limit: messageGroupsLimit,
-          order: SortingOrder.Ascending,
-          fromDate: {
-            greater: groups[groups.length - 1].toDate
-          }
-        })
+        // groups = await communicationApi.findMessagesGroups(this.communicationSession, {
+        //   limit: messageGroupsLimit,
+        //   order: SortingOrder.Ascending,
+        //   fromDate: {
+        //     greater: groups[groups.length - 1].toDate
+        //   }
+        // })
+        groups = []
       }
     })
     await ctx.with('process-messages', {}, async (ctx) => {
-      let messages = await communicationApi.findMessages(this.communicationSession, {
-        attachments: true,
-        limit: messagesLimit,
-        order: SortingOrder.Ascending
-      })
+      // let messages = await communicationApi.findMessages(this.communicationSession, {
+      //   limit: messagesLimit,
+      //   order: SortingOrder.Ascending
+      // })
+      let messages = [] as any[]
       while (messages.length > 0) {
         for (const message of messages) {
           if (control !== undefined) {
@@ -723,14 +713,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             lastPrint = now
           }
         }
-        messages = await communicationApi.findMessages(this.communicationSession, {
-          attachments: true,
-          limit: messagesLimit,
-          order: SortingOrder.Ascending,
-          created: {
-            greater: messages[messages.length - 1].created
-          }
-        })
+        // messages = await communicationApi.findMessages(this.communicationSession, {
+        //   limit: messagesLimit,
+        //   order: SortingOrder.Ascending,
+        //   created: {
+        //     greater: messages[messages.length - 1].created
+        //   }
+        // })
+        messages = []
       }
     })
     await rateLimit.waitProcessing()
@@ -842,35 +832,38 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       return
     }
     const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
-      const messages = await communicationApi.findMessages(this.communicationSession, {
-        card: cardId,
-        id: msgId,
-        attachments: true
-      })
-      if (messages.length === 1) {
-        return messages[0]
-      }
-      const messagesGroups = await communicationApi.findMessagesGroups(this.communicationSession, {
-        card: cardId,
-        messageId: msgId
-      })
-      if (messagesGroups.length !== 1) {
+      const meta = (
+        await communicationApi.findMessagesMeta(this.communicationSession, {
+          cardId,
+          id: msgId,
+          limit: 1
+        })
+      )[0]
+
+      if (meta === undefined) {
         return undefined
       }
-      const group = messagesGroups[0]
-      const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
-      const messagesFile = Buffer.concat(blob as any).toString()
-      const messagesParsedFile = parseYaml(messagesFile)
-      const message = messagesParsedFile.messages.find((m) => m.id === msgId)
-      if (group.patches === undefined || message === undefined) {
-        return message
+      const messagesGroups = await loadMessagesGroups(this.hulylake, cardId)
+      const group = messagesGroups.find((it) => it.blobId === meta.blobId)
+
+      if (group === undefined) {
+        return undefined
       }
-      const relevantPatches = group.patches.filter((p) => p.messageId === msgId)
-      if (relevantPatches.length === 0) {
-        return message
-      } else {
-        return applyPatches(message, relevantPatches)
-      }
+      return (
+        await loadMessages(
+          this.hulylake,
+          group.blobId,
+          {
+            cardId,
+            id: msgId
+          },
+          {
+            attachments: true,
+            reactions: true,
+            threads: true
+          }
+        )
+      )[0]
     }
     const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
     // If message was already fully replaced, other transactions can skip the message
@@ -898,8 +891,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         for (const operation of event.operations) {
           if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
             for (const blobData of operation.blobs) {
-              const blobAttachment: Omit<BlobAttachment, 'type'> = {
+              const blobAttachment: BlobAttachment = {
                 id: blobData.blobId as any as AttachmentID,
+                mimeType: blobData.mimeType ?? '',
                 params: blobData as BlobParams,
                 creator: event.socialId,
                 created: new Date(Date.parse(event.date))
@@ -1090,7 +1084,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     cardId: CardID,
     cardSpace: Ref<Space>,
     cardClass: Ref<Class<Card>>,
-    message: Pick<Message, 'id' | 'edited' | 'created' | 'creator' | 'content' | 'extra' | 'thread' | 'attachments'>
+    message: Pick<Message, 'id' | 'modified' | 'created' | 'creator' | 'content' | 'extra' | 'threads' | 'attachments'>
   ): Promise<void> {
     const indexedDoc = createIndexedDocFromMessage(cardId, cardSpace, cardClass, message)
     const markup = markdownToMarkup(message.content)
@@ -1130,7 +1124,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx: MeasureContext<any>,
     pushQueue: ElasticPushQueue,
     parentDoc: { id: Ref<Doc>, _class: Ref<Class<Doc>>[], space: Ref<Space>, attachedTo?: Ref<Doc> },
-    blobAttachment: Omit<BlobAttachment, 'type'>
+    blobAttachment: BlobAttachment
   ): Promise<void> {
     try {
       const indexedDoc: IndexedDoc = {
@@ -1148,7 +1142,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         attachedToCard: parentDoc.attachedTo
       }
       indexedDoc.fulltextSummary = ''
-      await this.handleBlobRef(ctx, blobAttachment.params.blobId, indexedDoc, blobAttachment.params.mimeType)
+      await this.handleBlobRef(ctx, blobAttachment.params.blobId, indexedDoc, blobAttachment.mimeType)
       if (this.listener?.onIndexing !== undefined) {
         await this.listener.onIndexing(indexedDoc)
       }

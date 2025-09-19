@@ -70,7 +70,7 @@
   $: if (favorites.length > 0) {
     contextsQuery.query(
       {
-        card: favorites.map((it) => it.attachedTo),
+        cardId: favorites.map((it) => it.attachedTo),
         notifications: {
           read: false,
           type: NotificationType.Message,

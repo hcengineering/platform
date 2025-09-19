@@ -13,12 +13,11 @@
 
 import { get, writable } from 'svelte/store'
 import { createLabelsQuery, createQuery, onClient, onCommunicationClient } from '@hcengineering/presentation'
-import type { Label, Message, MessageID } from '@hcengineering/communication-types'
-import type { Markup, Ref } from '@hcengineering/core'
+import { type Label, type LabelID, type Message, type MessageID } from '@hcengineering/communication-types'
+import core, { getCurrentAccount, type Markup, type Ref } from '@hcengineering/core'
 import { languageStore } from '@hcengineering/ui'
-import { type Card } from '@hcengineering/card'
+import cardPlugin, { type Card } from '@hcengineering/card'
 import communication from '@hcengineering/communication'
-import core from '@hcengineering/core'
 
 export const labelsStore = writable<Label[]>([])
 export const messageEditingStore = writable<MessageID | undefined>(undefined)
@@ -53,6 +52,11 @@ export function isShownTranslatedMessage (messageId: MessageID): boolean {
   return result?.shown === true && result?.result != null
 }
 
+export function isCardSubscribed (cardId: Ref<Card>): boolean {
+  const me = getCurrentAccount()
+  const labelId = cardPlugin.label.Subscribed as string as LabelID
+  return get(labelsStore).some((it) => it.account === me.uuid && it.cardId === cardId && it.labelId === labelId)
+}
 const query = createLabelsQuery(true)
 
 onCommunicationClient(() => {

@@ -11,9 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AttachedDoc, Ref } from '@hcengineering/core'
+import { AttachedDoc, Ref, AccountUuid } from '@hcengineering/core'
 import { PersonSpace } from '@hcengineering/contact'
-import { AccountID, MessageID } from '@hcengineering/communication-types'
+import { MessageID } from '@hcengineering/communication-types'
 import { Card } from '@hcengineering/card'
 
 export interface PollAnswer extends AttachedDoc<Poll> {
@@ -22,7 +22,7 @@ export interface PollAnswer extends AttachedDoc<Poll> {
 }
 
 export interface UserVote {
-  account: AccountID
+  account: AccountUuid
   options: { id: string, label: string, votedAt: Date }[]
 }
 

@@ -13,7 +13,7 @@
 -->
 
 <script lang="ts">
-  import { Notification, ReactionNotificationContent, SocialID } from '@hcengineering/communication-types'
+  import { Message, Notification, ReactionNotificationContent, SocialID } from '@hcengineering/communication-types'
   import { EmojiPresenter } from '@hcengineering/emoji-resources'
   import { Card } from '@hcengineering/card'
   import { Label } from '@hcengineering/ui'
@@ -31,7 +31,7 @@
   $: content = notification.content as ReactionNotificationContent
 
   let author: Person | undefined
-  $: void updateAuthor(content.creator)
+  $: void updateAuthor(notification.creator)
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
     author = $employeeByPersonIdStore.get(socialId)
@@ -40,6 +40,9 @@
       author = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
+
+  let message: Message | undefined = undefined
+  $: message = notification.message
 </script>
 
 {#if notification.message}
@@ -57,7 +60,8 @@
       </div>
       <NotificationPreview
         {card}
-        message={notification.message}
+        {message}
+        creator={notification.creator}
         date={notification.created}
         kind="column"
         padding="0"

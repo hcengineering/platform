@@ -107,7 +107,7 @@
   type="type-popup"
   okLabel={presentation.string.Create}
   okAction={attachCard}
-  canSave={selectedType !== undefined && title.trim() !== '' && _message.thread == null}
+  canSave={selectedType !== undefined && title.trim() !== ''}
   onCancel={() => dispatch('close')}
   on:close
 >
@@ -127,10 +127,10 @@
       />
     </div>
     <div class="mt-4" />
-    <MessagePresenter {card} message={{ ..._message, reactions: [], thread: undefined }} readonly={true} padding="0" />
+    <MessagePresenter {card} message={{ ..._message, reactions: {}, threads: [] }} readonly={true} padding="0" />
   </div>
   <svelte:fragment slot="footer">
-    {#if _message.thread != null && !inProgress}
+    {#if !inProgress}
       <div class="footer-error">
         <Label label={communication.string.MessageAlreadyHasCardAttached} />
       </div>

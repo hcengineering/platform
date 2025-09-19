@@ -14,13 +14,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { showPopup } from '@hcengineering/ui'
-  import { getCurrentAccount, groupByArray } from '@hcengineering/core'
-  import { Reaction } from '@hcengineering/communication-types'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import { Emoji, EmojiData } from '@hcengineering/communication-types'
   import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionPresenter from './ReactionPresenter.svelte'
 
-  export let reactions: Reaction[] = []
+  export let reactions: Record<Emoji, EmojiData[]> = {}
 
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
@@ -46,18 +46,15 @@
       () => {}
     )
   }
-
-  let reactionsByEmoji = new Map<string, Reaction[]>()
-  $: reactionsByEmoji = groupByArray(reactions, (it) => it.reaction)
 </script>
 
 <div class="reactions">
-  {#each reactionsByEmoji as [emoji, reactions] (emoji)}
+  {#each Object.entries(reactions) as [emoji, data] (emoji)}
     <ReactionPresenter
       {emoji}
-      selected={reactions.some((it) => me.socialIds.includes(it.creator))}
-      socialIds={reactions.map((it) => it.creator)}
-      count={reactions.length}
+      selected={data.some((it) => it.person === me.uuid)}
+      persons={data.map((it) => it.person)}
+      count={data.length}
       on:click={() => dispatch('click', emoji)}
     />
   {/each}

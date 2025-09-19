@@ -26,7 +26,8 @@
   import PreviewTemplate from './PreviewTemplate.svelte'
 
   export let card: Card
-  export let message: Message
+  export let message: Message | undefined = undefined
+  export let creator: SocialID
   export let date: Date
   export let color: 'primary' | 'secondary' = 'primary'
   export let kind: 'default' | 'column' = 'default'
@@ -36,9 +37,10 @@
 
   let person: WithLookup<Person> | undefined = undefined
 
-  $: void updatePerson(message.creator)
+  $: void updatePerson(creator)
 
-  function getTooltipLabel (message: Message): IntlString {
+  function getTooltipLabel (message: Message | undefined): IntlString {
+    if (message == null) return getEmbeddedLabel('')
     const text = markupToText(jsonToMarkup(markdownToMarkup(message.content)))
     if (text.length > tooltipLimit) {
       return getEmbeddedLabel(text.substring(0, tooltipLimit) + '...')
@@ -56,20 +58,24 @@
   {color}
   {person}
   {padding}
-  socialId={message.creator}
+  socialId={creator}
   {date}
-  fixHeight={message.type !== MessageType.Activity}
+  fixHeight={message == null || message.type !== MessageType.Activity}
   tooltipLabel={getTooltipLabel(message)}
 >
   <svelte:fragment slot="content">
-    {#if isActivityMessage(message)}
-      <ActivityMessageViewer {message} {card} author={person} />
-    {:else}
-      <LiteMessageViewer message={markdownToMarkup(message.content)} />
+    {#if message}
+      {#if isActivityMessage(message)}
+        <ActivityMessageViewer {message} {card} author={person} />
+      {:else}
+        <LiteMessageViewer message={markdownToMarkup(message.content)} />
+      {/if}
     {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="after">
-    <AttachmentsPreview {message} />
+    {#if message}
+      <AttachmentsPreview {message} />
+    {/if}
   </svelte:fragment>
 </PreviewTemplate>

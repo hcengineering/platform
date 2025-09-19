@@ -99,14 +99,14 @@ export function messageToDraft (message: Message): MessageDraft {
   return {
     _id: message.id,
     content: toMarkup(message.content),
-    blobs: message.attachments.filter(isBlobAttachment).map((it) => it.params),
+    blobs: message.attachments.filter(isBlobAttachment).map((it) => ({ ...it.params, mimeType: it.mimeType })),
     links: message.attachments.filter(isLinkPreviewAttachment).map((it) => it.params),
     applets: message.attachments
       .filter(isAppletAttachment)
       .map((it) => ({
         id: it.id,
-        type: it.type,
-        appletId: applets.find((a) => a.type === it.type)?._id as any,
+        mimeType: it.mimeType,
+        appletId: applets.find((a) => a.type === it.mimeType)?._id as any,
         params: it.params
       }))
       .filter((it) => it.appletId !== undefined)

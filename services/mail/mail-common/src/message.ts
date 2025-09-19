@@ -281,7 +281,7 @@ async function createMailThread (
   const subjectId = generateMessageId()
   const createSubjectEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
-    messageType: MessageType.Message,
+    messageType: MessageType.Text,
     cardId: data.channel,
     cardType: chat.masterTag.Thread,
     content: data.subject,
@@ -322,7 +322,7 @@ async function createMailMessage (
   const messageId = getHulyIdFromEmailMessageId(data.mailId, data.from) ?? generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
-    messageType: MessageType.Message,
+    messageType: MessageType.Text,
     cardId: threadId,
     cardType: chat.masterTag.Thread,
     content: data.content,
