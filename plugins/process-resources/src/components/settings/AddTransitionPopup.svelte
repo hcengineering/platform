@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, State, Transition, Trigger, TriggerResult } from '@hcengineering/process'
+  import { Process, State, Transition, Trigger } from '@hcengineering/process'
   import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
@@ -26,7 +26,6 @@
   const dispatch = createEventDispatcher()
   let to: Ref<State> | undefined = undefined
   let states: State[] = []
-  let result: TriggerResult | null = null
 
   const query = createQuery()
   query.query(
@@ -96,7 +95,6 @@
       triggerParams: params,
       process: process._id,
       rank,
-      result,
       actions: []
     })
     dispatch('close')
@@ -105,9 +103,6 @@
   function change (e: CustomEvent<Record<string, any>>): void {
     if (e.detail?.params !== undefined) {
       params = e.detail.params
-    }
-    if (e.detail?.result !== undefined) {
-      result = e.detail.result
     }
   }
 </script>
@@ -119,7 +114,7 @@
   width={'medium'}
   on:close
 >
-  <div class="grid">
+  <div class="editor-grid">
     <Label label={plugin.string.From} />
     {#if !withoutFrom}
       <Dropdown
@@ -149,7 +144,6 @@
       label={plugin.string.Trigger}
       on:selected={() => {
         params = {}
-        result = null
       }}
       justify={'left'}
       width={'100%'}
@@ -157,19 +151,6 @@
     />
   </div>
   {#if triggerValue?.editor}
-    <Component is={triggerValue.editor} props={{ process, params, result }} on:change={change} />
+    <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
   {/if}
 </Card>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    height: min-content;
-  }
-</style>

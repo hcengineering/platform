@@ -104,7 +104,11 @@
     "Cancelled": "Annulé",
     "WaitUntil": "Attendre jusqu'à",
     "CurrentUser": "Utilisateur actuel",
-    "CurrentDate": "Date actuelle"
+    "CurrentDate": "Date actuelle",
+    "AddResult": "Ajouter un résultat",
+    "For": "Pour",
+    "Context": "Contexte",
+    "Attribute": "Attribut"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

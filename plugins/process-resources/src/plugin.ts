@@ -195,6 +195,10 @@ export default mergeIds(processId, process, {
     ArraySizeLt: '' as IntlString,
     ArraySizeLte: '' as IntlString,
     CurrentUser: '' as IntlString,
-    CurrentDate: '' as IntlString
+    CurrentDate: '' as IntlString,
+    AddResult: '' as IntlString,
+    For: '' as IntlString,
+    Attribute: '' as IntlString,
+    Context: '' as IntlString
   }
 })

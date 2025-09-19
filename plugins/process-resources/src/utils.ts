@@ -49,7 +49,8 @@ import {
   type State,
   type Step,
   type StepId,
-  type Transition
+  type Transition,
+  type UserResult
 } from '@hcengineering/process'
 import { type AnyComponent, showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
@@ -567,27 +568,24 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
 export async function requestResult (
   txop: TxOperations,
   execution: Execution,
-  transition: Transition,
+  results: UserResult[] | undefined,
   context: ExecutionContext
 ): Promise<void> {
-  if (transition.result == null) return
-  const promise = new Promise<void>((resolve, reject) => {
-    showPopup(
-      process.component.ResultInput,
-      { type: transition.result?.type, name: transition.result?.name },
-      undefined,
-      (res) => {
-        if (transition.result?._id === undefined) return
+  if (results == null) return
+  for (const result of results) {
+    const promise = new Promise<void>((resolve, reject) => {
+      showPopup(process.component.ResultInput, { type: result.type, name: result.name }, undefined, (res) => {
+        if (result._id === undefined) return
         if (res?.value !== undefined) {
-          context[transition.result._id] = res.value
+          context[result._id] = res.value
           resolve()
         } else {
           reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
         }
-      }
-    )
-  })
-  await promise
+      })
+    })
+    await promise
+  }
   await txop.update(execution, {
     context
   })
