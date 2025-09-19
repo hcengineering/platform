@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-client",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
@@ -42,8 +42,8 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.1",
-    "@hcengineering/network-backrpc": "workspace:^0.7.1",
+    "@hcengineering/network-core": "workspace:^0.7.2",
+    "@hcengineering/network-backrpc": "workspace:^0.7.2",
     "uuid": "^8.3.2"
   },
   "repository": "https://github.com/hcengineering/huly.net",
