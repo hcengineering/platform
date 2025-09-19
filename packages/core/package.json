@@ -11,6 +11,8 @@
     "!lib/**/__test__/**",
     "types/**/*",
     "!types/**/__test__/**",
+    "src/**/*",
+    "!src/**/__test__/**",
     "README.md",
     "CHANGELOG.md"
   ],
