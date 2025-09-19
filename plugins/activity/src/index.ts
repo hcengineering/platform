@@ -324,7 +324,8 @@ export default plugin(activityId, {
     RemovedObjectType: '' as IntlString,
     AttributeSetTo: '' as IntlString,
     AddedTag: '' as IntlString,
-    RemovedTag: '' as IntlString
+    RemovedTag: '' as IntlString,
+    ValueTooLarge: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

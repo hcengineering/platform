@@ -55,6 +55,7 @@
     "RemovedObjectType": "{type} rimosso: {title}",
     "AttributeSetTo": "{name} impostato su {value}",
     "AddedTag": "Tag aggiunto: {title}",
-    "RemovedTag": "Tag rimosso: {title}"
+    "RemovedTag": "Tag rimosso: {title}",
+    "ValueTooLarge": "Valore troppo grande per essere visualizzato"
   }
 }

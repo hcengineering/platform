@@ -1,4 +1,8 @@
-import { type ActivityMessageControl, type DocAttributeUpdates, type DocUpdateAction } from '@hcengineering/activity'
+import activity, {
+  type ActivityMessageControl,
+  type DocAttributeUpdates,
+  type DocUpdateAction
+} from '@hcengineering/activity'
 import cardPlugin, { type Card, type Tag } from '@hcengineering/card'
 import { type ActivityUpdate, ActivityUpdateType } from '@hcengineering/communication-types'
 import core, {
@@ -23,6 +27,21 @@ import core, {
 import { translate } from '@hcengineering/platform'
 import { type ActivityControl, type DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { type TriggerControl } from '@hcengineering/server-core'
+
+// Use 100 KB limit for attribute updates
+const valueSizeLimit = 100 * 1024 // 100 KB
+
+function valueSizeExceedsLimit (value: any): boolean {
+  if (value == null) return false
+  if (Array.isArray(value)) {
+    return value.some((v) => valueSizeExceedsLimit(v))
+  } else if (typeof value === 'string') {
+    return value.length > valueSizeLimit
+  } else if (typeof value === 'object') {
+    return JSON.stringify(value).length > valueSizeLimit
+  }
+  return false
+}
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -280,6 +299,11 @@ export async function getTxAttributesUpdates (
       } else {
         prevValue = rawPrevValue
       }
+    }
+
+    if (valueSizeExceedsLimit(attrValue)) {
+      attrValue = [activity.string.ValueTooLarge]
+      prevValue = [activity.string.ValueTooLarge]
     }
 
     let setAttr = []

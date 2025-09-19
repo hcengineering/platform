@@ -55,7 +55,8 @@
     "RemovedObjectType": "{type} を削除：{title}",
     "AttributeSetTo": "{name} を {value} に設定しました",
     "AddedTag": "タグを追加しました：{title}",
-    "RemovedTag": "タグを削除しました：{title}"
+    "RemovedTag": "タグを削除しました：{title}",
+    "ValueTooLarge": "表示するには値が大きすぎます"
   }
 }
   

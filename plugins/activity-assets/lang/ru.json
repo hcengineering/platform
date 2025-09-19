@@ -55,6 +55,7 @@
     "RemovedObjectType": "Удален(ы) {type} : {title}",
     "AttributeSetTo": "{name} установлен на {value}",
     "AddedTag": "Добавлен тег: {title}",
-    "RemovedTag": "Удален тег: {title}"
+    "RemovedTag": "Удален тег: {title}",
+    "ValueTooLarge": "Значение слишком велико для отображения"
   }
 }
