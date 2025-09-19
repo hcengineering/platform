@@ -38,6 +38,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: node common/scripts/install-run-rush.js install
+      - name: Rush validate
+        run: node common/scripts/install-run-rush.js validate --verbose
       - name: Publish packages
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
