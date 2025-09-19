@@ -29,6 +29,9 @@
   import RoomModal from '../../RoomModal.svelte'
   import { currentRoom } from '../../../stores'
   import MeetingOptionsButton from '../controls/MeetingOptionsButton.svelte'
+  import RecordingButton from '../controls/RecordingButton.svelte'
+  import TranscriptionButton from '../controls/TranscriptionButton.svelte'
+  import RoomAccessButton from '../controls/RoomAccessButton.svelte'
 
   export let room: Room
   export let doc: MeetingMinutes | undefined = undefined
@@ -57,8 +60,11 @@
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
     {#if $currentRoom !== undefined}
-      <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
+      <RoomAccessButton {room} kind="tertiary" size="small" />
+      <RecordingButton {room} kind="tertiary" size="small" />
+      <TranscriptionButton {room} kind="tertiary" size="small" />
       <MeetingOptionsButton {room} kind="tertiary" size="small" />
+      <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
     {/if}
   </svelte:fragment>
 </Header>

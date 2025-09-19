@@ -50,7 +50,7 @@
 
 <div class="control-bar">
   <ControlBarContainer bind:noLabel>
-    <svelte:fragment slot="right">
+    <svelte:fragment slot="left">
       {#if room._id !== love.ids.Reception && $lkSessionConnected}
         <RoomAccessButton {room} />
         <InviteEmployeeButton
@@ -74,7 +74,7 @@
         <RoomAccessButton {room} />
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="left">
+    <svelte:fragment slot="right">
       {#if $lkSessionConnected && onFullScreen}
         <ModernButton
           icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}

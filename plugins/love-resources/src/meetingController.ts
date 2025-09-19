@@ -25,9 +25,9 @@ import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
 
+export let currentMeetingRoom: Ref<Room> | undefined
 const requestsQuery = createQuery(true)
 const invitesQuery = createQuery(true)
-export let currentMeetingRoom: Ref<Room> | undefined
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
