@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Process, UserResult } from '@hcengineering/process'
-  import { Button } from '@hcengineering/ui'
+  import { Button, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ResultEditor from './ResultEditor.svelte'
@@ -47,18 +47,23 @@
   }
 </script>
 
-{#each items as item, i}
-  <ResultEditor
-    {process}
-    result={item}
-    on:change={(e) => {
-      handleChange(e, i)
-    }}
-    on:remove={() => {
-      remove(i)
-    }}
-  />
-{/each}
-<div class="flex-center mt-4">
-  <Button label={plugin.string.AddResult} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+<div class="mx-8 fs-title">
+  <Label label={plugin.string.Result} />:
+</div>
+<div class="flex-col flex-gap-2">
+  {#each items as item, i}
+    <ResultEditor
+      {process}
+      result={item}
+      on:change={(e) => {
+        handleChange(e, i)
+      }}
+      on:remove={() => {
+        remove(i)
+      }}
+    />
+  {/each}
+  <div class="flex-center mx-8">
+    <Button label={plugin.string.AddResult} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+  </div>
 </div>

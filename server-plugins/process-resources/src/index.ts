@@ -28,11 +28,13 @@ import core, {
 import process, {
   ContextId,
   Execution,
+  Method,
   Process,
   ProcessContext,
   ProcessToDo,
   SelectedExecutionContext,
   State,
+  Step,
   Transition
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
@@ -273,6 +275,15 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
   return res
 }
 
+function getName (current: ProcessContext | undefined, method: Method<Doc>, action: Step<Doc>): string {
+  const nameField = method.createdContext?.nameField
+  if (nameField !== undefined) {
+    const name = action.params[nameField]
+    if (name !== undefined && typeof name === 'string' && name !== '') return name
+  }
+  return current?.name ?? ''
+}
+
 async function syncContext (control: TriggerControl, _process: Process): Promise<Tx | undefined> {
   const transitions = control.modelDb.findAllSync(process.class.Transition, { process: _process._id })
   const exists = new Set<ContextId>()
@@ -284,7 +295,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
         exists.add(action.context._id)
         const method = control.modelDb.findObject(action.methodId)
         const current = _process.context[action.context._id]
-        if (method?.contextClass != null) {
+        if (method?.createdContext != null) {
           changed = true
           const ctx: SelectedExecutionContext = {
             type: 'context',
@@ -292,8 +303,8 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             key: ''
           }
           _process.context[action.context._id] = {
-            name: current?.name ?? '',
-            _class: action.context._class ?? method.contextClass,
+            name: getName(current, method, action),
+            _class: action.context._class ?? method.createdContext._class,
             action: action._id,
             index: index++,
             producer: transition._id,
@@ -304,7 +315,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
       if (action.results != null) {
         for (const result of action.results) {
           exists.add(result._id)
-          const context = _process.context[result._id]
           changed = true
           const ctx: SelectedExecutionContext = {
             type: 'context',
@@ -314,9 +324,10 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
           const parentType = result.type._class === core.class.ArrOf ? (result.type as ArrOf<Doc>).of : result.type
           const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
           _process.context[result._id] = {
-            name: context?.name ?? result.name,
+            name: result.name,
             isResult: true,
             type: result.type,
+            action: action._id,
             _class,
             index: index++,
             producer: transition._id,

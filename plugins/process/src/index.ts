@@ -38,7 +38,7 @@ export interface Process extends Doc {
 export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
-  action?: StepId
+  action: StepId
   index: number
   producer: Ref<Transition>
   isResult?: boolean
@@ -165,8 +165,13 @@ export interface Method<T extends Doc> extends Doc {
   description?: IntlString
   editor?: AnyComponent
   presenter?: AnyComponent
-  contextClass: Ref<Class<Doc>> | null
+  createdContext: CreatedContext | null
   defaultParams?: MethodParams<T>
+}
+
+export interface CreatedContext {
+  _class: Ref<Class<Doc>>
+  nameField?: string
 }
 
 export interface ProcessFunction extends Doc {

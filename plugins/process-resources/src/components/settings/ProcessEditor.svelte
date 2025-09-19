@@ -144,7 +144,13 @@
       <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
         <div class="hulyComponent-content gap">
           <div class="header flex-between">
-            <EditBox bind:value={value.name} on:change={saveName} placeholder={process.string.Untitled} />
+            <EditBox
+              bind:value={value.name}
+              kind="modern-ghost-large"
+              on:change={saveName}
+              required
+              placeholder={process.string.Untitled}
+            />
             <div class="flex-row-center flex-gap-2">
               <ButtonIcon icon={IconSettings} size="small" kind="secondary" on:click={handleSettings} />
               <ButtonIcon

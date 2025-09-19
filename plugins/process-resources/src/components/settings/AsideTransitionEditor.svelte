@@ -93,14 +93,10 @@
 
 <style lang="scss">
   .header {
-    padding: 1rem 1.25rem 2rem 1.25rem;
+    padding-left: 2rem;
   }
 
   .editor {
     margin: 0.25rem 2rem 0;
-  }
-
-  .title {
-    padding-bottom: 1rem;
   }
 </style>
