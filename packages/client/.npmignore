@@ -1,4 +1,6 @@
 *
 !/lib/**
+!/types/**
 !CHANGELOG.md
-/lib/**/__tests__/
+/lib/**/__test__/
+/types/**/__test__/

@@ -8,7 +8,9 @@
   "license": "EPL-2.0",
   "files": [
     "lib/**/*",
+    "!lib/**/__test__/**",
     "types/**/*",
+    "!types/**/__test__/**",
     "README.md",
     "CHANGELOG.md"
   ],
