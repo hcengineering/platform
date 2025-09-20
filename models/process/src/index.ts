@@ -248,6 +248,8 @@ export class TUpdateCriteriaComponent extends TDoc implements UpdateCriteriaComp
   editor!: AnyComponent
 
   of!: Ref<Class<Doc<Space>>>
+
+  props!: Record<string, any>
 }
 
 export * from './migration'
@@ -1180,50 +1182,83 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeString
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeString,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeHyperlink
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeHyperlink,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.NumberCriteria,
-    of: core.class.TypeNumber
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeNumber,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.DateCriteria,
-    of: core.class.TypeDate
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeDate,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.BooleanCriteria,
-    of: core.class.TypeBoolean
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeBoolean,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'array',
-    editor: process.criteriaEditor.ArrayCriteria,
-    of: core.class.ArrOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.ArrOf,
+    props: {
+      modes: [
+        'ArrayAll',
+        'ArrayAny',
+        'ArrayNotIncludes',
+        'ArraySizeEquals',
+        'ArraySizeGt',
+        'ArraySizeGte',
+        'ArraySizeLt',
+        'ArraySizeLte'
+      ]
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.EnumCriteria,
-    of: core.class.EnumOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.EnumOf,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'object',
-    editor: process.criteriaEditor.RefCriteria,
-    of: core.class.RefTo
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.RefTo,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 }
 

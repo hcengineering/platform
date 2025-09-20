@@ -13,7 +13,9 @@
 
 import { type QuerySelector } from '@hcengineering/core'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
 import view from '@hcengineering/view-resources/src/plugin'
+import plugin from './plugin'
 
 export interface Mode {
   id: string
@@ -21,6 +23,7 @@ export interface Mode {
   query: QuerySelector<any> | string
   parse?: (value: any) => any
   withoutEditor?: boolean
+  editor?: AnyComponent
 }
 
 const Equal: Mode = {
@@ -45,6 +48,17 @@ const LT: Mode = {
   id: 'lessThan',
   label: getEmbeddedLabel('<'),
   query: { $lt: '$val' as any }
+}
+
+const Between: Mode = {
+  id: 'between',
+  label: view.string.Between,
+  query: { $gte: '$val[0]' as any, $lte: '$val[1]' as any },
+  parse: (value: any): any => {
+    if (!Array.isArray(value) || value.length !== 2) return value
+    return value
+  },
+  editor: plugin.criteriaEditor.RangeCriteria
 }
 
 const Exists: Mode = {
@@ -85,40 +99,46 @@ const ArrayNotIncludes: Mode = {
 const ArraySizeEquals: Mode = {
   id: 'sizeEquals',
   label: getEmbeddedLabel('='),
-  query: { $size: '$val' as any }
+  query: { $size: '$val' as any },
+  editor: plugin.criteriaEditor.ArraySizeCriteria
 }
 
 const ArraySizeGt: Mode = {
   id: 'sizeGt',
   label: getEmbeddedLabel('>'),
-  query: { $size: { $gt: '$val' as any } }
+  query: { $size: { $gt: '$val' as any } },
+  editor: plugin.criteriaEditor.ArraySizeCriteria
 }
 
 const ArraySizeGte: Mode = {
   id: 'sizeGte',
   label: getEmbeddedLabel('≥'),
-  query: { $size: { $gte: '$val' as any } }
+  query: { $size: { $gte: '$val' as any } },
+  editor: plugin.criteriaEditor.ArraySizeCriteria
 }
 
 const ArraySizeLt: Mode = {
   id: 'sizeLt',
   label: getEmbeddedLabel('<'),
-  query: { $size: { $lt: '$val' as any } }
+  query: { $size: { $lt: '$val' as any } },
+  editor: plugin.criteriaEditor.ArraySizeCriteria
 }
 
 const ArraySizeLte: Mode = {
   id: 'sizeLte',
   label: getEmbeddedLabel('≤'),
-  query: { $size: { $lte: '$val' as any } }
+  query: { $size: { $lte: '$val' as any } },
+  editor: plugin.criteriaEditor.ArraySizeCriteria
 }
 
-export const Modes: Record<string, Mode> = {
+export const Modes = {
   Exists,
   Equal,
   NotEqual,
   StringContains,
   GT,
   LT,
+  Between,
   ArrayAll,
   ArrayAny,
   ArrayNotIncludes,
@@ -128,6 +148,8 @@ export const Modes: Record<string, Mode> = {
   ArraySizeLt,
   ArraySizeLte
 } as const
+
+export type ModeId = keyof typeof Modes
 
 export function parseValue (modes: Mode[], value: any): [any, Mode] {
   if (value == null) {
@@ -163,24 +185,20 @@ export function buildResult (mode: Mode, value: any): any {
   if (typeof q !== 'object') return value
   const result: any = {}
   let res = result
-  while (true) {
-    if (typeof q === 'object') {
-      const key = Object.keys(q)[0]
-      const v: any = (q as any)[key]
-      if (typeof v !== 'object') {
-        if (typeof value === 'string' && typeof v === 'string') {
-          res[key] = v.replace('$val', value)
-        } else {
-          res[key] = mode.withoutEditor === true ? v : value ?? v
-        }
-        return result
+  while (typeof q === 'object') {
+    const key = Object.keys(q)[0]
+    const v: any = (q as any)[key]
+    if (typeof v !== 'object') {
+      if (typeof value === 'string' && typeof v === 'string') {
+        res[key] = v.replace('$val', value)
+      } else {
+        res[key] = mode.withoutEditor === true ? v : value ?? v
       }
-      q = v
-      res[key] = {}
-      res = res[key]
-    } else {
-      break
+      return result
     }
+    q = v
+    res[key] = {}
+    res = res[key]
   }
   return result
 }
