@@ -1,5 +1,5 @@
 import { Card } from '@hcengineering/card'
-import { Doc, MeasureContext, PersonId, Ref, Tx, TxOperations } from '@hcengineering/core'
+import { Doc, MeasureContext, PersonId, Ref, Tx, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { Execution, ExecutionError, MethodParams, Trigger, UserResult } from '@hcengineering/process'
 
 export type ExecuteFunc = (
@@ -42,6 +42,7 @@ export interface ProcessControl {
   client: TxOperations
   cache: Map<string, any>
   messageContext: Record<string, any>
+  workspace: WorkspaceUuid
 }
 
 export type RollbackFunc = (context: Record<string, any>, control: ProcessControl) => Tx

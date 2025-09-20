@@ -67,7 +67,8 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
         ctx,
         client,
         cache: new Map<string, any>(),
-        messageContext: record.context
+        messageContext: record.context,
+        workspace: ws
       }
       ctx.info('Processing event', { event: record.event, ws, record })
       if (record.execution !== undefined) {
@@ -528,7 +529,7 @@ async function setTimer (
     await temporalClient.workflow.signalWithStart('processTimeWorkflow', {
       taskQueue: 'process',
       signal: 'setDate',
-      args: [targetDate, 'workspace', execution._id],
+      args: [targetDate, control.workspace, execution._id],
       signalArgs: [targetDate],
       workflowId: `${execution._id}_${transition._id}`,
       searchAttributes: {
