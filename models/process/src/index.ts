@@ -47,6 +47,7 @@ import { type Asset, type IntlString, type Resource } from '@hcengineering/platf
 import {
   type CheckFunc,
   type ContextId,
+  type CreatedContext,
   type Execution,
   type ExecutionContext,
   type ExecutionError,
@@ -206,7 +207,7 @@ export class TMethod extends TDoc implements Method<Doc> {
 
   editor!: AnyComponent
 
-  contextClass!: Ref<Class<Doc>> | null
+  createdContext!: CreatedContext
 
   presenter?: AnyComponent
 
@@ -997,7 +998,7 @@ export function createModel (builder: Builder): void {
       objectClass: process.class.Process,
       editor: process.component.SubProcessEditor,
       presenter: process.component.SubProcessPresenter,
-      contextClass: process.class.Execution,
+      createdContext: { _class: process.class.Execution },
       requiredParams: ['_id']
     },
     process.method.RunSubProcess
@@ -1011,8 +1012,8 @@ export function createModel (builder: Builder): void {
       editor: process.component.ToDoEditor,
       objectClass: process.class.ProcessToDo,
       presenter: process.component.ToDoPresenter,
-      contextClass: process.class.ProcessToDo,
-      requiredParams: ['state', 'title', 'user'],
+      createdContext: { _class: process.class.ProcessToDo, nameField: 'title' },
+      requiredParams: ['title', 'user'],
       defaultParams: {
         withRollback: true
       }
@@ -1039,7 +1040,7 @@ export function createModel (builder: Builder): void {
       label: process.string.UpdateCard,
       editor: process.component.UpdateCardEditor,
       objectClass: card.class.Card,
-      contextClass: null,
+      createdContext: null,
       presenter: process.component.UpdateCardPresenter,
       requiredParams: []
     },
@@ -1054,7 +1055,7 @@ export function createModel (builder: Builder): void {
       objectClass: card.class.Card,
       editor: process.component.CreateCardEditor,
       presenter: process.component.CreateCardPresenter,
-      contextClass: card.class.Card,
+      createdContext: { _class: card.class.Card },
       requiredParams: ['title', '_class']
     },
     process.method.CreateCard
@@ -1068,7 +1069,7 @@ export function createModel (builder: Builder): void {
       objectClass: core.class.Relation,
       editor: process.component.AddRelationEditor,
       presenter: process.component.AddRelationPresenter,
-      contextClass: core.class.Relation,
+      createdContext: { _class: core.class.Relation },
       requiredParams: ['association', 'direction', '_id']
     },
     process.method.AddRelation
@@ -1082,7 +1083,7 @@ export function createModel (builder: Builder): void {
       objectClass: card.class.Tag,
       editor: process.component.AddTagEditor,
       presenter: process.component.AddTagPresenter,
-      contextClass: card.class.Card,
+      createdContext: { _class: card.class.Card },
       requiredParams: ['_id']
     },
     process.method.AddTag

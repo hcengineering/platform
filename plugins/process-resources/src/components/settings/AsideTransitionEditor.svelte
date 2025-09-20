@@ -91,7 +91,7 @@
 
 <style lang="scss">
   .header {
-    padding: 1rem 1.25rem 2rem 1.25rem;
+    padding-left: 2rem;
   }
 
   .title {
