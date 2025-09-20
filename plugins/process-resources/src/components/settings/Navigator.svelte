@@ -32,12 +32,7 @@
 </script>
 
 {#if visibleSecondNav}
-  <div class="hulyComponent-content__column">
-    <div class="hulyComponent-content__navHeader">
-      <div class="hulyComponent-content__navHeader-menu">
-        <ButtonIcon kind="tertiary" icon={IconDescription} size="small" inheritColor />
-      </div>
-    </div>
+  <div class="hulyComponent-content__column pt-4">
     {#each states as state (state._id)}
       <div class="state">
         {state.title}
