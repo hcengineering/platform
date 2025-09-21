@@ -320,7 +320,11 @@ async function execute (execution: Execution, transition: Transition, control: P
   }
 }
 
-async function executeTransition (execution: Execution, _transition: Transition, control: ProcessControl): Promise<void> {
+async function executeTransition (
+  execution: Execution,
+  _transition: Transition,
+  control: ProcessControl
+): Promise<void> {
   let transition: Transition | undefined = _transition
   while (transition !== undefined) {
     let deep = control.cache.get(execution._id + 'transition') ?? 0
@@ -347,7 +351,7 @@ async function executeTransition (execution: Execution, _transition: Transition,
     const res: Tx[] = []
     const _process = client.getModel().findObject(execution.process)
     if (_process === undefined) return
-  
+
     const state = client.getModel().findObject(transition.to)
     if (state === undefined) return
     const isDone =
@@ -426,12 +430,12 @@ async function executeTransition (execution: Execution, _transition: Transition,
       }
       TxProcessor.applyUpdate(execution, executionUpdate)
       transition = await checkNext(control, execution)
-      if (!transition) {
+      if (transition === undefined) {
         await setNextTimers(control, execution)
       }
     } else {
-      transition = undefined
       await client.update(execution, { error: errors })
+      break
     }
   }
 }
