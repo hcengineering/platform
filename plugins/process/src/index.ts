@@ -188,6 +188,7 @@ export interface UpdateCriteriaComponent extends Doc {
   category: AttributeCategory
   editor: AnyComponent
   of: Ref<Class<Doc>>
+  props: Record<string, any>
 }
 
 export * from './errors'

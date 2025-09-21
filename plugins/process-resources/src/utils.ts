@@ -50,9 +50,10 @@ import {
   type Step,
   type StepId,
   type Transition,
+  type UpdateCriteriaComponent,
   type UserResult
 } from '@hcengineering/process'
-import { type AnyComponent, showPopup } from '@hcengineering/ui'
+import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
@@ -638,17 +639,20 @@ export async function subProcessesDoneCheck (
   return res === undefined
 }
 
-export function getCirteriaEditor (of: Ref<Class<Doc>>, category: AttributeCategory): AnyComponent | undefined {
+export function getCirteriaEditor (
+  of: Ref<Class<Doc>>,
+  category: AttributeCategory
+): UpdateCriteriaComponent | undefined {
   const client = getClient()
   if (category !== 'attribute') {
     const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
       category
     })[0]
-    return res?.editor
+    return res
   }
   const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
     category,
     of
   })[0]
-  return res?.editor
+  return res
 }

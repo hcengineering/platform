@@ -46,7 +46,8 @@
       if (attr.hidden === true) continue
       if (ignoreKeys.includes(key)) continue
       const presenterClass = getAttributePresenterClass(hierarchy, attr.type)
-      const editor = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+      const updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+      const editor = updateCriteria?.editor
       if (editor == null) continue
       res.push(attr)
     }
