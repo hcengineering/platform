@@ -83,9 +83,7 @@
         />
       </div>
       {#if trigger.editor !== undefined}
-        <div class="editor">
-          <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
-        </div>
+        <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
       {/if}
     {/if}
   </div>
@@ -96,7 +94,7 @@
     padding-left: 2rem;
   }
 
-  .editor {
-    margin: 0.25rem 2rem 0;
+  .title {
+    padding-bottom: 1rem;
   }
 </style>
