@@ -1766,13 +1766,13 @@ export class GithubWorker implements IntegrationManager {
     workspace: WorkspaceIds,
     branding: Branding | null,
     app: App,
-    storageAdapter: StorageAdapter,
-    reconnect: (workspaceId: WorkspaceUuid, event: ClientConnectEvent) => void
+    storageAdapter: StorageAdapter
   ): Promise<GithubWorker | undefined> {
     ctx.info('Connecting to', { workspace })
     let client: Client | undefined
     let endpoint: string | undefined
     let maitenanceState = false
+    let worker: GithubWorker | undefined
     try {
       ;({ client, endpoint } = await createPlatformClient(
         ctx,
@@ -1784,7 +1784,9 @@ export class GithubWorker implements IntegrationManager {
             maitenanceState = true
             throw new Error('Workspace in maintenance')
           }
-          reconnect(workspace.uuid, event)
+          if (worker !== undefined) {
+            platformWorker.checkReconnect(workspace.uuid, event, worker)
+          }
         }
       ))
       ctx.info('connected to github', { workspace: workspace.uuid, endpoint })
@@ -1796,7 +1798,7 @@ export class GithubWorker implements IntegrationManager {
 
       await GithubWorker.checkIntegrations(client, installations)
 
-      const worker = new GithubWorker(
+      worker = new GithubWorker(
         ctx,
         platformWorker.getRateLimiter(endpoint ?? ''),
         platformWorker,
@@ -1808,10 +1810,16 @@ export class GithubWorker implements IntegrationManager {
         branding
       )
       ctx.info('Init worker', { workspace: workspace.url, workspaceId: workspace.uuid })
-      void worker.init()
+      void worker.init().catch((err) => {
+        ctx.error('failed to init worker', { error: err, workspace: workspace.uuid })
+        void client?.close().catch((err) => {
+          ctx.error('failed to close client after init error', { error: err, workspace: workspace.uuid })
+        })
+      })
       return worker
     } catch (err: any) {
       await client?.close()
+      void worker?.close()
       if (maitenanceState) {
         ctx.info('workspace in maintenance, schedule recheck', { workspace: workspace.uuid, endpoint })
         return

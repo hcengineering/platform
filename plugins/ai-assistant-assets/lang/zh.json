@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "AI 助手",
+    "IntegrationDescription": "您的 AI 驱动的个人助手，帮助组织、自动化和简化您在平台上的日常工作流程",
+    "ConfigLabel": "AI 助手",
+    "ConfigDescription": "AI 驱动的个人助手",
+    "Connect": "连接",
+    "Cancel": "取消",
+    "Status": "状态",
+    "FailedToConnect": "AI 助手服务不可用",
+    "Configure": "配置 AI 助手"
+  }
+}

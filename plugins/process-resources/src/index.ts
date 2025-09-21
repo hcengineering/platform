@@ -23,6 +23,7 @@ import ErrorPresenter from './components/ErrorPresenter.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
 import ExecutonProgressPresenter from './components/ExecutonProgressPresenter.svelte'
 import Main from './components/Main.svelte'
+import ExecutionMyToDos from './components/ExecutionMyToDos.svelte'
 import SubProcessPresenter from './components/presenters/SubProcessPresenter.svelte'
 import ToDoPresenter from './components/presenters/ToDoPresenter.svelte'
 import UpdateCardPresenter from './components/presenters/UpdateCardPresenter.svelte'
@@ -80,7 +81,8 @@ import {
   showDoneQuery,
   timeTransitionCheck,
   todoTranstionCheck,
-  updateCardTranstionCheck
+  updateCardTranstionCheck,
+  subProcessesDoneCheck
 } from './utils'
 
 export * from './query'
@@ -133,7 +135,8 @@ export default async (): Promise<Resources> => ({
     TimeEditor,
     TimePresenter,
     AddTagEditor,
-    AddTagPresenter
+    AddTagPresenter,
+    ExecutionMyToDos
   },
   criteriaEditor: {
     DateCriteria,
@@ -160,6 +163,7 @@ export default async (): Promise<Resources> => ({
   },
   triggerCheck: {
     UpdateCheck: updateCardTranstionCheck,
+    SubProcessesDoneCheck: subProcessesDoneCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck
   },

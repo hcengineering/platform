@@ -88,20 +88,13 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
           from: execution.currentState,
           trigger: process.trigger.OnCardUpdate
         })
-        const transition = await pickTransition(
-          this.client.getModel(),
-          this.client.getHierarchy(),
-          execution,
-          transitions,
-          updated
-        )
+        const transition = await pickTransition(this.client, execution, transitions, updated)
         if (transition === undefined) return
         const context = await getNextStateUserInput(execution, transition, execution.context)
         const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
         await txop.update(execution, {
           context
         })
-        await requestResult(txop, execution, transition, execution.context)
       }
     }
   }
@@ -153,27 +146,21 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: todo.execution
       })
       if (execution === undefined) return
+      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+      await requestResult(txop, execution, todo.results, execution.context)
       const transitions = this.client.getModel().findAllSync(process.class.Transition, {
         process: execution.process,
         from: execution.currentState,
         trigger: process.trigger.OnToDoClose
       })
-      const transition = await pickTransition(
-        this.client.getModel(),
-        this.client.getHierarchy(),
-        execution,
-        transitions,
-        todo
-      )
+      const transition = await pickTransition(this.client, execution, transitions, todo)
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
       if (context !== undefined) {
         await txop.update(execution, {
           context
         })
       }
-      await requestResult(txop, execution, transition, execution.context)
     }
   }
 }

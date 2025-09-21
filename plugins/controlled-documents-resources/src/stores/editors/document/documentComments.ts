@@ -19,9 +19,10 @@ import { type CompAndProps, type PopupAlignment, popupstore, showPopup } from '@
 import documents, { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../../utils'
 import {
-  DocumentCommentPopupCategory,
   type DocumentCommentsFilter,
+  DocumentCommentPopupCategory,
   documentCommentPopupsOpened,
+  documentCommentsAddCanceled,
   documentCommentsDisplayRequested,
   documentCommentsHighlightCleared,
   documentCommentsHighlightUpdated,
@@ -31,7 +32,8 @@ import {
   documentCommentsSortByChanged,
   documentCommentsUpdated,
   controlledDocumentClosed,
-  savedAttachmentsUpdated
+  savedAttachmentsUpdated,
+  controlledDocumentOpened
 } from './actions'
 
 export const $areDocumentCommentPopupsOpened = createStore(false).on(
@@ -120,6 +122,7 @@ export const showAddCommentPopupFx = createEffect((payload: { element?: PopupAli
     payload.element,
     (result) => {
       if (result === null || result === undefined) {
+        documentCommentsAddCanceled({ nodeId: payload.nodeId })
         documentCommentsHighlightCleared()
       } else {
         documentCommentsDisplayRequested(payload)
@@ -187,4 +190,5 @@ export const $savedAttachments = createStore<Array<Ref<Attachment>>>([])
   .on(savedAttachmentsUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
+forward({ from: controlledDocumentOpened, to: documentCommentsHighlightCleared })
 forward({ from: documentCommentsLocationNavigateRequested, to: documentCommentsHighlightUpdated })

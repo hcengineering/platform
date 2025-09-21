@@ -36,7 +36,7 @@
   } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
-  import { updateMyPresence } from '@hcengineering/presence-resources'
+  import { clearTyping, setTyping } from '@hcengineering/presence-resources'
   import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
   import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
@@ -55,7 +55,7 @@
     showForbidden
   } from '../../utils'
   import communication from '../../plugin'
-  import { type TextInputAction, type PresenceTyping, MessageDraft, AppletDraft } from '../../types'
+  import { type TextInputAction, MessageDraft, AppletDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
   import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
 
@@ -138,6 +138,8 @@
     } else {
       await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
     }
+
+    clearTyping(me, card._id)
   }
 
   async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
@@ -460,9 +462,7 @@
     if (message !== undefined) return
     if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
-        const room = { objectId: card._id, objectClass: card._class }
-        const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
-        updateMyPresence(room, { typing })
+        void setTyping(me, card._id)
       })
     }
   }

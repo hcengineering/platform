@@ -41,6 +41,7 @@
   import Navigator from './Navigator.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
+  import { SortableList } from '@hcengineering/view-resources'
 
   export let _id: Ref<Transition>
   export let visibleSecondNav: boolean = true
@@ -136,6 +137,11 @@
   function edit (): void {
     $settingsStore = { id: _id, component: AsideTransitionEditor, props: { process, transition: value } }
   }
+
+  async function moveHadler (): Promise<void> {
+    if (value === undefined) return
+    await client.update(value, { actions: value.actions })
+  }
 </script>
 
 <div class="hulyComponent-content__container columns">
@@ -169,20 +175,22 @@
               <div class="label w-full p-4">
                 <Label label={plugin.string.Actions} />
               </div>
-              {#each value.actions as action}
-                <Button
-                  justify="left"
-                  kind="ghost"
-                  width="100%"
-                  on:click={() => {
-                    editAction(action)
-                  }}
-                >
-                  <svelte:fragment slot="content">
-                    <ActionPresenter {action} {process} readonly={false} />
-                  </svelte:fragment>
-                </Button>
-              {/each}
+              <SortableList bind:items={value.actions} on:move={moveHadler}>
+                <svelte:fragment slot="object" let:value>
+                  <Button
+                    justify="left"
+                    kind="ghost"
+                    width="100%"
+                    on:click={() => {
+                      editAction(value)
+                    }}
+                  >
+                    <svelte:fragment slot="content">
+                      <ActionPresenter action={value} {process} readonly={false} />
+                    </svelte:fragment>
+                  </Button>
+                </svelte:fragment>
+              </SortableList>
               <Button
                 kind={'ghost'}
                 width={'100%'}

@@ -68,6 +68,7 @@ import CardTagsColored from './components/CardTagsColored.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
 import CardIcon from './components/CardIcon.svelte'
+import CardFeedView from './components/CardFeedView.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as CardIcon } from './components/CardIcon.svelte'
@@ -79,7 +80,6 @@ export { default as AssociationsSelect } from './components/settings/view/Associ
 export { default as CardTagsColored } from './components/CardTagsColored.svelte'
 export { default as CardPathPresenter } from './components/CardPathPresenter.svelte'
 export { default as CardTimestamp } from './components/CardTimestamp.svelte'
-export { default as NewCardForm } from './components/NewCardForm.svelte'
 
 export * from './types'
 export { getCardIconInfo, openCardInSidebar } from './utils'
@@ -118,7 +118,8 @@ export default async (): Promise<Resources> => ({
     FavoriteCardPresenter,
     CardTagColored,
     CardTagsColored,
-    CardIcon
+    CardIcon,
+    CardFeedView
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,

@@ -141,6 +141,8 @@ export default plugin(platformId, {
     BadRequest: '' as StatusCode,
     Forbidden: '' as StatusCode, // 403
     Unauthorized: '' as StatusCode, // 401
+    TokenExpired: '' as StatusCode, // 401
+    TokenNotActive: '' as StatusCode<{ notBefore: number }>, // 401
     Conflict: '' as StatusCode, // 409
     ExpiredLink: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,

@@ -33,6 +33,8 @@
   export let size: ButtonSize | undefined = undefined
   export let withIcon: boolean = false
   export let withSelectIcon: boolean = true
+  export let disableFocusOnMouseover: boolean = false
+  export let withSearch: boolean = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -42,7 +44,7 @@
   function openPopup (): void {
     if (!opened) {
       opened = true
-      showPopup(NestedMenu, { items, withIcon }, container, (result) => {
+      showPopup(NestedMenu, { items, withIcon, disableFocusOnMouseover, withSearch }, container, (result) => {
         if (result !== undefined) {
           selected = result
           dispatch('selected', result.id)

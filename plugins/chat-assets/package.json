@@ -38,6 +38,6 @@
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }

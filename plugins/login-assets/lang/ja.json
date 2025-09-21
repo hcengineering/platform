@@ -74,6 +74,8 @@
     "SetPasswordNow": "今すぐパスワードを設定します",
     "LoginAsGuest": "ゲストとして続行",
     "SignUpToCreateWorkspace": "ゲストアクセス可能なワークスペースはありません。登録して独自のワークスペースを作成してください。",
-    "WhatIsYourName": "お名前は何ですか？"
+    "WhatIsYourName": "お名前は何ですか？",
+    "AccessExpired": "アクセス時間が期限切れです。新しいアクセスリンクをリクエストしてください。",
+    "AccessNotActive": "アクセス時間はまだ開始されていません。開始まで: "
   }
 }

@@ -19,6 +19,7 @@ import core, {
   DOMAIN_MODEL,
   type Doc,
   type Domain,
+  type Rank,
   type Ref,
   SortingOrder,
   type Space,
@@ -26,11 +27,13 @@ import core, {
 } from '@hcengineering/core'
 import {
   type Builder,
+  Hidden,
   Model,
   Prop,
   ReadOnly,
   TypeAny,
   TypeBoolean,
+  TypeRank,
   TypeRef,
   TypeString,
   UX
@@ -60,7 +63,6 @@ import {
   type Step,
   type Transition,
   type Trigger,
-  type TriggerResult,
   type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
@@ -133,7 +135,9 @@ export class TTransition extends TDoc implements Transition {
 
   triggerParams!: Record<string, any>
 
-  result?: TriggerResult | null
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(process.class.ExecutionLog, core.class.Doc, DOMAIN_PROCESS_LOG)
@@ -188,8 +192,6 @@ export class TExecution extends TDoc implements Execution {
 export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 
-  state!: Ref<State>
-
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
 }
@@ -215,8 +217,16 @@ export class TMethod extends TDoc implements Method<Doc> {
 
 @Model(process.class.State, core.class.Doc, DOMAIN_MODEL)
 export class TState extends TDoc implements State {
-  process!: Ref<Process>
-  title!: string
+  @Prop(TypeRef(process.class.Process), process.string.Process)
+  @ReadOnly()
+    process!: Ref<Process>
+
+  @Prop(TypeString(), core.string.Name)
+    title!: string
+
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
@@ -823,6 +833,12 @@ export function createModel (builder: Builder): void {
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
         },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
+        },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
@@ -880,6 +896,12 @@ export function createModel (builder: Builder): void {
           key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
+        },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
@@ -1076,7 +1098,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoClose
   )
@@ -1091,7 +1114,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoRemove
   )
@@ -1118,6 +1142,7 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
+      checkFunction: process.triggerCheck.SubProcessesDoneCheck,
       requiredParams: [],
       init: false,
       auto: true

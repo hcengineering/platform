@@ -8,6 +8,12 @@
     "MessageIn": "メッセージ #{title}",
     "Thread": "スレッド",
     "Threads": "スレッド",
-    "Title": "タイトル"
+    "Title": "タイトル",
+    "All": "すべて",
+    "Inbox": "受信箱",
+    "ReactedToYourMessage": "あなたのメッセージに反応しました",
+    "ClearAll": "すべてクリア",
+    "InboxIsClear": "受信箱が空です",
+    "YouDontHaveAnyNewMessages": "新しいメッセージはありません"
   }
 }

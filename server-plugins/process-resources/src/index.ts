@@ -78,8 +78,10 @@ import {
   CreateCard,
   AddRelation,
   AddTag,
-  CheckToDo,
+  CheckToDoDone,
+  CheckToDoCancelled,
   OnCardUpdateCheck,
+  CheckSubProcessesDone,
   CheckTime
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
@@ -126,7 +128,6 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxCreateDoc) continue
     const createTx = tx as TxCreateDoc<Execution>
@@ -141,11 +142,10 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxRemoveDoc) continue
     const removeTx = tx as TxRemoveDoc<ProcessToDo>
@@ -163,11 +163,10 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxUpdateDoc) continue
     if (tx.space !== core.space.Tx) continue
@@ -190,7 +189,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnProcessRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -280,30 +279,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   let changed = false
   let index = 1
   for (const transition of transitions) {
-    if (transition.result?._id != null) {
-      exists.add(transition.result._id)
-      const context = _process.context[transition.result._id]
-      changed = true
-      const ctx: SelectedExecutionContext = {
-        type: 'context',
-        id: transition.result._id,
-        key: ''
-      }
-      const parentType =
-        transition.result.type._class === core.class.ArrOf
-          ? (transition.result.type as ArrOf<Doc>).of
-          : transition.result.type
-      const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
-      _process.context[transition.result._id] = {
-        name: context?.name ?? transition.result.name,
-        isResult: true,
-        type: transition.result.type,
-        _class,
-        index: index++,
-        producer: transition._id,
-        value: ctx
-      }
-    }
     for (const action of transition.actions) {
       if (action.context != null) {
         exists.add(action.context._id)
@@ -320,6 +295,29 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             name: current?.name ?? '',
             _class: action.context._class ?? method.contextClass,
             action: action._id,
+            index: index++,
+            producer: transition._id,
+            value: ctx
+          }
+        }
+      }
+      if (action.results != null) {
+        for (const result of action.results) {
+          exists.add(result._id)
+          const context = _process.context[result._id]
+          changed = true
+          const ctx: SelectedExecutionContext = {
+            type: 'context',
+            id: result._id,
+            key: ''
+          }
+          const parentType = result.type._class === core.class.ArrOf ? (result.type as ArrOf<Doc>).of : result.type
+          const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
+          _process.context[result._id] = {
+            name: context?.name ?? result.name,
+            isResult: true,
+            type: result.type,
+            _class,
             index: index++,
             producer: transition._id,
             value: ctx
@@ -354,8 +352,10 @@ export default async () => ({
     CreateCard,
     AddRelation,
     AddTag,
-    CheckToDo,
+    CheckToDoDone,
+    CheckToDoCancelled,
     OnCardUpdateCheck,
+    CheckSubProcessesDone,
     CheckTime
   },
   transform: {

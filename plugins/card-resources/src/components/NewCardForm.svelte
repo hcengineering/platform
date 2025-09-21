@@ -19,7 +19,7 @@
 
   import card from '../plugin'
   import { TypeSelector } from '../index'
-  import core, { Data, generateId, Markup, Ref } from '@hcengineering/core'
+  import core, { Data, generateId, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Card, type CardSpace, MasterTag } from '@hcengineering/card'
   import { getResource } from '@hcengineering/platform'
   import { EmptyMarkup, markupToText, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
@@ -39,9 +39,10 @@
 
   const threadMasterTag = chat.masterTag.Thread
 
+  export let type: Ref<MasterTag> = threadMasterTag
+
   let title: string = ''
   let space: Ref<CardSpace> | undefined = undefined
-  let type: Ref<MasterTag> = threadMasterTag
   let description = EmptyMarkup
   let _id = generateId<Card>()
   let isExpanded = false
@@ -49,6 +50,8 @@
 
   let creating = false
   $: applyDisabled = (title.trim() === '' && isEmptyMarkup(description)) || space == null || type == null || creating
+
+  const account = getCurrentAccount()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -201,7 +204,7 @@
             <div class="form-dropdowns">
               <SpaceSelector
                 _class={card.class.CardSpace}
-                query={{ archived: false }}
+                query={{ archived: false, members: account.uuid }}
                 label={core.string.Space}
                 bind:space
                 focus={false}

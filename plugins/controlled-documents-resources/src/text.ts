@@ -24,7 +24,7 @@ import { getCurrentEmployee } from '@hcengineering/contact'
 import { RequestStatus } from '@hcengineering/request'
 import { getClient } from '@hcengineering/presentation'
 import { type ActionContext } from '@hcengineering/text-editor'
-import { getNodeElement, selectNode, nodeUuidName } from '@hcengineering/text-editor-resources'
+import { getNodeElement, selectNode } from '@hcengineering/text-editor-resources'
 
 import { showAddCommentPopupFx } from './stores/editors/document'
 import { $editorMode } from './stores/editors/document/editor'
@@ -127,39 +127,20 @@ async function canAddDocumentComments (doc: ControlledDocument, mode: EditorMode
   return false
 }
 
-function setQMSInlineCommentMark (editor: Editor): string | undefined {
-  if (editor === undefined) {
+export async function comment (editor: Editor, event: MouseEvent, ctx: ActionContext): Promise<void> {
+  const { objectId, objectClass } = ctx
+
+  if (editor === undefined || objectId === undefined || objectClass === undefined) {
     return
   }
 
   const nodeId = generateId()
   editor.commands.setQMSInlineCommentMark(nodeId)
 
-  return nodeId
-}
+  const element = getNodeElement(editor, nodeId)
+  await showAddCommentPopupFx({ element, nodeId })
 
-export async function comment (editor: Editor, event: MouseEvent, ctx: ActionContext): Promise<void> {
-  const { objectId, objectClass } = ctx
-  if (objectId === undefined || objectClass === undefined) {
-    return
-  }
-
-  let selectedNodeId = editor.extensionStorage[nodeUuidName].activeNodeUuid
-
-  if (selectedNodeId == null) {
-    selectedNodeId = setQMSInlineCommentMark(editor)
-  }
-
-  if (selectedNodeId == null) {
-    return
-  }
-
-  await showAddCommentPopupFx({
-    element: getNodeElement(editor, selectedNodeId),
-    nodeId: selectedNodeId
-  })
-
-  selectNode(editor, selectedNodeId)
+  selectNode(editor, nodeId)
 }
 
 export async function isCommentVisible (editor: Editor, ctx: ActionContext): Promise<boolean> {

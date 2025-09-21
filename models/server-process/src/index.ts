@@ -16,7 +16,7 @@ import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
 import type { Resource } from '@hcengineering/platform'
-import process, { ExecutionStatus, type CheckFunc } from '@hcengineering/process'
+import process, { ExecutionStatus } from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
   type RollbackFunc,
@@ -24,7 +24,8 @@ import serverProcess, {
   type FuncImpl,
   type MethodImpl,
   type TransformFunc,
-  type TriggerImpl
+  type TriggerImpl,
+  type CheckFunc
 } from '@hcengineering/server-process'
 
 export { serverProcessId } from '@hcengineering/server-process'
@@ -50,12 +51,12 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMethodImpl, TFuncImpl, TTriggerImpl)
 
   builder.mixin(process.trigger.OnToDoClose, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoDone,
     rollbackFunc: serverProcess.rollbacks.ToDoCloseRollback
   })
 
   builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoCancelled,
     rollbackFunc: serverProcess.rollbacks.ToDoCancellRollback
   })
 
@@ -68,7 +69,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(process.trigger.OnSubProcessesDone, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    preventRollback: true
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.CheckSubProcessesDone
   })
 
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
@@ -267,7 +269,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnCardUpdate,
     txMatch: {
-      _class: core.class.TxUpdateDoc,
+      _class: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] },
       objectClass: cardPlugin.class.Card
     }
   })

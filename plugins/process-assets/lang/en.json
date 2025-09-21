@@ -104,7 +104,11 @@
     "Cancelled": "Cancelled",
     "WaitUntil": "Wait until",
     "CurrentUser": "Current user",
-    "CurrentDate": "Current date"
+    "CurrentDate": "Current date",
+    "AddResult": "Add result",
+    "For": "For",
+    "Context": "Context",
+    "Attribute": "Attribute"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
