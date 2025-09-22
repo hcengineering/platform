@@ -37,14 +37,8 @@
 
   $: [val, selectedMode] = parseValue(modesValues, value)
 
-  function changeResult () {
-    if (!selectedMode.withoutEditor && (val === undefined || val === '')) {
-      dispatch('change', null)
-      return
-    }
-
-    const result = buildResult(selectedMode, val)
-
+  function changeResult (value: any): void {
+    const result = buildResult(selectedMode, value)
     dispatch('change', result)
   }
 </script>
@@ -65,7 +59,7 @@
       if (prevEditor !== newEditor) {
         val = undefined
       }
-      changeResult()
+      changeResult(val)
     }}
   />
   {#if selectedMode.editor}
@@ -79,11 +73,19 @@
           readonly,
           val
         }}
-        on:change={changeResult}
+        on:change={(e) => { changeResult(e.detail) }}
         on:delete
       />
     </div>
   {:else if !selectedMode.withoutEditor}
-    <BaseCriteriaEditor {val} {attribute} {readonly} {process} {context} on:change={changeResult} on:delete />
+    <BaseCriteriaEditor
+      {val}
+      {attribute}
+      {readonly}
+      {process}
+      {context}
+      on:change={(e) => { changeResult(e.detail) }}
+      on:delete
+    />
   {/if}
 </div>

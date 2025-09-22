@@ -55,8 +55,7 @@ const Between: Mode = {
   label: view.string.Between,
   query: { $gte: '$val[0]' as any, $lte: '$val[1]' as any },
   parse: (value: any): any => {
-    if (!Array.isArray(value) || value.length !== 2) return value
-    return value
+    return [value.$gte, value.$lte]
   },
   editor: plugin.criteriaEditor.RangeCriteria
 }
@@ -151,54 +150,83 @@ export const Modes = {
 
 export type ModeId = keyof typeof Modes
 
+function hasSameKeys (target: any, value: any): boolean {
+  if (typeof target === 'object' && target !== null && typeof value === 'object' && value !== null) {
+    const keys1 = Object.keys(target)
+    const keys2 = Object.keys(value)
+
+    if (keys1.length !== keys2.length) return false
+    for (const k of keys1) {
+      if (!keys2.includes(k)) return false
+    }
+
+    for (const k of keys1) {
+      if (!hasSameKeys(target[k], value[k])) return false
+    }
+    return true
+  } else {
+    return true
+  }
+}
+
+function isModeMatch (mode: Mode, value: any): boolean {
+  if (typeof mode.query === 'object' && (typeof value !== 'object' || Array.isArray(value))) return false
+  if (typeof mode.query !== 'object') return typeof value !== 'object' || Array.isArray(value)
+  return hasSameKeys(mode.query, value)
+}
+
+function getValue (_value: any): any {
+  let value = _value
+  while (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 1) {
+    value = value[Object.keys(value)[0]]
+  }
+  return value
+}
+
 export function parseValue (modes: Mode[], value: any): [any, Mode] {
   if (value == null) {
     return [value, modes[0]]
   }
   for (const mode of modes) {
-    if (typeof mode.query === 'string' && typeof value !== 'object') {
-      return [value, mode]
-    }
-    let obj1: any = mode.query
-    let obj2: any = value
-    while (typeof obj1 === 'object' && typeof obj2 === 'object' && Object.keys(obj1)[0] === Object.keys(obj2)[0]) {
-      const key1 = Object.keys(obj1)[0]
-      const key2 = Object.keys(obj2)[0]
-      if (
-        ['string', 'boolean'].includes(typeof obj1[key1]) &&
-        (typeof obj2[key2] !== 'object' || Array.isArray(obj2[key2]))
-      ) {
-        if (mode.parse !== undefined) {
-          return [mode.parse(obj2[key2]), mode]
-        }
-        return [mode.withoutEditor === true ? undefined : obj2[key2], mode]
+    if (isModeMatch(mode, value)) {
+      if (mode.parse != null) {
+        return [mode.parse(getValue(value)), mode]
       }
-      obj1 = obj1[key1]
-      obj2 = obj2[key2]
+
+      return [getValue(value), mode]
     }
   }
   return [value, modes[0]]
 }
 
 export function buildResult (mode: Mode, value: any): any {
-  let q = mode.query
-  if (typeof q !== 'object') return value
-  const result: any = {}
-  let res = result
-  while (typeof q === 'object') {
-    const key = Object.keys(q)[0]
-    const v: any = (q as any)[key]
-    if (typeof v !== 'object') {
+  if (typeof mode.query !== 'object') return value
+  const res = JSON.parse(JSON.stringify(mode.query))
+  fillResult(mode, res, value)
+  return res
+}
+
+function fillResult (mode: Mode, obj: any, value: any): void {
+  if (typeof obj !== 'object') return
+  for (const key in obj) {
+    const v: any = (obj)[key]
+    if (typeof v === 'object') {
+      fillResult(mode, v, value)
+    } else {
       if (typeof value === 'string' && typeof v === 'string') {
-        res[key] = v.replace('$val', value)
+        obj[key] = v.replace('$val', value)
+      } else if (typeof v === 'string' && v === '$val') {
+        obj[key] = value
+      } else if (typeof v === 'string' && v.startsWith('$val[')) {
+        const index = parseInt(v.slice(5, -1))
+        if (Array.isArray(value) && !isNaN(index) && index >= 0 && index < value.length) {
+          obj[key] = value[index]
+        } else {
+          obj[key] = undefined
+        }
       } else {
-        res[key] = mode.withoutEditor === true ? v : value ?? v
+        obj[key] = mode.withoutEditor === true ? v : value ?? v
       }
-      return result
     }
-    q = v
-    res[key] = {}
-    res = res[key]
   }
-  return result
 }

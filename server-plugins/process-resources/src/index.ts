@@ -29,6 +29,7 @@ import process, {
   ContextId,
   Execution,
   Method,
+  parseContext,
   Process,
   ProcessContext,
   ProcessToDo,
@@ -279,7 +280,7 @@ function getName (current: ProcessContext | undefined, method: Method<Doc>, acti
   const nameField = method.createdContext?.nameField
   if (nameField !== undefined) {
     const name = action.params[nameField]
-    if (name !== undefined && typeof name === 'string' && name !== '') return name
+    if (name !== undefined && typeof name === 'string' && name !== '' && parseContext(name) === undefined) return name
   }
   return current?.name ?? ''
 }
