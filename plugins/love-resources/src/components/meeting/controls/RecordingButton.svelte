@@ -11,13 +11,13 @@
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
 </script>
 
-<!-- {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable} -->
-<ModernButton
-  icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
-  tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
-  disabled={!$lkSessionConnected}
-  {kind}
-  {size}
-  on:click={() => loveClient.record(room)}
-/>
-<!-- {/if} -->
+{#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}
+  <ModernButton
+    icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
+    tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
+    disabled={!$lkSessionConnected}
+    {kind}
+    {size}
+    on:click={() => loveClient.record(room)}
+  />
+{/if}

@@ -43,7 +43,6 @@
     if (newLang == null) return
 
     await client.diffUpdate(room, { language: newLang })
-    // await updateSessionLanguage(room)
   }
 
   function showLanguagesPopup (): void {

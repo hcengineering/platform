@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { ActionContext } from '@hcengineering/presentation'
+  import { ActionContext } from '@hcengineering/presentation'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../plugin'
-  import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { waitForOfficeLoaded, currentRoom } from '../stores'
   import { isFullScreen, lk } from '../utils'
   import ControlBar from './meeting/ControlBar.svelte'
-  import { lkSessionConnected } from '../liveKitClient'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
