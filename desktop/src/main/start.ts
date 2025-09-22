@@ -14,7 +14,7 @@
 //
 
 import { config as dotenvConfig } from 'dotenv'
-import { Event, BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
+import { globalShortcut, Event, BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
 import Store from 'electron-store'
@@ -22,7 +22,7 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, MenuBarAction, NotificationParams, JumpListSpares } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams, JumpListSpares, CommandCloseTab } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { dispatchMenuBarAction } from './customMenu'
@@ -517,6 +517,14 @@ async function onReady (): Promise<void> {
 
 app.on('ready', () => {
   void onReady()
+
+  const CloseTabHotKey = 'CommandOrControl+W'
+  const registered = globalShortcut.register(CloseTabHotKey, () => {
+    sendCommand(CommandCloseTab)
+  })
+  if (!registered) {
+    console.log(`failed to register global shortcut on ${CloseTabHotKey}`)
+  }
 })
 
 app.on('window-all-closed', () => {
