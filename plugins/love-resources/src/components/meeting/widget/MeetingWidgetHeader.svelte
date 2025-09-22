@@ -25,7 +25,6 @@
   import { MeetingMinutes, Room } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
 
-  import love from '../../../plugin'
   import RoomModal from '../../RoomModal.svelte'
   import { currentRoom } from '../../../stores'
   import MeetingOptionsButton from '../controls/MeetingOptionsButton.svelte'
@@ -42,7 +41,6 @@
   $: breadcrumbs = [
     {
       id: 'meeting',
-      icon: love.icon.Cam,
       title: doc?.title ?? room.name
     }
   ]

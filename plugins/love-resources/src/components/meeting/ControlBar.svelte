@@ -39,7 +39,6 @@
   export let onFullScreen: (() => void) | undefined = undefined
 
   let allowLeave: boolean = false
-  let noLabel: boolean = false
 
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
 
@@ -49,7 +48,7 @@
 </script>
 
 <div class="control-bar">
-  <ControlBarContainer bind:noLabel>
+  <ControlBarContainer>
     <svelte:fragment slot="left">
       {#if room._id !== love.ids.Reception && $lkSessionConnected}
         <RoomAccessButton {room} />
@@ -105,7 +104,7 @@
       {/if}
       <MeetingOptionsButton {room} />
       {#if allowLeave}
-        <LeaveRoomButton {room} {noLabel} />
+        <LeaveRoomButton {room} />
       {/if}
     </svelte:fragment>
 
