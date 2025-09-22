@@ -11,13 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { CardID, WorkspaceID } from './core'
+import { CardID, WorkspaceUuid } from './core'
 
 export type PeerKind = 'card' | string
 export type PeerExtra = Record<string, any>
 
 interface BasePeer {
-  workspaceId: WorkspaceID
+  workspaceId: WorkspaceUuid
   cardId: CardID
   kind: PeerKind
   value: string
@@ -37,7 +37,7 @@ export interface ExternalPeer extends BasePeer {
 export type Peer = CardPeer | ExternalPeer
 
 export interface CardPeerMember {
-  workspaceId: WorkspaceID
+  workspaceId: WorkspaceUuid
   cardId: CardID
   extra: PeerExtra
 }

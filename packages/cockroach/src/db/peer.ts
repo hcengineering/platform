@@ -14,7 +14,7 @@
 //
 
 import {
-  WorkspaceID,
+  WorkspaceUuid,
   type CardID,
   PeerKind,
   PeerExtra,
@@ -30,7 +30,7 @@ import { toPeer } from './mapping'
 
 export class PeersDb extends BaseDb {
   async createPeer (
-    workspaceId: WorkspaceID,
+    workspaceId: WorkspaceUuid,
     cardId: CardID,
     kind: PeerKind,
     value: string,
@@ -49,7 +49,7 @@ export class PeersDb extends BaseDb {
     await this.execute(sql, values, 'insert peer')
   }
 
-  async removePeer (workspaceId: WorkspaceID, cardId: CardID, kind: PeerKind, value: string): Promise<void> {
+  async removePeer (workspaceId: WorkspaceUuid, cardId: CardID, kind: PeerKind, value: string): Promise<void> {
     const filter: DbModelFilter<Domain.Peer> = [
       {
         column: 'workspace_id',

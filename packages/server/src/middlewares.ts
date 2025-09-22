@@ -14,24 +14,19 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import type { DbAdapter, EventResult, Event, SessionData } from '@hcengineering/communication-sdk-types'
+import type { EventResult, Event, SessionData } from '@hcengineering/communication-sdk-types'
 import type {
+  CardID,
   Collaborator,
   FindCollaboratorsParams,
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
+  FindLabelsParams, FindMessagesMetaParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   FindPeersParams,
-  FindThreadParams,
-  Label,
-  Message,
-  MessagesGroup,
+  Label, MessageMeta,
   Notification,
   NotificationContext, Peer,
-  Thread,
-  WorkspaceID
+  WorkspaceUuid
 } from '@hcengineering/communication-types'
 
 import type {
@@ -41,10 +36,10 @@ import type {
   Middleware,
   MiddlewareContext,
   MiddlewareCreateFn,
-  QueryId
+  Subscription
 } from './types'
 import { PermissionsMiddleware } from './middleware/permissions'
-import { DatabaseMiddleware } from './middleware/db'
+import { StorageMiddleware } from './middleware/storage'
 import { BroadcastMiddleware } from './middleware/broadcast'
 import { TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
@@ -52,14 +47,17 @@ import { DateMiddleware } from './middleware/date'
 import { IdentityMiddleware } from './middleware/indentity'
 import { IdMiddleware } from './middleware/id'
 import { PeerMiddleware } from './middleware/peer'
+import { LowLevelClient } from './client'
 
 export async function buildMiddlewares (
   ctx: MeasureContext,
-  workspace: WorkspaceID,
+  workspace: WorkspaceUuid,
   metadata: Metadata,
-  db: DbAdapter,
-  callbacks: CommunicationCallbacks, peers: Peer[]
+  client: LowLevelClient,
+  callbacks: CommunicationCallbacks
 ): Promise<Middlewares> {
+  const peers = await client.db.findPeers({ workspaceId: workspace })
+
   const createFns: MiddlewareCreateFn[] = [
     // Enrich events
     async (context, next) => new DateMiddleware(context, next),
@@ -68,12 +66,12 @@ export async function buildMiddlewares (
 
     // Validate events
     async (context, next) => new ValidateMiddleware(context, next),
-    async (context, next) => new PermissionsMiddleware(db, context, next),
+    async (context, next) => new PermissionsMiddleware(context, next),
 
     // Process events
-    async (context, next) => new TriggersMiddleware(callbacks, db, context, next),
+    async (context, next) => new TriggersMiddleware(callbacks, context, next),
     async (context, next) => new BroadcastMiddleware(callbacks, context, next),
-    async (context, next) => new DatabaseMiddleware(db, context, next),
+    async (context, next) => new StorageMiddleware(context, next),
     async (context, next) => new PeerMiddleware(context, next)
   ]
 
@@ -81,9 +79,7 @@ export async function buildMiddlewares (
     ctx,
     metadata,
     workspace,
-    registeredCards: new Set(),
-    accountBySocialID: new Map(),
-    removedContexts: new Map(),
+    client,
     cadsWithPeers: new Set(peers.map(it => it.cardId))
   }
 
@@ -137,20 +133,15 @@ export class Middlewares {
     return current
   }
 
-  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+  async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
     if (this.head === undefined) return []
-    return await this.head.findMessages(session, params, queryId)
-  }
-
-  async findMessagesGroups (session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    if (this.head === undefined) return []
-    return await this.head.findMessagesGroups(session, params)
+    return await this.head.findMessagesMeta(session, params)
   }
 
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    queryId?: Subscription
   ): Promise<NotificationContext[]> {
     if (this.head === undefined) return []
     return await this.head.findNotificationContexts(session, params, queryId)
@@ -159,7 +150,7 @@ export class Middlewares {
   async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    queryId?: Subscription
   ): Promise<Notification[]> {
     if (this.head === undefined) return []
     return await this.head.findNotifications(session, params, queryId)
@@ -180,14 +171,14 @@ export class Middlewares {
     return await this.head.findPeers(session, params)
   }
 
-  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
-    if (this.head === undefined) return []
-    return await this.head.findThreads(session, params)
+  subscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
+    if (this.head === undefined) return
+    this.head?.subscribeCard(session, cardId, subscription)
   }
 
-  async unsubscribeQuery (session: SessionData, id: number): Promise<void> {
+  unsubscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
     if (this.head === undefined) return
-    this.head?.unsubscribeQuery(session, id)
+    this.head?.unsubscribeCard(session, cardId, subscription)
   }
 
   async event (session: SessionData, event: Event): Promise<EventResult> {

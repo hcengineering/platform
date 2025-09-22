@@ -17,7 +17,7 @@ import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
 import type { ContextID, NotificationID, NotificationType } from './notification'
-import type { AccountID, BlobID, CardID, CardType, WorkspaceID } from './core'
+import type { AccountUuid, CardID, CardType, WorkspaceUuid } from './core'
 import type { LabelID } from './label'
 import { PeerKind } from './peer'
 
@@ -44,32 +44,29 @@ interface FindParams {
 }
 
 export interface FindMessagesParams extends FindParams {
+  cardId: CardID
   id?: MessageID
-  card?: CardID
-  attachments?: boolean
-  reactions?: boolean
-  replies?: boolean
-  created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
 
-export interface FindMessagesGroupsParams extends FindParams {
-  messageId?: MessageID
-  card?: CardID
-  blobId?: BlobID
-  patches?: boolean
-  fromDate?: Partial<Record<ComparisonOperator, Date>> | Date
-  toDate?: Partial<Record<ComparisonOperator, Date>> | Date
-  orderBy?: 'fromDate' | 'toDate'
+export interface FindMessagesMetaParams extends FindParams {
+  cardId?: CardID
+  id?: MessageID
+  creator?: SortingOrder
+}
+
+export interface FindMessagesOptions {
+  attachments?: boolean
+  reactions?: boolean
+  threads?: boolean
 }
 
 export interface FindNotificationContextParams extends FindParams {
   id?: ContextID
-  card?: CardID | CardID[]
+  cardId?: CardID | CardID[]
   lastNotify?: Partial<Record<ComparisonOperator, Date>> | Date
-  account?: AccountID | AccountID[]
+  account?: AccountUuid | AccountUuid[]
   notifications?: {
     type?: NotificationType
-    message?: boolean
     limit: number
     order: SortingOrder
     read?: boolean
@@ -81,35 +78,34 @@ export interface FindNotificationsParams extends FindParams {
   id?: NotificationID
   messageId?: MessageID
   type?: NotificationType
-  context?: ContextID
+  contextId?: ContextID
   read?: boolean
   created?: Partial<Record<ComparisonOperator, Date>> | Date
-  account?: AccountID | AccountID[]
-  card?: CardID
-  message?: boolean
+  account?: AccountUuid | AccountUuid[]
+  cardId?: CardID
   total?: boolean
 }
 
 export interface FindCollaboratorsParams extends FindParams {
-  card: CardID
-  account?: AccountID | AccountID[]
+  cardId: CardID
+  account?: AccountUuid | AccountUuid[]
 }
 
 export interface FindLabelsParams extends FindParams {
-  label?: LabelID | LabelID[]
-  card?: CardID
+  labelId?: LabelID | LabelID[]
+  cardId?: CardID
   cardType?: CardType | CardType[]
-  account?: AccountID
+  account?: AccountUuid
 }
 
-export interface FindThreadParams extends FindParams {
+export interface FindThreadMetaParams extends FindParams {
   cardId?: CardID
   messageId?: MessageID
   threadId?: CardID
 }
 
 export interface FindPeersParams extends FindParams {
-  workspaceId?: WorkspaceID
+  workspaceId?: WorkspaceUuid
   cardId?: CardID
   kind?: PeerKind
   value?: string

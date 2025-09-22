@@ -14,7 +14,7 @@
 //
 
 import postgres, { type ParameterOrJSON } from 'postgres'
-import type { WorkspaceID } from '@hcengineering/communication-types'
+import { SortingOrder, WorkspaceUuid } from '@hcengineering/communication-types'
 import { Domain } from '@hcengineering/communication-sdk-types'
 
 import { SqlRow, type Logger, type Options, type SqlResult } from '../types'
@@ -32,16 +32,16 @@ import {
 export class BaseDb {
   constructor (
     readonly client: SqlClient,
-    readonly workspace: WorkspaceID,
+    readonly workspace: WorkspaceUuid,
     readonly logger?: Logger,
     readonly options?: Options
   ) {}
 
-  getRowClient (): postgres.Sql {
+  protected getRowClient (): postgres.Sql {
     return this.client.getRawClient()
   }
 
-  getInsertSql<D extends Domain, M extends DomainDbModel[D]>(
+  protected getInsertSql<D extends Domain, M extends DomainDbModel[D]>(
     domain: D,
     model: M,
     returnColumns: { column: DbModelColumn<D>, cast: string }[] = [],
@@ -77,7 +77,7 @@ export class BaseDb {
     return { sql, values }
   }
 
-  getBatchInsertSql<D extends Domain, M extends DomainDbModel[D]>(
+  protected getBatchInsertSql<D extends Domain, M extends DomainDbModel[D]>(
     domain: D,
     models: M[],
     returnColumns: { column: DbModelColumn<D>, cast: string }[] = [],
@@ -115,7 +115,7 @@ export class BaseDb {
     return { sql, values }
   }
 
-  getDeleteSql<D extends Domain>(domain: D, filter: DbModelFilter<D>): { sql: string, values: any[] } {
+  protected getDeleteSql<D extends Domain>(domain: D, filter: DbModelFilter<D>): { sql: string, values: any[] } {
     if (filter.length === 0) {
       throw new Error('getDeleteSql requires at least one filter')
     }
@@ -138,7 +138,7 @@ export class BaseDb {
     return { sql, values }
   }
 
-  getUpdateSql<D extends Domain>(
+  protected getUpdateSql<D extends Domain>(
     domain: D,
     filter: DbModelFilter<D>,
     updates: DbModelUpdate<D>
@@ -197,7 +197,7 @@ export class BaseDb {
     return { sql, values }
   }
 
-  getBatchUpdateSql<D extends Domain>(
+  protected getBatchUpdateSql<D extends Domain>(
     domain: D,
     keyColumn: DbModelColumn<D>,
     filter: DbModelFilter<D>,
@@ -276,7 +276,15 @@ export class BaseDb {
     return { sql, values }
   }
 
-  async execute<T extends SqlRow>(
+  protected buildOrderBy (order: SortingOrder | null | undefined, column: string): string {
+    return order != null ? `ORDER BY ${column} ${order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+  }
+
+  protected buildLimit (limit: number | null | undefined): string {
+    return limit != null ? `LIMIT ${limit}` : ''
+  }
+
+  protected async execute<T extends SqlRow>(
     sql: string,
     params?: ParameterOrJSON<any>[],
     name?: string,

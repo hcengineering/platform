@@ -21,10 +21,6 @@ import type {
   Event
 } from '@hcengineering/communication-sdk-types'
 import type {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  Message,
-  MessagesGroup,
   FindNotificationsParams,
   FindNotificationContextParams,
   NotificationContext,
@@ -42,8 +38,6 @@ import type {
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
-  findMessages: (params: FindMessagesParams) => Promise<Message[]>
-  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 

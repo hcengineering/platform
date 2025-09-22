@@ -14,6 +14,5 @@
 //
 
 export * from './retry'
-export * from './patch'
 export * from './utils'
 export * from './processor'

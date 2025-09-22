@@ -28,6 +28,7 @@ export interface UpdateCardTypeEvent extends BaseEvent {
   type: CardEventType.UpdateCardType
   cardId: CardID
   cardType: CardType
+
   socialId: SocialID
   date?: Date
 }
@@ -35,6 +36,7 @@ export interface UpdateCardTypeEvent extends BaseEvent {
 export interface RemoveCardEvent extends BaseEvent {
   type: CardEventType.RemoveCard
   cardId: CardID
+
   socialId: SocialID
   date?: Date
 }

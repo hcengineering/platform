@@ -23,11 +23,7 @@ import {
   MessageEventType
 } from '@hcengineering/communication-sdk-types'
 import {
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
   type FindNotificationContextParams,
-  type Message,
-  type MessagesGroup,
   type NotificationContext,
   type FindNotificationsParams,
   type Notification,
@@ -268,14 +264,6 @@ class RestClientImpl implements RestClient {
       },
       socialId
     )
-  }
-
-  async findMessages (params: FindMessagesParams): Promise<Message[]> {
-    return await this.find<Message>('findMessages', params)
-  }
-
-  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.find<MessagesGroup>('findMessagesGroups', params)
   }
 
   async findNotificationContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {

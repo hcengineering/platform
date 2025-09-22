@@ -14,70 +14,32 @@
 //
 
 import {
-  type AccountID,
+  type AccountUuid,
   type BlobID,
   type CardID,
   type ContextID,
   type MessageID,
-  type MessageType,
-  type PatchType,
-  type Markdown,
   type SocialID,
-  type WorkspaceID,
+  type WorkspaceUuid,
   type NotificationID,
   type LabelID,
   type CardType,
   NotificationContent,
-  NotificationType, AttachmentID,
+  NotificationType,
   PeerKind, PeerExtra
 } from '@hcengineering/communication-types'
 import { Domain } from '@hcengineering/communication-sdk-types'
 
 export const schemas = {
-  [Domain.Message]: {
-    workspace_id: 'uuid',
-    card_id: 'varchar',
-    id: 'varchar',
-    type: 'varchar',
-    content: 'string',
-    creator: 'varchar',
-    created: 'timestamptz',
-    data: 'jsonb'
-  },
-  [Domain.MessageCreated]: {
-    workspace_id: 'uuid',
-    card_id: 'varchar',
-    created: 'timestamptz',
-    message_id: 'varchar'
-  },
-  [Domain.MessagesGroup]: {
-    workspace_id: 'uuid',
-    card_id: 'varchar',
-    blob_id: 'uuid',
-    from_date: 'timestamptz',
-    to_date: 'timestamptz',
-    count: 'int8'
-  },
-  [Domain.Patch]: {
-    id: 'int',
+  [Domain.MessageIndex]: {
     workspace_id: 'uuid',
     card_id: 'varchar',
     message_id: 'varchar',
-    type: 'varchar',
-    creator: 'varchar',
     created: 'timestamptz',
-    message_created: 'timestamptz',
-    data: 'jsonb'
-  },
-  [Domain.Reaction]: {
-    workspace_id: 'uuid',
-    card_id: 'varchar',
-    message_id: 'varchar',
-    reaction: 'varchar',
     creator: 'varchar',
-    created: 'timestamptz'
+    blob_id: 'uuid'
   },
-  [Domain.Thread]: {
+  [Domain.ThreadIndex]: {
     workspace_id: 'uuid',
     card_id: 'varchar',
     message_id: 'varchar',
@@ -86,22 +48,11 @@ export const schemas = {
     replies_count: 'int',
     last_reply: 'timestamptz'
   },
-  [Domain.Attachment]: {
-    workspace_id: 'uuid',
-    card_id: 'varchar',
-    message_id: 'varchar',
-    id: 'uuid',
-    type: 'text',
-    params: 'jsonb',
-    creator: 'varchar',
-    created: 'timestamptz',
-    modified: 'timestamptz'
-  },
   [Domain.Notification]: {
     id: 'int8',
     context_id: 'int8',
-    message_created: 'timestamptz',
     message_id: 'varchar',
+    creator: 'varchar',
     blob_id: 'uuid',
     created: 'timestamptz',
     content: 'jsonb',
@@ -143,16 +94,13 @@ export const schemas = {
 } as const
 
 export interface DomainDbModel {
-  [Domain.Message]: MessageDbModel
-  [Domain.MessageCreated]: MessageCreatedDbModel
-  [Domain.MessagesGroup]: MessagesGroupDbModel
-  [Domain.Patch]: PatchDbModel
-  [Domain.Reaction]: ReactionDbModel
-  [Domain.Thread]: ThreadDbModel
-  [Domain.Attachment]: AttachmentDbModel
+  [Domain.MessageIndex]: MessageIndexDbModel
+  [Domain.ThreadIndex]: ThreadDbModel
+
   [Domain.Notification]: NotificationDbModel
   [Domain.NotificationContext]: ContextDbModel
   [Domain.Collaborator]: CollaboratorDbModel
+
   [Domain.Label]: LabelDbModel
   [Domain.Peer]: PeerDbModel
 }
@@ -163,7 +111,8 @@ export type DbModelColumn<D extends Domain> = keyof DomainDbModel[D] & string
 
 export type DbModelColumnType<D extends Domain> = DomainDbModel[D][DbModelColumn<D>]
 
-export type DbModelFilter<D extends Domain> = Array<{ column: DbModelColumn<D>, value: DbModelColumnType<D> | DbModelColumnType<D>[] }>
+export interface DbModelFilterRow<D extends Domain> { column: DbModelColumn<D>, value: DbModelColumnType<D> | DbModelColumnType<D>[] }
+export type DbModelFilter<D extends Domain> = Array<DbModelFilterRow<D>>
 export type DbModelUpdate<D extends Domain> = Array<{
   column: DbModelColumn<D>
   innerKey?: string
@@ -176,67 +125,17 @@ export type DbModelBatchUpdate<D extends Domain> = Array<{
   value: any
 }>
 
-interface MessageDbModel {
-  workspace_id: WorkspaceID
-  card_id: CardID
-  id: MessageID
-  type: MessageType
-  content: Markdown
-  creator: SocialID
-  created: Date
-  data?: Record<string, any>
-}
-
-interface MessageCreatedDbModel {
-  workspace_id: WorkspaceID
+interface MessageIndexDbModel {
+  workspace_id: WorkspaceUuid
   card_id: CardID
   message_id: MessageID
   created: Date
-}
-
-interface MessagesGroupDbModel {
-  workspace_id: WorkspaceID
-  card_id: CardID
+  creator: SocialID
   blob_id: BlobID
-  from_date: Date
-  to_date: Date
-  count: number
-}
-
-interface PatchDbModel {
-  workspace_id: WorkspaceID
-  card_id: CardID
-  message_id: MessageID
-  type: PatchType
-  data: Record<string, any>
-  creator: SocialID
-  created: Date
-  message_created: Date
-}
-
-interface AttachmentDbModel {
-  workspace_id: WorkspaceID
-  card_id: CardID
-  message_id: MessageID
-  id: AttachmentID
-  type: string
-  params: Record<string, any>
-  creator: SocialID
-  created: Date
-  modified?: Date
-}
-
-interface ReactionDbModel {
-  workspace_id: WorkspaceID
-  card_id: CardID
-  message_id: MessageID
-  reaction: string
-  creator: SocialID
-  created: Date
 }
 
 interface ThreadDbModel {
-  workspace_id: WorkspaceID
+  workspace_id: WorkspaceUuid
   card_id: CardID
   message_id: MessageID
   thread_id: CardID
@@ -249,9 +148,9 @@ interface NotificationDbModel {
   id: NotificationID
   type: NotificationType
   read: boolean
-  message_id: MessageID | null
-  message_created: Date
-  blob_id?: BlobID
+  message_id: MessageID
+  creator: SocialID
+  blob_id: BlobID
   context_id: ContextID
   created: Date
   content: NotificationContent
@@ -259,33 +158,33 @@ interface NotificationDbModel {
 
 interface ContextDbModel {
   id: ContextID
-  workspace_id: WorkspaceID
+  workspace_id: WorkspaceUuid
   card_id: CardID
-  account: AccountID
+  account: AccountUuid
   last_update: Date
   last_view: Date
   last_notify: Date
 }
 
 interface CollaboratorDbModel {
-  workspace_id: WorkspaceID
+  workspace_id: WorkspaceUuid
   card_id: CardID
   card_type: CardType
-  account: AccountID
+  account: AccountUuid
   date: Date
 }
 
 interface LabelDbModel {
-  workspace_id: WorkspaceID
+  workspace_id: WorkspaceUuid
   label_id: LabelID
   card_id: CardID
   card_type: CardType
-  account: AccountID
+  account: AccountUuid
   created: Date
 }
 
 interface PeerDbModel {
-  workspace_id: WorkspaceID
+  workspace_id: WorkspaceUuid
   card_id: CardID
   kind: PeerKind
   value: string

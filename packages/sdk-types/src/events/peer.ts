@@ -14,7 +14,7 @@
 //
 
 import type { BaseEvent } from './common'
-import { CardID, PeerKind, PeerExtra, WorkspaceID } from '@hcengineering/communication-types'
+import { CardID, PeerKind, PeerExtra, WorkspaceUuid } from '@hcengineering/communication-types'
 
 // Peer events only for system
 export enum PeerEventType {
@@ -26,7 +26,7 @@ export type PeerEvent = CreatePeerEvent | RemovePeerEvent
 
 export interface CreatePeerEvent extends BaseEvent {
   type: PeerEventType.CreatePeer
-  workspaceId: WorkspaceID
+  workspaceId: WorkspaceUuid
   cardId: CardID
   kind: PeerKind
   value: string
@@ -36,7 +36,7 @@ export interface CreatePeerEvent extends BaseEvent {
 
 export interface RemovePeerEvent extends BaseEvent {
   type: PeerEventType.RemovePeer
-  workspaceId: WorkspaceID
+  workspaceId: WorkspaceUuid
   cardId: CardID
   kind: PeerKind
   value: string

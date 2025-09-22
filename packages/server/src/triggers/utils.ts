@@ -13,112 +13,25 @@
 // limitations under the License.
 //
 
-import {
-  type AccountID,
-  type CardID,
-  type Message,
-  type MessageID,
-  type Markdown,
-  type SocialID,
-  SortingOrder,
-  type WorkspaceID,
-  BlobID
-} from '@hcengineering/communication-types'
-import { loadGroupFile } from '@hcengineering/communication-yaml'
-import { applyPatches } from '@hcengineering/communication-shared'
-import type { DbAdapter } from '@hcengineering/communication-sdk-types'
+import { type AccountUuid, type Markdown, type SocialID } from '@hcengineering/communication-types'
 
-import type { TriggerCtx } from '../types'
-import { findAccount } from '../utils'
-
-export async function findMessage (
-  db: DbAdapter,
-  filesUrl: string,
-  workspace: WorkspaceID,
-  card: CardID,
-  id: MessageID,
-  ops?: {
-    attachments?: boolean
-    replies?: boolean
-    reactions?: boolean
-  }
-): Promise<{
-    message?: Message
-    blobId?: BlobID
-  }> {
-  const message = (await db.findMessages({ card, id, limit: 1, ...ops }))[0]
-  if (message !== undefined) {
-    return { message }
-  }
-  return await findMessageInFiles(db, filesUrl, workspace, card, id)
-}
-
-export async function findMessageInFiles (
-  db: DbAdapter,
-  filesUrl: string,
-  workspace: WorkspaceID,
-  cardId: CardID,
-  messageId: MessageID
-): Promise<{
-    message?: Message
-    blobId?: BlobID
-  }> {
-  if (filesUrl === '') {
-    return {}
-  }
-
-  const created = await db.getMessageCreated(cardId, messageId)
-
-  if (created == null) return {}
-  const group = (
-    await db.findMessagesGroups({
-      card: cardId,
-      fromDate: { lessOrEqual: created },
-      toDate: { greaterOrEqual: created },
-      limit: 1,
-      order: SortingOrder.Ascending,
-      orderBy: 'fromDate'
-    })
-  )[0]
-
-  if (group === undefined) {
-    return {}
-  }
-
-  try {
-    const parsedFile = await loadGroupFile(workspace, filesUrl, group.blobId, { retries: 3 })
-    const messageFromFile = parsedFile.messages.find((it) => it.id === messageId)
-    if (messageFromFile === undefined) {
-      return {}
-    }
-
-    const patches = (group.patches ?? []).filter((it) => it.messageId === messageId)
-    const message = patches.length > 0 ? applyPatches(messageFromFile, patches) : messageFromFile
-
-    return { message, blobId: group.blobId }
-  } catch (e) {
-    console.error('Failed to find message in files', { card: cardId, id: messageId, created })
-    console.error('Error:', { error: e })
-  }
-
-  return {}
-}
+import { TriggerCtx } from '../types'
 
 export async function getNameBySocialID (ctx: TriggerCtx, id: SocialID): Promise<string> {
-  const account = await findAccount(ctx, id)
-  return account != null ? (await ctx.db.getNameByAccount(account)) ?? 'System' : 'System'
+  const account = (await ctx.client.findPersonUuid(ctx, id, true)) as AccountUuid | undefined
+  return account != null ? (await ctx.client.db.getNameByAccount(account)) ?? 'System' : 'System'
 }
 
 export async function getAddCollaboratorsMessageContent (
   ctx: TriggerCtx,
-  sender: AccountID | undefined,
-  collaborators: AccountID[]
+  sender: AccountUuid | undefined,
+  collaborators: AccountUuid[]
 ): Promise<Markdown> {
   if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
     return 'Joined card'
   }
 
-  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
+  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.client.db.getNameByAccount(it)))).filter(
     (it): it is string => it != null && it !== ''
   )
 
@@ -127,14 +40,14 @@ export async function getAddCollaboratorsMessageContent (
 
 export async function getRemoveCollaboratorsMessageContent (
   ctx: TriggerCtx,
-  sender: AccountID | undefined,
-  collaborators: AccountID[]
+  sender: AccountUuid | undefined,
+  collaborators: AccountUuid[]
 ): Promise<Markdown> {
   if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
     return 'Left card'
   }
 
-  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
+  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.client.db.getNameByAccount(it)))).filter(
     (it): it is string => it != null && it !== ''
   )
 

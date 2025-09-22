@@ -15,19 +15,18 @@
 
 import {
   type CreateNotificationContextResult,
-  LabelEventType,
   NotificationEventType,
   type Event,
   MessageEventType
 } from '@hcengineering/communication-sdk-types'
 import {
-  type AccountID,
+  type AccountUuid,
+  BlobID,
   type CardID,
   type CardType,
   type ContextID,
   Markdown,
   type MessageID,
-  NewMessageLabelID,
   type NotificationContext,
   NotificationType,
   type ReactionNotificationContent,
@@ -39,8 +38,7 @@ import { jsonToMarkup, markupToText } from '@hcengineering/text-core'
 import { readOnlyGuestAccountUuid } from '@hcengineering/core'
 
 import type { Enriched, TriggerCtx } from '../types'
-import { findAccount } from '../utils'
-import { findMessage, getNameBySocialID } from '../triggers/utils'
+import { getNameBySocialID } from '../triggers/utils'
 
 const BATCH_SIZE = 500
 const maxDate = new Date('9999-12-31T23:59:59Z')
@@ -49,11 +47,14 @@ export async function notify (ctx: TriggerCtx, event: Enriched<Event>): Promise<
   switch (event.type) {
     case MessageEventType.CreateMessage: {
       if (event.options?.noNotify === true || event.messageId == null) return []
+      const meta = await ctx.client.getMessageMeta(event.cardId, event.messageId)
+      if (meta == null) return []
       return await notifyMessage(
         ctx,
         event.cardId,
         event.cardType,
         event.messageId,
+        meta.blobId,
         event.content,
         event.socialId,
         event.date
@@ -92,13 +93,20 @@ async function removeReactionNotification (
   socialId: SocialID
 ): Promise<Event[]> {
   const result: Event[] = []
-  const { message } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
-  if (message === undefined) return result
+  const meta = await ctx.client.getMessageMeta(cardId, messageId)
+  if (meta == null) return result
 
-  const messageAccount = await findAccount(ctx, message.creator)
+  const messageAccount = (await ctx.client.findPersonUuid(
+    {
+      ctx: ctx.ctx,
+      account: ctx.account
+    },
+    meta.creator,
+    true
+  )) as AccountUuid | undefined
   if (messageAccount == null) return result
 
-  const notifications = await ctx.db.findNotifications({
+  const notifications = await ctx.client.db.findNotifications({
     type: NotificationType.Reaction,
     messageId,
     account: messageAccount
@@ -111,13 +119,13 @@ async function removeReactionNotification (
 
   if (toDelete === undefined) return result
 
-  const context = (await ctx.db.findNotificationContexts({ card: cardId, account: messageAccount, limit: 1 }))[0]
+  const context = (await ctx.client.db.findNotificationContexts({ cardId, account: messageAccount, limit: 1 }))[0]
   if (context == null) return result
   if (context.lastNotify != null && context.lastNotify.getTime() === toDelete.created.getTime()) {
     const lastNotification = (
-      await ctx.db.findNotifications({
+      await ctx.client.db.findNotifications({
         account: messageAccount,
-        context: context.id,
+        contextId: context.id,
         created: {
           less: context.lastNotify
         },
@@ -157,19 +165,19 @@ async function notifyReaction (
 ): Promise<Event[]> {
   const result: Event[] = []
 
-  const { message, blobId } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
-  if (message == null) return result
+  const meta = await ctx.client.getMessageMeta(cardId, messageId)
+  if (meta == null) return result
 
-  const messageAccount = await findAccount(ctx, message.creator)
+  const messageAccount = (await ctx.client.findPersonUuid(ctx, meta.creator, true)) as AccountUuid | undefined
   if (messageAccount == null) return result
 
-  const spaceMembers = await ctx.db.getCardSpaceMembers(cardId)
+  const spaceMembers = await ctx.client.db.getCardSpaceMembers(cardId)
   if (!spaceMembers.includes(messageAccount)) return []
 
-  const reactionAccount = await findAccount(ctx, socialId)
+  const reactionAccount = (await ctx.client.findPersonUuid(ctx, socialId, true)) as AccountUuid | undefined
   if (reactionAccount === messageAccount) return result
 
-  const context = (await ctx.db.findNotificationContexts({ card: cardId, account: messageAccount }))[0]
+  const context = (await ctx.client.db.findNotificationContexts({ cardId, account: messageAccount }))[0]
   let contextId: ContextID | undefined = context?.id
 
   if (context == null) {
@@ -180,7 +188,6 @@ async function notifyReaction (
 
   const content: ReactionNotificationContent = {
     emoji: reaction,
-    creator: socialId,
     senderName: (await getNameBySocialID(ctx, socialId)) ?? 'System',
     title: 'Reacted to your message',
     shortText: reaction
@@ -192,10 +199,10 @@ async function notifyReaction (
     cardId,
     contextId,
     messageId,
-    messageCreated: message.created,
-    blobId,
+    blobId: meta.blobId,
     date,
     content,
+    creator: socialId,
     read: messageAccount === readOnlyGuestAccountUuid
   })
 
@@ -218,23 +225,25 @@ async function notifyMessage (
   cardId: CardID,
   cardType: CardType,
   messageId: MessageID,
+  blobId: BlobID,
   markdown: Markdown,
   socialId: SocialID,
   date: Date
 ): Promise<Event[]> {
-  const cursor = ctx.db.getCollaboratorsCursor(cardId, date, BATCH_SIZE)
-  const spaceMembers = await ctx.db.getCardSpaceMembers(cardId)
-  const creatorAccount = await findAccount(ctx, socialId)
+  const { client } = ctx
+  const cursor = client.db.getCollaboratorsCursor(cardId, date, BATCH_SIZE)
+  const spaceMembers = await client.db.getCardSpaceMembers(cardId)
+  const creatorAccount = (await ctx.client.findPersonUuid(ctx, socialId, true)) as AccountUuid | undefined
   const result: Event[] = []
 
-  const cardTitle = (await ctx.db.getCardTitle(cardId)) ?? 'New message'
+  const cardTitle = (await ctx.client.db.getCardTitle(cardId)) ?? 'New message'
 
   let isFirstBatch = true
 
   for await (const dbCollaborators of cursor) {
-    const collaborators: AccountID[] = dbCollaborators.map((it) => it.account)
-    const contexts: NotificationContext[] = await ctx.db.findNotificationContexts({
-      card: cardId,
+    const collaborators: AccountUuid[] = dbCollaborators.map((it) => it.account)
+    const contexts: NotificationContext[] = await client.db.findNotificationContexts({
+      cardId,
       account: isFirstBatch && collaborators.length < BATCH_SIZE ? undefined : collaborators
     })
 
@@ -248,6 +257,7 @@ async function notifyMessage (
           cardType,
           cardTitle,
           messageId,
+          blobId,
           markdown,
           date,
           collaborator,
@@ -273,27 +283,17 @@ async function processCollaborator (
   cardType: CardType,
   cardTitle: string,
   messageId: MessageID,
+  blobId: BlobID,
   markdown: Markdown,
   date: Date,
-  collaborator: AccountID,
+  collaborator: AccountUuid,
   creatorSocialId: SocialID,
-  creatorAccount?: AccountID,
+  creatorAccount?: AccountUuid,
   context?: NotificationContext
 ): Promise<Event[]> {
   const result: Event[] = []
   const isOwn = creatorAccount === collaborator
   const { contextId, events } = await createOrUpdateContext(ctx, cardId, date, collaborator, isOwn, context)
-
-  if (!isOwn) {
-    result.push({
-      type: LabelEventType.CreateLabel,
-      account: collaborator,
-      labelId: NewMessageLabelID,
-      cardId,
-      cardType,
-      date
-    })
-  }
 
   result.push(...events)
 
@@ -309,8 +309,9 @@ async function processCollaborator (
     contextId,
     cardId,
     messageId,
-    messageCreated: date,
+    blobId,
     date,
+    creator: creatorSocialId,
     content: {
       senderName: (await getNameBySocialID(ctx, creatorSocialId)) ?? 'System',
       title: cardTitle,
@@ -325,7 +326,7 @@ async function createOrUpdateContext (
   ctx: TriggerCtx,
   cardId: CardID,
   date: Date,
-  collaborator: AccountID,
+  collaborator: AccountUuid,
   isOwn: boolean,
   context?: NotificationContext
 ): Promise<{
@@ -366,7 +367,7 @@ async function createOrUpdateContext (
 
 async function createContext (
   ctx: TriggerCtx,
-  account: AccountID,
+  account: AccountUuid,
   cardId: CardID,
   lastUpdate: Date,
   lastView: Date | undefined,
@@ -386,9 +387,9 @@ async function createContext (
     return result.id
   } catch (e) {
     return (
-      await ctx.db.findNotificationContexts({
+      await ctx.client.db.findNotificationContexts({
         account,
-        card: cardId
+        cardId
       })
     )[0]?.id
   }

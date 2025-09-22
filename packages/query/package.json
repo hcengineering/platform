@@ -39,7 +39,7 @@
     "@hcengineering/communication-sdk-types": "^0.1.0",
     "@hcengineering/communication-shared": "^0.1.0",
     "@hcengineering/communication-types": "^0.1.0",
-    "@hcengineering/communication-yaml": "^0.1.0",
+    "@hcengineering/hulylake-client": "^0.6.0",
     "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"
   },

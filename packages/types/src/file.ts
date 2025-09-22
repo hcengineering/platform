@@ -13,44 +13,55 @@
 // limitations under the License.
 //
 
-import type { CardID, CardType, Markdown, SocialID } from './core'
-import type { Message, MessageID, MessageType, MessageExtra, Reaction, Attachment } from './message'
+import type { BlobID, CardID, CardType, Markdown, PersonUuid, SocialID } from './core'
+import { MessageID, MessageType, MessageExtra, AttachmentID, AttachmentParams, Emoji } from './message'
 
-export interface FileMetadata {
+export interface MessagesDoc {
   cardId: CardID
-  title: string
-  fromDate: Date
-  toDate: Date
+  fromDate: string // ISO date
+  toDate: string // ISO date
+  messages: Record<MessageID, MessageDoc>
+  language: string
 }
 
-export interface FileMessage {
+export interface MessageDoc {
   id: MessageID
+  cardId: CardID
+  created: string // ISO date
+  creator: SocialID
   type: MessageType
   content: Markdown
-  extra?: MessageExtra
+  extra: MessageExtra
+  modified: string | null // ISO date
 
-  creator: SocialID
-  created: Date
-
-  removed: boolean
-  edited?: Date
-
-  reactions: Reaction[]
-  attachments: Attachment[]
-  thread?: FileThread
+  reactions: Record<Emoji, Record<PersonUuid, { count: number, date: string }>>
+  attachments: Record<AttachmentID, AttachmentDoc>
+  threads: Record<CardID, ThreadDoc>
 }
 
-export interface FileThread {
+export interface AttachmentDoc {
+  id: AttachmentID
+  mimeType: string
+  params: AttachmentParams
+  creator: SocialID
+  created: string // ISO date
+  modified: string | null // ISO date
+}
+
+export interface ThreadDoc {
   threadId: CardID
   threadType: CardType
   repliesCount: number
-  lastReply: Date
+  lastReplyDate: string | null // ISO date
+  repliedPersons: Record<PersonUuid, number>
 }
 
-export interface ParsedFile {
+export type MessagesGroupsDoc = Record<BlobID, MessagesGroupDoc>
+
+export interface MessagesGroupDoc {
   cardId: CardID
-  title: string
-  fromDate: Date
-  toDate: Date
-  messages: Message[]
+  blobId: BlobID
+  fromDate: string // ISO date
+  toDate: string // ISO date
+  count: number
 }

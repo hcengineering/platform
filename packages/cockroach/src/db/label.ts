@@ -14,15 +14,14 @@
 //
 
 import {
-  SortingOrder,
-  type AccountID,
+  type AccountUuid,
   type CardID,
   type CardType,
   type FindLabelsParams,
   type LabelID,
   type Label
 } from '@hcengineering/communication-types'
-import { Domain, type LabelUpdates, type RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
+import { Domain, LabelQuery, LabelUpdate } from '@hcengineering/communication-sdk-types'
 
 import { BaseDb } from './base'
 import { toLabel } from './mapping'
@@ -33,7 +32,7 @@ export class LabelsDb extends BaseDb {
     label: LabelID,
     card: CardID,
     cardType: CardType,
-    account: AccountID,
+    account: AccountUuid,
     created: Date
   ): Promise<void> {
     const db: DbModel<Domain.Label> = {
@@ -51,7 +50,7 @@ export class LabelsDb extends BaseDb {
     await this.execute(sql, values, 'insert label')
   }
 
-  async removeLabels (query: RemoveLabelQuery): Promise<void> {
+  async removeLabels (query: LabelQuery): Promise<void> {
     const filter: DbModelFilter<Domain.Label> = []
 
     if (query.labelId != null) {
@@ -85,30 +84,47 @@ export class LabelsDb extends BaseDb {
     await this.execute(sql, values, 'remove labels')
   }
 
-  async updateLabels (card: CardID, updates: LabelUpdates): Promise<void> {
-    const update: DbModelUpdate<Domain.Label> = []
+  async updateLabels (query: LabelQuery, update: LabelUpdate): Promise<void> {
+    const dbUpdate: DbModelUpdate<Domain.Label> = []
 
     const filter: DbModelFilter<Domain.Label> = [
       {
         column: 'workspace_id',
         value: this.workspace
-      },
-      {
-        column: 'card_id',
-        value: card
       }
     ]
 
-    if (updates.cardType != null) {
-      update.push({
-        column: 'card_type',
-        value: updates.cardType
+    if (query.cardId != null) {
+      filter.push({
+        column: 'card_id',
+        value: query.cardId
       })
     }
 
-    if (update.length === 0) return
+    if (query.labelId != null) {
+      filter.push({
+        column: 'label_id',
+        value: query.labelId
+      })
+    }
 
-    const { sql, values } = this.getUpdateSql(Domain.Label, filter, update)
+    if (query.account != null) {
+      filter.push({
+        column: 'account',
+        value: query.account
+      })
+    }
+
+    if (update.cardType != null) {
+      dbUpdate.push({
+        column: 'card_type',
+        value: update.cardType
+      })
+    }
+
+    if (dbUpdate.length === 0) return
+
+    const { sql, values } = this.getUpdateSql(Domain.Label, filter, dbUpdate)
 
     await this.execute(sql, values, 'update labels')
   }
@@ -119,9 +135,8 @@ export class LabelsDb extends BaseDb {
 
     const { where, values } = this.buildWhere(params)
 
-    const limit = params.limit != null ? `LIMIT ${params.limit}` : ''
-    const orderBy =
-      params.order != null ? `ORDER BY l.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+    const limit = this.buildLimit(params.limit)
+    const orderBy = this.buildOrderBy(params.order, 'l.created')
     const sql = [select, where, orderBy, limit].join(' ')
 
     const result = await this.execute(sql, values, 'find labels')
@@ -137,8 +152,8 @@ export class LabelsDb extends BaseDb {
     where.push(`${prefix}workspace_id = $${index++}::uuid`)
     values.push(this.workspace)
 
-    if (params.label != null) {
-      const labels = Array.isArray(params.label) ? params.label : [params.label]
+    if (params.labelId != null) {
+      const labels = Array.isArray(params.labelId) ? params.labelId : [params.labelId]
       if (labels.length === 1) {
         where.push(`${prefix}label_id = $${index++}::varchar`)
         values.push(labels[0])
@@ -148,9 +163,9 @@ export class LabelsDb extends BaseDb {
       }
     }
 
-    if (params.card != null) {
+    if (params.cardId != null) {
       where.push(`${prefix}card_id = $${index++}::varchar`)
-      values.push(params.card)
+      values.push(params.cardId)
     }
 
     if (params.cardType != null) {

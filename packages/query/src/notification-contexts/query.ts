@@ -15,20 +15,18 @@
 
 import {
   BlobID,
-  type CardID,
+  CardID,
   type FindNotificationContextParams,
   FindNotificationsParams,
-  type Message,
-  type MessageID,
-  type Notification,
+  Message,
+  MessageID,
+  MessagesDoc,
   type NotificationContext,
-  ParsedFile,
-  PatchType,
-  SortingOrder,
-  type WorkspaceID
+  SortingOrder
 } from '@hcengineering/communication-types'
 import {
   CardEventType,
+  CreateMessageEvent,
   CreateNotificationContextEvent,
   CreateNotificationEvent,
   type Event,
@@ -44,18 +42,17 @@ import {
   UpdateNotificationEvent
 } from '@hcengineering/communication-sdk-types'
 import {
-  applyPatches,
   MessageProcessor,
   NotificationContextProcessor,
   NotificationProcessor
 } from '@hcengineering/communication-shared'
+import { HulylakeClient } from '@hcengineering/hulylake-client'
 
-import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
+import { defaultQueryParams, NotificationContextQueryOptions, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
-import { findMessage, loadMessageFromGroup, matchNotification } from '../utils'
+import { matchNotification, loadMessages } from '../utils'
 
-const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.attachment]
 export class NotificationContextsQuery implements PagedQuery<NotificationContext, FindNotificationContextParams> {
   private result: QueryResult<NotificationContext> | Promise<QueryResult<NotificationContext>>
   private forward: Promise<{ isDone: boolean }> | { isDone: boolean } = { isDone: false }
@@ -64,12 +61,14 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
   nexLoadedPagesCount = 0
   prevLoadedPagesCount = 0
 
+  private messagesBuffer: Message[] = []
+
   constructor (
     private readonly client: FindClient,
-    private readonly workspace: WorkspaceID,
-    private readonly filesUrl: string,
+    private readonly hulylake: HulylakeClient,
     public readonly id: QueryId,
     public readonly params: FindNotificationContextParams,
+    public readonly options: NotificationContextQueryOptions | undefined,
     private callback?: PagedQueryCallback<NotificationContext>,
     initialResult?: QueryResult<NotificationContext>
   ) {
@@ -123,6 +122,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   async onEvent (event: Event): Promise<void> {
     switch (event.type) {
+      case MessageEventType.CreateMessage:
+        await this.onCreateMessageEvent(event)
+        break
       case MessageEventType.BlobPatch:
       case MessageEventType.AttachmentPatch:
       case MessageEventType.RemovePatch:
@@ -162,9 +164,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   async onRequest (event: Event): Promise<void> {}
 
-  async unsubscribe (): Promise<void> {
-    await this.client.unsubscribeQuery(this.id)
-  }
+  async unsubscribe (): Promise<void> {}
 
   async requestLoadNextPage (notify = true): Promise<{ isDone: boolean }> {
     if (this.result instanceof Promise) this.result = await this.result
@@ -274,26 +274,34 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     return this.result.copy()
   }
 
-  async loadGroups (contexts: NotificationContext[]): Promise<NotificationContext[]> {
-    const cache = new Map<BlobID, Promise<ParsedFile>>()
+  private async findMessage (cardId: CardID, blobId: BlobID, messageId: MessageID): Promise<Message | undefined> {
+    const fromBuffer = this.messagesBuffer.find((it) => it.cardId === cardId && it.id === messageId)
+    if (fromBuffer != null) {
+      return fromBuffer
+    }
+
+    return (await loadMessages(this.hulylake, cardId, blobId, { cardId, id: messageId }, { attachments: true }))[0]
+  }
+
+  async loadMessages (contexts: NotificationContext[]): Promise<NotificationContext[]> {
+    const cache = new Map<BlobID, Promise<MessagesDoc | undefined>>()
     const newContexts = await Promise.all(
       contexts.map(async (context) => {
         const notifications = context.notifications ?? []
 
         context.notifications = await Promise.all(
           notifications.map(async (notification) => {
-            if (notification.message != null || notification.messageId == null || notification.blobId == null) {
-              return notification
-            }
-            const { blobId } = notification
-            const message = await loadMessageFromGroup(
-              notification.messageId,
-              this.workspace,
-              this.filesUrl,
-              blobId,
-              notification.patches,
-              cache
-            )
+            const message = (
+              await loadMessages(
+                this.hulylake,
+                context.cardId,
+                notification.blobId,
+                { cardId: context.cardId, id: notification.messageId },
+                { attachments: true },
+                cache
+              )
+            )[0]
+
             if (message !== undefined) {
               return {
                 ...notification,
@@ -313,9 +321,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   private async find (params: FindNotificationContextParams): Promise<NotificationContext[]> {
     const contexts = await this.client.findNotificationContexts(params, this.id)
-    if (params.notifications?.message !== true) return contexts
+    if (this.options?.message !== true || this.params.notifications == null) return contexts
 
-    return await this.loadGroups(contexts)
+    return await this.loadMessages(contexts)
   }
 
   private async onCreateNotificationContextEvent (event: CreateNotificationContextEvent): Promise<void> {
@@ -328,7 +336,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       return
     }
 
-    const context = NotificationContextProcessor.createFromEvent(event)
+    const context = NotificationContextProcessor.create(event)
 
     if (!this.match(context)) {
       return
@@ -338,15 +346,35 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     void this.notify()
   }
 
+  private async onCreateMessageEvent (event: CreateMessageEvent): Promise<void> {
+    if (this.params.notifications == null || this.options?.message !== true) return
+    if (this.forward instanceof Promise) this.forward = await this.forward
+    if (this.backward instanceof Promise) this.backward = await this.backward
+    if (this.result instanceof Promise) this.result = await this.result
+    const context = this.result.getResult().find((it) => it.cardId === event.cardId)
+    if (context === undefined) return
+    this.messagesBuffer.push(MessageProcessor.create(event))
+
+    const delay = 10 * 60 * 1000
+    this.messagesBuffer = this.messagesBuffer.filter((it) => it.created.getTime() - Date.now() < delay)
+  }
+
   private async onCreatePatchEvent (event: PatchEvent): Promise<void> {
-    const patches = MessageProcessor.eventToPatches(event).filter((it) => allowedPatchTypes.includes(it.type))
-    if (patches.length === 0) return
     const isUpdated = await this.updateMessage(event.cardId, event.messageId, (message) =>
-      applyPatches(message, patches, allowedPatchTypes)
+      MessageProcessor.applyPatch(message, event)
     )
     if (isUpdated) {
       void this.notify()
     }
+
+    this.messagesBuffer = this.messagesBuffer
+      .map((it) => {
+        if (it.cardId === event.cardId && it.id === event.messageId) {
+          return MessageProcessor.applyPatch(it, event)
+        }
+        return it
+      })
+      .filter((it): it is Message => it != null)
   }
 
   private async onRemoveNotificationEvent (event: RemoveNotificationsEvent): Promise<void> {
@@ -406,7 +434,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     const totalNotifications = this.getNotificationsTotal(context, event)
     const shouldRefreshTotal = this.params.notifications.total === true && this.params.notifications.type != null
 
-    let matchQuery: FindNotificationsParams = { ...event.query, context: event.contextId, account: event.account }
+    let matchQuery: FindNotificationsParams = { ...event.query, contextId: event.contextId, account: event.account }
     if (event.query.untilDate != null) {
       matchQuery = { ...matchQuery, created: { lessOrEqual: event.query.untilDate } }
     }
@@ -417,7 +445,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       if (shouldRefreshTotal) {
         const nRes = await this.client.findNotifications({
           ...this.params.notifications,
-          context: context.id,
+          contextId: context.id,
           limit: 1,
           total: true
         })
@@ -459,7 +487,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     } else if (shouldRefreshTotal) {
       const nRes = await this.client.findNotifications({
         ...this.params.notifications,
-        context: context.id,
+        contextId: context.id,
         limit: 1,
         total: true
       })
@@ -499,7 +527,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.backward instanceof Promise) this.backward = await this.backward
     if (this.result instanceof Promise) this.result = await this.result
 
-    const notification = NotificationProcessor.createFromEvent(event)
+    const notification = NotificationProcessor.create(event)
     const match = matchNotification(notification, {
       type: this.params.notifications.type,
       read: this.params.notifications.read
@@ -510,18 +538,8 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if ((context?.notifications ?? []).some((it) => it.id === notification.id)) return
     if (context !== undefined) {
       const message =
-        this.params.notifications.message === true
-          ? await findMessage(
-            this.client,
-            this.workspace,
-            this.filesUrl,
-            context.cardId,
-            notification.messageId,
-            notification.messageCreated,
-            false,
-            true,
-            false
-          )
+        this.options?.message === true
+          ? await this.findMessage(context.cardId, notification.blobId, notification.messageId)
           : undefined
 
       const notifications = [
@@ -628,19 +646,6 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       }
     }
 
-    if (this.params.notifications?.message === true) {
-      const result = updated ? this.result.getResult() : []
-      for (const context of result) {
-        const notifications = context.notifications ?? []
-        for (const notification of notifications) {
-          if (notification.message != null && notification.message.thread?.threadId === event.cardId) {
-            updated = true
-            notification.message.thread = undefined
-          }
-        }
-      }
-    }
-
     if (updated) {
       if (this.params.limit != null && this.result.length < this.params.limit && result.length >= this.params.limit) {
         const contexts = await this.find(this.params)
@@ -648,14 +653,6 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       }
       void this.notify()
     }
-  }
-
-  private filterNotifications (notifications: Notification[]): Notification[] {
-    if (this.params.notifications == null) return notifications
-    const read = this.params.notifications.read
-    if (read == null) return notifications
-
-    return notifications.filter((it) => it.read === read)
   }
 
   private addContext (context: NotificationContext, result: QueryResult<NotificationContext>): void {
@@ -684,8 +681,8 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
   }
 
   private match (context: NotificationContext): boolean {
-    if (this.params.card !== undefined) {
-      const cards = Array.isArray(this.params.card) ? this.params.card : [this.params.card]
+    if (this.params.cardId !== undefined) {
+      const cards = Array.isArray(this.params.cardId) ? this.params.cardId : [this.params.cardId]
       if (!cards.includes(context.cardId)) return false
     }
 
@@ -748,9 +745,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
   private async updateMessage (
     card: CardID,
     messageId: MessageID,
-    updater: (message: Message) => Message
+    updater: (message: Message) => Message | undefined
   ): Promise<boolean> {
-    if (this.params.notifications == null || this.params.notifications.message !== true) return false
+    if (this.params.notifications == null || this.options?.message !== true) return false
     if (this.forward instanceof Promise) this.forward = await this.forward
     if (this.backward instanceof Promise) this.backward = await this.backward
     if (this.result instanceof Promise) this.result = await this.result

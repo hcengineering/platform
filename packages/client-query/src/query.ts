@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
-import { MessageQueryParams, NotificationQueryParams } from '@hcengineering/communication-query'
+import {
+  MessageQueryParams,
+  NotificationContextQueryOptions,
+  NotificationQueryParams,
+  MessageQueryOptions,
+  QueryOptions
+} from '@hcengineering/communication-query'
 import type { PagedQueryCallback, QueryCallback } from '@hcengineering/communication-sdk-types'
 import {
   type FindLabelsParams,
@@ -28,8 +34,9 @@ import {
 import { deepEqual } from 'fast-equals'
 import { getLiveQueries, getOnDestroy } from './init'
 
-class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
-  private oldQuery: P | undefined
+class BaseQuery<P extends Record<string, any>, C extends (r: any) => void, O extends QueryOptions = QueryOptions> {
+  private oldParams: P | undefined
+  private oldOptions: O | undefined
   private oldCallback: C | undefined
 
   constructor (dontDestroy?: boolean) {
@@ -47,49 +54,53 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
     this._unsubscribe(false)
   }
 
-  query (params: P, callback: C): boolean {
-    if (!this.needUpdate(params, callback)) {
+  query (params: P, callback: C, options?: O): boolean {
+    if (!this.needUpdate(params, callback, options)) {
       return false
     }
-    this.doQuery(params, callback)
+    this.doQuery(params, callback, options)
     return true
   }
 
-  private doQuery (query: P, callback: C): void {
-    const isUpdate = this.oldQuery !== undefined
+  private doQuery (params: P, callback: C, options?: O): void {
+    const isUpdate = this.oldParams !== undefined
     this._unsubscribe(isUpdate)
     this.oldCallback = callback
-    this.oldQuery = query
+    this.oldParams = params
+    this.oldOptions = options
 
-    const { unsubscribe } = this.createQuery(query, callback)
+    const { unsubscribe } = this.createQuery(params, callback, options)
     this._unsubscribe = (isUpdate) => {
       unsubscribe(isUpdate)
       this.oldCallback = undefined
-      this.oldQuery = undefined
+      this.oldParams = undefined
+      this.oldOptions = undefined
       this._unsubscribe = () => {}
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createQuery (params: P, callback: C): { unsubscribe: (isUpdate: boolean) => void } {
+  createQuery (params: P, callback: C, options?: O): { unsubscribe: (isUpdate: boolean) => void } {
     return {
       unsubscribe: () => {}
     }
   }
 
-  private needUpdate (params: P, callback: C): boolean {
-    if (!deepEqual(params, this.oldQuery)) return true
+  private needUpdate (params: P, callback: C, options?: O): boolean {
+    if (!deepEqual(params, this.oldParams)) return true
+    if (!deepEqual(options, this.oldOptions)) return true
     if (!deepEqual(callback.toString(), this.oldCallback?.toString())) return true
     return false
   }
 }
 
-export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>> {
+export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>, MessageQueryOptions> {
   override createQuery (
     params: MessageQueryParams,
-    callback: PagedQueryCallback<Message>
+    callback: PagedQueryCallback<Message>,
+    options?: MessageQueryOptions
   ): { unsubscribe: (isUpdate: boolean) => void } {
-    return getLiveQueries().queryMessages(params, callback)
+    return getLiveQueries().queryMessages(params, callback, options)
   }
 }
 
@@ -106,15 +117,17 @@ export class NotificationsQuery extends BaseQuery<NotificationQueryParams, Paged
 
 export class NotificationContextsQuery extends BaseQuery<
 FindNotificationContextParams,
-PagedQueryCallback<NotificationContext>
+PagedQueryCallback<NotificationContext>,
+NotificationContextQueryOptions
 > {
   override createQuery (
     params: FindNotificationContextParams,
-    callback: PagedQueryCallback<NotificationContext>
+    callback: PagedQueryCallback<NotificationContext>,
+    options?: NotificationContextQueryOptions
   ): {
       unsubscribe: (isUpdate: boolean) => void
     } {
-    return getLiveQueries().queryNotificationContexts(params, callback)
+    return getLiveQueries().queryNotificationContexts(params, callback, options)
   }
 }
 

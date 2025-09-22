@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { CardID, AccountID, LabelID, CardType } from '@hcengineering/communication-types'
+import type { CardID, LabelID, CardType, AccountUuid } from '@hcengineering/communication-types'
 import type { BaseEvent } from './common'
 
 export enum LabelEventType {
@@ -30,7 +30,7 @@ export interface CreateLabelEvent extends BaseEvent {
   labelId: LabelID
   cardId: CardID
   cardType: CardType
-  account: AccountID
+  account: AccountUuid
 
   date?: Date
 }
@@ -39,7 +39,7 @@ export interface RemoveLabelEvent extends BaseEvent {
   type: LabelEventType.RemoveLabel
   labelId: LabelID
   cardId: CardID
-  account: AccountID
+  account: AccountUuid
 
   date?: Date
 }

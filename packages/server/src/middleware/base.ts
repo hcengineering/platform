@@ -15,12 +15,8 @@
 
 import { type Event, EventResult, type SessionData } from '@hcengineering/communication-sdk-types'
 import type {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
-  Message,
-  MessagesGroup,
   NotificationContext,
   Notification,
   FindLabelsParams,
@@ -29,11 +25,12 @@ import type {
   Collaborator,
   FindPeersParams,
   Peer,
-  FindThreadParams,
-  Thread
+  CardID,
+  FindMessagesMetaParams,
+  MessageMeta
 } from '@hcengineering/communication-types'
 
-import type { Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Enriched, Middleware, MiddlewareContext, Subscription } from '../types'
 
 export class BaseMiddleware implements Middleware {
   constructor (
@@ -41,36 +38,28 @@ export class BaseMiddleware implements Middleware {
     protected readonly next?: Middleware
   ) {}
 
-  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
-    return await this.provideFindMessages(session, params, queryId)
-  }
-
-  async findMessagesGroups (
-    session: SessionData,
-    params: FindMessagesGroupsParams,
-    queryId?: QueryId
-  ): Promise<MessagesGroup[]> {
-    return await this.provideFindMessagesGroups(session, params, queryId)
+  async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
+    return await this.provideFindMessagesMeta(session, params)
   }
 
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<NotificationContext[]> {
-    return await this.provideFindNotificationContexts(session, params, queryId)
+    return await this.provideFindNotificationContexts(session, params, subscription)
   }
 
   async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<Notification[]> {
-    return await this.provideFindNotifications(session, params, queryId)
+    return await this.provideFindNotifications(session, params, subscription)
   }
 
-  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
-    return await this.provideFindLabels(session, params, queryId)
+  async findLabels (session: SessionData, params: FindLabelsParams, subscription?: Subscription): Promise<Label[]> {
+    return await this.provideFindLabels(session, params, subscription)
   }
 
   async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
@@ -81,10 +70,6 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindPeers(session, params)
   }
 
-  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
-    return await this.provideFindThreads(session, params)
-  }
-
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     return await this.provideEvent(session, event, derived)
   }
@@ -93,9 +78,15 @@ export class BaseMiddleware implements Middleware {
     this.provideHandleBroadcast(session, events)
   }
 
-  unsubscribeQuery (session: SessionData, queryId: number): void {
+  subscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
     if (this.next !== undefined) {
-      this.next.unsubscribeQuery(session, queryId)
+      this.next.subscribeCard(session, cardId, subscription)
+    }
+  }
+
+  unsubscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
+    if (this.next !== undefined) {
+      this.next.unsubscribeCard(session, cardId, subscription)
     }
   }
 
@@ -109,24 +100,12 @@ export class BaseMiddleware implements Middleware {
     return {}
   }
 
-  protected async provideFindMessages (
+  protected async provideFindMessagesMeta (
     session: SessionData,
-    params: FindMessagesParams,
-    queryId?: QueryId
-  ): Promise<Message[]> {
+    params: FindMessagesMetaParams
+  ): Promise<MessageMeta[]> {
     if (this.next !== undefined) {
-      return await this.next.findMessages(session, params, queryId)
-    }
-    return []
-  }
-
-  protected async provideFindMessagesGroups (
-    session: SessionData,
-    params: FindMessagesGroupsParams,
-    queryId?: QueryId
-  ): Promise<MessagesGroup[]> {
-    if (this.next !== undefined) {
-      return await this.next.findMessagesGroups(session, params, queryId)
+      return await this.next.findMessagesMeta(session, params)
     }
     return []
   }
@@ -134,10 +113,10 @@ export class BaseMiddleware implements Middleware {
   protected async provideFindNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<NotificationContext[]> {
     if (this.next !== undefined) {
-      return await this.next.findNotificationContexts(session, params, queryId)
+      return await this.next.findNotificationContexts(session, params, subscription)
     }
     return []
   }
@@ -145,10 +124,10 @@ export class BaseMiddleware implements Middleware {
   protected async provideFindNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<Notification[]> {
     if (this.next !== undefined) {
-      return await this.next.findNotifications(session, params, queryId)
+      return await this.next.findNotifications(session, params, subscription)
     }
     return []
   }
@@ -156,10 +135,10 @@ export class BaseMiddleware implements Middleware {
   protected async provideFindLabels (
     session: SessionData,
     params: FindLabelsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<Label[]> {
     if (this.next !== undefined) {
-      return await this.next.findLabels(session, params, queryId)
+      return await this.next.findLabels(session, params, subscription)
     }
     return []
   }
@@ -177,13 +156,6 @@ export class BaseMiddleware implements Middleware {
   protected async provideFindPeers (session: SessionData, params: FindPeersParams): Promise<Peer[]> {
     if (this.next !== undefined) {
       return await this.next.findPeers(session, params)
-    }
-    return []
-  }
-
-  protected async provideFindThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
-    if (this.next !== undefined) {
-      return await this.next.findThreads(session, params)
     }
     return []
   }

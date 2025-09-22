@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountID, Collaborator, FindCollaboratorsParams, WorkspaceID } from '@hcengineering/communication-types'
+import type { AccountUuid, Collaborator, FindCollaboratorsParams } from '@hcengineering/communication-types'
 import {
   AddCollaboratorsEvent,
   CardEventType,
@@ -25,9 +25,10 @@ import {
   RemoveCardEvent,
   RemoveCollaboratorsEvent
 } from '@hcengineering/communication-sdk-types'
+import { HulylakeClient } from '@hcengineering/hulylake-client'
 
 import { QueryResult } from '../result'
-import { type Query, type QueryId } from '../types'
+import { QueryOptions, type Query, type QueryId } from '../types'
 
 export class CollaboratorsQuery implements Query<Collaborator, FindCollaboratorsParams> {
   private result: Promise<QueryResult<Collaborator>> | QueryResult<Collaborator>
@@ -35,10 +36,10 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
 
   constructor (
     private readonly client: FindClient,
-    private readonly workspace: WorkspaceID,
-    private readonly filesUrl: string,
+    private readonly hulylake: HulylakeClient,
     public readonly id: QueryId,
     public readonly params: FindCollaboratorsParams,
+    public readonly options: QueryOptions | undefined,
     private callback?: QueryCallback<Collaborator>,
     initialResult?: QueryResult<Collaborator>
   ) {
@@ -69,7 +70,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
   }
 
   async onCollaboratorsAdded (event: AddCollaboratorsEvent): Promise<void> {
-    if (event.cardId !== this.params.card || event.collaborators.length === 0) return
+    if (event.cardId !== this.params.cardId || event.collaborators.length === 0) return
     if (this.result instanceof Promise) this.result = await this.result
 
     let updated = false
@@ -93,7 +94,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
   }
 
   async onCollaboratorsRemoved (event: RemoveCollaboratorsEvent): Promise<void> {
-    if (event.cardId !== this.params.card || event.collaborators.length === 0) return
+    if (event.cardId !== this.params.cardId || event.collaborators.length === 0) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const prevLength = this.result.length
@@ -113,7 +114,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
   }
 
   async onCardRemoved (event: RemoveCardEvent): Promise<void> {
-    if (this.params.card !== event.cardId) return
+    if (this.params.cardId !== event.cardId) return
     if (this.result instanceof Promise) this.result = await this.result
 
     this.isCardRemoved = true
@@ -133,9 +134,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     }
   }
 
-  async unsubscribe (): Promise<void> {
-    await this.client.unsubscribeQuery(this.id)
-  }
+  async unsubscribe (): Promise<void> {}
 
   removeCallback (): void {
     this.callback = () => {}
@@ -166,7 +165,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     this.callback(result)
   }
 
-  private match (account: AccountID): boolean {
+  private match (account: AccountUuid): boolean {
     if (this.params.account != null) {
       const accounts = Array.isArray(this.params.account) ? this.params.account : [this.params.account]
       if (!accounts.includes(account)) {

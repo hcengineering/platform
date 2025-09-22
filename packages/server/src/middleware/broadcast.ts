@@ -24,28 +24,22 @@ import {
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import type {
-  AccountID,
+  AccountUuid,
   CardID,
   FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   Label,
-  Message,
-  MessageID,
-  MessagesGroup,
   Notification,
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { CommunicationCallbacks, Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
+import type { CommunicationCallbacks, Enriched, Middleware, MiddlewareContext, Subscription } from '../types'
 import { BaseMiddleware } from './base'
 
 interface SessionInfo {
-  account: AccountID
-  messageQueries: Map<QueryId, FindMessagesParams>
-  contextQueries: Map<QueryId, Set<CardID>>
+  account: AccountUuid
+  subscriptions: Map<CardID, Set<Subscription>>
 }
 
 export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
@@ -59,35 +53,16 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
   }
 
-  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
-    this.createSession(session)
-
-    const result = await this.provideFindMessages(session, params, queryId)
-    if (queryId != null && session.sessionId != null && session.sessionId !== '') {
-      this.subscribeMessageQuery(session, queryId, params)
-    }
-    return result
-  }
-
-  async findMessagesGroups (
-    session: SessionData,
-    params: FindMessagesGroupsParams,
-    queryId?: QueryId
-  ): Promise<MessagesGroup[]> {
-    this.createSession(session)
-    return await this.provideFindMessagesGroups(session, params, queryId)
-  }
-
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<NotificationContext[]> {
     this.createSession(session)
 
-    const result = await this.provideFindNotificationContexts(session, params, queryId)
-    if (queryId != null && session.sessionId != null && session.sessionId !== '') {
-      this.subscribeContextQuery(session, queryId, result)
+    const result = await this.provideFindNotificationContexts(session, params, subscription)
+    if (subscription != null && session.sessionId != null && session.sessionId !== '') {
+      this.subscribeContextsCard(session, subscription, result)
     }
     return result
   }
@@ -95,13 +70,13 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
   async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    queryId?: Subscription
   ): Promise<Notification[]> {
     this.createSession(session)
     return await this.provideFindNotifications(session, params, queryId)
   }
 
-  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: Subscription): Promise<Label[]> {
     this.createSession(session)
     return await this.provideFindLabels(session, params, queryId)
   }
@@ -111,13 +86,26 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideEvent(session, event, derived)
   }
 
-  unsubscribeQuery (session: SessionData, queryId: number): void {
+  unsubscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
     if (session.sessionId == null) return
     const data = this.dataBySessionId.get(session.sessionId)
     if (data == null) return
 
-    data.messageQueries.delete(queryId)
-    data.contextQueries.delete(queryId)
+    const current = data.subscriptions.get(cardId)
+    if (current == null) return
+    current.delete(subscription)
+
+    data.subscriptions.set(cardId, current)
+  }
+
+  subscribeCard (session: SessionData, cardId: CardID, subscription: string | number): void {
+    if (session.sessionId == null) return
+    const data = this.dataBySessionId.get(session.sessionId)
+    if (data == null) return
+
+    const current = data.subscriptions.get(cardId) ?? new Set()
+    current.add(subscription)
+    data.subscriptions.set(cardId, current)
   }
 
   handleBroadcast (session: SessionData, events: Enriched<Event>[]): void {
@@ -154,21 +142,13 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     this.dataBySessionId.clear()
   }
 
-  private subscribeMessageQuery (session: SessionData, queryId: QueryId, params: Record<string, any>): void {
+  private subscribeContextsCard (session: SessionData, queryId: Subscription, result: NotificationContext[]): void {
     const data = this.createSession(session)
     if (data == null) return
 
-    data.messageQueries.set(queryId, params as FindMessagesParams)
-  }
-
-  private subscribeContextQuery (session: SessionData, queryId: QueryId, result: NotificationContext[]): void {
-    const data = this.createSession(session)
-    if (data == null) return
-
-    const cards = new Set(result.map((it) => it.cardId))
-    const current = data.contextQueries.get(queryId) ?? new Set()
-
-    data.contextQueries.set(queryId, new Set([...current, ...cards]))
+    for (const context of result) {
+      this.subscribeCard(session, context.cardId, queryId)
+    }
   }
 
   private createSession (session: SessionData): SessionInfo | undefined {
@@ -177,8 +157,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     if (!this.dataBySessionId.has(id)) {
       this.dataBySessionId.set(id, {
         account: session.account.uuid,
-        messageQueries: new Map(),
-        contextQueries: new Map()
+        subscriptions: new Map()
       })
     }
 
@@ -188,23 +167,13 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
   private match (event: Enriched<Event>, info: SessionInfo): boolean {
     switch (event.type) {
       case MessageEventType.CreateMessage:
-        if (event.messageId == null) return false
-        return this.matchMessagesQuery(
-          { ids: [event.messageId], card: event.cardId },
-          Array.from(info.messageQueries.values()),
-          new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
-        )
       case MessageEventType.ThreadPatch:
       case MessageEventType.ReactionPatch:
       case MessageEventType.BlobPatch:
       case MessageEventType.AttachmentPatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.UpdatePatch:
-        return this.matchMessagesQuery(
-          { card: event.cardId, ids: [event.messageId] },
-          Array.from(info.messageQueries.values()),
-          new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
-        )
+        return info.subscriptions.has(event.cardId)
       case NotificationEventType.RemoveNotifications:
       case NotificationEventType.CreateNotification:
       case NotificationEventType.UpdateNotification:
@@ -212,9 +181,6 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case NotificationEventType.UpdateNotificationContext:
       case NotificationEventType.CreateNotificationContext:
         return info.account === event.account
-      case MessageEventType.CreateMessagesGroup:
-      case MessageEventType.RemoveMessagesGroup:
-        return false
       case NotificationEventType.RemoveCollaborators:
       case NotificationEventType.AddCollaborators:
         return true
@@ -228,22 +194,5 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case PeerEventType.CreatePeer:
         return false
     }
-  }
-
-  private matchMessagesQuery (
-    params: { ids: MessageID[], card: CardID },
-    queries: FindMessagesParams[],
-    cards: Set<CardID>
-  ): boolean {
-    if (cards.has(params.card)) return true
-    if (queries.length === 0) return false
-
-    for (const query of queries) {
-      if (query.id != null && !params.ids.includes(query.id)) continue
-      if (query.card != null && query.card !== params.card) continue
-      return true
-    }
-
-    return false
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { DbAdapter, Event, EventResult, SessionData } from '@hcengineering/communication-sdk-types'
+import type { Event, EventResult, SessionData } from '@hcengineering/communication-sdk-types'
 import type { MeasureContext } from '@hcengineering/core'
 
 import type { CommunicationCallbacks, Enriched, Middleware, MiddlewareContext, TriggerCtx } from '../types'
@@ -27,18 +27,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
 
   constructor (
     private readonly callbacks: CommunicationCallbacks,
-    private readonly db: DbAdapter,
     context: MiddlewareContext,
     next?: Middleware
   ) {
     super(context, next)
     this.ctx = context.ctx.newChild('triggers', {})
-    setInterval(
-      () => {
-        this.context.registeredCards.clear()
-      },
-      60 * 60 * 1000
-    ) // 1hour
   }
 
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
@@ -55,12 +48,9 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   async processDerived (session: SessionData, events: Enriched<Event>[], derived: boolean): Promise<void> {
     const triggerCtx: Omit<TriggerCtx, 'ctx'> = {
       metadata: this.context.metadata,
-      db: this.db,
+      client: this.context.client,
       workspace: this.context.workspace,
       account: session.account,
-      registeredCards: this.context.registeredCards,
-      accountBySocialID: this.context.accountBySocialID,
-      removedContexts: this.context.removedContexts,
       processedPeersEvents: this.processedPeersEvents,
       derived,
       execute: async (event: Event) => {

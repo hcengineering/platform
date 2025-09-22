@@ -14,7 +14,6 @@
 //
 
 import {
-  type DbAdapter,
   type Event,
   EventResult,
   MessageEventType,
@@ -23,7 +22,7 @@ import {
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import { AccountRole, systemAccountUuid } from '@hcengineering/core'
-import type { AccountID, SocialID } from '@hcengineering/communication-types'
+import type { AccountUuid, CardID, MessageID, SocialID } from '@hcengineering/communication-types'
 
 import { ApiError } from '../error'
 import type { Enriched, Middleware, MiddlewareContext } from '../types'
@@ -31,7 +30,6 @@ import { BaseMiddleware } from './base'
 
 export class PermissionsMiddleware extends BaseMiddleware implements Middleware {
   constructor (
-    readonly db: DbAdapter,
     readonly context: MiddlewareContext,
     next?: Middleware
   ) {
@@ -42,6 +40,10 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     if (derived) return await this.provideEvent(session, event, derived)
 
     this.notAnonymousAccount(session)
+
+    if (this.isSystemAccount(session)) {
+      return await this.provideEvent(session, event, derived)
+    }
 
     switch (event.type) {
       case MessageEventType.CreateMessage:
@@ -54,6 +56,9 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
       case MessageEventType.UpdatePatch:
       case MessageEventType.BlobPatch:
       case MessageEventType.AttachmentPatch:
+        this.checkSocialId(session, event.socialId)
+        await this.checkMessageAuthor(session, event.cardId, event.messageId)
+        break
       case MessageEventType.ReactionPatch:
       case MessageEventType.ThreadPatch:
       case NotificationEventType.AddCollaborators:
@@ -68,9 +73,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         break
       }
       case PeerEventType.CreatePeer:
-      case PeerEventType.RemovePeer:
-      case MessageEventType.CreateMessagesGroup:
-      case MessageEventType.RemoveMessagesGroup: {
+      case PeerEventType.RemovePeer: {
         this.onlySystemAccount(session)
         break
       }
@@ -81,6 +84,17 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     return await this.provideEvent(session, event, derived)
   }
 
+  private async checkMessageAuthor (session: SessionData, cardId: CardID, messageId: MessageID): Promise<void> {
+    const meta = await this.context.client.getMessageMeta(cardId, messageId)
+    if (meta === undefined) {
+      throw ApiError.notFound(`message not found: cardId =${cardId}, messageId = ${messageId}`)
+    }
+
+    if (!session.account.socialIds.includes(meta.creator)) {
+      throw ApiError.forbidden('message author is not allowed')
+    }
+  }
+
   private checkSocialId (session: SessionData, creator: SocialID): void {
     const account = session.account
     if (!account.socialIds.includes(creator) && systemAccountUuid !== account.uuid) {
@@ -88,7 +102,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     }
   }
 
-  private checkAccount (session: SessionData, creator: AccountID): void {
+  private checkAccount (session: SessionData, creator: AccountUuid): void {
     const account = session.account
     if (account.uuid !== creator && systemAccountUuid !== account.uuid) {
       throw ApiError.forbidden('account is not allowed')

@@ -14,19 +14,15 @@
 //
 
 import type {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
-  Message,
-  MessagesGroup,
   NotificationContext,
   Notification,
   FindLabelsParams,
   Label,
   FindCollaboratorsParams,
   Collaborator,
-  FindThreadParams, Thread, FindPeersParams, Peer
+  FindPeersParams, Peer, CardID, FindMessagesMetaParams, MessageMeta
 } from '@hcengineering/communication-types'
 import type { Account, MeasureContext } from '@hcengineering/core'
 
@@ -46,28 +42,27 @@ export interface SessionData {
 }
 
 export interface ServerApi {
-  findMessages: (session: SessionData, params: FindMessagesParams, queryId?: number | string) => Promise<Message[]>
-  findMessagesGroups: (session: SessionData, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
+  findMessagesMeta: (session: SessionData, params: FindMessagesMetaParams) => Promise<MessageMeta[]>
+
   findNotificationContexts: (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: number | string
+    subscription?: number | string
   ) => Promise<NotificationContext[]>
   findNotifications: (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: number | string
+    subscription?: number | string
   ) => Promise<Notification[]>
 
   findLabels: (session: SessionData, params: FindLabelsParams) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
-
-  findThreads: (session: SessionData, params: FindThreadParams) => Promise<Thread[]>
   findPeers: (session: SessionData, params: FindPeersParams) => Promise<Peer[]>
 
   event: (session: SessionData, event: Event) => Promise<EventResult>
 
-  unsubscribeQuery: (session: SessionData, id: number) => Promise<void>
+  subscribeCard: (session: SessionData, cardId: CardID, subscription: number | string) => void
+  unsubscribeCard: (session: SessionData, cardId: CardID, subscription: number | string) => void
 
   closeSession: (sessionId: string) => Promise<void>
   close: () => Promise<void>

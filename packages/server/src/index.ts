@@ -15,27 +15,27 @@
 
 import { type MeasureContext } from '@hcengineering/core'
 import type {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
-  Message,
-  MessagesGroup,
   NotificationContext,
-  WorkspaceID,
+  WorkspaceUuid,
   Notification,
   FindLabelsParams,
   Label,
   FindCollaboratorsParams,
-  Collaborator, FindPeersParams, Peer, Thread,
-  FindThreadParams
+  Collaborator,
+  FindPeersParams,
+  Peer,
+  CardID, FindMessagesMetaParams, MessageMeta
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, Event, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
 
 import { getMetadata } from './metadata'
-import type { CommunicationCallbacks, QueryId } from './types'
+import type { CommunicationCallbacks, Subscription } from './types'
 import { buildMiddlewares, Middlewares } from './middlewares'
+import { Blob } from './blob'
+import { LowLevelClient } from './client'
 
 export class Api implements ServerApi {
   private constructor (
@@ -45,43 +45,39 @@ export class Api implements ServerApi {
 
   static async create (
     ctx: MeasureContext,
-    workspace: WorkspaceID,
+    workspace: WorkspaceUuid,
     dbUrl: string,
     callbacks: CommunicationCallbacks
   ): Promise<Api> {
+    const metadata = getMetadata()
     const db = await createDbAdapter(dbUrl, workspace, ctx, {
       withLogs: process.env.COMMUNICATION_TIME_LOGGING_ENABLED === 'true'
     })
-
-    const peers = await db.findPeers({ workspaceId: workspace })
-    const metadata = getMetadata()
-    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, callbacks, peers)
+    const blob = new Blob(ctx, workspace, metadata)
+    const client: LowLevelClient = new LowLevelClient(db, blob, metadata, workspace)
+    const middleware = await buildMiddlewares(ctx, workspace, metadata, client, callbacks)
 
     return new Api(ctx, middleware)
   }
 
-  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
-    return await this.middlewares.findMessages(session, params, queryId)
-  }
-
-  async findMessagesGroups (session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.middlewares.findMessagesGroups(session, params)
+  async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
+    return await this.middlewares.findMessagesMeta(session, params)
   }
 
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<NotificationContext[]> {
-    return await this.middlewares.findNotificationContexts(session, params, queryId)
+    return await this.middlewares.findNotificationContexts(session, params, subscription)
   }
 
   async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<Notification[]> {
-    return await this.middlewares.findNotifications(session, params, queryId)
+    return await this.middlewares.findNotifications(session, params, subscription)
   }
 
   async findLabels (session: SessionData, params: FindLabelsParams): Promise<Label[]> {
@@ -96,12 +92,12 @@ export class Api implements ServerApi {
     return await this.middlewares.findPeers(session, params)
   }
 
-  async findThreads (session: SessionData, params: FindThreadParams): Promise<Thread[]> {
-    return await this.middlewares.findThreads(session, params)
+  subscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
+    this.middlewares.subscribeCard(session, cardId, subscription)
   }
 
-  async unsubscribeQuery (session: SessionData, id: number): Promise<void> {
-    await this.middlewares.unsubscribeQuery(session, id)
+  unsubscribeCard (session: SessionData, cardId: CardID, subscription: Subscription): void {
+    this.middlewares.unsubscribeCard(session, cardId, subscription)
   }
 
   async event (session: SessionData, event: Event): Promise<EventResult> {

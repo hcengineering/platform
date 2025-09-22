@@ -14,7 +14,7 @@
 //
 
 import {
-  type AccountID,
+  type AccountUuid,
   type CardID,
   type Collaborator,
   type ContextID,
@@ -29,14 +29,19 @@ import {
   type CardType,
   type NotificationType,
   type NotificationContent,
-  WithTotal
+  WithTotal,
+  BlobID,
+  SocialID
 } from '@hcengineering/communication-types'
 import { withTotal } from '@hcengineering/communication-shared'
 import {
+  CollaboratorQuery,
+  CollaboratorUpdate,
   Domain,
-  type NotificationContextUpdates,
-  type NotificationUpdates,
-  type UpdateNotificationQuery
+  NotificationContextQuery,
+  NotificationContextUpdate,
+  NotificationQuery,
+  NotificationUpdate
 } from '@hcengineering/communication-sdk-types'
 
 import { BaseDb } from './base'
@@ -48,9 +53,9 @@ export class NotificationsDb extends BaseDb {
   async addCollaborators (
     card: CardID,
     cardType: CardType,
-    collaborators: AccountID[],
+    collaborators: AccountUuid[],
     date: Date
-  ): Promise<AccountID[]> {
+  ): Promise<AccountUuid[]> {
     if (collaborators.length === 0) return []
     const models: DbModel<Domain.Collaborator>[] = collaborators.map((account, index) => ({
       workspace_id: this.workspace,
@@ -68,18 +73,19 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => it.account)
   }
 
-  async removeCollaborators (card: CardID, accounts: AccountID[], unsafe = false): Promise<void> {
-    if (accounts.length === 0 && unsafe) {
-      const sql = `DELETE FROM ${Domain.Collaborator} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
-      await this.execute(sql, [this.workspace, card], 'remove collaborators')
-    } else {
-      const { sql, values } = this.getDeleteSql(Domain.Collaborator, [
-        { column: 'workspace_id', value: this.workspace },
-        { column: 'card_id', value: card },
-        { column: 'account', value: accounts }
-      ])
-      await this.execute(sql, values, 'remove collaborator')
+  async removeCollaborators (query: CollaboratorQuery): Promise<void> {
+    if (query.cardId == null) return
+
+    const filter: DbModelFilter<Domain.Collaborator> = [
+      { column: 'workspace_id', value: this.workspace },
+      { column: 'card_id', value: query.cardId }
+    ]
+    if (query.account != null) {
+      filter.push({ column: 'account', value: query.account ?? [] })
     }
+    const { sql, values } = this.getDeleteSql(Domain.Collaborator, filter)
+
+    await this.execute(sql, values, 'remove collaborator')
   }
 
   getCollaboratorsCursor (
@@ -99,22 +105,24 @@ export class NotificationsDb extends BaseDb {
   }
 
   async createNotification (
-    context: ContextID,
-    message: MessageID,
-    messageCreated: Date,
+    contextId: ContextID,
+    messageId: MessageID,
+    blobId: BlobID,
     type: NotificationType,
     read: boolean,
     content: NotificationContent,
+    creator: SocialID,
     created: Date
   ): Promise<NotificationID> {
     const db: Omit<DbModel<Domain.Notification>, 'id'> = {
-      context_id: context,
+      context_id: contextId,
       type,
-      message_id: message,
-      message_created: messageCreated,
+      message_id: messageId,
+      blob_id: blobId,
       read,
       created,
-      content
+      content,
+      creator
     }
     const { sql, values } = this.getInsertSql(Domain.Notification, db as DbModel<Domain.Notification>, [
       { column: 'id', cast: 'text' }
@@ -123,24 +131,38 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as NotificationID
   }
 
-  async updateNotification (
-    contextId: ContextID,
-    account: AccountID,
-    query: UpdateNotificationQuery,
-    updates: NotificationUpdates
-  ): Promise<number> {
+  async updateNotification (query: NotificationQuery, update: NotificationUpdate): Promise<number> {
     const where: string[] = [
       'nc.workspace_id = $1::uuid',
       'nc.id = $2::int8',
       'nc.account = $3::uuid',
       'nc.id = n.context_id'
     ]
-    const values: any[] = [this.workspace, contextId, account]
+    const values: any[] = [this.workspace]
     let index = values.length + 1
 
+    if (query.contextId != null) {
+      where.push(`n.context_id = $${index++}::int8`)
+      values.push(query.contextId)
+    }
+
+    if (query.account != null) {
+      where.push(`nc.account = $${index++}::uuid`)
+      values.push(query.account)
+    }
     if (query.id != null) {
-      where.push(`n.id = $${index++}::int8`)
-      values.push(query.id)
+      if (Array.isArray(query.id)) {
+        if (query.id.length === 1) {
+          where.push(`n.id = $${index++}::int8`)
+          values.push(query.id[0])
+        } else {
+          where.push(`n.id = ANY($${index++}::int8[])`)
+          values.push(query.id)
+        }
+      } else {
+        where.push(`n.id = $${index++}::int8`)
+        values.push(query.id)
+      }
     }
 
     if (query.type != null) {
@@ -166,32 +188,40 @@ export class NotificationsDb extends BaseDb {
         ${whereClause}
         `
 
-    const result = await this.execute(sql, [...values, updates.read], 'update notification')
+    const result = await this.execute(sql, [...values, update.read], 'update notification')
     return result?.count ?? 0
   }
 
-  async removeNotifications (
-    contextId: ContextID,
-    account: AccountID,
-    ids: NotificationID[]
-  ): Promise<NotificationID[]> {
-    if (ids.length === 0) return []
-    const where: string[] = [
-      'nc.workspace_id = $1::uuid',
-      'nc.id = $2::int8',
-      'nc.account = $3::uuid',
-      'nc.id = n.context_id'
-    ]
-    const values: any[] = [this.workspace, contextId, account]
+  async removeNotifications (query: NotificationQuery): Promise<NotificationID[]> {
+    const ids = query.id == null || Array.isArray(query.id) ? query.id : [query.id]
+
+    const where: string[] = ['nc.workspace_id = $1::uuid']
+    const values: any[] = [this.workspace]
     let index = values.length + 1
 
-    if (ids.length === 1) {
-      where.push(`n.id = $${index++}::int8`)
-      values.push(ids[0])
-    } else {
-      where.push(`n.id = ANY($${index++}::int8[])`)
-      values.push(ids)
+    if (query.contextId != null) {
+      where.push(`n.context_id = $${index++}::int8`)
+      values.push(query.contextId)
     }
+    if (query.account != null) {
+      where.push(`nc.account = $${index++}::uuid`)
+      values.push(query.account)
+    }
+    if (query.type != null) {
+      where.push(`n.type = $${index++}::varchar`)
+      values.push(query.type)
+    }
+    if (ids != null && ids.length > 0) {
+      if (ids.length === 1) {
+        where.push(`n.id = $${index++}::int8`)
+        values.push(ids[0])
+      } else {
+        where.push(`n.id = ANY($${index++}::int8[])`)
+        values.push(ids)
+      }
+    }
+
+    if (values.length <= 1) return []
 
     const sql = `DELETE FROM ${Domain.Notification} n
                 USING ${Domain.NotificationContext} nc
@@ -204,7 +234,7 @@ export class NotificationsDb extends BaseDb {
   }
 
   async createContext (
-    account: AccountID,
+    account: AccountUuid,
     card: CardID,
     lastUpdate: Date,
     lastView: Date,
@@ -226,7 +256,7 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as ContextID
   }
 
-  async removeContext (contextId: ContextID, account: AccountID): Promise<ContextID | undefined> {
+  async removeContext (query: NotificationContextQuery): Promise<ContextID | undefined> {
     const sql = `DELETE
                  FROM ${Domain.NotificationContext}
                  WHERE workspace_id = $1::uuid
@@ -234,66 +264,63 @@ export class NotificationsDb extends BaseDb {
                    AND account = $3::uuid
                  RETURNING id::text`
 
-    const result = await this.execute(sql, [this.workspace, contextId, account], 'remove notification context')
+    const result = await this.execute(sql, [this.workspace, query.id, query.account], 'remove notification context')
 
     return result[0]?.id as ContextID | undefined
   }
 
-  async updateContext (context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
-    const update: DbModelUpdate<Domain.NotificationContext> = []
+  async updateContext (query: NotificationContextQuery, update: NotificationContextUpdate): Promise<void> {
+    const dbUpdate: DbModelUpdate<Domain.NotificationContext> = []
 
-    if (updates.lastView != null) {
-      update.push({
+    if (update.lastView != null) {
+      dbUpdate.push({
         column: 'last_view',
-        value: updates.lastView
+        value: update.lastView
       })
     }
-    if (updates.lastUpdate != null) {
-      update.push({
+    if (update.lastUpdate != null) {
+      dbUpdate.push({
         column: 'last_update',
-        value: updates.lastUpdate
+        value: update.lastUpdate
       })
     }
-    if (updates.lastNotify != null) {
-      update.push({
+    if (update.lastNotify != null) {
+      dbUpdate.push({
         column: 'last_notify',
-        value: updates.lastNotify
+        value: update.lastNotify
       })
     }
 
-    if (update.length === 0) return
+    if (dbUpdate.length === 0) return
 
     const filter: DbModelFilter<Domain.NotificationContext> = [
       {
         column: 'workspace_id',
         value: this.workspace
-      },
-      {
-        column: 'id',
-        value: context
-      },
-      {
-        column: 'account',
-        value: account
       }
     ]
 
-    const { sql, values } = this.getUpdateSql(Domain.NotificationContext, filter, update)
+    if (query.id != null) {
+      filter.push({ column: 'id', value: query.id })
+    }
+    if (query.account != null) {
+      filter.push({ column: 'account', value: query.account })
+    }
+
+    const { sql, values } = this.getUpdateSql(Domain.NotificationContext, filter, dbUpdate)
 
     await this.execute(sql, values, 'update notification context')
   }
 
   async findContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
     const withNotification = params.notifications != null
-    const withMessage = params.notifications?.message === true
     const withTotal = params.notifications?.total === true
     const notificationsLimit = params.notifications?.limit
     const notificationOrder = params.notifications?.order === SortingOrder.Ascending ? 'ASC' : 'DESC'
 
     const { where, values } = this.buildContextWhere(params)
-    const orderBy =
-      params.order != null ? `ORDER BY nc.last_notify ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
-    const limit = params.limit != null ? `LIMIT ${Number(params.limit)}` : ''
+    const orderBy = this.buildOrderBy(params.order, 'nc.last_notify')
+    const limit = this.buildLimit(params.limit)
 
     if (!withNotification) {
       const sql = `
@@ -366,75 +393,11 @@ export class NotificationsDb extends BaseDb {
     )`
       : ''
 
-    const patchesCte = `
-  , patches_json AS (
-      SELECT
-        p.workspace_id,
-        p.card_id,
-        p.message_id,
-        COALESCE(
-          JSON_AGG(
-            JSONB_BUILD_OBJECT(
-              'type',    p.type,
-              'data',    p.data,
-              'creator', p.creator,
-              'created', p.created
-            )
-          ), '[]'::jsonb
-        ) AS patches
-      FROM ${Domain.Patch} p
-      JOIN message_keys mk
-        ON mk.workspace_id = p.workspace_id
-       AND mk.card_id      = p.card_id
-       AND mk.message_id   = p.message_id
-      GROUP BY p.workspace_id, p.card_id, p.message_id
-    )
-  `
-
-    const attachCte = `
-  , attachments_json AS (
-      SELECT
-        a.workspace_id,
-        a.card_id,
-        a.message_id,
-        COALESCE(
-          JSON_AGG(
-            JSONB_BUILD_OBJECT(
-               'id',      a.id,
-                'type',    a.type,
-                'params',  a.params,
-                'creator', a.creator,
-                'created', a.created,
-                'modified',a.modified
-            )
-          ), '[]'::jsonb
-        ) AS attachments
-      FROM ${Domain.Attachment} a
-      JOIN message_keys mk
-        ON mk.workspace_id = a.workspace_id
-       AND mk.card_id      = a.card_id
-       AND mk.message_id   = a.message_id
-      GROUP BY a.workspace_id, a.card_id, a.message_id
-    )
-  `
-
-    const msgJoin = withMessage
-      ? `
-    LEFT JOIN ${Domain.Message} m
-           ON  m.workspace_id = nc.workspace_id
-           AND m.card_id      = nc.card_id
-           AND m.id           = n.message_id
-           AND n.message_id IS NOT NULL
-           AND n.blob_id   IS NULL`
-      : ''
-
     const sql = `
     ${contextsCte}
     ${notificationsCte}
     ${msgKeysCte}
     ${statsCte}
-    ${patchesCte}
-    ${attachCte}
     SELECT
       nc.id::text,
       nc.card_id,
@@ -452,19 +415,8 @@ export class NotificationsDb extends BaseDb {
             'content',          n.content,
             'created',          n.created,
             'blob_id',          n.blob_id,
-            'message_created',  n.message_created,
             'message_id',       n.message_id::text,
-            ${
-              withMessage
-                ? `
-            'message_type',     m.type,
-            'message_content',  m.content,
-            'message_data',     m.data,
-            'message_creator',  m.creator,`
-                : ''
-            }
-            'message_patches',          pj.patches,
-            'message_attachments',      aj.attachments
+            'creator',          n.creator
           )
           ORDER BY n.created ${notificationOrder}
         ), '[]'::jsonb
@@ -473,15 +425,6 @@ export class NotificationsDb extends BaseDb {
     ${withTotal ? 'LEFT JOIN stats s ON s.context_id = nc.id' : ''}
     LEFT JOIN last_notifs n
            ON n.context_id = nc.id
-    ${msgJoin}
-    LEFT JOIN patches_json    pj
-           ON pj.workspace_id = nc.workspace_id
-          AND pj.card_id      = nc.card_id
-          AND pj.message_id   = n.message_id
-    LEFT JOIN attachments_json aj
-           ON aj.workspace_id = nc.workspace_id
-          AND aj.card_id      = nc.card_id
-          AND aj.message_id   = n.message_id
     GROUP BY
       nc.id, nc.card_id, nc.account, nc.last_view, nc.last_update, nc.last_notify
     ${orderBy}
@@ -492,58 +435,17 @@ export class NotificationsDb extends BaseDb {
   }
 
   async findNotifications (params: FindNotificationsParams): Promise<WithTotal<Notification>> {
-    const withMessage = params.message === true
-
     let select =
-      'SELECT  n.id, n.created, n.read, n.message_id, n.message_created, n.type, n.content, n.context_id, nc.card_id, nc.account, nc.last_view '
-
-    let joinMessages = ''
-
-    if (withMessage) {
-      select += `,
-      m.type AS message_type,
-      m.content AS message_content,
-      m.creator AS message_creator,
-      m.data AS message_data,
-      (SELECT json_agg(
-        jsonb_build_object(
-          'type', p.type,
-          'data', p.data,
-          'creator', p.creator,
-          'created', p.created
-        )
-      )
-      FROM ${Domain.Patch} p
-      WHERE p.workspace_id = m.workspace_id AND p.card_id = m.card_id AND p.message_id = m.id) AS message_patches,
-      (SELECT json_agg(
-        jsonb_build_object(
-            'id', a.id,
-            'type', a.type,
-            'params', a.params,
-            'creator', a.creator,
-            'created', a.created,
-            'modified', a.modified
-        )
-      )
-      FROM ${Domain.Attachment} a
-      WHERE a.workspace_id = m.workspace_id AND a.card_id = m.card_id AND a.message_id = m.id) AS message_attachments
-    `
-      joinMessages = `
-      LEFT JOIN ${Domain.Message} m 
-        ON nc.workspace_id = m.workspace_id
-        AND nc.card_id = m.card_id
-        AND n.message_id = m.id `
-    }
+      'SELECT  n.id, n.created, n.read, n.message_id, n.blob_id, n.type, n.content, n.context_id, n.creator, nc.card_id, nc.account, nc.last_view '
 
     select += ` FROM ${Domain.Notification} n
     JOIN ${Domain.NotificationContext} nc  ON n.context_id = nc.id`
 
     const { where, values } = this.buildNotificationWhere(params)
-    const orderBy =
-      params.order != null ? `ORDER BY n.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
-    const limit = params.limit != null ? `LIMIT ${params.limit}` : ''
+    const orderBy = this.buildOrderBy(params.order, 'n.created')
+    const limit = this.buildLimit(params.limit)
 
-    const sql = [select, joinMessages, where, orderBy, limit].join(' ')
+    const sql = [select, where, orderBy, limit].join(' ')
 
     const result = await this.execute(sql, values, 'find notifications')
 
@@ -574,21 +476,21 @@ export class NotificationsDb extends BaseDb {
     return { sql, values }
   }
 
-  async updateCollaborators (params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
-    const update: Partial<DbModel<Domain.Collaborator>> = {
-      account: data.account,
-      card_id: data.cardId,
-      card_type: data.cardType
+  async updateCollaborators (query: CollaboratorQuery, update: CollaboratorUpdate): Promise<void> {
+    const dbUpdate: Partial<DbModel<Domain.Collaborator>> = {
+      account: update.account,
+      card_id: update.cardId,
+      card_type: update.cardType
     }
 
-    const entries = Object.entries(update).filter(([_, value]) => value != null)
+    const entries = Object.entries(dbUpdate).filter(([_, value]) => value != null)
     if (entries.length === 0) return
 
     entries.unshift(['workspace_id', this.workspace])
     const setClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
     const setValues = entries.map(([_, value]) => value)
 
-    const { where, values: whereValues } = this.buildCollaboratorsWhere(params, setValues.length, '')
+    const { where, values: whereValues } = this.buildCollaboratorsWhere(query, setValues.length, '')
 
     const sql = `UPDATE ${Domain.Collaborator}
              SET ${setClauses.join(', ')}
@@ -626,7 +528,7 @@ export class NotificationsDb extends BaseDb {
     where.push(`${prefix}workspace_id = $${index++}::uuid`)
     values.push(this.workspace)
     where.push(`${prefix}card_id = $${index++}::varchar`)
-    values.push(params.card)
+    values.push(params.cardId)
 
     if (params.account != null) {
       const accounts = Array.isArray(params.account) ? params.account : [params.account]
@@ -656,8 +558,8 @@ export class NotificationsDb extends BaseDb {
       values.push(params.id)
     }
 
-    if (params.card != null) {
-      const cards = Array.isArray(params.card) ? params.card : [params.card]
+    if (params.cardId != null) {
+      const cards = Array.isArray(params.cardId) ? params.cardId : [params.cardId]
       if (cards.length === 1) {
         where.push(`nc.card_id = $${index++}::varchar`)
         values.push(cards[0])
@@ -701,9 +603,9 @@ export class NotificationsDb extends BaseDb {
     const values: any[] = skipWorkspace === true ? [] : [this.workspace]
     let index = (initialIndex ?? 0) + values.length + 1
 
-    if (params.context != null) {
+    if (params.contextId != null) {
       where.push(`n.context_id = $${index++}::int8`)
-      values.push(params.context)
+      values.push(params.contextId)
     }
 
     if (params.account != null) {
@@ -717,9 +619,9 @@ export class NotificationsDb extends BaseDb {
       }
     }
 
-    if (params.card != null) {
+    if (params.cardId != null) {
       where.push(`nc.card_id = $${index++}::varchar`)
-      values.push(params.card)
+      values.push(params.cardId)
     }
 
     if (params.messageId != null) {
@@ -748,34 +650,5 @@ export class NotificationsDb extends BaseDb {
     }
 
     return { where: where.length > 0 ? `WHERE ${where.join(' AND ')}` : '', values }
-  }
-
-  public async updateNotificationsBlobId (cardId: CardID, blobId: string, from: Date, to: Date): Promise<void> {
-    const sql = `
-        UPDATE ${Domain.Notification} AS n
-        SET blob_id = $3::uuid
-        FROM ${Domain.NotificationContext} AS nc
-        WHERE
-            n.context_id = nc.id
-          AND nc.workspace_id = $1::uuid
-          AND nc.card_id      = $2::varchar
-          AND n.message_created BETWEEN $4::timestamptz AND $5::timestamptz
-          AND n.blob_id IS NULL
-    `
-    await this.execute(sql, [this.workspace, cardId, blobId, from, to])
-  }
-
-  public async removeNotificationsBlobId (cardId: CardID, blobId: string): Promise<void> {
-    const sql = `
-        UPDATE ${Domain.Notification} AS n
-        SET blob_id = NULL
-        FROM ${Domain.NotificationContext} AS nc
-        WHERE
-            n.context_id    = nc.id
-          AND nc.workspace_id = $1::uuid
-          AND nc.card_id      = $2::varchar
-          AND n.blob_id       = $3::uuid;
-    `
-    await this.execute(sql, [this.workspace, cardId, blobId])
   }
 }

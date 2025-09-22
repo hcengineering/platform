@@ -49,10 +49,10 @@ async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: UpdateCar
 }
 
 async function onCardTypeUpdates (ctx: TriggerCtx, event: Enriched<UpdateCardTypeEvent>): Promise<Event[]> {
-  await ctx.db.updateCollaborators({ card: event.cardId }, { cardType: event.cardType })
-  await ctx.db.updateLabels(event.cardId, { cardType: event.cardType })
+  await ctx.client.db.updateCollaborators({ cardId: event.cardId }, { cardType: event.cardType })
+  await ctx.client.db.updateLabels({ cardId: event.cardId }, { cardType: event.cardType })
 
-  const thread = (await ctx.db.findThreads({ threadId: event.cardId, limit: 1 }))[0]
+  const thread = (await ctx.client.db.findThreadMeta({ threadId: event.cardId, limit: 1 }))[0]
   if (thread === undefined) return []
 
   return [
@@ -63,7 +63,7 @@ async function onCardTypeUpdates (ctx: TriggerCtx, event: Enriched<UpdateCardTyp
       operation: {
         opcode: 'update',
         threadId: thread.threadId,
-        updates: {
+        update: {
           threadType: event.cardType
         }
       },
@@ -74,24 +74,24 @@ async function onCardTypeUpdates (ctx: TriggerCtx, event: Enriched<UpdateCardTyp
 }
 
 async function removeCardCollaborators (ctx: TriggerCtx, event: UpdateCardTypeEvent): Promise<Event[]> {
-  await ctx.db.removeCollaborators(event.cardId, [], true)
+  await ctx.client.db.removeCollaborators({ cardId: event.cardId })
   return []
 }
 
 async function removeCardLabels (ctx: TriggerCtx, event: UpdateCardTypeEvent): Promise<Event[]> {
-  await ctx.db.removeLabels({ cardId: event.cardId })
+  await ctx.client.db.removeLabels({ cardId: event.cardId })
   return []
 }
 
 async function removeCardThreads (ctx: TriggerCtx, event: RemoveCardEvent): Promise<Event[]> {
-  await ctx.db.removeThreads({ cardId: event.cardId })
-  await ctx.db.removeThreads({ threadId: event.cardId })
+  await ctx.client.db.removeThreadMeta({ cardId: event.cardId })
+  await ctx.client.db.removeThreadMeta({ threadId: event.cardId })
   return []
 }
 
 async function removeNotificationContexts (ctx: TriggerCtx, event: RemoveCardEvent): Promise<Event[]> {
   const result: Event[] = []
-  const contexts = await ctx.db.findNotificationContexts({ card: event.cardId })
+  const contexts = await ctx.client.db.findNotificationContexts({ cardId: event.cardId })
   for (const context of contexts) {
     result.push({
       type: NotificationEventType.RemoveNotificationContext,

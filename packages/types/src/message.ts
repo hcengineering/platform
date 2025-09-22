@@ -16,14 +16,14 @@
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
 import type { Card, Tag } from '@hcengineering/card'
 
-import type { AccountID, BlobID, CardID, CardType, ID, Markdown, SocialID } from './core'
-import { Patch } from './patch'
+import type { AccountUuid, BlobID, CardID, CardType, ID, Markdown, SocialID, PersonUuid } from './core'
 
 // Message
 export type MessageID = ID & { message: true }
+export type Emoji = string & { emoji: true }
 
 export enum MessageType {
-  Message = 'message',
+  Text = 'text',
   Activity = 'activity'
 }
 
@@ -32,19 +32,27 @@ export type MessageExtra = Record<string, any>
 export interface Message {
   id: MessageID
   cardId: CardID
+
   type: MessageType
   content: Markdown
   extra?: MessageExtra
+
   creator: SocialID
   created: Date
+  modified?: Date
 
-  removed: boolean
-  edited?: Date
-
-  reactions: Reaction[]
+  reactions: Record<Emoji, EmojiData[]>
   attachments: Attachment[]
-  thread?: Thread
+  threads: Thread[]
 }
+
+export interface EmojiData {
+  count: number
+  person: PersonUuid
+  date: Date
+}
+
+export type MessageMeta = Pick<Message, 'id' | 'cardId' | 'created' | 'creator'> & { blobId: BlobID }
 
 export interface ActivityMessage extends Message {
   type: MessageType.Activity
@@ -77,8 +85,8 @@ export interface ActivityTagUpdate {
 
 export interface ActivityCollaboratorsUpdate {
   type: ActivityUpdateType.Collaborators
-  added: AccountID[]
-  removed: AccountID[]
+  added: AccountUuid[]
+  removed: AccountUuid[]
 }
 
 export interface ActivityTypeUpdate {
@@ -96,13 +104,6 @@ export interface ActivityAttributeUpdate {
   set?: AttributeValue | AttributeValue[]
   added?: AttributeValue[]
   removed?: AttributeValue[]
-}
-
-// Reaction
-export interface Reaction {
-  reaction: string
-  creator: SocialID
-  created: Date
 }
 
 // LinkPreview
@@ -128,7 +129,6 @@ export interface LinkPreviewImage {
 
 export interface BlobParams {
   blobId: BlobID
-  mimeType: string
   fileName: string
   size: number
   metadata?: BlobMetadata
@@ -138,6 +138,7 @@ export interface BlobParams {
 export type AttachmentID = string & { __attachmentId: true }
 
 export type Attachment = BlobAttachment | LinkPreviewAttachment | AppletAttachment
+
 interface BaseAttachment<D extends AttachmentParams = AttachmentParams> extends AttachmentData<D> {
   creator: SocialID
   created: Date
@@ -145,7 +146,7 @@ interface BaseAttachment<D extends AttachmentParams = AttachmentParams> extends 
 }
 
 export interface LinkPreviewAttachment extends BaseAttachment<LinkPreviewParams> {
-  type: typeof linkPreviewType
+  mimeType: typeof linkPreviewType
 }
 
 export interface BlobAttachment extends BaseAttachment<BlobParams> {}
@@ -154,12 +155,12 @@ export type AppletParams = Record<string, any>
 export type AppletType = `application/vnd.huly.applet.${string}`
 
 export interface AppletAttachment<T extends AppletParams = AppletParams> extends BaseAttachment<T> {
-  type: AppletType
+  mimeType: AppletType
 }
 
 export interface AttachmentData<P extends AttachmentParams = AttachmentParams> {
   id: AttachmentID
-  type: string
+  mimeType: string
   params: P
 }
 
@@ -177,8 +178,11 @@ export interface Thread {
   threadId: CardID
   threadType: CardType
   repliesCount: number
-  lastReply: Date
+  lastReplyDate: Date | undefined
+  repliedPersons: Record<PersonUuid, number>
 }
+
+export type ThreadMeta = Pick<Thread, 'cardId' | 'messageId' | 'threadId' | 'threadType'>
 
 // MessagesGroup
 export interface MessagesGroup {
@@ -187,5 +191,4 @@ export interface MessagesGroup {
   fromDate: Date
   toDate: Date
   count: number
-  patches?: Patch[]
 }

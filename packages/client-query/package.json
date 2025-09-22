@@ -38,6 +38,7 @@
     "@hcengineering/communication-types": "^0.1.0",
     "@hcengineering/communication-sdk-types": "^0.1.0",
     "@hcengineering/communication-query": "^0.1.0",
+    "@hcengineering/hulylake-client": "^0.6.0",
     "fast-equals": "^5.2.2"
   },
   "repository": {

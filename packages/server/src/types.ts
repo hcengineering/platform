@@ -15,70 +15,57 @@
 
 import type { Account, MeasureContext } from '@hcengineering/core'
 import type {
-  DbAdapter,
   EventResult,
   Event,
   SessionData, EventType
 } from '@hcengineering/communication-sdk-types'
 import type {
-  AccountID,
   CardID,
   Collaborator,
-  ContextID,
   FindCollaboratorsParams,
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
+  FindLabelsParams, FindMessagesMetaParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   FindPeersParams,
-  FindThreadParams,
-  Label,
-  Message,
-  MessagesGroup,
+  Label, MessageMeta,
   Notification,
   NotificationContext,
   Peer,
-  SocialID, Thread,
-  WorkspaceID
+  WorkspaceUuid
 } from '@hcengineering/communication-types'
 
+import { LowLevelClient } from './client'
+
 export interface Metadata {
-  msg2fileUrl: string
   accountsUrl: string
-  filesUrl: string
-  secret?: string
+  hulylakeUrl: string
+  secret: string
+  messagesPerBlob: number
 }
 
-export type QueryId = string | number
+export type Subscription = string | number
 
 export interface Middleware {
-  findMessages: (session: SessionData, params: FindMessagesParams, queryId?: QueryId) => Promise<Message[]>
-  findMessagesGroups: (
-    session: SessionData,
-    params: FindMessagesGroupsParams,
-    queryId?: QueryId
-  ) => Promise<MessagesGroup[]>
-
+  findMessagesMeta: (session: SessionData, params: FindMessagesMetaParams) => Promise<MessageMeta[]>
   findNotificationContexts: (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ) => Promise<NotificationContext[]>
   findNotifications: (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ) => Promise<Notification[]>
 
-  findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
+  findLabels: (session: SessionData, params: FindLabelsParams, subscription?: Subscription) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
   findPeers: (session: SessionData, params: FindPeersParams) => Promise<Peer[]>
-  findThreads: (session: SessionData, params: FindThreadParams) => Promise<Thread[]>
 
   event: (session: SessionData, event: Enriched<Event>, derived: boolean) => Promise<EventResult>
 
-  unsubscribeQuery: (session: SessionData, queryId: number) => void
+  subscribeCard: (session: SessionData, cardId: CardID, subscription: Subscription) => void
+  unsubscribeCard: (session: SessionData, cardId: CardID, subscription: Subscription) => void
 
   handleBroadcast: (session: SessionData, events: Enriched<Event>[]) => void
 
@@ -88,11 +75,9 @@ export interface Middleware {
 
 export interface MiddlewareContext {
   ctx: MeasureContext
-  workspace: WorkspaceID
+  workspace: WorkspaceUuid
   metadata: Metadata
-  registeredCards: Set<CardID>
-  accountBySocialID: Map<SocialID, AccountID>
-  removedContexts: Map<ContextID, NotificationContext>
+  client: LowLevelClient
 
   cadsWithPeers: Set<CardID>
 
@@ -111,12 +96,9 @@ export interface CommunicationCallbacks {
 export interface TriggerCtx {
   ctx: MeasureContext
   metadata: Metadata
-  db: DbAdapter
-  workspace: WorkspaceID
+  client: LowLevelClient
+  workspace: WorkspaceUuid
   account: Account
-  registeredCards: Set<CardID>
-  accountBySocialID: Map<SocialID, AccountID>
-  removedContexts: Map<ContextID, NotificationContext>
   derived: boolean
   processedPeersEvents: Set<string>
   execute: (event: Event) => Promise<EventResult>
@@ -127,7 +109,8 @@ export type Triggers = [string, EventType, TriggerFn][]
 
 export type Enriched<T> = T & {
   _id: string
+  _eventExtra: Record<string, any>
+
   skipPropagate?: boolean
   date: Date
-  _eventExtra: Record<string, any>
 }

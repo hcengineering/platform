@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { type SessionData } from '@hcengineering/communication-sdk-types'
+import { type Event, EventResult, MessageEventType, type SessionData } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 import type {
-  AccountID,
+  AccountUuid,
   FindLabelsParams,
   FindNotificationContextParams,
   FindNotificationsParams,
@@ -25,7 +25,7 @@ import type {
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Enriched, Middleware, MiddlewareContext, Subscription } from '../types'
 import { BaseMiddleware } from './base'
 
 export class IdentityMiddleware extends BaseMiddleware implements Middleware {
@@ -36,30 +36,54 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
   }
 
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
+    switch (event.type) {
+      case MessageEventType.ThreadPatch:
+      case MessageEventType.ReactionPatch: {
+        const personUuid = await this.context.client.findPersonUuid(
+          {
+            ctx: this.context.ctx,
+            account: session.account
+          },
+          event.socialId
+        )
+        event.personUuid = personUuid
+        break
+      }
+      default:
+        break
+    }
+
+    return await this.provideEvent(session, event, derived)
+  }
+
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<NotificationContext[]> {
     const paramsWithAccount = this.enrichParamsWithAccount(session, params)
-    return await this.provideFindNotificationContexts(session, paramsWithAccount, queryId)
+    return await this.provideFindNotificationContexts(session, paramsWithAccount, subscription)
   }
 
   async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
-    queryId?: QueryId
+    subscription?: Subscription
   ): Promise<Notification[]> {
     const paramsWithAccount = this.enrichParamsWithAccount(session, params)
-    return await this.provideFindNotifications(session, paramsWithAccount, queryId)
+    return await this.provideFindNotifications(session, paramsWithAccount, subscription)
   }
 
-  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, subscription?: Subscription): Promise<Label[]> {
     const paramsWithAccount = this.enrichParamsWithAccount(session, params)
-    return await this.provideFindLabels(session, paramsWithAccount, queryId)
+    return await this.provideFindLabels(session, paramsWithAccount, subscription)
   }
 
-  private enrichParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(session: SessionData, params: T): T {
+  private enrichParamsWithAccount<T extends { account?: AccountUuid | AccountUuid[] }>(
+    session: SessionData,
+    params: T
+  ): T {
     const account = session.account
     const isSystem = account.uuid === systemAccountUuid
 

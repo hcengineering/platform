@@ -14,16 +14,13 @@
 //
 
 import {
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
+  BlobID,
+  FindMessagesParams,
   type Message,
   type MessageID,
   type MessagesGroup,
-  type ParsedFile,
-  type Patch,
-  PatchType,
-  SortingOrder,
-  type WorkspaceID
+  MessagesGroupsDoc,
+  SortingOrder
 } from '@hcengineering/communication-types'
 import {
   CardEventType,
@@ -37,91 +34,85 @@ import {
   PatchEvent,
   RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
-import { applyPatches, MessageProcessor } from '@hcengineering/communication-shared'
-import { loadGroupFile } from '@hcengineering/communication-yaml'
+import { MessageProcessor } from '@hcengineering/communication-shared'
 import { v4 as uuid } from 'uuid'
+import { HulylakeClient } from '@hcengineering/hulylake-client'
 
 import { QueryResult } from '../result'
 import {
   defaultQueryParams,
   Direction,
+  MessageQueryOptions,
   type MessageQueryParams,
   type OneMessageQueryParams,
   type PagedQuery,
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-
-const GROUPS_LIMIT = 4
+import { loadMessages } from '../utils'
 
 export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private result: Promise<QueryResult<Message>> | QueryResult<Message>
 
-  private groupsBuffer: MessagesGroup[] = []
+  private groups: MessagesGroup[] = []
+  private areGroupsLoaded = false
+  private groupsPromise: Promise<MessagesGroup[]> | undefined
 
-  private firstGroup?: MessagesGroup
-  private lastGroup?: MessagesGroup
-  private firstLoadedGroup?: MessagesGroup
-  private lastLoadedGroup?: MessagesGroup
-
-  private lastGroupsDirection?: Direction
-
-  private readonly limit: number
   private initialized = false
 
   nexLoadedPagesCount = 0
   prevLoadedPagesCount = 0
 
   private readonly next = {
-    hasMessages: true,
-    hasGroups: true,
-    buffer: [] as Message[]
+    done: false,
+    buffer: [] as Message[],
+    lastGroupIndex: -1
   }
 
   private readonly prev = {
-    hasMessages: true,
-    hasGroups: true,
-    buffer: [] as Message[]
+    done: false,
+    buffer: [] as Message[],
+    lastGroupIndex: -1
   }
-
-  private readonly createdPatches = new Map<MessageID, Patch[]>()
 
   private readonly tmpMessages = new Map<string, MessageID>()
   private isCardRemoved = false
 
   constructor (
     private readonly client: FindClient,
-    private readonly workspace: WorkspaceID,
-    private readonly filesUrl: string,
+    private readonly hulylake: HulylakeClient,
     public readonly id: QueryId,
     public readonly params: MessageQueryParams,
-    private callback?: PagedQueryCallback<Message>,
-    initialResult?: QueryResult<Message>
+    public readonly options: MessageQueryOptions | undefined,
+    private callback: PagedQueryCallback<Message> | undefined,
+    initialResult: QueryResult<Message> | undefined
   ) {
-    const baseLimit = 'id' in params && params.id != null ? 1 : this.params.limit ?? defaultQueryParams.limit
-    this.limit = baseLimit + 1
+    const limit = params.limit ?? defaultQueryParams.limit
     this.params = {
       ...params,
+      limit,
       order: params.order ?? defaultQueryParams.order
     }
+    void this.subscribe()
+
     if (initialResult !== undefined) {
       const messages = initialResult.getResult()
       const count = messages.length
 
-      if (count < this.limit) {
+      if (count < limit) {
         this.result = initialResult
-        this.initialized = true
       } else {
         if (this.params.order === SortingOrder.Ascending) {
-          this.result = new QueryResult(messages.slice(0, baseLimit), (x) => x.id)
-          this.result.setHead(true)
+          this.result = new QueryResult(messages.slice(0, limit), (x) => x.id)
+          this.result.setHead(this.params.from == null)
           this.result.setTail(false)
         } else {
-          this.result = new QueryResult(messages.slice(0, baseLimit), (x) => x.id)
+          this.result = new QueryResult(messages.slice(0, limit), (x) => x.id)
           this.result.setHead(false)
-          this.result.setTail(true)
+          this.result.setTail(this.params.from == null)
         }
       }
+
       this.initialized = true
       void this.notify()
     } else {
@@ -137,8 +128,94 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
+  private findGroupIndex (groups: MessagesGroup[], from: Date): number {
+    const match = groups.findIndex(
+      (it) => it.fromDate.getTime() <= from.getTime() && it.toDate.getTime() >= from.getTime()
+    )
+
+    if (match !== -1) return match
+    return groups.findIndex((it) => it.fromDate.getTime() >= from.getTime())
+  }
+
+  private async loadGroups (): Promise<void> {
+    if (this.areGroupsLoaded) return
+    if (this.groupsPromise instanceof Promise) {
+      await this.groupsPromise
+      this.groupsPromise = undefined
+      return
+    }
+
+    const promise = (async (): Promise<MessagesGroup[]> => {
+      try {
+        const res = await this.hulylake.getJson<MessagesGroupsDoc>(`${this.params.cardId}/messages/groups`, {
+          maxRetries: 3,
+          isRetryable: () => true,
+          delayStrategy: {
+            getDelay: () => 500
+          }
+        })
+        let groups = Object.values(res?.body ?? {})
+          .map((it) => ({
+            cardId: this.params.cardId,
+            count: it.count,
+            blobId: it.blobId,
+            fromDate: new Date(it.fromDate),
+            toDate: new Date(it.toDate)
+          }))
+          .sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
+
+        if (this.isOneMessageQuery(this.params)) {
+          const blobId =
+            this.params.blobId ??
+            (await this.client.findMessagesMeta({ cardId: this.params.cardId, id: this.params.id }))[0]?.blobId
+          if (blobId != null) {
+            groups = groups.filter((it) => it.blobId === blobId)
+          } else {
+            groups = []
+          }
+        }
+
+        this.prev.lastGroupIndex = groups.length
+        const from = this.params.from
+        const fromGroupIndex = from != null ? this.findGroupIndex(groups, from) : null
+
+        if (fromGroupIndex != null) {
+          if (this.params.order === SortingOrder.Ascending) {
+            this.next.lastGroupIndex = Math.max(-1, fromGroupIndex - 1)
+            this.prev.lastGroupIndex = Math.max(-1, fromGroupIndex)
+          } else {
+            this.next.lastGroupIndex = Math.max(-1, fromGroupIndex)
+            this.prev.lastGroupIndex = Math.max(-1, fromGroupIndex + 1)
+          }
+
+          if (fromGroupIndex === 0) {
+            if (this.params.order === SortingOrder.Ascending) {
+              this.prev.done = true
+            }
+          }
+
+          if (fromGroupIndex === -1) {
+            this.next.done = true
+            this.prev.lastGroupIndex = groups.length
+          }
+        }
+
+        this.areGroupsLoaded = true
+        return groups
+      } catch (e) {
+        console.error(e)
+      }
+
+      return []
+    })()
+
+    this.groupsPromise = promise
+    this.groups = await promise
+  }
+
   async onEvent (event: Event): Promise<void> {
     if (this.isCardRemoved) return
+
     switch (event.type) {
       case MessageEventType.CreateMessage: {
         await this.onMessageCreatedEvent(event)
@@ -161,24 +238,32 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   async onCardRemoved (event: RemoveCardEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card === event.cardId) {
+    if (this.params.cardId === event.cardId) {
       this.isCardRemoved = true
       this.result.deleteAll()
       this.result.setHead(true)
       this.result.setTail(true)
+      this.groups = []
       void this.notify()
       return
     }
 
-    if (this.params.replies === true) {
+    if (this.options?.threads === true) {
       const result = this.result.getResult()
+      let isUpdated = false
       for (const message of result) {
-        if (message.thread != null && message.thread.threadId === event.cardId) {
+        if (message.threads.length > 0 && message.threads.some((it) => it.threadId === event.cardId)) {
           this.result.update({
             ...message,
-            thread: undefined
+            threads: message.threads.filter((it) => it.threadId !== event.cardId)
           })
+
+          isUpdated = true
         }
+      }
+
+      if (isUpdated) {
+        void this.notify()
       }
     }
   }
@@ -194,14 +279,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   async onCreateMessageRequest (event: CreateMessageEvent, promise: Promise<CreateMessageResult>): Promise<void> {
-    if (this.params.card !== event.cardId) return
-    if (this.params.strict === true) return
+    if (this.params.cardId !== event.cardId) return
+    if (this.options?.autoExpand !== true) return
+
     const eventId = event._id
-    if (eventId == null || event.socialId == null) return
+    if (eventId == null) return
 
     const tmpId = event.messageId ?? (uuid() as MessageID)
+    const tmpMessage = MessageProcessor.create(event, tmpId)
+
     let resultId: MessageID | undefined
-    const tmpMessage = MessageProcessor.createFromEvent(event, tmpId)
 
     if (!this.match(tmpMessage)) return
 
@@ -217,9 +304,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
             await this.notify()
           }
         } else {
-          const updatedMessage = this.patchMessage({ ...tmpMessage, id: resultId })
+          const updatedMessage = { ...tmpMessage, id: resultId }
           this.result.delete(tmpId)
-
           this.insertMessage(this.result, updatedMessage)
 
           void this.notify()
@@ -250,8 +336,12 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
+  async subscribe (): Promise<void> {
+    await this.client.subscribeCard(this.params.cardId, this.id)
+  }
+
   async unsubscribe (): Promise<void> {
-    await this.client.unsubscribeQuery(this.id)
+    await this.client.unsubscribeCard(this.params.cardId, this.id)
   }
 
   async requestLoadNextPage (notify = true): Promise<{ isDone: boolean }> {
@@ -265,6 +355,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.result = pagePromise
 
     const r = await pagePromise
+
     if (notify) {
       await this.notify()
     }
@@ -315,25 +406,27 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async loadPage (direction: Direction, result: QueryResult<Message>): Promise<QueryResult<Message>> {
-    const { messages, fromDb } =
+    if (!this.areGroupsLoaded) {
+      await this.loadGroups()
+    }
+
+    const limit = this.getLimit()
+    const messages =
       direction === Direction.Forward ? await this.loadNextMessages(result) : await this.loadPrevMessages(result)
 
     if (!result.isHead() && direction === Direction.Backward) {
-      result.setHead(messages.length < this.limit)
+      result.setHead(messages.length < limit)
     }
     if (!result.isTail() && direction === Direction.Forward) {
-      result.setTail(messages.length < this.limit)
+      result.setTail(messages.length < limit)
     }
 
-    if (messages.length === this.limit && this.limit > 1) {
-      const lastMessage = messages.pop()
-      if (lastMessage != null && !fromDb) {
-        if (direction === Direction.Forward) {
-          this.next.buffer.unshift(lastMessage)
-        } else {
-          this.prev.buffer.push(lastMessage)
-        }
-      }
+    if (this.next.done && this.next.buffer.length === 0) {
+      result.setTail(true)
+    }
+
+    if (this.prev.done && this.prev.buffer.length === 0) {
+      result.setHead(true)
     }
 
     if (this.params.order === SortingOrder.Ascending && direction === Direction.Backward) {
@@ -347,363 +440,174 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return result
   }
 
-  // Load next
-  private async loadNextMessages (result: QueryResult<Message>): Promise<{ messages: Message[], fromDb: boolean }> {
-    const messages: Message[] = this.next.buffer.splice(0, this.limit)
-    if (messages.length >= this.limit) return { messages, fromDb: false }
-
-    while (this.next.hasGroups || this.groupsBuffer.length > 0) {
-      await this.loadGroups(Direction.Forward, result)
-
-      messages.push(...this.next.buffer.splice(0, this.limit - messages.length))
-
-      if (messages.length >= this.limit) return { messages, fromDb: false }
-    }
-
-    const dbMessages = await this.findNextMessages(this.limit - messages.length, result)
-    this.next.hasMessages = dbMessages.length > 0
-    messages.push(...dbMessages)
-    return { messages, fromDb: dbMessages.length > 0 }
+  private getLimit (): number {
+    return this.params.limit ?? defaultQueryParams.limit
   }
 
-  private async findNextMessages (limit: number, result: QueryResult<Message>): Promise<Message[]> {
-    if (this.next.hasGroups) {
-      return []
+  // Load next
+  private async loadNextMessages (result: QueryResult<Message>): Promise<Message[]> {
+    const limit = this.getLimit()
+    const messages: Message[] = this.next.buffer.splice(0, limit)
+    if (messages.length >= limit) return messages
+
+    while (!this.next.done) {
+      await this.fillMessagesBuffer(Direction.Forward, result)
+
+      const restLimit = limit - messages.length
+      if (restLimit <= 0) break
+
+      const fromBuffer = this.next.buffer.splice(0, restLimit)
+      messages.push(...fromBuffer)
+
+      if (messages.length >= limit) return messages
     }
 
-    if (result.isTail()) return []
-
-    const last = this.params.order === SortingOrder.Ascending ? result.getLast() : result.getFirst()
-
-    return await this.find({
-      ...this.params,
-      created:
-        last != null
-          ? {
-              greater: last.created
-            }
-          : this.params.from != null
-            ? { greaterOrEqual: this.params.from }
-            : undefined,
-      limit,
-      order: SortingOrder.Ascending
-    })
+    return messages
   }
 
   // Load prev
-  private async loadPrevMessages (
-    result: QueryResult<Message>
-  ): Promise<{ messages: Message[], fromDb: boolean, hasNext?: boolean }> {
-    const messages: Message[] = []
-    const prevBuffer = this.prev.buffer
-    const last = prevBuffer[prevBuffer.length - 1]
+  private async loadPrevMessages (result: QueryResult<Message>): Promise<Message[]> {
+    const limit = this.getLimit()
+    const messages: Message[] = this.prev.buffer.splice(-limit).reverse()
 
-    let fromDb = false
+    if (messages.length >= limit) return messages
+    while (!this.prev.done) {
+      await this.fillMessagesBuffer(Direction.Backward, result)
 
-    if (this.prev.hasMessages) {
-      const prevMessages = await this.findPrevMessages(this.limit, result)
-      const first = prevMessages[0]
-      this.prev.hasMessages = prevMessages.length > 0
+      const restLimit = limit - messages.length
+      if (restLimit <= 0) break
 
-      if (last == null) {
-        messages.push(...prevMessages)
-        fromDb = true
-      } else if (first != null && first.created < last.created) {
-        messages.push(...prevMessages)
-        fromDb = true
-      } else {
-        const toPush = this.prev.buffer.splice(-this.limit).reverse()
-        messages.push(...toPush)
-      }
+      const fromBuffer = this.prev.buffer.splice(-restLimit).reverse()
+      messages.push(...fromBuffer)
+
+      if (messages.length >= limit) return messages
     }
 
-    if (messages.length >= this.limit) return { messages, fromDb }
-
-    const restLimit = this.limit - messages.length
-    const fromBuffer = this.prev.buffer.splice(-restLimit).reverse()
-    messages.push(...fromBuffer)
-
-    if (messages.length >= this.limit) return { messages, fromDb: false }
-    while (this.prev.hasGroups || this.groupsBuffer.length > 0) {
-      await this.loadGroups(Direction.Backward, result)
-
-      const rest = this.limit - messages.length
-      const fromBuffer2 = this.prev.buffer.splice(-rest).reverse()
-
-      messages.push(...fromBuffer2)
-      if (messages.length >= this.limit) return { messages, fromDb: false }
-    }
-
-    return { messages, fromDb: false }
+    return messages
   }
 
-  private async findPrevMessages (limit: number, result: QueryResult<Message>): Promise<Message[]> {
-    if (!this.prev.hasMessages || result.isHead()) return []
+  private getNextGroupsToLoad (last: Message | undefined): MessagesGroup[] {
+    const limit = this.getLimit()
+    const groupsToLoad: MessagesGroup[] = []
 
-    const first = this.params.order === SortingOrder.Ascending ? result.getFirst() : result.getLast()
+    let count = 0
+    let i = this.next.lastGroupIndex + 1
 
-    return await this.find({
-      ...this.params,
-      created:
-        first != null
-          ? {
-              less: first?.created
-            }
-          : this.params.from != null
-            ? { lessOrEqual: this.params.from }
-            : undefined,
-      limit,
-      order: SortingOrder.Descending
-    })
+    if (i >= this.groups.length) {
+      this.next.done = true
+      return groupsToLoad
+    }
+
+    for (; i < this.groups.length; i++) {
+      if (count >= limit) break
+      const group = this.groups[i]
+      if (last != null && group.toDate.getTime() < last.created.getTime()) continue
+
+      groupsToLoad.push(group)
+      count += group.count
+    }
+
+    this.next.lastGroupIndex = i - 1
+    this.next.done = this.next.lastGroupIndex >= this.groups.length - 1
+
+    return groupsToLoad
   }
 
-  getLoadGroupsParams (direction: Direction): Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'> | undefined {
-    if (direction === Direction.Forward) {
-      if (this.lastGroup != null) {
-        return {
-          fromDate: {
-            greater: this.lastGroup.fromDate
-          }
-        }
-      }
+  private getPrevGroupsToLoad (first: Message | undefined): MessagesGroup[] {
+    const limit = this.getLimit()
+    let count = 0
 
-      if (this.params.from instanceof Date) {
-        return {
-          toDate: {
-            greaterOrEqual: this.params.from
-          }
-        }
-      }
+    const groupsToLoad: MessagesGroup[] = []
+    let i = this.prev.lastGroupIndex - 1
+
+    if (i < 0) {
+      this.prev.done = true
+      return groupsToLoad
     }
 
-    if (direction === Direction.Backward) {
-      if (this.firstGroup != null) {
-        return {
-          fromDate: {
-            less: this.firstGroup.fromDate
-          }
-        }
-      }
+    for (; i >= 0; i--) {
+      if (count >= limit) break
+      const group = this.groups[i]
+      if (first != null && group.fromDate.getTime() > first.created.getTime()) continue
 
-      if (this.params.from instanceof Date) {
-        return {
-          fromDate: {
-            lessOrEqual: this.params.from
-          }
-        }
-      }
+      groupsToLoad.push(group)
+      count += group.count
     }
 
-    return undefined
+    this.prev.lastGroupIndex = i + 1
+    this.prev.done = this.prev.lastGroupIndex <= 0
+
+    return groupsToLoad
   }
 
-  private async loadGroups (direction: Direction, result: QueryResult<Message>): Promise<void> {
-    let messagesCount = 0
-    const lastResult = result.getLast()
-    const toLoad: MessagesGroup[] = []
-    const toBuffer: MessagesGroup[] = []
+  private async fillMessagesBuffer (direction: Direction, result: QueryResult<Message>): Promise<void> {
+    const groups =
+      direction === Direction.Forward
+        ? this.getNextGroupsToLoad(result.getLast())
+        : this.getPrevGroupsToLoad(result.getFirst()).reverse()
 
-    while (messagesCount < this.limit) {
-      if (this.lastGroupsDirection !== direction && this.groupsBuffer.length > 0) {
-        this.groupsBuffer.length = 0
-        this.lastGroup = this.lastLoadedGroup
-        this.firstGroup = this.firstLoadedGroup
-
-        if (this.lastGroupsDirection === Direction.Backward) {
-          this.prev.hasGroups = true
-        } else if (this.lastGroupsDirection === Direction.Forward) {
-          this.next.hasGroups = true
-        }
-      }
-      this.lastGroupsDirection = direction
-      const currentGroups = this.groupsBuffer.splice(direction === Direction.Forward ? 0 : -GROUPS_LIMIT, GROUPS_LIMIT)
-      const hasGroups = direction === Direction.Forward ? this.next.hasGroups : this.prev.hasGroups
-      if (currentGroups.length === 0 && !hasGroups) break
-
-      const groups =
-        currentGroups.length > 0 ? currentGroups : await this.findGroups(direction, this.getLoadGroupsParams(direction))
-
-      if (currentGroups.length === 0) {
-        this.firstGroup = direction === Direction.Forward ? this.firstGroup ?? groups[0] : groups[groups.length - 1]
-        this.lastGroup =
-          direction === Direction.Forward ? groups[groups.length - 1] ?? this.lastGroup : this.lastGroup ?? groups[0]
-
-        if (direction === Direction.Forward) {
-          this.next.hasGroups = groups.length >= GROUPS_LIMIT
-        } else {
-          this.prev.hasGroups = groups.length >= GROUPS_LIMIT
-        }
-        if (this.isOneMessageQuery(this.params)) {
-          this.next.hasGroups = false
-          this.prev.hasGroups = false
-        }
-      }
-
-      const orderedGroups = direction === Direction.Forward ? groups : groups.reverse()
-
-      while (messagesCount < this.limit && orderedGroups.length > 0) {
-        const group = direction === Direction.Forward ? orderedGroups.shift() : orderedGroups.pop()
-        if (group == null) break
-        toLoad.push(group)
-        messagesCount += group.count
-      }
-
-      this.firstLoadedGroup =
-        direction === Direction.Forward ? this.firstLoadedGroup ?? toLoad[0] : toLoad[toLoad.length - 1]
-      this.lastLoadedGroup =
-        direction === Direction.Forward
-          ? toLoad[toLoad.length - 1] ?? this.lastLoadedGroup
-          : this.lastLoadedGroup ?? toLoad[0]
-
-      while (orderedGroups.length > 0) {
-        const group = direction === Direction.Forward ? orderedGroups.shift() : orderedGroups.pop()
-        if (group == null) break
-        toBuffer.push(group)
-        messagesCount += group.count
-      }
-    }
+    const messages = await Promise.all(groups.map((group) => this.loadMessagesFromBlob(group.blobId)))
+    const matched = this.matchMessages(
+      messages.flat(),
+      direction,
+      this.params.order === SortingOrder.Ascending ? result.getFirst() : result.getLast()
+    )
 
     if (direction === Direction.Forward) {
-      this.groupsBuffer.push(...toBuffer)
+      this.next.buffer.push(...matched.next)
+      this.prev.buffer.push(...matched.prev)
     } else {
-      this.groupsBuffer.unshift(...toBuffer)
-    }
-
-    const parsedFiles = await Promise.all(toLoad.map((group) => this.loadMessagesFromFiles(group)))
-
-    for (const file of parsedFiles) {
-      if (file.messages.length === 0) continue
-      if (direction === Direction.Forward) {
-        const firstInFile = file.messages[0]
-        const queryDate =
-          lastResult != null && firstInFile.created < lastResult?.created ? lastResult?.created : undefined
-        const { next, prev } = this.matchFileMessages(file, direction, result, queryDate)
-        this.next.buffer.push(...next)
-        this.prev.buffer.push(...prev)
-      } else {
-        const lastInFile = file.messages[file.messages.length - 1]
-        const queryDate =
-          lastResult != null && lastInFile.created > lastResult?.created ? lastResult?.created : undefined
-        const matched = this.matchFileMessages(file, direction, result, queryDate)
-        this.prev.buffer.unshift(...matched.prev)
-        this.next.buffer.push(...matched.next)
-      }
+      this.prev.buffer.unshift(...matched.prev)
+      this.next.buffer.push(...matched.next)
     }
   }
 
-  private matchFileMessages (
-    file: ParsedFile,
+  private matchMessages (
+    messages: Message[],
     direction: Direction,
-    queryResult: QueryResult<Message>,
-    filterDate?: Date
-  ): { next: Message[], prev: Message[] } {
-    let result: Message[] = file.messages
+    currentFirst?: Message
+  ): {
+      prev: Message[]
+      next: Message[]
+    } {
     const params = this.params
-    if (this.isOneMessageQuery(params)) {
-      const msg = file.messages.find((it) => it.id === params.id)
-      result = msg != null ? [msg] : []
-    }
+    const _messages: Message[] = this.isOneMessageQuery(params)
+      ? [messages.find((it) => it.id === params.id)].filter((it): it is Message => it != null)
+      : messages
 
-    if (filterDate != null) {
-      result =
-        this.params.order === SortingOrder.Ascending
-          ? result.filter((it) => it.created > filterDate)
-          : result.filter((it) => it.created < filterDate)
-    }
+    let prev: Message[] = []
+    let next: Message[] = []
 
-    let prevResult: Message[] = []
-    let nextResult: Message[] = []
     const from = this.initialized ? undefined : this.params.from
+    const lastMessage = _messages[_messages.length - 1]
 
-    const firstFromQueryResult =
-      params.order === SortingOrder.Ascending ? queryResult.getFirst() : queryResult.getLast()
-    const lastFromFile = result[result.length - 1]
     if (from instanceof Date) {
-      for (const message of result) {
+      for (const message of _messages) {
         const isNext = params.order === SortingOrder.Ascending ? message.created >= from : message.created > from
 
         if (isNext) {
-          nextResult.push(message)
+          next.push(message)
         } else {
-          prevResult.push(message)
+          prev.push(message)
         }
       }
     } else if (
       direction === Direction.Backward &&
-      (firstFromQueryResult == null || lastFromFile.created < firstFromQueryResult.created)
+      (currentFirst == null || lastMessage.created < currentFirst.created)
     ) {
-      prevResult = result
+      prev = _messages
     } else {
-      nextResult = result
+      next = _messages
     }
 
-    return { next: nextResult, prev: prevResult }
+    return { next, prev }
   }
 
-  private async loadMessagesFromFiles (group: MessagesGroup): Promise<ParsedFile> {
-    const parsedFile = await loadGroupFile(this.workspace, this.filesUrl, group.blobId, { retries: 5 })
-    const patches = group.patches ?? []
-
-    const patchesMap = new Map<MessageID, Patch[]>()
-    for (const patch of patches) {
-      patchesMap.set(patch.messageId, [...(patchesMap.get(patch.messageId) ?? []), patch])
-    }
-
-    return {
-      ...parsedFile,
-      messages:
-        patches.length > 0
-          ? parsedFile.messages.map((message) =>
-            applyPatches(message, patchesMap.get(message.id) ?? [], this.allowedPatches())
-          )
-          : parsedFile.messages
-    }
-  }
-
-  private async findGroupByDate (params: Date): Promise<MessagesGroup | undefined> {
-    const groups = await this.client.findMessagesGroups({
-      card: this.params.card,
-      fromDate: { lessOrEqual: params },
-      toDate: { greaterOrEqual: params },
-      limit: 1,
-      order: SortingOrder.Ascending,
-      orderBy: 'fromDate'
-    })
-
-    return groups[0]
-  }
-
-  private async findGroups (
-    direction: Direction,
-    date?: Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'>
-  ): Promise<MessagesGroup[]> {
-    if (this.isOneMessageQuery(this.params)) {
-      const group = await this.findGroupByDate(this.params.created)
-      return group !== undefined ? [group] : []
-    }
-
-    if (date == null) {
-      return await this.client.findMessagesGroups({
-        card: this.params.card,
-        limit: GROUPS_LIMIT,
-        order: direction === Direction.Forward ? SortingOrder.Ascending : SortingOrder.Descending,
-        orderBy: 'fromDate'
-      })
-    }
-
-    return await this.client.findMessagesGroups({
-      card: this.params.card,
-      limit: GROUPS_LIMIT,
-      order: direction === Direction.Forward ? SortingOrder.Ascending : SortingOrder.Descending,
-      orderBy: 'fromDate',
-      ...date
-    })
-  }
-
-  private async find (params: FindMessagesParams): Promise<Message[]> {
-    delete (params as any).from
-    delete (params as any).strict
-    return await this.client.findMessages(params, this.id)
+  private async loadMessagesFromBlob (blobId: BlobID): Promise<Message[]> {
+    const params: FindMessagesParams = this.isOneMessageQuery(this.params)
+      ? { cardId: this.params.cardId, id: this.params.id, order: SortingOrder.Ascending }
+      : { cardId: this.params.cardId, order: SortingOrder.Ascending }
+    return await loadMessages(this.hulylake, this.params.cardId, blobId, params, this.options)
   }
 
   private isOneMessageQuery (params: MessageQueryParams): params is OneMessageQueryParams {
@@ -719,153 +623,145 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private match (message: Message): boolean {
+    if (this.params.cardId !== message.cardId) {
+      return false
+    }
+
     if (this.isOneMessageQuery(this.params) && this.params.id !== message.id) {
       return false
     }
-    if (this.params.card !== message.cardId) {
-      return false
-    }
+
     return true
   }
 
-  private patchMessage (origin: Message): Message {
-    let message = origin
-    const patches = this.createdPatches.get(message.id) ?? []
-    message = applyPatches(message, patches, this.allowedPatches())
-    return message
+  private resort (result: QueryResult<Message>): void {
+    result.sort((a, b) =>
+      this.params.order === SortingOrder.Ascending
+        ? a.created.getTime() - b.created.getTime()
+        : b.created.getTime() - a.created.getTime()
+    )
   }
 
   private async onMessageCreatedEvent (event: CreateMessageEvent): Promise<void> {
-    if (this.params.card !== event.cardId || event.messageId == null) return
+    if (this.params.cardId !== event.cardId || event.messageId == null) return
     if (this.result instanceof Promise) this.result = await this.result
 
-    let message = MessageProcessor.createFromEvent(event)
+    const limit = this.getLimit()
+    const count = this.result.length
+
+    const message = MessageProcessor.create(event)
     const exists = this.result.get(message.id)
 
-    if (exists !== undefined) {
-      this.cleanCache(message.id)
-      return
-    }
+    if (exists !== undefined) return
     if (!this.match(message)) return
 
-    message = this.patchMessage(message)
+    const autoExpand = this.options?.autoExpand ?? false
+    const last = this.params.order === SortingOrder.Ascending ? this.result.getLast() : this.result.getFirst()
 
-    if (this.params.strict === true && this.params.limit != null && this.result.length >= this.params.limit) {
+    const fromTail = message.created.getTime() >= (last?.created.getTime() ?? 0)
+
+    if (!autoExpand) {
       this.result.unshift(message)
-      this.result.sort((a, b) =>
-        this.params.order === SortingOrder.Ascending
-          ? a.created.getTime() - b.created.getTime()
-          : b.created.getTime() - a.created.getTime()
-      )
-      if (this.params.order === SortingOrder.Descending && this.result.length > this.params.limit) {
+      this.resort(this.result)
+      if (count >= limit && this.params.order === SortingOrder.Descending) {
         this.result.pop()
-      } else if (this.params.order === SortingOrder.Ascending && this.result.length > this.params.limit) {
+      } else if (count >= limit && this.params.order === SortingOrder.Ascending) {
         this.result.shift()
       }
 
       await this.notify()
-
       return
     }
 
-    if (this.result.isTail()) {
-      const eventId = event._id
-      if (eventId != null) {
-        const tmp = this.tmpMessages.get(eventId)
-        if (tmp != null) this.result.delete(tmp)
-        this.tmpMessages.delete(eventId)
-      }
-      const lastMessage = this.result.getLast()
-      const firstMessage = this.result.getFirst()
+    const eventId = event._id
 
-      function shouldResort (order: SortingOrder): boolean {
-        if (firstMessage == null || lastMessage == null) return false
-        if (order === SortingOrder.Ascending) {
-          return lastMessage.created > message.created
-        }
-        return firstMessage.created > message.created
-      }
-      if (this.params.order === SortingOrder.Ascending) {
-        if (message.created.getTime() > (firstMessage?.created?.getTime() ?? 0) || this.result.length < this.limit) {
-          this.result.push(message)
-        } else {
-          this.result.setHead(false)
-        }
-      } else {
-        if (message.created.getTime() >= (lastMessage?.created?.getTime() ?? 0) || this.result.length < this.limit) {
-          this.result.unshift(message)
-        } else {
-          this.result.setHead(false)
-        }
-      }
-
-      if (shouldResort(this.params.order ?? SortingOrder.Ascending)) {
-        this.result.sort((a, b) =>
-          this.params.order === SortingOrder.Ascending
-            ? a.created.getTime() - b.created.getTime()
-            : b.created.getTime() - a.created.getTime()
-        )
-      }
-      void this.notify()
+    if (eventId != null) {
+      const tmp = this.tmpMessages.get(eventId)
+      if (tmp != null) this.result.delete(tmp)
+      this.tmpMessages.delete(eventId)
     }
-    this.cleanCache(message.id)
-  }
 
-  private cleanCache (message: MessageID): void {
-    this.createdPatches.delete(message)
+    if (this.result.isTail() && fromTail) {
+      if (this.params.order === SortingOrder.Ascending) {
+        this.result.push(message)
+      } else {
+        this.result.unshift(message)
+      }
+      await this.notify()
+    } else if (!fromTail) {
+      this.result.push(message)
+      this.resort(this.result)
+
+      if (!this.result.isTail() && this.params.order === SortingOrder.Descending) {
+        this.result.pop()
+      } else if (!this.result.isTail() && this.params.order === SortingOrder.Ascending) {
+        this.result.shift()
+      }
+
+      await this.notify()
+    }
   }
 
   private async onPatchEvent (event: PatchEvent): Promise<void> {
-    if (this.params.card !== event.cardId) return
-    const allowedPatches = this.allowedPatches()
-    const eventPatches = MessageProcessor.eventToPatches(event).filter((it) => allowedPatches.includes(it.type))
+    if (this.params.cardId !== event.cardId) return
 
-    if (eventPatches.length === 0) return
+    const allowedPatchEvents = this.allowedPatchEvents()
+    if (!allowedPatchEvents.includes(event.type)) return
 
     if (this.result instanceof Promise) this.result = await this.result
 
     const { messageId } = event
 
     const message = this.result.get(messageId)
+    const count = this.result.length
+    const limit = this.getLimit()
 
     if (message !== undefined) {
-      const updatedMessage = applyPatches(message, eventPatches, this.allowedPatches())
+      const updatedMessage = MessageProcessor.applyPatch(message, event)
 
-      this.result.update(updatedMessage)
+      if (updatedMessage != null) {
+        this.result.update(updatedMessage)
+      } else {
+        this.result.delete(messageId)
+
+        if (this.options?.autoExpand !== true && count === limit) {
+          await this.refresh()
+          return
+        }
+      }
       await this.notify()
     } else {
-      const currentPatches = this.createdPatches.get(messageId) ?? []
-      const patches = currentPatches.concat(eventPatches)
-      this.createdPatches.set(messageId, patches)
-
-      this.next.buffer = this.next.buffer.map((it) => {
-        if (it.id === event.messageId) {
-          this.createdPatches.delete(messageId)
-          return applyPatches(it, eventPatches, this.allowedPatches())
-        }
-        return it
-      })
-      this.prev.buffer = this.next.buffer.map((it) => {
-        if (it.id === event.messageId) {
-          this.createdPatches.delete(messageId)
-          return applyPatches(it, eventPatches, this.allowedPatches())
-        }
-        return it
-      })
+      this.next.buffer = this.next.buffer
+        .map((it) => {
+          if (it.id === event.messageId) {
+            return MessageProcessor.applyPatch(it, event)
+          }
+          return it
+        })
+        .filter((it): it is Message => it != null)
+      this.prev.buffer = this.next.buffer
+        .map((it) => {
+          if (it.id === event.messageId) {
+            return MessageProcessor.applyPatch(it, event)
+          }
+          return it
+        })
+        .filter((it): it is Message => it != null)
     }
   }
 
-  private allowedPatches (): PatchType[] {
-    const result = [PatchType.update, PatchType.remove]
+  private allowedPatchEvents (): MessageEventType[] {
+    const result = [MessageEventType.UpdatePatch, MessageEventType.RemovePatch]
 
-    if (this.params.reactions === true) {
-      result.push(PatchType.reaction)
+    if (this.options?.reactions === true) {
+      result.push(MessageEventType.ReactionPatch)
     }
-    if (this.params.attachments === true) {
-      result.push(PatchType.attachment)
+    if (this.options?.attachments === true) {
+      result.push(MessageEventType.AttachmentPatch)
+      result.push(MessageEventType.BlobPatch)
     }
-    if (this.params.replies === true) {
-      result.push(PatchType.thread)
+    if (this.options?.threads === true) {
+      result.push(MessageEventType.ThreadPatch)
     }
 
     return result
@@ -875,26 +771,20 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     const nextPagesCount = this.nexLoadedPagesCount
     const prevPagesCount = this.prevLoadedPagesCount
 
+    this.areGroupsLoaded = false
+    this.groups = []
+    this.groupsPromise = undefined
+
     this.nexLoadedPagesCount = 0
     this.prevLoadedPagesCount = 0
 
-    this.groupsBuffer = []
-    this.firstGroup = undefined
-    this.lastGroup = undefined
-
-    this.firstLoadedGroup = undefined
-    this.lastLoadedGroup = undefined
-
-    this.lastGroupsDirection = undefined
-
-    this.next.hasMessages = true
-    this.next.hasGroups = true
+    this.next.done = false
     this.next.buffer = []
-    this.prev.hasMessages = true
-    this.prev.hasGroups = true
+    this.prev.lastGroupIndex = -1
+    this.prev.done = false
     this.prev.buffer = []
+    this.prev.lastGroupIndex = -1
 
-    this.createdPatches.clear()
     this.tmpMessages.clear()
 
     this.result = new QueryResult([] as Message[], (x) => x.id)

@@ -17,10 +17,11 @@ import { EventResult, Event } from '@hcengineering/communication-sdk-types'
 import {
   SortingOrder,
   type Window,
-  type ComparisonOperator,
   type CardID,
   type MessageID,
-  FindNotificationsParams
+  FindNotificationsParams,
+  FindMessagesOptions,
+  BlobID
 } from '@hcengineering/communication-types'
 
 import { QueryResult } from './result'
@@ -33,15 +34,17 @@ export const defaultQueryParams = {
 }
 
 export enum Direction {
-  Forward = 1,
-  Backward = -1
+  Forward = 'forward',
+  Backward = 'backward'
 }
 
 export type FindParams = Partial<typeof defaultQueryParams>
+export type QueryOptions = Record<string, any>
 
 interface BaseQuery<R = any, P = FindParams> {
   readonly id: QueryId
   readonly params: P
+  readonly options: QueryOptions | undefined
 
   onEvent: (event: Event) => Promise<void>
   onRequest: (event: Event, promise: Promise<EventResult>) => Promise<void>
@@ -56,8 +59,6 @@ interface BaseQuery<R = any, P = FindParams> {
 }
 
 export interface PagedQuery<R = any, P = FindParams> extends BaseQuery<R, P> {
-  readonly id: QueryId
-  readonly params: P
   nexLoadedPagesCount: number
   prevLoadedPagesCount: number
 
@@ -72,40 +73,26 @@ export interface Query<R = any, P = FindParams> extends BaseQuery<R, P> {
 
 export type AnyQuery = Query | PagedQuery
 
-export interface DefaultMessageQueryParams {
-  card: CardID
-
-  limit?: number
-  order?: SortingOrder
-
-  files?: boolean
-  reactions?: boolean
-  replies?: boolean
-  created?: Partial<Record<ComparisonOperator, Date>> | Date
-}
-
 interface BaseMessageQueryParams {
-  card: CardID
+  cardId: CardID
 
   limit?: number
   order?: SortingOrder
-
-  attachments?: boolean
-  reactions?: boolean
-  replies?: boolean
 }
 
 export interface ManyMessagesQueryParams extends BaseMessageQueryParams {
   from?: Date
-  strict?: boolean
 }
 
 export interface OneMessageQueryParams extends BaseMessageQueryParams {
   id: MessageID
-  created: Date
-  from?: never
-  strict?: never
+  blobId?: BlobID
+  from: never
 }
 
+export interface NotificationContextQueryOptions {
+  message?: boolean
+}
 export type MessageQueryParams = OneMessageQueryParams | ManyMessagesQueryParams
+export interface MessageQueryOptions extends QueryOptions, FindMessagesOptions { autoExpand?: boolean }
 export type NotificationQueryParams = FindNotificationsParams & { strict?: boolean }

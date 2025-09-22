@@ -17,9 +17,9 @@ import type { Metadata } from './types'
 
 export function getMetadata (): Metadata {
   return {
-    msg2fileUrl: process.env.MSG2FILE_URL ?? '',
     accountsUrl: process.env.ACCOUNTS_URL ?? '',
-    secret: process.env.SERVER_SECRET,
-    filesUrl: process.env.FILES_URL ?? ''
+    secret: process.env.SERVER_SECRET ?? 'secret',
+    hulylakeUrl: process.env.HULYLAKE_URL ?? 'http://huly.local:8096',
+    messagesPerBlob: Number(process.env.MESSAGES_PER_BLOB ?? '200')
   }
 }

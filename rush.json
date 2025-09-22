@@ -40,11 +40,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/communication-yaml",
-      "projectFolder": "packages/yaml",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/communication-rest-client",
       "projectFolder": "packages/rest-client",
       "shouldPublish": false

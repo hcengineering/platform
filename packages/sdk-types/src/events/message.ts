@@ -6,12 +6,13 @@ import type {
   BlobID,
   MessageType,
   CardType,
-  MessagesGroup,
   MessageExtra,
   BlobParams,
   AttachmentData,
   AttachmentID,
-  AttachmentUpdateData
+  AttachmentUpdateData,
+  Emoji,
+  PersonUuid
 } from '@hcengineering/communication-types'
 
 import type { BaseEvent } from './common'
@@ -27,11 +28,7 @@ export enum MessageEventType {
    */
   BlobPatch = 'blobPatch',
   AttachmentPatch = 'attachmentPatch',
-  ThreadPatch = 'threadPatch',
-
-  // Internal events
-  CreateMessagesGroup = 'createMessagesGroup',
-  RemoveMessagesGroup = 'removeMessagesGroup'
+  ThreadPatch = 'threadPatch'
 }
 
 export type PatchEvent =
@@ -42,7 +39,7 @@ export type PatchEvent =
   | AttachmentPatchEvent
   | ThreadPatchEvent
 
-export type MessageEvent = CreateMessageEvent | PatchEvent | CreateMessagesGroupEvent | RemoveMessagesGroupEvent
+export type MessageEvent = CreateMessageEvent | PatchEvent
 
 export interface CreateMessageOptions {
   // Available for regular users (Not implemented yet)
@@ -102,12 +99,12 @@ export interface RemovePatchEvent extends BaseEvent {
 
 export interface AddReactionOperation {
   opcode: 'add'
-  reaction: string
+  reaction: Emoji
 }
 
 export interface RemoveReactionOperation {
   opcode: 'remove'
-  reaction: string
+  reaction: Emoji
 }
 
 // For any user
@@ -120,12 +117,13 @@ export interface ReactionPatchEvent extends BaseEvent {
   operation: AddReactionOperation | RemoveReactionOperation
 
   socialId: SocialID
+  personUuid?: PersonUuid // Set by server
   date?: Date
 }
 
 export interface AttachBlobsOperation {
   opcode: 'attach'
-  blobs: BlobParams[]
+  blobs: (BlobParams & { mimeType: string })[]
 }
 
 export interface DetachBlobsOperation {
@@ -135,7 +133,7 @@ export interface DetachBlobsOperation {
 
 export interface SetBlobsOperation {
   opcode: 'set'
-  blobs: BlobParams[]
+  blobs: (BlobParams & { mimeType: string })[]
 }
 
 export interface UpdateBlobsOperation {
@@ -143,7 +141,7 @@ export interface UpdateBlobsOperation {
   blobs: BlobUpdateData[]
 }
 
-export type BlobUpdateData = { blobId: BlobID } & Partial<BlobParams>
+export type BlobUpdateData = { blobId: BlobID, mimeType?: string } & Partial<BlobParams>
 
 /**
  * @deprecated Use AttachmentPatch instead
@@ -209,11 +207,21 @@ export interface AttachThreadOperation {
 export interface UpdateThreadOperation {
   opcode: 'update'
   threadId: CardID
-  updates: {
-    threadType?: CardType
-    repliesCountOp?: 'increment' | 'decrement'
-    lastReply?: Date
+  update: {
+    threadType: CardType
   }
+}
+
+// For system
+export interface AddReplyOperation {
+  opcode: 'addReply'
+  threadId: CardID
+}
+
+// For system
+export interface RemoveReplyOperation {
+  opcode: 'removeReply'
+  threadId: CardID
 }
 
 export interface ThreadPatchEvent extends BaseEvent {
@@ -222,31 +230,17 @@ export interface ThreadPatchEvent extends BaseEvent {
   cardId: CardID
   messageId: MessageID
 
-  operation: AttachThreadOperation | UpdateThreadOperation
+  operation: AttachThreadOperation | UpdateThreadOperation | AddReplyOperation | RemoveReplyOperation
 
   socialId: SocialID
+  personUuid?: PersonUuid // Set by server
   date?: Date
 }
 
 export interface CreateMessageResult {
   messageId: MessageID
   created: Date
+  blobId: BlobID
 }
 
 export type MessageEventResult = CreateMessageResult
-
-// Internal
-export interface CreateMessagesGroupEvent extends BaseEvent {
-  type: MessageEventType.CreateMessagesGroup
-  group: MessagesGroup
-  socialId: SocialID
-  date?: Date
-}
-
-export interface RemoveMessagesGroupEvent extends BaseEvent {
-  type: MessageEventType.RemoveMessagesGroup
-  cardId: CardID
-  blobId: BlobID
-  socialId: SocialID
-  date?: Date
-}

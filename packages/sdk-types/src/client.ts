@@ -14,15 +14,13 @@
 //
 
 import type {
+  CardID,
   Collaborator, FindCollaboratorsParams,
   FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
+  FindMessagesMetaParams,
   FindNotificationContextParams,
   FindNotificationsParams,
-  Label,
-  Message,
-  MessagesGroup,
+  Label, MessageMeta,
   Notification,
   NotificationContext, WithTotal
 } from '@hcengineering/communication-types'
@@ -33,17 +31,13 @@ export interface FindClient {
   onEvent: (event: Event) => void
   onRequest: (event: Event, promise: Promise<EventResult>) => void
 
-  findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
-
-  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
+  findMessagesMeta: (params: FindMessagesMetaParams) => Promise<MessageMeta[]>
 
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
-
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<WithTotal<Notification>>
-
   findLabels: (params: FindLabelsParams, queryId?: number) => Promise<Label[]>
-
   findCollaborators: (params: FindCollaboratorsParams, queryId?: number) => Promise<Collaborator[]>
 
-  unsubscribeQuery: (id: number) => Promise<void>
+  subscribeCard: (cardId: CardID, subscription: string | number) => Promise<void>
+  unsubscribeCard: (cardId: CardID, subscription: string | number) => Promise<void>
 }
