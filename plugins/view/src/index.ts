@@ -248,6 +248,7 @@ const view = plugin(viewId, {
     PermissionWarningTitle: '' as IntlString,
     PermissionWarningMessage: '' as IntlString,
     Icon: '' as IntlString,
+    Select: '' as IntlString,
     Color: '' as IntlString,
     AutomationOnly: '' as IntlString
   },

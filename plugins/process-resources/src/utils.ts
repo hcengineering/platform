@@ -113,7 +113,7 @@ export async function pickTransition (
   client: Client,
   execution: Execution,
   transitions: Transition[],
-  doc: Doc
+  context: Record<string, any>
 ): Promise<Transition | undefined> {
   for (const tr of transitions) {
     const trigger = client.getModel().findObject(tr.trigger)
@@ -122,7 +122,7 @@ export async function pickTransition (
     const filled = fillParams(tr.triggerParams, execution)
     const checkFunc = await getResource(trigger.checkFunction)
     if (checkFunc === undefined) continue
-    const res = await checkFunc(client, execution, filled, doc)
+    const res = await checkFunc(client, execution, filled, context)
     if (res) return tr
   }
 }
@@ -600,10 +600,10 @@ export function todoTranstionCheck (
   client: Client,
   execution: Execution,
   params: Record<string, any>,
-  doc: Doc
+  context: Record<string, any>
 ): boolean {
   if (params._id === undefined) return false
-  return doc._id === params._id
+  return context.card?._id === params._id
 }
 
 export function timeTransitionCheck (
@@ -616,12 +616,28 @@ export function timeTransitionCheck (
   return params.value <= Date.now()
 }
 
-export function updateCardTranstionCheck (
+export function matchCardCheck (
   client: Client,
   execution: Execution,
   params: Record<string, any>,
-  doc: Doc
+  context: Record<string, any>
 ): boolean {
+  const doc = context.card
+  if (doc === undefined) return false
+  const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
+  return res.length > 0
+}
+
+export function fieldChangesCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  const doc = context.card
+  if (doc === undefined) return false
+  const param = Object.keys(params)[0]
+  if (!Object.keys(context.operations ?? {}).includes(param)) return false
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }

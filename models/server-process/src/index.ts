@@ -61,7 +61,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.OnCardUpdateCheck
+    serverCheckFunc: serverProcess.func.MatchCardCheck
+  })
+
+  builder.mixin(process.trigger.WhenFieldChanges, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.FieldChangedCheck
   })
 
   builder.mixin(process.trigger.OnTime, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
