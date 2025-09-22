@@ -106,7 +106,8 @@
         "STATS_URL": "http://huly.local:4900",
         "QUEUE_CONFIG": "localhost:19092",
         "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
-        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
+        "BRANDING_PATH": "${workspaceRoot}/dev/branding.json"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
