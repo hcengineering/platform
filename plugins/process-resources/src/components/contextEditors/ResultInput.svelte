@@ -13,64 +13,85 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Type } from '@hcengineering/core'
-  import presentation, { Card, getClient, getAttrEditor } from '@hcengineering/presentation'
-  import { Component, Label } from '@hcengineering/ui'
+  import presentation, { Card, getAttrEditor, getClient } from '@hcengineering/presentation'
+  import { ContextId, UserResult } from '@hcengineering/process'
+  import { Component, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
-  export let type: Type<any>
-  export let name: string = ''
+  export let results: UserResult[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const h = client.getHierarchy()
 
-  const editor = getAttrEditor(type, h)
-
-  let value: any | undefined = undefined
-
-  function onChange (val: any | undefined): void {
-    value = val
-  }
+  let values: Record<ContextId, any> = {}
 
   export function canClose (): boolean {
     return false
   }
 
   function save (): void {
-    dispatch('close', { value })
+    dispatch('close', values)
   }
 </script>
 
 <Card
-  width={'menu'}
+  width={'small'}
   on:close
-  label={plugin.string.EnterValue}
-  canSave={value !== undefined}
+  label={plugin.string.Result}
+  canSave={Object.keys(values).length === results.length}
   okAction={save}
+  hideClose
   okLabel={presentation.string.Save}
 >
-  <div>
-    <Label label={plugin.string.Result} />: {name}
-  </div>
-  {#if editor}
-    <div class="w-full mt-2">
-      <Component
-        is={editor}
-        props={{
-          label: plugin.string.Result,
-          placeholder: plugin.string.Result,
-          kind: 'ghost',
-          size: 'large',
-          width: '100%',
-          justify: 'left',
-          type,
-          value,
-          onChange,
-          focus
+  <div class="grid">
+    {#each results as result, i}
+      {@const editor = getAttrEditor(result.type, h) }
+      <span
+        class="labelOnPanel"
+        use:tooltip={{
+          props: { text: result.name }
         }}
-      />
-    </div>
-  {/if}
+      >
+        {result.name}
+      </span>
+      {#if editor}
+        <div class="w-full">
+          <Component
+            is={editor}
+            props={{
+              label: plugin.string.Result,
+              placeholder: plugin.string.Result,
+              kind: 'ghost',
+              size: 'large',
+              width: '100%',
+              justify: 'left',
+              type: result.type,
+              value: values[result._id],
+              onChange: (val) => {
+                values[result._id] = val
+              },
+              focus
+            }}
+          />
+        </div>
+      {/if}
+    {/each}
+  </div>
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    margin: 0.25rem 2rem 0;
+    width: calc(100% - 4rem);
+    height: min-content;
+  }
+</style>

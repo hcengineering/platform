@@ -577,20 +577,20 @@ export async function requestResult (
   context: ExecutionContext
 ): Promise<void> {
   if (results == null) return
-  for (const result of results) {
-    const promise = new Promise<void>((resolve, reject) => {
-      showPopup(process.component.ResultInput, { type: result.type, name: result.name }, undefined, (res) => {
-        if (result._id === undefined) return
-        if (res?.value !== undefined) {
-          context[result._id] = res.value
-          resolve()
-        } else {
-          reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
+  const promise = new Promise<void>((resolve, reject) => {
+    showPopup(process.component.ResultInput, { results }, undefined, (res) => {
+      if (res !== undefined) {
+        for (const contextId in res) {
+          const val = res[contextId]
+          context[contextId as ContextId] = val
         }
-      })
+        resolve()
+      } else {
+        reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
+      }
     })
-    await promise
-  }
+  })
+  await promise
   await txop.update(execution, {
     context
   })
