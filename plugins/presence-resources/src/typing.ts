@@ -29,6 +29,61 @@ export interface TypingInfo {
   objectId: Ref<Doc>
 }
 
+export interface TypingActionParams {
+  personId: Ref<Employee>
+  objectId: Ref<Doc>
+  onTyping: (presence: Map<string, Ref<Person>>) => void
+}
+
+export function typing (node: HTMLElement, params: TypingActionParams): any {
+  let unsubscribe: Promise<UnsubscribeCallback> | undefined
+  let presence = new Map<string, Ref<Person>>()
+
+  let personId = params.personId
+  let objectId = params.objectId
+  let onTyping = params.onTyping
+
+  function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
+    if (value?.personId === personId) {
+      return
+    }
+
+    if (value === undefined) {
+      presence.delete(key)
+    } else {
+      presence.set(key, value.personId)
+    }
+
+    onTyping(presence)
+  }
+
+  unsubscribe = subscribeTyping(params.objectId, handleTypingInfo)
+
+  return {
+    update: (params: TypingActionParams) => {
+      if (objectId !== params.objectId) {
+        personId = params.personId
+        objectId = params.objectId
+        onTyping = params.onTyping
+
+        void unsubscribe?.then((unsub) => {
+          void unsub()
+        })
+
+        presence = new Map<string, Ref<Person>>()
+        unsubscribe = subscribeTyping(params.objectId, handleTypingInfo)
+
+        onTyping(presence)
+      }
+    },
+    destroy: () => {
+      void unsubscribe?.then((unsub) => {
+        void unsub()
+      })
+    }
+  }
+}
+
 export async function subscribeTyping (
   objectId: Ref<Doc>,
   callback: Callback<TypingInfo | undefined>

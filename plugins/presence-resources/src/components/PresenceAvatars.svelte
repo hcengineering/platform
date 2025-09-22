@@ -14,15 +14,14 @@
 -->
 
 <script lang="ts">
-  import { type Class, type Doc, type Ref, notEmpty } from '@hcengineering/core'
+  import { type Doc, type Ref, notEmpty } from '@hcengineering/core'
   import { type Person, formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { Avatar, getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
 
   import PresenceList from './PresenceList.svelte'
-  import { PresenceInfo, subscribePresence } from '../presence'
+  import { presence } from '../presence'
   import { followee, toggleFollowee } from '../store'
 
   export let object: Doc
@@ -37,8 +36,6 @@
   $: overLimit = persons.length > limit
   $: adaptive = checkAdaptiveMatching($deviceInfo.size, 'md') || overLimit
 
-  let unsubscribe: (() => Promise<boolean>) | undefined
-
   async function updatePresence (presenceInfo: Map<string, Ref<Person>>): Promise<void> {
     const personByRef = await getPersonsByPersonRefs(Array.from(presenceInfo.values()))
     persons = presenceInfo
@@ -48,68 +45,56 @@
       .toArray()
   }
 
-  function handlePresenceInfo (key: string, value: PresenceInfo | undefined): void {
-    if (value === undefined) {
-      presenceInfo.delete(key)
-      presenceInfo = presenceInfo
-      return
-    }
-
-    if (presenceInfo.has(key) || value.personId === me) {
-      return
-    }
-
-    presenceInfo.set(key, value.personId)
-    presenceInfo = presenceInfo
+  function onPresence (presence: Map<string, Ref<Person>>): void {
+    presenceInfo = presence
   }
 
-  async function updatePresenceSub (objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>): Promise<void> {
-    await unsubscribe?.()
-    presenceInfo = new Map<string, Ref<Person>>()
-    unsubscribe = await subscribePresence(objectClass, objectId, handlePresenceInfo)
-  }
-
-  $: void updatePresenceSub(object._class, object._id)
   $: void updatePresence(presenceInfo)
-  onDestroy(() => {
-    void unsubscribe?.()
-  })
 </script>
 
-{#if persons.length > 0}
-  {#if adaptive}
-    <div
-      class="hulyCombineAvatars-container"
-      use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
-    >
-      {#each persons.slice(0, limit) as person, i}
-        <div
-          class="hulyCombineAvatar tiny"
-          data-over={i === limit - 1 && overLimit ? `+${persons.length - limit + 1}` : undefined}
-        >
-          <Avatar name={person.name} {size} {person} />
-        </div>
-      {/each}
-    </div>
-  {:else}
-    <div class="flex-row-center flex-gap-1">
-      {#each persons as person}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
-          class="avatar-button"
-          class:followee-avatar={$followee === person._id}
-          on:click={() => {
-            toggleFollowee(person._id)
-          }}
-        >
-          <Avatar name={person.name} {size} {person} />
-        </div>
-      {/each}
-    </div>
+<div
+  use:presence={{
+    personId: me,
+    objectId: object._id,
+    objectClass: object._class,
+    onPresence
+  }}
+>
+  {#if persons.length > 0}
+    {#if adaptive}
+      <div
+        class="hulyCombineAvatars-container"
+        use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
+      >
+        {#each persons.slice(0, limit) as person, i}
+          <div
+            class="hulyCombineAvatar tiny"
+            data-over={i === limit - 1 && overLimit ? `+${persons.length - limit + 1}` : undefined}
+          >
+            <Avatar name={person.name} {size} {person} />
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="flex-row-center flex-gap-1">
+        {#each persons as person}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
+            class="avatar-button"
+            class:followee-avatar={$followee === person._id}
+            on:click={() => {
+              toggleFollowee(person._id)
+            }}
+          >
+            <Avatar name={person.name} {size} {person} />
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/if}
-{/if}
+</div>
 
 <style lang="scss">
   .avatar-button {
