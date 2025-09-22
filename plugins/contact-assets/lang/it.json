@@ -123,6 +123,7 @@
     "EveryoneDescription": "Notifica tutti in questo {title}",
     "HereDescription": "Notifica tutti in questo {title}",
     "Guest": "Ospite",
-    "Deleted": "Eliminato"
+    "Deleted": "Eliminato",
+    "CannotMerge": "Errore: Impossibile unire persone globali"
   }
 }

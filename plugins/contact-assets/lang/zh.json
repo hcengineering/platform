@@ -123,6 +123,7 @@
     "EveryoneDescription": "通知所有人在此{title}",
     "HereDescription": "通知所有人在此{title}",
     "Guest": "访客",
-    "Deleted": "已删除"
+    "Deleted": "已删除",
+    "CannotMerge": "错误：无法合并全局人员"
   }
 }

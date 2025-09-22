@@ -21,16 +21,9 @@
     setCurrentAccount,
     SocialId
   } from '@hcengineering/core'
-  import {
-    Button,
-    getPlatformColorDef,
-    Icon,
-    Label,
-    PaletteColorIndexes,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
-  import contact, { SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
+  import { Button, getPlatformColorDef, Label, PaletteColorIndexes, showPopup, themeStore } from '@hcengineering/ui'
+  import contact, { SocialIdentity, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
+  import { SocialIdentityPresenter } from '@hcengineering/contact-resources'
   import { getClient, MessageBox } from '@hcengineering/presentation'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
@@ -46,7 +39,6 @@
   const dispatch = createEventDispatcher()
   let currAcc = getCurrentAccount()
 
-  $: icon = socialIdProvider?.icon ?? contact.icon.Profile
   $: isLogin = loginSocialTypes.includes(socialId.type)
   $: isPrimary = socialId._id === currAcc.primarySocialId
 
@@ -116,15 +108,12 @@
       }
     })
   }
+
+  $: socialIdentity = socialId as SocialIdentity
 </script>
 
 <div class="flex-row-center flex-gap-2 root">
-  <div class="icon"><Icon size="full" {icon} /></div>
-
-  <div class="flex-col flex-gap-0-5">
-    <div>{socialId.displayValue ?? socialId.value}</div>
-    <div class="type"><Label label={socialIdProvider.label} /></div>
-  </div>
+  <SocialIdentityPresenter value={socialIdentity} {socialIdProvider} />
 
   <div class="flex-grow" />
 
@@ -163,16 +152,6 @@
 
   .on-hover {
     display: none;
-  }
-
-  .icon {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
-  .type {
-    color: var(--theme-dark-color);
-    font-size: 0.75rem;
   }
 
   .tag {
