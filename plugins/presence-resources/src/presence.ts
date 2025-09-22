@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-import { type Person } from '@hcengineering/contact'
+import { type Employee, type Person } from '@hcengineering/contact'
 import { type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
@@ -23,6 +23,64 @@ export interface PresenceInfo {
   personId: Ref<Person>
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
+}
+
+export interface PresenceActionParams {
+  personId: Ref<Employee>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  onPresence: (presence: Map<string, Ref<Person>>) => void
+}
+
+export function presence (node: HTMLElement, params: PresenceActionParams): any {
+  let unsubscribe: Promise<UnsubscribeCallback> | undefined
+  let presence = new Map<string, Ref<Person>>()
+
+  let personId = params.personId
+  let objectId = params.objectId
+  let objectClass = params.objectClass
+  let onPresence = params.onPresence
+
+  function handlePresenceInfo (key: string, value: PresenceInfo | undefined): void {
+    if (value?.personId === personId) {
+      return
+    }
+
+    if (value === undefined) {
+      presence.delete(key)
+    } else {
+      presence.set(key, value.personId)
+    }
+
+    onPresence(presence)
+  }
+
+  unsubscribe = subscribePresence(params.objectClass, params.objectId, handlePresenceInfo)
+
+  return {
+    update: (params: PresenceActionParams) => {
+      if (objectId !== params.objectId || objectClass !== params.objectClass) {
+        personId = params.personId
+        objectId = params.objectId
+        objectClass = params.objectClass
+        onPresence = params.onPresence
+
+        void unsubscribe?.then((unsub) => {
+          void unsub()
+        })
+
+        presence = new Map<string, Ref<Person>>()
+        unsubscribe = subscribePresence(params.objectClass, params.objectId, handlePresenceInfo)
+
+        onPresence(presence)
+      }
+    },
+    destroy: () => {
+      void unsubscribe?.then((unsub) => {
+        void unsub()
+      })
+    }
+  }
 }
 
 export async function subscribePresence (

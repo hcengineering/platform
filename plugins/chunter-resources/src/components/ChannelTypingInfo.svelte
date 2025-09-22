@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
   import chunter from '@hcengineering/chunter'
   import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { subscribeTyping, TypingInfo } from '@hcengineering/presence-resources'
+  import { typing } from '@hcengineering/presence-resources'
   import { Doc, type Ref } from '@hcengineering/core'
 
   const maxTypingPersons = 3
@@ -45,37 +44,19 @@
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
-    if (value === undefined) {
-      typingInfo.delete(key)
-      typingInfo = typingInfo
-      return
-    }
-
-    if (typingInfo.has(key) || value.personId === me) {
-      return
-    }
-
-    typingInfo.set(key, value.personId)
-    typingInfo = typingInfo
+  function handleTyping (typing: Map<string, Ref<Person>>): void {
+    typingInfo = typing
   }
-
-  let unsubscribe: (() => Promise<boolean>) | undefined
-
-  async function updateTypingSub (objectId: Ref<Doc>): Promise<void> {
-    await unsubscribe?.()
-    typingInfo = new Map<string, Ref<Person>>()
-    unsubscribe = await subscribeTyping(objectId, handleTypingInfo)
-  }
-
-  $: void updateTypingSub(object._id)
-
-  onDestroy(() => {
-    void unsubscribe?.()
-  })
 </script>
 
-<span class="root h-4 mt-1 mb-1 ml-0-5 overflow-label">
+<span
+  class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
+  use:typing={{
+    personId: me,
+    objectId: object._id,
+    onTyping: handleTyping
+  }}
+>
   {#if typingPersonsLabel !== ''}
     <span class="fs-bold">
       {typingPersonsLabel}
