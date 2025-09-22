@@ -72,13 +72,9 @@ export default mergeIds(processId, process, {
     AddTagPresenter: '' as AnyComponent
   },
   criteriaEditor: {
-    StringCriteria: '' as AnyComponent,
-    NumberCriteria: '' as AnyComponent,
-    DateCriteria: '' as AnyComponent,
-    BooleanCriteria: '' as AnyComponent,
-    ArrayCriteria: '' as AnyComponent,
-    EnumCriteria: '' as AnyComponent,
-    RefCriteria: '' as AnyComponent
+    BaseCriteria: '' as AnyComponent,
+    RangeCriteria: '' as AnyComponent,
+    ArraySizeCriteria: '' as AnyComponent
   },
   transformEditor: {
     MultiArrayElementEditor: '' as AnyComponent,

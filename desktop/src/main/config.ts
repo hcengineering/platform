@@ -15,12 +15,12 @@
 import * as path from 'path'
 import * as fs from 'fs'
 
-interface PackedConfig {
+export interface PackedConfig {
   server?: string
   updatesChannelKey?: string
 }
 
-const configPath = path.join(process.resourcesPath, 'config/config.json')
+const configPath = path.join(process.resourcesPath, 'config', 'config.json')
 
 export function readPackedConfig (): PackedConfig | undefined {
   if (fs.existsSync(configPath)) {

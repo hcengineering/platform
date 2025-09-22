@@ -50,9 +50,10 @@ import {
   type Step,
   type StepId,
   type Transition,
+  type UpdateCriteriaComponent,
   type UserResult
 } from '@hcengineering/process'
-import { type AnyComponent, showPopup } from '@hcengineering/ui'
+import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
@@ -151,10 +152,10 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
   const step: Step<T> = {
     _id: generateId() as string as StepId,
     context:
-      method.contextClass !== null
+      method.createdContext !== null
         ? {
             _id: generateContextId(),
-            _class: method.contextClass
+            _class: method.createdContext._class
           }
         : null,
     methodId,
@@ -209,40 +210,44 @@ export function getContext (
 
   const relationsA = allRelations.filter((it) => descendants.has(it.classA))
   for (const rel of relationsA) {
-    const refAttributes = getClassAttributes(client, rel.classB, target, 'attribute')
-    if (refAttributes.length > 0) {
-      relations[rel.nameB] = {
-        name: rel.nameB,
-        association: rel._id,
-        direction: 'B',
-        attributes: refAttributes
-      }
-    } else if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classB, target)) {
+    if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classB, target)) {
       relations[rel.nameB] = {
         name: rel.nameB,
         association: rel._id,
         direction: 'B',
         attributes: []
+      }
+    } else {
+      const refAttributes = getClassAttributes(client, rel.classB, target, 'attribute')
+      if (refAttributes.length > 0) {
+        relations[rel.nameB] = {
+          name: rel.nameB,
+          association: rel._id,
+          direction: 'B',
+          attributes: refAttributes
+        }
       }
     }
   }
 
   const relationsB = allRelations.filter((it) => descendants.has(it.classB))
   for (const rel of relationsB) {
-    const refAttributes = getClassAttributes(client, rel.classA, target, 'attribute')
-    if (refAttributes.length > 0) {
-      relations[rel.nameA] = {
-        name: rel.nameA,
-        association: rel._id,
-        direction: 'A',
-        attributes: refAttributes
-      }
-    } else if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classA, target)) {
+    if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classA, target)) {
       relations[rel.nameA] = {
         name: rel.nameA,
         association: rel._id,
         direction: 'A',
         attributes: []
+      }
+    } else {
+      const refAttributes = getClassAttributes(client, rel.classA, target, 'attribute')
+      if (refAttributes.length > 0) {
+        relations[rel.nameA] = {
+          name: rel.nameA,
+          association: rel._id,
+          direction: 'A',
+          attributes: refAttributes
+        }
       }
     }
   }
@@ -634,17 +639,20 @@ export async function subProcessesDoneCheck (
   return res === undefined
 }
 
-export function getCirteriaEditor (of: Ref<Class<Doc>>, category: AttributeCategory): AnyComponent | undefined {
+export function getCirteriaEditor (
+  of: Ref<Class<Doc>>,
+  category: AttributeCategory
+): UpdateCriteriaComponent | undefined {
   const client = getClient()
   if (category !== 'attribute') {
     const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
       category
     })[0]
-    return res?.editor
+    return res
   }
   const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
     category,
     of
   })[0]
-  return res?.editor
+  return res
 }

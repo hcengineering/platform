@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ProcessContext } from '@hcengineering/process'
+  import { ProcessContextView } from '../../types'
   import ProcessContextRawPresenter from './ProcessContextRawPresenter.svelte'
 
-  export let context: ProcessContext
+  export let context: ProcessContextView
 </script>
 
-{context.index}:
+{#if context.index !== undefined}
+  {context.index}:
+{/if}
 {#if context.name !== undefined && context.name !== ''}
   {context.name}
 {:else}

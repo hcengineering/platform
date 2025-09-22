@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { app, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
+import { TrayController } from './tray'
 
-export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction): void {
+export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction, tray: TrayController | undefined): void {
   if (mainWindow == null) {
     return
   }
@@ -42,7 +43,7 @@ export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, ac
       mainWindow.webContents.send(CommandLogout)
       break
     case 'exit':
-      app.quit()
+      mainWindow.close()
       break
     case 'undo':
       mainWindow.webContents.undo()
@@ -86,6 +87,13 @@ export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, ac
     case 'toggle-fullscreen':
       mainWindow.setFullScreen(!mainWindow.isFullScreen())
       break
+    case 'toggle-minimize-to-tray': {
+      if (tray != null) {
+        const newSetting = tray.toggleMinimizeToTray()
+        mainWindow.webContents.send('minimize-to-tray-setting-changed', newSetting)
+      }
+      break
+    }
     default:
       console.log('unknown menu action:', action)
   }

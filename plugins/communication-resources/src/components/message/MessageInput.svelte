@@ -139,7 +139,7 @@
       await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
     }
 
-    clearTyping(me, card._id)
+    void clearTyping(me, card._id)
   }
 
   async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {

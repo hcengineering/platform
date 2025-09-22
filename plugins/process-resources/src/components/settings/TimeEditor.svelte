@@ -84,7 +84,7 @@
     bind:value={params.value}
     on:change={(e) => {
       params.value = e.detail
-      dispatch('change', params)
+      dispatch('change', { params })
     }}
   />
 </div>
