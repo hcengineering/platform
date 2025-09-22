@@ -322,6 +322,7 @@ export interface LoginInfoWorkspace {
   role: AccountRole | null
 
   progress?: number
+  branding?: string
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {
