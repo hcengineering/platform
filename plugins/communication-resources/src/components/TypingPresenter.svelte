@@ -11,13 +11,12 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
   import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { subscribeTyping, TypingInfo } from '@hcengineering/presence-resources'
+  import { typing } from '@hcengineering/presence-resources'
   import { CardID } from '@hcengineering/communication-types'
 
   import communication from '../plugin'
@@ -45,37 +44,19 @@
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
-    if (value === undefined) {
-      typingInfo.delete(key)
-      typingInfo = typingInfo
-      return
-    }
-
-    if (typingInfo.has(key) || value.personId === me) {
-      return
-    }
-
-    typingInfo.set(key, value.personId)
-    typingInfo = typingInfo
+  function handleTyping (typing: Map<string, Ref<Person>>): void {
+    typingInfo = typing
   }
-
-  let unsubscribe: (() => Promise<boolean>) | undefined
-
-  async function updateTypingSub (cardId: CardID): Promise<void> {
-    await unsubscribe?.()
-    typingInfo = new Map<string, Ref<Person>>()
-    unsubscribe = await subscribeTyping(cardId, handleTypingInfo)
-  }
-
-  $: void updateTypingSub(cardId)
-
-  onDestroy(() => {
-    void unsubscribe?.()
-  })
 </script>
 
-<span class="root h-4 mt-1 mb-1 ml-0-5 overflow-label">
+<span
+  class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
+  use:typing={{
+    personId: me,
+    objectId: cardId,
+    onTyping: handleTyping
+  }}
+>
   {#if typingPersonsLabel !== ''}
     <span class="fs-bold">
       {typingPersonsLabel}

@@ -32,6 +32,7 @@ export default mergeIds(contactId, contact, {
   },
   component: {
     PersonPresenter: '' as AnyComponent,
+    SocialIdentityPresenter: '' as AnyComponent,
     ContactRefPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,

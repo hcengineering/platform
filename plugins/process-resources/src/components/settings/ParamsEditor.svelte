@@ -34,7 +34,7 @@
       delete (params as any)[key]
     }
     params = params
-    dispatch('change', { params })
+    dispatch('change', params)
   }
 </script>
 

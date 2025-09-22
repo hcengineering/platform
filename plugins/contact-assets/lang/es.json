@@ -123,6 +123,7 @@
     "EveryoneDescription": "Notificar a todos en este {title}",
     "HereDescription": "Notificar a todos en este {title}",
     "Guest": "Invitado",
-    "Deleted": "Eliminado"
+    "Deleted": "Eliminado",
+    "CannotMerge": "Error: No se pueden fusionar personas globales"
   }
 }

@@ -14,7 +14,7 @@
 //
 
 import { RetryOptions, withRetry } from '@hcengineering/retry'
-import { HulylakeError, NetworkError, NotFoundError } from './error'
+import { HulylakeError, NetworkError } from './error'
 
 async function innerFetchSafe (url: string | URL, init?: RequestInit): Promise<Response> {
   let response
@@ -31,7 +31,7 @@ async function innerFetchSafe (url: string | URL, init?: RequestInit): Promise<R
 
   const text = await response.text()
   if (response.status === 404) {
-    throw new NotFoundError(text)
+    return response
   } else {
     throw new HulylakeError(text)
   }

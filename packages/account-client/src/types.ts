@@ -40,6 +40,7 @@ export interface LoginInfoWorkspace {
   endpoint: EndpointInfo
   role: AccountRole | null
   progress?: number
+  branding?: string
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {

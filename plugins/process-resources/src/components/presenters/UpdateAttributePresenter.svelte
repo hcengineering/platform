@@ -67,6 +67,10 @@
   {#if presenter && !selectedMode.withoutEditor}
     {#if contextValue && context}
       <ContextValuePresenter {contextValue} {context} {process} />
+    {:else if Array.isArray(val)}
+      {#each val as item}
+        <Component is={presenter} props={{ value: item, readonly: true }} />
+      {/each}
     {:else}
       <Component is={presenter} props={{ value: val, readonly: true }} />
     {/if}

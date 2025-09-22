@@ -67,7 +67,6 @@ import {
   updateWorkspaceRole,
   getPersonName,
   doMergeAccounts,
-  doMergePersons,
   assignableRoles
 } from './utils'
 
@@ -929,27 +928,6 @@ export async function findFullSocialIds (
   return await db.socialId.find({ _id: { $in: socialIds } })
 }
 
-export async function mergeSpecifiedPersons (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    primaryPerson: PersonUuid
-    secondaryPerson: PersonUuid
-  }
-): Promise<void> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['tool', 'workspace'], extra)
-
-  const { primaryPerson, secondaryPerson } = params
-  if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  await doMergePersons(db, primaryPerson, secondaryPerson)
-}
-
 export async function mergeSpecifiedAccounts (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1026,7 +1004,6 @@ export type AccountServiceMethods =
   | 'getIntegrationSecret'
   | 'listIntegrationsSecrets'
   | 'findFullSocialIdBySocialKey'
-  | 'mergeSpecifiedPersons'
   | 'mergeSpecifiedAccounts'
   | 'findPersonBySocialKey'
   | 'listAccounts'
@@ -1060,7 +1037,6 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     listIntegrationsSecrets: wrap(listIntegrationsSecrets),
     findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
     findFullSocialIds: wrap(findFullSocialIds),
-    mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts)
