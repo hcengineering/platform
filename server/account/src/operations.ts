@@ -1883,7 +1883,8 @@ export async function getLoginWithWorkspaceInfo (
               versionMinor: it.status.versionMinor,
               versionPatch: it.status.versionPatch
             },
-            progress: it.status.processingProgress
+            progress: it.status.processingProgress,
+            branding: it.branding
           }
         ])
     ),
