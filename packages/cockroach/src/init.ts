@@ -606,7 +606,8 @@ function migrationV10_9 (): [string, string] {
 function migrationV10_10 (): [string, string] {
   const sql = `
       UPDATE ${Domain.Notification}
-      SET blob_id = '00000000-0000-0000-0000-000000000000';
+      SET blob_id = '00000000-0000-0000-0000-000000000000'
+      WHERE blob_id IS NULL;
   `
   return ['set_blob_id-v10_10', sql]
 }
