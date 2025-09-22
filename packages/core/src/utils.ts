@@ -43,7 +43,8 @@ import {
   type TypedSpace,
   type WorkspaceMode,
   type Domain,
-  type PluginConfiguration
+  type PluginConfiguration,
+  type AccountUuid
 } from './classes'
 import core from './component'
 import { type Hierarchy } from './hierarchy'
@@ -976,7 +977,7 @@ export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
   return hulySocialIds[0] ?? activeSocialIds[0]
 }
 
-export const loginSocialTypes = [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB]
+export const loginSocialTypes = [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB, SocialIdType.OIDC]
 
 export function notEmpty<T> (id: T | undefined | null): id is T {
   return id !== undefined && id !== null && id !== ''
@@ -990,3 +991,8 @@ export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | u
   return unique(arr).filter(notEmpty)
 }
 export { platformNow, platformNowDiff } from '@hcengineering/measurements'
+
+export interface PermissionsGrant {
+  spaces?: Ref<Space>[]
+  grantedBy?: AccountUuid
+}

@@ -25,7 +25,8 @@
     TableOfContents,
     TableOfContentsContent,
     getNodeElement,
-    highlightUpdateCommand
+    highlightUpdateCommand,
+    selectNode
   } from '@hcengineering/text-editor-resources'
   import { EditBox, Label, Scroller } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
@@ -41,12 +42,10 @@
     $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
-    documentCommentsHighlightUpdated,
     documentCommentsLocationNavigateRequested,
-    $documentReleasedVersions as documentReleasedVersions,
+    documentCommentsAddCanceled,
     $isEditable as isEditable
   } from '../../stores/editors/document'
-  import { syncDocumentMetaTitle } from '../../utils'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
 
@@ -60,19 +59,16 @@
   let headings: Heading[] = []
   let textEditor: CollaboratorEditor
   let selectedNodeId: string | null | undefined = undefined
-  let isFocused = false
   let editor: Editor
   let title = $controlledDocument?.title ?? ''
 
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
 
-  function handleRefreshHighlight () {
-    if (!textEditor) {
-      return
-    }
+  $: commentUuids = $documentComments.map((p) => p.nodeId).filter((id) => id != null)
 
-    textEditor.commands()?.command(highlightUpdateCommand())
+  function handleRefreshHighlight (): void {
+    textEditor?.commands()?.command(highlightUpdateCommand())
   }
 
   const unsubscribeHighlightRefresh = merge([documentCommentHighlightedLocation, documentComments.updates]).subscribe({
@@ -84,21 +80,28 @@
   const unsubscribeNavigateToLocation = documentCommentsLocationNavigateRequested.subscribe({
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     next: async ({ nodeId }) => {
-      if (!nodeId) {
+      if (nodeId == null) {
         handleRefreshHighlight()
         return
       }
 
-      if (!textEditor) {
-        return
+      selectedNodeId = nodeId
+
+      if (editor !== undefined) {
+        await tick()
+
+        const element = getNodeElement(editor, nodeId)
+        element?.scrollIntoView({ behavior: 'smooth' })
       }
+    }
+  })
 
-      await tick()
-
-      const element = getNodeElement(editor, nodeId)
-
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
+  const unsubscribeCommentsAddCanceled = documentCommentsAddCanceled.subscribe({
+    next: ({ nodeId }) => {
+      if (editor !== undefined && nodeId != null) {
+        if (selectNode(editor, nodeId)) {
+          editor.commands.unsetQMSInlineCommentMark()
+        }
       }
     }
   })
@@ -106,6 +109,7 @@
   onDestroy(() => {
     unsubscribeHighlightRefresh()
     unsubscribeNavigateToLocation()
+    unsubscribeCommentsAddCanceled()
   })
 
   const handleUpdateTitle = async () => {
@@ -116,9 +120,6 @@
 
     if (titleTrimmed.length > 0 && titleTrimmed !== $controlledDocument.title) {
       await client.update($controlledDocument, { title: titleTrimmed })
-      if ($documentReleasedVersions.length === 0 && $controlledDocument.state === DocumentState.Draft) {
-        await syncDocumentMetaTitle(client, $controlledDocument.attachedTo, $controlledDocument.code, titleTrimmed)
-      }
     }
   }
 
@@ -142,15 +143,9 @@
     return null
   }
 
-  function handleShowDocumentComments (uuid: string) {
-    if (!uuid) {
-      return
-    }
-
-    documentCommentsDisplayRequested({
-      element: getNodeElement(editor, uuid),
-      nodeId: uuid
-    })
+  function handleShowDocumentComments (nodeId: string): void {
+    const element = getNodeElement(editor, nodeId)
+    documentCommentsDisplayRequested({ element, nodeId })
   }
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
@@ -246,29 +241,19 @@
               qmsInlineComment: {
                 isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
                 getNodeHighlight: handleNodeHighlight,
-                onNodeSelected: (uuid) => {
-                  if (selectedNodeId !== uuid) {
-                    selectedNodeId = uuid
-                  }
-                  if (isFocused) {
-                    documentCommentsHighlightUpdated(selectedNodeId !== null ? { nodeId: selectedNodeId } : null)
-                  }
-                },
-                onNodeClicked: (uuid) => {
-                  if (selectedNodeId !== uuid) {
-                    selectedNodeId = uuid
-                  }
+                onNodeClicked: (uuids) => {
+                  // filter out those uuids that are not in comments
+                  uuids = Array.isArray(uuids) ? uuids : [uuids]
+                  uuids = uuids.filter((id) => commentUuids.includes(id)).sort()
 
-                  if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
+                  // scroll through the comments as user clicks on the same node
+                  const currIndex = selectedNodeId != null ? uuids.indexOf(selectedNodeId) : -1
+                  const nextIndex = currIndex === -1 ? 0 : (currIndex + 1) % uuids.length
+                  selectedNodeId = uuids[nextIndex]
+
+                  if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId != null) {
                     handleShowDocumentComments(selectedNodeId)
                   }
-                }
-              }
-            },
-            hooks: {
-              focus: {
-                onFocus: (focused) => {
-                  isFocused = focused
                 }
               }
             },

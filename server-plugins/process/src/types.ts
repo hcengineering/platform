@@ -1,11 +1,12 @@
 import { Card } from '@hcengineering/card'
-import { Doc, MeasureContext, PersonId, Ref, Tx, TxOperations } from '@hcengineering/core'
-import { Execution, ExecutionError, MethodParams, Trigger } from '@hcengineering/process'
+import { Doc, MeasureContext, PersonId, Ref, Tx, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import { Execution, ExecutionError, MethodParams, Trigger, UserResult } from '@hcengineering/process'
 
 export type ExecuteFunc = (
   params: MethodParams<Doc>,
   execution: Execution,
-  control: ProcessControl
+  control: ProcessControl,
+  results: UserResult[] | undefined
 ) => Promise<ExecuteResult>
 
 export type ExecuteResult = SuccessExecutionResult | ExecutionError
@@ -13,7 +14,12 @@ export type ExecuteResult = SuccessExecutionResult | ExecutionError
 export interface SuccessExecutionResult {
   txes: Tx[]
   rollback: Tx[] | undefined
-  context: any | null
+  context: SuccessExecutionContext[] | null
+}
+
+export interface SuccessExecutionContext {
+  _id: string
+  value: any
 }
 
 export type TransformFunc = (
@@ -36,6 +42,7 @@ export interface ProcessControl {
   client: TxOperations
   cache: Map<string, any>
   messageContext: Record<string, any>
+  workspace: WorkspaceUuid
 }
 
 export type RollbackFunc = (context: Record<string, any>, control: ProcessControl) => Tx

@@ -65,9 +65,6 @@
       <EditBox label={login.string.LinkValidHours} format={'number'} bind:value={expTime} />
     </div>
     <div class="mt-2">
-      <EditBox label={login.string.EmailMask} bind:value={mask} />
-    </div>
-    <div class="mt-2">
       <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
     </div>
     {#if !noLimit}

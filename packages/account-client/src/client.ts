@@ -97,12 +97,26 @@ export interface AccountClient {
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  /**
+   * @param options.personalized
+   * If true, will generate a link with a personalized token for one person access
+   * If false, will generate a link with an open-ended account in the token. Every token use will generate a new account.
+   * When false, notBefore and expiration parameters are mandatory.
+   * @param options.notBefore - not valid before; timestamp in seconds
+   * @param options.expiration - expires after; timestamp in seconds
+   */
   createAccessLink: (
     role: AccountRole,
-    firstName?: string,
-    lastName?: string,
-    navigateUrl?: string,
-    extra?: Record<string, any>
+    options?: {
+      firstName?: string
+      lastName?: string
+      navigateUrl?: string
+      extra?: Record<string, any>
+      spaces?: string[]
+      notBefore?: number
+      expiration?: number
+      personalized?: boolean
+    }
   ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
@@ -209,6 +223,7 @@ export interface AccountClient {
   mergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<void>
   mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
   addEmailSocialId: (email: string) => Promise<OtpInfo>
+  addHulyAssistantSocialId: () => Promise<PersonId>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -426,14 +441,20 @@ class AccountClientImpl implements AccountClient {
 
   async createAccessLink (
     role: AccountRole,
-    firstName?: string,
-    lastName?: string,
-    navigateUrl?: string,
-    extra?: Record<string, any>
+    options?: {
+      firstName?: string
+      lastName?: string
+      navigateUrl?: string
+      extra?: Record<string, any>
+      spaces?: string[]
+      notBefore?: number
+      expiration?: number
+      personalized?: boolean
+    }
   ): Promise<string> {
-    const params: any = { role, firstName, lastName, navigateUrl }
-    if (extra != null) {
-      params.extra = JSON.stringify(extra)
+    const params: any = { ...(options ?? {}), role }
+    if (params.extra != null) {
+      params.extra = JSON.stringify(params.extra)
     }
 
     const request = {
@@ -1073,6 +1094,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'addEmailSocialId' as const,
       params: { email }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async addHulyAssistantSocialId (): Promise<PersonId> {
+    const request = {
+      method: 'addHulyAssistantSocialId' as const,
+      params: {}
     }
 
     return await this.rpc(request)

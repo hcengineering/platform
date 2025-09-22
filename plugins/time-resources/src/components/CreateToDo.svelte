@@ -43,6 +43,7 @@
         description,
         user: me,
         workslots: 0,
+        doneOn: null,
         priority: ToDoPriority.NoPriority,
         visibility: 'private',
         rank: makeRank(undefined, latestTodo?.rank)

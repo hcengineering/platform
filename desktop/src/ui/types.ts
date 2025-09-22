@@ -53,6 +53,7 @@ export interface Config {
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string
+  PULSE_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
 }
@@ -103,8 +104,26 @@ export interface NotificationParams {
   objectClass?: Ref<Class<Doc>>
 }
 
-export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools',
-  'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const
+export const MenuBarActions = [
+  'settings',
+  'select-workspace',
+  'logout',
+  'exit',
+  'undo',
+  'redo',
+  'cut',
+  'copy',
+  'paste',
+  'delete',
+  'select-all',
+  'reload',
+  'force-reload',
+  'toggle-devtools',
+  'zoom-in',
+  'zoom-out',
+  'restore-size',
+  'toggle-fullscreen',
+  'toggle-minimize-to-tray'] as const
 
 export type MenuBarAction = typeof MenuBarActions[number]
 
@@ -150,4 +169,10 @@ export interface IPCMainExposed {
   executeMenuBarAction: (action: MenuBarAction) => void
 
   rebuildJumpList: (spares: JumpListSpares) => void
+
+  isMinimizeToTrayEnabled: () => Promise<boolean>
+  onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => void
 }
+
+export type SendCommandDelegate = (cmd: Command, ...args: any[]) => void
+export type WindowAction = () => void

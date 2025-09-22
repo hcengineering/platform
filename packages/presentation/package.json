@@ -63,12 +63,12 @@
     "@hcengineering/retry": "^0.6.0",
     "fast-equals": "^5.2.2",
     "png-chunks-extract": "^1.0.0",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "uuid": "^8.3.2",
     "yjs": "^13.6.23"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }

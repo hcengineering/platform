@@ -50,7 +50,8 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   TypedSpace,
-  TxFactory
+  TxFactory,
+  PermissionsGrant
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
@@ -92,6 +93,40 @@ export async function OnSpaceTypeMembers (txes: Tx[], control: TriggerControl): 
   return result
 }
 
+async function getGrantSpaces (control: TriggerControl, grant?: PermissionsGrant): Promise<Space[]> {
+  const spacesRefs = grant?.spaces
+  if (spacesRefs == null) {
+    return []
+  }
+
+  const grantSpaces = await control.findAll(control.ctx, core.class.Space, { _id: { $in: spacesRefs } })
+  const allowedGrantedSpaces: Space[] = []
+
+  for (const space of grantSpaces) {
+    if (!space.private) {
+      allowedGrantedSpaces.push(space)
+      continue
+    }
+
+    const grantedBy = grant?.grantedBy
+    if (grantedBy == null) {
+      control.ctx.warn('Granted private space access without grantor is not allowed', { space })
+      continue
+    }
+
+    if (space.members.includes(grantedBy)) {
+      allowedGrantedSpaces.push(space)
+    } else {
+      control.ctx.warn('Granted private space access but the grantor is not a member of the workspace', {
+        space,
+        grantedBy
+      })
+    }
+  }
+
+  return allowedGrantedSpaces
+}
+
 export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
 
@@ -111,16 +146,22 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
 
     const emp = control.hierarchy.as(person, contact.mixin.Employee)
     if (emp.role === 'GUEST') {
+      let readOnlyGuestSpaces: Space[] = []
       const readonlyEmployees = await control.findAll(control.ctx, contact.mixin.Employee, {
         personUuid: readOnlyGuestAccountUuid
       })
-      if (readonlyEmployees.length === 0) continue
+      if (readonlyEmployees.length !== 0) {
+        const readonlyEmployee = readonlyEmployees[0]
+        if (readonlyEmployee.active) {
+          readOnlyGuestSpaces = await control.findAll(control.ctx, core.class.Space, {
+            members: readOnlyGuestAccountUuid
+          })
+        }
+      }
 
-      const readonlyEmployee = readonlyEmployees[0]
-      if (!readonlyEmployee.active) continue
+      const grantSpaces = await getGrantSpaces(control, control.ctx.contextData.grant)
 
-      const spaces = await control.findAll(control.ctx, core.class.Space, { members: readOnlyGuestAccountUuid })
-      for (const space of spaces) {
+      for (const space of [...readOnlyGuestSpaces, ...grantSpaces]) {
         if (space._class === contact.class.PersonSpace || space.members.includes(account)) continue
 
         const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
@@ -149,7 +190,9 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     }
 
     const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
-    for (const space of spaces) {
+    const grantSpaces = await getGrantSpaces(control, control.ctx.contextData.grant)
+
+    for (const space of [...spaces, ...grantSpaces]) {
       if (space.members.includes(account)) continue
 
       const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {

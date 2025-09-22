@@ -48,6 +48,6 @@
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   }
 }

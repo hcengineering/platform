@@ -102,7 +102,13 @@
     "RemoveFirst": "Remove first",
     "RemoveLast": "Remove last",
     "Cancelled": "Cancelled",
-    "WaitUntil": "Wait until"
+    "WaitUntil": "Wait until",
+    "CurrentUser": "Current user",
+    "CurrentDate": "Current date",
+    "AddResult": "Add result",
+    "For": "For",
+    "Context": "Context",
+    "Attribute": "Attribute"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

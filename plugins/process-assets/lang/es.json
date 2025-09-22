@@ -102,7 +102,13 @@
     "ArraySizeLt": "Tamaño menor que",
     "ArraySizeLte": "Tamaño menor o igual que",
     "Cancelled": "Cancelado",
-    "WaitUntil": "Esperar hasta"
+    "WaitUntil": "Esperar hasta",
+    "CurrentUser": "Usuario Actual",
+    "CurrentDate": "Fecha Actual",
+    "AddResult": "Agregar resultado",
+    "For": "Para",
+    "Context": "Contexto",
+    "Attribute": "Atributo"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

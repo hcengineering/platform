@@ -19,6 +19,7 @@ import core, {
   DOMAIN_MODEL,
   type Doc,
   type Domain,
+  type Rank,
   type Ref,
   SortingOrder,
   type Space,
@@ -26,11 +27,13 @@ import core, {
 } from '@hcengineering/core'
 import {
   type Builder,
+  Hidden,
   Model,
   Prop,
   ReadOnly,
   TypeAny,
   TypeBoolean,
+  TypeRank,
   TypeRef,
   TypeString,
   UX
@@ -44,6 +47,7 @@ import { type Asset, type IntlString, type Resource } from '@hcengineering/platf
 import {
   type CheckFunc,
   type ContextId,
+  type CreatedContext,
   type Execution,
   type ExecutionContext,
   type ExecutionError,
@@ -60,7 +64,6 @@ import {
   type Step,
   type Transition,
   type Trigger,
-  type TriggerResult,
   type UpdateCriteriaComponent,
   processId
 } from '@hcengineering/process'
@@ -133,7 +136,9 @@ export class TTransition extends TDoc implements Transition {
 
   triggerParams!: Record<string, any>
 
-  result?: TriggerResult | null
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(process.class.ExecutionLog, core.class.Doc, DOMAIN_PROCESS_LOG)
@@ -188,8 +193,6 @@ export class TExecution extends TDoc implements Execution {
 export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 
-  state!: Ref<State>
-
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
 }
@@ -204,7 +207,7 @@ export class TMethod extends TDoc implements Method<Doc> {
 
   editor!: AnyComponent
 
-  contextClass!: Ref<Class<Doc>> | null
+  createdContext!: CreatedContext
 
   presenter?: AnyComponent
 
@@ -215,8 +218,16 @@ export class TMethod extends TDoc implements Method<Doc> {
 
 @Model(process.class.State, core.class.Doc, DOMAIN_MODEL)
 export class TState extends TDoc implements State {
-  process!: Ref<Process>
-  title!: string
+  @Prop(TypeRef(process.class.Process), process.string.Process)
+  @ReadOnly()
+    process!: Ref<Process>
+
+  @Prop(TypeString(), core.string.Name)
+    title!: string
+
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
@@ -237,6 +248,8 @@ export class TUpdateCriteriaComponent extends TDoc implements UpdateCriteriaComp
   editor!: AnyComponent
 
   of!: Ref<Class<Doc<Space>>>
+
+  props!: Record<string, any>
 }
 
 export * from './migration'
@@ -671,7 +684,8 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.Insert,
-      editor: process.transformEditor.ArrayElementEditor,
+      allowMany: true,
+      editor: process.transformEditor.MultiArrayElementEditor,
       type: 'transform'
     },
     process.function.Insert
@@ -684,6 +698,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.Remove,
+      allowMany: true,
       editor: process.transformEditor.ArrayElementEditor,
       type: 'transform'
     },
@@ -697,6 +712,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.RemoveFirst,
+      allowMany: true,
       type: 'transform'
     },
     process.function.RemoveFirst
@@ -709,18 +725,7 @@ export function createModel (builder: Builder): void {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.RemoveLast,
-      type: 'transform'
-    },
-    process.function.RemoveLast
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.RemoveLast,
+      allowMany: true,
       type: 'transform'
     },
     process.function.RemoveLast
@@ -732,11 +737,48 @@ export function createModel (builder: Builder): void {
     {
       of: contact.mixin.Employee,
       editor: process.component.RoleEditor,
+      presenter: process.transformPresenter.RolePresenter,
       category: 'array',
       label: core.string.Role,
       type: 'context'
     },
     process.function.RoleContext
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.class.Person,
+      category: 'attribute',
+      label: process.string.CurrentUser,
+      type: 'context'
+    },
+    process.function.CurrentUser
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.mixin.Employee,
+      category: 'attribute',
+      label: process.string.CurrentUser,
+      type: 'context'
+    },
+    process.function.CurrentEmployee
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.CurrentDate,
+      type: 'context'
+    },
+    process.function.CurrentDate
   )
 
   builder.mixin(process.class.Process, core.class.Class, view.mixin.AttributePresenter, {
@@ -793,6 +835,12 @@ export function createModel (builder: Builder): void {
           key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
+        },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
@@ -851,6 +899,12 @@ export function createModel (builder: Builder): void {
           key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
+        },
+        {
+          key: '',
+          presenter: process.component.ExecutionMyToDos,
+          label: process.string.ToDo,
+          displayProps: { key: 'todos' }
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
@@ -946,7 +1000,7 @@ export function createModel (builder: Builder): void {
       objectClass: process.class.Process,
       editor: process.component.SubProcessEditor,
       presenter: process.component.SubProcessPresenter,
-      contextClass: process.class.Execution,
+      createdContext: { _class: process.class.Execution },
       requiredParams: ['_id']
     },
     process.method.RunSubProcess
@@ -960,8 +1014,8 @@ export function createModel (builder: Builder): void {
       editor: process.component.ToDoEditor,
       objectClass: process.class.ProcessToDo,
       presenter: process.component.ToDoPresenter,
-      contextClass: process.class.ProcessToDo,
-      requiredParams: ['state', 'title', 'user'],
+      createdContext: { _class: process.class.ProcessToDo, nameField: 'title' },
+      requiredParams: ['title', 'user'],
       defaultParams: {
         withRollback: true
       }
@@ -988,7 +1042,7 @@ export function createModel (builder: Builder): void {
       label: process.string.UpdateCard,
       editor: process.component.UpdateCardEditor,
       objectClass: card.class.Card,
-      contextClass: null,
+      createdContext: null,
       presenter: process.component.UpdateCardPresenter,
       requiredParams: []
     },
@@ -1003,7 +1057,7 @@ export function createModel (builder: Builder): void {
       objectClass: card.class.Card,
       editor: process.component.CreateCardEditor,
       presenter: process.component.CreateCardPresenter,
-      contextClass: card.class.Card,
+      createdContext: { _class: card.class.Card },
       requiredParams: ['title', '_class']
     },
     process.method.CreateCard
@@ -1017,10 +1071,24 @@ export function createModel (builder: Builder): void {
       objectClass: core.class.Relation,
       editor: process.component.AddRelationEditor,
       presenter: process.component.AddRelationPresenter,
-      contextClass: core.class.Relation,
+      createdContext: { _class: core.class.Relation },
       requiredParams: ['association', 'direction', '_id']
     },
     process.method.AddRelation
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: card.string.AddTag,
+      objectClass: card.class.Tag,
+      editor: process.component.AddTagEditor,
+      presenter: process.component.AddTagPresenter,
+      createdContext: { _class: card.class.Card },
+      requiredParams: ['_id']
+    },
+    process.method.AddTag
   )
 
   builder.createDoc(
@@ -1033,7 +1101,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoClose
   )
@@ -1048,7 +1117,8 @@ export function createModel (builder: Builder): void {
       presenter: process.component.ToDoSettingPresenter,
       requiredParams: ['_id'],
       checkFunction: process.triggerCheck.ToDo,
-      init: false
+      init: false,
+      auto: true
     },
     process.trigger.OnToDoRemove
   )
@@ -1075,6 +1145,7 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
+      checkFunction: process.triggerCheck.SubProcessesDoneCheck,
       requiredParams: [],
       init: false,
       auto: true
@@ -1111,50 +1182,83 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeString
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeString,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeHyperlink
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeHyperlink,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.NumberCriteria,
-    of: core.class.TypeNumber
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeNumber,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.DateCriteria,
-    of: core.class.TypeDate
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeDate,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.BooleanCriteria,
-    of: core.class.TypeBoolean
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeBoolean,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'array',
-    editor: process.criteriaEditor.ArrayCriteria,
-    of: core.class.ArrOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.ArrOf,
+    props: {
+      modes: [
+        'ArrayAll',
+        'ArrayAny',
+        'ArrayNotIncludes',
+        'ArraySizeEquals',
+        'ArraySizeGt',
+        'ArraySizeGte',
+        'ArraySizeLt',
+        'ArraySizeLte'
+      ]
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.EnumCriteria,
-    of: core.class.EnumOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.EnumOf,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'object',
-    editor: process.criteriaEditor.RefCriteria,
-    of: core.class.RefTo
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.RefTo,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 }
 

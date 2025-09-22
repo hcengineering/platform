@@ -122,11 +122,16 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       const url = event.pull_request.issue_url
 
       await syncRunner.exec(url, async () => {
-        await this.processEvent(ctx, event, derivedClient, repository, integration, project)
+        try {
+          await this.processEvent(ctx, event, derivedClient, repository, integration, project)
+        } catch (err: any) {
+          ctx.error('Error processing event', { error: err })
+        }
       })
     }
   }
 
+  @withContext('pullrequests-processEvent')
   private async processEvent (
     ctx: MeasureContext,
     event: PullRequestEvent,
@@ -139,8 +144,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     let externalData: PullRequestExternalData
     try {
-      const response: any = await integration.octokit?.graphql(
-        `query listIssue($name: String!, $owner: String!, $issue: Int!) {
+      const response: any = await ctx.with('graphql', {}, (ctx) =>
+        integration.octokit?.graphql(
+          `query listIssue($name: String!, $owner: String!, $issue: Int!) {
           repository(name: $name, owner: $owner) {
             pullRequest(number: $issue) {
               ${pullRequestDetails}
@@ -148,11 +154,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           }
         }
         `,
-        {
-          name: repo.name,
-          owner: repo.owner?.login,
-          issue: event.pull_request.number
-        }
+          {
+            name: repo.name,
+            owner: repo.owner?.login,
+            issue: event.pull_request.number
+          }
+        )
       )
       externalData = response.repository.pullRequest
     } catch (err: any) {
@@ -496,7 +503,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
 
         // To sync reviews/review threads in case they are created before us.
-        await syncChilds(info, this.client, derivedClient)
+        await syncChilds(ctx, info, this.client, derivedClient)
 
         return {
           needSync: '',
@@ -810,6 +817,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         attachedSpace: pullRequest.space,
         user: employee._id,
         workslots: 0,
+        doneOn: null,
         priority: ToDoPriority.High,
         visibility: 'public',
         rank: makeRank(undefined, latestTodo?.rank)
@@ -865,6 +873,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         title: 'Resolve ' + pullRequest.title,
         description: external.url,
         user: employee._id,
+        doneOn: null,
         workslots: 0,
         priority: ToDoPriority.High,
         visibility: 'public',

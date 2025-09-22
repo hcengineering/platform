@@ -12,6 +12,7 @@
     "Parent": "Genitore",
     "Tags": "Tag",
     "Tag": "Tag",
+    "AddTag": "Aggiungi Tag",
     "CardLibrary": "Libreria Carte",
     "MinimizeAll": "Minimizza Tutto",
     "ExpandAll": "Espandi Tutto",
@@ -41,11 +42,11 @@
     "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
     "ConfigDescription": "Estensione per la gestione della conoscenza in stile database.",
     "AddCollaborators": "Aggiungi collaboratori",
-    "Home": "Home",
-    "WhatDoYouWantToShare": "Cosa vuoi condividere?",
-    "Share": "Condividi",
-    "Compact": "Compatto",
-    "Comfortable": "Confortabile",
-    "Comfortable2": "Confortabile 2"
+    "CardTitle": "Titolo",
+    "Post": "Pubblica",
+    "GetIndividualPublicLink": "Ottieni link pubblico personalizzato",
+    "ShowLess": "Mostra meno",
+    "CardContent": "Cosa vuoi condividere?",
+    "Feed": "Feed"
   }
 }

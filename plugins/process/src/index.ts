@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
-import { Association, Class, Doc, DocumentUpdate, Hierarchy, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
+import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Rank, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -38,7 +38,7 @@ export interface Process extends Doc {
 export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
-  action?: StepId
+  action: StepId
   index: number
   producer: Ref<Transition>
   isResult?: boolean
@@ -66,7 +66,7 @@ export interface Transition extends Doc {
   actions: Step<Doc>[]
   trigger: Ref<Trigger>
   triggerParams: Record<string, any>
-  result?: TriggerResult | null
+  rank: Rank
 }
 
 export interface ExecutionLog extends Doc {
@@ -84,9 +84,10 @@ export enum ExecutionLogAction {
 }
 
 export type CheckFunc = (
+  client: Client,
+  execution: Execution,
   params: Record<string, any>,
-  context: Record<string, any>,
-  hierarchy: Hierarchy
+  context: Record<string, any>
 ) => Promise<boolean>
 
 export enum ExecutionStatus {
@@ -113,13 +114,15 @@ export interface ExecutionError {
   error: IntlString
   props: Record<string, any>
   intlProps: Record<string, IntlString>
-  transition: Ref<Transition>
+  transition: Ref<Transition> | undefined
 }
 
 export interface ProcessToDo extends ToDo {
   execution: Ref<Execution>
 
   withRollback: boolean
+
+  results?: UserResult[]
 }
 
 export type MethodParams<T extends Doc> = {
@@ -130,6 +133,7 @@ Record<string, any>
 export interface State extends Doc {
   process: Ref<Process>
   title: string
+  rank: Rank
 }
 
 export type StepId = string & { __stepId: true }
@@ -139,6 +143,7 @@ export interface Step<T extends Doc> {
   context: StepContext | null
   methodId: Ref<Method<T>>
   params: MethodParams<T>
+  results?: UserResult[]
 }
 
 export interface StepContext {
@@ -146,9 +151,10 @@ export interface StepContext {
   _class?: Ref<Class<Doc>> // class of the context
 }
 
-export interface TriggerResult {
+export interface UserResult {
   _id: ContextId // context id
   name: string
+  key?: string
   type: Type<any>
 }
 
@@ -159,8 +165,13 @@ export interface Method<T extends Doc> extends Doc {
   description?: IntlString
   editor?: AnyComponent
   presenter?: AnyComponent
-  contextClass: Ref<Class<Doc>> | null
+  createdContext: CreatedContext | null
   defaultParams?: MethodParams<T>
+}
+
+export interface CreatedContext {
+  _class: Ref<Class<Doc>>
+  nameField?: string
 }
 
 export interface ProcessFunction extends Doc {
@@ -177,6 +188,7 @@ export interface UpdateCriteriaComponent extends Doc {
   category: AttributeCategory
   editor: AnyComponent
   of: Ref<Class<Doc>>
+  props: Record<string, any>
 }
 
 export * from './errors'
@@ -201,7 +213,8 @@ export default plugin(processId, {
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
     UpdateCard: '' as Ref<Method<Card>>,
     CreateCard: '' as Ref<Method<Card>>,
-    AddRelation: '' as Ref<Method<Association>>
+    AddRelation: '' as Ref<Method<Association>>,
+    AddTag: '' as Ref<Method<Tag>>
   },
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>,
@@ -215,6 +228,7 @@ export default plugin(processId, {
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
     UpdateCheck: '' as Resource<CheckFunc>,
+    SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>
   },
   string: {
@@ -285,6 +299,9 @@ export default plugin(processId, {
     Insert: '' as Ref<ProcessFunction>,
     Remove: '' as Ref<ProcessFunction>,
     RemoveFirst: '' as Ref<ProcessFunction>,
-    RemoveLast: '' as Ref<ProcessFunction>
+    RemoveLast: '' as Ref<ProcessFunction>,
+    CurrentEmployee: '' as Ref<ProcessFunction>,
+    CurrentUser: '' as Ref<ProcessFunction>,
+    CurrentDate: '' as Ref<ProcessFunction>
   }
 })

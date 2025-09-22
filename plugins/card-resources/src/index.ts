@@ -29,7 +29,9 @@ import {
   cardCustomLinkEncode,
   cardCustomLinkMatch,
   openCardInSidebar,
-  checkRelationsSectionVisibility
+  checkRelationsSectionVisibility,
+  getSpaceAccessPublicLink,
+  canGetSpaceAccessPublicLink
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -66,6 +68,7 @@ import CardTagsColored from './components/CardTagsColored.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
 import CardIcon from './components/CardIcon.svelte'
+import CardFeedView from './components/CardFeedView.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as CardIcon } from './components/CardIcon.svelte'
@@ -74,10 +77,12 @@ export { default as Favorites } from './components/Favorites.svelte'
 export { default as CardPresenter } from './components/CardPresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
 export { default as AssociationsSelect } from './components/settings/view/AssociationsSelect.svelte'
-export { default as Home } from './components/Home.svelte'
+export { default as CardTagsColored } from './components/CardTagsColored.svelte'
+export { default as CardPathPresenter } from './components/CardPathPresenter.svelte'
+export { default as CardTimestamp } from './components/CardTimestamp.svelte'
 
 export * from './types'
-export { getCardIconInfo } from './utils'
+export { getCardIconInfo, openCardInSidebar } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -113,7 +118,8 @@ export default async (): Promise<Resources> => ({
     FavoriteCardPresenter,
     CardTagColored,
     CardTagsColored,
-    CardIcon
+    CardIcon,
+    CardFeedView
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,
@@ -140,6 +146,8 @@ export default async (): Promise<Resources> => ({
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,
     OpenCardInSidebar: openCardInSidebar,
-    CheckRelationsSectionVisibility: checkRelationsSectionVisibility
+    CheckRelationsSectionVisibility: checkRelationsSectionVisibility,
+    GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
+    CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink
   }
 })

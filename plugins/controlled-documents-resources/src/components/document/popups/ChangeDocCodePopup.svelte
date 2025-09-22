@@ -21,7 +21,6 @@
 
   import IconWarning from '../../icons/IconWarning.svelte'
   import documentsRes from '../../../plugin'
-  import { syncDocumentMetaTitle } from '../../../utils'
 
   export let object: ControlledDocument
 
@@ -60,7 +59,6 @@
     }
 
     await client.update(object, { code })
-    await syncDocumentMetaTitle(client, object.attachedTo, code, object.title)
     dispatch('close')
   }
 </script>

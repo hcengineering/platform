@@ -28,6 +28,7 @@
   import { createEventDispatcher } from 'svelte'
   import NextTriggers from './NextTriggers.svelte'
   import process from '../plugin'
+  import ExecutionAllToDos from './ExecutionAllToDos.svelte'
 
   export let execution: Execution
 
@@ -130,6 +131,7 @@
   on:close
 >
   <NextTriggers {execution} />
+  <ExecutionAllToDos value={execution} />
   <div class="flex-row-reverse">
     <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
   </div>

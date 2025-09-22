@@ -414,6 +414,23 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(builder, {
+    action: view.actionImpl.CopyTextToClipboard,
+    actionProps: {
+      textProvider: card.function.GetSpaceAccessPublicLink
+    },
+    label: card.string.GetIndividualPublicLink,
+    icon: view.icon.CopyLink,
+    input: 'any',
+    category: view.category.General,
+    target: card.class.CardSpace,
+    query: {},
+    visibilityTester: card.function.CanGetSpaceAccessPublicLink,
+    context: {
+      mode: ['context', 'browser']
+    }
+  })
+
   builder.mixin(card.class.CardSpace, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: card.class.Card,
@@ -595,6 +612,28 @@ export function createModel (builder: Builder): void {
       config: listConfig
     },
     card.viewlet.CardChildList
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: card.string.Feed,
+      icon: card.icon.Feed,
+      component: card.component.CardFeedView
+    },
+    card.viewlet.CardFeedDescriptor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: card.viewlet.CardFeedDescriptor,
+      config: []
+    },
+    card.viewlet.CardFeed
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {

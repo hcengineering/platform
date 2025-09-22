@@ -97,7 +97,13 @@
     "RemoveFirst": "Odstranit první",
     "RemoveLast": "Odstranit poslední",
     "Cancelled": "Zrušeno",
-    "WaitUntil": "Čekat do"
+    "WaitUntil": "Čekat do",
+    "CurrentUser": "Aktuální uživatel",
+    "CurrentDate": "Aktuální datum",
+    "AddResult": "Přidat výsledek",
+    "For": "Pro",
+    "Context": "Kontext",
+    "Attribute": "Atribut"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

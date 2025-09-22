@@ -12,6 +12,7 @@
     "Parent": "Parent",
     "Tags": "Tags",
     "Tag": "Tag",
+    "AddTag": "Add Tag",
     "CardLibrary": "Card Library",
     "MinimizeAll": "Minimize All",
     "ExpandAll": "Expand All",
@@ -41,11 +42,11 @@
     "NoChildren": "No children",
     "ConfigDescription": "Extension for database-style knowledge management.",
     "AddCollaborators": "Add collaborators",
-    "Home": "Home",
-    "WhatDoYouWantToShare": "What do you want to share?",
-    "Share": "Share",
-    "Compact": "Compact",
-    "Comfortable": "Comfortable",
-    "Comfortable2": "Comfortable 2"
+    "CardTitle": "Title",
+    "Post": "Post",
+    "GetIndividualPublicLink": "Get personalized public link",
+    "ShowLess": "Show less",
+    "CardContent": "What do you want to share?",
+    "Feed": "Feed"
   }
 }

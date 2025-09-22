@@ -12,6 +12,10 @@ export interface Token {
   workspace: WorkspaceUuid
   extra?: Record<string, any>
   grant?: PermissionsGrant
+
+  sub?: AccountUuid // Subject
+  exp?: number // Expiration, seconds since epoch
+  nbf?: number // Not valid before, seconds since epoch
 }
 
 // Permissions grant provides the token presenter access to a specific workspace
@@ -19,8 +23,14 @@ export interface PermissionsGrant {
   workspace: WorkspaceUuid
   role: AccountRole
 
+  // Ideally we shouldn't need this but for now it's the only way to check
+  // if some granted permissions are valid - the ones which can only be verified in the workspace
+  grantedBy?: AccountUuid
+
   firstName?: string
   lastName?: string
+
+  spaces?: string[]
 
   extra?: Record<string, any>
 }
@@ -47,7 +57,12 @@ export function generateToken (
   workspaceUuid?: WorkspaceUuid,
   extra?: Record<string, string>,
   secret?: string,
-  grant?: PermissionsGrant
+  options?: {
+    grant?: PermissionsGrant
+    nbf?: number
+    exp?: number
+    sub?: PersonUuid
+  }
 ): string {
   if (!validate(accountUuid)) {
     throw new TokenError(`Invalid account uuid: "${accountUuid}"`)
@@ -55,8 +70,13 @@ export function generateToken (
   if (workspaceUuid !== undefined && !validate(workspaceUuid)) {
     throw new TokenError(`Invalid workspace uuid: "${workspaceUuid}"`)
   }
+  const { grant, nbf, exp, sub } = options ?? {}
   if (grant?.workspace !== undefined && !validate(grant?.workspace)) {
     throw new TokenError(`Invalid grant workspace uuid: "${grant?.workspace}"`)
+  }
+
+  if (grant != null && sub == null && (nbf == null || exp == null)) {
+    throw new TokenError('nbf and exp are required when sub is not provided')
   }
 
   const service = getMetadata(serverPlugin.metadata.Service)
@@ -69,8 +89,10 @@ export function generateToken (
       ? {
           workspace: grant.workspace,
           role: grant.role,
+          grantedBy: grant.grantedBy,
           firstName: grant.firstName,
           lastName: grant.lastName,
+          spaces: grant.spaces,
           extra: grant.extra
         }
       : undefined
@@ -80,7 +102,10 @@ export function generateToken (
       ...(extra !== undefined ? { extra } : {}),
       account: accountUuid,
       workspace: workspaceUuid,
-      grant: sanitizedGrant
+      grant: sanitizedGrant,
+      sub,
+      exp,
+      nbf
     },
     secret ?? getSecret()
   )

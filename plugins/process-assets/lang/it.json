@@ -102,7 +102,13 @@
     "ArraySizeLt": "Dimensione minore di",
     "ArraySizeLte": "Dimensione minore o uguale a",
     "Cancelled": "Annullato",
-    "WaitUntil": "Aspetta fino a"
+    "WaitUntil": "Aspetta fino a",
+    "CurrentUser": "Utente corrente",
+    "CurrentDate": "Data corrente",
+    "AddResult": "Aggiungi risultato",
+    "For": "Per",
+    "Context": "Contesto",
+    "Attribute": "Attributo"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

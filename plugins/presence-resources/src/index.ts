@@ -21,8 +21,10 @@ import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 import { getFollowee, publishData, followeeDataSubscribe, followeeDataUnsubscribe } from './store'
 
 export { Presence, PresenceAvatars }
-export { updateMyPresence, removeMyPresence, presenceByObjectId } from './store'
 
+export * from './pulse'
+export * from './presence'
+export * from './typing'
 export * from './types'
 
 export default async (): Promise<Resources> => ({

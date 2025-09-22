@@ -23,14 +23,13 @@ import core, {
   type FindResult,
   type LookupData,
   type MeasureContext,
-  type PersonUuid,
   type Ref,
   type Tx,
   type TxCUD,
   TxProcessor,
   systemAccountUuid,
   type SessionData,
-  type AccountUuid
+  AccountRole
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
@@ -72,7 +71,11 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     for (const tx of txes) {
       if (this.isTargetDomain(tx)) {
         const account = ctx.contextData.account
-        if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
+        if (
+          !account.socialIds.includes(tx.modifiedBy) &&
+          account.uuid !== systemAccountUuid &&
+          account.role !== AccountRole.Owner
+        ) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
         const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accontUuid

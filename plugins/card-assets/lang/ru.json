@@ -12,6 +12,7 @@
     "Parent": "Родитель",
     "Tags": "Теги",
     "Tag": "Тег",
+    "AddTag": "Добавить тег",
     "CardLibrary": "Библиотека карт",
     "MinimizeAll": "Свернуть все",
     "ExpandAll": "Развернуть все",
@@ -41,11 +42,11 @@
     "NoChildren": "Нет потомков",
     "ConfigDescription": "Расширение для управления знаниями в стиле базы данных.",
     "AddCollaborators": "Добавить сотрудников",
-    "Home": "Дом",
-    "WhatDoYouWantToShare": "Чем вы хотите поделиться?",
-    "Share": "Поделиться",
-    "Compact": "Компактный",
-    "Comfortable": "Комфортный",
-    "Comfortable2": "Комфортный 2"
+    "CardTitle": "Название",
+    "Post": "Опубликовать",
+    "GetIndividualPublicLink": "Получить персональную публичную ссылку",
+    "ShowLess": "Скрыть детали",
+    "CardContent": "Чем вы хотите поделиться?",
+    "Feed": "Лента"
   }
 }

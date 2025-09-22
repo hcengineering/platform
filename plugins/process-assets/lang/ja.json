@@ -101,7 +101,13 @@
     "ArraySizeLt": "サイズがより小さい",
     "ArraySizeLte": "サイズが以下",
     "Cancelled": "キャンセル済み",
-    "WaitUntil": "待機する"
+    "WaitUntil": "待機する",
+    "CurrentUser": "現在のユーザー",
+    "CurrentDate": "現在の日付",
+    "AddResult": "結果を追加",
+    "For": "〜のために",
+    "Context": "コンテキスト",
+    "Attribute": "属性"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

@@ -101,8 +101,7 @@ export async function loadCollabJson (
   }
 
   if (!blob.contentType.includes('application/json')) {
-    ctx.error('invalid content type', { contentType: blob.contentType })
-    return undefined
+    ctx.warn('invalid content type', { contentType: blob.contentType })
   }
 
   const buffer = await storageAdapter.read(ctx, wsIds, blobId)

@@ -12,6 +12,7 @@
     "Parent": "Principal",
     "Tags": "Tags",
     "Tag": "Tag",
+    "AddTag": "Adicionar Tag",
     "CardLibrary": "Biblioteca de Cartões",
     "MinimizeAll": "Minimizar Tudo",
     "ExpandAll": "Expandir Tudo",
@@ -41,11 +42,11 @@
     "NoChildren": "Sem filhos",
     "ConfigDescription": "Extensão para gerenciamento de conhecimento no estilo de banco de dados.",
     "AddCollaborators": "Adicionar colaboradores",
-    "Home": "Início",
-    "WhatDoYouWantToShare": "O que você deseja compartilhar?",
-    "Share": "Compartilhar",
-    "Compact": "Compacto",
-    "Comfortable": "Confortável",
-    "Comfortable2": "Confortável 2"
+    "CardTitle": "Título",
+    "Post": "Publicar",
+    "GetIndividualPublicLink": "Obter link público personalizado",
+    "ShowLess": "Mostrar menos",
+    "CardContent": "O que você quer compartilhar?",
+    "Feed": "Feed"
   }
 }

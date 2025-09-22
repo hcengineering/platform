@@ -104,6 +104,9 @@
     "Yesterday": "昨日",
     "ThisWeek": "今週",
     "ThisMonth": "今月",
-    "ThisYear": "今年"
+    "ThisYear": "今年",
+    "EmojiStyle": "絵文字スタイル",
+    "EmojiSystem": "システムデフォルト",
+    "EmojiNoto": "Noto Color"
   }
 }

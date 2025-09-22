@@ -380,6 +380,37 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
     })
   }
 
+  res.push(...(await updatePeers(control, doc, updateTx)))
+  return res
+}
+
+async function updatePeers (control: TriggerControl, doc: Card, updateTx: TxUpdateDoc<Card>): Promise<Tx[]> {
+  if (updateTx.space === core.space.DerivedTx) return []
+  const isDirect = control.hierarchy.isDerived(doc._class, communication.type.Direct)
+  const isThreadFromDirect = (doc.parentInfo ?? []).some((it) =>
+    control.hierarchy.isDerived(it._class, communication.type.Direct)
+  )
+
+  if (!isDirect && !isThreadFromDirect) return []
+
+  delete updateTx.operations.title
+  delete updateTx.operations.parentInfo
+  delete updateTx.operations.parent
+  delete updateTx.operations.$inc
+
+  const peers = (
+    (
+      await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+        findPeers: { params: { kind: 'card', cardId: doc._id } }
+      })
+    ).value as CardPeer[]
+  ).flatMap((it) => it.members)
+
+  const res: Tx[] = []
+  for (const peer of peers) {
+    res.push(control.txFactory.createTxUpdateDoc(doc._class, peer.extra.space, peer.cardId, updateTx.operations))
+  }
+
   return res
 }
 

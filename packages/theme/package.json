@@ -36,12 +36,12 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/analytics": "^0.6.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }

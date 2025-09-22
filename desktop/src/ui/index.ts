@@ -18,7 +18,7 @@ import {
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
-import { inboxId } from '@hcengineering/inbox'
+import { chatId } from '@hcengineering/chat'
 import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
@@ -46,18 +46,18 @@ window.addEventListener('DOMContentLoaded', () => {
   if (currentOsIsWindows()) {
     const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
     if (titleBarRoot != null) {
-      const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
+      void setupTitleBarMenu(ipcMain, titleBarRoot).then((menuBar) => {
+        themeStore.subscribe((themeOptions) => {
+          if (themeOptions != null) {
+            menuBar.setTheme(themeOptions.variant)
+          }
+        })
 
-      themeStore.subscribe((themeOptions) => {
-        if (themeOptions != null) {
-          menuBar.setTheme(themeOptions.variant)
-        }
-      })
-
-      void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
-        menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
-      }).catch(() => {
-        menuBar.setTheme(ThemeVariant.Light) // fallback
+        void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+          menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
+        }).catch(() => {
+          menuBar.setTheme(ThemeVariant.Light) // fallback
+        })
       })
     }
   }
@@ -169,7 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Support for new inbox with cardId (card-based)
     if (notificationParams.cardId != null) {
       const currentLocation = getCurrentResolvedLocation()
-      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${inboxId}/${notificationParams.cardId}`)
+      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${chatId}/${notificationParams.cardId}`)
       return
     }
 

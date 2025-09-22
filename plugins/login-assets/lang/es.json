@@ -74,6 +74,8 @@
     "SetPasswordNow": "Estableceré una contraseña ahora",
     "LoginAsGuest": "Continuar como invitado",
     "SignUpToCreateWorkspace": "No hay espacios de trabajo con acceso de invitado. Por favor, regístrese para crear el suyo.",
-    "WhatIsYourName": "¿Cuál es su nombre?"
+    "WhatIsYourName": "¿Cuál es su nombre?",
+    "AccessExpired": "El tiempo de acceso ha expirado. Por favor, solicite un nuevo enlace de acceso.",
+    "AccessNotActive": "El tiempo de acceso aún no ha comenzado. Comienza en: "
   }
 }

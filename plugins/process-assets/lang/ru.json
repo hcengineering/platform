@@ -102,7 +102,13 @@
     "ArraySizeLt": "Количество меньше",
     "ArraySizeLte": "Количество меньше или равно",
     "Cancelled": "Отменено",
-    "WaitUntil": "Ждать до"
+    "WaitUntil": "Ждать до",
+    "CurrentUser": "Текущий пользователь",
+    "CurrentDate": "Текущая дата",
+    "AddResult": "Добавить результат",
+    "For": "Для",
+    "Context": "Контекст",
+    "Attribute": "Аттрибут"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

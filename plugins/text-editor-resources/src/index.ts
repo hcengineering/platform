@@ -64,6 +64,7 @@ export { default as TableOfContents } from './components/toc/TableOfContents.sve
 export { default as TableOfContentsContent } from './components/toc/TableOfContentsContent.svelte'
 export type { EditorKitOptions } from './kits/editor-kit'
 export * from './utils'
+export * from './components/editor-context'
 
 export * from './command/deleteAttachment'
 export { EmojiExtension } from './components/extension/emoji'
@@ -94,8 +95,7 @@ export {
   QMSInlineCommentMark as NodeUuidExtension,
   qmsInlineCommentMarkName as nodeUuidName,
   selectNode,
-  type QMSInlineCommentMarkOptions as NodeUuidOptions,
-  type QMSInlineCommentMarkStorage as NodeUuidStorage
+  type QMSInlineCommentMarkOptions as NodeUuidOptions
 } from './components/extension/qms/qmsInlineCommentMark'
 export { referenceConfig, ReferenceExtension } from './components/extension/reference'
 export { type Provider } from './provider/types'

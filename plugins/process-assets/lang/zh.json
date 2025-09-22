@@ -102,7 +102,13 @@
     "ArraySizeLt": "大小小于",
     "ArraySizeLte": "大小小于等于",
     "Cancelled": "已取消",
-    "WaitUntil": "等待直到"
+    "WaitUntil": "等待直到",
+    "CurrentUser": "当前用户",
+    "CurrentDate": "当前日期",
+    "AddResult": "添加结果",
+    "For": "对于",
+    "Context": "上下文",
+    "Attribute": "属性"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

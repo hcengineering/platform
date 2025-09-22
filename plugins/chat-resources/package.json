@@ -54,7 +54,13 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/workbench-resources": "^0.6.1",
+    "@hcengineering/communication-resources": "^0.6.0",
+    "@hcengineering/communication-shared": "^0.1.0",
+    "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-markdown": "^0.6.0",
+    "@hcengineering/emoji-resources": "^0.6.0",
     "fast-equals": "^5.2.2",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   }
 }

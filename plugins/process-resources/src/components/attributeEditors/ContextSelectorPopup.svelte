@@ -54,7 +54,7 @@
     onClick({
       type: 'attribute',
       key: val.name,
-      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : []
+      functions: valueFunc !== undefined ? [valueFunc] : []
     })
   }
 

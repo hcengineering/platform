@@ -1238,16 +1238,6 @@ export async function openDocFromRef<T extends Doc = Doc> (_class: Ref<Class<T>>
   return false
 }
 
-export async function canCopyLink (doc?: Doc | Doc[]): Promise<boolean> {
-  if (doc === null || doc === undefined) {
-    return false
-  }
-  if (Array.isArray(doc) && doc.length !== 1) {
-    return false
-  }
-  return true
-}
-
 export async function getLink (doc?: Doc | Doc[]): Promise<string> {
   doc = Array.isArray(doc) ? doc[0] : doc
   if (doc === undefined) {

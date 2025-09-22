@@ -283,7 +283,7 @@
       tooltip={{ label: emojiPlugin.string.DefaultSkinTone }}
       on:click={showSkinMenu}
     >
-      <span style:font-size={'1.5rem'}>{getUnicodeEmojiByShortCode(':hand:', skinTone)?.emoji}</span>
+      <span style:font-size={'1.5rem'} class="emoji">{getUnicodeEmojiByShortCode(':hand:', skinTone)?.emoji}</span>
     </ButtonBase>
   </div>
   <Scroller

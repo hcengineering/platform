@@ -10,10 +10,12 @@
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
+    "test": "jest --passWithNoTests --silent",
     "_phase:svelte-check": "do-svelte-check",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "_phase:validate": "compile validate",
+    "_phase:test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -50,12 +52,12 @@
     "emojibase": "^16.0.0",
     "emojibase-regex": "^16.0.0",
     "fast-equals": "^5.2.2",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "plyr": "^3.7.8",
     "blurhash": "^2.0.5"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }

@@ -30,7 +30,7 @@
   import { chatId } from '@hcengineering/chat'
   import { Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
-  import { Favorites, Home } from '@hcengineering/card-resources'
+  import { Favorites } from '@hcengineering/card-resources'
 
   import ChatNavigation from './ChatNavigation.svelte'
   import {
@@ -38,10 +38,10 @@
     getCardIdFromLocation,
     navigateToType,
     getTypeIdFromLocation,
+    isAllLocation,
     isFavoritesLocation,
     navigateToFavorites,
-    navigateToHome,
-    isHomeLocation
+    navigateToAll
   } from '../location'
   import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
 
@@ -57,7 +57,7 @@
       doc: MasterTag
     }
     | { type: 'favorites' }
-    | { type: 'home' }
+    | { type: 'all' }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -77,15 +77,15 @@
     const typeId = getTypeIdFromLocation(loc)
     const cardId = getCardIdFromLocation(loc)
     const isFavorites = isFavoritesLocation(loc)
-    const isHome = isHomeLocation(loc)
+    const isAll = isAllLocation(loc)
 
     if (isFavorites) {
       selection = { type: 'favorites' }
       return
     }
 
-    if (isHome) {
-      selection = { type: 'home' }
+    if (isAll) {
+      selection = { type: 'all' }
       return
     }
 
@@ -136,11 +136,11 @@
     navigateToFavorites()
   }
 
-  function selectHome (): void {
-    if (selection?.type === 'home') return
+  function selectAll (): void {
+    if (selection?.type === 'all') return
     closePanel(false)
-    selection = { type: 'home' }
-    navigateToHome()
+    selection = { type: 'all' }
+    navigateToAll()
   }
 
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
@@ -184,7 +184,7 @@
           on:selectCard={selectCard}
           on:selectType={selectType}
           on:favorites={selectFavorites}
-          on:home={selectHome}
+          on:selectAll={selectAll}
         />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
@@ -205,16 +205,14 @@
       {#key selection.type}
         <Favorites application={chatId} />
       {/key}
-    {:else if selection?.type === 'home'}
-      {#key selection.type}
-        <Home on:selectCard={selectCard} />
-      {/key}
     {:else if selectedCard}
       {@const panelComponent = hierarchy.classHierarchyMixin(selectedCard._class, view.mixin.ObjectPanel)}
       {@const comp = panelComponent?.component ?? view.component.EditDoc}
       <Component is={comp} props={{ _id: selectedCard._id, readonly: false, embedded: true, allowClose: false }} />
     {:else if selectedType}
       <ChatNavigationCategoryList type={selectedType} />
+    {:else if selection?.type === 'all'}
+      <Component is={cardPlugin.component.CardFeedView} />
     {/if}
   </div>
 </div>

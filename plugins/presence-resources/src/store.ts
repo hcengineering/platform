@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
-import { getCurrentEmployee, type Person } from '@hcengineering/contact'
-import { type PresenceData } from '@hcengineering/presence'
+import { type Ref } from '@hcengineering/core'
+import { type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
-import { type Readable, derived, writable, get } from 'svelte/store'
+import { writable, get } from 'svelte/store'
 
-import type { PersonRoomPresence, Room, RoomPresence, MyDataItem } from './types'
+import type { RoomPresence, MyDataItem } from './types'
 
 type PersonPresenceMap = Map<Ref<Person>, RoomPresence[]>
 
@@ -30,46 +29,6 @@ export const followee = writable<Ref<Person> | undefined>(undefined)
 
 const personDataMap = new Map<Ref<Person>, Map<string, any>>()
 const followeeDataHandlers = new Map<string, Set<(data: any) => Promise<void>>>()
-
-export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
-  otherPresence,
-  ($presence) => {
-    const map = new Map<Ref<Doc>, PersonRoomPresence[]>()
-    for (const [person, presences] of $presence.entries()) {
-      if (person === getCurrentEmployee()) continue
-
-      presences.forEach((presence) => {
-        const values = map.get(presence.room.objectId) ?? []
-        values.push({ person, ...presence })
-
-        map.set(presence.room.objectId, values)
-      })
-    }
-
-    return map
-  }
-)
-
-export function updateMyPresence (room: Room, presence: PresenceData): void {
-  myPresence.update((rooms) => {
-    const value = { room, presence, lastUpdated: Date.now() }
-
-    const index = rooms.findIndex((it) => it.room.objectId === room.objectId)
-    if (index >= 0) {
-      rooms[index] = value
-    } else {
-      rooms.push(value)
-    }
-
-    return rooms
-  })
-}
-
-export function removeMyPresence (room: Room): void {
-  myPresence.update((old) => {
-    return old.filter((it) => it.room.objectId !== room.objectId)
-  })
-}
 
 export function onPersonUpdate (person: Ref<Person>, presence: RoomPresence[]): void {
   otherPresence.update((map) => {

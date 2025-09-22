@@ -119,7 +119,7 @@ export class TToDo extends TAttachedDoc implements ToDo {
   @Index(IndexKind.FullText)
     description!: Markup
 
-  doneOn?: Timestamp | null
+  doneOn!: Timestamp | null
 
   @Prop(TypeRef(contactPlugin.mixin.Employee), contactPlugin.string.Employee)
   @Index(IndexKind.Indexed)

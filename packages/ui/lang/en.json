@@ -104,6 +104,9 @@
     "Yesterday": "Yesterday",
     "ThisWeek": "This week",
     "ThisMonth": "This month",
-    "ThisYear": "This year"
+    "ThisYear": "This year",
+    "EmojiStyle": "Emoji Style",
+    "EmojiSystem": "System Default",
+    "EmojiNoto": "Noto Color"
   }
 }

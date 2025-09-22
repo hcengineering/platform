@@ -196,9 +196,11 @@ export class SyncRunner {
       id,
       promise.then(() => {})
     )
-    const result = await promise
-    this.eventSync.delete(id)
-    return result
+    try {
+      return await promise
+    } finally {
+      this.eventSync.delete(id)
+    }
   }
 }
 
@@ -328,13 +330,20 @@ export function compareMarkdown (a: string, b: string): boolean {
   return na === nb
 }
 
-export async function syncChilds (info: DocSyncInfo, client: TxOperations, derivedClient: TxOperations): Promise<void> {
-  const childInfos = await client.findAll(github.class.DocSyncInfo, { parent: info.url.toLowerCase() })
+export async function syncChilds (
+  ctx: MeasureContext,
+  info: DocSyncInfo,
+  client: TxOperations,
+  derivedClient: TxOperations
+): Promise<void> {
+  const childInfos = await ctx.with('syncChilds-find', {}, () =>
+    client.findAll(github.class.DocSyncInfo, { parent: info.url.toLowerCase() })
+  )
   if (childInfos.length > 0) {
     const ops = derivedClient.apply()
     for (const child of childInfos) {
       await ops?.update(child, { needSync: '' })
     }
-    await ops.commit()
+    await ctx.with('sync-child-trigger', {}, () => ops.commit())
   }
 }

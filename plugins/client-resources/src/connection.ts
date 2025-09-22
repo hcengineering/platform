@@ -72,7 +72,7 @@ class RequestPromise {
   reject!: (reason?: any) => void
   reconnect?: () => void
 
-  // Required to proeprly handle rate limits
+  // Required to properly handle rate limits
   sendData: () => void = () => {}
 
   constructor (
@@ -92,6 +92,11 @@ class RequestPromise {
 
 const globalRPCHandler: RPCHandler = new RPCHandler()
 
+interface OnConnectHandler {
+  resolve: () => void
+  reject: (err: Error) => void
+}
+
 class Connection implements ClientConnection {
   private websocket: ClientSocket | null = null
   binaryMode = false
@@ -99,7 +104,7 @@ class Connection implements ClientConnection {
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private interval: number | undefined
-  private dialTimer: any | undefined
+  private dialTimer: number | undefined
 
   private sockets = 0
   private openAction: any
@@ -166,12 +171,13 @@ class Connection implements ClientConnection {
   }
 
   private schedulePing (socketId: number): void {
-    clearInterval(this.interval)
     this.pingResponse = Date.now()
     const wsocket = this.websocket
-    const interval = setInterval(() => {
+
+    clearInterval(this.interval)
+    this.interval = setInterval(() => {
       if (wsocket !== this.websocket) {
-        clearInterval(interval)
+        clearInterval(this.interval)
         return
       }
       if (!this.upgrading && this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
@@ -203,7 +209,6 @@ class Connection implements ClientConnection {
         clearInterval(this.interval)
       }
     }, pingTimeout)
-    this.interval = interval
   }
 
   async close (): Promise<void> {
@@ -211,6 +216,12 @@ class Connection implements ClientConnection {
     clearTimeout(this.openAction)
     clearTimeout(this.dialTimer)
     clearInterval(this.interval)
+    for (const handler of this.onConnectHandlers) {
+      handler.reject(new Error('Connection closed'))
+    }
+    for (const req of this.requests.values()) {
+      req.reject(new Error('Connection closed'))
+    }
     if (this.websocket !== null) {
       this.websocket.close(1000)
       this.websocket = null
@@ -222,7 +233,7 @@ class Connection implements ClientConnection {
   }
 
   delay = 0
-  onConnectHandlers: (() => void)[] = []
+  onConnectHandlers: OnConnectHandler[] = []
 
   private waitOpenConnection (ctx: MeasureContext): Promise<void> | undefined {
     if (this.isConnected()) {
@@ -233,9 +244,10 @@ class Connection implements ClientConnection {
       'wait-connection',
       {},
       (ctx) =>
-        new Promise((resolve) => {
-          this.onConnectHandlers.push(() => {
-            resolve()
+        new Promise((resolve, reject) => {
+          this.onConnectHandlers.push({
+            resolve,
+            reject
           })
           // Websocket is null for first time
           this.scheduleOpen(ctx, false)
@@ -294,7 +306,7 @@ class Connection implements ClientConnection {
     if (resp.error !== undefined) {
       if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
         if (
-          resp.error.code !== platform.status.WorkspaceArchived ||
+          resp.error.code !== platform.status.WorkspaceArchived &&
           resp.error.code !== platform.status.WorkspaceNotFound
         ) {
           Analytics.handleError(new PlatformError(resp.error))
@@ -350,7 +362,7 @@ class Connection implements ClientConnection {
 
         // We need to clear dial timer, since we recieve hello response.
         clearTimeout(this.dialTimer)
-        this.dialTimer = null
+        this.dialTimer = undefined
         this.lastHash = (resp as HelloResponse).lastHash
 
         const serverVersion = helloResp.serverVersion
@@ -374,7 +386,7 @@ class Connection implements ClientConnection {
         // Notify all waiting connection listeners
         const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
         for (const h of handlers) {
-          h()
+          h.resolve()
         }
 
         for (const [, v] of this.requests.entries()) {
@@ -540,12 +552,10 @@ class Connection implements ClientConnection {
       return
     }
     this.websocket = wsocket
-    const opened = false
-
-    if (this.dialTimer != null) {
+    if (this.dialTimer === undefined) {
       this.dialTimer = setTimeout(() => {
-        this.dialTimer = null
-        if (!opened && !this.closed) {
+        this.dialTimer = undefined
+        if (!this.closed) {
           void this.opt?.onDialTimeout?.()?.catch((err) => {
             this.ctx.error('failed to handle dial timeout', { err })
           })
@@ -652,16 +662,15 @@ class Connection implements ClientConnection {
       ctx.withSync('send-hello', {}, () => this.websocket?.send(this.rpcHandler.serialize(helloRequest, false)))
     }
 
-    wsocket.onerror = (event: any) => {
+    // FIX: remove undefined variable 'opened'
+    wsocket.onerror = () => {
       if (this.websocket !== wsocket) {
         return
       }
       if (this.delay < 3) {
         this.delay += 1
       }
-      if (opened) {
-        console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
-      }
+      console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
     }
   }
 
@@ -761,7 +770,7 @@ class Connection implements ClientConnection {
 
   getAccount (): Promise<Account> {
     if (this.account !== undefined) {
-      return clone(this.account)
+      return Promise.resolve(clone(this.account))
     }
     return this.sendRequest({ method: 'getAccount', params: [] })
   }

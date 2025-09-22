@@ -102,7 +102,13 @@
     "ArraySizeLt": "Taille inférieure à",
     "ArraySizeLte": "Taille inférieure ou égale à",
     "Cancelled": "Annulé",
-    "WaitUntil": "Attendre jusqu'à"
+    "WaitUntil": "Attendre jusqu'à",
+    "CurrentUser": "Utilisateur actuel",
+    "CurrentDate": "Date actuelle",
+    "AddResult": "Ajouter un résultat",
+    "For": "Pour",
+    "Context": "Contexte",
+    "Attribute": "Attribut"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

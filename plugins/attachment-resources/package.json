@@ -58,10 +58,10 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "filesize": "^8.0.3",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.20"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }

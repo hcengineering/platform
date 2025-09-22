@@ -14,26 +14,66 @@
 -->
 
 <script lang="ts">
-  import { notEmpty, type Doc } from '@hcengineering/core'
-  import { formatName } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { type Class, type Doc, type Ref, notEmpty } from '@hcengineering/core'
+  import { type Person, formatName, getCurrentEmployee } from '@hcengineering/contact'
+  import { Avatar, getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
+
   import PresenceList from './PresenceList.svelte'
-  import { presenceByObjectId, followee, toggleFollowee } from '../store'
+  import { PresenceInfo, subscribePresence } from '../presence'
+  import { followee, toggleFollowee } from '../store'
 
   export let object: Doc
   export let size: IconSize = 'small'
   export let limit: number = 4
 
-  $: presence = $presenceByObjectId?.get(object._id) ?? []
-  $: personByRefStore = getPersonByPersonRefStore(presence.map((p) => p.person))
-  $: persons = presence
-    .map((it) => it.person)
-    .map((p) => $personByRefStore.get(p))
-    .filter(notEmpty)
+  const me = getCurrentEmployee()
+
+  let presenceInfo = new Map<string, Ref<Person>>()
+  let persons: Person[] = []
+
   $: overLimit = persons.length > limit
   $: adaptive = checkAdaptiveMatching($deviceInfo.size, 'md') || overLimit
+
+  let unsubscribe: (() => Promise<boolean>) | undefined
+
+  async function updatePresence (presenceInfo: Map<string, Ref<Person>>): Promise<void> {
+    const personByRef = await getPersonsByPersonRefs(Array.from(presenceInfo.values()))
+    persons = presenceInfo
+      .values()
+      .map((p) => personByRef.get(p))
+      .filter(notEmpty)
+      .toArray()
+  }
+
+  function handlePresenceInfo (key: string, value: PresenceInfo | undefined): void {
+    if (value === undefined) {
+      presenceInfo.delete(key)
+      presenceInfo = presenceInfo
+      return
+    }
+
+    if (presenceInfo.has(key) || value.personId === me) {
+      return
+    }
+
+    presenceInfo.set(key, value.personId)
+    presenceInfo = presenceInfo
+  }
+
+  async function updatePresenceSub (objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>): Promise<void> {
+    await unsubscribe?.()
+    presenceInfo = new Map<string, Ref<Person>>()
+    unsubscribe = await subscribePresence(objectClass, objectId, handlePresenceInfo)
+  }
+
+  $: void updatePresenceSub(object._class, object._id)
+  $: void updatePresence(presenceInfo)
+  onDestroy(() => {
+    void unsubscribe?.()
+  })
 </script>
 
 {#if persons.length > 0}

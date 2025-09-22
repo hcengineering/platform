@@ -14,15 +14,27 @@
 //
 
 import cardPlugin, { Card } from '@hcengineering/card'
-import core, { Tx, TxCreateDoc, TxCUD, TxProcessor, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  ArrOf,
+  Doc,
+  RefTo,
+  Tx,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import process, {
   ContextId,
   Execution,
+  Method,
   Process,
   ProcessContext,
   ProcessToDo,
   SelectedExecutionContext,
   State,
+  Step,
   Transition
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
@@ -33,6 +45,8 @@ import {
   All,
   Append,
   Ceil,
+  CurrentDate,
+  CurrentUser,
   Cut,
   Divide,
   FirstValue,
@@ -65,8 +79,11 @@ import {
   UpdateCard,
   CreateCard,
   AddRelation,
-  CheckToDo,
+  AddTag,
+  CheckToDoDone,
+  CheckToDoCancelled,
   OnCardUpdateCheck,
+  CheckSubProcessesDone,
   CheckTime
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
@@ -113,7 +130,6 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxCreateDoc) continue
     const createTx = tx as TxCreateDoc<Execution>
@@ -128,11 +144,10 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxRemoveDoc) continue
     const removeTx = tx as TxRemoveDoc<ProcessToDo>
@@ -150,11 +165,10 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxUpdateDoc) continue
     if (tx.space !== core.space.Tx) continue
@@ -177,7 +191,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
       control
     )
   }
-  return res
+  return []
 }
 
 export async function OnProcessRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -261,37 +275,27 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
   return res
 }
 
+function getName (current: ProcessContext | undefined, method: Method<Doc>, action: Step<Doc>): string {
+  const nameField = method.createdContext?.nameField
+  if (nameField !== undefined) {
+    const name = action.params[nameField]
+    if (name !== undefined && typeof name === 'string' && name !== '') return name
+  }
+  return current?.name ?? ''
+}
+
 async function syncContext (control: TriggerControl, _process: Process): Promise<Tx | undefined> {
   const transitions = control.modelDb.findAllSync(process.class.Transition, { process: _process._id })
   const exists = new Set<ContextId>()
   let changed = false
   let index = 1
   for (const transition of transitions) {
-    if (transition.result?._id != null) {
-      exists.add(transition.result._id)
-      const context = _process.context[transition.result._id]
-      changed = true
-      const ctx: SelectedExecutionContext = {
-        type: 'context',
-        id: transition.result._id,
-        key: ''
-      }
-      _process.context[transition.result._id] = {
-        name: context?.name ?? transition.result.name,
-        isResult: true,
-        type: transition.result.type,
-        _class: transition.result.type._class,
-        index: index++,
-        producer: transition._id,
-        value: ctx
-      }
-    }
     for (const action of transition.actions) {
       if (action.context != null) {
         exists.add(action.context._id)
         const method = control.modelDb.findObject(action.methodId)
         const current = _process.context[action.context._id]
-        if (method?.contextClass != null) {
+        if (method?.createdContext != null) {
           changed = true
           const ctx: SelectedExecutionContext = {
             type: 'context',
@@ -299,9 +303,32 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             key: ''
           }
           _process.context[action.context._id] = {
-            name: current?.name ?? '',
-            _class: action.context._class ?? method.contextClass,
+            name: getName(current, method, action),
+            _class: action.context._class ?? method.createdContext._class,
             action: action._id,
+            index: index++,
+            producer: transition._id,
+            value: ctx
+          }
+        }
+      }
+      if (action.results != null) {
+        for (const result of action.results) {
+          exists.add(result._id)
+          changed = true
+          const ctx: SelectedExecutionContext = {
+            type: 'context',
+            id: result._id,
+            key: ''
+          }
+          const parentType = result.type._class === core.class.ArrOf ? (result.type as ArrOf<Doc>).of : result.type
+          const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
+          _process.context[result._id] = {
+            name: result.name,
+            isResult: true,
+            type: result.type,
+            action: action._id,
+            _class,
             index: index++,
             producer: transition._id,
             value: ctx
@@ -325,6 +352,8 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   }
 }
 
+export * from './utils'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
@@ -333,11 +362,16 @@ export default async () => ({
     UpdateCard,
     CreateCard,
     AddRelation,
-    CheckToDo,
+    AddTag,
+    CheckToDoDone,
+    CheckToDoCancelled,
     OnCardUpdateCheck,
+    CheckSubProcessesDone,
     CheckTime
   },
   transform: {
+    CurrentDate,
+    CurrentUser,
     FirstValue,
     LastValue,
     Random,

@@ -8,6 +8,12 @@
     "MessageIn": "Zpráva v #{title}",
     "Thread": "Vlákno",
     "Threads": "Vlákna",
-    "Title": "Název"
+    "Title": "Název",
+    "All": "Vše",
+    "Inbox": "Doručená pošta",
+    "ReactedToYourMessage": "reagoval na vaši zprávu",
+    "ClearAll": "Vymazať všetko",
+    "InboxIsClear": "Doručená pošta je vymazaná",
+    "YouDontHaveAnyNewMessages": "Nemáte žiadne nové správy"
   }
 }

@@ -204,7 +204,6 @@ export const storeNodes: Record<string, NodeProcessor> = {
       )
     } else {
       if (attrs.width != null || attrs.height != null) {
-        // state.write(`<img width="446" alt="{alt}" src="{src}">`)
         state.write(
           '<img' +
             (attrs.width != null ? ` width="${state.esc(`${attrs.width}`)}"` : '') +
