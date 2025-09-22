@@ -79,14 +79,11 @@
     findObjectPresenter(_class)
   }
 
-  const checkSelected = (item?: Doc): void => {
-    if (item === undefined) {
-      return
-    }
-    if (selectedElements.has(item._id)) {
-      selectedElements.delete(item._id)
+  const checkSelected = (_id: Ref<Doc>): void => {
+    if (selectedElements.has(_id)) {
+      selectedElements.delete(_id)
     } else {
-      selectedElements.add(item._id)
+      selectedElements.add(_id)
     }
 
     selectedObjects = Array.from(selectedElements)
@@ -97,12 +94,16 @@
   let selection = 0
   let list: ListView
 
-  async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
+  function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): void {
     const item = objects[selection]
     if (item === undefined) {
       return
     }
 
+    select(item)
+  }
+
+  function select (item: Doc): void {
     if (!multiSelect) {
       if (allowDeselect) {
         selected = item._id === selected ? undefined : item._id
@@ -111,7 +112,7 @@
       }
       dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
     } else {
-      checkSelected(item)
+      checkSelected(item._id)
     }
   }
 
@@ -129,7 +130,7 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      void handleSelection(key, objects, selection)
+      handleSelection(key, objects, selection)
     }
   }
   const manager = createFocusManager()
@@ -142,11 +143,10 @@
     showPopup(c.component, c.props ?? {}, 'top', async (res) => {
       if (res != null) {
         // We expect reference to new object.
-        const newPerson = await getClient().findOne(_class, { _id: res })
-        if (newPerson !== undefined) {
-          search = c.update?.(newPerson) ?? ''
-          dispatch('created', newPerson)
-          dispatch('search', search)
+        const newObject = await getClient().findOne(_class, { _id: res })
+        if (newObject !== undefined) {
+          dispatch('created', newObject)
+          select(newObject)
         }
       }
     })
@@ -248,7 +248,7 @@
             class="menu-item withList w-full flex-row-center"
             disabled={readonly || isDeselectDisabled || loading}
             on:click={() => {
-              void handleSelection(undefined, objects, item)
+              handleSelection(undefined, objects, item)
             }}
           >
             {#if type === 'text'}
