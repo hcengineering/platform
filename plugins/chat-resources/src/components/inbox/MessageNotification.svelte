@@ -16,12 +16,11 @@
 <script lang="ts">
   import { Notification } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
+
   import NotificationPreview from './preview/NotificationPreview.svelte'
 
   export let notification: Notification
   export let card: Card
 </script>
 
-{#if notification.message}
-  <NotificationPreview {card} message={notification.message} date={notification.created} />
-{/if}
+<NotificationPreview {card} message={notification.message} creator={notification.creator} date={notification.created} />

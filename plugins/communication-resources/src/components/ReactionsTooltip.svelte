@@ -12,21 +12,20 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { notEmpty, PersonId, Ref } from '@hcengineering/core'
+  import { AccountUuid, notEmpty, PersonUuid } from '@hcengineering/core'
   import { ObjectPresenter } from '@hcengineering/view-resources'
-  import contact, { Person } from '@hcengineering/contact'
-  import { getPersonRefsByPersonIdsCb } from '@hcengineering/contact-resources'
+  import { Employee } from '@hcengineering/contact'
+  import { employeeByAccountStore } from '@hcengineering/contact-resources'
 
-  export let socialIds: PersonId[] = []
+  export let persons: PersonUuid[] = []
 
-  let persons: Set<Ref<Person>>
-  $: getPersonRefsByPersonIdsCb(socialIds, (personsMap) => {
-    persons = new Set(personsMap.values().filter(notEmpty))
-  })
+  let employees: Employee[] = []
+
+  $: employees = persons.map((it) => $employeeByAccountStore.get(it as AccountUuid)).filter(notEmpty)
 </script>
 
 <div class="m-2 flex-col flex-gap-2">
-  {#each persons as person (person)}
-    <ObjectPresenter objectId={person} _class={contact.class.Person} disabled />
+  {#each employees as emp (emp._id)}
+    <ObjectPresenter objectId={emp._id} _class={emp._class} value={emp} disabled />
   {/each}
 </div>

@@ -93,7 +93,7 @@
           console.error('Failed to create thread card')
           return
         }
-        const blobs: BlobParams[] = descriptionBox.getAttachments().map((attachment) => ({
+        const blobs: (BlobParams & { mimeType: string })[] = descriptionBox.getAttachments().map((attachment) => ({
           blobId: attachment.file,
           mimeType: attachment.type,
           fileName: attachment.name,
@@ -113,7 +113,11 @@
     }
   }
 
-  async function createMessage (card: Ref<Card>, markup: Markup, blobs: BlobParams[]): Promise<void> {
+  async function createMessage (
+    card: Ref<Card>,
+    markup: Markup,
+    blobs: (BlobParams & { mimeType: string })[]
+  ): Promise<void> {
     const markdown = markupToMarkdown(markupToJSON(markup))
     const { messageId } = await communicationClient.createMessage(card, type, markdown)
 
@@ -121,7 +125,7 @@
       void communicationClient.attachmentPatch<BlobParams>(card, messageId, {
         add: blobs.map((it) => ({
           id: it.blobId as any as AttachmentID,
-          type: it.mimeType,
+          mimeType: it.mimeType,
           params: it
         }))
       })

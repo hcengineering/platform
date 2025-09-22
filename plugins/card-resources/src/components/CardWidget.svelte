@@ -65,7 +65,7 @@
     )
 
   $: tab?.id &&
-    contextsQuery.query({ card: tab.id as Ref<Card>, limit: 1 }, (res) => {
+    contextsQuery.query({ cardId: tab.id as Ref<Card>, limit: 1 }, (res) => {
       context = res.getResult()[0]
       isContextLoaded = true
     })

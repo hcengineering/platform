@@ -44,7 +44,7 @@ export function toMessageEvent (tx: Tx): CreateMessageEvent | undefined {
     return undefined
   }
   const event: CreateMessageEvent = domainTx.event
-  const isMessage = event.cardType === chat.masterTag.Thread && event.messageType === MessageType.Message
+  const isMessage = event.cardType === chat.masterTag.Thread && event.messageType === MessageType.Text
   if (!isMessage) {
     return undefined
   }

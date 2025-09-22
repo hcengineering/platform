@@ -77,6 +77,7 @@
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/kafka": "^0.6.0",
     "@hcengineering/communication-server": "^0.1.0",
-    "@hcengineering/communication-sdk-types": "^0.1.0"
+    "@hcengineering/communication-sdk-types": "^0.1.0",
+    "@hcengineering/hulylake-client": "^0.6.0"
   }
 }
