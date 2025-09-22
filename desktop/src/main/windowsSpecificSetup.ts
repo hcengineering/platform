@@ -14,7 +14,7 @@
 //
 
 import { app, JumpListItem, JumpListCategory } from 'electron'
-import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenApplication, JumpListSpares, WindowAction, SendCommandDelegate, CommandCloseTab } from '../ui/types'
+import { Command, CommandOpenSettings, CommandOpenInbox, CommandOpenApplication, JumpListSpares, WindowAction, SendCommandDelegate } from '../ui/types'
 import * as path from 'path'
 
 const JUMP_COMMANDS = {
