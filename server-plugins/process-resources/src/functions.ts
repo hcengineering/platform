@@ -81,7 +81,7 @@ export async function CheckSubProcessesDone (control: ProcessControl, execution:
   return res === undefined
 }
 
-export function OnCardUpdateCheck (
+export function MatchCardCheck (
   control: ProcessControl,
   execution: Execution,
   params: Record<string, any>,
@@ -90,6 +90,23 @@ export function OnCardUpdateCheck (
   if (context.card === undefined) return false
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
+  const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
+  return res.length > 0
+}
+
+export function FieldChangedCheck (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  if (context.card === undefined) return false
+  const process = control.client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  if (context.operations === undefined) return false
+  const changedFields = Object.keys(context.operations)
+  const target = Object.keys(params)[0]
+  if (!changedFields.includes(target)) return false
   const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }

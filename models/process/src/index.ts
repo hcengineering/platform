@@ -1127,16 +1127,32 @@ export function createModel (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
-      label: process.string.OnCardUpdate,
-      icon: process.icon.OnCardUpdate,
+      label: process.string.WhenCardMatches,
+      icon: process.icon.WhenCardMatches,
       editor: process.component.CardUpdateEditor,
       presenter: process.component.CardUpdatePresenter,
       requiredParams: [],
-      checkFunction: process.triggerCheck.UpdateCheck,
+      checkFunction: process.triggerCheck.MatchCheck,
       init: false,
       auto: true
     },
     process.trigger.OnCardUpdate
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.WhenFieldChanges,
+      icon: process.icon.WhenFieldChanges,
+      editor: process.component.FieldChangesEditor,
+      presenter: process.component.CardUpdatePresenter,
+      requiredParams: [],
+      checkFunction: process.triggerCheck.FieldChangedCheck,
+      init: false,
+      auto: true
+    },
+    process.trigger.WhenFieldChanges
   )
 
   builder.createDoc(
