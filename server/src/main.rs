@@ -77,7 +77,9 @@ async fn main() -> anyhow::Result<()> {
         let claims = request
             .extract_claims(&CONFIG.token_secret)
             .map_err(|error| {
-                warn!(%error, "Unauthorized request");
+                let method = request.method();
+                let path = request.path();
+                warn!(%method, path, %error, "Unauthorized request");
                 error
             })?;
 
