@@ -1145,7 +1145,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.MergePersons,
       category: contact.category.Contact,
       target: contact.class.Person,
-      visibilityTester: contact.function.CanResendInvitation,
+      visibilityTester: contact.function.CanMergePersons,
       input: 'focus',
       context: {
         mode: ['context'],
