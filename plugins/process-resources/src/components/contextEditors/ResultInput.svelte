@@ -25,7 +25,7 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  let values: Record<ContextId, any> = {}
+  const values: Record<ContextId, any> = {}
 
   export function canClose (): boolean {
     return false
@@ -33,6 +33,12 @@
 
   function save (): void {
     dispatch('close', values)
+  }
+
+  function getOnChange (id: ContextId): (val: any) => void {
+    return (val: any) => {
+      values[id] = val
+    }
   }
 </script>
 
@@ -47,7 +53,7 @@
 >
   <div class="grid">
     {#each results as result, i}
-      {@const editor = getAttrEditor(result.type, h) }
+      {@const editor = getAttrEditor(result.type, h)}
       <span
         class="labelOnPanel"
         use:tooltip={{
@@ -69,9 +75,7 @@
               justify: 'left',
               type: result.type,
               value: values[result._id],
-              onChange: (val) => {
-                values[result._id] = val
-              },
+              onChange: getOnChange(result._id),
               focus
             }}
           />
