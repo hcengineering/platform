@@ -194,6 +194,16 @@ export async function closeTab (tab: WorkbenchTab): Promise<void> {
   await client.remove(tab)
 }
 
+export async function closeCurrentTab (): Promise<void> {
+  const tab = get(currentTabStore)
+  if (tab == null) {
+    return
+  }
+  if (canCloseTab(tab)) {
+    await closeTab(tab)
+  }
+}
+
 export async function createTab (): Promise<void> {
   const loc = getCurrentLocation()
   const client = getClient()

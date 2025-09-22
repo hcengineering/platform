@@ -192,6 +192,19 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
+  createAction(builder, {
+    action: workbench.actionImpl.CloseCurrentTab,
+    label: presentation.string.Close,
+    icon: view.icon.Delete,
+    keyBinding: ['Meta + keyW', 'Ctrl + keyW'],
+    input: 'none',
+    category: workbench.category.Workbench,
+    allowedForEditableContent: 'always',
+    target: core.class.Doc,
+    context: { mode: ['workbench', 'browser', 'panel', 'editor', 'input'] }
+  },
+  workbench.action.CloseCurrentTab)
 }
 
 export default workbench

@@ -2,7 +2,7 @@ import { loginId } from '@hcengineering/login'
 import { loveId } from '@hcengineering/love'
 import { timeId } from '@hcengineering/time'
 
-import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { MessageBox, setDownloadProgress, getClient } from '@hcengineering/presentation'
 import setting, { settingId } from '@hcengineering/setting'
 import {
@@ -20,14 +20,14 @@ import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
 import { chatId } from '@hcengineering/chat'
 import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
-import { encodeObjectURI } from '@hcengineering/view'
+import view, { Action, encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
 
-import { isOwnerOrMaintainer, getCurrentAccount } from '@hcengineering/core'
+import { isOwnerOrMaintainer, getCurrentAccount, Ref } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams } from './types'
+import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams, CommandCloseTab } from './types'
 import { ipcMainExposed } from './typesUtils'
 import { themeStore, ThemeVariant } from '@hcengineering/theme'
 import type { Application } from '@hcengineering/workbench'
@@ -35,6 +35,19 @@ import { isAllowedToRole } from '@hcengineering/workbench-resources'
 
 function currentOsIsWindows (): boolean {
   return (window as any).windowsPlatform === true
+}
+
+async function executePlatformAction (action: Ref<Action>): Promise<void> {
+  try {
+    const client = getClient()
+    const actions = client.getModel().findAllSync<Action>(view.class.Action, { _id: action })
+    if (actions.length > 0) {
+      const actionBody = await getResource(actions[0].action)
+      await actionBody(undefined)
+    }
+  } catch (error) {
+    console.error('failed to execute platform action', error)
+  }
 }
 
 defineScreenShare()
@@ -122,6 +135,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   ipcMain.on(CommandOpenOffice, () => {
     openScreen(loveId)
+  })
+
+  ipcMain.on(CommandCloseTab, () => {
+    void executePlatformAction(workbench.action.CloseCurrentTab)
   })
 
   ipcMain.on(CommandOpenPlanner, () => {
