@@ -33,6 +33,8 @@
   $: isUnset = values.length > 0 && !values.some((value) => value != null && value !== '')
 
   $: isTextType = getIsTextType(attributeModel)
+  $: isTooLarge =
+    isTextType && (values[0] === activity.string.ValueTooLarge || prevValue === activity.string.ValueTooLarge)
 
   let isDiffShown = false
 
@@ -48,7 +50,11 @@
     <span class="lower"><Label label={attributeModel.label} /></span>
   </div>
 {:else if isTextType}
-  {#if preview}
+  {#if isTooLarge}
+    <div class="unset row overflow-label">
+      <Label label={activity.string.ValueTooLarge} />
+    </div>
+  {:else if preview}
     <div class="row overflow-label">
       <span class="mr-1"><Icon icon={attributeIcon} size="small" /></span>
       <Label label={activity.string.Changed} />

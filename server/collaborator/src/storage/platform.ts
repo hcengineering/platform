@@ -26,6 +26,8 @@ import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 import { CollabStorageAdapter } from './adapter'
 
+const activityMarkupLimit = 100 * 1024 // 100kb
+
 export interface PlatformStorageAdapterOptions {
   retryCount?: number
   retryInterval?: number
@@ -211,8 +213,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       curr: getMarkup.curr()
     }
 
-    const currMarkup = markup.curr[objectAttr]
-    const prevMarkup = markup.prev[objectAttr]
+    const currMarkup = markup.curr[objectAttr] ?? ''
+    const prevMarkup = markup.prev[objectAttr] ?? ''
 
     if (areEqualMarkups(currMarkup, prevMarkup)) {
       ctx.info('markup not changed, skip platform update', { documentName })
@@ -255,6 +257,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     await ctx.with('update', {}, () => client.diffUpdate(current, { [objectAttr]: blobId }))
 
+    const prevValue = prevMarkup.length > activityMarkupLimit ? activity.string.ValueTooLarge : prevMarkup
+    const currValue = currMarkup.length > activityMarkupLimit ? activity.string.ValueTooLarge : currMarkup
+
     await ctx.with(
       'activity',
       {},
@@ -270,8 +275,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
           attributeUpdates: {
             attrKey: objectAttr,
             attrClass: core.class.TypeMarkup,
-            prevValue: prevMarkup,
-            set: [currMarkup],
+            prevValue,
+            set: [currValue],
             added: [],
             removed: [],
             isMixin: hierarchy.isMixin(objectClass)
