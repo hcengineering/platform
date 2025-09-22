@@ -209,7 +209,7 @@ export function buildResult (mode: Mode, value: any): any {
 function fillResult (mode: Mode, obj: any, value: any): void {
   if (typeof obj !== 'object') return
   for (const key in obj) {
-    const v: any = (obj)[key]
+    const v: any = obj[key]
     if (typeof v === 'object') {
       fillResult(mode, v, value)
     } else {

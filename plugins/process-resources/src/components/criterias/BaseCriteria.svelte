@@ -73,7 +73,9 @@
           readonly,
           val
         }}
-        on:change={(e) => { changeResult(e.detail) }}
+        on:change={(e) => {
+          changeResult(e.detail)
+        }}
         on:delete
       />
     </div>
@@ -84,7 +86,9 @@
       {readonly}
       {process}
       {context}
-      on:change={(e) => { changeResult(e.detail) }}
+      on:change={(e) => {
+        changeResult(e.detail)
+      }}
       on:delete
     />
   {/if}
