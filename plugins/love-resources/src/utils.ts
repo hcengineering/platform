@@ -267,11 +267,6 @@ export async function navigateToOfficeDoc (object: Doc): Promise<void> {
   navigate(loc)
 }
 
-export async function prepareRoomConnection (room: Room): Promise<void> {
-  const roomToken = await loveClient.getRoomToken(room)
-  await liveKitClient.prepareConnection(getLiveKitEndpoint(), roomToken)
-}
-
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
 
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
@@ -413,14 +408,9 @@ async function getRoomGuestLink (room: Room): Promise<string> {
 
     console.log('Create link')
     const accountClient = getAccountClientRaw(accountsUrl, token)
-    return await accountClient.createAccessLink(
-      AccountRole.Guest,
-      undefined,
-      undefined,
-      encodeURIComponent(JSON.stringify(navigateUrl))
-    )
-    // const func = await getResource(login.function.GetInviteLink)
-    // return await func(24, '', -1, AccountRole.Guest, )
+    return await accountClient.createAccessLink(AccountRole.Guest, {
+      navigateUrl: encodeURIComponent(JSON.stringify(navigateUrl))
+    })
   }
   return ''
 }

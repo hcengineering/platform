@@ -186,7 +186,6 @@
       }
       return
     }
-    console.log(meetingSessionConnected, room, currentMeetingRoom, isMeetingWidgetCreated)
 
     if (meetingSessionConnected) {
       if (currentMeetingRoom !== undefined && room !== currentMeetingRoom) {

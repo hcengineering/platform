@@ -240,8 +240,8 @@ async function connectToMeeting (room: Room): Promise<void> {
   await navigateToOfficeDoc(room)
   await moveToMeetingRoom(room)
 
-  const token = await loveClient.getRoomToken(room)
   try {
+    const token = await loveClient.getRoomToken(room)
     const wsURL = getLiveKitEndpoint()
     await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
   } catch (err) {

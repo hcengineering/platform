@@ -19,7 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, prepareRoomConnection } from '../utils'
+  import { getRoomName } from '../utils'
   import { infos, myOffice, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
   import { createMeeting, joinMeeting } from '../meetingController'
@@ -36,7 +36,6 @@
   let connecting = false
 
   onMount(() => {
-    void prepareRoomConnection(object)
     dispatch('open', { ignoreKeys: ['name'] })
   })
 
@@ -44,10 +43,8 @@
 
   async function connect (): Promise<void> {
     if ($infos.some(({ room }) => room === object._id)) {
-      console.log('join')
       await joinMeeting(object)
     } else {
-      console.log('create')
       await createMeeting(object)
     }
   }

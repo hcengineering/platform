@@ -80,7 +80,6 @@ export class LoveClient {
   private async refreshRoomToken (room: Room): Promise<string> {
     const sessionName = this.getTokenRoomName(room)
     const endpoint = this.getLoveEndpoint()
-    console.log('refresh room token')
     if (endpoint === undefined) {
       throw new Error('Love service endpoint not found')
     }
@@ -89,7 +88,6 @@ export class LoveClient {
       throw new Error('Cannot find current person')
     }
     const platformToken = getPlatformToken()
-    console.log(platformToken)
     const res = await fetch(concatLink(endpoint, '/getToken'), {
       method: 'POST',
       headers: {

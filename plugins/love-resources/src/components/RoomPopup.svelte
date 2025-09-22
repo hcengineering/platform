@@ -23,10 +23,9 @@
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentMeetingMinutes, infos, myInfo } from '../stores'
-  import { prepareRoomConnection } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
   import MicrophoneButton from './meeting/controls/MicrophoneButton.svelte'
   import CameraButton from './meeting/controls/CameraButton.svelte'
@@ -45,10 +44,6 @@
 
     return await getPersonByPersonRef(info.person)
   }
-
-  onMount(() => {
-    prepareRoomConnection(room)
-  })
 
   let joined: boolean = false
   $: joined = $myInfo?.room === room._id
