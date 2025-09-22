@@ -48,7 +48,7 @@
   })
 
   $: notificationsQuery.query(
-    { card: cardId, limit: 1, read: false, order: SortingOrder.Descending, type: NotificationType.Message },
+    { cardId, limit: 1, read: false, order: SortingOrder.Descending, type: NotificationType.Message },
     (res) => {
       count = res.getResult().length
     }

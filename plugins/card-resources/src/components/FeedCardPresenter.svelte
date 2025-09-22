@@ -42,10 +42,14 @@
   let person: Person | undefined = undefined
 
   $: messagesQuery.query(
-    { card: card._id, strict: true, attachments: true, reactions: true, limit: 1, order: SortingOrder.Descending },
+    { cardId: card._id, limit: 1, order: SortingOrder.Descending },
     (res) => {
       const msgs = res.getResult().reverse()
       message = msgs[msgs.length - 1]
+    },
+    {
+      attachments: true,
+      reactions: true
     }
   )
 
@@ -103,7 +107,7 @@
         {#if isCompact}
           <MessagePreview {card} {message} colorInherit />
         {:else}
-          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" thread={false} />
+          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" showThreads={false} />
         {/if}
       {/if}
     </div>

@@ -108,10 +108,10 @@ async function handleCommunicationTx (
       .flatMap((it) => it.attachments)
       .filter((it): it is BlobAttachment => 'blobId' in it.params)
 
-    const messages: VideoTranscodeRequest[] = attachments.map(({ params }) => ({
+    const messages: VideoTranscodeRequest[] = attachments.map(({ mimeType, params }) => ({
       workspaceUuid,
       blobId: params.blobId,
-      contentType: params.mimeType,
+      contentType: mimeType,
       source
     }))
 

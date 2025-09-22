@@ -48,7 +48,6 @@
   query.query(
     {
       notifications: {
-        message: true,
         order: SortingOrder.Descending,
         limit: 3
       },
@@ -63,7 +62,8 @@
       if (contexts.length < limit && window.hasPrevPage()) {
         void window.loadPrevPage()
       }
-    }
+    },
+    { message: true }
   )
 
   $: cardsQuery.query(cardPlugin.class.Card, { _id: { $in: contexts.map((c) => c.cardId) } }, (res) => {

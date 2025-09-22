@@ -29,7 +29,7 @@
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
-  import { isAppFocusedStore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, isAppFocusedStore } from '@hcengineering/ui'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
@@ -101,27 +101,34 @@
 
   $: reinit(position)
 
-  $: query.query(queryDef, (res: Window<Message>) => {
-    window = res
-    messages = (queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()).filter(
-      (it) => !it.removed || it.thread != null
-    )
+  $: query.query(
+    queryDef,
+    (res: Window<Message>) => {
+      window = res
+      messages = queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
 
-    if (messages.length < limit && res.hasNextPage()) {
-      void window.loadNextPage()
-    } else if (messages.length < limit && res.hasPrevPage()) {
-      void window.loadPrevPage()
+      if (messages.length < limit && res.hasNextPage()) {
+        void window.loadNextPage()
+      } else if (messages.length < limit && res.hasPrevPage()) {
+        void window.loadPrevPage()
+      }
+
+      groups = groupMessagesByDay(messages)
+      isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
+      void onUpdate(messages)
+    },
+    {
+      autoExpand: true,
+      threads: true,
+      attachments: true,
+      reactions: true
     }
-
-    groups = groupMessagesByDay(messages)
-    isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
-    void onUpdate(messages)
-  })
+  )
 
   $: if (context !== undefined) {
     void notificationsQuery.query(
       {
-        context: context.id,
+        contextId: context.id,
         read: false
       },
       (res) => {
@@ -193,10 +200,7 @@
   function getBaseQuery (): MessageQueryParams {
     if (position === MessagesNavigationAnchors.ConversationStart) {
       return {
-        card: card._id,
-        replies: true,
-        attachments: true,
-        reactions: true,
+        cardId: card._id,
         order: SortingOrder.Ascending,
         limit
       }
@@ -206,10 +210,7 @@
     const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
     const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
-      card: card._id,
-      replies: true,
-      attachments: true,
-      reactions: true,
+      cardId: card._id,
       order,
       limit,
       from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined

@@ -117,9 +117,9 @@ export function createIndexedDocFromMessage (
   cardId: Ref<Card>,
   cardSpace: Ref<Space>,
   cardClass: Ref<Class<Card>>,
-  message: Pick<Message, 'id' | 'edited' | 'created' | 'creator'>
+  message: Pick<Message, 'id' | 'modified' | 'created' | 'creator'>
 ): IndexedDoc {
-  const modifiedDate = message.edited ?? message.created
+  const modifiedDate = message.modified ?? message.created
   const modifiedOn = modifiedDate.getTime()
   const indexedDoc = {
     id: `${message.id}@${cardId}` as any,

@@ -21,7 +21,7 @@
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/tool staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/tool",
     "run-local-mongo": "rush bundle --to @hcengineering/tool >/dev/null && cross-env SERVER_SECRET=secret FULLTEXT_URL=http://localhost:4700 ACCOUNTS_URL=http://localhost:3000 TRANSACTOR_URL=ws://localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ACCOUNT_DB_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 TELEGRAM_DATABASE=telegram-service REKONI_URL=http://localhost:4004 MODEL_VERSION=$(node ../../common/scripts/show_version.js) GIT_REVISION=$(git describe --all --long) QUEUE_CONFIG='localhost:19092' node --expose-gc --max-old-space-size=18000 ./bundle/bundle.js",
-    "run-local": "rush bundle --to @hcengineering/tool >/dev/null && cross-env SERVER_SECRET=secret FULLTEXT_URL=http://localhost:4702 ACCOUNTS_URL=http://localhost:3000 TRANSACTOR_URL=ws://localhost:3332 STORAGE_CONFIG='datalake|http://huly.local:4030' ACCOUNT_DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable TELEGRAM_DATABASE=telegram-service REKONI_URL=http://localhost:4004 REGION_INFO='cockroach|CockroachDB' MODEL_VERSION=$(node ../../common/scripts/show_version.js) GIT_REVISION=$(git describe --all --long) QUEUE_CONFIG='localhost:19092' node --expose-gc --max-old-space-size=18000 $TOOL_OPT ./bundle/bundle.js",
+    "run-local": "rush bundle --to @hcengineering/tool >/dev/null && cross-env SERVER_SECRET=secret FULLTEXT_URL=http://localhost:4702 ACCOUNTS_URL=http://localhost:3000 TRANSACTOR_URL=ws://localhost:3332 STORAGE_CONFIG='datalake|http://huly.local:4030' HULYLAKE_URL=http://huly.local:8096  ACCOUNT_DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable TELEGRAM_DATABASE=telegram-service REKONI_URL=http://localhost:4004 REGION_INFO='cockroach|CockroachDB' MODEL_VERSION=$(node ../../common/scripts/show_version.js) GIT_REVISION=$(git describe --all --long) QUEUE_CONFIG='localhost:19092' node --expose-gc --max-old-space-size=18000 $TOOL_OPT ./bundle/bundle.js",
     "run-local-brk": "rush bundle --to @hcengineering/tool >/dev/null && cross-env SERVER_SECRET=secret ACCOUNTS_URL=http://localhost:3000 TRANSACTOR_URL=ws://localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ACCOUNT_DB_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 TELEGRAM_DATABASE=telegram-service REKONI_URL=http://localhost:4004 MODEL_VERSION=$(node ../../common/scripts/show_version.js) GIT_REVISION=$(git describe --all --long) node --inspect-brk --enable-source-maps --max-old-space-size=18000 ./bundle/bundle.js",
     "run": "rush bundle --to @hcengineering/tool >/dev/null && cross-env node --max-old-space-size=8000 ./bundle/bundle.js",
     "upgrade-mongo": "rushx run-local-mongo upgrade-workspace -- $1",
@@ -55,7 +55,8 @@
     "@types/request": "~2.48.8",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "@types/js-yaml": "^4.0.9"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.14",
@@ -180,6 +181,9 @@
     "msgpackr-extract": "^3.0.3",
     "@hcengineering/kafka": "^0.6.0",
     "@hcengineering/api-client": "^0.6.0",
-    "@faker-js/faker": "^8.4.1"
+    "@faker-js/faker": "^8.4.1",
+    "@hcengineering/hulylake-client": "^0.6.0",
+    "js-yaml": "^4.1.0",
+    "@hcengineering/communication-types": "^0.1.0"
   }
 }
