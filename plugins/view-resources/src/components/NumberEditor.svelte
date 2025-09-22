@@ -18,11 +18,12 @@
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
+  import { AnyAttribute, TypeNumber } from '@hcengineering/core'
 
   export let label: IntlString
   export let value: number | undefined
   export let autoFocus: boolean = false
-  // export let maxWidth: string = '10rem'
+  export let attribute: AnyAttribute | undefined
   export let onChange: (value: number | undefined) => void
   export let kind: ButtonKind | undefined = undefined
   export let readonly = false
@@ -38,6 +39,10 @@
       onChange(value)
     }
   }
+
+  $: minValue = (attribute?.type as TypeNumber)?.min
+  $: maxValue = (attribute?.type as TypeNumber)?.max
+  $: maxDigitsAfterPoint = (attribute?.type as TypeNumber)?.digits
 </script>
 
 {#if kind}
@@ -48,13 +53,18 @@
     {width}
     on:click={(ev) => {
       if (!shown && !readonly) {
-        showPopup(EditBoxPopup, { value, placeholder: label, format: 'number' }, eventToHTMLElement(ev), (res) => {
-          if (Number.isFinite(res)) {
-            value = res
-            onChange(value)
+        showPopup(
+          EditBoxPopup,
+          { value, placeholder: label, format: 'number', maxDigitsAfterPoint, maxValue, minValue },
+          eventToHTMLElement(ev),
+          (res) => {
+            if (Number.isFinite(res)) {
+              value = res
+              onChange(value)
+            }
+            shown = false
           }
-          shown = false
-        })
+        )
       }
     }}
   >
@@ -73,5 +83,14 @@
     <span class="content-dark-color"><Label {label} /></span>
   {/if}
 {:else}
-  <EditBox placeholder={label} bind:value format={'number'} {autoFocus} on:change={_onchange} />
+  <EditBox
+    placeholder={label}
+    bind:value
+    format={'number'}
+    {autoFocus}
+    {maxDigitsAfterPoint}
+    {maxValue}
+    {minValue}
+    on:change={_onchange}
+  />
 {/if}

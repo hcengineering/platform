@@ -195,6 +195,9 @@
     "Connected": "已连接",
     "Available": "可用",
     "NotConnectedIntegration": "帐户 {account} 未与工作区集成",
-    "IntegrationIsUnstable": "集成服务出现问题。某些功能可能无法正常工作。"
+    "IntegrationIsUnstable": "集成服务出现问题。某些功能可能无法正常工作。",
+    "MinValue": "最小值",
+    "MaxValue": "最大值",
+    "IntegerOnly": "仅整数"
   }
 }

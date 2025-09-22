@@ -31,6 +31,8 @@
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' | 'text-multiline' = 'text'
   export let maxDigitsAfterPoint: number | undefined = undefined
+  export let minValue: number | undefined = undefined
+  export let maxValue: number | undefined = undefined
   export let formatter: ((value: string | number) => string | number) | undefined = undefined
   export let kind: EditStyle = 'editbox'
   export let autoFocus: boolean = false
@@ -48,17 +50,27 @@
   let phTranslate: string = ''
 
   $: {
-    if (
-      format === 'number' &&
-      maxDigitsAfterPoint &&
-      value &&
-      !value.toString().match(`^\\d+\\.?\\d{0,${maxDigitsAfterPoint}}$`)
-    ) {
+    if (format === 'number' && maxDigitsAfterPoint !== undefined && typeof value === 'number' && value) {
       value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
     } else if (formatter !== undefined && value != null) {
       value = formatter(value)
     }
   }
+
+  function setValue (
+    val: number | string | undefined,
+    maxValue: number | undefined,
+    minValue: number | undefined
+  ): void {
+    if (typeof val !== 'number' || format !== 'number') return
+    if (minValue !== undefined && maxValue !== undefined && maxValue < minValue) return
+    if (minValue !== undefined && val < minValue) value = minValue
+    if (maxValue !== undefined && val > maxValue) value = maxValue
+    dispatch('change')
+  }
+
+  $: setValue(value, maxValue, minValue)
+
   $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })

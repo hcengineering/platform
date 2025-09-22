@@ -26,8 +26,9 @@
   import UpOutline from './icons/UpOutline.svelte'
 
   export let maxWidth: string | undefined = undefined
-  export let value: number = 0
+  export let value: number | undefined
   export let minValue: number | undefined = undefined
+  export let maxValue: number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let maxDigitsAfterPoint: number | undefined = undefined
@@ -54,9 +55,19 @@
     }
   }
 
-  $: {
-    if (minValue !== undefined && value < minValue) value = minValue
+  function setValue (val: number | undefined, maxValue: number | undefined, minValue: number | undefined): void {
+    if (typeof val !== 'number' || Number.isNaN(val)) {
+      dispatch('change')
+      return
+    }
+    if (minValue !== undefined && maxValue !== undefined && maxValue < minValue) return
+    if (minValue !== undefined && val < minValue) value = minValue
+    if (maxValue !== undefined && val > maxValue) value = maxValue
+    dispatch('change')
   }
+
+  $: setValue(value, maxValue, minValue)
+
   $: style = `max-width: ${maxWidth || (parentWidth ? `${parentWidth}px` : 'max-content')};`
   $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
@@ -152,8 +163,26 @@
       on:blur
     />
     <div class="flex-col-center py-0-5">
-      <Button icon={UpOutline} kind={'stepper'} padding={'0'} {disabled} on:click={() => value++} />
-      <Button icon={DownOutline} kind={'stepper'} padding={'0'} {disabled} on:click={() => value--} />
+      <Button
+        icon={UpOutline}
+        kind={'stepper'}
+        padding={'0'}
+        {disabled}
+        on:click={() => {
+          value = (value ?? 0) + 1
+          dispatch('change')
+        }}
+      />
+      <Button
+        icon={DownOutline}
+        kind={'stepper'}
+        padding={'0'}
+        {disabled}
+        on:click={() => {
+          value = (value ?? 0) - 1
+          dispatch('change')
+        }}
+      />
     </div>
   </div>
 </div>
@@ -166,6 +195,7 @@
     padding: 0rem 0.125rem 0 0.5rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.375rem;
+    width: max-content;
 
     input {
       margin: 0;
