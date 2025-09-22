@@ -518,9 +518,13 @@ async function onReady (): Promise<void> {
 app.on('ready', () => {
   void onReady()
 
-  globalShortcut.register('CommandOrControl+W', () => {
+  const CloseTabHotKey = 'CommandOrControl+W'
+  const registered = globalShortcut.register(CloseTabHotKey, () => {
     sendCommand(CommandCloseTab)
   })
+  if (!registered) {
+    console.log(`failed to register global shortcut on ${CloseTabHotKey}`)
+  }
 })
 
 app.on('window-all-closed', () => {
