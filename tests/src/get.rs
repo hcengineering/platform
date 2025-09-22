@@ -37,3 +37,50 @@ pub async fn get_known() -> eyre::Result<()> {
 
     Ok(())
 }
+
+#[tanu::test]
+pub async fn get_conditional() -> eyre::Result<()> {
+    let key = random_key();
+    let text = random_text(1024);
+
+    let http = Client::new();
+
+    let res = http.key_put(&key).body(text.clone()).send().await?;
+    check!(res.status().is_success());
+
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success());
+    let etag = res.header("etag").expect("ETag not found");
+
+    // Test without If-None-Match (normal GET)
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success());
+    check_eq!(text, res.text().await?);
+
+    // Test with If-None-Match: *
+    let res = http
+        .key_get(&key)
+        .header("If-None-Match", "*")
+        .send()
+        .await?;
+    check_eq!(res.status(), http::StatusCode::NOT_MODIFIED);
+
+    // Test with correct ETag
+    let res = http
+        .key_get(&key)
+        .header("If-None-Match", etag)
+        .send()
+        .await?;
+    check_eq!(res.status(), http::StatusCode::NOT_MODIFIED);
+
+    // Test with incorrect ETag
+    let res = http
+        .key_get(&key)
+        .header("If-None-Match", "\"invalid-etag\"")
+        .send()
+        .await?;
+    check!(res.status().is_success());
+    check_eq!(text, res.text().await?);
+
+    Ok(())
+}

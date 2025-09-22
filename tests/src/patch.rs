@@ -1,11 +1,11 @@
 use hulyrs::StatusCode;
 use serde_json::{self as json, Value, json};
-use tanu::{check, check_eq, eyre, http::Client};
+use tanu::{check, check_eq, check_ne, eyre, http::Client};
 
 use crate::util::*;
 
 #[tanu::test((10, 10))]
-pub async fn put_and_patch_contact((initial, patch): (usize, usize)) -> eyre::Result<()> {
+pub async fn put_and_patch_content((initial, patch): (usize, usize)) -> eyre::Result<()> {
     let key = random_key();
     let initial = random_text(1024 * initial);
     let patch = random_text(1024 * patch);
@@ -231,6 +231,60 @@ async fn get_json_patch_safe() -> eyre::Result<()> {
     let json = res.json::<Value>().await?;
 
     assert_eq!(json, json!({ "a": { "b": 1 }}));
+
+    Ok(())
+}
+
+#[derive(PartialEq, Eq)]
+pub enum IfMatch {
+    ETag,
+    Some(&'static str),
+    None,
+}
+
+#[tanu::test(1, IfMatch::None, StatusCode::CREATED)]
+#[tanu::test(2, IfMatch::ETag, StatusCode::CREATED)]
+#[tanu::test(3, IfMatch::Some("*"), StatusCode::CREATED)]
+#[tanu::test(4, IfMatch::Some("\"unknown\""), StatusCode::PRECONDITION_FAILED)]
+pub async fn put_and_patch_conditional(
+    _: usize,
+    if_match: IfMatch,
+    status: StatusCode,
+) -> eyre::Result<()> {
+    let key = random_key();
+    let initial = random_text(1024);
+    let patch = random_text(1024);
+
+    let http = Client::new();
+
+    // create new blob
+    let res = http.key_put(&key).body(initial.clone()).send().await?;
+    check!(res.status().is_success());
+
+    // check content
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success());
+    let etag = res.header("etag").expect("ETag not found");
+
+    let mut req = http.key_patch(&key).body(patch.clone());
+
+    req = match if_match {
+        IfMatch::ETag => req.header("If-Match", etag),
+        IfMatch::Some(etag) => req.header("If-Match", etag),
+        IfMatch::None => req,
+    };
+
+    let res = req.send().await?;
+    check_eq!(res.status(), status);
+
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success());
+
+    if status.is_success() {
+        check_ne!(res.header("etag"), Some(etag));
+    } else {
+        check_eq!(res.header("etag"), Some(etag));
+    }
 
     Ok(())
 }

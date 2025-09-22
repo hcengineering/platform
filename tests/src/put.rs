@@ -341,3 +341,74 @@ pub async fn put_merge_patch(
 
     Ok(())
 }
+
+#[derive(PartialEq, Eq)]
+pub enum Condition {
+    ETag,
+    IfMatch(&'static str),
+    IfNoneMatch(&'static str),
+}
+
+#[tanu::test(1, Condition::ETag, StatusCode::CREATED)]
+#[tanu::test(2, Condition::IfMatch("*"), StatusCode::PRECONDITION_FAILED)]
+#[tanu::test(3, Condition::IfNoneMatch("*"), StatusCode::CREATED)]
+#[tanu::test(4, Condition::IfNoneMatch("\"unknown\""), StatusCode::CREATED)]
+pub async fn put_conditional_create(
+    _: usize,
+    condition: Condition,
+    status: StatusCode,
+) -> eyre::Result<()> {
+    let key = random_key();
+    let body = random_text(1024);
+
+    let http = Client::new();
+
+    let mut req = http.key_put(&key).body(body.clone());
+
+    req = match condition {
+        Condition::ETag => req,
+        Condition::IfMatch(etag) => req.header("If-Match", etag),
+        Condition::IfNoneMatch(etag) => req.header("If-None-Match", etag),
+    };
+
+    let res = req.send().await?;
+    check_eq!(res.status(), status);
+
+    Ok(())
+}
+
+#[tanu::test(1, Condition::ETag, StatusCode::CREATED)]
+#[tanu::test(2, Condition::IfMatch("*"), StatusCode::CREATED)]
+#[tanu::test(3, Condition::IfNoneMatch("*"), StatusCode::PRECONDITION_FAILED)]
+#[tanu::test(
+    4,
+    Condition::IfNoneMatch("\"unknown\""),
+    StatusCode::INTERNAL_SERVER_ERROR
+)]
+pub async fn put_conditional_update(
+    _: usize,
+    condition: Condition,
+    status: StatusCode,
+) -> eyre::Result<()> {
+    let key = random_key();
+    let body = random_text(1024);
+
+    let http = Client::new();
+
+    let res = http.key_put(&key).body(body.clone()).send().await?;
+    check!(res.status().is_success());
+    let etag = res.header("etag").expect("ETag not found");
+
+    let mut req = http.key_put(&key).body(body.clone());
+
+    req = match condition {
+        Condition::ETag => req.header("If-Match", etag),
+        Condition::IfMatch(etag) => req.header("If-Match", etag),
+        Condition::IfNoneMatch(etag) => req.header("If-None-Match", etag),
+    };
+
+    let res = req.send().await?;
+    check_eq!(res.status(), status);
+
+    Ok(())
+}

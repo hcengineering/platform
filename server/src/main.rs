@@ -15,12 +15,13 @@ use uuid::Uuid;
 use hulyrs::services::jwt::actix::ServiceRequestExt;
 
 mod blob;
+mod conditional;
 mod config;
 mod handlers;
 mod merge;
-mod recovery;
 mod patch;
 mod postgres;
+mod recovery;
 mod s3;
 
 use config::CONFIG;

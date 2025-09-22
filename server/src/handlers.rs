@@ -6,7 +6,7 @@ use actix_web::{
     dev::ServiceRequest,
     http::{
         self,
-        header::{self, ContentLength, ContentType},
+        header::{self, ContentLength, ContentType, EntityTag},
     },
     web::{Data, Header, Path, Payload},
 };
@@ -17,13 +17,21 @@ use size::Size;
 use tracing::*;
 use uuid::Uuid;
 
+use crate::conditional;
 use crate::s3::S3Client;
-use crate::{blob, merge};
+use crate::{
+    blob,
+    conditional::{ConditionalMatch, any_match, none_match},
+    merge,
+    postgres::ObjectPart,
+};
 use crate::{
     config::CONFIG,
     postgres::{self, Pool},
 };
 use crate::{merge::MergeStrategy, recovery};
+
+const CACHE_CONTROL: &str = "public, max-age=0, must-revalidate";
 
 #[derive(Deserialize, Debug)]
 pub struct ObjectPath {
@@ -46,6 +54,12 @@ pub enum ApiError {
     ActixParseError(#[from] actix_web::error::ParseError),
 
     #[error(transparent)]
+    ConditionalError(#[from] conditional::ConditionalError),
+
+    #[error("Precondition Failed")]
+    PreconditionFailed,
+
+    #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
 
@@ -55,6 +69,12 @@ impl actix_web::error::ResponseError for ApiError {
     fn error_response(&self) -> HttpResponse {
         match self {
             ApiError::ActixError(error) => error.error_response(),
+
+            ApiError::ConditionalError(_) => HttpResponse::BadRequest().body("Bad Request"),
+
+            ApiError::PreconditionFailed => {
+                HttpResponse::PreconditionFailed().body("Precondition Failed")
+            }
 
             _ => {
                 tracing::error!(error=?self, "Internal error in http handler");
@@ -187,6 +207,10 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
+    let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
+
+    let conditionals = validate_put_conditionals(request.request(), &parts)?;
+
     let uploaded = blob::upload(&s3, &pool, headers.content_length, payload).await?;
 
     merge::validate_put_body(merge_strategy, &uploaded)?;
@@ -213,7 +237,8 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
     });
 
     let obj_parts = vec![&part_data];
-    recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts).await?;
+
+    recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts, conditionals).await?;
 
     postgres::set_part(&pool, path.workspace, &part_data.key, inline, &part_data).await?;
 
@@ -253,8 +278,9 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
     let mut response = if !parts.is_empty() {
-        let first = parts.first().unwrap();
-        let merge_strategy = first.data.merge_strategy.unwrap();
+        let conditionals = validate_patch_conditionals(request.request(), &parts)?;
+
+        let merge_strategy = objectpart_strategy(&parts).unwrap();
 
         merge::validate_patch_request(merge_strategy, &headers)?;
 
@@ -288,7 +314,8 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
             .map(|p| &p.data)
             .chain(std::iter::once(&part_data))
             .collect::<Vec<&PartData>>();
-        recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts).await?;
+
+        recovery::set_object(&s3, path.workspace, &part_data.key, obj_parts, conditionals).await?;
 
         postgres::append_part(
             &pool,
@@ -330,29 +357,38 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
     span.record("huly_key", &path.key);
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
-    let s3 = request
-        .app_data::<Data<S3Client>>()
-        .unwrap()
-        .to_owned()
-        .into_inner();
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
     let response = if !parts.is_empty() {
-        let mut response = HttpResponse::Ok();
+        let etag = objectpart_etag(&parts).unwrap();
 
-        let headers = parts[0].data.headers.as_ref();
-        if let Some(headers) = headers {
-            for (header, value) in headers.iter() {
-                response.insert_header((header.as_str(), value.to_owned()));
+        match none_match(request.request(), Some(etag.clone()))? {
+            Some(false) => HttpResponse::NotModified()
+                .insert_header((header::ETAG, etag))
+                .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
+                .finish(),
+            _ => {
+                let mut response = HttpResponse::Ok();
+
+                let s3 = request
+                    .app_data::<Data<S3Client>>()
+                    .unwrap()
+                    .to_owned()
+                    .into_inner();
+
+                let headers = parts[0].data.headers.as_ref();
+                if let Some(headers) = headers {
+                    for (header, value) in headers.iter() {
+                        response.insert_header((header.as_str(), value.to_owned()));
+                    }
+                }
+
+                response.insert_header((header::ETAG, etag));
+                response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
+                response.body(merge::stream(s3, parts).await?)
             }
         }
-
-        let etag = parts.last().unwrap().data.etag.to_owned();
-
-        response.insert_header((header::ETAG, etag));
-
-        response.body(merge::stream(s3, parts).await?)
     } else {
         HttpResponse::NotFound().finish()
     };
@@ -376,27 +412,36 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
     let response = if !parts.is_empty() {
-        let mut response = HttpResponse::Ok();
+        let etag = objectpart_etag(&parts).unwrap();
 
-        let headers = parts[0].data.headers.as_ref();
-        if let Some(headers) = headers {
-            for (header, value) in headers.iter() {
-                response.insert_header((header.as_str(), value.to_owned()));
+        match none_match(request.request(), Some(etag.clone()))? {
+            Some(false) => HttpResponse::NotModified()
+                .insert_header((header::ETAG, etag))
+                .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
+                .finish(),
+            _ => {
+                let mut response = HttpResponse::Ok();
+
+                let headers = parts[0].data.headers.as_ref();
+                if let Some(headers) = headers {
+                    for (header, value) in headers.iter() {
+                        response.insert_header((header.as_str(), value.to_owned()));
+                    }
+                }
+
+                response.insert_header((header::ETAG, etag));
+                response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
+
+                // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
+                let content_length = merge::content_length(parts);
+                match content_length {
+                    Some(content_length) => response.body(SizedStream::new(
+                        content_length as u64,
+                        stream::empty::<Result<_, io::Error>>().boxed_local(),
+                    )),
+                    None => response.finish(),
+                }
             }
-        }
-
-        let etag = parts.last().unwrap().data.etag.to_owned();
-
-        response.insert_header((header::ETAG, etag));
-
-        // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
-        let content_length = merge::content_length(parts);
-        match content_length {
-            Some(content_length) => response.body(SizedStream::new(
-                content_length as u64,
-                stream::empty::<Result<_, io::Error>>().boxed_local(),
-            )),
-            None => response.finish(),
         }
     } else {
         HttpResponse::NotFound().finish()
@@ -407,4 +452,53 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
 pub async fn delete(_path: Path<ObjectPath>) -> HandlerResult<HttpResponse> {
     unimplemented!("delete is not implemented")
+}
+
+fn objectpart_etag(parts: &Vec<ObjectPart<PartData>>) -> Option<EntityTag> {
+    parts
+        .last()
+        .map(|p| EntityTag::new_strong(p.data.etag.to_owned()))
+}
+
+fn objectpart_strategy(parts: &Vec<ObjectPart<PartData>>) -> Option<MergeStrategy> {
+    parts.first().map(|p| p.data.merge_strategy.unwrap())
+}
+
+fn validate_patch_conditionals(
+    req: &HttpRequest,
+    parts: &Vec<ObjectPart<PartData>>,
+) -> Result<Option<ConditionalMatch>, ApiError> {
+    let etag = objectpart_etag(parts);
+
+    match any_match(req, etag)? {
+        Some(false) => Err(ApiError::PreconditionFailed),
+        _ => {
+            let parts_data = parts.iter().map(|p| &p.data).collect::<Vec<&PartData>>();
+            let parts_etag = recovery::object_etag(parts_data)?;
+
+            Ok(Some(ConditionalMatch::IfMatch(parts_etag)))
+        }
+    }
+}
+
+fn validate_put_conditionals(
+    req: &HttpRequest,
+    parts: &Vec<ObjectPart<PartData>>,
+) -> Result<Option<ConditionalMatch>, ApiError> {
+    let etag = objectpart_etag(parts);
+
+    match any_match(req, etag.clone())? {
+        Some(true) => {
+            let parts_data = parts.iter().map(|p| &p.data).collect::<Vec<&PartData>>();
+            let parts_etag = recovery::object_etag(parts_data)?;
+
+            Ok(Some(ConditionalMatch::IfMatch(parts_etag)))
+        }
+        Some(false) => Err(ApiError::PreconditionFailed),
+        None => match none_match(req, etag.clone())? {
+            Some(true) => Ok(Some(ConditionalMatch::IfNoneMatch("*".to_owned()))),
+            Some(false) => Err(ApiError::PreconditionFailed),
+            None => Ok(None),
+        },
+    }
 }
