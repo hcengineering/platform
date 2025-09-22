@@ -41,7 +41,6 @@
     persons = presenceInfo
       .values()
       .map((p) => personByRef.get(p))
-      .filter((p) => p !== me)
       .filter(notEmpty)
       .toArray()
   }
