@@ -239,11 +239,7 @@ async function migrateMessagesGroup (
   const newMessages: MessageDoc[] = []
 
   for (const oldMessage of oldMessages) {
-    const newMessage = await oldMessageToNewMessageDoc(
-      oldMessage,
-      accountClient,
-      personUuidBySocialId
-    )
+    const newMessage = await oldMessageToNewMessageDoc(oldMessage, accountClient, personUuidBySocialId)
     newMessages.push(newMessage)
   }
 
@@ -251,7 +247,7 @@ async function migrateMessagesGroup (
 
   let i = 0
   for (const chunk of chunks) {
-    const blobId = i === 0 ? group.blobId : generateUuid() as BlobID
+    const blobId = i === 0 ? group.blobId : (generateUuid() as BlobID)
     const newGroupDoc: MessagesGroupDoc = {
       cardId: group.cardId,
       blobId,
