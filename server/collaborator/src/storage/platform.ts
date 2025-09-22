@@ -213,8 +213,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       curr: getMarkup.curr()
     }
 
-    const currMarkup = markup.curr[objectAttr]
-    const prevMarkup = markup.prev[objectAttr]
+    const currMarkup = markup.curr[objectAttr] ?? ''
+    const prevMarkup = markup.prev[objectAttr] ?? ''
 
     if (areEqualMarkups(currMarkup, prevMarkup)) {
       ctx.info('markup not changed, skip platform update', { documentName })
