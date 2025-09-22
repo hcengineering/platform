@@ -33,7 +33,7 @@ class Client implements HulylakeClient {
   }
 
   private objectUrl (key: string): string {
-    return `${this.baseUrl}/api/${this.workspace}/${key}`
+    return `${this.baseUrl}/api/${this.workspace}/${encodeURIComponent(key)}`
   }
 
   private authHeaders (init?: HeadersInit): Headers {

@@ -26,10 +26,3 @@ export class HulylakeError extends Error {
     this.name = 'HulylakeError'
   }
 }
-
-export class NotFoundError extends Error {
-  constructor (message: string) {
-    super(message)
-    this.name = 'NotFoundError'
-  }
-}

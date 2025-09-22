@@ -50,6 +50,8 @@ import {
 import yaml from 'js-yaml'
 import { type AccountClient } from '@hcengineering/account-client'
 
+const MAX_MESSAGES_SIZE = 95 * 1024
+
 const MESSAGES_GROUP_TABLE = 'communication.messages_group'
 const MESSAGES_TABLE = 'communication.message'
 const PATCH_TABLE = 'communication.patch'
@@ -112,52 +114,55 @@ async function migrateMessagesBatch (
   personUuidBySocialId: Map<PersonId, PersonUuid>,
   messages: OldMessage[]
 ): Promise<void> {
-  const fromDate = messages[0].created
-  const toDate = messages[messages.length - 1].created
-  const blobId = generateUuid() as BlobID
-  const newGroupDoc: MessagesGroupDoc = {
-    cardId,
-    blobId,
-    fromDate: fromDate.toISOString(),
-    toDate: toDate.toISOString(),
-    count: messages.length
-  }
-  const newMessagesDoc: MessagesDoc = {
-    cardId,
-    fromDate: fromDate.toISOString(),
-    toDate: toDate.toISOString(),
-    messages: {},
-    language: 'original'
-  }
-
+  const newMessages: MessageDoc[] = []
   for (const oldMessage of messages) {
     const newMessageDoc = await oldMessageToNewMessageDoc(oldMessage, accountClient, personUuidBySocialId)
-    newMessagesDoc.messages[newMessageDoc.id] = newMessageDoc
+    newMessages.push(newMessageDoc)
   }
-
-  const jsonPatches: JsonPatch[] = [
-    {
-      hop: 'add',
-      path: `/${blobId}`,
-      value: newGroupDoc,
-      safe: true
-    } as const
-  ]
-
-  await hulylake.patchJson(`${cardId}/messages/groups`, jsonPatches, undefined, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 1000
+  const chunks = chunkMessagesBySize(newMessages)
+  for (const chunk of chunks) {
+    const fromDate = chunk.from
+    const toDate = chunk.to
+    const blobId = generateUuid() as BlobID
+    const newGroupDoc: MessagesGroupDoc = {
+      cardId,
+      blobId,
+      fromDate: fromDate.toISOString(),
+      toDate: toDate.toISOString(),
+      count: chunk.count
     }
-  })
-  await hulylake.putJson(`${cardId}/messages/${blobId}`, newMessagesDoc, undefined, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 1000
+    const newMessagesDoc: MessagesDoc = {
+      cardId,
+      fromDate: fromDate.toISOString(),
+      toDate: toDate.toISOString(),
+      messages: chunk.chunk,
+      language: 'original'
     }
-  })
+
+    const jsonPatches: JsonPatch[] = [
+      {
+        hop: 'add',
+        path: `/${blobId}`,
+        value: newGroupDoc,
+        safe: true
+      } as const
+    ]
+
+    await hulylake.patchJson(`${cardId}/messages/groups`, jsonPatches, undefined, {
+      maxRetries: 3,
+      isRetryable: () => true,
+      delayStrategy: {
+        getDelay: () => 1000
+      }
+    })
+    await hulylake.putJson(`${cardId}/messages/${blobId}`, newMessagesDoc, undefined, {
+      maxRetries: 3,
+      isRetryable: () => true,
+      delayStrategy: {
+        getDelay: () => 1000
+      }
+    })
+  }
 }
 
 async function migrateMessagesGroups (
@@ -203,6 +208,7 @@ async function initializeCardGroups (
       getDelay: () => 500
     }
   })
+
   if (res.body != null) return
 
   await hulylake.putJson(`${cardId}/messages/groups`, {}, undefined, {
@@ -226,55 +232,138 @@ async function migrateMessagesGroup (
 ): Promise<void> {
   const patches = await findMessageGroupPatches(ws.uuid, db, group)
   const parsedBlob = await loadMessagesGroupBlob(ctx, ws, group, storage, patches)
+
   if (parsedBlob == null) return
 
   const oldMessages = parsedBlob.messages
-  const newGroupDoc: MessagesGroupDoc = {
-    cardId: group.cardId,
-    blobId: group.blobId,
-    fromDate: group.fromDate.toISOString(),
-    toDate: group.toDate.toISOString(),
-    count: group.count
-  }
-  const newMessagesDoc: MessagesDoc = {
-    cardId: group.cardId,
-    fromDate: group.fromDate.toISOString(),
-    toDate: group.toDate.toISOString(),
-    messages: {},
-    language: 'original'
-  }
+  const newMessages: MessageDoc[] = []
 
   for (const oldMessage of oldMessages) {
-    newMessagesDoc.messages[oldMessage.id] = await oldMessageToNewMessageDoc(
+    const newMessage = await oldMessageToNewMessageDoc(
       oldMessage,
       accountClient,
       personUuidBySocialId
     )
+    newMessages.push(newMessage)
   }
 
-  const jsonPatches: JsonPatch[] = [
-    {
-      hop: 'add',
-      path: `/${group.blobId}`,
-      value: newGroupDoc,
-      safe: true
-    } as const
-  ]
+  const chunks = chunkMessagesBySize(newMessages)
 
-  await hulylake.patchJson(`${group.cardId}/messages/groups`, jsonPatches, undefined, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 1000
+  let i = 0
+  for (const chunk of chunks) {
+    const blobId = i === 0 ? group.blobId : generateUuid() as BlobID
+    const newGroupDoc: MessagesGroupDoc = {
+      cardId: group.cardId,
+      blobId,
+      fromDate: chunk.from.toISOString(),
+      toDate: chunk.to.toISOString(),
+      count: chunk.count
     }
-  })
-  await hulylake.putJson(`${group.cardId}/messages/${group.blobId}`, newMessagesDoc, undefined, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 1000
+    const newMessagesDoc: MessagesDoc = {
+      cardId: group.cardId,
+      fromDate: chunk.from.toISOString(),
+      toDate: chunk.to.toISOString(),
+      messages: chunk.chunk,
+      language: 'original'
     }
-  })
+    const jsonPatches: JsonPatch[] = [
+      {
+        hop: 'add',
+        path: `/${blobId}`,
+        value: newGroupDoc,
+        safe: true
+      } as const
+    ]
+
+    await hulylake.patchJson(`${group.cardId}/messages/groups`, jsonPatches, undefined, {
+      maxRetries: 3,
+      isRetryable: () => true,
+      delayStrategy: {
+        getDelay: () => 1000
+      }
+    })
+    await hulylake.putJson(`${group.cardId}/messages/${blobId}`, newMessagesDoc, undefined, {
+      maxRetries: 3,
+      isRetryable: () => true,
+      delayStrategy: {
+        getDelay: () => 1000
+      }
+    })
+    i++
+  }
+}
+
+function chunkMessagesBySize (
+  messages: MessageDoc[]
+): Array<{ chunk: Record<MessageID, MessageDoc>, from: Date, to: Date, count: number }> {
+  const chunks: Array<{ chunk: Record<MessageID, MessageDoc>, from: Date, to: Date, count: number }> = []
+
+  let current: { chunk: Record<MessageID, MessageDoc>, from?: Date, to?: Date, count: number } = {
+    chunk: {},
+    count: 0
+  }
+
+  for (const msg of messages) {
+    current.chunk[msg.id] = msg
+
+    if (sizeOfJson(current.chunk) <= MAX_MESSAGES_SIZE) {
+      const d = new Date(msg.created)
+      current.count += 1
+      current.from = current.from != null ? (d < current.from ? d : current.from) : d
+      current.to = current.to != null ? (d > current.to ? d : current.to) : d
+      continue
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete current.chunk[msg.id]
+
+    if (sizeOfJson(msg) > MAX_MESSAGES_SIZE) {
+      console.warn('Message size is too big, skipping')
+      continue
+    }
+
+    if (Object.keys(current.chunk).length === 0) {
+      console.warn('Message size is too big, skipping')
+      continue
+    }
+
+    if (current.from != null && current.to != null) {
+      chunks.push({
+        chunk: current.chunk,
+        from: current.from,
+        to: current.to,
+        count: current.count
+      })
+    }
+
+    current = {
+      chunk: {},
+      count: 0
+    }
+    current.chunk[msg.id] = msg
+
+    if (sizeOfJson(current.chunk) <= MAX_MESSAGES_SIZE) {
+      const d = new Date(msg.created)
+      current.from = current.from != null ? (d < current.from ? d : current.from) : d
+      current.to = current.to != null ? (d > current.to ? d : current.to) : d
+      current.count = 1
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete current.chunk[msg.id]
+      console.warn(`Message ${msg.id} still exceeds limit, skipping`)
+    }
+  }
+
+  if (current.from != null && current.to != null) {
+    chunks.push({
+      chunk: current.chunk,
+      from: current.from,
+      to: current.to,
+      count: current.count
+    })
+  }
+
+  return chunks
 }
 
 async function oldMessageToNewMessageDoc (
@@ -344,6 +433,11 @@ async function oldMessageToNewMessageDoc (
     threads
   }
 }
+
+function sizeOfJson (obj: unknown): number {
+  return Buffer.byteLength(JSON.stringify(obj), 'utf8')
+}
+
 async function getPersonUuidBySocialId (
   ccountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>,
@@ -511,7 +605,7 @@ function getMessagesCursor (ws: WorkspaceUuid, cardId: CardID, db: postgres.Sql)
                                ON p.workspace_id = m.workspace_id
                                    AND p.card_id = m.card_id
                                    AND p.message_id = m.id
-            ORDER BY m.created ASC;`.cursor(500)
+            ORDER BY m.created ASC;`.cursor(200)
 }
 
 async function findMessageGroupPatches (ws: WorkspaceUuid, db: postgres.Sql, group: MessagesGroup): Promise<Patch[]> {
@@ -578,7 +672,7 @@ function deserializeOldMessage (raw: any): OldMessage | undefined {
   )
 }
 
-export function deserializeReaction (raw: any): OldReaction {
+function deserializeReaction (raw: any): OldReaction {
   return {
     reaction: raw.reaction,
     creator: raw.creator,
@@ -586,7 +680,7 @@ export function deserializeReaction (raw: any): OldReaction {
   }
 }
 
-export function deserializeAttachment (raw: any): Attachment {
+function deserializeAttachment (raw: any): Attachment {
   return {
     id: String(raw.id) as AttachmentID,
     type: raw.type,
@@ -687,7 +781,7 @@ function parseAttachments (message: FileMessage): Attachment[] {
   return attachments
 }
 
-export function applyPatches (message: OldMessage, patches: Patch[]): OldMessage | undefined {
+function applyPatches (message: OldMessage, patches: Patch[]): OldMessage | undefined {
   if (patches.length === 0) return message
 
   let result: OldMessage | undefined = message
@@ -697,7 +791,7 @@ export function applyPatches (message: OldMessage, patches: Patch[]): OldMessage
   return result
 }
 
-export function applyPatch (message: OldMessage, patch: Patch): OldMessage | undefined {
+function applyPatch (message: OldMessage, patch: Patch): OldMessage | undefined {
   if (message.removed) {
     return undefined
   }
@@ -900,7 +994,7 @@ function updateThread (
   }
 }
 
-export interface OldMessage {
+interface OldMessage {
   id: MessageID
   cardId: CardID
   type: 'message' | 'activity'
@@ -917,13 +1011,13 @@ export interface OldMessage {
   thread?: OldThread
 }
 
-export interface OldReaction {
+interface OldReaction {
   reaction: string
   creator: SocialID
   created: Date
 }
 
-export interface OldThread {
+interface OldThread {
   cardId: CardID
   messageId: MessageID
   threadId: CardID
@@ -932,9 +1026,9 @@ export interface OldThread {
   lastReply: Date
 }
 
-export type Patch = UpdatePatch | RemovePatch | ReactionPatch | ThreadPatch | AttachmentPatch
+type Patch = UpdatePatch | RemovePatch | ReactionPatch | ThreadPatch | AttachmentPatch
 
-export enum PatchType {
+enum PatchType {
   update = 'update',
   remove = 'remove',
   reaction = 'reaction',
@@ -951,76 +1045,76 @@ interface BasePatch {
   data: Record<string, any>
 }
 
-export interface UpdatePatch extends BasePatch {
+interface UpdatePatch extends BasePatch {
   type: PatchType.update
   data: UpdatePatchData
 }
 
-export interface UpdatePatchData {
+interface UpdatePatchData {
   content?: Markdown
   extra?: MessageExtra
 }
 
-export interface RemovePatch extends BasePatch {
+interface RemovePatch extends BasePatch {
   type: PatchType.remove
   data: RemovePatchData
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RemovePatchData {}
+interface RemovePatchData {}
 
-export interface ReactionPatch extends BasePatch {
+interface ReactionPatch extends BasePatch {
   type: PatchType.reaction
   data: AddReactionPatchData | RemoveReactionPatchData
 }
 
-export interface AddReactionPatchData {
+interface AddReactionPatchData {
   operation: 'add'
   reaction: string
 }
 
-export interface RemoveReactionPatchData {
+interface RemoveReactionPatchData {
   operation: 'remove'
   reaction: string
 }
 
-export interface AttachmentPatch extends BasePatch {
+interface AttachmentPatch extends BasePatch {
   type: PatchType.attachment
   data: AddAttachmentsPatchData | RemoveAttachmentsPatchData | SetAttachmentsPatchData | UpdateAttachmentsPatchData
 }
 
-export interface AddAttachmentsPatchData {
+interface AddAttachmentsPatchData {
   operation: 'add'
   attachments: AttachmentData[]
 }
 
-export interface RemoveAttachmentsPatchData {
+interface RemoveAttachmentsPatchData {
   operation: 'remove'
   ids: AttachmentID[]
 }
 
-export interface SetAttachmentsPatchData {
+interface SetAttachmentsPatchData {
   operation: 'set'
   attachments: AttachmentData[]
 }
 
-export interface UpdateAttachmentsPatchData {
+interface UpdateAttachmentsPatchData {
   operation: 'update'
   attachments: AttachmentUpdateData[]
 }
 
-export interface ThreadPatch extends BasePatch {
+interface ThreadPatch extends BasePatch {
   type: PatchType.thread
   data: AttachThreadPatchData | UpdateThreadPatchData
 }
 
-export interface AttachThreadPatchData {
+interface AttachThreadPatchData {
   operation: 'attach'
   threadId: CardID
   threadType: CardType
 }
 
-export interface UpdateThreadPatchData {
+interface UpdateThreadPatchData {
   operation: 'update'
   threadId: CardID
   threadType?: CardType
@@ -1028,14 +1122,14 @@ export interface UpdateThreadPatchData {
   lastReply?: Date
 }
 
-export interface FileMetadata {
+interface FileMetadata {
   cardId: CardID
   title: string
   fromDate: Date
   toDate: Date
 }
 
-export interface FileMessage {
+interface FileMessage {
   id: MessageID
   type: 'message' | 'activity'
   content: Markdown
@@ -1052,14 +1146,14 @@ export interface FileMessage {
   thread?: FileThread
 }
 
-export interface FileThread {
+interface FileThread {
   threadId: CardID
   threadType: CardType
   repliesCount: number
   lastReply: Date
 }
 
-export interface ParsedFile {
+interface ParsedFile {
   cardId: CardID
   title: string
   fromDate: Date
