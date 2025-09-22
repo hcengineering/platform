@@ -19,7 +19,7 @@
   import contact from '@hcengineering/contact'
   import view from '@hcengineering/view'
 
-  import SocialIdPresenter from './SocialIdPresenter.svelte'
+  import SocialIdRow from './SocialIdRow.svelte'
   import setting from '../../plugin'
 
   let account = getCurrentAccount()
@@ -81,7 +81,7 @@
               : true}
         {#if socialIdProvider != null && socialId.type !== SocialIdType.HULY}
           <div class="item">
-            <SocialIdPresenter {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
+            <SocialIdRow {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
           </div>
         {/if}
       {/each}

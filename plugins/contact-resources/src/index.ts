@@ -103,6 +103,7 @@ import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
+import SocialIdentityPresenter from './components/SocialIdentityPresenter.svelte'
 import PersonIdFilter from './components/PersonIdFilter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SelectAvatars from './components/SelectAvatars.svelte'
@@ -127,7 +128,7 @@ import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 import PersonPreviewProvider from './components/person/PersonPreviewProvider.svelte'
 
 import { get } from 'svelte/store'
-import { canResendInvitation } from './visibilityTester'
+import { canMergePersons, canResendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -191,6 +192,7 @@ export {
   OrganizationPresenter,
   PersonIcon,
   PersonPresenter,
+  SocialIdentityPresenter,
   PersonRefPresenter,
   SelectAvatars,
   SelectUsersPopup,
@@ -458,7 +460,8 @@ export default async (): Promise<Resources> => ({
     PersonTooltipProvider: getPersonTooltip,
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
-    CanResendInvitation: canResendInvitation
+    CanResendInvitation: canResendInvitation,
+    CanMergePersons: canMergePersons
   },
   resolver: {
     Location: resolveLocation,

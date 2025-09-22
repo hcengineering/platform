@@ -119,6 +119,7 @@
     "EveryoneDescription": "Upozornit všechny v tomto {title}",
     "HereDescription": "Upozornit všechny v tomto {title}",
     "Guest": "Host",
-    "Deleted": "Smazáno"
+    "Deleted": "Smazáno",
+    "CannotMerge": "Chyba: Nelze sloučit globální osoby"
   }
 }

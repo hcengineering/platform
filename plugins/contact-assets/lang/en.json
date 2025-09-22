@@ -123,6 +123,7 @@
     "EveryoneDescription": "Notify everyone in this {title}",
     "HereDescription": "Notify every online member in this {title}",
     "Guest": "Guest",
-    "Deleted": "Deleted"
+    "Deleted": "Deleted",
+    "CannotMerge": "Error: Cannot merge global persons"
   }
 }

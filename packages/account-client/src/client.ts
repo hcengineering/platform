@@ -220,6 +220,7 @@ export interface AccountClient {
   getIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<IntegrationSecret | null>
   listIntegrationsSecrets: (filter: Partial<IntegrationSecretKey>) => Promise<IntegrationSecret[]>
   getAccountInfo: (uuid: AccountUuid) => Promise<AccountInfo>
+  canMergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<boolean>
   mergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<void>
   mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
   addEmailSocialId: (email: string) => Promise<OtpInfo>
@@ -1067,6 +1068,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'getAccountInfo' as const,
       params: { accountId: uuid }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async canMergeSpecifiedPersons (primaryPerson: PersonUuid, secondaryPerson: PersonUuid): Promise<boolean> {
+    const request = {
+      method: 'canMergeSpecifiedPersons' as const,
+      params: { primaryPerson, secondaryPerson }
     }
 
     return await this.rpc(request)
