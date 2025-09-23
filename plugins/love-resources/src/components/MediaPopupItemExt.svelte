@@ -1,15 +1,14 @@
 <script lang="ts">
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { isOffice } from '@hcengineering/love'
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, myInfo, myOffice, rooms } from '../stores'
+  import { currentRoom, infos, myInfo, myOffice } from '../stores'
   import { liveKitClient } from '../utils'
   import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { leaveMeeting } from '../meetingController'
+  import { leaveMeeting } from '../meetings'
 
   export let limit: number = 4
 

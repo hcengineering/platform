@@ -20,7 +20,7 @@
   import { JoinRequest } from '@hcengineering/love'
   import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
-  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetingController'
+  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetings'
 
   export let request: JoinRequest
 

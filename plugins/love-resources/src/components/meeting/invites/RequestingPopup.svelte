@@ -18,7 +18,7 @@
   import love from '../../../plugin'
   import { rooms } from '../../../stores'
   import { getRoomLabel } from '../../../utils'
-  import { cancelJoinRequest } from '../../../meetingController'
+  import { cancelJoinRequest } from '../../../meetings'
 
   export let request: JoinRequest
 

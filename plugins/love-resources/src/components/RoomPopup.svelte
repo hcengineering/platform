@@ -32,7 +32,7 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting } from '../meetingController'
+  import { joinMeeting } from '../meetings'
 
   export let room: Room
 

@@ -4,7 +4,7 @@
   import { myInfo, myOffice } from '../../../stores'
   import { isOffice, Room } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
-  import { leaveMeeting } from '../../../meetingController'
+  import { leaveMeeting } from '../../../meetings'
 
   export let room: Room
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'

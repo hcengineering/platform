@@ -21,7 +21,7 @@
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../../../plugin'
-  import { acceptInvite, rejectInvite } from '../../../meetingController'
+  import { acceptInvite, rejectInvite } from '../../../meetings'
 
   export let invite: Invite
 

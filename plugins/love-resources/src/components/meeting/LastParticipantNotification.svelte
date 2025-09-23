@@ -3,7 +3,7 @@
   import love from '../../plugin'
   import { onMount } from 'svelte'
   import { playSound } from '@hcengineering/presentation'
-  import { leaveMeeting } from '../../meetingController'
+  import { leaveMeeting } from '../../meetings'
 
   export let onRemove: () => void
   export let notification: Notification

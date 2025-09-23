@@ -17,7 +17,7 @@
   import { CombineAvatars } from '@hcengineering/contact-resources'
   import { Button, Label } from '@hcengineering/ui'
   import love from '../../../plugin'
-  import { cancelInvites } from '../../../meetingController'
+  import { cancelInvites } from '../../../meetings'
   import { activeInvites } from '../../../stores'
 
   $: persons = $activeInvites.map((p) => p.target)

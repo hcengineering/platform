@@ -23,7 +23,7 @@ import { getCurrentLanguage } from '@hcengineering/theme'
 import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
 import love from './plugin'
 import { $myPreferences } from './stores'
-import { leaveMeeting } from './meetingController'
+import { leaveMeeting } from './meetings'
 
 export enum ScreenSharingState {
   Inactive,

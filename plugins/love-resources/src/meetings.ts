@@ -29,7 +29,7 @@ export let currentMeetingRoom: Ref<Room> | undefined
 const requestsQuery = createQuery(true)
 const invitesQuery = createQuery(true)
 
-export async function createMeeting (room: Room): Promise<void> {
+export async function createMeeting(room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const me = getCurrentEmployee()
@@ -55,7 +55,7 @@ export async function createMeeting (room: Room): Promise<void> {
   await connectToMeeting(room)
 }
 
-export async function leaveMeeting (): Promise<void> {
+export async function leaveMeeting(): Promise<void> {
   const client = getClient()
   const currentParticipationInfo = get(myInfo)
   const office = get(myOffice)
@@ -82,7 +82,7 @@ export async function leaveMeeting (): Promise<void> {
   currentMeetingRoom = undefined
 }
 
-export async function joinMeeting (room: Room): Promise<void> {
+export async function joinMeeting(room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const isGuest = getCurrentAccount().role === AccountRole.Guest
@@ -94,7 +94,7 @@ export async function joinMeeting (room: Room): Promise<void> {
   await connectToMeeting(room)
 }
 
-export async function acceptInvite (invite: Invite): Promise<void> {
+export async function acceptInvite(invite: Invite): Promise<void> {
   const client = getClient()
   await client.update(invite, { status: RequestStatus.Approved })
   const room = getRoomById(invite.room)
@@ -112,12 +112,12 @@ export async function acceptInvite (invite: Invite): Promise<void> {
   await connectToMeeting(room)
 }
 
-export async function rejectInvite (invite: Invite): Promise<void> {
+export async function rejectInvite(invite: Invite): Promise<void> {
   const client = getClient()
   await client.update(invite, { status: RequestStatus.Rejected })
 }
 
-export async function cancelInvites (invites: Invite[]): Promise<void> {
+export async function cancelInvites(invites: Invite[]): Promise<void> {
   const client = getClient()
   for (const invite of invites) {
     if (invite.status === RequestStatus.Pending) {
@@ -126,7 +126,7 @@ export async function cancelInvites (invites: Invite[]): Promise<void> {
   }
 }
 
-export async function sendInvites (persons: Array<Ref<Person>>): Promise<void> {
+export async function sendInvites(persons: Array<Ref<Person>>): Promise<void> {
   const myParticipation = get(myInfo)
   const room = myParticipation?.room
   if (room === undefined || room === love.ids.Reception) return
@@ -156,7 +156,7 @@ export async function sendInvites (persons: Array<Ref<Person>>): Promise<void> {
   })
 }
 
-export async function acceptJoinRequest (request: JoinRequest): Promise<void> {
+export async function acceptJoinRequest(request: JoinRequest): Promise<void> {
   const client = getClient()
   const room = getRoomById(request.room)
 
@@ -174,19 +174,19 @@ export async function acceptJoinRequest (request: JoinRequest): Promise<void> {
   await connectToMeeting(room)
 }
 
-export async function rejectJoinRequest (request: JoinRequest): Promise<void> {
+export async function rejectJoinRequest(request: JoinRequest): Promise<void> {
   const client = getClient()
   await client.update(request, { status: RequestStatus.Rejected })
 }
 
-export async function cancelJoinRequest (request: JoinRequest): Promise<void> {
+export async function cancelJoinRequest(request: JoinRequest): Promise<void> {
   if (request.status === RequestStatus.Pending) {
     const client = getClient()
     await client.remove(request)
   }
 }
 
-async function sendJoinRequest (room: Room): Promise<void> {
+async function sendJoinRequest(room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
 
   const me = getCurrentEmployee()
@@ -217,7 +217,7 @@ async function sendJoinRequest (room: Room): Promise<void> {
   })
 }
 
-export async function kick (person: Ref<Person>): Promise<void> {
+export async function kick(person: Ref<Person>): Promise<void> {
   const client = getClient()
   const allRooms = get(rooms)
   const participantsInfo = get(infos)
@@ -227,7 +227,7 @@ export async function kick (person: Ref<Person>): Promise<void> {
   await client.update(participantInfo, { room: participantOffice?._id ?? love.ids.Reception, x: 0, y: 0 })
 }
 
-async function connectToMeeting (room: Room): Promise<void> {
+async function connectToMeeting(room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
   if (currentMeetingRoom === room._id) return
 
@@ -250,7 +250,7 @@ async function connectToMeeting (room: Room): Promise<void> {
   }
 }
 
-async function moveToMeetingRoom (room: Room): Promise<void> {
+async function moveToMeetingRoom(room: Room): Promise<void> {
   const me = getCurrentEmployee()
   const currentPerson = await getPersonByPersonRef(me)
   const client = getClient()
@@ -282,7 +282,7 @@ async function moveToMeetingRoom (room: Room): Promise<void> {
   }
 }
 
-async function createMeetingDocument (room: Room): Promise<void> {
+async function createMeetingDocument(room: Room): Promise<void> {
   const client = getClient()
   await client.createDoc(love.class.MeetingMinutes, core.space.Workspace, {
     description: null,
@@ -294,7 +294,7 @@ async function createMeetingDocument (room: Room): Promise<void> {
   })
 }
 
-async function getNewMeetingTitle (room: Room): Promise<string> {
+async function getNewMeetingTitle(room: Room): Promise<string> {
   const date = new Date()
     .toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -305,7 +305,7 @@ async function getNewMeetingTitle (room: Room): Promise<string> {
   return `${await getRoomName(room)} ${date}`
 }
 
-function getRoomById (roomId: Ref<Room>): Room | undefined {
+function getRoomById(roomId: Ref<Room>): Room | undefined {
   const allRooms = get(rooms)
   return allRooms.find((p) => p._id === roomId)
 }

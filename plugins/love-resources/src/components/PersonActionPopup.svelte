@@ -5,7 +5,7 @@
   import { ActionIcon } from '@hcengineering/ui'
   import love from '../plugin'
   import { myInfo } from '../stores'
-  import { joinMeeting, kick, sendInvites } from '../meetingController'
+  import { joinMeeting, kick, sendInvites } from '../meetings'
 
   export let room: Room
   export let person: Ref<Person>

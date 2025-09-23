@@ -22,7 +22,7 @@
   import { getRoomName } from '../utils'
   import { infos, myOffice, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
-  import { createMeeting, joinMeeting } from '../meetingController'
+  import { createMeeting, joinMeeting } from '../meetings'
 
   export let object: Room
 

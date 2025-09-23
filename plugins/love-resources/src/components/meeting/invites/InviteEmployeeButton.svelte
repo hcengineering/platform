@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ButtonBaseSize, IconSize, ModernButton, showPopup } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
-  import { sendInvites } from '../../../meetingController'
+  import { sendInvites } from '../../../meetings'
   import love from '../../../plugin'
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'

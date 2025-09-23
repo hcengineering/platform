@@ -39,7 +39,7 @@
   import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { leaveMeeting, currentMeetingRoom } from '../../meetingController'
+  import { leaveMeeting, currentMeetingRoom } from '../../meetings'
   import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
