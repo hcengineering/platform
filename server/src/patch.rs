@@ -474,6 +474,30 @@ mod tests {
     }
 
     #[test]
+    fn test_patch_err() {
+        let mut doc = json!({});
+
+        let patches = vec![
+            PatchOperation::Standard(StandardPatchOperation::Add(json_patch::AddOperation {
+                path: PointerBuf::from_tokens(["a"]),
+                value: json!([]),
+            })),
+            PatchOperation::Standard(StandardPatchOperation::Add(json_patch::AddOperation {
+                path: PointerBuf::from_tokens(["a", "b"]),
+                value: json!(1),
+            })),
+        ];
+
+        let res = apply(&mut doc, &patches);
+        assert_eq!(
+            res,
+            Err(HulyPatchError::PatchError(String::from(
+                "operation '/0' failed at path '/a/b': path is invalid"
+            )))
+        );
+    }
+
+    #[test]
     fn test_deserialize_add_safe() {
         let patch = r#"{ "hop": "add", "path": "/a", "value": 1, "safe": true }"#;
         let res = serde_json::from_str::<PatchOperation>(patch);
