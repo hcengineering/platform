@@ -50,6 +50,7 @@
 
 <div class="reactions">
   {#each Object.entries(reactions) as [emoji, data] (emoji)}
+    {#if data.length > 0}
     <ReactionPresenter
       {emoji}
       selected={data.some((it) => it.person === me.uuid)}
@@ -57,6 +58,7 @@
       count={data.length}
       on:click={() => dispatch('click', emoji)}
     />
+      {/if}
   {/each}
   <ReactionPresenter icon={emojiPlugin.icon.EmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />
 </div>

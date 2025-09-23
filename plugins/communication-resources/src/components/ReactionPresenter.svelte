@@ -43,7 +43,7 @@
       <EmojiPresenter {emoji} />
     {/if}
   </div>
-  {#if count !== undefined}
+  {#if count !== undefined && count > 0}
     <div class="reaction__count">{count}</div>
   {/if}
 </div>
