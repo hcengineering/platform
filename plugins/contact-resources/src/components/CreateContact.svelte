@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { Doc, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Menu, Action, showPopup, closePopup } from '@hcengineering/ui'
+  import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '../plugin'
 
@@ -17,22 +18,22 @@
       const cl = hierarchy.getClass(v)
       if (hierarchy.hasMixin(cl, view.mixin.ObjectFactory)) {
         const { component, create } = hierarchy.as(cl, view.mixin.ObjectFactory)
-        let action: (() => Promise<void>) | undefined
 
         if (component) {
-          action = async () => {
-            closePopup()
-            showPopup(component, { shouldSaveDraft: true }, 'top')
-          }
-        } else if (create) {
-          action = await getResource(create)
-        }
-
-        if (action) {
           actions.push({
             icon: cl.icon as Asset,
             label: cl.label,
-            action
+            action: async () => {
+              closePopup()
+              showPopup(component, { shouldSaveDraft: true }, 'top')
+            }
+          })
+        } else if (create) {
+          const action = await getResource(create)
+          actions.push({
+            icon: cl.icon as Asset,
+            label: cl.label,
+            action: async () => { await action() }
           })
         }
       }

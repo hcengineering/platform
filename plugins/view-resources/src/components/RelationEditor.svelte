@@ -17,7 +17,7 @@
   export let direction: 'A' | 'B'
   export let emptyKind: 'create' | 'placeholder' = 'create'
 
-  const client = getClient()  
+  const client = getClient()
 
   $: _class = direction === 'B' ? association.classB : association.classA
 
