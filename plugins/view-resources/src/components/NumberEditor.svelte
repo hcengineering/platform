@@ -23,7 +23,7 @@
   export let label: IntlString
   export let value: number | undefined
   export let autoFocus: boolean = false
-  export let attribute: AnyAttribute | undefined
+  export let attribute: AnyAttribute | undefined = undefined
   export let onChange: (value: number | undefined) => void
   export let kind: ButtonKind | undefined = undefined
   export let readonly = false

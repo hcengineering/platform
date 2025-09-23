@@ -23,7 +23,7 @@
   export let onChange: ((value: number | undefined) => void) | undefined = undefined
   export let kind: 'no-border' | 'link' | 'list' = 'link'
   export let readonly = false
-  export let attribute: AnyAttribute | undefined
+  export let attribute: AnyAttribute | undefined = undefined
 </script>
 
 {#if onChange !== undefined && !readonly}
