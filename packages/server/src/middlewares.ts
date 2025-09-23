@@ -19,11 +19,11 @@ import type {
   CardID,
   Collaborator,
   FindCollaboratorsParams,
-  FindLabelsParams, FindMessagesMetaParams,
+  FindLabelsParams, FindMessagesGroupParams, FindMessagesMetaParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   FindPeersParams,
-  Label, MessageMeta,
+  Label, MessageMeta, MessagesGroup,
   Notification,
   NotificationContext, Peer,
   WorkspaceUuid
@@ -131,6 +131,11 @@ export class Middlewares {
     this.middlewares.reverse()
 
     return current
+  }
+
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    if (this.head === undefined) return []
+    return await this.head.findMessagesGroups(session, params)
   }
 
   async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {

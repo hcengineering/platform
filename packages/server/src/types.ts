@@ -23,11 +23,11 @@ import type {
   CardID,
   Collaborator,
   FindCollaboratorsParams,
-  FindLabelsParams, FindMessagesMetaParams,
+  FindLabelsParams, FindMessagesGroupParams, FindMessagesMetaParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   FindPeersParams,
-  Label, MessageMeta,
+  Label, MessageMeta, MessagesGroup,
   Notification,
   NotificationContext,
   Peer,
@@ -47,6 +47,7 @@ export type Subscription = string | number
 
 export interface Middleware {
   findMessagesMeta: (session: SessionData, params: FindMessagesMetaParams) => Promise<MessageMeta[]>
+  findMessagesGroups: (session: SessionData, params: FindMessagesGroupParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (
     session: SessionData,
     params: FindNotificationContextParams,

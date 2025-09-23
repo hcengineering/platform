@@ -15,10 +15,11 @@ import {
   generateUuid,
   MeasureContext,
   PersonUuid,
+  SortingOrder,
   systemAccountUuid,
   WorkspaceUuid
 } from '@hcengineering/core'
-import { type HulylakeClient, getClient, type JsonPatch } from '@hcengineering/hulylake-client'
+import { getClient, type HulylakeClient, type JsonPatch } from '@hcengineering/hulylake-client'
 import { generateToken } from '@hcengineering/server-token'
 import {
   Attachment,
@@ -27,6 +28,7 @@ import {
   BlobID,
   CardID,
   CardType,
+  FindMessagesGroupParams,
   Markdown,
   Message,
   MessageDoc,
@@ -37,6 +39,7 @@ import {
   MessagesGroupDoc,
   MessagesGroupsDoc,
   Thread
+  , ComparisonOperator
 } from '@hcengineering/communication-types'
 import { Metadata } from './types'
 
@@ -58,6 +61,34 @@ export class Blob {
 
   constructor (private readonly ctx: MeasureContext, private readonly workspace: WorkspaceUuid, private readonly metadata: Metadata) {
     this.client = getClient(metadata.hulylakeUrl, workspace, generateToken(systemAccountUuid, workspace, undefined, metadata.secret))
+  }
+
+  public async findMessagesGroups (params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    const { cardId, fromDate, toDate, blobId, limit, order } = params
+    const groups = await this.getAllMessageGroups(cardId)
+
+    if (order === SortingOrder.Ascending) {
+      groups.sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
+    } else if (order === SortingOrder.Descending) {
+      groups.sort((a, b) => b.fromDate.getTime() - a.fromDate.getTime())
+    }
+
+    if (fromDate == null && toDate == null && blobId == null && limit == null) {
+      return groups
+    }
+
+    const result: MessagesGroup[] = []
+    for (const group of groups) {
+      if (blobId != null && group.blobId !== blobId) continue
+      if (fromDate != null && !matchDate(group.fromDate, fromDate)) continue
+      if (toDate != null && !matchDate(group.toDate, toDate)) continue
+
+      result.push(group)
+
+      if (limit != null && result.length >= limit) break
+    }
+
+    return result
   }
 
   private async getAllMessageGroups (cardId: CardID): Promise<MessagesGroup[]> {
@@ -472,6 +503,16 @@ export class Blob {
     await this.patchJson(cardId, blobId, patches)
   }
 
+  async removeThread (cardId: CardID, blobId: BlobID, messageId: MessageID, threadId: CardID): Promise<void> {
+    const patches: JsonPatch[] = [
+      {
+        op: 'remove',
+        path: `/messages/${messageId}/threads/${threadId}`
+      }
+    ]
+    await this.patchJson(cardId, blobId, patches)
+  }
+
   private async patchJson (cardId: CardID, blobId: BlobID, patches: JsonPatch[]): Promise<void> {
     await this.client.patchJson(`${cardId}/messages/${blobId}`, patches, undefined, this.retryOptions)
   }
@@ -497,4 +538,17 @@ export class Blob {
       threads: {}
     }
   }
+}
+
+function matchDate (date: Date, filter: Partial<Record<ComparisonOperator, Date>> | Date): boolean {
+  const ts = date.getTime()
+  if (filter instanceof Date) return ts === filter.getTime()
+
+  if (filter.greater != null && !(ts > filter.greater.getTime())) return false
+  if (filter.greaterOrEqual != null && !(ts >= filter.greaterOrEqual.getTime())) return false
+  if (filter.less != null && !(ts < filter.less.getTime())) return false
+  if (filter.lessOrEqual != null && !(ts <= filter.lessOrEqual.getTime())) return false
+  if (filter.notEqual != null && !(ts !== filter.notEqual.getTime())) return false
+
+  return true
 }

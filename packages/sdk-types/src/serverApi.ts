@@ -22,7 +22,7 @@ import type {
   Label,
   FindCollaboratorsParams,
   Collaborator,
-  FindPeersParams, Peer, CardID, FindMessagesMetaParams, MessageMeta
+  FindPeersParams, Peer, CardID, FindMessagesMetaParams, MessageMeta, MessagesGroup, FindMessagesGroupParams
 } from '@hcengineering/communication-types'
 import type { Account, MeasureContext } from '@hcengineering/core'
 
@@ -42,6 +42,7 @@ export interface SessionData {
 }
 
 export interface ServerApi {
+  findMessagesGroups: (session: SessionData, params: FindMessagesGroupParams) => Promise<MessagesGroup[]>
   findMessagesMeta: (session: SessionData, params: FindMessagesMetaParams) => Promise<MessageMeta[]>
 
   findNotificationContexts: (

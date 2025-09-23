@@ -34,10 +34,10 @@ async function addCollaborators (ctx: TriggerCtx, event: Enriched<CreateMessageE
   const { messageType, socialId, content, cardId, cardType, date } = event
   if (messageType === MessageType.Activity) return []
   const account = (await ctx.client.findPersonUuid(ctx, socialId, true)) as AccountUuid | undefined
-  const collaborators: AccountUuid[] = []
+  const collaborators = new Set<AccountUuid>()
 
   if (account !== undefined) {
-    collaborators.push(account)
+    collaborators.add(account)
   }
 
   const markup = markdownToMarkup(content)
@@ -48,9 +48,16 @@ async function addCollaborators (ctx: TriggerCtx, event: Enriched<CreateMessageE
     .filter((it) => it != null) as string[]
   const accounts = await ctx.client.db.getAccountsByPersonIds(personIds)
 
-  collaborators.push(...accounts)
+  if (accounts.length > 0) {
+    const spaceMembers = await ctx.client.db.getCardSpaceMembers(cardId)
+    for (const account of accounts) {
+      if (spaceMembers.includes(account)) {
+        collaborators.add(account)
+      }
+    }
+  }
 
-  if (collaborators.length === 0) {
+  if (collaborators.size === 0) {
     return []
   }
 
@@ -59,7 +66,7 @@ async function addCollaborators (ctx: TriggerCtx, event: Enriched<CreateMessageE
       type: NotificationEventType.AddCollaborators,
       cardId,
       cardType,
-      collaborators,
+      collaborators: Array.from(collaborators),
       socialId,
       date: new Date(date.getTime() - 1)
     }

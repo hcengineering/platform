@@ -84,8 +84,17 @@ async function removeCardLabels (ctx: TriggerCtx, event: UpdateCardTypeEvent): P
 }
 
 async function removeCardThreads (ctx: TriggerCtx, event: RemoveCardEvent): Promise<Event[]> {
+  const toRemove = await ctx.client.db.findThreadMeta({ threadId: event.cardId })
+
   await ctx.client.db.removeThreadMeta({ cardId: event.cardId })
   await ctx.client.db.removeThreadMeta({ threadId: event.cardId })
+
+  for (const thread of toRemove) {
+    const meta = await ctx.client.getMessageMeta(thread.cardId, thread.messageId)
+    if (meta === undefined) continue
+    await ctx.client.blob.removeThread(thread.cardId, meta.blobId, thread.messageId, thread.threadId)
+  }
+
   return []
 }
 

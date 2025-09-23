@@ -17,7 +17,7 @@ import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
 import type { ContextID, NotificationID, NotificationType } from './notification'
-import type { AccountUuid, CardID, CardType, SocialID, WorkspaceUuid } from './core'
+import type { AccountUuid, BlobID, CardID, CardType, SocialID, WorkspaceUuid } from './core'
 import type { LabelID } from './label'
 import { PeerKind } from './peer'
 
@@ -52,6 +52,14 @@ export interface FindMessagesMetaParams extends FindParams {
   cardId?: CardID
   id?: MessageID
   creator?: SocialID
+}
+
+export interface FindMessagesGroupParams extends FindParams {
+  cardId: CardID
+  id?: MessageID
+  blobId?: BlobID
+  fromDate?: Partial<Record<ComparisonOperator, Date>> | Date
+  toDate?: Partial<Record<ComparisonOperator, Date>> | Date
 }
 
 export interface FindMessagesOptions {

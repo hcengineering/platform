@@ -36,11 +36,14 @@ import type {
   MessageExtra,
   AttachmentData,
   AttachmentParams,
-  AttachmentID
+  AttachmentID,
+  MessagesGroup,
+  FindMessagesGroupParams
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
   findMessagesMeta: (params: FindMessagesMetaParams) => Promise<MessageMeta[]>
+  findMessagesGroups: (params: FindMessagesGroupParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 

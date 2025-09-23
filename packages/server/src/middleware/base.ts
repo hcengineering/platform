@@ -27,7 +27,9 @@ import type {
   Peer,
   CardID,
   FindMessagesMetaParams,
-  MessageMeta
+  MessageMeta,
+  FindMessagesGroupParams,
+  MessagesGroup
 } from '@hcengineering/communication-types'
 
 import type { Enriched, Middleware, MiddlewareContext, Subscription } from '../types'
@@ -40,6 +42,10 @@ export class BaseMiddleware implements Middleware {
 
   async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
     return await this.provideFindMessagesMeta(session, params)
+  }
+
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    return await this.provideFindMessagesGroups(session, params)
   }
 
   async findNotificationContexts (
@@ -98,6 +104,16 @@ export class BaseMiddleware implements Middleware {
       return await this.next.event(session, event, derived)
     }
     return {}
+  }
+
+  protected async provideFindMessagesGroups (
+    session: SessionData,
+    params: FindMessagesGroupParams
+  ): Promise<MessagesGroup[]> {
+    if (this.next !== undefined) {
+      return await this.next.findMessagesGroups(session, params)
+    }
+    return []
   }
 
   protected async provideFindMessagesMeta (

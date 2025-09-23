@@ -26,7 +26,7 @@ import type {
   Collaborator,
   FindPeersParams,
   Peer,
-  CardID, FindMessagesMetaParams, MessageMeta
+  CardID, FindMessagesMetaParams, MessageMeta, FindMessagesGroupParams, MessagesGroup
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, Event, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
@@ -62,6 +62,10 @@ export class Api implements ServerApi {
 
   async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
     return await this.middlewares.findMessagesMeta(session, params)
+  }
+
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    return await this.middlewares.findMessagesGroups(session, params)
   }
 
   async findNotificationContexts (

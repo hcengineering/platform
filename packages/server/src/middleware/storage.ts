@@ -30,7 +30,9 @@ import {
   Thread,
   ThreadMeta,
   FindMessagesMetaParams,
-  MessageMeta
+  MessageMeta,
+  FindMessagesGroupParams,
+  MessagesGroup
 } from '@hcengineering/communication-types'
 import {
   type AddCollaboratorsEvent,
@@ -97,6 +99,18 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
 
   async findMessagesMeta (session: SessionData, params: FindMessagesMetaParams): Promise<MessageMeta[]> {
     return await this.db.findMessagesMeta(params)
+  }
+
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    if (params.id != null) {
+      const meta = await this.context.client.getMessageMeta(params.cardId, params.id)
+      if (meta == null) return []
+      return await this.blob.findMessagesGroups({
+        ...params,
+        blobId: params.blobId ?? meta.blobId
+      })
+    }
+    return await this.blob.findMessagesGroups(params)
   }
 
   async findNotificationContexts (
@@ -203,6 +217,7 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
     const added = await this.db.addCollaborators(event.cardId, event.cardType, event.collaborators, event.date)
 
     if (added.length === 0) return { skipPropagate: true }
+    event.collaborators = added
     return {}
   }
 

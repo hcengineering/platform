@@ -307,7 +307,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
           const updatedMessage = { ...tmpMessage, id: resultId }
           this.result.delete(tmpId)
           this.insertMessage(this.result, updatedMessage)
-
+          this.resort(this.result)
           void this.notify()
         }
       })
@@ -324,6 +324,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (resultId === undefined && this.result.isTail()) {
       this.tmpMessages.set(eventId, tmpId)
       this.insertMessage(this.result, tmpMessage)
+      this.resort(this.result)
       void this.notify()
     }
   }
@@ -687,6 +688,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       } else {
         this.result.unshift(message)
       }
+      this.resort(this.result)
       await this.notify()
     } else if (!fromTail) {
       this.result.push(message)
@@ -789,6 +791,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
     this.result = new QueryResult([] as Message[], (x) => x.id)
     this.initialized = false
+
+    void this.subscribe()
 
     if (this.isInitLoadingForward()) {
       this.result.setHead(this.params.from == null)
