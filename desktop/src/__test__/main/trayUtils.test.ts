@@ -37,7 +37,7 @@ describe('getBadgeIconInfo', () => {
   it.each([1, 2, 3, 4, 5, 6, 7, 8, 9])('count of %i', (count: number) => {
     const result = getBadgeIconInfo(count, baseTitle)
     expect(result).toEqual({
-      fileName: `app_icon_badge_0${count}.png`,
+      fileName: 'TrayIconWithBadge.ico',
       tooltip: `${baseTitle}: ${count} unread`
     })
   })
@@ -51,7 +51,7 @@ describe('getBadgeIconInfo', () => {
     it.each(testCases)('count of %i', (count: number) => {
       const result = getBadgeIconInfo(count, baseTitle)
       expect(result).toEqual({
-        fileName: `app_icon_badge_${count}.png`,
+        fileName: 'TrayIconWithBadge.ico',
         tooltip: `${baseTitle}: ${count} unread`
       })
     })
@@ -60,7 +60,7 @@ describe('getBadgeIconInfo', () => {
   it.each([99, 100, 200, 301])('count of %i', (count: number) => {
     const result = getBadgeIconInfo(count, baseTitle)
     expect(result).toEqual({
-      fileName: 'app_icon_badge_99plus.png',
+      fileName: 'TrayIconWithBadge.ico',
       tooltip: `${baseTitle}: ${count} unread`
     })
   })
