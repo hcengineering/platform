@@ -162,9 +162,7 @@
         reference: false,
         emoji: false,
         placeholder: { placeholder: placeHolderStr },
-        shortcuts: {
-          submit: supportSubmit ? { submit } : false
-        }
+        submit: supportSubmit ? { submit } : false
       },
       kitOptions
     )
