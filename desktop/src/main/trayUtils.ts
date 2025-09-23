@@ -13,9 +13,6 @@
 // limitations under the License.
 //
 
-const BADGE_ICON_COMMON_PREFIX = 'app_icon_badge_'
-const BADGE_ICON_COMMON_EXTENSION = '.png'
-
 export interface BadgeIconInfo {
   fileName: string
   tooltip: string
@@ -29,19 +26,8 @@ export function getBadgeIconInfo (badgeCount: number, baseTitle: string): BadgeI
     }
   }
 
-  if (badgeCount >= 99) {
-    return {
-      fileName: `${BADGE_ICON_COMMON_PREFIX}99plus${BADGE_ICON_COMMON_EXTENSION}`,
-      tooltip: `${baseTitle}: ${badgeCount} unread`
-    }
-  }
-
-  const fileName = badgeCount <= 9
-    ? `${BADGE_ICON_COMMON_PREFIX}0${badgeCount}${BADGE_ICON_COMMON_EXTENSION}`
-    : `${BADGE_ICON_COMMON_PREFIX}${badgeCount}${BADGE_ICON_COMMON_EXTENSION}`
-
   return {
-    fileName,
+    fileName: 'TrayIconWithBadge.ico',
     tooltip: `${baseTitle}: ${badgeCount} unread`
   }
 }
