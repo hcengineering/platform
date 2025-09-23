@@ -84,6 +84,16 @@ impl actix_web::error::ResponseError for ApiError {
     }
 }
 
+impl From<recovery::RecoveryError> for ApiError {
+    fn from(error: recovery::RecoveryError) -> Self {
+        match error {
+            recovery::RecoveryError::S3(err) => ApiError::S3(err),
+            recovery::RecoveryError::PreconditionFailed => ApiError::PreconditionFailed,
+            recovery::RecoveryError::Other(err) => ApiError::Other(err),
+        }
+    }
+}
+
 impl<E: Display + std::error::Error + 'static, B: std::fmt::Debug> From<SdkError<E, B>>
     for ApiError
 {

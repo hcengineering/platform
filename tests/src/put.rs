@@ -383,7 +383,7 @@ pub async fn put_conditional_create(
 #[tanu::test(
     4,
     Condition::IfNoneMatch("\"unknown\""),
-    StatusCode::INTERNAL_SERVER_ERROR
+    StatusCode::PRECONDITION_FAILED
 )]
 pub async fn put_conditional_update(
     _: usize,
