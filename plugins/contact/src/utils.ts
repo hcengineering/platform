@@ -730,7 +730,6 @@ export async function getPersonByPersonId (client: Client, personId: PersonId): 
     await loadCachesForPersonId(client, personId)
   }
 
-  console.log('getPersonByPersonId', personId, contactCache.personByPersonId, contactCache.personByPersonId.get(personId))
   return contactCache.personByPersonId.get(personId) ?? null
 }
 
