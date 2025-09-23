@@ -381,10 +381,10 @@
 
         history: false,
         shortcuts: {
-          submit: false,
           imageUpload: canAttachFiles && { attachFile, getFileUrl },
           fileUpload: canAttachFiles && { attachFile }
         },
+        submit: false,
         toolbar: {
           boundary,
           popupContainer: editorPopupContainer
