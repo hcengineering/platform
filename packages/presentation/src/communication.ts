@@ -62,7 +62,9 @@ import {
   type WithTotal,
   type NotificationID,
   type Emoji,
-  type MessageMeta, type FindMessagesGroupParams, type MessagesGroup
+  type MessageMeta,
+  type FindMessagesGroupParams,
+  type MessagesGroup
 } from '@hcengineering/communication-types'
 import core, {
   generateId,

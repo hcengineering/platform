@@ -47,7 +47,12 @@
 
 {#if notification.message}
   <div class="reaction-notification">
-    <PreviewTemplate socialId={notification.creator} date={notification.created} color="secondary" showSeparator={false}>
+    <PreviewTemplate
+      socialId={notification.creator}
+      date={notification.created}
+      color="secondary"
+      showSeparator={false}
+    >
       <svelte:fragment slot="content">
         <span class="ml-1-5" />
         <Label label={chat.string.ReactedToYourMessage} />
