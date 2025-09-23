@@ -33,7 +33,9 @@
           actions.push({
             icon: cl.icon as Asset,
             label: cl.label,
-            action: async () => { await action() }
+            action: async () => {
+              await action()
+            }
           })
         }
       }
