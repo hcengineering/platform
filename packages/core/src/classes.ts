@@ -336,6 +336,15 @@ export interface TypeDate extends Type<Date> {
 /**
  * @public
  */
+export interface TypeNumber extends Type<number> {
+  min?: number
+  max?: number
+  digits?: number // Number of digits after comma
+}
+
+/**
+ * @public
+ */
 export interface RefTo<T extends Doc> extends Type<Ref<Class<T>>> {
   to: Ref<Class<T>>
 }
