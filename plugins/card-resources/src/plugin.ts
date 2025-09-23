@@ -14,7 +14,7 @@
 //
 
 import card, { cardId } from '@hcengineering/card'
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -49,7 +49,11 @@ export default mergeIds(cardId, card, {
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
     CardWidget: '' as AnyComponent,
-    CardWidgetTab: '' as AnyComponent
+    CardWidgetTab: '' as AnyComponent,
+    CreateCard: '' as AnyComponent
+  },
+  function: {
+    CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
   },
   sectionComponent: {
     AttachmentsSection: '' as AnyComponent,

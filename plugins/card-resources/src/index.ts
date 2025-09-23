@@ -31,7 +31,8 @@ import {
   openCardInSidebar,
   checkRelationsSectionVisibility,
   getSpaceAccessPublicLink,
-  canGetSpaceAccessPublicLink
+  canGetSpaceAccessPublicLink,
+  cardFactory
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -148,6 +149,7 @@ export default async (): Promise<Resources> => ({
     OpenCardInSidebar: openCardInSidebar,
     CheckRelationsSectionVisibility: checkRelationsSectionVisibility,
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
-    CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink
+    CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
+    CardFactory: cardFactory
   }
 })

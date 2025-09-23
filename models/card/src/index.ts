@@ -849,6 +849,10 @@ export function createModel (builder: Builder): void {
     forceIndex: true
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectFactory, {
+    create: card.function.CardFactory
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,

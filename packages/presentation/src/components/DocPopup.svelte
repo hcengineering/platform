@@ -135,12 +135,11 @@
   }
   const manager = createFocusManager()
 
-  function onCreate (): void {
+  async function onCreate (): Promise<void> {
     if (create === undefined) {
       return
     }
-    const c = create
-    showPopup(c.component, c.props ?? {}, 'top', async (res) => {
+    const handler = async (res: Ref<Doc> | undefined) => {
       if (res != null) {
         // We expect reference to new object.
         const newObject = await getClient().findOne(_class, { _id: res })
@@ -149,7 +148,17 @@
           select(newObject)
         }
       }
-    })
+    }
+    const c = create
+    if (c.component !== undefined) {
+      showPopup(c.component, c.props ?? {}, 'top', handler)
+    } else if (c.func !== undefined) {
+      const impl = await getResource(c.func)
+      if (impl !== undefined) {
+        const newObjectId = await impl(c.props)
+        await handler(newObjectId)
+      }
+    }
   }
   function toAny (obj: any): any {
     return obj
