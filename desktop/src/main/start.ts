@@ -64,6 +64,8 @@ const options = getOptions()
 const containerPageFileName = isWindows ? 'index.windows.html' : 'index.html'
 const containerPagePath = path.join('dist', 'ui', containerPageFileName)
 
+const CloseTabHotKey = 'CommandOrControl+W'
+
 // Note: using electron-store here as local storage is not available in the main process
 // before the window is created
 const settings = new Settings(new Store(), isDev, packedConfig)
@@ -285,7 +287,17 @@ const createWindow = async (): Promise<void> => {
     mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
   }
 
+  mainWindow.on('focus', () => {
+    const registered = globalShortcut.register(CloseTabHotKey, () => {
+      sendCommand(CommandCloseTab)
+    })
+    if (!registered) {
+      console.log(`failed to register global shortcut on ${CloseTabHotKey}`)
+    }
+  })
+
   mainWindow.on('blur', () => {
+    globalShortcut.unregister(CloseTabHotKey)
     mainWindow?.webContents.send('window-focus-loss')
   })
 
@@ -517,17 +529,14 @@ async function onReady (): Promise<void> {
 
 app.on('ready', () => {
   void onReady()
+})
 
-  const CloseTabHotKey = 'CommandOrControl+W'
-  const registered = globalShortcut.register(CloseTabHotKey, () => {
-    sendCommand(CommandCloseTab)
-  })
-  if (!registered) {
-    console.log(`failed to register global shortcut on ${CloseTabHotKey}`)
-  }
+app.on('will-quit', () => {
+  globalShortcut.unregister(CloseTabHotKey)
 })
 
 app.on('window-all-closed', () => {
+  globalShortcut.unregister(CloseTabHotKey)
   if (process.platform !== 'darwin') {
     app.quit()
   }
