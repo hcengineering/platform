@@ -685,7 +685,7 @@ export interface BuildModelOptions {
  */
 export interface ObjectFactory extends Class<Obj> {
   component?: AnyComponent
-  create?: Resource<(props?: Record<string, any>) => Promise<void>>
+  create?: Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
 }
 
 /**
