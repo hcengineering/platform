@@ -68,8 +68,14 @@ impl<'de> serde::Deserialize<'de> for PatchOperation {
 pub enum HulyPatchError {
     #[error("invalid number")]
     InvalidNumber,
-    #[error("patch error")]
-    PatchError,
+    #[error("patch error: {0}")]
+    PatchError(String),
+}
+
+impl From<json_patch::PatchError> for HulyPatchError {
+    fn from(err: json_patch::PatchError) -> Self {
+        HulyPatchError::PatchError(err.to_string())
+    }
 }
 
 pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatchError> {
@@ -81,7 +87,7 @@ pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatc
             },
             PatchOperation::Standard(standard_op) => Ok(Some(standard_op.clone())),
         }? {
-            json_patch::patch(doc, &[op]).map_err(|_| HulyPatchError::PatchError)?;
+            json_patch::patch(doc, &[op])?;
         }
     }
     Ok(())
