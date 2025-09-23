@@ -587,6 +587,7 @@ export async function ensureEmployeeForPerson (
 export const contactCache = ContactCache.instance
 
 export async function loadCachesForPersonId (client: Client, personId: PersonId): Promise<void> {
+  if (personId == null || personId === '') return
   const sidObj = await client.findOne(
     contact.class.SocialIdentity,
     {
@@ -729,6 +730,7 @@ export async function getPersonByPersonId (client: Client, personId: PersonId): 
     await loadCachesForPersonId(client, personId)
   }
 
+  console.log('getPersonByPersonId', personId, contactCache.personByPersonId, contactCache.personByPersonId.get(personId))
   return contactCache.personByPersonId.get(personId) ?? null
 }
 
