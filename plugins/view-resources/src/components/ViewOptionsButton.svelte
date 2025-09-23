@@ -15,13 +15,13 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { ButtonIcon, closeTooltip, IconOptions, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import { OrderOption, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { focusStore } from '../selection'
   import { setViewOptions } from '../viewOptions'
   import ViewOptionsEditor from './ViewOptions.svelte'
-  import core, { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Hierarchy, Ref, SortingOrder, Type } from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -44,6 +44,23 @@
     return customAttributes
   }
 
+  function getCustomSortingAttributes (h: Hierarchy, _class: Ref<Class<Doc>>): OrderOption[] {
+    const sortableTypes: Ref<Class<Type<any>>>[] = [
+      core.class.EnumOf,
+      core.class.TypeString,
+      core.class.TypeNumber,
+      core.class.TypeDate,
+      core.class.TypeBoolean
+    ]
+
+    const customSortableAttributes: OrderOption[] = [...h.getOwnAttributes(_class).values()]
+      .filter((attr) => attr.isCustom && !attr.isHidden && sortableTypes.includes(attr.type._class))
+      .map((a) => {
+        return [a.name, SortingOrder.Ascending]
+      })
+    return customSortableAttributes
+  }
+
   async function clickHandler (): Promise<void> {
     if (viewlet === undefined) {
       return
@@ -57,6 +74,9 @@
     }
 
     const customAttributes = getGroupingCustomAttributes(h, viewlet.attachTo)
+
+    const customSort = getCustomSortingAttributes(h, viewlet.attachTo)
+    config.orderBy = Array.from(new Set([...config.orderBy, ...customSort]))
 
     config.groupBy = Array.from(new Set([...config.groupBy, ...customAttributes]))
 

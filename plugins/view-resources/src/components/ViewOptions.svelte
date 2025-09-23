@@ -6,6 +6,7 @@
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
   import { isDropdownType, isToggleType, noCategory } from '../viewOptions'
+  import { SortingOrder } from '@hcengineering/core'
 
   export let viewlet: Viewlet
   export let config: ViewOptionsModel
@@ -113,8 +114,13 @@
           const key = e.detail
           const value = config.orderBy.find((p) => p[0] === key)
           if (value !== undefined) {
-            viewOptions.orderBy = value
-            dispatch('update', { key: 'orderBy', value })
+            if (viewOptions.orderBy[0] === key) {
+              viewOptions.orderBy[1] =
+                viewOptions.orderBy[1] === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
+            } else {
+              viewOptions.orderBy = value
+            }
+            dispatch('update', { key: 'orderBy', value: viewOptions.orderBy })
           }
         }}
       />
