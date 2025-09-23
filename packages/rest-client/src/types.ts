@@ -23,9 +23,11 @@ import type {
 import type {
   FindNotificationsParams,
   FindNotificationContextParams,
+  FindMessagesMetaParams,
   NotificationContext,
   Notification,
   MessageID,
+  MessageMeta,
   Markdown,
   SocialID,
   MessageType,
@@ -38,6 +40,7 @@ import type {
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
+  findMessagesMeta: (params: FindMessagesMetaParams) => Promise<MessageMeta[]>
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 

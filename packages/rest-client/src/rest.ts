@@ -28,6 +28,7 @@ import {
   type FindNotificationsParams,
   type Notification,
   type MessageID,
+  type MessageMeta,
   type CardID,
   type Markdown,
   type SocialID,
@@ -35,7 +36,8 @@ import {
   type MessageType,
   type MessageExtra,
   AttachmentData,
-  AttachmentID
+  AttachmentID,
+  FindMessagesMetaParams
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -272,5 +274,9 @@ class RestClientImpl implements RestClient {
 
   async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
     return await this.find<Notification>('findNotifications', params)
+  }
+
+  async findMessagesMeta (params: FindMessagesMetaParams): Promise<MessageMeta[]> {
+    return await this.find<MessageMeta>('findMessagesMeta', params)
   }
 }
