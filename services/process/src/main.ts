@@ -22,6 +22,7 @@ import core, {
   Ref,
   SortingOrder,
   Tx,
+  TxMixin,
   TxProcessor,
   TxUpdateDoc,
   WorkspaceUuid
@@ -32,6 +33,7 @@ import process, {
   ExecutionError,
   ExecutionLogAction,
   ExecutionStatus,
+  isUpdateTx,
   MethodParams,
   parseContext,
   parseError,
@@ -138,7 +140,7 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
   }
 
   // we should update timers, probably context value changed
-  if (record.event === process.trigger.OnCardUpdate) {
+  if ([process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges].includes(record.event)) {
     await updateTimers(control, record)
   }
 }
@@ -376,6 +378,7 @@ async function executeTransition (
         control.cache.set(execution.card, card)
       }
     }
+    const context: Record<string, any> = {}
     for (const action of transition.actions) {
       const actionResult = await executeAction(action, transition._id, execution, control)
       if (isError(actionResult)) {
@@ -386,13 +389,24 @@ async function executeTransition (
         }
         res.push(...actionResult.txes)
         for (const tx of actionResult.txes) {
-          const updateTx = tx as TxUpdateDoc<Doc>
-          if (updateTx._class === core.class.TxUpdateDoc && updateTx.objectId === execution.card) {
-            const updatedCard = TxProcessor.updateDoc2Doc(
-              control.client.getHierarchy().clone(control.cache.get(execution.card)),
-              updateTx
-            )
-            control.cache.set(execution.card, updatedCard)
+          const updateTx = tx as TxUpdateDoc<Doc> | TxMixin<Doc, Doc>
+          if (updateTx.objectId === execution.card) {
+            if (isUpdateTx(updateTx)) {
+              const updatedCard = TxProcessor.updateDoc2Doc(
+                control.client.getHierarchy().clone(control.cache.get(execution.card)),
+                updateTx
+              )
+              context.operations = { ...context.operations, ...updateTx.operations }
+              control.cache.set(execution.card, updatedCard)
+            } else if (updateTx._class === core.class.TxMixin) {
+              const mixinTx = updateTx as TxMixin<Doc, Doc>
+              const updatedCard = TxProcessor.updateMixin4Doc(
+                control.client.getHierarchy().clone(control.cache.get(execution.card)),
+                mixinTx
+              )
+              context.operations = { ...context.operations, ...mixinTx.attributes }
+              control.cache.set(execution.card, updatedCard)
+            }
           }
         }
       }
@@ -429,7 +443,7 @@ async function executeTransition (
         await checkParent(execution, control)
       }
       TxProcessor.applyUpdate(execution, executionUpdate)
-      transition = await checkNext(control, execution)
+      transition = await checkNext(control, execution, context)
       if (transition === undefined) {
         await setNextTimers(control, execution)
       }
@@ -642,7 +656,11 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
   }
 }
 
-async function checkNext (control: ProcessControl, execution: Execution): Promise<Transition | undefined> {
+async function checkNext (
+  control: ProcessControl,
+  execution: Execution,
+  context: Record<string, any>
+): Promise<Transition | undefined> {
   const autoTriggers = control.client.getModel().findAllSync(process.class.Trigger, { auto: true })
   const transitions = control.client.getModel().findAllSync(
     process.class.Transition,
@@ -658,6 +676,7 @@ async function checkNext (control: ProcessControl, execution: Execution): Promis
     if (doc !== undefined) {
       control.cache.set(execution.card, doc)
       const transition = await pickTransition(control, execution, transitions, {
+        ...context,
         card: doc
       })
       return transition

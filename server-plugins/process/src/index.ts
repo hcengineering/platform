@@ -56,7 +56,8 @@ export default plugin(serverProcessId, {
     AddTag: '' as Resource<ExecuteFunc>,
     CheckToDoDone: '' as Resource<CheckFunc>,
     CheckToDoCancelled: '' as Resource<CheckFunc>,
-    OnCardUpdateCheck: '' as Resource<CheckFunc>,
+    MatchCardCheck: '' as Resource<CheckFunc>,
+    FieldChangedCheck: '' as Resource<CheckFunc>,
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>
   },

@@ -74,7 +74,6 @@ export default mergeIds(viewId, view, {
     MatchCriteria: '' as IntlString,
     DontMatchCriteria: '' as IntlString,
     MarkupEditor: '' as IntlString,
-    Select: '' as IntlString,
     Grouping: '' as IntlString,
     Ordering: '' as IntlString,
     Manual: '' as IntlString,

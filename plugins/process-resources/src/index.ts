@@ -77,9 +77,11 @@ import {
   showDoneQuery,
   timeTransitionCheck,
   todoTranstionCheck,
-  updateCardTranstionCheck,
-  subProcessesDoneCheck
+  matchCardCheck,
+  subProcessesDoneCheck,
+  fieldChangesCheck
 } from './utils'
+import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
 export * from './query'
 
@@ -132,7 +134,8 @@ export default async (): Promise<Resources> => ({
     TimePresenter,
     AddTagEditor,
     AddTagPresenter,
-    ExecutionMyToDos
+    ExecutionMyToDos,
+    FieldChangesEditor
   },
   criteriaEditor: {
     BaseCriteria,
@@ -154,7 +157,8 @@ export default async (): Promise<Resources> => ({
     CutEditor
   },
   triggerCheck: {
-    UpdateCheck: updateCardTranstionCheck,
+    MatchCheck: matchCardCheck,
+    FieldChangedCheck: fieldChangesCheck,
     SubProcessesDoneCheck: subProcessesDoneCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck
