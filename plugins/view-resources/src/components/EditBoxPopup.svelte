@@ -23,6 +23,9 @@
   export let format: 'text' | 'password' | 'number'
   export let placeholder: IntlString
   export let kind: EditStyle = 'editbox'
+  export let minValue: number | undefined = undefined
+  export let maxDigitsAfterPoint: number | undefined = undefined
+  export let maxValue: number | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -34,7 +37,18 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="flex-row-center justify-stretch p-2">
     <div class="overflow-label flex-grow">
-      <EditBox bind:value {placeholder} {format} {kind} select on:keypress={_onkeypress} maxWidth={'12rem'} />
+      <EditBox
+        bind:value
+        {placeholder}
+        {format}
+        {kind}
+        {minValue}
+        {maxValue}
+        {maxDigitsAfterPoint}
+        select
+        on:keypress={_onkeypress}
+        maxWidth={'12rem'}
+      />
     </div>
     <div class="ml-2">
       <Button icon={IconCheck} size={'small'} on:click={() => dispatch('close', value)} />

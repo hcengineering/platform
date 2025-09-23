@@ -89,8 +89,9 @@ const StaticEditorKit = extensionKit(
       // See file://./../../../../packages/text/src/kits/server-kit.ts
       // =============================================================
 
-      lists: e(subKits.lists, context),
       tables: e(subKits.tables),
+      lists: e(subKits.lists, context),
+      submit: e(HandleSubmitExtension, { useModKey: context.mode === 'full' }),
       codeSnippets: e(subKits.codeSnippets),
       textColorStyling: e(TextColorStylingKit, context.mode === 'full'),
       hardBreak: e(HardBreakExtension, { shortcuts: context.mode }),
@@ -175,7 +176,6 @@ const subKits = {
       ({
         fileUpload: e(FileUploadExtension, false),
         imageUpload: e(ImageUploadExtension, false),
-        submit: e(HandleSubmitExtension, { useModKey: context.mode === 'full' }),
         indent: e(IndentExtension, indentExtensionOptions),
         smartPaste: e(SmartPasteExtension),
         paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),

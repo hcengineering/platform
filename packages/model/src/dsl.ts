@@ -50,6 +50,7 @@ import core, {
   type ArrOf as TypeArrOf,
   type Collection as TypeCollection,
   type TypeDate as TypeDateType,
+  type TypeNumber as TypeNumberType,
   generateId,
   type AccountUuid
 } from '@hcengineering/core'
@@ -413,8 +414,8 @@ export function TypeHyperlink (): Type<Hyperlink> {
 /**
  * @public
  */
-export function TypeNumber (): Type<number> {
-  return { _class: core.class.TypeNumber, label: core.string.Number, icon: core.icon.TypeNumber }
+export function TypeNumber (min?: number, max?: number, digits?: number): TypeNumberType {
+  return { _class: core.class.TypeNumber, label: core.string.Number, icon: core.icon.TypeNumber, min, max, digits }
 }
 
 /**
