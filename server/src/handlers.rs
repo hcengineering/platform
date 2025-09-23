@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, io, str::FromStr};
+use std::{collections::HashMap, fmt::Display, io, str::FromStr, time::SystemTime};
 
 use actix_web::{
     HttpRequest, HttpResponse,
@@ -6,11 +6,12 @@ use actix_web::{
     dev::ServiceRequest,
     http::{
         self,
-        header::{self, ContentLength, ContentType, EntityTag},
+        header::{self, ContentLength, ContentType, EntityTag, HttpDate},
     },
     web::{Data, Header, Path, Payload},
 };
 use aws_sdk_s3::error::SdkError;
+use chrono::{DateTime, Utc};
 use futures::{StreamExt, stream};
 use serde::{Deserialize, Serialize};
 use size::Size;
@@ -189,6 +190,7 @@ pub struct PartData {
     pub size: usize,
     pub blob: String,
     etag: String,
+    date: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     headers: Option<HashMap<String, String>>,
@@ -232,6 +234,7 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
         blob: uploaded.s3_key,
         size: uploaded.length,
         etag: random_etag(),
+        date: chrono::Utc::now(),
 
         headers: Some(headers.huly_headers.clone().into_iter().collect()),
         meta: Some(headers.meta.into_iter().collect()),
@@ -312,6 +315,7 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
             blob: uploaded.s3_key,
             size: uploaded.length,
             etag: random_etag(),
+            date: chrono::Utc::now(),
 
             // defined in the first part
             headers: None,
@@ -372,10 +376,12 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
     let response = if !parts.is_empty() {
         let etag = objectpart_etag(&parts).unwrap();
+        let date = objectpart_date(&parts).unwrap();
 
         match none_match(request.request(), Some(etag.clone()))? {
             Some(false) => HttpResponse::NotModified()
                 .insert_header((header::ETAG, etag))
+                .insert_header((header::LAST_MODIFIED, HttpDate::from(date)))
                 .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
                 .finish(),
             _ => {
@@ -395,6 +401,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                 }
 
                 response.insert_header((header::ETAG, etag));
+                response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
                 response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
                 response.body(merge::stream(s3, parts).await?)
             }
@@ -423,10 +430,12 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
     let response = if !parts.is_empty() {
         let etag = objectpart_etag(&parts).unwrap();
+        let date = objectpart_date(&parts).unwrap();
 
         match none_match(request.request(), Some(etag.clone()))? {
             Some(false) => HttpResponse::NotModified()
                 .insert_header((header::ETAG, etag))
+                .insert_header((header::LAST_MODIFIED, HttpDate::from(date)))
                 .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
                 .finish(),
             _ => {
@@ -440,6 +449,7 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
                 }
 
                 response.insert_header((header::ETAG, etag));
+                response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
                 response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
 
                 // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
@@ -468,6 +478,10 @@ fn objectpart_etag(parts: &Vec<ObjectPart<PartData>>) -> Option<EntityTag> {
     parts
         .last()
         .map(|p| EntityTag::new_strong(p.data.etag.to_owned()))
+}
+
+fn objectpart_date(parts: &Vec<ObjectPart<PartData>>) -> Option<SystemTime> {
+    parts.last().map(|p| p.data.date).map(|d| d.into())
 }
 
 fn objectpart_strategy(parts: &Vec<ObjectPart<PartData>>) -> Option<MergeStrategy> {
