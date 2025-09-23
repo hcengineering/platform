@@ -16,7 +16,7 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { Employee } from '@hcengineering/contact'
   import { employeeByAccountStore } from '@hcengineering/contact-resources'
-      import { EmojiPresenter, getEmojiByUnicode } from '@hcengineering/emoji-resources'
+  import { EmojiPresenter, getEmojiByUnicode } from '@hcengineering/emoji-resources'
   import { isCustomEmoji } from '@hcengineering/emoji'
 
   export let persons: PersonUuid[] = []
@@ -29,22 +29,22 @@
   let shortCode: string = ''
   $: extendedEmoji = getEmojiByUnicode(emoji)
   $: shortCode =
-          extendedEmoji && isCustomEmoji(extendedEmoji) ? extendedEmoji.shortcode : extendedEmoji?.shortcodes?.[0] ?? ''
+    extendedEmoji && isCustomEmoji(extendedEmoji) ? extendedEmoji.shortcode : extendedEmoji?.shortcodes?.[0] ?? ''
 </script>
 
-    <div class="m-2 flex-col flex-gap-2">
-      <div class="emoji">
-        <EmojiPresenter {emoji} />
-        {#if shortCode}
+<div class="m-2 flex-col flex-gap-2">
+  <div class="emoji">
+    <EmojiPresenter {emoji} />
+    {#if shortCode}
       <span class="shortcode">
         :{shortCode}:
       </span>
-        {/if}
-      </div>
-      {#each employees as emp (emp._id)}
-        <ObjectPresenter objectId={emp._id} _class={emp._class} value={emp} disabled />
-      {/each}
-    </div>
+    {/if}
+  </div>
+  {#each employees as emp (emp._id)}
+    <ObjectPresenter objectId={emp._id} _class={emp._class} value={emp} disabled />
+  {/each}
+</div>
 
 <style lang="scss">
   .emoji {

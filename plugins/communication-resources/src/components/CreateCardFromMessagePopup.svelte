@@ -70,7 +70,9 @@
       if (_class.label === undefined) continue
       if (_class.kind !== ClassifierKind.CLASS) continue
       if ((_class as MasterTag).removed === true) continue
-      if (hierarchy.isDerived(_id, communication.type.Direct) || hierarchy.isDerived(_id, communication.type.Poll)) { continue }
+      if (hierarchy.isDerived(_id, communication.type.Direct) || hierarchy.isDerived(_id, communication.type.Poll)) {
+        continue
+      }
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
@@ -80,7 +82,12 @@
         if (_class.label === undefined) continue
         if (_class.kind !== ClassifierKind.CLASS) continue
         if ((_class as MasterTag).removed === true) continue
-        if (hierarchy.isDerived(desc, communication.type.Direct) || hierarchy.isDerived(desc, communication.type.Poll)) { continue }
+        if (
+          hierarchy.isDerived(desc, communication.type.Direct) ||
+          hierarchy.isDerived(desc, communication.type.Poll)
+        ) {
+          continue
+        }
         added.add(desc)
         toAdd.push(_class)
       }

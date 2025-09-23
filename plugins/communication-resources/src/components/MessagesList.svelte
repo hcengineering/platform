@@ -622,7 +622,7 @@
     let lastMessage: Message | undefined = undefined
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i]
-      if (message.removed || message.type === MessageType.Activity) continue
+      if (message.type === MessageType.Activity) continue
       if (!me.socialIds.includes(message.creator)) continue
       lastMessage = message
       break
