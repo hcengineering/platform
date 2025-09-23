@@ -1,7 +1,7 @@
 <script lang="ts">
   import core, { Association, Doc, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, ObjectCreate } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
   import { showMenu } from '../actions'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -17,11 +17,24 @@
   export let direction: 'A' | 'B'
   export let emptyKind: 'create' | 'placeholder' = 'create'
 
-  const client = getClient()
+  const client = getClient()  
 
   $: _class = direction === 'B' ? association.classB : association.classA
 
+  function getCreate (): ObjectCreate | undefined {
+    const factory = client.getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectFactory)
+    if (factory) {
+      return {
+        component: factory.component,
+        func: factory.create,
+        label,
+        props: { _class, space: object.space }
+      }
+    }
+  }
+
   function add (): void {
+    const create = getCreate()
     showPopup(
       ObjectBoxPopup,
       {
@@ -29,7 +42,8 @@
         docQuery: { _id: { $nin: docs.map((p) => p._id) } },
         docProps: {
           shouldShowAvatar: true
-        }
+        },
+        create
       },
       'top',
       async (result) => {

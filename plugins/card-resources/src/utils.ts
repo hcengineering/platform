@@ -205,6 +205,17 @@ const toCardObjectSearchResult = (e: WithLookup<Card>): ObjectSearchResult => ({
   component: CardSearchItem
 })
 
+export async function cardFactory (props: Record<string, any> = {}): Promise<Ref<Card> | undefined> {
+  const _class = props._class as Ref<MasterTag> | undefined
+  const space = props.space as Ref<Space> | undefined
+
+  if (_class === undefined || space === undefined) {
+    return undefined
+  }
+
+  return await createCard(_class, space, props.data, props.content)
+}
+
 export async function createCard (
   type: Ref<MasterTag>,
   space: Ref<Space>,
