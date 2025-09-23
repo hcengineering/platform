@@ -123,6 +123,7 @@
     "EveryoneDescription": "この{title}のすべてに通知する",
     "HereDescription": "この{title}のすべてに通知する",
     "Guest": "ゲスト",
-    "Deleted": "削除済み"
+    "Deleted": "削除済み",
+    "CannotMerge": "エラー：グローバル個人は統合できません"
   }
 }

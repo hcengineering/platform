@@ -40,6 +40,7 @@ export default mergeIds(workbenchId, workbench, {
   actionImpl: {
     PinTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>,
     UnpinTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>,
-    CloseTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>
+    CloseTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>,
+    CloseCurrentTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>
   }
 })

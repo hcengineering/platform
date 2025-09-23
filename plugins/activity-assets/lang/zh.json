@@ -55,6 +55,7 @@
     "RemovedObjectType": "移除 {type} : {title}",
     "AttributeSetTo": "{name} 设置为 {value}",
     "AddedTag": "添加标签: {title}",
-    "RemovedTag": "移除标签: {title}"
+    "RemovedTag": "移除标签: {title}",
+    "ValueTooLarge": "值过大，无法显示"
   }
 }

@@ -1883,7 +1883,8 @@ export async function getLoginWithWorkspaceInfo (
               versionMinor: it.status.versionMinor,
               versionPatch: it.status.versionPatch
             },
-            progress: it.status.processingProgress
+            progress: it.status.processingProgress,
+            branding: it.branding
           }
         ])
     ),
@@ -2380,6 +2381,67 @@ export async function deleteAccount (
   })
 }
 
+export async function canMergeSpecifiedPersons (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    primaryPerson: PersonUuid
+    secondaryPerson: PersonUuid
+  }
+): Promise<boolean> {
+  decodeTokenVerbose(ctx, token)
+
+  const { primaryPerson, secondaryPerson } = params
+  if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (primaryPerson === secondaryPerson) {
+    // Nothing to do
+    return false
+  }
+
+  const primaryPersonObj = await db.person.findOne({ uuid: primaryPerson })
+  if (primaryPersonObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: primaryPerson }))
+  }
+
+  const secondaryPersonObj = await db.person.findOne({ uuid: secondaryPerson })
+  if (secondaryPersonObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: secondaryPerson }))
+  }
+
+  // TODO: support checking if the source person is merged already
+
+  // Merge social ids. Re-wire the secondary person social ids to the primary person.
+  // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
+  const verifiedSecondaryIds = await db.socialId.find({ personUuid: secondaryPerson, verifiedOn: { $ne: null } })
+
+  return verifiedSecondaryIds.length === 0
+}
+
+export async function mergeSpecifiedPersons (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    primaryPerson: PersonUuid
+    secondaryPerson: PersonUuid
+  }
+): Promise<void> {
+  decodeTokenVerbose(ctx, token)
+
+  const { primaryPerson, secondaryPerson } = params
+  if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  await doMergePersons(db, primaryPerson, secondaryPerson)
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2435,6 +2497,8 @@ export type AccountMethods =
   | 'addHulyAssistantSocialId'
   | 'releaseSocialId'
   | 'deleteAccount'
+  | 'canMergeSpecifiedPersons'
+  | 'mergeSpecifiedPersons'
 
 /**
  * @public
@@ -2479,6 +2543,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
+    canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
+    mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

@@ -180,7 +180,8 @@ export default plugin(presentationId, {
     StatsUrl: '' as Metadata<string>,
     MailUrl: '' as Metadata<string>,
     PreviewUrl: '' as Metadata<string>,
-    PulseUrl: '' as Metadata<string>
+    PulseUrl: '' as Metadata<string>,
+    HulylakeUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

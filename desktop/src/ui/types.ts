@@ -56,6 +56,7 @@ export interface Config {
   PULSE_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
+  HULYLAKE_URL?: string
 }
 
 export interface Branding {
@@ -84,6 +85,7 @@ export const CommandOpenPlanner = 'open-planner' as const
 export const CommandSelectWorkspace = 'select-workspace' as const
 export const CommandLogout = 'logout' as const
 export const CommandOpenApplication = 'open-application' as const
+export const CommandCloseTab = 'close-tab' as const
 
 export type Command =
   typeof CommandOpenSettings |
@@ -92,7 +94,8 @@ export type Command =
   typeof CommandOpenPlanner |
   typeof CommandSelectWorkspace |
   typeof CommandLogout |
-  typeof CommandOpenApplication
+  typeof CommandOpenApplication |
+  typeof CommandCloseTab
 
 export interface NotificationParams {
   title: string

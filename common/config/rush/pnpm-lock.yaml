@@ -34,6 +34,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      '@hcengineering/communication-yaml':
+        specifier: ^0.1.0
+        version: 0.1.195(typescript@5.8.3)
       '@hocuspocus/provider':
         specifier: ^2.15.2
         version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
@@ -304,9 +307,6 @@ importers:
       '@rush-temp/communication-types':
         specifier: file:./projects/communication-types.tgz
         version: file:projects/communication-types.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      '@rush-temp/communication-yaml':
-        specifier: file:./projects/communication-yaml.tgz
-        version: file:projects/communication-yaml.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/contact':
         specifier: file:./projects/contact.tgz
         version: file:projects/contact.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -928,9 +928,6 @@ importers:
       '@rush-temp/pod-media':
         specifier: file:./projects/pod-media.tgz
         version: file:projects/pod-media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
-      '@rush-temp/pod-msg2file':
-        specifier: file:./projects/pod-msg2file.tgz
-        version: file:projects/pod-msg2file.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-notification':
         specifier: file:./projects/pod-notification.tgz
         version: file:projects/pod-notification.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -1732,9 +1729,6 @@ importers:
       '@types/node':
         specifier: ^22.15.29
         version: 22.15.29
-      '@types/node-cron':
-        specifier: ^3.0.11
-        version: 3.0.11
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
@@ -2153,9 +2147,6 @@ importers:
         specifier: ^1.11.2
         version: 1.11.2
       msgpackr-extract:
-        specifier: ^3.0.3
-        version: 3.0.3
-      node-cron:
         specifier: ^3.0.3
         version: 3.0.3
       node-forge:
@@ -3065,6 +3056,56 @@ packages:
     resolution: {integrity: sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ==}
     engines: {node: '>=6'}
     hasBin: true
+
+  '@hcengineering/analytics@0.7.242':
+    resolution: {integrity: sha512-lmNwY7FxXA9zQ4XsszWP0mjWR9fF0JhfUMvKtpJOeDgyGzH+o/ak1snN82s5x3SsuaHSM47mjo56OFQY6T8UFQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.242/5c0f56b0659f0592c4369ee839b3882856ffbec4}
+
+  '@hcengineering/card@0.7.242':
+    resolution: {integrity: sha512-nnoDBBzymcJvwtk10uNy/bhkI12lSyIB4+GU+BmEnO+T/5/8iqk06ZVliop6ksmjlElSRn/QYV9EmZfB+Zsp5w==, tarball: https://npm.pkg.github.com/download/@hcengineering/card/0.7.242/471fe338fb94d1f99fd8a3ffe9b7f910441e48d1}
+
+  '@hcengineering/communication-sdk-types@0.1.195':
+    resolution: {integrity: sha512-7c3o+qZ+4iJWDnJX6Yq6g62ZaybZO7uJf/jxfaoT0Ee1jtxgrltjXzWAJEK5LVpXzNN6oacVWxe7+W6vlZ6bQg==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-sdk-types/0.1.195/0adc1fcb52eb9ee69619808acba5e78e9a9aaa40}
+    peerDependencies:
+      typescript: ^5.6.3
+
+  '@hcengineering/communication-shared@0.1.195':
+    resolution: {integrity: sha512-i0Iq3Kil8IhbW9wS1MnzIjzmbNSP4ycZdsTZ61phKOYpShqDi0WubwMLmRzttnTHMLMTkuw77nXpHDuQCEsIrQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-shared/0.1.195/66db0b6e5c74227f07f791ad7a62d686b83561f2}
+    peerDependencies:
+      typescript: ^5.6.3
+
+  '@hcengineering/communication-types@0.1.195':
+    resolution: {integrity: sha512-a22nIhEZEGKVeY4pALG4OHROW3E6SKMDslyo1TNI9QR+upca/aX/gZxorc+HzLe3fkhj2BWkrDj3didGBBmJZQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-types/0.1.195/4bace160ae375c32f9c3e0b1814ce73944ec9829}
+    peerDependencies:
+      typescript: ^5.6.3
+
+  '@hcengineering/communication-yaml@0.1.195':
+    resolution: {integrity: sha512-vJrD8fYMYCOBJciYPV1oOy7z+4r80x4oG4ZFwYc/gMKe2J93z7uZajfBFSHfdhAH0iesIzykr1Ybk2DnL9+7Kw==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-yaml/0.1.195/d5864f390f1371f13cde0de387e792bef598c429}
+    peerDependencies:
+      typescript: ^5.6.3
+
+  '@hcengineering/core@0.7.242':
+    resolution: {integrity: sha512-fWxbCbPAyyh84oLIslxS2vdHb8uDcNqNDy1aRZcEarGEN7mdNPNCqok543D5KCqwXD/Wbegi7+Snx425T9U0Vw==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.7.242/18e0bb24c985778998b7faef17776049c1e84782}
+
+  '@hcengineering/measurements@0.7.242':
+    resolution: {integrity: sha512-azd72WdoMdQvpvkvUS7C3uIV9QCqk/wND8IWFfPJdzWA+tkGzsmkWw2jBI+l8M0T2WOerpozGiNxGTFfiC/U/Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/measurements/0.7.242/b48fcc2c171a4282e6a71f7cd040703173d09c4f}
+
+  '@hcengineering/platform@0.7.242':
+    resolution: {integrity: sha512-IbKw9w2I57IWsLMLo91s8+6gJoMqXwU0v4+0g0PgL0PVf5GNB/TMy2mWwP1FO26TzPa2awmeZm8TImDX1OjtPQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.7.242/03295880d68708362268f4a1fff83546aa0ad371}
+
+  '@hcengineering/preference@0.7.242':
+    resolution: {integrity: sha512-a5YaKxplzaGsc94ywaH1RL2OTirGYhRryCeBpIeUTwRDq+nSTKmnEkPFmxvGj+u47yKyXI+XSdAhpZawRiBhqA==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.7.242/60c05c79abe301623cd1fdf75edc9cbd09a59ed1}
+
+  '@hcengineering/tags@0.7.242':
+    resolution: {integrity: sha512-MYHE9nb+sKqG4aZkQZimSLm/F7j2nCmTOeq55FRMBqGvFNyJ9iU/+vd7WfQkWMVN+9BdTnVEV4+6IAjgAFD11Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/tags/0.7.242/0ef7f6034822a53e39dcb3f4c7f114636b33f6ae}
+
+  '@hcengineering/theme@0.7.242':
+    resolution: {integrity: sha512-n5V3xWc7j9UabPm9z7mkt1OYKA8efonTggB0PH0g8FnErukebt1i1csjzeENqE/T7XaT47DqGj/6ZbiyU9vf4A==, tarball: https://npm.pkg.github.com/download/@hcengineering/theme/0.7.242/e78e29b3d0e4a400d90960f7135620087ab35a72}
+
+  '@hcengineering/ui@0.7.242':
+    resolution: {integrity: sha512-8msNyxXOHUJKWAEao9GzNK0Z46OtTk+y3eFR07r6CYPOYzKjRnVPNZMfeEx81WsKxGMxj7HDxqV1XHEQiHYAAg==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.7.242/cbc28e51c81490fed8ddc8b8d0ce45ab59ff951f}
+
+  '@hcengineering/view@0.7.242':
+    resolution: {integrity: sha512-qp7mBJ+bKIaH4NiLy34VU1I5jwDia6ezcPtV9SwqK8fl8s+QXWp75KAa7lMVtZZBM07nTLg5qJZNq4oyuIWIow==, tarball: https://npm.pkg.github.com/download/@hcengineering/view/0.7.242/ac007500e9b7b457546cfd4fd66fa3a23a4be3bc}
 
   '@hocuspocus/common@2.15.2':
     resolution: {integrity: sha512-wU1wxXNnQQMXyeL3mdSDYiQsm/r/QyJVjjQhF7sUBrLnjdsN7bA1cvfcSvJBr1ymrMSeYRmUL3UlQmEHEOaP7w==}
@@ -4588,7 +4629,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz':
-    resolution: {integrity: sha512-sXcvSDoXmgZH233jFRePio23qQosvQZoACKqKgJ2Obr+oY4ZzJ2uX7DM0lyIKbhFUuLNFl56u2RfM5ra8SxRDg==, tarball: file:projects/communication-query.tgz}
+    resolution: {integrity: sha512-MGyVKHjVsubVphvZfGCiHLqMaXiItQvbP8YxoWOXkDdg9OoUwg8u46f6QJD8j6I9E4LorKNGPxhXU4pJzdgxBQ==, tarball: file:projects/communication-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
@@ -4604,7 +4645,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-KVc53phC1b9CNptvJmMb706t74gsCiEQGWvCpvTlRWMd3q+pj7i2994gJ0/KzuCojcHxPYVn2QxNojpNSV66Eg==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-Yghkuyu3fA3Thmzo36T1nu62wgMI8GHQUTV7fj0dN12/Mi20JckxRSZDVKRnmRGhNqrzbj/O3DXAM02QpDIeAQ==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
@@ -4613,10 +4654,6 @@ packages:
 
   '@rush-temp/communication-types@file:projects/communication-types.tgz':
     resolution: {integrity: sha512-uzZ82V1R+h+TmxBCrmKaAfUgoiX3Z8ciPGrkc42M++M5d5mlfIjTvPh0O+y50pHoFuQ5NQ3pNIjeDkrJE8Dp0w==, tarball: file:projects/communication-types.tgz}
-    version: 0.0.0
-
-  '@rush-temp/communication-yaml@file:projects/communication-yaml.tgz':
-    resolution: {integrity: sha512-D+fijwXQM2oMeT6QOmkRVLik5uyVCNsml07rz5RvKcPEpbqRh3YBtIvcUABoCStLvNTIzYuXnqbCHzSl/ibidw==, tarball: file:projects/communication-yaml.tgz}
     version: 0.0.0
 
   '@rush-temp/communication@file:projects/communication.tgz':
@@ -4684,7 +4721,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-kMVLNqalurSBKidY00TqK2GIBSaEvgAKScF/32N4vsmx+pzMBkE6U63HiW+RxsqVC/ig9QikeohoDXx7Ps9kHg==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-EIuP2KmLDWhA4J63srKU8MI9wWCUTpNtCPGaS9P4guXJdH55cV8cqbWYbEYuWqsa28YPPoS1hel73H92Mf7nKw==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4976,7 +5013,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-u5b+jP4WxAVIk6DlawxySE+qDG7iz7YD3dTT3LCgR3Ml5RkMOlej4YtbO0YQmX4wp4l4gMJKdRCgBCpVfytksg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-1IC5c/j2fgqgamtZGZLUBHUuzMaqM6eguG6WTbmdTrSW8YjfUYeutKSRDRykbF6SilzaGS8eKxhNpZTIRT20fA==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -5424,7 +5461,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
-    resolution: {integrity: sha512-0G3FKVxHWnyPuHWVBiR3Xtns3rLxGTC6ferQCX8NSC3dGOGOvk4TZgB8leohmJavwwxdZQKk1QFJqmXvHux10A==, tarball: file:projects/pod-fulltext.tgz}
+    resolution: {integrity: sha512-kPi4ermTxQtUKZ5xzbJgT07rLj2gG6m4YQgArWiONz47ooSoizi/Sg8Pu2FFyVV0klzQwqUOseuoVqgdySnFNg==, tarball: file:projects/pod-fulltext.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
@@ -5449,10 +5486,6 @@ packages:
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
     resolution: {integrity: sha512-5LRHcx/zPNVCJbIBfjigt+of64jfGrH5fjoDyvhASTEJbtG4RGRj8kKZoUI+1JHibDZzcVn2NLc+3nFMhksreA==, tarball: file:projects/pod-media.tgz}
-    version: 0.0.0
-
-  '@rush-temp/pod-msg2file@file:projects/pod-msg2file.tgz':
-    resolution: {integrity: sha512-7b2GrlsmevpahNIADhqNUBpshocrdjlc2L0kf2BAFVSEFpjzUtRju2XqwwoZ2l7xA0Z/b+Un9PHt+XYMWcNzlg==, tarball: file:projects/pod-msg2file.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz':
@@ -5524,7 +5557,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-nMn7FUSF2F6YuJAstYbvV8Yi9upkKqeSccsU3EOrKjJm1c57sa7x8i4K3Z6l4RoSQk86/F5CrzZVgqIMKCjF0w==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-yUvZa29zEHKk183hweT+OqJYrQtt4WwtYd6X4Y5WknLTG4fnd0kDEyFyOT9LgUUFF0/vW2iVYWLcMU93+W8PUg==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5552,7 +5585,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-OvmMqiOyuDeKVGHc7g8UxMlvr9WAJsqtqICsv6kcx9vSvB7bB0iXOLY9CevyOOBDk5Y6OvRKWJKeY9pif+pjMg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-LkECK91CfEPLwDVaCQWN4XSeBlM1jXqboKuXtu7ftZkgG66wtt1/AlVDqwRY6o1iuvVNvuTJBSp03DMfDzBIKw==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5804,7 +5837,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-indexer@file:projects/server-indexer.tgz':
-    resolution: {integrity: sha512-OYx2FWCD6jtTnsKmYnhhS3BsvhtCN9pIYkvIoSe0mzZi3xEAhnwu2T59+JpZgRO1fvD1yVxBy7nw0hyFtz03Hg==, tarball: file:projects/server-indexer.tgz}
+    resolution: {integrity: sha512-InjSApXF2jmClorioQIIV+JxbKtuYjl3a9i4eetEWuG2z7R+Ya7L6f98cqhEhYkdA4hM5TTZYbS+BcRLWlSqQg==, tarball: file:projects/server-indexer.tgz}
     version: 0.0.0
 
   '@rush-temp/server-inventory-resources@file:projects/server-inventory-resources.tgz':
@@ -6116,7 +6149,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-bsqWzFX5qr02kfG1zQZOgHsGWzR/Z66VC16ZoQnXs6mkdHFSmQ2p2l8eNL/aYPu2qfrRkMNAnI8cu6aULfKuDg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-RQFbb0YGcuuAzNtGrbYDMyFE5VKDEsPA+bylES+hRUvKKBou2icVHwzDbFWrdSwGwfrr0ZhXVFQfTwSKOM18Bw==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -7175,9 +7208,6 @@ packages:
 
   '@types/mysql@2.15.27':
     resolution: {integrity: sha512-YfWiV16IY0OeBfBCk8+hXKmdTKrKlwKN1MNKAPBu5JYxLwBEZl7QzeEpGnlZb3VMGJrrGmB84gXiH+ofs/TezA==}
-
-  '@types/node-cron@3.0.11':
-    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
 
   '@types/node-fetch@2.6.12':
     resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
@@ -11808,10 +11838,6 @@ packages:
   node-api-version@0.2.0:
     resolution: {integrity: sha512-fthTTsi8CxaBXMaBAD7ST2uylwvsnYxh2PfaScwpMhos6KlSFajXQPcM4ogNE1q2s3Lbz9GCGqeIHC+C6OZnKg==}
 
-  node-cron@3.0.3:
-    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
-    engines: {node: '>=6.0.0'}
-
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -15618,6 +15644,100 @@ snapshots:
       protobufjs: 7.5.3
       yargs: 17.7.2
 
+  '@hcengineering/analytics@0.7.242':
+    dependencies:
+      '@hcengineering/platform': 0.7.242
+
+  '@hcengineering/card@0.7.242':
+    dependencies:
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      '@hcengineering/preference': 0.7.242
+      '@hcengineering/ui': 0.7.242
+      '@hcengineering/view': 0.7.242
+
+  '@hcengineering/communication-sdk-types@0.1.195(typescript@5.8.3)':
+    dependencies:
+      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
+      '@hcengineering/core': 0.7.242
+      typescript: 5.8.3
+
+  '@hcengineering/communication-shared@0.1.195(typescript@5.8.3)':
+    dependencies:
+      '@hcengineering/communication-sdk-types': 0.1.195(typescript@5.8.3)
+      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
+      typescript: 5.8.3
+
+  '@hcengineering/communication-types@0.1.195(typescript@5.8.3)':
+    dependencies:
+      '@hcengineering/card': 0.7.242
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/tags': 0.7.242
+      typescript: 5.8.3
+
+  '@hcengineering/communication-yaml@0.1.195(typescript@5.8.3)':
+    dependencies:
+      '@hcengineering/communication-shared': 0.1.195(typescript@5.8.3)
+      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
+      js-yaml: 4.1.0
+      typescript: 5.8.3
+
+  '@hcengineering/core@0.7.242':
+    dependencies:
+      '@hcengineering/analytics': 0.7.242
+      '@hcengineering/measurements': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      fast-equals: 5.2.2
+
+  '@hcengineering/measurements@0.7.242': {}
+
+  '@hcengineering/platform@0.7.242':
+    dependencies:
+      intl-messageformat: 10.7.14
+
+  '@hcengineering/preference@0.7.242':
+    dependencies:
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      '@hcengineering/ui': 0.7.242
+
+  '@hcengineering/tags@0.7.242':
+    dependencies:
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      '@hcengineering/ui': 0.7.242
+      '@hcengineering/view': 0.7.242
+
+  '@hcengineering/theme@0.7.242':
+    dependencies:
+      '@hcengineering/analytics': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      svelte: 4.2.20
+
+  '@hcengineering/ui@0.7.242':
+    dependencies:
+      '@hcengineering/analytics': 0.7.242
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      '@hcengineering/theme': 0.7.242
+      autolinker: 4.0.0
+      blurhash: 2.0.5
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.0(date-fns@2.30.0)
+      dompurify: 3.2.3
+      emojibase: 16.0.0
+      emojibase-regex: 16.0.0
+      fast-equals: 5.2.2
+      plyr: 3.7.8
+      svelte: 4.2.20
+
+  '@hcengineering/view@0.7.242':
+    dependencies:
+      '@hcengineering/core': 0.7.242
+      '@hcengineering/platform': 0.7.242
+      '@hcengineering/preference': 0.7.242
+      '@hcengineering/ui': 0.7.242
+
   '@hocuspocus/common@2.15.2':
     dependencies:
       lib0: 0.2.99
@@ -19112,6 +19232,7 @@ snapshots:
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
+      '@hcengineering/communication-yaml': 0.1.195(typescript@5.8.3)
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -19224,6 +19345,7 @@ snapshots:
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
+      '@hcengineering/communication-yaml': 0.1.195(typescript@5.8.3)
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       esbuild: 0.25.9
@@ -19277,29 +19399,6 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      prettier: 3.2.5
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - node-notifier
-      - supports-color
-      - ts-node
-
-  '@rush-temp/communication-yaml@file:projects/communication-yaml.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
-    dependencies:
-      '@types/js-yaml': 4.0.9
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
-      esbuild: 0.25.9
-      esbuild-plugin-copy: 2.1.1(esbuild@0.25.9)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      js-yaml: 4.1.0
       prettier: 3.2.5
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -25435,47 +25534,6 @@ snapshots:
       - node-notifier
       - supports-color
 
-  '@rush-temp/pod-msg2file@file:projects/pod-msg2file.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))':
-    dependencies:
-      '@tsconfig/node16': 1.0.4
-      '@types/cors': 2.8.17
-      '@types/express': 4.17.21
-      '@types/jest': 29.5.12
-      '@types/js-yaml': 4.0.9
-      '@types/node': 22.15.29
-      '@types/node-cron': 3.0.11
-      '@types/uuid': 8.3.4
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
-      cors: 2.8.5
-      dotenv: 16.0.3
-      esbuild: 0.25.9
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-node: 11.1.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      express: 4.21.2
-      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      js-yaml: 4.1.0
-      node-cron: 3.0.3
-      postgres: 3.4.7
-      prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
-      typescript: 5.8.3
-      uuid: 8.3.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@swc/core'
-      - '@swc/wasm'
-      - babel-jest
-      - babel-plugin-macros
-      - node-notifier
-      - supports-color
-
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@tsconfig/node16': 1.0.4
@@ -30348,6 +30406,7 @@ snapshots:
       '@elastic/elasticsearch': 7.17.14
       '@faker-js/faker': 8.4.1
       '@types/jest': 29.5.12
+      '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
       '@types/node': 22.15.29
@@ -30368,6 +30427,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      js-yaml: 4.1.0
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
       mongodb: 6.16.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
@@ -32145,8 +32205,6 @@ snapshots:
   '@types/mysql@2.15.27':
     dependencies:
       '@types/node': 22.15.29
-
-  '@types/node-cron@3.0.11': {}
 
   '@types/node-fetch@2.6.12':
     dependencies:
@@ -37733,10 +37791,6 @@ snapshots:
   node-api-version@0.2.0:
     dependencies:
       semver: 7.7.2
-
-  node-cron@3.0.3:
-    dependencies:
-      uuid: 8.3.2
 
   node-domexception@1.0.0: {}
 

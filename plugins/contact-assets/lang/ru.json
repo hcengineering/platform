@@ -123,6 +123,7 @@
     "EveryoneDescription": "Уведомить всех в этом {title}",
     "HereDescription": "Уведомить всех в этом {title}",
     "Guest": "Гость",
-    "Deleted": "Удалён"
+    "Deleted": "Удалён",
+    "CannotMerge": "Ошибка: Невозможно объединить глобальных персон"
   }
 }

@@ -18,7 +18,7 @@ import type { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
-import { ViewAction } from '@hcengineering/view'
+import { Action, ViewAction } from '@hcengineering/view'
 
 import type {
   Application,
@@ -46,6 +46,9 @@ export const workbenchPlugin = plugin(workbenchId, {
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>
+  },
+  action: {
+    CloseCurrentTab: '' as Ref<Action>
   },
   component: {
     WorkbenchApp: '' as AnyComponent,

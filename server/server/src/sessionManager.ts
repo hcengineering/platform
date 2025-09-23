@@ -595,7 +595,10 @@ export class TSessionManager implements SessionManager {
 
     workspace = this.workspaces.get(workspaceUuid)
 
-    const branding = null
+    const branding =
+      (workspaceInfo.branding !== undefined
+        ? Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding)
+        : null) ?? null
 
     if (workspace === undefined) {
       ctx.warn('open workspace', {
@@ -698,7 +701,8 @@ export class TSessionManager implements SessionManager {
           },
           role: AccountRole.Owner,
           endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
-          progress: workspaceInfo.processingProgress
+          progress: workspaceInfo.processingProgress,
+          branding: workspaceInfo.branding
         }
       } else {
         this.workspaceInfoCache.delete(token.workspace)

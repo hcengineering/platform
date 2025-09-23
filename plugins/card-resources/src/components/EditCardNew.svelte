@@ -84,7 +84,7 @@
     }
   })
 
-  $: contextsQuery.query({ card: _id, limit: 1 }, (res) => {
+  $: contextsQuery.query({ cardId: _id, limit: 1 }, (res) => {
     context = res.getResult()[0]
     isContextLoaded = true
   })

@@ -217,7 +217,8 @@ export default plugin(processId, {
     AddTag: '' as Ref<Method<Tag>>
   },
   trigger: {
-    OnCardUpdate: '' as Ref<Trigger>,
+    OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
+    WhenFieldChanges: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
@@ -227,7 +228,8 @@ export default plugin(processId, {
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
-    UpdateCheck: '' as Resource<CheckFunc>,
+    MatchCheck: '' as Resource<CheckFunc>,
+    FieldChangedCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>
   },
@@ -263,7 +265,8 @@ export default plugin(processId, {
     Steps: '' as Asset,
     States: '' as Asset,
     ToDo: '' as Asset,
-    OnCardUpdate: '' as Asset,
+    WhenCardMatches: '' as Asset,
+    WhenFieldChanges: '' as Asset,
     WaitSubprocesses: '' as Asset,
     ToDoRemove: '' as Asset,
     Start: '' as Asset,

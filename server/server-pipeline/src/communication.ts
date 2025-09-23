@@ -109,29 +109,22 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
 
   async handleCommand (_ctx: MeasureContext<SessionData>, args: DomainParams): Promise<any> {
     const ctx = this.getCommunicationCtx(_ctx)
-    if (args.findMessages !== undefined) {
-      const { params, queryId } = args.findMessages
-      return await this.communicationApi.findMessages(ctx, params, queryId)
-    }
-    if (args.findMessagesGroups !== undefined) {
-      const { params } = args.findMessagesGroups
-      return await this.communicationApi.findMessagesGroups(ctx, params)
+
+    if (args.findMessagesMeta !== undefined) {
+      const { params } = args.findMessagesMeta
+      return await this.communicationApi.findMessagesMeta(ctx, params)
     }
     if (args.findNotificationContexts !== undefined) {
-      const { params, queryId } = args.findNotificationContexts
-      return await this.communicationApi.findNotificationContexts(ctx, params, queryId)
+      const { params, subscription } = args.findNotificationContexts
+      return await this.communicationApi.findNotificationContexts(ctx, params, subscription)
     }
     if (args.findNotifications !== undefined) {
-      const { params, queryId } = args.findNotifications
-      return await this.communicationApi.findNotifications(ctx, params, queryId)
+      const { params, subscription } = args.findNotifications
+      return await this.communicationApi.findNotifications(ctx, params, subscription)
     }
     if (args.findLabels !== undefined) {
       const { params } = args.findLabels
       return await this.communicationApi.findLabels(ctx, params)
-    }
-    if (args.findThreads !== undefined) {
-      const { params } = args.findThreads
-      return await this.communicationApi.findThreads(ctx, params)
     }
     if (args.findCollaborators !== undefined) {
       const { params } = args.findCollaborators
@@ -141,9 +134,14 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
       const { params } = args.findPeers
       return await this.communicationApi.findPeers(ctx, params)
     }
-    if (args.unsubscribeQuery !== undefined) {
-      const { id } = args.unsubscribeQuery
-      await this.communicationApi.unsubscribeQuery(ctx, id)
+    if (args.subscribeCard !== undefined) {
+      const { cardId, subscription } = args.subscribeCard
+      this.communicationApi.subscribeCard(ctx, cardId, subscription)
+      return
+    }
+    if (args.unsubscribeCard !== undefined) {
+      const { cardId, subscription } = args.unsubscribeCard
+      this.communicationApi.unsubscribeCard(ctx, cardId, subscription)
       return
     }
     if (args.event !== undefined) {

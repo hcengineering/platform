@@ -21,6 +21,7 @@ import core, {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -29,13 +30,15 @@ import process, {
   ContextId,
   Execution,
   Method,
+  parseContext,
   Process,
   ProcessContext,
   ProcessToDo,
   SelectedExecutionContext,
   State,
   Step,
-  Transition
+  Transition,
+  isUpdateTx
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -82,9 +85,10 @@ import {
   AddTag,
   CheckToDoDone,
   CheckToDoCancelled,
-  OnCardUpdateCheck,
+  MatchCardCheck,
   CheckSubProcessesDone,
-  CheckTime
+  CheckTime,
+  FieldChangedCheck
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -257,16 +261,30 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
   const res: Tx[] = []
   for (const tx of txes) {
     if (!control.hierarchy.isDerived(tx._class, core.class.TxCUD)) continue
-    const cudTx = tx as TxCUD<Card>
+    if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) continue
+    const cudTx = tx as TxUpdateDoc<Card> | TxMixin<Card, Card>
     if (!control.hierarchy.isDerived(cudTx.objectClass, cardPlugin.class.Card)) continue
     const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: cudTx.objectId }, { limit: 1 })
     if (card.length === 0) continue
+    const ops = isUpdateTx(cudTx) ? cudTx.operations : cudTx.mixin
     await putEventToQueue(
       {
         event: process.trigger.OnCardUpdate,
         card: cudTx.objectId,
         context: {
-          card: card[0]
+          card: card[0],
+          operations: ops ?? {}
+        }
+      },
+      control
+    )
+    await putEventToQueue(
+      {
+        event: process.trigger.WhenFieldChanges,
+        card: cudTx.objectId,
+        context: {
+          card: card[0],
+          operations: ops ?? {}
         }
       },
       control
@@ -279,7 +297,7 @@ function getName (current: ProcessContext | undefined, method: Method<Doc>, acti
   const nameField = method.createdContext?.nameField
   if (nameField !== undefined) {
     const name = action.params[nameField]
-    if (name !== undefined && typeof name === 'string' && name !== '') return name
+    if (name !== undefined && typeof name === 'string' && name !== '' && parseContext(name) === undefined) return name
   }
   return current?.name ?? ''
 }
@@ -365,7 +383,8 @@ export default async () => ({
     AddTag,
     CheckToDoDone,
     CheckToDoCancelled,
-    OnCardUpdateCheck,
+    FieldChangedCheck,
+    MatchCardCheck,
     CheckSubProcessesDone,
     CheckTime
   },
