@@ -297,7 +297,7 @@ const createWindow = async (): Promise<void> => {
   })
 
   mainWindow.on('blur', () => {
-    globalShortcut.unregisterAll()
+    globalShortcut.unregister(CloseTabHotKey)
     mainWindow?.webContents.send('window-focus-loss')
   })
 
@@ -532,11 +532,11 @@ app.on('ready', () => {
 })
 
 app.on('will-quit', () => {
-  globalShortcut.unregisterAll()
+  globalShortcut.unregister(CloseTabHotKey)
 })
 
 app.on('window-all-closed', () => {
-  globalShortcut.unregisterAll()
+  globalShortcut.unregister(CloseTabHotKey)
   if (process.platform !== 'darwin') {
     app.quit()
   }
