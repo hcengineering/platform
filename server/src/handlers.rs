@@ -190,6 +190,8 @@ pub struct PartData {
     pub size: usize,
     pub blob: String,
     etag: String,
+
+    #[serde(default)]
     date: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
