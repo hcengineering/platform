@@ -33,7 +33,6 @@
   import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
   import { createMeetingWidget, getRoomName } from '../../utils'
   import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
-  import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
   import RequestPopup from './invites/RequestPopup.svelte'
   import RequestingPopup from './invites/RequestingPopup.svelte'
@@ -127,30 +126,6 @@
     }
   }
 
-  let activeInvite: Invite | undefined = undefined
-  const inviteCategory = 'inviteReq'
-  function checkInvites (invites: Invite[]): void {
-    if (activeInvite !== undefined) {
-      // try to find active request, if it not exists close popup
-      if (invites.find((r) => r._id === activeInvite?._id) === undefined) {
-        closePopup(inviteCategory)
-        activeInvite = undefined
-      }
-    }
-    if (activeInvite === undefined) {
-      activeInvite = invites[0]
-      if (activeInvite !== undefined) {
-        showPopup(InvitePopup, { invite: activeInvite }, undefined, undefined, undefined, {
-          category: inviteCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    }
-  }
-
-  $: checkInvites($myInvites)
-
   const myInvitesCategory = 'myInvites'
 
   let myInvitesPopup: PopupResult | undefined = undefined
@@ -211,7 +186,6 @@
 
   onDestroy(() => {
     closePopup(myInvitesCategory)
-    closePopup(inviteCategory)
     closePopup(joinRequestCategory)
     closePopup(myJoinRequestCategory)
     closeWidget(love.ids.MeetingWidget)

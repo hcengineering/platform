@@ -13,17 +13,41 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
+  import contact, { Person } from '@hcengineering/contact'
   import { CombineAvatars } from '@hcengineering/contact-resources'
   import { Button, Label } from '@hcengineering/ui'
   import love from '../../../plugin'
-  import { cancelInvites } from '../../../meetings'
-  import { activeInvites } from '../../../stores'
+  import { Ref } from '@hcengineering/core'
+  import { onMount } from 'svelte'
+  import {
+    cancelInvites,
+    closeInvitesPopup,
+    inviteSecondsToLive,
+    sendInvites,
+    subscribeInviteResponses,
+    unsubscribeInviteResponses
+  } from '../../../invites'
 
-  $: persons = $activeInvites.map((p) => p.target)
+  export let persons: Array<Ref<Person>>
+  export let meetingId: string
+
+  onMount(() => {
+    void subscribeInviteResponses()
+    void doSendInvites()
+    const interval = setInterval(doSendInvites, (inviteSecondsToLive - 2) * 1000)
+    return () => {
+      void unsubscribeInviteResponses()
+      clearInterval(interval)
+      void cancelInvites(meetingId)
+    }
+  })
+
+  async function doSendInvites (): Promise<void> {
+    await sendInvites(persons, meetingId)
+  }
 
   async function cancel (): Promise<void> {
-    await cancelInvites($activeInvites)
+    closeInvitesPopup()
   }
 </script>
 

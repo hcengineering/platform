@@ -5,7 +5,8 @@
   import { ActionIcon } from '@hcengineering/ui'
   import love from '../plugin'
   import { myInfo } from '../stores'
-  import { joinMeeting, kick, sendInvites } from '../meetings'
+  import { joinMeeting, kick } from '../meetings'
+  import { showInvitesPopup } from '../invites'
 
   export let room: Room
   export let person: Ref<Person>
@@ -30,7 +31,7 @@
       label={love.string.Invite}
       icon={love.icon.Invite}
       action={() => {
-        void sendInvites([person])
+        showInvitesPopup([person])
       }}
     />
     {#if room.access === RoomAccess.Knock}

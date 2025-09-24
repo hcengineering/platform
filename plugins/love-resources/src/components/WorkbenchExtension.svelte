@@ -5,6 +5,7 @@
   import love from '../plugin'
   import { liveKitClient, lk } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
+  import { subscribeInviteRequests, unsubscribeInviteRequests } from '../invites'
 
   let parentElement: HTMLDivElement
 
@@ -33,13 +34,16 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
     pushRootBarComponent('left', love.component.ControlExt, 20)
     lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+
+    await subscribeInviteRequests()
   })
 
   onDestroy(async () => {
+    await unsubscribeInviteRequests()
     lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     if ($lkSessionConnected) {

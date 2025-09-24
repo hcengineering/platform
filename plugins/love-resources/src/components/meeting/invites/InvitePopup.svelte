@@ -17,15 +17,14 @@
   import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
   import { playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite } from '@hcengineering/love'
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../../../plugin'
-  import { acceptInvite, rejectInvite } from '../../../meetings'
+  import { InviteRequest, responseToInviteRequest } from '../../../invites'
 
-  export let invite: Invite
-
+  export let invite: InviteRequest
   let person: Person | undefined = undefined
+
   $: getPersonByPersonRefCb(invite.from, (p) => {
     person = p ?? undefined
   })
@@ -33,11 +32,11 @@
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await acceptInvite(invite)
+    await responseToInviteRequest(true)
   }
 
   async function decline (): Promise<void> {
-    await rejectInvite(invite)
+    await responseToInviteRequest(false)
   }
 
   onMount(async () => {
@@ -82,11 +81,5 @@
   .title {
     color: var(--caption-color);
     font-weight: 700;
-  }
-
-  .roomTitle {
-    color: var(--caption-color);
-    font-weight: 700;
-    font-size: 1rem;
   }
 </style>
