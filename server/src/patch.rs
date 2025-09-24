@@ -30,6 +30,17 @@ pub struct IncOperationExt {
     pub safe: bool,
 }
 
+/// 'remove' operation - increments a numeric value
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct RemoveOperationExt {
+    /// JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    /// within the target document where the operation is performed.
+    pub path: PointerBuf,
+    // When enabled, ensures that the operation does not create new fields
+    #[serde(default)]
+    pub safe: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "hop")]
 #[serde(rename_all = "lowercase")]
@@ -38,6 +49,8 @@ pub enum HulyPatchOperation {
     Add(AddOperationExt),
     /// 'inc' operation
     Inc(IncOperationExt),
+    /// 'remove' operation
+    Remove(RemoveOperationExt),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,6 +97,7 @@ pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatc
             PatchOperation::Huly(huly_op) => match huly_op {
                 HulyPatchOperation::Add(op) => add(doc, &op.path, &op.value, op.safe),
                 HulyPatchOperation::Inc(op) => inc(doc, &op.path, &op.value, op.safe),
+                HulyPatchOperation::Remove(op) => remove(doc, &op.path, op.safe),
             },
             PatchOperation::Standard(standard_op) => Ok(Some(standard_op.clone())),
         }? {
@@ -149,6 +163,24 @@ fn inc(
     }
 }
 
+fn remove(
+    doc: &Value,
+    path: &Pointer,
+    safe: bool,
+) -> Result<Option<StandardPatchOperation>, HulyPatchError> {
+    let target = doc.pointer(path.as_str());
+
+    Ok(if safe && target.is_none() {
+        None
+    } else {
+        Some(StandardPatchOperation::Remove(
+            json_patch::RemoveOperation {
+                path: path.to_owned(),
+            },
+        ))
+    })
+}
+
 fn add_json_numbers(a: &Number, b: &Number) -> Result<Number, HulyPatchError> {
     a.as_i64()
         .and_then(|a| b.as_i64().map(|b| Number::from(a + b)))
@@ -197,6 +229,27 @@ mod tests {
     ) {
         let mut doc = doc.clone();
         let res = inc(&mut doc, &path, &value, safe);
+
+        match expected {
+            Ok(op) => {
+                assert!(res.is_ok());
+                assert_eq!(op, res.unwrap());
+            }
+            Err(e) => {
+                assert!(res.is_err());
+                assert_eq!(Some(e), res.err());
+            }
+        }
+    }
+
+    fn test_remove(
+        doc: Value,
+        path: PointerBuf,
+        safe: bool,
+        expected: Result<Option<json_patch::PatchOperation>, HulyPatchError>,
+    ) {
+        let mut doc = doc.clone();
+        let res = remove(&mut doc, &path, safe);
 
         match expected {
             Ok(op) => {
@@ -407,6 +460,39 @@ mod tests {
             false,
             Err(HulyPatchError::InvalidNumber),
         );
+    }
+
+    #[test]
+    fn test_remove_existing_object_field() {
+        test_remove(
+            json!({ "a": 1 }),
+            PointerBuf::from_tokens(["a"]),
+            false,
+            Ok(Some(StandardPatchOperation::Remove(
+                json_patch::RemoveOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                },
+            ))),
+        );
+    }
+
+    #[test]
+    fn test_remove_non_existing_object_field() {
+        test_remove(
+            json!({}),
+            PointerBuf::from_tokens(["a"]),
+            false,
+            Ok(Some(StandardPatchOperation::Remove(
+                json_patch::RemoveOperation {
+                    path: PointerBuf::from_tokens(["a"]),
+                },
+            ))),
+        );
+    }
+
+    #[test]
+    fn test_remove_non_existing_object_field_safe() {
+        test_remove(json!({}), PointerBuf::from_tokens(["a"]), true, Ok(None));
     }
 
     #[test]
