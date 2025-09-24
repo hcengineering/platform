@@ -498,12 +498,13 @@ fn validate_patch_conditionals(
 
     match any_match(req, etag)? {
         Some(false) => Err(ApiError::PreconditionFailed),
-        _ => {
+        Some(true) => {
             let parts_data = parts.iter().map(|p| &p.data).collect::<Vec<&PartData>>();
             let parts_etag = recovery::object_etag(parts_data)?;
 
             Ok(Some(ConditionalMatch::IfMatch(parts_etag)))
         }
+        None => Ok(None),
     }
 }
 
@@ -526,5 +527,193 @@ fn validate_put_conditionals(
             Some(false) => Err(ApiError::PreconditionFailed),
             None => Ok(None),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::test::TestRequest;
+
+    fn object_part(etag: &str) -> ObjectPart<PartData> {
+        ObjectPart {
+            inline: None,
+            data: PartData {
+                workspace: Uuid::new_v4(),
+                key: "test".to_string(),
+                part: 0,
+                size: 0,
+                blob: "test".to_string(),
+                etag: etag.to_owned(),
+                date: Utc::now(),
+                headers: None,
+                meta: None,
+                merge_strategy: None,
+            },
+        }
+    }
+
+    #[test]
+    fn test_objectpart_etag() {
+        let parts = vec![object_part("foo"), object_part("bar")];
+
+        let etag = objectpart_etag(&parts);
+        assert_eq!(etag, Some(EntityTag::new_strong("bar".to_owned())));
+    }
+
+    #[test]
+    fn test_validate_patch_conditionals_none_none() {
+        let req = TestRequest::default().to_http_request();
+        let parts = vec![];
+
+        let res = validate_patch_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), None);
+    }
+
+    #[test]
+    fn test_validate_patch_conditionals_none_some() {
+        let req = TestRequest::default().to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_patch_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), None);
+    }
+
+    #[test]
+    fn test_validate_patch_conditionals_some_some_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_MATCH, "\"foo\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+        let etag = recovery::object_etag(vec![&parts[0].data]).unwrap();
+
+        let res = validate_patch_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Some(ConditionalMatch::IfMatch(etag)));
+    }
+
+    #[test]
+    fn test_validate_patch_conditionals_some_some_not_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_MATCH, "\"bar\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_patch_conditionals(&req, &parts);
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            ApiError::PreconditionFailed.to_string()
+        );
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_none_none() {
+        let req = TestRequest::default().to_http_request();
+        let parts = vec![];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), None);
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_none_some() {
+        let req = TestRequest::default().to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), None);
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_some_some_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_MATCH, "\"foo\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+        let etag = recovery::object_etag(vec![&parts[0].data]).unwrap();
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Some(ConditionalMatch::IfMatch(etag)));
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_some_some_not_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_MATCH, "\"bar\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            ApiError::PreconditionFailed.to_string()
+        );
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_if_match_if_none_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_MATCH, "\"bar\""))
+            .insert_header((header::IF_NONE_MATCH, "*"))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            ApiError::PreconditionFailed.to_string()
+        );
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_if_none_match_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_NONE_MATCH, "\"bar\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_ok());
+        assert_eq!(
+            res.unwrap(),
+            Some(ConditionalMatch::IfNoneMatch("*".to_owned()))
+        );
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_if_none_match_not_match() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_NONE_MATCH, "\"foo\""))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            ApiError::PreconditionFailed.to_string()
+        );
+    }
+
+    #[test]
+    fn test_validate_put_conditionals_if_none_match_err() {
+        let req = TestRequest::default()
+            .insert_header((header::IF_NONE_MATCH, "*"))
+            .to_http_request();
+        let parts = vec![object_part("foo")];
+
+        let res = validate_put_conditionals(&req, &parts);
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            ApiError::PreconditionFailed.to_string()
+        );
     }
 }

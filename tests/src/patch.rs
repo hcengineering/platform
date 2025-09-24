@@ -288,3 +288,45 @@ pub async fn put_and_patch_conditional(
 
     Ok(())
 }
+
+#[tanu::test]
+pub async fn put_and_patch_json_err() -> eyre::Result<()> {
+    let key = random_key();
+
+    let http = Client::new();
+
+    let initial = json!({
+        "a": 1
+    });
+
+    // create new blob
+    let res = http
+        .key_put(&key)
+        .body(json::to_string(&initial)?)
+        .header("huly-merge-strategy", "jsonpatch")
+        .header("content-type", "application/json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let patch = json!([
+        { "hop": "add", "path": "/a/b/c", "value": 0, "safe": false },
+    ]);
+
+    let res = http
+        .key_patch(&key)
+        .body(json::to_string(&patch)?)
+        .header("content-type", "application/json-patch+json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let json = res.json::<Value>().await?;
+    assert_eq!(json, json!({ "a": 1 }));
+
+    Ok(())
+}
