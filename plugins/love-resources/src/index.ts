@@ -27,6 +27,7 @@ import MediaPopupItemExt from './components/MediaPopupItemExt.svelte'
 import SharingStateIndicator from './components/SharingStateIndicator.svelte'
 import MeetingScheduleData from './components/MeetingScheduleData.svelte'
 import EditMeetingScheduleData from './components/EditMeetingScheduleData.svelte'
+import InviteEmployeeButton from './components/meeting/invites/InviteEmployeeButton.svelte'
 
 import {
   copyGuestLink,
@@ -68,7 +69,8 @@ export default async (): Promise<Resources> => ({
     MediaPopupItemExt,
     SharingStateIndicator,
     MeetingScheduleData,
-    EditMeetingScheduleData
+    EditMeetingScheduleData,
+    InviteEmployeeButton
   },
   function: {
     CreateMeeting: createMeeting,

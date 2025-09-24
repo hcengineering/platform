@@ -44,12 +44,22 @@
   }
 </script>
 
-<ModernButton
-  label={type === 'type-button-icon' ? undefined : chunter.string.Message}
-  icon={icon ?? view.icon.Bubble}
-  size="small"
-  iconSize="small"
-  {type}
-  {kind}
-  on:click={openDirect}
-/>
+<div class="button-container">
+  <ModernButton
+    label={type === 'type-button-icon' ? undefined : chunter.string.Message}
+    icon={icon ?? view.icon.Bubble}
+    size="small"
+    iconSize="small"
+    {type}
+    {kind}
+    on:click={openDirect}
+  />
+</div>
+
+<style lang="scss">
+  .button-container {
+    border-radius: var(--small-BorderRadius);
+    display: flex;
+    background-color: var(--theme-button-container-color);
+  }
+</style>

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Room, RoomType } from '@hcengineering/love'
+  import { Room } from '@hcengineering/love'
   import { IconMaximize, ModernButton, Popup, showPopup, TooltipInstance } from '@hcengineering/ui'
 
   import love from '../../plugin'
   import { myInfo, myOffice } from '../../stores'
-  import { isFullScreen, screenSharing } from '../../utils'
+  import { isFullScreen } from '../../utils'
   import ControlBarContainer from './ControlBarContainer.svelte'
   import RoomModal from '../RoomModal.svelte'
   import { lkSessionConnected } from '../../liveKitClient'
@@ -31,6 +31,7 @@
   import MicrophoneButton from './controls/MicrophoneButton.svelte'
   import CameraButton from './controls/CameraButton.svelte'
   import ShareScreenButton from './controls/ShareScreenButton.svelte'
+  import InviteEmployeeButton from './invites/InviteEmployeeButton.svelte'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -38,11 +39,8 @@
   export let onFullScreen: (() => void) | undefined = undefined
 
   let allowLeave: boolean = false
-  let noLabel: boolean = false
 
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
-
-  $: withVideo = $screenSharing || room.type === RoomType.Video
 
   function maximize (): void {
     showPopup(RoomModal, { room }, 'full-centered')
@@ -50,10 +48,17 @@
 </script>
 
 <div class="control-bar">
-  <ControlBarContainer bind:noLabel>
-    <svelte:fragment slot="right">
+  <ControlBarContainer>
+    <svelte:fragment slot="left">
       {#if room._id !== love.ids.Reception && $lkSessionConnected}
         <RoomAccessButton {room} />
+        <InviteEmployeeButton
+          kind={'secondary'}
+          type={'type-button-icon'}
+          size={'large'}
+          iconSize={'medium'}
+          withBackground={false}
+        />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="center">
@@ -68,8 +73,8 @@
         <RoomAccessButton {room} />
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="left">
-      {#if $lkSessionConnected && withVideo && onFullScreen}
+    <svelte:fragment slot="right">
+      {#if $lkSessionConnected && onFullScreen}
         <ModernButton
           icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
           tooltip={{
@@ -99,7 +104,7 @@
       {/if}
       <MeetingOptionsButton {room} />
       {#if allowLeave}
-        <LeaveRoomButton {room} {noLabel} />
+        <LeaveRoomButton {room} />
       {/if}
     </svelte:fragment>
 

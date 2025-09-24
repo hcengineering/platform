@@ -13,72 +13,81 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { resizeObserver } from '@hcengineering/ui'
-  import { afterUpdate } from 'svelte'
-
-  export let noLabel: boolean = false
-
-  let grow: HTMLElement
-  let leftPanel: HTMLElement
-  let leftPanelSize: number = 0
-
-  let combinePanel: boolean = false
-
-  const checkBar = (): void => {
-    if (grow === undefined || leftPanel === undefined) return
-    if (!noLabel && leftPanel.clientWidth > leftPanelSize) leftPanelSize = leftPanel.clientWidth
-    if (grow.clientWidth - 16 < leftPanel.clientWidth && !noLabel && !combinePanel) noLabel = true
-    else if (grow.clientWidth - 16 < leftPanel.clientWidth && noLabel && !combinePanel) combinePanel = true
-    else if (grow.clientWidth * 2 - 32 > leftPanel.clientWidth && noLabel && combinePanel) combinePanel = false
-    else if (grow.clientWidth - 32 >= leftPanelSize && noLabel && !combinePanel) noLabel = false
-  }
-  afterUpdate(() => {
-    checkBar()
-  })
+  export let size: 'small' | 'big' = 'big'
 </script>
 
-<div class="bar w-full flex-center flex-gap-2 flex-no-shrink" class:combinePanel use:resizeObserver={checkBar}>
-  <div class="bar__right-panel flex-gap-2 flex-center">
-    <slot name="right" />
+<div class="bar" data-size={size}>
+  <div class="row">
+    <div class="left"><slot name="left" /></div>
+    <div class="center"><slot name="center" /></div>
+    <div class="right"><slot name="right" /></div>
+    <slot name="extra" />
   </div>
-  <div bind:this={grow} class="flex-grow" />
-  <slot name="center" />
-  <div bind:this={leftPanel} class="bar__left-panel flex-gap-2 flex-center">
-    <slot name="left" />
-  </div>
-  <div class="flex-grow" />
-  <slot name="extra" />
 </div>
 
 <style lang="scss">
   .bar {
-    overflow-x: auto;
-    position: relative;
+    --g: 0.5rem;
+  }
+
+  .bar {
     padding: 1rem;
     border-top: 1px solid var(--theme-divider-color);
+    container-type: inline-size;
+    width: 100%;
+  }
 
-    &__left-panel {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      right: 1rem;
-      height: 100%;
+  .row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--g);
+  }
+  .left,
+  .center,
+  .right {
+    display: flex;
+    align-items: center;
+    gap: var(--g);
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @container (max-width: 350px) {
+    .bar[data-size='small'] .row {
+      justify-content: center;
+      gap: var(--g);
     }
-
-    &__right-panel {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 1rem;
-      height: 100%;
+    .bar[data-size='small'] .left,
+    .bar[data-size='small'] .center,
+    .bar[data-size='small'] .right {
+      display: contents;
     }
-
-    &.combinePanel .bar__left-panel {
+    .bar[data-size='small'] .center {
       position: static;
+      transform: none;
     }
+  }
 
-    &.combinePanel .bar__right-panel {
+  @container (max-width: 960px) {
+    .bar[data-size='big'] .row {
+      justify-content: center;
+      gap: var(--g);
+    }
+    .bar[data-size='big'] .left,
+    .bar[data-size='big'] .center,
+    .bar[data-size='big'] .right {
+      display: contents;
+    }
+    .bar[data-size='big'] .center {
       position: static;
+      transform: none;
     }
   }
 </style>

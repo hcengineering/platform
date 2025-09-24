@@ -13,34 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { CombineAvatars } from '@hcengineering/contact-resources'
-  import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus } from '@hcengineering/love'
-  import love from '../plugin'
+  import { JoinRequest } from '@hcengineering/love'
+  import love from '../../../plugin'
+  import { rooms } from '../../../stores'
+  import { getRoomLabel } from '../../../utils'
+  import { cancelJoinRequest } from '../../../meetings'
 
-  export let invites: Invite[]
+  export let request: JoinRequest
 
-  $: persons = invites.map((p) => p.target)
+  $: room = $rooms.find((p) => p._id === request.room)
 
-  const client = getClient()
-
-  async function cancel () {
-    for (const invite of invites) {
-      if (invite.status === RequestStatus.Pending) {
-        await client.remove(invite)
-      }
-    }
+  async function cancel (): Promise<void> {
+    await cancelJoinRequest(request)
   }
 </script>
 
 <div class="antiPopup flex-col-center">
-  <span class="title">
-    <Label label={love.string.YouInivite} />
-  </span>
-  <div class="p-4">
-    <CombineAvatars _class={contact.class.Person} size={'large'} items={persons} limit={5} />
+  <div class="mb-4 flex-col-center flex-gap-2">
+    <Label label={love.string.KnockingTo} params={{ name: room?.name }} />
+    <span class="title">
+      {#if room}
+        {#await getRoomLabel(room) then label}
+          <Label {label} />
+        {/await}
+      {/if}
+    </span>
   </div>
   <div class="flex-row-center p-1 w-full">
     <Button label={love.string.Cancel} width={'100%'} on:click={cancel} />

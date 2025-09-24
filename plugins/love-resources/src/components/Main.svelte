@@ -14,15 +14,8 @@
 -->
 <script lang="ts">
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { onDestroy, onMount } from 'svelte'
-  import presentation from '@hcengineering/presentation'
-
+  import { onDestroy } from 'svelte'
   import Hall from './Hall.svelte'
-  import { getMetadata } from '@hcengineering/platform'
-  import love from '../plugin'
-  import { tryConnect } from '../utils'
-  import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
-  import { lkSessionConnected } from '../liveKitClient'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -31,28 +24,6 @@
 
   onDestroy(() => {
     $deviceInfo.navigator.visible = localNav
-  })
-
-  onMount(async () => {
-    const wsURL = getMetadata(love.metadata.WebSocketURL)
-
-    if (wsURL === undefined) {
-      return
-    }
-
-    await waitForOfficeLoaded()
-    const room = $currentRoom
-
-    if (room === undefined) return
-
-    if (
-      !$lkSessionConnected &&
-      $myInfo?.sessionId !== undefined &&
-      $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
-    ) {
-      const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($myInfo, room, info, $myRequests, $invites)
-    }
   })
 </script>
 

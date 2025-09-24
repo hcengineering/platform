@@ -14,15 +14,14 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRef, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
-  import { getClient, playNotificationSound } from '@hcengineering/presentation'
+  import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
+  import { playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
+  import { Invite } from '@hcengineering/love'
   import { onDestroy, onMount } from 'svelte'
 
-  import love from '../plugin'
-  import { infos, myInfo, rooms } from '../stores'
-  import { connectRoom } from '../utils'
+  import love from '../../../plugin'
+  import { acceptInvite, rejectInvite } from '../../../meetings'
 
   export let invite: Invite
 
@@ -31,25 +30,14 @@
     person = p ?? undefined
   })
 
-  const client = getClient()
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    const room = $rooms.find((p) => p._id === invite.room)
-    if (room === undefined) return
-    const myPerson = await getPersonByPersonRef(invite.target)
-    if (myPerson == null) return
-    if ($myInfo === undefined) return
-    await client.update(invite, { status: RequestStatus.Approved })
-    const place = getFreeRoomPlace(
-      room,
-      $infos.filter((p) => p.room === room?._id),
-      myPerson._id
-    )
-    await connectRoom(place.x, place.y, $myInfo, myPerson, room)
+    await acceptInvite(invite)
   }
+
   async function decline (): Promise<void> {
-    await client.update(invite, { status: RequestStatus.Rejected })
+    await rejectInvite(invite)
   }
 
   onMount(async () => {

@@ -16,13 +16,12 @@
   import { tooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import love from '../plugin'
-  import { isSharingEnabled, isShareWithSound, screenSharing, liveKitClient } from '../utils'
+  import { isShareWithSound, liveKitClient } from '../utils'
 
   import SharingStatePopup from './SharingStatePopup.svelte'
   import IconShare from './icons/Share.svelte'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
 
-  let disabled: boolean = false
   let pressed: boolean = false
 
   function handleShowPopup (ev: MouseEvent): void {
@@ -33,15 +32,13 @@
   }
 
   function handleShare (): void {
-    if (disabled) return
+    if ($screenSharingState !== ScreenSharingState.Inactive) return
     void liveKitClient.setScreenShareEnabled(true, $isShareWithSound)
   }
-
-  $: disabled = !$screenSharing && !$lkSessionConnected
 </script>
 
 {#if $lkSessionConnected}
-  {#if $isSharingEnabled}
+  {#if $screenSharingState === ScreenSharingState.Local}
     <button
       class="hulyStatusBarButton mini positive positiveContent"
       class:pressed
@@ -54,7 +51,6 @@
     <button
       class="hulyStatusBarButton mini disabled"
       class:pressed
-      {disabled}
       use:tooltip={{ label: love.string.Share, direction: 'bottom' }}
       on:click={handleShare}
     >
