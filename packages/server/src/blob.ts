@@ -336,8 +336,9 @@ export class Blob {
   async removeMessage (cardId: CardID, blobId: BlobID, messageId: MessageID): Promise<void> {
     const patches: JsonPatch[] = [
       {
-        op: 'remove',
-        path: `/messages/${messageId}`
+        hop: 'remove',
+        path: `/messages/${messageId}`,
+        safe: true
       } as const
     ]
 
@@ -369,8 +370,9 @@ export class Blob {
   async removeReaction (cardId: CardID, blobId: BlobID, messageId: MessageID, emoji: string, person: PersonUuid): Promise<void> {
     const patches: JsonPatch[] = [
       {
-        op: 'remove',
-        path: `/messages/${messageId}/reactions/${emoji}/${person}`
+        hop: 'remove',
+        path: `/messages/${messageId}/reactions/${emoji}/${person}`,
+        safe: true
       }
     ]
     await this.patchJson(cardId, blobId, patches)
@@ -394,8 +396,9 @@ export class Blob {
 
     for (const attachmentId of attachmentIds) {
       patches.push({
-        op: 'remove',
-        path: `/messages/${messageId}/attachments/${attachmentId}`
+        hop: 'remove',
+        path: `/messages/${messageId}/attachments/${attachmentId}`,
+        safe: true
       })
     }
     await this.patchJson(cardId, blobId, patches)
@@ -506,8 +509,9 @@ export class Blob {
   async removeThread (cardId: CardID, blobId: BlobID, messageId: MessageID, threadId: CardID): Promise<void> {
     const patches: JsonPatch[] = [
       {
-        op: 'remove',
-        path: `/messages/${messageId}/threads/${threadId}`
+        hop: 'remove',
+        path: `/messages/${messageId}/threads/${threadId}`,
+        safe: true
       }
     ]
     await this.patchJson(cardId, blobId, patches)
