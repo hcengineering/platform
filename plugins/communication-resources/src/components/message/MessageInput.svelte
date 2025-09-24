@@ -58,6 +58,7 @@
   import { type TextInputAction, MessageDraft, AppletDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
   import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
+  import { messageEditingStore } from '../../stores'
 
   export let card: Card
   export let message: Message | undefined = undefined
@@ -551,6 +552,20 @@
       void uploadWith(handler)
     }
   }))
+
+  function handleKeyDown (_: any, event: KeyboardEvent): boolean {
+    if (event.key === 'ArrowUp') {
+      if (isEmptyDraft() && $messageEditingStore === undefined) {
+        dispatch('arrowUp')
+      }
+    }
+    if (event.key === 'Escape') {
+      if ($messageEditingStore !== undefined) {
+        messageEditingStore.set(undefined)
+      }
+    }
+    return false
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -581,8 +596,10 @@
     actions={[...defaultMessageInputActions, attachAction, ...uploadActions, ...appletActions]}
     on:submit={handleSubmit}
     on:update={onUpdate}
+    autofocus="end"
     onCancel={onCancel ? handleCancel : undefined}
     onPaste={pasteAction}
+    onKeyDown={handleKeyDown}
   >
     <div slot="header" class="header">
       {#if draft.blobs.length > 0 || draft.links.length > 0 || draft.applets.length > 0}

@@ -36,7 +36,7 @@ export function buildMessageActions (builder: Builder): void {
     communication.class.MessageAction,
     core.space.Model,
     {
-      label: communication.string.ReplyInThread,
+      label: communication.string.Reply,
       icon: communication.icon.MessageMultiple,
       action: communication.messageActionImpl.ReplyInThread,
       visibilityTester: communication.function.CanReplyInThread,

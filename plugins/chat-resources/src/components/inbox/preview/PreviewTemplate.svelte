@@ -69,14 +69,15 @@
     </span>
 
     <span class="message-preview-template__left">
-      <span
-        class="message-preview-template__content overflow-label {color}"
-        class:fixHeight
-        use:tooltip={tooltipLabel ? { label: tooltipLabel } : undefined}
-      >
-        <slot />
-      </span>
-
+      {#if $$slots.content}
+        <span
+          class="message-preview-template__content overflow-label {color}"
+          class:fixHeight
+          use:tooltip={tooltipLabel ? { label: tooltipLabel, textAlign: 'left' } : undefined}
+        >
+          <slot name="content" />
+        </span>
+      {/if}
       <slot name="after" />
     </span>
   </div>

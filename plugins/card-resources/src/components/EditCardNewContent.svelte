@@ -60,6 +60,9 @@
     <MessageInput
       card={doc}
       title={doc.title}
+      on:arrowUp={() => {
+        content?.editLastMessage()
+      }}
       on:sent={() => {
         content?.hideScrollBar()
         content?.scrollDown()

@@ -37,7 +37,7 @@
 
   let person: WithLookup<Person> | undefined = undefined
 
-  $: void updatePerson(creator)
+  $: void updatePerson(message?.creator ?? creator)
 
   function getTooltipLabel (message: Message | undefined): IntlString {
     if (message == null) return getEmbeddedLabel('')
