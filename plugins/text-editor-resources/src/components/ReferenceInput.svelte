@@ -59,6 +59,7 @@
   export let onCancel: (() => void) | undefined = undefined
   export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let onKeyDown: ((view: EditorView, event: KeyboardEvent) => boolean) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
@@ -178,6 +179,7 @@
         dispatch('focus')
       }}
       {onPaste}
+      {onKeyDown}
       on:update
       kitOptions={mergeKitOptions(
         {
