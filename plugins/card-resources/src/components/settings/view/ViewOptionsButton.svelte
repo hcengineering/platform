@@ -15,9 +15,9 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { ButtonIcon, showPopup, closeTooltip, IconOptions } from '@hcengineering/ui'
-  import view, { ViewOptionsModel, Viewlet } from '@hcengineering/view'
+  import view, { OrderOption, ViewOptionsModel, Viewlet } from '@hcengineering/view'
   import { ViewOptions as ViewOptionsEditor } from '@hcengineering/view-resources'
-  import core, { Data } from '@hcengineering/core'
+  import core, { Class, Data, Ref, SortingOrder, Type } from '@hcengineering/core'
 
   export let viewlet: Data<Viewlet> | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -58,6 +58,30 @@
     }
 
     mergedModel.groupBy = Array.from(new Set([...mergedModel.groupBy, ...customAttributes]))
+    const sortableTypes: Ref<Class<Type<any>>>[] = [
+      core.class.EnumOf,
+      core.class.TypeString,
+      core.class.TypeNumber,
+      core.class.TypeDate,
+      core.class.TypeBoolean
+    ]
+
+    const customSortableAttributes: OrderOption[] = classes
+      .flatMap((c) => {
+        const hierarchy = client.getHierarchy()
+        return hierarchy.isMixin(c)
+          ? [
+              ...Array.from(hierarchy.getOwnAttributes(c).values()),
+              ...Array.from(hierarchy.getOwnAttributes(hierarchy.getBaseClass(c)).values())
+            ]
+          : Array.from(client.getHierarchy().getOwnAttributes(c).values())
+      })
+      .filter((attr) => attr.isCustom && !attr.isHidden && sortableTypes.includes(attr.type._class))
+      .map((a) => {
+        return [a.name, SortingOrder.Ascending]
+      })
+    mergedModel.orderBy = Array.from(new Set([...mergedModel.orderBy, ...customSortableAttributes]))
+
     mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
     mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.findIndex((q) => it[0] === q[0]) === idx)
     mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
