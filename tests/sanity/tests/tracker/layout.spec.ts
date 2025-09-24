@@ -189,6 +189,7 @@ test.describe('tracker layout tests', () => {
       await issuesPage.clickModelSelectorAll()
       await page.click(ViewletSelectors.Board)
       await setViewGroup(page, 'No grouping')
+      await setViewOrder(page, 'Manual')
       await setViewOrder(page, order)
 
       await fillSearch(page, id)
