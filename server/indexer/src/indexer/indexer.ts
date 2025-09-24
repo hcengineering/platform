@@ -89,6 +89,7 @@ import {
 } from '@hcengineering/communication-types'
 import {
   isBlobAttachment,
+  isBlobAttachmentType,
   isLinkPreviewAttachment,
   loadMessages,
   loadMessagesGroups
@@ -780,18 +781,22 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
         await this.processCommunicationMessage(ctx, pushQueue, cardDoc._id, cardDoc.space, cardDoc._class, message)
         messagesUpdated.add(event.messageId)
-      } else if (tx.event.type === MessageEventType.BlobPatch) {
+      } else if (tx.event.type === MessageEventType.AttachmentPatch) {
         const event = tx.event
         if (messagesUpdated.has(event.messageId)) {
           continue
         }
         for (const operation of event.operations) {
-          if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
-            for (const blobData of operation.blobs) {
+          if (operation.opcode === 'add' || operation.opcode === 'set') {
+            for (const blobData of operation.attachments) {
+              if (!isBlobAttachmentType(blobData.mimeType)) {
+                continue
+              }
+              const params = blobData.params as BlobParams
               const blobAttachment: BlobAttachment = {
-                id: blobData.blobId as any as AttachmentID,
+                id: params.blobId as any as AttachmentID,
                 mimeType: blobData.mimeType ?? '',
-                params: blobData as BlobParams,
+                params,
                 creator: event.socialId,
                 created: new Date(Date.parse(event.date))
               }
@@ -808,8 +813,37 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                 blobAttachment
               )
             }
-          } else if (operation.opcode === 'detach') {
-            for (const blobId of operation.blobIds) {
+          } else if (operation.opcode === 'update') {
+            if (messagesUpdated.has(event.messageId)) {
+              continue
+            }
+            const message = await getMessage(cardId, event.messageId)
+            if (message === undefined) {
+              continue
+            }
+            const blobIds = new Set(operation.attachments.map((d) => d.id))
+            for (const attachment of message.attachments) {
+              if (!blobIds.has(attachment.id)) {
+                continue
+              }
+              if (!isBlobAttachmentType(attachment.mimeType)) {
+                continue
+              }
+              const blobAttachment = attachment as BlobAttachment
+              await this.processCommunicationBlob(
+                ctx,
+                pushQueue,
+                {
+                  id: `${event.messageId}@${cardDoc._id}` as any,
+                  _class: [messagePseudoClass],
+                  space: cardDoc.space,
+                  attachedTo: cardDoc._id
+                },
+                blobAttachment
+              )
+            }
+          } else if (operation.opcode === 'remove') {
+            for (const blobId of operation.ids) {
               toRemove.push({
                 _id: `${blobId}@${cardDoc._id}` as Ref<Doc>,
                 _class: blobPseudoClass
@@ -817,8 +851,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
           }
         }
-      } else if (tx.event.type === MessageEventType.AttachmentPatch) {
-        // TODO: implement
       } else if (tx.event.type === MessageEventType.RemovePatch) {
         const event = tx.event
         messagesUpdated.add(event.messageId)
