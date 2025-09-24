@@ -66,7 +66,6 @@ import { type FullTextPipeline } from './types'
 import { blobPseudoClass, createIndexedDoc, createIndexedDocFromMessage, getContent, messagePseudoClass } from './utils'
 import {
   type AttachmentPatchEvent,
-  type BlobPatchEvent,
   CardEventType,
   type CreateMessageEvent,
   type Event,
@@ -111,8 +110,7 @@ export type QueueSourced<T extends Event> = Omit<T, 'date'> & { date: string }
 type IndexableCommunicationEvent =
   | QueueSourced<CreateMessageEvent>
   | QueueSourced<UpdatePatchEvent>
-  | QueueSourced<BlobPatchEvent>
-  | QueueSourced<AttachmentPatchEvent> // TODO: handle
+  | QueueSourced<AttachmentPatchEvent>
   | QueueSourced<RemovePatchEvent>
   | QueueSourced<UpdateCardTypeEvent>
   | QueueSourced<RemoveCardEvent>
@@ -642,7 +640,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const indexableCommunicationEventTypes: Array<EventType> = [
       MessageEventType.CreateMessage,
       MessageEventType.UpdatePatch,
-      MessageEventType.BlobPatch,
       MessageEventType.AttachmentPatch,
       MessageEventType.RemovePatch,
       CardEventType.UpdateCardType,
