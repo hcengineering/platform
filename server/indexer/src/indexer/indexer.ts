@@ -746,16 +746,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (meta === undefined) {
         return undefined
       }
-      const messagesGroups = await loadMessagesGroups(this.hulylake, cardId)
-      const group = messagesGroups.find((it) => it.blobId === meta.blobId)
-
-      if (group === undefined) {
-        return undefined
-      }
       return (
         await loadMessages(
           this.hulylake,
-          group.blobId,
+          meta.blobId,
           {
             cardId,
             id: msgId
