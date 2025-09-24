@@ -39,6 +39,6 @@
     <svelte:fragment slot="title">
       {$currentRoom.name}
     </svelte:fragment>
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} canMaximize={false} />
+    <RoomComponent room={$currentRoom} canMaximize={false} />
   </Modal>
 {/if}

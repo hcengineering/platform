@@ -114,6 +114,7 @@ export function start (
     if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
       return {
         findMessagesMeta: async () => [],
+        findMessagesGroups: async () => [],
         findNotificationContexts: async () => [],
         findCollaborators: async () => [],
         findNotifications: async () => [],

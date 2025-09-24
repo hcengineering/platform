@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Invite, isOffice, JoinRequest, Office, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
+  import { Invite, isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -28,27 +27,19 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
-  import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
+  import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../../stores'
-  import {
-    connectRoom,
-    createMeetingVideoWidgetTab,
-    createMeetingWidget,
-    disconnect,
-    endMeeting,
-    getRoomName,
-    leaveRoom
-  } from '../../utils'
-  import ActiveInvitesPopup from '../ActiveInvitesPopup.svelte'
-  import InvitePopup from '../InvitePopup.svelte'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
+  import { createMeetingWidget, getRoomName } from '../../utils'
+  import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
+  import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
-  import RequestPopup from '../RequestPopup.svelte'
-  import RequestingPopup from '../RequestingPopup.svelte'
+  import RequestPopup from './invites/RequestPopup.svelte'
+  import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { getPersonByPersonRef } from '@hcengineering/contact-resources'
+  import { leaveMeeting, currentMeetingRoom } from '../../meetings'
   import { lkSessionConnected } from '../../liveKitClient'
 
   const client = getClient()
@@ -160,32 +151,6 @@
 
   $: checkInvites($myInvites)
 
-  async function checkOwnRoomConnection (
-    infos: ParticipantInfo[],
-    myInfo: ParticipantInfo | undefined,
-    myOffice: Office | undefined,
-    isConnected: boolean
-  ): Promise<void> {
-    if (myInfo !== undefined && myInfo.room === (myOffice?._id ?? love.ids.Reception)) {
-      if (myOffice === undefined) {
-        await disconnect()
-        return
-      }
-      const filtered = infos.filter((p) => p.room === myOffice._id && p.person !== myInfo.person)
-      if (filtered.length === 0) {
-        if (isConnected) {
-          await disconnect()
-        }
-      } else if (!isConnected) {
-        const myPerson = await getPersonByPersonRef(getCurrentEmployee())
-        if (myPerson == null) return
-        await connectRoom(0, 0, myInfo, myPerson, myOffice)
-      }
-    }
-  }
-
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $lkSessionConnected)
-
   const myInvitesCategory = 'myInvites'
 
   let myInvitesPopup: PopupResult | undefined = undefined
@@ -193,7 +158,7 @@
   function checkActiveInvites (invites: Invite[]): void {
     if (invites.length > 0) {
       if (myInvitesPopup === undefined) {
-        myInvitesPopup = showPopup(ActiveInvitesPopup, { invites }, undefined, undefined, undefined, {
+        myInvitesPopup = showPopup(ActiveInvitesPopup, {}, undefined, undefined, undefined, {
           category: myInvitesCategory,
           overlay: false,
           fixed: true
@@ -211,7 +176,7 @@
 
   $: checkActiveInvites($activeInvites)
 
-  function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
+  function checkActiveMeeting (loc: Location, meetingSessionConnected: boolean, room: Ref<Room> | undefined): void {
     const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
     const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
@@ -222,16 +187,16 @@
       return
     }
 
-    if ($lkSessionConnected) {
+    if (meetingSessionConnected) {
+      if (currentMeetingRoom !== undefined && room !== currentMeetingRoom) {
+        void leaveMeeting()
+        return
+      }
       const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
       if (widget === undefined) return
 
       if (!isMeetingWidgetCreated) {
-        createMeetingWidget(widget, room, video)
-      } else if (video && !meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
-        createMeetingVideoWidgetTab(widget)
-      } else if (!video && meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
-        void closeWidgetTab(widget, 'video')
+        createMeetingWidget(widget, room, meetingSessionConnected)
       }
     } else {
       if (isMeetingWidgetCreated) {
@@ -240,7 +205,7 @@
     }
   }
 
-  $: checkActiveVideo($location, $lkSessionConnected, $currentRoom?._id)
+  $: checkActiveMeeting($location, $lkSessionConnected, $currentRoom?._id)
 
   $: joined = activeRooms.filter((r) => $myInfo?.room === r._id)
 
@@ -270,11 +235,7 @@
 
   const beforeUnloadListener = () => {
     if ($myInfo !== undefined && $lkSessionConnected) {
-      if ($myOffice !== undefined && $myInfo.room === $myOffice._id) {
-        endMeeting($myOffice, $rooms, $infos, $myInfo)
-      } else {
-        leaveRoom($myInfo, $myOffice)
-      }
+      leaveMeeting()
     }
   }
 

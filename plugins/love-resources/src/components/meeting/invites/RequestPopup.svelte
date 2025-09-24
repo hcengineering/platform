@@ -13,36 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRef, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { getClient, playNotificationSound } from '@hcengineering/presentation'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest, RequestStatus } from '@hcengineering/love'
-  import love from '../plugin'
-  import { myInfo, myOffice } from '../stores'
-  import { connectRoom } from '../utils'
+  import { JoinRequest } from '@hcengineering/love'
+  import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetings'
 
   export let request: JoinRequest
 
   $: personByRefStore = getPersonByPersonRefStore([request.person])
   $: person = $personByRefStore.get(request.person)
 
-  const client = getClient()
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await client.update(request, { status: RequestStatus.Approved })
-    if (request.room === $myOffice?._id && !$lkSessionConnected) {
-      const person = await getPersonByPersonRef(getCurrentEmployee())
-      if (person == null) return
-      await connectRoom(0, 0, $myInfo, person, $myOffice)
-    }
+    await acceptJoinRequest(request)
   }
 
   async function decline (): Promise<void> {
-    await client.update(request, { status: RequestStatus.Rejected })
+    await rejectJoinRequest(request)
   }
 
   onMount(async () => {

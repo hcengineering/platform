@@ -133,12 +133,10 @@
   <div slot="actions">
     {#if !disabled}
       <div class="flex-presenter flex-gap-2 flex-center">
-        <div class="button-container">
-          <ComponentExtensions
-            extension={contact.extension.EmployeePopupActions}
-            props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon' }}
-          />
-        </div>
+        <ComponentExtensions
+          extension={contact.extension.EmployeePopupActions}
+          props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon', class: 'button-container' }}
+        />
         <div class="button-container">
           <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
         </div>

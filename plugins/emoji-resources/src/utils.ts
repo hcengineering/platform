@@ -90,6 +90,13 @@ export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: n
   }, skinTone)
 }
 
+export function getEmojiByUnicode (emoji: string): ExtendedEmoji | undefined {
+  return findEmoji((e) => {
+    if (isCustomEmoji(e)) return e.shortcode === emoji
+    return e.emoji === emoji
+  })
+}
+
 export function getCustomEmoji (shortcode: string | undefined): CustomEmoji | undefined {
   if (shortcode === undefined) return undefined
   const pureShortcode = shortcode.replaceAll(':', '')

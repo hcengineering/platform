@@ -4,15 +4,13 @@
   import { isOffice, Room, RoomAccess } from '@hcengineering/love'
   import { ActionIcon } from '@hcengineering/ui'
   import love from '../plugin'
-  import { infos, invites, myInfo, myRequests, rooms } from '../stores'
-  import { invite, kick, tryConnect } from '../utils'
+  import { myInfo } from '../stores'
+  import { joinMeeting, kick, sendInvites } from '../meetings'
 
   export let room: Room
   export let person: Ref<Person>
 
   $: isMyOffice = isOffice(room) && room.person === $myInfo?.person
-
-  $: info = $infos.filter((p) => p.room === room._id)
 </script>
 
 <div class="p-3 flex-gap-2 antiPopup">
@@ -22,7 +20,7 @@
       label={love.string.Kick}
       icon={love.icon.Kick}
       action={() => {
-        kick(person, $rooms, $infos)
+        void kick(person)
       }}
     />
   {/if}
@@ -32,7 +30,7 @@
       label={love.string.Invite}
       icon={love.icon.Invite}
       action={() => {
-        invite(person, $myInfo?.room)
+        void sendInvites([person])
       }}
     />
     {#if room.access === RoomAccess.Knock}
@@ -41,7 +39,7 @@
         label={love.string.KnockAction}
         icon={love.icon.Knock}
         action={() => {
-          tryConnect($myInfo, room, info, $myRequests, $invites)
+          void joinMeeting(room)
         }}
       />
     {/if}
