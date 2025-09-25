@@ -119,7 +119,7 @@ async function removeThreadReply (ctx: TriggerCtx, event: Enriched<RemovePatchEv
 
 async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEvent>): Promise<Event[]> {
   if (event.operation.opcode !== 'attach') return []
-  const message = await ctx.client.findMessage(event.cardId, event.messageId)
+  const message = await ctx.client.findMessage(event.cardId, event.messageId, { attachments: true })
 
   if (message === undefined) return []
 
@@ -164,6 +164,7 @@ async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEve
     date: message.created
   })
 
+  console.log(result)
   return result
 }
 
