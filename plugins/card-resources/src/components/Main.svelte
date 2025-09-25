@@ -53,6 +53,7 @@
     _class={clazz._id}
     baseQuery={{ space: currentSpace }}
     space={currentSpace}
+    defaultViewletDescriptor={card.viewlet.CardFeedDescriptor}
     {label}
     icon={card.icon.Card}
   />
