@@ -3,6 +3,7 @@ use jsonptr::{Pointer, PointerBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::{Number, Value, json};
 use thiserror::Error;
+use tracing::*;
 
 /// 'add' operation - increments a numeric value
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -91,7 +92,11 @@ impl From<json_patch::PatchError> for HulyPatchError {
     }
 }
 
+#[instrument(level = "debug", skip_all, fields(patches))]
 pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatchError> {
+    let span = Span::current();
+    span.record("patches", &patches.len());
+
     for patch in patches {
         if let Some(op) = match patch {
             PatchOperation::Huly(huly_op) => match huly_op {

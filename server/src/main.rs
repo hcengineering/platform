@@ -13,6 +13,7 @@ use tracing_actix_web::TracingLogger;
 use uuid::Uuid;
 
 use hulyrs::services::jwt::actix::ServiceRequestExt;
+use hulyrs::services::otel;
 
 mod blob;
 mod conditional;
@@ -27,17 +28,54 @@ mod s3;
 use config::CONFIG;
 
 fn initialize_tracing() {
+    use opentelemetry::trace::TracerProvider;
+    use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+    use tracing::Level;
+    use tracing_opentelemetry::OpenTelemetryLayer;
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
+
+    let otel_config = otel::OtelConfig {
+        mode: config::hulyrs::CONFIG.otel_mode.clone(),
+        service_name: env!("CARGO_PKG_NAME").to_string(),
+        service_version: env!("CARGO_PKG_VERSION").to_string(),
+    };
+
+    otel::init(&otel_config);
 
     let filter = Targets::default()
         .with_target(env!("CARGO_BIN_NAME"), config::hulyrs::CONFIG.log)
         .with_target("actix", Level::WARN);
     let format = tracing_subscriber::fmt::layer().compact();
 
-    tracing_subscriber::registry()
-        .with(filter)
-        .with(format)
-        .init();
+    match &config::hulyrs::CONFIG.otel_mode {
+        otel::OtelMode::Off => {
+            tracing_subscriber::registry()
+                .with(filter)
+                .with(format)
+                .init();
+        }
+
+        _ => {
+            tracing_subscriber::registry()
+                .with(filter)
+                .with(format)
+                .with(otel::tracer_provider(&otel_config).map(|provider| {
+                    let filter = Targets::default()
+                        .with_default(Level::DEBUG)
+                        .with_target(env!("CARGO_PKG_NAME"), config::hulyrs::CONFIG.log);
+
+                    OpenTelemetryLayer::new(provider.tracer("hulylake")).with_filter(filter)
+                }))
+                .with(otel::logger_provider(&otel_config).as_ref().map(|logger| {
+                    let filter = Targets::default()
+                        .with_default(Level::DEBUG)
+                        .with_target(env!("CARGO_PKG_NAME"), Level::DEBUG);
+
+                    OpenTelemetryTracingBridge::new(logger).with_filter(filter)
+                }))
+                .init();
+        }
+    }
 }
 
 #[tokio::main]

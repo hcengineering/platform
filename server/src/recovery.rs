@@ -41,6 +41,7 @@ pub fn object_etag(parts: Vec<&PartData>) -> anyhow::Result<String> {
     Ok(format!("{:x}", digest))
 }
 
+#[tracing::instrument(level = "debug", skip_all)]
 pub async fn set_object(
     s3: &S3Client,
     workspace: uuid::Uuid,
@@ -71,6 +72,7 @@ pub async fn set_object(
     Ok(())
 }
 
+#[tracing::instrument(level = "debug", skip_all)]
 pub async fn set_blob(s3: &S3Client, key: &str, hash: &str) -> Result<(), RecoveryError> {
     let s3_bucket = &CONFIG.s3_bucket;
 

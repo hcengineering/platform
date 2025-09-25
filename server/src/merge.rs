@@ -85,6 +85,7 @@ pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> Handle
     }
 }
 
+#[instrument(level = "debug", skip_all)]
 pub async fn stream(
     s3: Arc<S3Client>,
     parts: Vec<ObjectPart<PartData>>,
