@@ -523,7 +523,7 @@ async function * getChunks (data: Buffer | string | Readable, chunkSize: number)
 async function fetchSafe (ctx: MeasureContext, url: string | URL, init?: RequestInit): Promise<Response> {
   let response
   try {
-    response = await fetch(url, init)
+    response = await ctx.with('fetch', {}, () => fetch(url, init), { url: url.toString() }, { span: 'disable' })
   } catch (err: any) {
     ctx.error('network error', { err })
     throw new NetworkError(`Network error ${err}`)
