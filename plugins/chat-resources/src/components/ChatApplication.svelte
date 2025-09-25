@@ -111,6 +111,9 @@
       const card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
       selection = card != null ? { type: 'card', _id: cardId, doc: card } : undefined
     }
+    if (selection == null) {
+      selection = { type: 'all' }
+    }
   }
 
   function selectCard (event: CustomEvent<Card>): void {

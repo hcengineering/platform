@@ -603,7 +603,7 @@ export function todoTranstionCheck (
   context: Record<string, any>
 ): boolean {
   if (params._id === undefined) return false
-  return context.card?._id === params._id
+  return context.todo?._id === params._id
 }
 
 export function timeTransitionCheck (
