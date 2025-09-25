@@ -109,7 +109,7 @@
 
 <Scroller bind:divScroll {onScroll} padding="2rem 4rem">
   <div class="home">
-    <NewCardForm type={_class} />
+    <NewCardForm type={_class !== card.class.Card ? _class : undefined} />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}
