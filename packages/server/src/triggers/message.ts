@@ -164,7 +164,6 @@ async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEve
     date: message.created
   })
 
-  console.log(result)
   return result
 }
 
