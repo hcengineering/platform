@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Button, Label } from '@hcengineering/ui'
-<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/JoinRequestPopup.svelte
   import love from '../../../plugin'
   import { rooms } from '../../../stores'
   import { getRoomLabel } from '../../../utils'
@@ -27,13 +26,6 @@
     updateJoinRequest
   } from '../../../joinRequests'
   import { onMount } from 'svelte'
-========
-  import { JoinRequest } from '@hcengineering/love'
-  import love from '../../../plugin'
-  import { rooms } from '../../../stores'
-  import { getRoomLabel } from '../../../utils'
-  import { cancelJoinRequest } from '../../../meetings'
->>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/RequestingPopup.svelte
 
   export let meetingId: string
 
@@ -55,11 +47,7 @@
   }
 
   async function cancel (): Promise<void> {
-<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/JoinRequestPopup.svelte
     closeJoinRequestPopup()
-========
-    await cancelJoinRequest(request)
->>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/RequestingPopup.svelte
   }
 </script>
 

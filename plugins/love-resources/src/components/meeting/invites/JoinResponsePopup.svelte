@@ -15,18 +15,11 @@
 <script lang="ts">
   import { formatName } from '@hcengineering/contact'
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { playNotificationSound } from '@hcengineering/presentation'
+  import { playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/JoinResponsePopup.svelte
   import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
   import { responseToJoinRequest, JoinRequest } from '../../../joinRequests'
-========
-  import { JoinRequest } from '@hcengineering/love'
-  import love from '../../../plugin'
-  import { onDestroy, onMount } from 'svelte'
-  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetings'
->>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/RequestPopup.svelte
 
   export let request: JoinRequest
 
@@ -36,23 +29,15 @@
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/JoinResponsePopup.svelte
     await responseToJoinRequest(request, true)
   }
 
   async function decline (): Promise<void> {
     await responseToJoinRequest(request, false)
-========
-    await acceptJoinRequest(request)
-  }
-
-  async function decline (): Promise<void> {
-    await rejectJoinRequest(request)
->>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/RequestPopup.svelte
   }
 
   onMount(async () => {
-    stopSound = await playNotificationSound(love.sound.Knock, love.class.JoinRequest, true)
+    stopSound = await playSound(love.sound.Knock, true)
   })
 
   onDestroy(() => {
