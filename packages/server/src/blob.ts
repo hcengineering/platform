@@ -133,19 +133,16 @@ export class Blob {
     const match = all.find(g => g.fromDate.getTime() <= ts && g.toDate.getTime() >= ts)
     if (match != null) return match
 
-    for (let i = all.length - 1; i >= 0; i--) {
-      const group = all[i]
-      if (group.fromDate.getTime() <= ts && group.count < this.metadata.messagesPerBlob) {
-        return group
-      }
+    const lastGroup = all[all.length - 1]
+    if (lastGroup.fromDate.getTime() <= ts && lastGroup.count < this.metadata.messagesPerBlob) {
+      return lastGroup
     }
 
-    for (let i = 0; i < all.length; i++) {
-      const group = all[i]
-      if (group.fromDate.getTime() >= ts && group.count < this.metadata.messagesPerBlob) {
-        return group
-      }
+    const firstGroup = all[0]
+    if (firstGroup.fromDate.getTime() >= ts && firstGroup.count < this.metadata.messagesPerBlob) {
+      return firstGroup
     }
+
     if (create) return await this.createMessageGroup(cardId, date)
 
     return undefined
