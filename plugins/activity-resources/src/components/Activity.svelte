@@ -255,14 +255,22 @@
 
   export function editLastMessage (): void {
     if (isMessagesLoading) return
+
     const me = getCurrentAccount()
-    let lastMessage: ActivityMessage | undefined = undefined
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const message = messages[i]
-      if (message.collection !== 'comments') continue
-      if (message.createdBy == null || !me.socialIds.includes(message.createdBy)) continue
-      lastMessage = message
-      break
+    const mySocialIds = new Set(me.socialIds)
+
+    const start = isNewestFirst ? 0 : filteredMessages.length - 1
+    const end = isNewestFirst ? filteredMessages.length : -1
+    const step = isNewestFirst ? 1 : -1
+
+    let lastMessage: ActivityMessage | undefined
+
+    for (let i = start; i !== end; i += step) {
+      const m = filteredMessages[i]
+      if (m.collection === 'comments' && m.createdBy != null && mySocialIds.has(m.createdBy)) {
+        lastMessage = m
+        break
+      }
     }
 
     if (lastMessage == null) return
