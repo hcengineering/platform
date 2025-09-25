@@ -42,7 +42,7 @@
     uploadFile,
     LinkPreviewAttachmentMetadata
   } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
@@ -77,6 +77,7 @@
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
   export let skipAttachmentsPreload = false
+  export let onKeyDown: ((event: KeyboardEvent) => boolean) | undefined = undefined
 
   let refInput: ReferenceInput
 
@@ -320,6 +321,10 @@
     }
   }
 
+  export function isEmptyDraft (): boolean {
+    return attachments.size === 0 && isEmptyMarkup(content)
+  }
+
   export async function createAttachments (): Promise<void> {
     if (saved) {
       return
@@ -510,6 +515,7 @@
       on:message={onMessage}
       on:update={onUpdate}
       onPaste={pasteAction}
+      onKeyDown={(_, ev) => onKeyDown?.(ev) ?? false}
       {placeholder}
       kitOptions={{
         file: false,

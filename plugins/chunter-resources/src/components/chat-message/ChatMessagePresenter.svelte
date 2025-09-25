@@ -14,7 +14,12 @@
 -->
 <script lang="ts">
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
+  import {
+    ActivityDocLink,
+    ActivityMessageTemplate,
+    MessageInlineAction,
+    editingMessageStore
+  } from '@hcengineering/activity-resources'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
@@ -149,10 +154,12 @@
   }
 
   async function handleEditAction (): Promise<void> {
-    isEditing = true
+    if (value == null) return
+    editingMessageStore.set(value._id)
   }
 
   let isEditing = false
+  $: isEditing = $editingMessageStore === value?._id
   let additionalActions: Action[] = []
 
   $: isOwn = person !== undefined && person._id === me
@@ -296,14 +303,14 @@
           autofocus
           {object}
           on:submit={() => {
-            isEditing = false
+            editingMessageStore.set(undefined)
           }}
         />
         <div class="flex-row-center gap-2 justify-end mt-2">
           <Button
             label={view.string.Cancel}
             on:click={() => {
-              isEditing = false
+              editingMessageStore.set(undefined)
             }}
           />
           <Button label={activity.string.Update} accent on:click={() => refInput.submit()} />
