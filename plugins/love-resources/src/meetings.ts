@@ -14,7 +14,7 @@ import { infos, myInfo, myOffice, rooms } from './stores'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
-import { sendJoinRequest, subscribeJoinRequests, unsubscribeJoinRequests } from './joinRequests'
+import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
 
 export let currentMeetingRoom: Ref<Room> | undefined
 
