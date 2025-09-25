@@ -91,7 +91,7 @@
     selected: Ref<Doc>[] | Ref<ActivityMessagesFilter>,
     sortOrder: SortingOrder
   ): Promise<void> {
-    const baseComparator = (m1, m2): number =>
+    const baseComparator = (m1: ActivityMessage, m2: ActivityMessage): number =>
       sortOrder === SortingOrder.Ascending ? activityMessagesComparator(m1, m2) : activityMessagesComparator(m2, m1)
     const sortedMessages = messages.sort((message1, message2) => {
       const isPinned1 = message1.isPinned ?? false
