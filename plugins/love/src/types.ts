@@ -139,13 +139,6 @@ export interface JoinRequest extends Doc {
   status: RequestStatus
 }
 
-export interface Invite extends Doc {
-  from: Ref<Person>
-  target: Ref<Person>
-  room: Ref<Room>
-  status: RequestStatus
-}
-
 export interface DevicesPreference extends Preference {
   micEnabled: boolean
   noiseCancellation: boolean

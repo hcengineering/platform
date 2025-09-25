@@ -72,14 +72,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverLove.trigger.OnInvite,
-    txMatch: {
-      objectClass: love.class.Invite,
-      _class: core.class.TxCreateDoc
-    }
-  })
-
   builder.mixin(love.class.MeetingMinutes, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchIcon: love.icon.MeetingMinutes,
     title: [['title']]

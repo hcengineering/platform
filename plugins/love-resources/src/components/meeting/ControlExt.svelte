@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { Invite, isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
+  import { isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -30,9 +30,8 @@
   import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
+  import { currentRoom, infos, myInfo, myRequests, rooms } from '../../stores'
   import { createMeetingWidget, getRoomName } from '../../utils'
-  import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
   import RequestPopup from './invites/RequestPopup.svelte'
   import RequestingPopup from './invites/RequestingPopup.svelte'
@@ -128,28 +127,9 @@
 
   const myInvitesCategory = 'myInvites'
 
-  let myInvitesPopup: PopupResult | undefined = undefined
-
-  function checkActiveInvites (invites: Invite[]): void {
-    if (invites.length > 0) {
-      if (myInvitesPopup === undefined) {
-        myInvitesPopup = showPopup(ActiveInvitesPopup, {}, undefined, undefined, undefined, {
-          category: myInvitesCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    } else if (myInvitesPopup !== undefined) {
-      myInvitesPopup.close()
-      myInvitesPopup = undefined
-    }
-  }
-
   $: reception = $rooms.find((f) => f._id === love.ids.Reception)
 
   $: receptionParticipants = $infos.filter((p) => p.room === love.ids.Reception)
-
-  $: checkActiveInvites($activeInvites)
 
   function checkActiveMeeting (loc: Location, meetingSessionConnected: boolean, room: Ref<Room> | undefined): void {
     const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)

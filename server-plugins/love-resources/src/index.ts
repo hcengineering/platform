@@ -31,7 +31,6 @@ import core, {
   UserStatus
 } from '@hcengineering/core'
 import love, {
-  Invite,
   isOffice,
   JoinRequest,
   loveId,
@@ -452,60 +451,6 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
   return []
 }
 
-export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  for (const tx of txes) {
-    const actualTx = tx as TxCreateDoc<Invite>
-    if (actualTx._class === core.class.TxCreateDoc) {
-      const invite = TxProcessor.createDoc2Doc(actualTx)
-      if (invite.status === RequestStatus.Pending) {
-        const target = (
-          await control.findAll(
-            control.ctx,
-            contact.mixin.Employee,
-            { _id: invite.target as Ref<Employee> },
-            { limit: 1 }
-          )
-        )[0]
-        if (target === undefined) {
-          continue
-        }
-        const from = (await control.findAll(control.ctx, contact.class.Person, { _id: invite.from }))[0]
-        const type = await control.modelDb.findOne(notification.class.NotificationType, {
-          _id: love.ids.InviteNotification
-        })
-        if (type === undefined) {
-          continue
-        }
-        const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
-          _id: notification.providers.PushNotificationProvider
-        })
-        if (provider === undefined) {
-          continue
-        }
-        const notificationControl = await getNotificationProviderControl(control.ctx, control)
-        const socialStrings = await getSocialStrings(control, target._id)
-        if (isAllowed(control, socialStrings, type, provider, notificationControl)) {
-          const path = [workbenchId, control.workspace.url, loveId]
-          const title = await translate(love.string.InivitingLabel, {})
-          const body =
-            from !== undefined
-              ? await translate(love.string.InvitingYou, {
-                name: formatName(from.name, control.branding?.lastNameFirst)
-              })
-              : await translate(love.string.InivitingLabel, {})
-          const account = target?.personUuid
-          if (account === undefined) continue
-          const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-            user: account
-          })
-          await createPushNotification(control, account, title, body, invite._id, subscriptions, from, path)
-        }
-      }
-    }
-  }
-  return []
-}
-
 export async function meetingMinutesHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const meetingMinutes = doc as MeetingMinutes
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
@@ -588,7 +533,6 @@ export default async () => ({
     OnUserStatus,
     OnParticipantInfo,
     OnRoomInfo,
-    OnKnock,
-    OnInvite
+    OnKnock
   }
 })

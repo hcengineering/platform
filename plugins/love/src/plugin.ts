@@ -8,7 +8,6 @@ import { Widget } from '@hcengineering/workbench'
 import {
   DevicesPreference,
   Floor,
-  Invite,
   JoinRequest,
   Meeting,
   MeetingMinutes,
@@ -31,7 +30,6 @@ const love = plugin(loveId, {
     JoinRequest: '' as Ref<Class<JoinRequest>>,
     DevicesPreference: '' as Ref<Class<DevicesPreference>>,
     RoomInfo: '' as Ref<Class<RoomInfo>>,
-    Invite: '' as Ref<Class<Invite>>,
     MeetingMinutes: '' as Ref<Class<MeetingMinutes>>
   },
   mixin: {

@@ -31,7 +31,6 @@ import {
 import {
   type DevicesPreference,
   type Floor,
-  type Invite,
   type JoinRequest,
   loveId,
   type Meeting,
@@ -174,20 +173,6 @@ export class TJoinRequest extends TDoc implements JoinRequest {
   status!: RequestStatus
 }
 
-@Model(love.class.Invite, core.class.Doc, DOMAIN_TRANSIENT)
-export class TInvite extends TDoc implements Invite {
-  @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('From'))
-    from!: Ref<Person>
-
-  @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('Target'))
-    target!: Ref<Person>
-
-  @Prop(TypeRef(love.class.Room), love.string.Room)
-    room!: Ref<Room>
-
-  status!: RequestStatus
-}
-
 @Model(love.class.DevicesPreference, preference.class.Preference)
 export class TDevicesPreference extends TPreference implements DevicesPreference {
   blurRadius!: number
@@ -275,7 +260,6 @@ export function createModel (builder: Builder): void {
     TJoinRequest,
     TDevicesPreference,
     TRoomInfo,
-    TInvite,
     TMeeting,
     TMeetingMinutes,
     TMeetingSchedule
@@ -386,21 +370,6 @@ export function createModel (builder: Builder): void {
       icon: love.icon.Love
     },
     love.ids.LoveNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      hidden: false,
-      generated: false,
-      label: love.string.InivitingLabel,
-      group: love.ids.LoveNotificationGroup,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: love.class.Invite,
-      defaultEnabled: true
-    },
-    love.ids.InviteNotification
   )
 
   builder.createDoc(

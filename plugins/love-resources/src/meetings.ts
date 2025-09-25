@@ -7,8 +7,7 @@ import love, {
   isOffice,
   RoomAccess,
   RequestStatus,
-  type JoinRequest,
-  type Invite
+  type JoinRequest
 } from '@hcengineering/love'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import {
@@ -27,7 +26,6 @@ import { getMetadata } from '@hcengineering/platform'
 
 export let currentMeetingRoom: Ref<Room> | undefined
 const requestsQuery = createQuery(true)
-const invitesQuery = createQuery(true)
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return

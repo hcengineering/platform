@@ -15,7 +15,7 @@
 <script lang="ts">
   import { formatName, Person } from '@hcengineering/contact'
   import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
-  import { playNotificationSound } from '@hcengineering/presentation'
+  import { playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -40,7 +40,7 @@
   }
 
   onMount(async () => {
-    stopSound = await playNotificationSound(love.sound.Knock, love.class.Invite, true)
+    stopSound = await playSound(love.sound.Knock, true)
   })
 
   onDestroy(() => {
