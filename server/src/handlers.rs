@@ -32,8 +32,6 @@ use crate::{
 };
 use crate::{merge::MergeStrategy, recovery};
 
-const CACHE_CONTROL: &str = "public, max-age=0, must-revalidate";
-
 #[derive(Deserialize, Debug)]
 pub struct ObjectPath {
     workspace: Uuid,
@@ -384,7 +382,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
             Some(false) => HttpResponse::NotModified()
                 .insert_header((header::ETAG, etag))
                 .insert_header((header::LAST_MODIFIED, HttpDate::from(date)))
-                .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
+                .insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()))
                 .finish(),
             _ => {
                 let mut response = HttpResponse::Ok();
@@ -404,7 +402,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
                 response.insert_header((header::ETAG, etag));
                 response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
-                response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
+                response.insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()));
                 response.body(merge::stream(s3, parts).await?)
             }
         }
@@ -438,7 +436,7 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
             Some(false) => HttpResponse::NotModified()
                 .insert_header((header::ETAG, etag))
                 .insert_header((header::LAST_MODIFIED, HttpDate::from(date)))
-                .insert_header((header::CACHE_CONTROL, CACHE_CONTROL))
+                .insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()))
                 .finish(),
             _ => {
                 let mut response = HttpResponse::Ok();
@@ -452,7 +450,7 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
 
                 response.insert_header((header::ETAG, etag));
                 response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
-                response.insert_header((header::CACHE_CONTROL, CACHE_CONTROL));
+                response.insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()));
 
                 // see https://github.com/actix/examples/blob/master/forms/multipart-s3/src/main.rs#L67-L79
                 let content_length = merge::content_length(parts);

@@ -37,6 +37,8 @@ pub struct Config {
 
     // store blobs inline if size is less than this
     pub inline_threshold: Size,
+
+    pub cache_control: String,
 }
 
 pub mod hulyrs {
@@ -65,6 +67,8 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
 
         multipart_threshold = "4MB"
         inline_threshold = "100KB"
+
+        cache_control = "public, no-cache"
     "#;
 
     let mut builder =
