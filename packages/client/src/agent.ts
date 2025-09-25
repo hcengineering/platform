@@ -1,19 +1,19 @@
 import {
-  agentDirectRef,
-  type ClientUuid,
-  type ContainerConnection,
-  type NetworkEvent,
-  type ContainerUuid,
-  type NetworkAgent,
-  type TickManager
-} from '@hcengineering/network-core'
-import {
   BackRPCClient,
   BackRPCServer,
   type BackRPCResponseSend,
   type BackRPCServerHandler,
   type ClientId
 } from '@hcengineering/network-backrpc'
+import {
+  agentDirectRef,
+  type ClientUuid,
+  type ContainerConnection,
+  type ContainerUuid,
+  type NetworkAgent,
+  type NetworkEvent,
+  type TickManager
+} from '@hcengineering/network-core'
 import { opNames } from './types'
 
 /**
@@ -218,6 +218,8 @@ export class NetworkDirectConnectionImpl implements ContainerConnection {
 export class ContainerConnectionImpl implements ContainerConnection {
   private connection!: ContainerConnection | Promise<ContainerConnection>
 
+  onEndpointUpdate?: () => void
+
   on?: ((data: any) => Promise<void>) | undefined
 
   constructor (
@@ -234,6 +236,19 @@ export class ContainerConnectionImpl implements ContainerConnection {
   }
 
   setConnection (connection: Promise<ContainerConnection> | ContainerConnection): void {
+    if (this.connection !== undefined) {
+      if (this.connection instanceof Promise) {
+        void this.connection.then((res) =>
+          res.close().catch((err) => {
+            console.error('Error closing connection', err)
+          })
+        )
+      } else {
+        void this.connection.close().catch((err) => {
+          console.error('Error closing connection', err)
+        })
+      }
+    }
     this.connection = connection
     if (connection instanceof Promise) {
       void connection.then((res) => {
@@ -247,6 +262,7 @@ export class ContainerConnectionImpl implements ContainerConnection {
         void this.on?.(event)
       }
     }
+    this.onEndpointUpdate?.()
   }
 
   async request (operation: string, data?: any): Promise<any> {

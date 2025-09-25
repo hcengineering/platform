@@ -71,12 +71,10 @@ export class TickManagerImpl implements TickManager {
     }
 
     for (const [h, hash, interval] of this.handlers.values()) {
-      try {
-        if (this.isMe(hash, interval)) {
-          await h()
-        }
-      } catch (err: any) {
-        console.error(`Error in tick handler for tick ${this._tick}:`, err)
+      if (this.isMe(hash, interval)) {
+        void h().catch((err) => {
+          console.error(err)
+        })
       }
     }
   }
@@ -122,4 +120,45 @@ export class TickManagerImpl implements TickManager {
 
 export function composeCID (prefix: string, id: string): ContainerUuid {
   return `${prefix}_${id}` as ContainerUuid
+}
+
+export class FakeTickManager implements TickManager {
+  private currentTime: number = 0
+  private readonly handlers: Array<{ handler: TickHandler, interval: number, lastTick: number }> = []
+
+  now = (): number => {
+    return this.currentTime
+  }
+
+  tps: number = 1
+
+  register = (handler: TickHandler, interval: number): (() => void) => {
+    const handlerEntry = { handler, interval, lastTick: this.currentTime }
+    this.handlers.push(handlerEntry)
+
+    return () => {
+      const index = this.handlers.indexOf(handlerEntry)
+      if (index !== -1) {
+        this.handlers.splice(index, 1)
+      }
+    }
+  }
+
+  start = (): void => {}
+
+  stop = (): void => {}
+
+  waitTick = async (ticks: number): Promise<void> => {
+    // Ignore
+  }
+
+  setTime = (time: number): void => {
+    this.currentTime = time
+  }
+
+  async execAll (): Promise<void> {
+    for (const h of this.handlers.values()) {
+      await h.handler()
+    }
+  }
 }

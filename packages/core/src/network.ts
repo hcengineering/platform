@@ -1,18 +1,18 @@
 import type { AgentRecord, AgentRecordInfo, NetworkAgent } from './api/agent'
 import type { Network, NetworkWithClients } from './api/network'
 import { timeouts } from './api/timeouts'
-import { NetworkEventKind } from './api/types'
 import type {
   AgentEndpointRef,
   AgentUuid,
   ClientUuid,
   ContainerEndpointRef,
-  NetworkEvent,
   ContainerKind,
   ContainerRecord,
   ContainerUuid,
-  GetOptions
+  GetOptions,
+  NetworkEvent
 } from './api/types'
+import { NetworkEventKind } from './api/types'
 import type { TickManager } from './api/utils'
 
 export interface ContainerRecordImpl {
@@ -72,12 +72,10 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
   constructor (private readonly tickManager: TickManager) {
     // Register for periodic agent health checks
-    this.stopTick = tickManager.register(() => {
-      void this.checkAlive().catch((err) => {
-        console.error('Error during network health check:', err)
-      })
+    this.stopTick = tickManager.register(async () => {
+      await this.checkAlive()
       // Check for events on every tick
-      void this.sendEvents()
+      await this.sendEvents()
     }, timeouts.aliveTimeout)
   }
 
@@ -227,18 +225,30 @@ export class NetworkImpl implements Network, NetworkWithClients {
 
     for (const event of events) {
       for (const agent of event.agents) {
-        if (agent.event === NetworkEventKind.removed) {
-          agents.delete(agent.id)
-        } else {
-          agents.set(agent.id, agent)
+        const curAgent = agents.get(agent.id)
+        if (curAgent?.event === NetworkEventKind.removed) {
+          // If we have already agent remove, skip further updates for it.
+          continue
         }
+        if (curAgent?.event === NetworkEventKind.added && agent.event === NetworkEventKind.updated) {
+          // Skip update, if we have create event.
+          continue
+        }
+        agents.set(agent.id, agent)
       }
       for (const container of event.containers) {
-        if (container.event === NetworkEventKind.removed) {
-          containers.delete(container.container.uuid)
-        } else {
-          containers.set(container.container.uuid, container)
+        const curContainer = containers.get(container.container.uuid)
+
+        if (curContainer?.event === NetworkEventKind.removed) {
+          // If we have already container remove, skip further updates for it.
+          continue
         }
+        if (curContainer?.event === NetworkEventKind.added && container.event === NetworkEventKind.updated) {
+          // Skip update, if we have create event.
+          continue
+        }
+
+        containers.set(container.container.uuid, container)
       }
     }
 

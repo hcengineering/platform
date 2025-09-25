@@ -79,10 +79,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       console.error('Failed to start BackRPCClient', err)
     })
 
-    this.stopTick = this.tickMgr.register(() => {
-      void this.checkAlive().catch((err) => {
-        console.error(err)
-      })
+    this.stopTick = this.tickMgr.register(async () => {
+      await this.checkAlive()
     }, timeouts.pingInterval)
   }
 
@@ -245,6 +243,13 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       void this.doSend([backrpcOperations.close, '', '']).catch((err) => {
         console.error('Failed to send close', err)
       })
+    }
+    // We need to reject all pending requests
+    if (this.requests.size > 0) {
+      for (const [reqId, req] of Array.from(this.requests.entries())) {
+        req.reject(new Error('Client closed'))
+        this.requests.delete(reqId)
+      }
     }
     this.closed = true
     this.stopTick?.()

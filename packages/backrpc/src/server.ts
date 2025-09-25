@@ -76,10 +76,8 @@ export class BackRPCServer<ClientT extends string = ClientId> {
       tcpKeepalive: 1
     })
 
-    this.stopTick = this.tickMgr.register(() => {
-      void this.checkAlive().catch((err) => {
-        console.error(err)
-      })
+    this.stopTick = this.tickMgr.register(async () => {
+      await this.checkAlive()
     }, timeouts.pingInterval)
 
     void this.start()

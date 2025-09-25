@@ -41,7 +41,7 @@ export function registerRequest (): void {
       })
 
       // Every 5 second print a status of our requested container
-      const stop = tickManager.register(() => {
+      const stop = tickManager.register(async () => {
         if (container !== undefined) {
           console.log(`Container alive at for ${cmd.uuid}: ${container.endpoint}`)
         }

@@ -1,4 +1,4 @@
-export type TickHandler = () => void | Promise<void>
+export type TickHandler = () => Promise<void>
 
 export interface TickManager {
   now: () => number

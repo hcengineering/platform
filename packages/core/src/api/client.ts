@@ -68,6 +68,9 @@ export interface ContainerReference {
   connect: () => Promise<ContainerConnection>
 
   request: (operation: string, data?: any) => Promise<any>
+
+  // A notification will be called if container changed container endpoint reference
+  onEndpointUpdate?: () => void
 }
 
 // A request/reponse interface to container.

@@ -1,3 +1,4 @@
+import { NetworkAgentServer, NetworkClientImpl } from '@hcengineering/network-client'
 import {
   AgentImpl,
   composeCID,
@@ -11,12 +12,12 @@ import {
   type AgentUuid,
   type ContainerConnection,
   type ContainerKind,
-  type NetworkClient
+  type NetworkClient,
+  type TickManager
 } from '@hcengineering/network-core'
 import { NetworkServer } from '../server'
 import { DummySessionContainer } from './dummySession'
 import { DummyWorkspaceContainer } from './dummyWorkspace'
-import { NetworkClientImpl, NetworkAgentServer } from '@hcengineering/network-client'
 
 const agents = {
   agent1: 'agent1' as AgentUuid,
@@ -28,7 +29,7 @@ const kinds = {
   workspace: 'workspace' as ContainerKind
 }
 
-function createAgent1 (tickMgr: TickManagerImpl, networkClient: NetworkClient): AgentImpl {
+function createAgent1 (tickMgr: TickManager, networkClient: NetworkClient): AgentImpl {
   const agent: AgentImpl = new AgentImpl(agents.agent1, {
     [kinds.session]: async (options) => {
       const uuid = options.uuid ?? containerUuid()
