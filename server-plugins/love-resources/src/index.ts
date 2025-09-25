@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, formatName, getName, Person } from '@hcengineering/contact'
+import contact, { Employee, getName, Person } from '@hcengineering/contact'
 import core, {
   type AccountUuid,
   combineAttributes,
@@ -32,26 +32,17 @@ import core, {
 } from '@hcengineering/core'
 import love, {
   isOffice,
-  JoinRequest,
   loveId,
   MeetingMinutes,
   MeetingStatus,
   Office,
   ParticipantInfo,
-  RequestStatus,
   Room,
   RoomAccess,
   RoomInfo
 } from '@hcengineering/love'
-import notification from '@hcengineering/notification'
-import { getMetadata, translate } from '@hcengineering/platform'
-import { getSocialStrings } from '@hcengineering/server-contact'
+import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import {
-  createPushNotification,
-  getNotificationProviderControl,
-  isAllowed
-} from '@hcengineering/server-notification-resources'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -289,29 +280,6 @@ async function getRoomName (control: TriggerControl, roomId: Ref<Room>): Promise
   return room.name
 }
 
-async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
-  const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
-  if (oldRoomInfo !== undefined) {
-    const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
-    if (restPersons.length === 0) {
-      const requests = await control.findAll(control.ctx, love.class.JoinRequest, {
-        room: oldRoomInfo.room,
-        status: RequestStatus.Pending
-      })
-      for (const request of requests) {
-        res.push(
-          control.txFactory.createTxUpdateDoc(love.class.JoinRequest, core.space.Workspace, request._id, {
-            status: RequestStatus.Rejected
-          })
-        )
-      }
-    }
-  }
-  return res
-}
-
 async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
@@ -386,69 +354,11 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
       if (info === undefined) {
         continue
       }
-      result.push(...(await rejectJoinRequests(info, control)))
       result.push(...(await setDefaultRoomAccess(info, control)))
       result.push(...(await roomJoinHandler(info, control)))
     }
   }
   return result
-}
-
-export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  for (const tx of txes) {
-    const actualTx = tx as TxCreateDoc<JoinRequest>
-    if (actualTx._class === core.class.TxCreateDoc) {
-      const request = TxProcessor.createDoc2Doc(actualTx)
-      if (request.status === RequestStatus.Pending) {
-        const roomInfo = (await control.findAll(control.ctx, love.class.RoomInfo, { room: request.room }))[0]
-        if (roomInfo !== undefined) {
-          const from = (await control.findAll(control.ctx, contact.class.Person, { _id: request.person }))[0]
-          if (from === undefined) {
-            continue
-          }
-          const type = await control.modelDb.findOne(notification.class.NotificationType, {
-            _id: love.ids.KnockNotification
-          })
-          if (type === undefined) {
-            continue
-          }
-          const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
-            _id: notification.providers.PushNotificationProvider
-          })
-          if (provider === undefined) {
-            continue
-          }
-
-          const notificationControl = await getNotificationProviderControl(control.ctx, control)
-          for (const user of roomInfo.persons) {
-            const socialStrings = await getSocialStrings(control, user)
-            if (socialStrings.length === 0) continue
-            if (isAllowed(control, socialStrings, type, provider, notificationControl)) {
-              const path = [workbenchId, control.workspace.url, loveId]
-              const title = await translate(love.string.KnockingLabel, {})
-              const body = await translate(love.string.IsKnocking, {
-                name: formatName(from.name, control.branding?.lastNameFirst)
-              })
-              const employee = await control.findAll(
-                control.ctx,
-                contact.mixin.Employee,
-                { _id: user as Ref<Employee> },
-                { limit: 1 }
-              )
-              const account = employee[0]?.personUuid
-              if (account === undefined) continue
-
-              const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-                user: account
-              })
-              await createPushNotification(control, account, title, body, request._id, subscriptions, from, path)
-            }
-          }
-        }
-      }
-    }
-  }
-  return []
 }
 
 export async function meetingMinutesHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
@@ -532,7 +442,6 @@ export default async () => ({
     OnEmployee,
     OnUserStatus,
     OnParticipantInfo,
-    OnRoomInfo,
-    OnKnock
+    OnRoomInfo
   }
 })

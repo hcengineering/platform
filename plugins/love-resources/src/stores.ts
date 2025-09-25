@@ -3,10 +3,8 @@ import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import { type Ref } from '@hcengineering/core'
 import {
-  RequestStatus,
   type DevicesPreference,
   type Floor,
-  type JoinRequest,
   type MeetingMinutes,
   type Office,
   type ParticipantInfo,
@@ -42,7 +40,6 @@ export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, m
   }
   return res ?? love.ids.MainFloor
 })
-export const myRequests = writable<JoinRequest[]>([])
 
 export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
@@ -69,7 +66,6 @@ const officeLoaded = writable(false)
 const query = createQuery(true)
 const statusQuery = createQuery(true)
 const floorsQuery = createQuery(true)
-const requestsQuery = createQuery(true)
 const preferencesQuery = createQuery(true)
 
 onClient(() => {
@@ -91,16 +87,6 @@ onClient(() => {
       resolve()
     })
   )
-  const requestPromise = new Promise<void>((resolve) =>
-    requestsQuery.query(
-      love.class.JoinRequest,
-      { person: getCurrentEmployee(), status: RequestStatus.Pending },
-      (res) => {
-        myRequests.set(res)
-        resolve()
-      }
-    )
-  )
   const preferencePromise = new Promise<void>((resolve) =>
     preferencesQuery.query(love.class.DevicesPreference, {}, (res) => {
       myPreferences.set(res[0])
@@ -109,7 +95,7 @@ onClient(() => {
     })
   )
 
-  void Promise.all([roomPromise, infoPromise, floorPromise, requestPromise, preferencePromise]).then(() => {
+  void Promise.all([roomPromise, infoPromise, floorPromise, preferencePromise]).then(() => {
     officeLoaded.set(true)
   })
 })

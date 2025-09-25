@@ -127,18 +127,6 @@ export interface MeetingSchedule extends Schedule {
   room: Ref<Room>
 }
 
-export enum RequestStatus {
-  Pending,
-  Approved,
-  Rejected
-}
-
-export interface JoinRequest extends Doc {
-  person: Ref<Person>
-  room: Ref<Room>
-  status: RequestStatus
-}
-
 export interface DevicesPreference extends Preference {
   micEnabled: boolean
   noiseCancellation: boolean

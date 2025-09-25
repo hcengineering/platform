@@ -31,7 +31,6 @@ import {
 import {
   type DevicesPreference,
   type Floor,
-  type JoinRequest,
   loveId,
   type Meeting,
   type MeetingMinutes,
@@ -39,7 +38,6 @@ import {
   type MeetingSchedule,
   type Office,
   type ParticipantInfo,
-  type RequestStatus,
   type Room,
   type RoomAccess,
   type RoomInfo,
@@ -162,17 +160,6 @@ export class TParticipantInfo extends TDoc implements ParticipantInfo {
   account!: AccountUuid | null
 }
 
-@Model(love.class.JoinRequest, core.class.Doc, DOMAIN_TRANSIENT)
-export class TJoinRequest extends TDoc implements JoinRequest {
-  @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('From'))
-    person!: Ref<Person>
-
-  @Prop(TypeRef(love.class.Room), love.string.Room)
-    room!: Ref<Room>
-
-  status!: RequestStatus
-}
-
 @Model(love.class.DevicesPreference, preference.class.Preference)
 export class TDevicesPreference extends TPreference implements DevicesPreference {
   blurRadius!: number
@@ -257,7 +244,6 @@ export function createModel (builder: Builder): void {
     TFloor,
     TOffice,
     TParticipantInfo,
-    TJoinRequest,
     TDevicesPreference,
     TRoomInfo,
     TMeeting,
@@ -372,21 +358,6 @@ export function createModel (builder: Builder): void {
     love.ids.LoveNotificationGroup
   )
 
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      hidden: false,
-      generated: false,
-      label: love.string.KnockingLabel,
-      group: love.ids.LoveNotificationGroup,
-      txClasses: [],
-      objectClass: love.class.JoinRequest,
-      defaultEnabled: true
-    },
-    love.ids.KnockNotification
-  )
-
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.SoundNotificationProvider,
     excludeIgnore: [love.ids.KnockNotification],
@@ -481,11 +452,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.MeetingMinutes,
     components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
-  })
-
-  builder.mixin(love.class.JoinRequest, core.class.Class, core.mixin.TxAccessLevel, {
-    createAccessLevel: AccountRole.Guest,
-    removeAccessLevel: AccountRole.Guest
   })
 
   builder.mixin(love.class.ParticipantInfo, core.class.Class, core.mixin.TxAccessLevel, {
