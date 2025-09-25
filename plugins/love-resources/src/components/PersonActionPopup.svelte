@@ -6,7 +6,7 @@
   import love from '../plugin'
   import { myInfo } from '../stores'
   import { joinMeeting, kick } from '../meetings'
-  import { showInvitesPopup } from '../invites'
+  import { sendInvites } from '../invites'
 
   export let room: Room
   export let person: Ref<Person>
@@ -31,7 +31,7 @@
       label={love.string.Invite}
       icon={love.icon.Invite}
       action={() => {
-        showInvitesPopup([person])
+        sendInvites([person])
       }}
     />
     {#if room.access === RoomAccess.Knock}

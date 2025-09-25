@@ -14,27 +14,17 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    closePopup,
-    eventToHTMLElement,
-    Location,
-    location,
-    PopupResult,
-    showPopup,
-    closeTooltip
-  } from '@hcengineering/ui'
+  import { isOffice, ParticipantInfo, Room } from '@hcengineering/love'
+  import { getClient } from '@hcengineering/presentation'
+  import { closePopup, eventToHTMLElement, Location, location, showPopup, closeTooltip } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
   import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
-  import { currentRoom, infos, myInfo, myRequests, rooms } from '../../stores'
+  import { currentRoom, infos, myInfo, rooms } from '../../stores'
   import { createMeetingWidget, getRoomName } from '../../utils'
   import PersonActionPopup from '../PersonActionPopup.svelte'
-  import RequestPopup from './invites/RequestPopup.svelte'
-  import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
   import { leaveMeeting, currentMeetingRoom } from '../../meetings'
@@ -67,56 +57,6 @@
   }
 
   $: activeRooms = getActiveRooms($rooms, $infos)
-
-  const query = createQuery()
-  let requests: JoinRequest[] = []
-  query.query(love.class.JoinRequest, { status: RequestStatus.Pending }, (res) => {
-    requests = res
-  })
-
-  let activeRequest: JoinRequest | undefined = undefined
-  const joinRequestCategory = 'joinRequest'
-  function checkRequests (requests: JoinRequest[], $myInfo: ParticipantInfo | undefined): void {
-    if (activeRequest !== undefined) {
-      // try to find active request, if it not exists close popup
-      if (requests.find((r) => r._id === activeRequest?._id && r.room === $myInfo?.room) === undefined) {
-        closePopup(joinRequestCategory)
-        activeRequest = undefined
-      }
-    }
-    if (activeRequest === undefined) {
-      activeRequest = requests.find((r) => r.room === $myInfo?.room)
-      if (activeRequest !== undefined) {
-        showPopup(RequestPopup, { request: activeRequest }, undefined, undefined, undefined, {
-          category: joinRequestCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    }
-  }
-
-  const myJoinRequestCategory = 'MyJoinRequest'
-  let myRequestsPopup: PopupResult | undefined = undefined
-
-  function checkMyRequests (requests: JoinRequest[]): void {
-    if (requests.length > 0) {
-      if (myRequestsPopup === undefined) {
-        myRequestsPopup = showPopup(RequestingPopup, { request: requests[0] }, undefined, undefined, undefined, {
-          category: myJoinRequestCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    } else if (myRequestsPopup !== undefined) {
-      myRequestsPopup.close()
-      myRequestsPopup = undefined
-    }
-  }
-
-  $: checkMyRequests($myRequests)
-
-  $: checkRequests(requests, $myInfo)
 
   function openRoom (room: Room): (e: MouseEvent) => void {
     return (e: MouseEvent) => {
@@ -166,8 +106,6 @@
 
   onDestroy(() => {
     closePopup(myInvitesCategory)
-    closePopup(joinRequestCategory)
-    closePopup(myJoinRequestCategory)
     closeWidget(love.ids.MeetingWidget)
   })
 

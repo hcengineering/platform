@@ -19,7 +19,7 @@
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
-  import { showInvitesPopup } from '../../../invites'
+  import { sendInvites } from '../../../invites'
 
   export let employee: Employee | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -32,7 +32,7 @@
 
   async function invite (): Promise<void> {
     if (employee !== undefined) {
-      showInvitesPopup([employee._id])
+      sendInvites([employee._id])
     } else {
       openSelectUsersPopup()
     }
@@ -50,7 +50,7 @@
       'top',
       (result?: Ref<Employee>[]) => {
         if (result != null) {
-          showInvitesPopup(result)
+          sendInvites(result)
         }
         dispatch('close')
       }

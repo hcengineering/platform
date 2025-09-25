@@ -17,24 +17,23 @@
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest } from '@hcengineering/love'
   import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
-  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetings'
+  import { responseToJoinRequest, JoinRequest } from '../../../joinRequests'
 
   export let request: JoinRequest
 
-  $: personByRefStore = getPersonByPersonRefStore([request.person])
-  $: person = $personByRefStore.get(request.person)
+  $: personByRefStore = getPersonByPersonRefStore([request.from])
+  $: person = $personByRefStore.get(request.from)
 
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await acceptJoinRequest(request)
+    await responseToJoinRequest(request, true)
   }
 
   async function decline (): Promise<void> {
-    await rejectJoinRequest(request)
+    await responseToJoinRequest(request, false)
   }
 
   onMount(async () => {

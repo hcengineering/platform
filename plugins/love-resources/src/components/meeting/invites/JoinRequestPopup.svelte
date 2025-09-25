@@ -14,18 +14,40 @@
 -->
 <script lang="ts">
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest } from '@hcengineering/love'
   import love from '../../../plugin'
   import { rooms } from '../../../stores'
   import { getRoomLabel } from '../../../utils'
-  import { cancelJoinRequest } from '../../../meetings'
+  import {
+    cancelJoinRequest,
+    closeJoinRequestPopup,
+    joinRequestSecondsToLive,
+    subscribeJoinResponses,
+    unsubscribeJoinResponses,
+    updateJoinRequest
+  } from '../../../joinRequests'
+  import { onMount } from 'svelte'
 
-  export let request: JoinRequest
+  export let meetingId: string
 
-  $: room = $rooms.find((p) => p._id === request.room)
+  $: room = $rooms.find((p) => p._id === meetingId)
+
+  onMount(() => {
+    void subscribeJoinResponses()
+    void doUpdateRequest()
+    const interval = setInterval(doUpdateRequest, (joinRequestSecondsToLive - 2) * 1000)
+    return () => {
+      void unsubscribeJoinResponses()
+      clearInterval(interval)
+      void cancelJoinRequest()
+    }
+  })
+
+  async function doUpdateRequest (): Promise<void> {
+    await updateJoinRequest()
+  }
 
   async function cancel (): Promise<void> {
-    await cancelJoinRequest(request)
+    closeJoinRequestPopup()
   }
 </script>
 

@@ -19,158 +19,151 @@ import { type PopupResult, showPopup } from '@hcengineering/ui'
 import { type UnsubscribeCallback } from '@hcengineering/hulypulse-client'
 import presentation, { createPulseClient } from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
-import { get } from 'svelte/store'
-import { myInfo } from './stores'
-import love, { type Room } from '@hcengineering/love'
-import InviteRequestPopup from './components/meeting/invites/InviteRequestPopup.svelte'
-import InviteResponsePopup from './components/meeting/invites/InviteResponsePopup.svelte'
+import { type Room } from '@hcengineering/love'
 import { joinOrCreateMeetingByInvite } from './meetings'
+import JoinRequestPopup from './components/meeting/invites/JoinRequestPopup.svelte'
+import JoinResponsePopup from './components/meeting/invites/JoinResponsePopup.svelte'
 
-export const inviteRequestSecondsToLive = 5
+export const joinRequestSecondsToLive = 5
 const responseSecondsToLive = 2
 
-const pulsePrefix = 'love/invite'
+const pulsePrefix = 'love/join'
 
-export interface InviteRequest {
+export interface JoinRequest {
   from: Ref<Person>
   meetingId: string
 }
 
-export interface InviteResponse {
-  from: Ref<Person>
+export interface JoinResponse {
   meetingId: string
   accept: boolean
 }
 
-const requestPopupCategory = 'inviteRequest'
+const requestPopupCategory = 'joinRequest'
 let unsubscribeResponse: UnsubscribeCallback | undefined
 let requestPopup: PopupResult | undefined
-let requestPersons: Array<Ref<Person>> | undefined
+let requestMeetingId: string | undefined
 
-export async function subscribeInviteResponses (): Promise<void> {
+export async function subscribeJoinResponses (): Promise<void> {
   const client = await createPulseClient()
-  if (client === undefined) return
-
   const currentPerson = getCurrentEmployee()
+
+  if (client === undefined) return
 
   unsubscribeResponse = await client.subscribe(
     `${getPulsePrefix()}/response/${currentPerson}/`,
-    (key: string, inviteResponse: InviteResponse | undefined) => {
-      void onInviteResponse(key, inviteResponse)
+    (key: string, inviteResponse: JoinResponse | undefined) => {
+      void onJoinResponse(key, inviteResponse)
     }
   )
 }
 
-export async function unsubscribeInviteResponses (): Promise<void> {
+export async function unsubscribeJoinResponses (): Promise<void> {
   if (unsubscribeResponse !== undefined) {
     await unsubscribeResponse()
   }
 }
 
-export function sendInvites (persons: Array<Ref<Person>>): void {
-  closeInvitesPopup()
-  requestPersons = persons
-  const myParticipation = get(myInfo)
-  const room = myParticipation?.room
-  if (room === undefined || room === love.ids.Reception) return
-  requestPopup = showPopup(InviteRequestPopup, { persons, meetingId: room }, undefined, undefined, undefined, {
+export function sendJoinRequest (meetingId: string): void {
+  closeJoinRequestPopup()
+  requestMeetingId = meetingId
+  requestPopup = showPopup(JoinRequestPopup, { meetingId }, undefined, undefined, undefined, {
     category: requestPopupCategory,
     overlay: false,
     fixed: true
   })
 }
 
-export function closeInvitesPopup (): void {
+export function closeJoinRequestPopup (): void {
   requestPopup?.close()
   requestPopup = undefined
 }
 
-export async function updateInvites (persons: Array<Ref<Person>>, meetingId: string): Promise<void> {
+export async function updateJoinRequest (): Promise<void> {
   const client = await createPulseClient()
   const currentPerson = getCurrentEmployee()
+  console.log('update request')
 
   if (client === undefined) return
 
   try {
-    for (const person of persons) {
-      await client.put(
-        `${getPulsePrefix()}/request/${person}/${currentPerson}/${meetingId}`,
-        { from: currentPerson, meetingId },
-        inviteRequestSecondsToLive
-      )
-    }
+    await client.put(
+      `${getPulsePrefix()}/request/${requestMeetingId}/${currentPerson}`,
+      { from: currentPerson, meetingId: requestMeetingId },
+      joinRequestSecondsToLive
+    )
   } catch (error) {
-    console.warn('failed to put invite info:', error)
+    console.warn('failed to put joinRequest:', error)
   }
 }
 
-export async function cancelInvites (meetingId: string): Promise<void> {
+export async function cancelJoinRequest (): Promise<void> {
   const client = await createPulseClient()
   const currentPerson = getCurrentEmployee()
 
-  if (client === undefined || requestPersons === undefined) return
+  if (client === undefined) return
   try {
-    for (const person of requestPersons) {
-      await client.delete(`${getPulsePrefix()}/request/${person}/${currentPerson}/${meetingId}`)
-    }
+    await client.delete(`${getPulsePrefix()}/request/${requestMeetingId}/${currentPerson}`)
   } catch (error) {
     console.warn('failed to delete invite info:', error)
   }
+  requestMeetingId = undefined
 }
 
-async function onInviteResponse (_key: string, response: InviteResponse | undefined): Promise<void> {
+async function onJoinResponse (_key: string, response: JoinResponse | undefined): Promise<void> {
   const client = await createPulseClient()
-  if (client === undefined || response === undefined || requestPersons === undefined) return
-
-  const currentPerson = getCurrentEmployee()
-  await client.delete(`${getPulsePrefix()}/request/${response.from}/${currentPerson}/${response.meetingId}`)
-  await client.delete(`${getPulsePrefix()}/response/${currentPerson}/${response.from}/${response.meetingId}`)
-  requestPersons = requestPersons.filter((p) => p !== response.from)
-  if (requestPersons.length === 0) {
-    closeInvitesPopup()
-  } else {
-    requestPopup?.update({ persons: requestPersons })
+  if (
+    client === undefined ||
+    response === undefined ||
+    requestMeetingId === undefined ||
+    requestMeetingId !== response.meetingId
+  ) {
+    return
   }
 
+  const currentPerson = getCurrentEmployee()
+  await client.delete(`${getPulsePrefix()}/request/${requestMeetingId}/${currentPerson}`)
+  await client.delete(`${getPulsePrefix()}/response/${currentPerson}/${requestMeetingId}`)
+  closeJoinRequestPopup()
   if (!response.accept) return
   await joinOrCreateMeetingByInvite(response.meetingId as Ref<Room>)
 }
 
-const responsePopupCategory = 'inviteResponse'
+const responsePopupCategory = 'joinResponse'
 let responsePopup: PopupResult | undefined
 let unsubscribeRequest: UnsubscribeCallback | undefined
 let activeRequestKey: string | undefined
-let activeRequestsMap: Map<string, InviteRequest | undefined>
+let activeRequestsMap: Map<string, JoinRequest | undefined> | undefined
 
-export async function subscribeInviteRequests (): Promise<void> {
+export async function subscribeJoinRequests (meetingId: string | undefined): Promise<void> {
+  if (meetingId === undefined) return
+
   const client = await createPulseClient()
   if (client === undefined) return
 
-  const currentPerson = getCurrentEmployee()
-
-  activeRequestsMap = new Map<string, InviteRequest>()
-  unsubscribeRequest = await client.subscribe(`${getPulsePrefix()}/request/${currentPerson}/`, onInviteRequest)
+  activeRequestsMap = new Map<string, JoinRequest>()
+  unsubscribeRequest = await client.subscribe(`${getPulsePrefix()}/request/${meetingId}/`, onJoinRequest)
 }
 
-export async function unsubscribeInviteRequests (): Promise<void> {
+export async function unsubscribeJoinRequests (): Promise<void> {
+  activeRequestsMap = undefined
   if (unsubscribeRequest !== undefined) {
     await unsubscribeRequest()
   }
 }
 
-export async function responseToInviteRequest (accept: boolean): Promise<void> {
+export async function responseToJoinRequest (joinRequest: JoinRequest, accept: boolean): Promise<void> {
   if (activeRequestKey === undefined) return
 
   const client = await createPulseClient()
-  if (client === undefined) return
+  if (client === undefined || activeRequestsMap === undefined) return
 
-  const activeInvite = activeRequestsMap.get(activeRequestKey)
-  if (activeInvite === undefined) return
+  const activeRequest = activeRequestsMap.get(activeRequestKey)
+  if (activeRequest === undefined) return
 
-  const currentPerson = getCurrentEmployee()
   await client.put(
-    `${getPulsePrefix()}/response/${activeInvite.from}/${currentPerson}/${activeInvite.meetingId}`,
-    { accept, from: currentPerson, meetingId: activeInvite.meetingId },
+    `${getPulsePrefix()}/response/${joinRequest.from}/${joinRequest.meetingId}`,
+    { accept, meetingId: joinRequest.meetingId },
     responseSecondsToLive
   )
 
@@ -181,10 +174,11 @@ export async function responseToInviteRequest (accept: boolean): Promise<void> {
   activeRequestKey = undefined
 
   if (!accept) return
-  await joinOrCreateMeetingByInvite(activeInvite.meetingId as Ref<Room>)
+  await joinOrCreateMeetingByInvite(joinRequest.meetingId as Ref<Room>)
 }
 
-function onInviteRequest (key: string, request: InviteRequest | undefined): void {
+function onJoinRequest (key: string, request: JoinRequest | undefined): void {
+  if (activeRequestsMap === undefined) return
   if (request === undefined) {
     activeRequestsMap.delete(key)
     if (activeRequestKey === key) {
@@ -196,7 +190,7 @@ function onInviteRequest (key: string, request: InviteRequest | undefined): void
   let keyChanged: boolean = false
   if (activeRequestKey === undefined && activeRequestsMap.size > 0) {
     const requests = Array.from(activeRequestsMap.entries())
-    const unprocessedRequest = requests.find((v: [string, InviteRequest | undefined]) => v[1] !== undefined)
+    const unprocessedRequest = requests.find((v: [string, JoinRequest | undefined]) => v[1] !== undefined)
     if (unprocessedRequest !== undefined) {
       activeRequestKey = unprocessedRequest[0]
       keyChanged = true
@@ -210,8 +204,8 @@ function onInviteRequest (key: string, request: InviteRequest | undefined): void
 
   if (responsePopup === undefined) {
     responsePopup = showPopup(
-      InviteResponsePopup,
-      { invite: activeRequestsMap.get(activeRequestKey) },
+      JoinResponsePopup,
+      { request: activeRequestsMap.get(activeRequestKey) },
       undefined,
       undefined,
       undefined,

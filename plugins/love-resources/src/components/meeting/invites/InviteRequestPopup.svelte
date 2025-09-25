@@ -22,10 +22,10 @@
   import {
     cancelInvites,
     closeInvitesPopup,
-    inviteSecondsToLive,
-    sendInvites,
+    inviteRequestSecondsToLive,
     subscribeInviteResponses,
-    unsubscribeInviteResponses
+    unsubscribeInviteResponses,
+    updateInvites
   } from '../../../invites'
 
   export let persons: Array<Ref<Person>>
@@ -33,8 +33,8 @@
 
   onMount(() => {
     void subscribeInviteResponses()
-    void doSendInvites()
-    const interval = setInterval(doSendInvites, (inviteSecondsToLive - 2) * 1000)
+    void doUpdateInvites()
+    const interval = setInterval(doUpdateInvites, (inviteRequestSecondsToLive - 2) * 1000)
     return () => {
       void unsubscribeInviteResponses()
       clearInterval(interval)
@@ -42,8 +42,8 @@
     }
   })
 
-  async function doSendInvites (): Promise<void> {
-    await sendInvites(persons, meetingId)
+  async function doUpdateInvites (): Promise<void> {
+    await updateInvites(persons, meetingId)
   }
 
   async function cancel (): Promise<void> {
