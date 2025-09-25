@@ -153,7 +153,8 @@ const cardPlugin = plugin(cardId, {
     Home: '' as Asset,
     Space: '' as Asset,
     Expand: '' as Asset,
-    Feed: '' as Asset
+    Feed: '' as Asset,
+    All: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -170,7 +171,8 @@ const cardPlugin = plugin(cardId, {
     Labels: '' as IntlString,
     GetIndividualPublicLink: '' as IntlString,
     AddTag: '' as IntlString,
-    Feed: '' as IntlString
+    Feed: '' as IntlString,
+    AllCards: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
