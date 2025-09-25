@@ -13,12 +13,55 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { TypeNumber as TypeNumberType } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import { TypeNumber } from '@hcengineering/model'
+  import { EditBox, Label, NumberInput, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import setting from '../../plugin'
+
+  export let type: TypeNumberType
+  export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
 
+  let min: number | undefined = type?.min
+  let max: number | undefined = type?.max
+  let isInteger = type?.digits === 0
+
+  function updateType (): void {
+    dispatch('change', { type: TypeNumber(min, max, isInteger ? 0 : undefined) })
+  }
+
   onMount(() => {
-    dispatch('change', { type: TypeNumber() })
+    if (type?._class !== core.class.TypeNumber) {
+      dispatch('change', { type: TypeNumber() })
+    }
   })
+
+  function changeIsInteger (e: CustomEvent<boolean>): void {
+    isInteger = e.detail
+    updateType()
+  }
 </script>
+
+<span class="label">
+  <Label label={setting.string.MinValue} />
+</span>
+<NumberInput
+  bind:value={min}
+  disabled={!editable}
+  maxWidth={'100%'}
+  placeholder={setting.string.MinValue}
+  on:change={updateType}
+/>
+<Label label={setting.string.MaxValue} />
+<NumberInput
+  bind:value={max}
+  disabled={!editable}
+  maxWidth={'100%'}
+  placeholder={setting.string.MaxValue}
+  on:change={updateType}
+/>
+<Label label={setting.string.IntegerOnly} />
+<Toggle on={isInteger} on:change={changeIsInteger} disabled={!editable} />

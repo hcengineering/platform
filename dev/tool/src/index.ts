@@ -136,6 +136,7 @@ import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
 import { restoreGithubIntegrations } from './restoreGithub'
 import { migrateWorkspaceMessages } from './communication'
+import { type CardID } from '@hcengineering/communication-types'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2851,18 +2852,19 @@ export function devTool (
     })
 
   program
-    .command('migrate-communication-to-hulylake')
+    .command('migrate-communication-to-hulylake <workspace>')
     .description('Migrate communication messages to hulylake')
-    .action(async () => {
+    .option('-c, --card <card>', 'Card to migrate')
+    .action(async (workspace: WorkspaceUuid, cmd: { card?: CardID }) => {
       const { dbUrl } = prepareTools()
-      const storageConfig = storageConfigFromEnv()
       const hulylakeUrl = process.env.HULYLAKE_URL ?? ''
 
+      console.log('Workspace', workspace)
+      console.log('Card', cmd.card)
       if (hulylakeUrl === '') {
         throw new Error('HULYLAKE_URL should be specified')
       }
 
-      const storage: StorageAdapter = buildStorageFromConfig(storageConfig)
       const token = generateToken(systemAccountUuid, undefined, {
         service: 'tool'
       })
@@ -2872,25 +2874,26 @@ export function devTool (
       const personUuidBySocialId = new Map<PersonId, PersonUuid>()
 
       await withAccountDatabase(async (accountDb) => {
-        const workspaces = await accountDb.workspace.find({})
-        for (const ws of workspaces) {
-          try {
-            const hulylake = getHulylakeClient(hulylakeUrl, ws.uuid, token)
-            console.log('start workspace migration', ws.name)
-            await migrateWorkspaceMessages(
-              toolCtx.newChild(ws.name, {}),
-              ws,
-              dbClient,
-              storage,
-              hulylake,
-              accountClient,
-              personUuidBySocialId
-            )
-            console.log('done workspace migration', ws.name)
-          } catch (err: any) {
-            console.error('failed to migrate workspace', ws.name)
-            console.error(err)
-          }
+        const ws = (await accountDb.workspace.find({ uuid: workspace }))[0]
+        if (ws === undefined) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+        try {
+          const hulylake = getHulylakeClient(hulylakeUrl, ws.uuid, token)
+          console.log('start workspace migration', ws.name)
+          await migrateWorkspaceMessages(
+            toolCtx.newChild(ws.name, {}),
+            ws,
+            cmd.card,
+            dbClient,
+            hulylake,
+            accountClient,
+            personUuidBySocialId
+          )
+          console.log('done workspace migration', ws.name)
+        } catch (err: any) {
+          console.error('failed to migrate workspace', ws.name)
+          console.error(err)
         }
         db.close()
       }, dbUrl)

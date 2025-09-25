@@ -72,6 +72,18 @@ export const replyInThread: MessageActionFunction = async (message: Message, par
     await showForbidden()
     return
   }
+
+  const thread = message.threads[0]
+  if (thread != null) {
+    const client = getClient()
+    const _id = thread.threadId
+    const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
+    if (card === undefined) return
+    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+    await r(_id, card)
+    return
+  }
+
   await attachCardToMessage(
     message,
     parentCard,
@@ -92,19 +104,7 @@ export async function attachCardToMessage (
   const communicationClient = getCommunicationClient()
   const hierarchy = client.getHierarchy()
 
-  const thread = _id != null ? message.threads.find((it) => it.threadId === _id) : undefined
-  if (thread != null) {
-    const _id = thread.threadId
-    const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
-    if (card === undefined) return
-    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
-    await r(_id, card)
-    return
-  }
-
   const threadCardID = _id ?? generateId<Card>()
-
-  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, type)
 
   const author =
     get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
@@ -129,7 +129,7 @@ export async function attachCardToMessage (
     type
   )
   await client.createDoc(type, parentCard.space, data, threadCardID)
-
+  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, type)
   if (author?.active === true && author?.personUuid !== undefined) {
     await communicationClient.addCollaborators(threadCardID, type, [author.personUuid])
   }

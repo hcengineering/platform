@@ -1911,7 +1911,7 @@ export async function restoreTrustedV6Workspace (
       url
     }
 
-    const queue = getPlatformQueue('tool', workspace.region)
+    const queue = getPlatformQueue('tool', region)
     const wsProducer = queue.getProducer<QueueWorkspaceMessage>(ctx, QueueTopic.Workspace)
 
     await wsProducer.send(ctx, uuid, [workspaceEvents.restoring()])

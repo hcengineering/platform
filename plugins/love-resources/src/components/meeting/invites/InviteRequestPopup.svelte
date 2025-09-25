@@ -17,6 +17,7 @@
   import { CombineAvatars } from '@hcengineering/contact-resources'
   import { Button, Label } from '@hcengineering/ui'
   import love from '../../../plugin'
+<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/InviteRequestPopup.svelte
   import { Ref } from '@hcengineering/core'
   import { onMount } from 'svelte'
   import {
@@ -48,6 +49,15 @@
 
   async function cancel (): Promise<void> {
     closeInvitesPopup()
+========
+  import { cancelInvites } from '../../../meetings'
+  import { activeInvites } from '../../../stores'
+
+  $: persons = $activeInvites.map((p) => p.target)
+
+  async function cancel (): Promise<void> {
+    await cancelInvites($activeInvites)
+>>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/ActiveInvitesPopup.svelte
   }
 </script>
 

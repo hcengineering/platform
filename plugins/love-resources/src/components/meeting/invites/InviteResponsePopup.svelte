@@ -15,12 +15,24 @@
 <script lang="ts">
   import { formatName, Person } from '@hcengineering/contact'
   import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
+<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/InviteResponsePopup.svelte
   import { playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../../../plugin'
   import { InviteRequest, responseToInviteRequest } from '../../../invites'
+========
+  import { playNotificationSound } from '@hcengineering/presentation'
+  import { Button, Label } from '@hcengineering/ui'
+  import { Invite } from '@hcengineering/love'
+  import { onDestroy, onMount } from 'svelte'
+
+  import love from '../../../plugin'
+  import { acceptInvite, rejectInvite } from '../../../meetings'
+
+  export let invite: Invite
+>>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/InvitePopup.svelte
 
   export let invite: InviteRequest
   let person: Person | undefined = undefined
@@ -32,11 +44,19 @@
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
+<<<<<<<< HEAD:plugins/love-resources/src/components/meeting/invites/InviteResponsePopup.svelte
     await responseToInviteRequest(true)
   }
 
   async function decline (): Promise<void> {
     await responseToInviteRequest(false)
+========
+    await acceptInvite(invite)
+  }
+
+  async function decline (): Promise<void> {
+    await rejectInvite(invite)
+>>>>>>>> develop:plugins/love-resources/src/components/meeting/invites/InvitePopup.svelte
   }
 
   onMount(async () => {

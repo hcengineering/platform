@@ -62,7 +62,9 @@ import {
   type WithTotal,
   type NotificationID,
   type Emoji,
-  type MessageMeta
+  type MessageMeta,
+  type FindMessagesGroupParams,
+  type MessagesGroup
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -358,6 +360,14 @@ class Client {
     return (
       await this.connection.domainRequest<MessageMeta[]>(COMMUNICATION, {
         findMessagesMeta: { params }
+      })
+    ).value
+  }
+
+  async findMessagesGroups (params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    return (
+      await this.connection.domainRequest<MessagesGroup[]>(COMMUNICATION, {
+        findMessagesGroups: { params }
       })
     ).value
   }

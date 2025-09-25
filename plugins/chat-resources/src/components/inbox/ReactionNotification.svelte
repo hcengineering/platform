@@ -47,7 +47,12 @@
 
 {#if notification.message}
   <div class="reaction-notification">
-    <PreviewTemplate socialId={content.creator} date={notification.created} color="secondary" showSeparator={false}>
+    <PreviewTemplate
+      socialId={notification.creator}
+      date={notification.created}
+      color="secondary"
+      showSeparator={false}
+    >
       <svelte:fragment slot="content">
         <span class="ml-1-5" />
         <Label label={chat.string.ReactedToYourMessage} />
@@ -88,11 +93,11 @@
     &__emoji {
       display: flex;
       align-items: center;
-      font-size: 2rem;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      min-height: 2.5rem;
-      height: 2.5rem;
+      font-size: 1.5rem;
+      width: 2rem;
+      min-width: 2rem;
+      min-height: 2rem;
+      height: 2rem;
       overflow: hidden;
     }
   }

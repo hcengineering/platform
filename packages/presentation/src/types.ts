@@ -35,10 +35,11 @@ export interface ObjectSearchResult {
  * @public
  */
 export interface ObjectCreate {
-  component: AnyComponent
+  component: AnyComponent | undefined
   props?: Record<string, any>
   label: IntlString
   update?: (doc: Doc) => string
+  func?: Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
 }
 
 /**

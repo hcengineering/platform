@@ -37,6 +37,7 @@
   export let autofocus: FocusPosition = false
   export let onCancel: (() => void) | undefined = undefined
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
+  export let onKeyDown: ((view: EditorView, event: KeyboardEvent) => boolean) | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -140,6 +141,7 @@
       {placeholder}
       {placeholderParams}
       {onPaste}
+      {onKeyDown}
       on:content={(ev) => {
         if (canSubmit(loading, content, hasChanges)) {
           dispatch('submit', ev.detail)

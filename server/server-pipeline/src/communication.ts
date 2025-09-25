@@ -114,6 +114,10 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
       const { params } = args.findMessagesMeta
       return await this.communicationApi.findMessagesMeta(ctx, params)
     }
+    if (args.findMessagesGroups !== undefined) {
+      const { params } = args.findMessagesGroups
+      return await this.communicationApi.findMessagesGroups(ctx, params)
+    }
     if (args.findNotificationContexts !== undefined) {
       const { params, subscription } = args.findNotificationContexts
       return await this.communicationApi.findNotificationContexts(ctx, params, subscription)

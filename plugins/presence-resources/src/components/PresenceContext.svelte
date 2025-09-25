@@ -22,6 +22,7 @@
 
   export let object: Doc
   export let presenceTtlSeconds: number = 5
+  export let presenceUpdateSeconds: number = 2
 
   const personId = getCurrentEmployee()
 
@@ -37,7 +38,7 @@
 
   onMount(() => {
     void doUpdatePresence()
-    const interval = setInterval(doUpdatePresence, presenceTtlSeconds * 1000)
+    const interval = setInterval(doUpdatePresence, presenceUpdateSeconds * 1000)
     return () => {
       clearInterval(interval)
       void doDeletePresence(object)

@@ -451,6 +451,19 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
+            id: 'all',
+            label: card.string.AllCards,
+            icon: card.icon.All,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: card.class.Card,
+              icon: card.icon.All,
+              label: card.string.AllCards,
+              defaultViewletDescriptor: card.viewlet.CardFeedDescriptor
+            },
+            position: 'top'
+          },
+          {
             id: 'browser',
             label: core.string.Spaces,
             icon: view.icon.List,
@@ -847,6 +860,10 @@ export function createModel (builder: Builder): void {
     toClass: card.class.Card,
     fullTextSummary: true,
     forceIndex: true
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectFactory, {
+    create: card.function.CardFactory
   })
 
   builder.createDoc(

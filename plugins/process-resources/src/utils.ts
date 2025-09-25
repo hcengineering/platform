@@ -576,9 +576,9 @@ export async function requestResult (
   results: UserResult[] | undefined,
   context: ExecutionContext
 ): Promise<void> {
-  if (results == null) return
+  if (results == null || results.length === 0) return
   const promise = new Promise<void>((resolve, reject) => {
-    showPopup(process.component.ResultInput, { results }, undefined, (res) => {
+    showPopup(process.component.ResultInput, { results, context }, undefined, (res) => {
       if (res !== undefined) {
         for (const contextId in res) {
           const val = res[contextId]
@@ -603,7 +603,7 @@ export function todoTranstionCheck (
   context: Record<string, any>
 ): boolean {
   if (params._id === undefined) return false
-  return context.card?._id === params._id
+  return context.todo?._id === params._id
 }
 
 export function timeTransitionCheck (

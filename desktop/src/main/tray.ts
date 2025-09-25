@@ -18,7 +18,6 @@ import { WindowAction } from '../ui/types'
 import { Settings } from './settings'
 import { getFileInPublicBundledFolder } from './path'
 import { getBadgeIconInfo } from './trayUtils'
-import path from 'path'
 
 export class TrayController {
   private tray: Tray | undefined = undefined
@@ -88,7 +87,7 @@ export class TrayController {
 
     const iconInfo = getBadgeIconInfo(badgeCount, BASE_TITLE)
     if (badgeCount > 0) {
-      const iconFilePath = getFileInPublicBundledFolder(path.join('app_icons_with_badge', iconInfo.fileName))
+      const iconFilePath = getFileInPublicBundledFolder(iconInfo.fileName)
       const icon = nativeImage.createFromPath(iconFilePath)
       this.tray.setImage(icon)
     } else {

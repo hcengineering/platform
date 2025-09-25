@@ -192,6 +192,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="presence">
+      <Component is={presence.component.Presence} props={{ object: doc }} />
       <Component is={presence.component.PresenceAvatars} props={{ object: doc, size: 'x-small', limit: 5 }} />
     </svelte:fragment>
 

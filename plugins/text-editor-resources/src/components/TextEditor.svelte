@@ -38,6 +38,7 @@
   export let autofocus: FocusPosition = false
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let onKeyDown: ((view: EditorView, event: KeyboardEvent) => boolean) | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -162,9 +163,7 @@
         reference: false,
         emoji: false,
         placeholder: { placeholder: placeHolderStr },
-        shortcuts: {
-          submit: supportSubmit ? { submit } : false
-        }
+        submit: supportSubmit ? { submit } : false
       },
       kitOptions
     )
@@ -174,7 +173,13 @@
       element,
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
-        handlePaste: onPaste
+        handlePaste: onPaste,
+        handleKeyDown: (view, event) => {
+          if (onKeyDown !== undefined) {
+            return onKeyDown(view, event)
+          }
+          return false
+        }
       },
       content: markupToJSON(content),
       autofocus,

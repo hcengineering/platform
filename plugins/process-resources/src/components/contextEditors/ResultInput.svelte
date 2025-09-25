@@ -14,18 +14,23 @@
 -->
 <script lang="ts">
   import presentation, { Card, getAttrEditor, getClient } from '@hcengineering/presentation'
-  import { ContextId, UserResult } from '@hcengineering/process'
+  import { ContextId, ExecutionContext, UserResult } from '@hcengineering/process'
   import { Component, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
   export let results: UserResult[]
+  export let context: ExecutionContext
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const h = client.getHierarchy()
 
   const values: Record<ContextId, any> = {}
+
+  results.forEach((r) => {
+    values[r._id] = context[r._id]
+  })
 
   export function canClose (): boolean {
     return false
