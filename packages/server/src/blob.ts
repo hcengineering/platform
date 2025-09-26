@@ -134,12 +134,12 @@ export class Blob {
     if (match != null) return match
 
     const lastGroup = all[all.length - 1]
-    if (lastGroup.fromDate.getTime() <= ts && lastGroup.count < this.metadata.messagesPerBlob) {
+    if (lastGroup != null && lastGroup.fromDate.getTime() <= ts && lastGroup.count < this.metadata.messagesPerBlob) {
       return lastGroup
     }
 
     const firstGroup = all[0]
-    if (firstGroup.fromDate.getTime() >= ts && firstGroup.count < this.metadata.messagesPerBlob) {
+    if (firstGroup != null && firstGroup.fromDate.getTime() >= ts && firstGroup.count < this.metadata.messagesPerBlob) {
       return firstGroup
     }
 
