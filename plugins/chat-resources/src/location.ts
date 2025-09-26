@@ -142,7 +142,11 @@ export async function resolveLocationData (loc: Location): Promise<LocationData>
       return {}
     }
 
-    return { name: object.title }
+    return {
+      name: object.title,
+      objectId: object._id,
+      objectClass: object._class
+    }
   }
 
   if (typeId !== undefined) {
