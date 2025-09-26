@@ -311,6 +311,13 @@ export async function Power (
   return value
 }
 
+export function Sqrt (value: number): number {
+  if (typeof value === 'number') {
+    return Math.sqrt(value)
+  }
+  return value
+}
+
 export function Round (value: number): number {
   if (typeof value === 'number') {
     return Math.round(value)

@@ -83,6 +83,7 @@
     "Divide": "Divide",
     "Modulo": "Modulo",
     "Power": "Power",
+    "Sqrt": "Sqrt",
     "Round": "Round",
     "Absolute": "Absolute",
     "Ceil": "Ceil",

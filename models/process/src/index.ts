@@ -606,6 +606,20 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.TypeNumber,
       category: 'attribute',
+      label: process.string.Sqrt,
+      presenter: process.transformPresenter.NumberPresenter,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Sqrt
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
       label: process.string.Round,
       type: 'transform',
       allowMany: true

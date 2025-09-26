@@ -87,6 +87,7 @@
     "Divide": "Diviser",
     "Modulo": "Modulo",
     "Power": "Élever à la puissance",
+    "Sqrt": "Racine carrée",
     "Round": "Arrondir",
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",

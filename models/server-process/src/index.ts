@@ -177,6 +177,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Power
   })
 
+  builder.mixin(process.function.Sqrt, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Sqrt
+  })
+
   builder.mixin(process.function.Round, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Round
   })
