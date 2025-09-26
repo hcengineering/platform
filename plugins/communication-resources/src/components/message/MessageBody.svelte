@@ -223,9 +223,9 @@
     max-width: 100%;
     user-select: text;
     flex: 1;
-    position: relative; // This ensures ShowMore button positions relative to this container
 
     &.with-showmore {
+      position: relative; // This ensures ShowMore button positions relative to this container
       margin-bottom: 1rem;
     }
   }
