@@ -294,7 +294,7 @@
     width: 100%;
     text-align: center;
     color: var(--theme-dark-color);
-    font-size: .8125rem;
+    font-size: 0.8125rem;
     font-weight: 400;
     border-radius: 0.25rem;
     transition: background-color 0.2s ease;
