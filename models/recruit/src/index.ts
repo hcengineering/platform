@@ -37,6 +37,7 @@ import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@h
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { defineSpaceType } from './spaceType'
+import { definePermissions } from './permissions'
 import { TApplicant, TApplicantMatch, TCandidate, TOpinion, TReview, TVacancy, TVacancyList } from './types'
 
 export { recruitId } from '@hcengineering/recruit'
@@ -1036,7 +1037,8 @@ export function createModel (builder: Builder): void {
       application: recruit.app.Recruit,
       group: 'create'
     }
-  })
+  }, recruit.action.CreateTalent
+  )
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
@@ -1596,4 +1598,5 @@ export function createModel (builder: Builder): void {
   )
 
   defineSpaceType(builder)
+  definePermissions(builder)
 }

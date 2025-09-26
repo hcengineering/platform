@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+<<<<<<< ours
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+=======
+  import core, { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
+>>>>>>> theirs
   import { type Drive } from '@hcengineering/drive'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -92,45 +96,47 @@
     }
   }
 
-  const dropdownItems: SelectPopupValueType[] = hasAccountRole(myAcc, AccountRole.User)
-    ? [
-        { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }
+  let visibleActions: string[] = []
+  function updateActions (hasSpace: boolean): void {
+    if (hasSpace) {
+      visibleActions = [
+        drive.string.CreateDrive,
+        drive.string.CreateFolder,
+        drive.string.UploadFile
       ]
-    : [{ id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }]
+    } else {
+      visibleActions = [
+        drive.string.CreateDrive
+      ]
+    }
+  }
 
-  loading = false
+  $: updateActions(hasDrive)
 </script>
 
-{#if loading}
-  <Loading shrink />
-{:else}
-  <div class="antiNav-subheader">
-    {#if hasDrive}
-      <ButtonWithDropdown
-        icon={IconAdd}
-        justify={'left'}
-        kind={'primary'}
-        label={drive.string.UploadFile}
-        mainButtonId={'new-document'}
-        dropdownIcon={IconDropdown}
-        {dropdownItems}
-        disabled={currentSpace === undefined}
-        on:click={handleUploadFile}
-        on:dropdown-selected={(ev) => {
-          void handleDropdownItemSelected(ev.detail)
-        }}
-      />
-    {:else}
-      <Button
-        icon={IconAdd}
-        label={drive.string.CreateDrive}
-        justify={'left'}
-        width={'100%'}
-        kind={'primary'}
-        gap={'large'}
-        on:click={handleCreateDrive}
-      />
-    {/if}
-  </div>
-{/if}
+<HeaderButton
+  {loading}
+  {client}
+  mainActionId={drive.string.UploadFile}
+  {visibleActions}
+  actions={[
+    {
+      id: drive.string.CreateDrive,
+      label: drive.string.CreateDrive,
+      icon: drive.icon.Drive,
+      accountRole: AccountRole.User,
+      callback: handleCreateDrive
+    },
+    {
+      id: drive.string.CreateFolder,
+      label: drive.string.CreateFolder,
+      icon: drive.icon.Folder,
+      callback: handleCreateFolder
+    },
+    {
+      id: drive.string.UploadFile,
+      label: drive.string.UploadFile,
+      icon: drive.icon.File,
+      callback: handleUploadFile
+    }]}
+/>

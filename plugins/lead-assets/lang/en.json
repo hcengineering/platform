@@ -34,6 +34,8 @@
     "ConfigDescription": "Extension for Customer relation management",
     "EditFunnel": "Edit Funnel",
     "FunnelMembers": "Members",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "ForbidCreateFunnelPermission": "Forbid create funnel",
+    "ForbidCreateFunnelPermissionDescription": "Forbid users creating new funnels"
   }
 }

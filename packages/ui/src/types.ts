@@ -522,6 +522,21 @@ export interface SelectPopupValueType {
 /**
  * @public
  */
+export interface HeaderButtonAction extends SelectPopupValueType {
+  callback: () => void
+  keyBindingPromise?: Promise<string[] | undefined>
+  keyBinding?: string[] | undefined
+  draft?: boolean
+  accountRole?: AccountRole
+  permissions?: Array<{
+    id: Ref<Permission>
+    space: Ref<TypedSpace>
+  }>
+}
+
+/**
+ * @public
+ */
 export interface TimeZone {
   id: string
   continent: string

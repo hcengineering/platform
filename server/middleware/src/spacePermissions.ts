@@ -45,7 +45,11 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class SpacePermissionsMiddleware extends BaseMiddleware implements Middleware {
   private whitelistSpaces = new Set<Ref<Space>>()
   private assignmentBySpace: Record<Ref<Space>, RolesAssignment> = {}
+<<<<<<< ours
   private permissionsBySpace: Record<Ref<Space>, Record<AccountUuid, Set<Ref<Permission>>>> = {}
+=======
+  private permissionsBySpace: Record<Ref<Space>, Record<Ref<Account>, Set<Permission>>> = {}
+>>>>>>> theirs
   private typeBySpace: Record<Ref<Space>, Ref<SpaceType>> = {}
   wasInit: Promise<void> | boolean = false
 
@@ -80,11 +84,20 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     }
   }
 
+  private getPermissions (): Permission[] {
+    return this.context.modelDb.findAllSync(core.class.Permission, {})
+  }
+
   private getRoles (spaceTypeId: Ref<SpaceType>): Role[] {
     return this.context.modelDb.findAllSync(core.class.Role, { attachedTo: spaceTypeId })
   }
 
-  private setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment): void {
+  private setPermissions (
+    spaceId: Ref<Space>,
+    roles: Role[],
+    assignment: RolesAssignment,
+    permissions: Permission[]
+  ): void {
     for (const role of roles) {
       const roleMembers: AccountUuid[] = assignment[role._id] ?? []
 
@@ -94,7 +107,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
         }
 
         for (const permission of role.permissions) {
-          this.permissionsBySpace[spaceId][member].add(permission)
+          const p = permissions.find((p) => p._id === permission)
+          if (p === undefined) continue
+          this.permissionsBySpace[spaceId][member].add(p)
         }
       }
     }
@@ -127,7 +142,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
     this.assignmentBySpace[space._id] = requiredValues
 
-    this.setPermissions(space._id, this.getRoles(spaceType._id), asMixin)
+    this.setPermissions(space._id, this.getRoles(spaceType._id), asMixin, this.getPermissions())
   }
 
   private isTypedSpaceClass (_class: Ref<Class<Space>>): boolean {
@@ -145,11 +160,21 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    *
    * Checks if the required permission is present in the space for the given context
    */
-  private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, id: Ref<Permission>): boolean {
+  private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, tx: TxCUD<Doc>): boolean {
     const account = ctx.contextData.account
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? null
 
+<<<<<<< ours
     return permissions !== null && permissions.has(id)
+=======
+    for (const permission of permissions) {
+      if (permission.txClass === undefined || permission.txClass !== tx._class) continue
+      if (permission.objectClass !== undefined && permission.objectClass !== tx.objectClass) continue
+      return permission.forbid !== undefined ? !permission.forbid : true
+    }
+
+    return true
+>>>>>>> theirs
   }
 
   private throwForbidden (): void {
@@ -222,7 +247,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     this.assignmentBySpace[spaceId] = requiredValues
 
     this.permissionsBySpace[tx.objectId] = {}
-    this.setPermissions(spaceId, this.getRoles(spaceType._id), assignment)
+    this.setPermissions(spaceId, this.getRoles(spaceType._id), assignment, this.getPermissions())
   }
 
   private handleRemove (tx: TxCUD<Space>): void {
@@ -293,7 +318,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       targetRole.permissions = updateTx.operations.permissions
 
       this.permissionsBySpace[spaceId] = {}
-      this.setPermissions(spaceId, roles, assignment)
+      this.setPermissions(spaceId, roles, assignment, this.getPermissions())
     }
   }
 
@@ -349,20 +374,21 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     const cudTx = tx as TxCUD<Doc>
     const h = this.context.hierarchy
     const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
-    // NOTE: in assumption that we want to control permissions for space itself on that space level
-    // and not on the system's spaces space level for now
-    const targetSpaceId = (isSpace ? cudTx.objectId : cudTx.objectSpace) as Ref<Space>
 
+    this.checkSpacePermissions(ctx, cudTx, cudTx.objectSpace)
+    if (isSpace) {
+      this.checkSpacePermissions(ctx, cudTx, cudTx.objectId as Ref<Space>)
+    }
+  }
+
+  private checkSpacePermissions (ctx: MeasureContext, cudTx: TxCUD<Doc>, targetSpaceId: Ref<Space>): void {
     if (this.whitelistSpaces.has(targetSpaceId)) {
       return
     }
-
     // NOTE: move this checking logic later to be defined in some server plugins?
     // so they can contribute checks into the middleware for their custom permissions?
-    if (tx._class === core.class.TxRemoveDoc) {
-      if (this.checkPermission(ctx, targetSpaceId as Ref<TypedSpace>, core.permission.ForbidDeleteObject)) {
-        this.throwForbidden()
-      }
+    if (!this.checkPermission(ctx, targetSpaceId as Ref<TypedSpace>, cudTx)) {
+      this.throwForbidden()
     }
   }
 }
