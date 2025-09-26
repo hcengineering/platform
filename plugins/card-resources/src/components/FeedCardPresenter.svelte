@@ -107,7 +107,7 @@
         {#if isCompact}
           <MessagePreview {card} {message} colorInherit />
         {:else}
-          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" showThreads={false} />
+          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" showThreads={false} collapsible={true} />
         {/if}
       {/if}
     </div>
