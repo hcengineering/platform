@@ -113,19 +113,19 @@
       <InviteEmployeeButton
         kind="secondary"
         type="type-button-icon"
-        size="small"
+        size="large"
         iconSize="medium"
         withBackground={false}
       />
     </svelte:fragment>
     <svelte:fragment slot="center">
-      <SendReactionButton size="small" />
-      <MicrophoneButton size="small" />
-      <CameraButton size="small" />
-      <ShareScreenButton size="small" />
+      <SendReactionButton />
+      <MicrophoneButton />
+      <CameraButton />
+      <ShareScreenButton />
     </svelte:fragment>
     <svelte:fragment slot="right">
-      <LeaveRoomButton {room} noLabel={true} size="small" />
+      <LeaveRoomButton {room} noLabel={true} />
     </svelte:fragment>
   </ControlBarContainer>
 {/if}
