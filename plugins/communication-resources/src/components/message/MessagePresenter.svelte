@@ -44,9 +44,14 @@
   export let hideHeader: boolean = false
   export let readonly: boolean = false
   export let showThreads: boolean = true
+  export let collapsible: boolean = false
+  export let maxHeight: string = '30rem'
 
   let isEditing = false
   let author: Person | undefined
+  let isExpanded = false
+  let messageContainer: HTMLElement
+  let needsExpansion = false
 
   $: isEditing = $messageEditingStore === message.id
   $: void updateAuthor(message.creator)
@@ -137,6 +142,27 @@
   let isActionsPanelOpened = false
 
   $: showActions = !isEditing && !readonly
+
+  // Check if message content needs expansion
+  function checkContentHeight (): void {
+    if (messageContainer != null && collapsible && !isExpanded) {
+      const scrollHeight = messageContainer.scrollHeight
+      const maxHeightPx = parseFloat(maxHeight.replace('rem', '')) * 16 // Convert rem to px (assuming 16px = 1rem)
+      needsExpansion = scrollHeight > maxHeightPx + 20 // 20px threshold
+    } else {
+      needsExpansion = false
+    }
+  }
+
+  function toggleExpansion (event: MouseEvent): void {
+    event.stopPropagation()
+    isExpanded = !isExpanded
+  }
+
+  // Check content height after message updates
+  $: if (message != null && messageContainer != null) {
+    setTimeout(checkContentHeight, 100) // Small delay to ensure content is rendered
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -149,19 +175,43 @@
   class:noHover={readonly}
   style:padding
 >
-  {#if message.type === MessageType.Activity}
-    <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
-  {:else}
-    <MessageBody
-      {message}
-      {card}
-      {author}
-      {isEditing}
-      compact={compact && message.threads.length === 0}
-      {hideAvatar}
-      {hideHeader}
-      {showThreads}
-    />
+  <div
+    class="message-content"
+    class:collapsible
+    class:collapsed={collapsible && !isExpanded && needsExpansion}
+    style:max-height={collapsible && !isExpanded ? maxHeight : 'none'}
+    bind:this={messageContainer}
+  >
+    {#if message.type === MessageType.Activity}
+      <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
+    {:else}
+      <MessageBody
+        {message}
+        {card}
+        {author}
+        {isEditing}
+        compact={compact && (message.thread == null || message.thread === undefined)}
+        {hideAvatar}
+        {hideHeader}
+        {showThreads}
+      />
+    {/if}
+  </div>
+
+  {#if collapsible && needsExpansion && !isExpanded}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="show-more" on:click={toggleExpansion}>
+      <span class="show-more-text">Show more</span>
+    </div>
+  {/if}
+
+  {#if collapsible && isExpanded}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="show-more" on:click={toggleExpansion}>
+      <span class="show-more-text">Show less</span>
+    </div>
   {/if}
 
   {#if showActions}
@@ -217,6 +267,44 @@
 
     &.opened {
       visibility: visible;
+    }
+  }
+
+  .message-content {
+    width: 100%;
+
+    &.collapsible.collapsed {
+      overflow: hidden;
+      position: relative;
+
+      /* Use mask-image for transparent fade effect on text */
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+  }
+
+  .show-more {
+    cursor: pointer;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    width: 100%;
+    text-align: center;
+    color: var(--theme-dark-color);
+    font-size: .8125rem;
+    font-weight: 400;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--global-ui-BackgroundColor);
+    }
+
+    .show-more-text {
+      text-decoration: underline;
     }
   }
 </style>
