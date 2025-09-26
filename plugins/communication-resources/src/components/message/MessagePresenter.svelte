@@ -190,7 +190,7 @@
         {card}
         {author}
         {isEditing}
-        compact={compact && (message.thread == null || message.thread === undefined)}
+        compact={compact && (message.thread == null)}
         {hideAvatar}
         {hideHeader}
         {showThreads}
