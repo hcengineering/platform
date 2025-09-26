@@ -109,7 +109,10 @@
     "AddResult": "Ajouter un résultat",
     "For": "Pour",
     "Context": "Contexte",
-    "Attribute": "Attribut"
+    "Attribute": "Attribut",
+    "ProcessRunned": "Processus \"{process}\" démarré",
+    "ProcessStateChanged": "État du processus \"{process}\" changé en \"{state}\"",
+    "ProcessFinished": "Processus \"{process}\" terminé dans l'état \"{state}\""
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

@@ -109,7 +109,10 @@
     "AddResult": "添加结果",
     "For": "对于",
     "Context": "上下文",
-    "Attribute": "属性"
+    "Attribute": "属性",
+    "ProcessRunned": "过程 \"{process}\" 已启动",
+    "ProcessStateChanged": "过程 \"{process}\" 状态已更改为 \"{state}\"",
+    "ProcessFinished": "过程 \"{process}\" 已在状态 \"{state}\" 中完成"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

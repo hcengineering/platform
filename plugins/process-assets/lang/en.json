@@ -109,7 +109,10 @@
     "AddResult": "Add result",
     "For": "For",
     "Context": "Context",
-    "Attribute": "Attribute"
+    "Attribute": "Attribute",
+    "ProcessRunned": "Process \"{process}\" started",
+    "ProcessStateChanged": "Process \"{process}\" changed state to \"{state}\"",
+    "ProcessFinished": "Process \"{process}\" finished in \"{state}\""
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

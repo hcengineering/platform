@@ -104,7 +104,10 @@
     "AddResult": "Ergebnis hinzufügen",
     "For": "Für",
     "Context": "Kontext",
-    "Attribute": "Attribut"
+    "Attribute": "Attribut",
+    "ProcessRunned": "Prozess \"{process}\" gestartet",
+    "ProcessStateChanged": "Prozess \"{process}\" Status geändert zu \"{state}\"",
+    "ProcessFinished": "Prozess \"{process}\" beendet im Status \"{state}\""
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
