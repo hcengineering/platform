@@ -147,7 +147,7 @@
   function checkContentHeight (): void {
     if (messageContainer != null && collapsible && !isExpanded) {
       const scrollHeight = messageContainer.scrollHeight
-      const maxHeightPx = parseFloat(maxHeight.replace('rem', '')) * 16 // Convert rem to px (assuming 16px = 1rem)
+      const maxHeightPx = parseFloat(maxHeight.replace('rem', '')) * 16 // Convert rem to px
       needsExpansion = scrollHeight > maxHeightPx + 20 // 20px threshold
     } else {
       needsExpansion = false
