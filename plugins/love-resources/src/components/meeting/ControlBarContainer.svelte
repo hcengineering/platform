@@ -23,6 +23,7 @@
 
   let resizeObserver: ResizeObserver | undefined
   const HORIZONTAL_PADDING = 60
+  const SCALE_CHANGE_THRESHOLD = 0.001
 
   function measureWidths (): { barWidth: number, rowWidth: number } {
     if (barContainer === undefined || rowContainer === undefined) {
@@ -46,7 +47,7 @@
 
     const nextScale = Math.min(1, containerWidth / rowWidth)
 
-    if (Math.abs(nextScale - scale) > 0.001) {
+    if (Math.abs(nextScale - scale) > SCALE_CHANGE_THRESHOLD) {
       scale = Number(nextScale.toFixed(3))
     }
   }
