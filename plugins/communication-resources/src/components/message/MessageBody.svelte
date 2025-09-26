@@ -35,6 +35,10 @@
   export let hideAvatar: boolean = false
   export let hideHeader: boolean = false
   export let showThreads: boolean = true
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
+
+  let isShowMoreActive: boolean = false
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -58,8 +62,8 @@
 
     <div class="message__content">
       {#if !isEditing && message.content !== ''}
-        <div class="message__text">
-          <MessageContentViewer {message} {card} {author} />
+        <div class="message__text" class:with-showmore={isShowMoreActive}>
+          <MessageContentViewer {message} {card} {author} {collapsible} {maxHeight} bind:isShowMoreActive />
         </div>
       {:else if isEditing}
         <MessageInput
@@ -114,8 +118,8 @@
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text">
-          <MessageContentViewer {message} {card} {author} />
+        <div class="message__text" class:with-showmore={isShowMoreActive}>
+          <MessageContentViewer {message} {card} {author} {collapsible} {maxHeight} bind:isShowMoreActive />
         </div>
       {:else if isEditing}
         <MessageInput
@@ -219,6 +223,11 @@
     max-width: 100%;
     user-select: text;
     flex: 1;
+    position: relative; // This ensures ShowMore button positions relative to this container
+
+    &.with-showmore {
+      margin-bottom: 1rem;
+    }
   }
 
   .time-container {

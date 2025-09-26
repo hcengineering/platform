@@ -17,20 +17,22 @@
   import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
   import { Markdown, Message, MessageID } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
-  import { Label } from '@hcengineering/ui'
   import { Person } from '@hcengineering/contact'
   import { Markup } from '@hcengineering/core'
+  import { ShowMore } from '@hcengineering/ui'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
-  import communication from '../../plugin'
   import { isShownTranslatedMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
   import { translateMessage } from '../../actions'
 
   export let card: Card
   export let message: Message
   export let author: Person | undefined
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
+  export let isShowMoreActive: boolean = false
 
   let displayMarkup: Markup = toMarkup(message.content)
   let prevContent: Markdown | undefined = undefined
@@ -60,9 +62,13 @@
 </script>
 
 {#if isActivityMessage(message)}
-  <ActivityMessageViewer {message} {card} {author} />
+  <ShowMore limit={parseFloat(maxHeight.replace('rem', '')) * 16} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+    <ActivityMessageViewer {message} {card} {author} />
+  </ShowMore>
 {:else}
-  <MarkupMessageViewer message={displayMarkup} />
+  <ShowMore limit={parseFloat(maxHeight.replace('rem', '')) * 16} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+    <MarkupMessageViewer message={displayMarkup} />
+  </ShowMore>
 {/if}
 
 <style lang="scss">
