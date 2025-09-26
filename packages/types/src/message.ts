@@ -15,6 +15,7 @@
 
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
 import type { Card, Tag } from '@hcengineering/card'
+import type { Process, State } from '@hcengineering/process'
 
 import type { AccountUuid, BlobID, CardID, CardType, ID, Markdown, SocialID, PersonUuid } from './core'
 
@@ -69,12 +70,21 @@ export type ActivityUpdate =
   | ActivityTagUpdate
   | ActivityTypeUpdate
   | ActivityCollaboratorsUpdate
+  | ActivityProcess
 
 export enum ActivityUpdateType {
   Attribute = 'attribute',
   Tag = 'tag',
   Collaborators = 'collaborators',
-  Type = 'type'
+  Type = 'type',
+  Process = 'process'
+}
+
+export interface ActivityProcess {
+  type: ActivityUpdateType.Process
+  process: Ref<Process>
+  action: 'started' | 'complete' | 'transition'
+  transitionTo?: Ref<State>
 }
 
 export interface ActivityTagUpdate {

@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/process": "^0.6.0",
     "@hcengineering/card": "^0.6.0"
   },
   "repository": {
