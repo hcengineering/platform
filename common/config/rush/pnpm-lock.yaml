@@ -34,18 +34,15 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
-      '@hcengineering/communication-yaml':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
       '@hocuspocus/provider':
         specifier: ^2.15.2
-        version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+        version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
       '@hocuspocus/server':
         specifier: ^2.15.2
-        version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+        version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
       '@hocuspocus/transformer':
         specifier: ^2.15.2
-        version: 2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))(yjs@13.6.23)
+        version: 2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(yjs@13.6.27)
       '@koa/cors':
         specifier: ^5.0.0
         version: 5.0.0
@@ -270,7 +267,7 @@ importers:
         version: file:projects/collaboration.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/collaborator':
         specifier: file:./projects/collaborator.tgz
-        version: file:projects/collaborator.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(@tiptap/pm@2.11.7)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))(y-protocols@1.0.6(yjs@13.6.23))
+        version: file:projects/collaborator.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(@tiptap/pm@2.11.7)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(y-protocols@1.0.6(yjs@13.6.27))
       '@rush-temp/collaborator-client':
         specifier: file:./projects/collaborator-client.tgz
         version: file:projects/collaborator-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -912,7 +909,7 @@ importers:
         version: file:projects/pod-fulltext.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-github':
         specifier: file:./projects/pod-github.tgz
-        version: file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
+        version: file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
       '@rush-temp/pod-gmail':
         specifier: file:./projects/pod-gmail.tgz
         version: file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)
@@ -1410,7 +1407,7 @@ importers:
         version: file:projects/text-markdown.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/text-ydoc':
         specifier: file:./projects/text-ydoc.tgz
-        version: file:projects/text-ydoc.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))
+        version: file:projects/text-ydoc.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))
       '@rush-temp/theme':
         specifier: file:./projects/theme.tgz
         version: file:projects/theme.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -1536,10 +1533,10 @@ importers:
         version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/extension-code-block@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(highlight.js@11.11.1)(lowlight@3.3.0)
       '@tiptap/extension-collaboration':
         specifier: ^2.11.7
-        version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
+        version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
       '@tiptap/extension-collaboration-cursor':
         specifier: ^2.11.7
-        version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
+        version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
       '@tiptap/extension-document':
         specifier: ^2.11.7
         version: 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
@@ -2382,19 +2379,19 @@ importers:
         version: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       y-indexeddb:
         specifier: ^9.0.12
-        version: 9.0.12(yjs@13.6.23)
+        version: 9.0.12(yjs@13.6.27)
       y-prosemirror:
-        specifier: ^1.3.6
-        version: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+        specifier: ^1.3.7
+        version: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
       y-protocols:
         specifier: ^1.0.6
-        version: 1.0.6(yjs@13.6.23)
+        version: 1.0.6(yjs@13.6.27)
       y-websocket:
         specifier: ^2.1.0
-        version: 2.1.0(yjs@13.6.23)
+        version: 2.1.0(yjs@13.6.27)
       yjs:
-        specifier: ^13.6.23
-        version: 13.6.23
+        specifier: ^13.6.27
+        version: 13.6.27
       zod:
         specifier: ^3.22.4
         version: 3.24.2
@@ -3056,56 +3053,6 @@ packages:
     resolution: {integrity: sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ==}
     engines: {node: '>=6'}
     hasBin: true
-
-  '@hcengineering/analytics@0.7.242':
-    resolution: {integrity: sha512-lmNwY7FxXA9zQ4XsszWP0mjWR9fF0JhfUMvKtpJOeDgyGzH+o/ak1snN82s5x3SsuaHSM47mjo56OFQY6T8UFQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.242/5c0f56b0659f0592c4369ee839b3882856ffbec4}
-
-  '@hcengineering/card@0.7.242':
-    resolution: {integrity: sha512-nnoDBBzymcJvwtk10uNy/bhkI12lSyIB4+GU+BmEnO+T/5/8iqk06ZVliop6ksmjlElSRn/QYV9EmZfB+Zsp5w==, tarball: https://npm.pkg.github.com/download/@hcengineering/card/0.7.242/471fe338fb94d1f99fd8a3ffe9b7f910441e48d1}
-
-  '@hcengineering/communication-sdk-types@0.1.195':
-    resolution: {integrity: sha512-7c3o+qZ+4iJWDnJX6Yq6g62ZaybZO7uJf/jxfaoT0Ee1jtxgrltjXzWAJEK5LVpXzNN6oacVWxe7+W6vlZ6bQg==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-sdk-types/0.1.195/0adc1fcb52eb9ee69619808acba5e78e9a9aaa40}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-shared@0.1.195':
-    resolution: {integrity: sha512-i0Iq3Kil8IhbW9wS1MnzIjzmbNSP4ycZdsTZ61phKOYpShqDi0WubwMLmRzttnTHMLMTkuw77nXpHDuQCEsIrQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-shared/0.1.195/66db0b6e5c74227f07f791ad7a62d686b83561f2}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-types@0.1.195':
-    resolution: {integrity: sha512-a22nIhEZEGKVeY4pALG4OHROW3E6SKMDslyo1TNI9QR+upca/aX/gZxorc+HzLe3fkhj2BWkrDj3didGBBmJZQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-types/0.1.195/4bace160ae375c32f9c3e0b1814ce73944ec9829}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-yaml@0.1.195':
-    resolution: {integrity: sha512-vJrD8fYMYCOBJciYPV1oOy7z+4r80x4oG4ZFwYc/gMKe2J93z7uZajfBFSHfdhAH0iesIzykr1Ybk2DnL9+7Kw==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-yaml/0.1.195/d5864f390f1371f13cde0de387e792bef598c429}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/core@0.7.242':
-    resolution: {integrity: sha512-fWxbCbPAyyh84oLIslxS2vdHb8uDcNqNDy1aRZcEarGEN7mdNPNCqok543D5KCqwXD/Wbegi7+Snx425T9U0Vw==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.7.242/18e0bb24c985778998b7faef17776049c1e84782}
-
-  '@hcengineering/measurements@0.7.242':
-    resolution: {integrity: sha512-azd72WdoMdQvpvkvUS7C3uIV9QCqk/wND8IWFfPJdzWA+tkGzsmkWw2jBI+l8M0T2WOerpozGiNxGTFfiC/U/Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/measurements/0.7.242/b48fcc2c171a4282e6a71f7cd040703173d09c4f}
-
-  '@hcengineering/platform@0.7.242':
-    resolution: {integrity: sha512-IbKw9w2I57IWsLMLo91s8+6gJoMqXwU0v4+0g0PgL0PVf5GNB/TMy2mWwP1FO26TzPa2awmeZm8TImDX1OjtPQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.7.242/03295880d68708362268f4a1fff83546aa0ad371}
-
-  '@hcengineering/preference@0.7.242':
-    resolution: {integrity: sha512-a5YaKxplzaGsc94ywaH1RL2OTirGYhRryCeBpIeUTwRDq+nSTKmnEkPFmxvGj+u47yKyXI+XSdAhpZawRiBhqA==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.7.242/60c05c79abe301623cd1fdf75edc9cbd09a59ed1}
-
-  '@hcengineering/tags@0.7.242':
-    resolution: {integrity: sha512-MYHE9nb+sKqG4aZkQZimSLm/F7j2nCmTOeq55FRMBqGvFNyJ9iU/+vd7WfQkWMVN+9BdTnVEV4+6IAjgAFD11Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/tags/0.7.242/0ef7f6034822a53e39dcb3f4c7f114636b33f6ae}
-
-  '@hcengineering/theme@0.7.242':
-    resolution: {integrity: sha512-n5V3xWc7j9UabPm9z7mkt1OYKA8efonTggB0PH0g8FnErukebt1i1csjzeENqE/T7XaT47DqGj/6ZbiyU9vf4A==, tarball: https://npm.pkg.github.com/download/@hcengineering/theme/0.7.242/e78e29b3d0e4a400d90960f7135620087ab35a72}
-
-  '@hcengineering/ui@0.7.242':
-    resolution: {integrity: sha512-8msNyxXOHUJKWAEao9GzNK0Z46OtTk+y3eFR07r6CYPOYzKjRnVPNZMfeEx81WsKxGMxj7HDxqV1XHEQiHYAAg==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.7.242/cbc28e51c81490fed8ddc8b8d0ce45ab59ff951f}
-
-  '@hcengineering/view@0.7.242':
-    resolution: {integrity: sha512-qp7mBJ+bKIaH4NiLy34VU1I5jwDia6ezcPtV9SwqK8fl8s+QXWp75KAa7lMVtZZBM07nTLg5qJZNq4oyuIWIow==, tarball: https://npm.pkg.github.com/download/@hcengineering/view/0.7.242/ac007500e9b7b457546cfd4fd66fa3a23a4be3bc}
 
   '@hocuspocus/common@2.15.2':
     resolution: {integrity: sha512-wU1wxXNnQQMXyeL3mdSDYiQsm/r/QyJVjjQhF7sUBrLnjdsN7bA1cvfcSvJBr1ymrMSeYRmUL3UlQmEHEOaP7w==}
@@ -4605,7 +4552,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/collaboration@file:projects/collaboration.tgz':
-    resolution: {integrity: sha512-aDcBIrPlESppS8EWtyzKhLJSC7IEHzPdLxtA05aZtp63v6+LRARuzfhT1x53KJ1u03/2ttjGu/ts7dVEnct2kw==, tarball: file:projects/collaboration.tgz}
+    resolution: {integrity: sha512-Ij/ksdlgcTdsHBU00nzKWoYkQNM0RMJdaPR1ZSmOMlKe9lndge3UT23w3G0KHXelXlkzBxKfKWPEfnAy1biedw==, tarball: file:projects/collaboration.tgz}
     version: 0.0.0
 
   '@rush-temp/collaborator-client@file:projects/collaborator-client.tgz':
@@ -4613,7 +4560,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/collaborator@file:projects/collaborator.tgz':
-    resolution: {integrity: sha512-cGZGxft0YIkGzuUQIhYORUQ00fi/rhyhJnA0TMYMniRDfLLewBPvRtyXIHSHVZG1AJ1TWyyp+Xe+MrKfGYDzFw==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-+WZ7aCQzJBE8eF+5MM4ruyqa73msf/U6AMvX598LOHy6WwTL/id/IXTSyult37VBTYpCa64I6BhD77gTV8D4Rw==, tarball: file:projects/collaborator.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-assets@file:projects/communication-assets.tgz':
@@ -4621,7 +4568,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-client-query@file:projects/communication-client-query.tgz':
-    resolution: {integrity: sha512-6OA/sAql1ZLhhDX9J2yZOAEgfXqSxYh6yxpH/YGrC3PfYyhVAoe7piCjpB+JpKR5wL1kzpl1eP7Bj0IEq2jNJQ==, tarball: file:projects/communication-client-query.tgz}
+    resolution: {integrity: sha512-+68bXbpIU6XTujL5Dj3pFCdFelV7mE+Ln6zZEvf2NPHhAcJqy3+KjHQyIbytnWhCFsGyk+HE3S08ps6Kl6TKtw==, tarball: file:projects/communication-client-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-cockroach@file:projects/communication-cockroach.tgz':
@@ -4629,7 +4576,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz':
-    resolution: {integrity: sha512-MGyVKHjVsubVphvZfGCiHLqMaXiItQvbP8YxoWOXkDdg9OoUwg8u46f6QJD8j6I9E4LorKNGPxhXU4pJzdgxBQ==, tarball: file:projects/communication-query.tgz}
+    resolution: {integrity: sha512-KMDSFpLNW1ekFoAf+BbRxPeRYnMUjYu+l80F+fgtvkKsX/6oKtb6xRhQyVh4EQiRlQBaMV//1b2d7cBwuF5HDw==, tarball: file:projects/communication-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
@@ -4645,11 +4592,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-Yghkuyu3fA3Thmzo36T1nu62wgMI8GHQUTV7fj0dN12/Mi20JckxRSZDVKRnmRGhNqrzbj/O3DXAM02QpDIeAQ==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-HfKzdbndaS3opK1inqcTOrVnKvU7PS2asLmKuR4JHooiTTvFFCHcXXYO++t1QmdGmankZRn3Qsq59CIt/UPgsA==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
-    resolution: {integrity: sha512-SustnNpr/eopCXmm0ZahvUZXZPcD7psSWM+CkWVwiPlLVPGWMVUURFOcnC94F3OhY+7qu9N0Rgr3gDvr4VKXWA==, tarball: file:projects/communication-shared.tgz}
+    resolution: {integrity: sha512-/ZUh5sviGQkQGJnOe6ImJHpKCcn7xNyyMeOcl4Tr3TqXjsH+uOQ0MAFI0Ul4f1LI+dGIrp1QsZWSVWvEVprRQQ==, tarball: file:projects/communication-shared.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-types@file:projects/communication-types.tgz':
@@ -4949,7 +4896,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-uB1RrbistrQwA5PIld+dgw+QnpTtS5i6wdiSAemCBe2ay5hTKExnmINPrgM/p7FEkya2sq3IVZXzric/ZYwnng==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-d/rTH5piCl8x3YfKoZ2yIWklH/MU9h8WrccgwV9VS3a1lYQ2i6l+JVpO/hdMGTN6llF3REFNnMYndfcu8Siy4w==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -5557,7 +5504,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-yUvZa29zEHKk183hweT+OqJYrQtt4WwtYd6X4Y5WknLTG4fnd0kDEyFyOT9LgUUFF0/vW2iVYWLcMU93+W8PUg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-r1AG89qg5hvx+usQjP8KLtkNL/j5z/8OHDcURyAb6yOhWAWNkY5Frs05L9qcPsJoN6raUaZ164jzlk0P2SiPqQ==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -6109,7 +6056,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-vb8UXE1DL6LyA3M51Pj4uKcuxdoaPEYFcNa/P7i0zR8XsebrOJZWNAhvtIsH1NKmNycLBNhvmTxKKEM1XEaiLA==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-2aRRXC4H573M3+OR/vRe5pGoA4tAB3jEbufqAe4/EgKkUHvRlGVZBBUyDAfYtsIHQd7IrAEEVK1NQoC6iZE1Lg==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -6125,7 +6072,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz':
-    resolution: {integrity: sha512-vKLzX1+/6aZmMzsR213dQDXADDE4cDw3M2Ofkn3r7QKV6GidHGHipTlBO4jjsCbYK4G0L1QIf8ZHi7QhpE8icQ==, tarball: file:projects/text-ydoc.tgz}
+    resolution: {integrity: sha512-EdNN9bQUsIb2qPGpotFbm5xIQDH1GJilcCiV66EVTlrsRkQSAjqVDPZyhQALE8200gR8K7OCSayKoQPnb/nPEA==, tarball: file:projects/text-ydoc.tgz}
     version: 0.0.0
 
   '@rush-temp/text@file:projects/text.tgz':
@@ -6149,7 +6096,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-RQFbb0YGcuuAzNtGrbYDMyFE5VKDEsPA+bylES+hRUvKKBou2icVHwzDbFWrdSwGwfrr0ZhXVFQfTwSKOM18Bw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-FwR6SJSyoZvzT/0uIoItaG+S6N+ofaqtNJ4ZXRJ8f454jzOGrzjgjL+BupOX+xJCY4w9zNfpMOIke7e9LPX5pA==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -14495,8 +14442,8 @@ packages:
     peerDependencies:
       yjs: ^13.0.0
 
-  y-prosemirror@1.3.6:
-    resolution: {integrity: sha512-vtS2rv8+ll/TBQRqwUiqflgSuN/DhfvUQX0r5O3o5i0pO6K4pSNgFtVkOKtNWPBVkS6l9BDQjbtnDNftZnxq7Q==}
+  y-prosemirror@1.3.7:
+    resolution: {integrity: sha512-NpM99WSdD4Fx4if5xOMDpPtU3oAmTSjlzh5U4353ABbRHl1HtAFUx6HlebLZfyFxXN9jzKMDkVbcRjqOZVkYQg==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     peerDependencies:
       prosemirror-model: ^1.7.1
@@ -14564,8 +14511,8 @@ packages:
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
-  yjs@13.6.23:
-    resolution: {integrity: sha512-ExtnT5WIOVpkL56bhLeisG/N5c4fmzKn4k0ROVfJa5TY2QHbH7F0Wu2T5ZhR7ErsFWQEFafyrnSI8TPKVF9Few==}
+  yjs@13.6.27:
+    resolution: {integrity: sha512-OIDwaflOaq4wC6YlPBy2L6ceKeKuF7DeTxx+jPzv1FHn9tCZ0ZwSRnUBxD05E3yed46fv/FWJbvR+Ud7x0L7zw==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
 
   ylru@1.3.2:
@@ -15644,117 +15591,23 @@ snapshots:
       protobufjs: 7.5.3
       yargs: 17.7.2
 
-  '@hcengineering/analytics@0.7.242':
-    dependencies:
-      '@hcengineering/platform': 0.7.242
-
-  '@hcengineering/card@0.7.242':
-    dependencies:
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      '@hcengineering/preference': 0.7.242
-      '@hcengineering/ui': 0.7.242
-      '@hcengineering/view': 0.7.242
-
-  '@hcengineering/communication-sdk-types@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/core': 0.7.242
-      typescript: 5.8.3
-
-  '@hcengineering/communication-shared@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-sdk-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      typescript: 5.8.3
-
-  '@hcengineering/communication-types@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/card': 0.7.242
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/tags': 0.7.242
-      typescript: 5.8.3
-
-  '@hcengineering/communication-yaml@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-shared': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      js-yaml: 4.1.0
-      typescript: 5.8.3
-
-  '@hcengineering/core@0.7.242':
-    dependencies:
-      '@hcengineering/analytics': 0.7.242
-      '@hcengineering/measurements': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      fast-equals: 5.2.2
-
-  '@hcengineering/measurements@0.7.242': {}
-
-  '@hcengineering/platform@0.7.242':
-    dependencies:
-      intl-messageformat: 10.7.14
-
-  '@hcengineering/preference@0.7.242':
-    dependencies:
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      '@hcengineering/ui': 0.7.242
-
-  '@hcengineering/tags@0.7.242':
-    dependencies:
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      '@hcengineering/ui': 0.7.242
-      '@hcengineering/view': 0.7.242
-
-  '@hcengineering/theme@0.7.242':
-    dependencies:
-      '@hcengineering/analytics': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      svelte: 4.2.20
-
-  '@hcengineering/ui@0.7.242':
-    dependencies:
-      '@hcengineering/analytics': 0.7.242
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      '@hcengineering/theme': 0.7.242
-      autolinker: 4.0.0
-      blurhash: 2.0.5
-      date-fns: 2.30.0
-      date-fns-tz: 2.0.0(date-fns@2.30.0)
-      dompurify: 3.2.3
-      emojibase: 16.0.0
-      emojibase-regex: 16.0.0
-      fast-equals: 5.2.2
-      plyr: 3.7.8
-      svelte: 4.2.20
-
-  '@hcengineering/view@0.7.242':
-    dependencies:
-      '@hcengineering/core': 0.7.242
-      '@hcengineering/platform': 0.7.242
-      '@hcengineering/preference': 0.7.242
-      '@hcengineering/ui': 0.7.242
-
   '@hocuspocus/common@2.15.2':
     dependencies:
       lib0: 0.2.99
 
-  '@hocuspocus/provider@2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)':
+  '@hocuspocus/provider@2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)':
     dependencies:
       '@hocuspocus/common': 2.15.2
       '@lifeomic/attempt': 3.0.3
       lib0: 0.2.99
       ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      y-protocols: 1.0.6(yjs@13.6.23)
-      yjs: 13.6.23
+      y-protocols: 1.0.6(yjs@13.6.27)
+      yjs: 13.6.27
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@hocuspocus/server@2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)':
+  '@hocuspocus/server@2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)':
     dependencies:
       '@hocuspocus/common': 2.15.2
       async-lock: 1.4.1
@@ -15762,19 +15615,19 @@ snapshots:
       lib0: 0.2.99
       uuid: 11.1.0
       ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      y-protocols: 1.0.6(yjs@13.6.23)
-      yjs: 13.6.23
+      y-protocols: 1.0.6(yjs@13.6.27)
+      yjs: 13.6.27
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@hocuspocus/transformer@2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))(yjs@13.6.23)':
+  '@hocuspocus/transformer@2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(yjs@13.6.27)':
     dependencies:
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
       '@tiptap/pm': 2.11.7
       '@tiptap/starter-kit': 2.11.7
-      y-prosemirror: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
-      yjs: 13.6.23
+      y-prosemirror: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
+      yjs: 13.6.27
 
   '@humanwhocodes/config-array@0.11.14':
     dependencies:
@@ -19067,7 +18920,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
-      yjs: 13.6.23
+      yjs: 13.6.27
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -19104,10 +18957,10 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/collaborator@file:projects/collaborator.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(@tiptap/pm@2.11.7)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))(y-protocols@1.0.6(yjs@13.6.23))':
+  '@rush-temp/collaborator@file:projects/collaborator.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(@tiptap/pm@2.11.7)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(y-protocols@1.0.6(yjs@13.6.27))':
     dependencies:
-      '@hocuspocus/server': 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
-      '@hocuspocus/transformer': 2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))(yjs@13.6.23)
+      '@hocuspocus/server': 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
+      '@hocuspocus/transformer': 2.15.2(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(yjs@13.6.27)
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
       '@tiptap/html': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
       '@types/body-parser': 1.19.5
@@ -19136,7 +18989,7 @@ snapshots:
       ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
       typescript: 5.8.3
       ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      yjs: 13.6.23
+      yjs: 13.6.27
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@babel/core'
@@ -19232,7 +19085,6 @@ snapshots:
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@hcengineering/communication-yaml': 0.1.195(typescript@5.8.3)
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -19345,7 +19197,6 @@ snapshots:
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@hcengineering/communication-yaml': 0.1.195(typescript@5.8.3)
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       esbuild: 0.25.9
@@ -25243,7 +25094,7 @@ snapshots:
       - node-notifier
       - supports-color
 
-  '@rush-temp/pod-github@file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))':
+  '@rush-temp/pod-github@file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))':
     dependencies:
       '@octokit/types': 12.6.0
       '@octokit/webhooks': 12.2.0
@@ -25252,8 +25103,8 @@ snapshots:
       '@tiptap/extension-bubble-menu': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
       '@tiptap/extension-code': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-code-block': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
-      '@tiptap/extension-collaboration': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
-      '@tiptap/extension-collaboration-cursor': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
+      '@tiptap/extension-collaboration': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
+      '@tiptap/extension-collaboration-cursor': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
       '@tiptap/extension-gapcursor': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
       '@tiptap/extension-heading': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-highlight': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
@@ -26191,7 +26042,7 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
       uuid: 8.3.2
-      yjs: 13.6.23
+      yjs: 13.6.27
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -29995,15 +29846,15 @@ snapshots:
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(highlight.js@11.11.1)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)':
     dependencies:
-      '@hocuspocus/provider': 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+      '@hocuspocus/provider': 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
       '@tiptap/extension-bubble-menu': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
       '@tiptap/extension-bullet-list': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-code': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-code-block': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)
       '@tiptap/extension-code-block-lowlight': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/extension-code-block@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(highlight.js@11.11.1)(lowlight@3.3.0)
-      '@tiptap/extension-collaboration': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
-      '@tiptap/extension-collaboration-cursor': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
+      '@tiptap/extension-collaboration': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
+      '@tiptap/extension-collaboration-cursor': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))
       '@tiptap/extension-hard-break': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-heading': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
       '@tiptap/extension-highlight': 2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))
@@ -30053,11 +29904,11 @@ snapshots:
       tippy.js: 6.3.7
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
-      y-indexeddb: 9.0.12(yjs@13.6.23)
-      y-prosemirror: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
-      y-protocols: 1.0.6(yjs@13.6.23)
-      y-websocket: 2.1.0(yjs@13.6.23)
-      yjs: 13.6.23
+      y-indexeddb: 9.0.12(yjs@13.6.27)
+      y-prosemirror: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
+      y-protocols: 1.0.6(yjs@13.6.27)
+      y-websocket: 2.1.0(yjs@13.6.27)
+      yjs: 13.6.27
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -30166,7 +30017,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))':
+  '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))':
     dependencies:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -30182,8 +30033,8 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
-      y-prosemirror: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
-      yjs: 13.6.23
+      y-prosemirror: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
+      yjs: 13.6.27
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -30427,7 +30278,6 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      js-yaml: 4.1.0
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
       mongodb: 6.16.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
@@ -31579,16 +31429,16 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
 
-  '@tiptap/extension-collaboration-cursor@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))':
+  '@tiptap/extension-collaboration-cursor@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))':
     dependencies:
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
-      y-prosemirror: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+      y-prosemirror: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
 
-  '@tiptap/extension-collaboration@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))':
+  '@tiptap/extension-collaboration@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))(@tiptap/pm@2.11.7)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))':
     dependencies:
       '@tiptap/core': 2.11.7(@tiptap/pm@2.11.7)
       '@tiptap/pm': 2.11.7
-      y-prosemirror: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
+      y-prosemirror: 1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
 
   '@tiptap/extension-document@2.11.7(@tiptap/core@2.11.7(@tiptap/pm@2.11.7))':
     dependencies:
@@ -40806,41 +40656,41 @@ snapshots:
 
   xtend@4.0.2: {}
 
-  y-indexeddb@9.0.12(yjs@13.6.23):
+  y-indexeddb@9.0.12(yjs@13.6.27):
     dependencies:
       lib0: 0.2.89
-      yjs: 13.6.23
+      yjs: 13.6.27
 
-  y-leveldb@0.1.2(yjs@13.6.23):
+  y-leveldb@0.1.2(yjs@13.6.27):
     dependencies:
       level: 6.0.1
-      lib0: 0.2.99
-      yjs: 13.6.23
+      lib0: 0.2.109
+      yjs: 13.6.27
     optional: true
 
-  y-prosemirror@1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23):
+  y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27):
     dependencies:
       lib0: 0.2.109
       prosemirror-model: 1.24.1
       prosemirror-state: 1.4.3
       prosemirror-view: 1.37.2
-      y-protocols: 1.0.6(yjs@13.6.23)
-      yjs: 13.6.23
+      y-protocols: 1.0.6(yjs@13.6.27)
+      yjs: 13.6.27
 
-  y-protocols@1.0.6(yjs@13.6.23):
+  y-protocols@1.0.6(yjs@13.6.27):
     dependencies:
       lib0: 0.2.89
-      yjs: 13.6.23
+      yjs: 13.6.27
 
-  y-websocket@2.1.0(yjs@13.6.23):
+  y-websocket@2.1.0(yjs@13.6.27):
     dependencies:
       lib0: 0.2.89
       lodash.debounce: 4.0.8
-      y-protocols: 1.0.6(yjs@13.6.23)
-      yjs: 13.6.23
+      y-protocols: 1.0.6(yjs@13.6.27)
+      yjs: 13.6.27
     optionalDependencies:
       ws: 6.2.2
-      y-leveldb: 0.1.2(yjs@13.6.23)
+      y-leveldb: 0.1.2(yjs@13.6.27)
 
   y18n@4.0.3: {}
 
@@ -40895,9 +40745,9 @@ snapshots:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
 
-  yjs@13.6.23:
+  yjs@13.6.27:
     dependencies:
-      lib0: 0.2.99
+      lib0: 0.2.109
 
   ylru@1.3.2: {}
 
