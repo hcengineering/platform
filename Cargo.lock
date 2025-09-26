@@ -2303,6 +2303,7 @@ dependencies = [
  "json-patch",
  "jsonptr",
  "ksuid",
+ "lockable",
  "md5",
  "mime",
  "opentelemetry",
@@ -2954,6 +2955,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "lockable"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b0f35193d57711b7b4730a3b888a5033347fb7be1ee9a64a755fa4ee013ef80"
+dependencies = [
+ "derive_more",
+ "futures",
+ "itertools 0.14.0",
+ "lru 0.14.0",
+ "tokio",
+]
+
+[[package]]
 name = "log"
 version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2973,6 +2987,15 @@ name = "lru"
 version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "234cf4f4a04dc1f57e24b96cc0cd600cf2af460d4161ac5ecdd0af8e1f3b2a38"
+dependencies = [
+ "hashbrown 0.15.5",
+]
+
+[[package]]
+name = "lru"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f8cc7106155f10bdf99a6f379688f543ad6596a415375b36a59a054ceda1198"
 dependencies = [
  "hashbrown 0.15.5",
 ]
@@ -3718,7 +3741,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.13.0",
+ "itertools 0.14.0",
  "proc-macro2",
  "quote",
  "syn 2.0.106",
@@ -5173,6 +5196,7 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
+ "futures",
  "hex",
  "hulyrs",
  "rand 0.9.2",

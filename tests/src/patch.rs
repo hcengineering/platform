@@ -1,3 +1,4 @@
+use futures::future::join_all;
 use hulyrs::StatusCode;
 use serde_json::{self as json, Value, json};
 use tanu::{check, check_eq, check_ne, eyre, http::Client};
@@ -327,6 +328,66 @@ pub async fn put_and_patch_json_err() -> eyre::Result<()> {
 
     let json = res.json::<Value>().await?;
     assert_eq!(json, json!({ "a": 1 }));
+
+    Ok(())
+}
+
+#[tanu::test(1)]
+#[tanu::test(2)]
+#[tanu::test(5)]
+#[tanu::test(10)]
+#[tanu::test(50)]
+pub async fn put_and_patch_concurrent(count: usize) -> eyre::Result<()> {
+    let key = random_key();
+
+    let http = Client::new();
+
+    let initial = json!({
+        "a": 0
+    });
+
+    // create new blob
+    let res = http
+        .key_put(&key)
+        .body(json::to_string(&initial)?)
+        .header("huly-merge-strategy", "jsonpatch")
+        .header("content-type", "application/json")
+        .send()
+        .await?;
+
+    check!(res.status().is_success(), "{:#?}", res);
+
+    let patch = json!([
+        { "hop": "inc", "path": "/a", "value": 1 },
+    ]);
+
+    let body: String = json::to_string(&patch)?;
+
+    let futures: Vec<_> = (0..count)
+        .map(|_| {
+            let key = key.clone();
+            let body = body.clone();
+            let http = http.clone();
+
+            async move {
+                http.key_patch(&key)
+                    .body(body)
+                    .header("content-type", "application/json-patch+json")
+                    .send()
+                    .await
+            }
+        })
+        .collect();
+
+    let results = join_all(futures).await;
+    for result in results.iter() {
+        assert!(result.is_ok())
+    }
+
+    let res = http.key_get(&key).send().await?;
+    check!(res.status().is_success(), "{:#?}", res);
+    let json = res.json::<Value>().await?;
+    assert_eq!(json, json!({ "a": count }));
 
     Ok(())
 }

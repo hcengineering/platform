@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
 use actix_cors::Cors;
 use actix_web::{
@@ -8,6 +8,7 @@ use actix_web::{
     middleware::{Next, from_fn},
     web::{self, Data, Path},
 };
+use lockable::LockPool;
 use tracing::*;
 use tracing_actix_web::TracingLogger;
 use uuid::Uuid;
@@ -95,6 +96,7 @@ async fn main() -> anyhow::Result<()> {
         "configuration"
     );
 
+    let lock = Arc::new(LockPool::<String>::new());
     let postgres = postgres::pool().await?;
     let s3 = s3::client().await;
 
@@ -149,6 +151,7 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(Data::new(postgres.clone()))
             .app_data(Data::new(s3.clone()))
+            .app_data(Data::new(lock.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(

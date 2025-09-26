@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, io, str::FromStr, time::SystemTime};
+use std::{collections::HashMap, fmt::Display, io, str::FromStr, sync::Arc, time::SystemTime};
 
 use actix_web::{
     HttpRequest, HttpResponse,
@@ -13,6 +13,7 @@ use actix_web::{
 use aws_sdk_s3::error::SdkError;
 use chrono::{DateTime, Utc};
 use futures::{StreamExt, stream};
+use lockable::LockPool;
 use serde::{Deserialize, Serialize};
 use size::Size;
 use tracing::*;
@@ -219,6 +220,15 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
 
+    let lock_pool = request
+        .app_data::<Data<Arc<LockPool<String>>>>()
+        .unwrap()
+        .to_owned();
+
+    let _guard = lock_pool
+        .async_lock(format!("{}:{}", path.workspace, path.key))
+        .await;
+
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
     let conditionals = validate_put_conditionals(request.request(), &parts)?;
@@ -287,6 +297,15 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
+
+    let lock_pool = request
+        .app_data::<Data<Arc<LockPool<String>>>>()
+        .unwrap()
+        .to_owned();
+
+    let _guard = lock_pool
+        .async_lock(format!("{}:{}", path.workspace, path.key))
+        .await;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
