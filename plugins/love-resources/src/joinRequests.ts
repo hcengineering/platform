@@ -82,7 +82,6 @@ export function closeJoinRequestPopup (): void {
 export async function updateJoinRequest (): Promise<void> {
   const client = await createPulseClient()
   const currentPerson = getCurrentEmployee()
-  console.log('update request')
 
   if (client === undefined) return
 
