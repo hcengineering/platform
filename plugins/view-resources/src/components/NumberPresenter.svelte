@@ -29,5 +29,5 @@
 {#if onChange !== undefined && !readonly}
   <NumberEditor {onChange} {value} {label} {kind} {attribute} />
 {:else}
-  <span>{value || ''}</span>
+  <span>{value != null ? value : ''}</span>
 {/if}
