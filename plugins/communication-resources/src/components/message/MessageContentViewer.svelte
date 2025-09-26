@@ -59,20 +59,20 @@
       })
     }
   }
+
+  function getMaxSize (maxHeight: string): number {
+    const remValue = parseFloat(maxHeight.replace('rem', ''))
+    if (isNaN(remValue) || remValue <= 0) {
+      return 480 // 30rem * 16px
+    }
+    return remValue * 16
+  }
 </script>
 
-{#if isActivityMessage(message)}
-  <ShowMore limit={parseFloat(maxHeight.replace('rem', '')) * 16} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+<ShowMore limit={getMaxSize(maxHeight)} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+  {#if isActivityMessage(message)}
     <ActivityMessageViewer {message} {card} {author} />
-  </ShowMore>
-{:else}
-  <ShowMore limit={parseFloat(maxHeight.replace('rem', '')) * 16} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+  {:else}
     <MarkupMessageViewer message={displayMarkup} />
-  </ShowMore>
-{/if}
-
-<style lang="scss">
-  .removed-label {
-    color: var(--theme-text-placeholder-color);
-  }
-</style>
+  {/if}
+</ShowMore>
