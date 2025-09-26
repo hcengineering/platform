@@ -23,6 +23,7 @@
   import { getResource } from '@hcengineering/platform'
   import { MessageAction } from '@hcengineering/communication'
   import { Ref } from '@hcengineering/core'
+  import { tick } from 'svelte'
 
   import MessageActionsPanel from './MessageActionsPanel.svelte'
   import MessageBody from './MessageBody.svelte'
@@ -147,7 +148,8 @@
   function checkContentHeight (): void {
     if (messageContainer != null && collapsible && !isExpanded) {
       const scrollHeight = messageContainer.scrollHeight
-      const maxHeightPx = parseFloat(maxHeight.replace('rem', '')) * 16 // Convert rem to px
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+      const maxHeightPx = parseFloat(maxHeight.replace('rem', '')) * rootFontSize
       needsExpansion = scrollHeight > maxHeightPx + 20 // 20px threshold
     } else {
       needsExpansion = false
@@ -161,7 +163,9 @@
 
   // Check content height after message updates
   $: if (message != null && messageContainer != null) {
-    setTimeout(checkContentHeight, 100) // Small delay to ensure content is rendered
+    void tick().then(() => {
+      checkContentHeight()
+    })
   }
 </script>
 
@@ -190,7 +194,7 @@
         {card}
         {author}
         {isEditing}
-        compact={compact && (message.thread == null)}
+        compact={compact && message.thread == null}
         {hideAvatar}
         {hideHeader}
         {showThreads}
