@@ -109,7 +109,10 @@
     "AddResult": "Добавить результат",
     "For": "Для",
     "Context": "Контекст",
-    "Attribute": "Аттрибут"
+    "Attribute": "Аттрибут",
+    "ProcessRunned": "Процесс \"{process}\" запущен",
+    "ProcessStateChanged": "Состояние процесса \"{process}\" изменено на \"{state}\"",
+    "ProcessFinished": "Процесс \"{process}\" завершен в состояние \"{state}\""
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

@@ -59,6 +59,7 @@
     "@hcengineering/presence-resources": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/process": "^0.6.0",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/text-editor-resources": "^0.6.0",

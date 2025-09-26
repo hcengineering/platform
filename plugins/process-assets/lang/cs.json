@@ -104,7 +104,10 @@
     "AddResult": "Přidat výsledek",
     "For": "Pro",
     "Context": "Kontext",
-    "Attribute": "Atribut"
+    "Attribute": "Atribut",
+    "ProcessRunned": "Proces \"{process}\" spuštěn",
+    "ProcessStateChanged": "Stav procesu \"{process}\" změněn na \"{state}\"",
+    "ProcessFinished": "Proces \"{process}\" dokončen ve stavu \"{state}\""
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

@@ -108,7 +108,10 @@
     "AddResult": "結果を追加",
     "For": "〜のために",
     "Context": "コンテキスト",
-    "Attribute": "属性"
+    "Attribute": "属性",
+    "ProcessRunned": "プロセス \"{process}\" が開始されました",
+    "ProcessStateChanged": "プロセス \"{process}\" の状態が \"{state}\" に変更されました",
+    "ProcessFinished": "プロセス \"{process}\" が状態 \"{state}\" で終了しました"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
