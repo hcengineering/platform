@@ -160,7 +160,7 @@
         {card}
         {author}
         {isEditing}
-        compact={compact && message.thread == null}
+        compact={compact && message.threads.length === 0}
         {hideAvatar}
         {hideHeader}
         {showThreads}
