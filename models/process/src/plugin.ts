@@ -30,7 +30,8 @@ export default mergeIds(processId, process, {
     ProcessMiddleware: '' as Ref<PresentationMiddlewareFactory>
   },
   ids: {
-    ProcessSettings: '' as Ref<Doc>
+    ProcessSettings: '' as Ref<Doc>,
+    ProcessToDoCreated: '' as Ref<Doc>
   },
   actionImpl: {
     ContinueExecution: '' as ViewAction
@@ -40,6 +41,7 @@ export default mergeIds(processId, process, {
     ContinueExecution: '' as Ref<Action<Doc, any>>
   },
   string: {
+    NewProcessToDo: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     LogAction: '' as IntlString
