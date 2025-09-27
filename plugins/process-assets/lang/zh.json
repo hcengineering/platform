@@ -87,6 +87,7 @@
     "Divide": "除法",
     "Modulo": "取模",
     "Power": "求幂",
+    "Sqrt": "平方根",
     "Round": "四舍五入",
     "Floor": "向下取整",
     "Ceil": "向上取整",

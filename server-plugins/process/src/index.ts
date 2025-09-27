@@ -81,6 +81,7 @@ export default plugin(serverProcessId, {
     Divide: '' as Resource<TransformFunc>,
     Modulo: '' as Resource<TransformFunc>,
     Power: '' as Resource<TransformFunc>,
+    Sqrt: '' as Resource<TransformFunc>,
     Round: '' as Resource<TransformFunc>,
     Absolute: '' as Resource<TransformFunc>,
     Ceil: '' as Resource<TransformFunc>,

@@ -27,7 +27,8 @@
     [plugin.function.Multiply]: '×',
     [plugin.function.Divide]: '/',
     [plugin.function.Modulo]: '%',
-    [plugin.function.Power]: '^'
+    [plugin.function.Power]: '^',
+    [plugin.function.Sqrt]: '√'
   }
 
   $: op = ops[value.func as keyof typeof ops]
@@ -42,7 +43,7 @@
   {/if}
   {#if contextValue && context}
     <ContextValuePresenter {contextValue} {context} {process} />
-  {:else}
+  {:else if val != null}
     {val}
   {/if}
 </div>

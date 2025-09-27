@@ -294,6 +294,7 @@ export default plugin(processId, {
     Divide: '' as Ref<ProcessFunction>,
     Modulo: '' as Ref<ProcessFunction>,
     Power: '' as Ref<ProcessFunction>,
+    Sqrt: '' as Ref<ProcessFunction>,
     Round: '' as Ref<ProcessFunction>,
     Absolute: '' as Ref<ProcessFunction>,
     Ceil: '' as Ref<ProcessFunction>,
