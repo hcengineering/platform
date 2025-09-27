@@ -53,7 +53,7 @@
     "Continue": "继续",
     "RequestFromUser": "从用户请求",
     "EnterValue": "输入值",
-    "OnToDoDone": "完成任务时",
+    "OnToDoDone": "任务完成时",
     "OnSubProcessesDone": "子进程完成时",
     "Result": "结果",
     "RequestResult": "请求结果",
@@ -67,7 +67,7 @@
     "DeleteTransition": "删除转换",
     "DeleteTransitionConfirm": "您确定要删除转换吗？",
     "AddTransition": "添加转换",
-    "ToDo": "待办事项",
+    "ToDo": "任务",
     "CurrentCard": "当前卡片",
     "Data": "数据",
     "Transitions": "转换",
@@ -113,7 +113,8 @@
     "Attribute": "属性",
     "ProcessRunned": "过程 \"{process}\" 已启动",
     "ProcessStateChanged": "过程 \"{process}\" 状态已更改为 \"{state}\"",
-    "ProcessFinished": "过程 \"{process}\" 已在状态 \"{state}\" 中完成"
+    "ProcessFinished": "过程 \"{process}\" 已在状态 \"{state}\" 中完成",
+    "NewProcessToDo": "新过程待办事项"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
