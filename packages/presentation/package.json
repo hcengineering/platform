@@ -62,6 +62,7 @@
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/retry": "^0.6.0",
     "@hcengineering/hulylake-client": "^0.6.0",
+    "@hcengineering/hulypulse-client": "^0.6.0",
     "fast-equals": "^5.2.2",
     "png-chunks-extract": "^1.0.0",
     "svelte": "^4.2.20",

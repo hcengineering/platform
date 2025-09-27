@@ -5,6 +5,11 @@
   import love from '../plugin'
   import { liveKitClient, lk } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
+  import { subscribeInviteRequests, unsubscribeInviteRequests } from '../invites'
+  import { Room } from '@hcengineering/love'
+  import { subscribeJoinRequests, unsubscribeJoinRequests } from '../joinRequests'
+  import { Ref } from '@hcengineering/core'
+  import { myInfo } from '../stores'
 
   let parentElement: HTMLDivElement
 
@@ -33,13 +38,26 @@
     }
   }
 
-  onMount(() => {
+  function subscribeRoomRequests (room: Ref<Room> | undefined): void {
+    unsubscribeJoinRequests()
+      .then(() => subscribeJoinRequests(room))
+      .catch((e) => {
+        console.log(e)
+      })
+  }
+
+  $: subscribeRoomRequests($myInfo?.room)
+
+  onMount(async () => {
     pushRootBarComponent('left', love.component.ControlExt, 20)
     lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
+
+    await subscribeInviteRequests()
   })
 
   onDestroy(async () => {
+    await unsubscribeInviteRequests()
     lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     if ($lkSessionConnected) {

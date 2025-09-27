@@ -22,7 +22,6 @@ import { getFollowee, publishData, followeeDataSubscribe, followeeDataUnsubscrib
 
 export { Presence, PresenceAvatars }
 
-export * from './pulse'
 export * from './presence'
 export * from './typing'
 export * from './types'

@@ -13,7 +13,7 @@
 
 import { HulypulseClient } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import presentation from './plugin'
 
 let pulseclient: HulypulseClient | undefined
 
