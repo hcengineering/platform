@@ -11,7 +11,7 @@
     "build": "compile",
     "build:watch": "compile",
     "test": "echo 'run api-test' for API-tests",
-    "api-test": "jest --passWithNoTests --silent --forceExit",
+    "api-test": "jest --coverage --coverageDirectory=./coverage --passWithNoTests --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:test": "echo 'run api-test' for API-tests",

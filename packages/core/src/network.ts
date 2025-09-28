@@ -84,23 +84,18 @@ export class NetworkImpl implements Network, NetworkWithClients {
   }
 
   async agents (): Promise<AgentRecordInfo[]> {
-    return Array.from(
-      this._agents.values().map(({ api, containers }) => ({
-        agentId: api.uuid,
-        endpoint: api.endpoint,
-        kinds: api.kinds,
-        containers: containers.size
-      }))
-    )
+    return Array.from(this._agents.values()).map(({ api, containers }) => ({
+      agentId: api.uuid,
+      endpoint: api.endpoint,
+      kinds: api.kinds,
+      containers: containers.size
+    }))
   }
 
   async kinds (): Promise<ContainerKind[]> {
-    return Array.from(
-      this._agents
-        .values()
-        .map((it) => it.kinds)
-        .flatMap((it) => it)
-    )
+    return Array.from(this._agents.values())
+      .map((it) => it.kinds)
+      .flatMap((it) => it)
   }
 
   async list (kind?: ContainerKind): Promise<ContainerRecord[]> {

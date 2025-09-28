@@ -20,10 +20,10 @@
     "build": "compile",
     "prepublishOnly": "npm run build",
     "build:watch": "compile",
-    "test": "jest --passWithNoTests --silent --forceExit",
+    "test": "jest --coverage --coverageDirectory=./coverage --passWithNoTests --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:test": "jest --coverage --coverageDirectory=./coverage --passWithNoTests --forceExit",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
