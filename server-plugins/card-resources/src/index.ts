@@ -17,15 +17,21 @@ import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   AccountUuid,
   AnyAttribute,
+  ArrOf,
+  Class,
   Data,
   Doc,
+  DocumentUpdate,
   fillDefaults,
   generateId,
   getDiffUpdate,
   Mixin,
+  MixinUpdate,
   notEmpty,
   OperationDomain,
+  PersonId,
   Ref,
+  RefTo,
   Space,
   splitMixinUpdate,
   Tx,
@@ -310,6 +316,18 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   return res
 }
 
+function unwrapPush (push: Record<string, any>): Record<string, any> {
+  const res: Record<string, any> = {}
+  for (const [key, value] of Object.entries(push)) {
+    if (value.$each !== undefined) {
+      res[key] = value.$each
+    } else {
+      res[key] = value
+    }
+  }
+  return res
+}
+
 async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
   const updateTx = ctx[0]
   const doc = (await control.findAll(control.ctx, card.class.Card, { _id: updateTx.objectId }))[0]
@@ -381,7 +399,87 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
   }
 
   res.push(...(await updatePeers(control, doc, updateTx)))
+
+  await updateCollaborators(control, updateTx.operations, doc._class, doc, updateTx.modifiedBy)
   return res
+}
+
+function getUpdateEmployees (
+  control: TriggerControl,
+  field: string,
+  value: any,
+  _class: Ref<Class<Doc>>
+): Ref<Employee>[] | undefined {
+  const res: Ref<Employee>[] = []
+  const attr = control.hierarchy.findAttribute(_class, field)
+  if (attr === undefined) return
+  const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
+  if (parentType._class !== core.class.RefTo) return
+  const to = (parentType as RefTo<Doc>).to
+  if (control.hierarchy.isDerived(to, contact.mixin.Employee)) {
+    if (value != null) {
+      if (Array.isArray(value)) {
+        for (const val of value) {
+          res.push(val)
+        }
+      } else {
+        res.push(value)
+      }
+    }
+  }
+  return res
+}
+
+async function addCollaborators (
+  collaboratorRefs: Set<Ref<Employee>>,
+  control: TriggerControl,
+  doc: Card,
+  modifiedBy: PersonId
+): Promise<void> {
+  if (collaboratorRefs.size > 0) {
+    const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
+      _id: { $in: [...collaboratorRefs] }
+    })
+    const collaborators = employees.map((p) => p.personUuid).filter((p) => p != null)
+    const event: AddCollaboratorsEvent = {
+      type: NotificationEventType.AddCollaborators,
+      cardId: doc._id,
+      cardType: doc._class,
+      collaborators,
+      socialId: modifiedBy
+    }
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+      event
+    })
+  }
+}
+
+async function updateCollaborators (
+  control: TriggerControl,
+  ops: MixinUpdate<Card, Card> | DocumentUpdate<Card>,
+  _class: Ref<Class<Doc>>,
+  doc: Card,
+  modifiedBy: PersonId
+): Promise<void> {
+  const collaboratorRefs = new Set<Ref<Employee>>()
+
+  for (const [field, value] of Object.entries(ops)) {
+    if (field === '$push') {
+      const unwrap = unwrapPush(value)
+      for (const [field, value] of Object.entries(unwrap)) {
+        const col = getUpdateEmployees(control, field, value, _class)
+        if (col !== undefined) {
+          col.map((p) => collaboratorRefs.add(p))
+        }
+      }
+    }
+    if (field.startsWith('$')) continue
+    const col = getUpdateEmployees(control, field, value, _class)
+    if (col !== undefined) {
+      col.map((p) => collaboratorRefs.add(p))
+    }
+  }
+  await addCollaborators(collaboratorRefs, control, doc, modifiedBy)
 }
 
 async function updatePeers (control: TriggerControl, doc: Card, updateTx: TxUpdateDoc<Card>): Promise<Tx[]> {
@@ -668,12 +766,12 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
     }
   }
 
-  await updateCollaborators(control, ctx)
+  await createCollaborators(control, ctx)
 
   return res
 }
 
-async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Card>[]): Promise<void> {
+async function createCollaborators (control: TriggerControl, ctx: TxCreateDoc<Card>[]): Promise<void> {
   for (const tx of ctx) {
     const modifier = await getEmployee(control, tx.modifiedBy)
     const collaborators: AccountUuid[] = []
@@ -736,6 +834,7 @@ export async function OnCardTag (ctx: TxMixin<Card, Card>[], control: TriggerCon
         res.push(control.txFactory.createTxUpdateDoc(it[0], doc.space, doc._id, it[1]))
       }
     }
+    await updateCollaborators(control, tx.attributes, tx.mixin, doc, tx.modifiedBy)
   }
   return res
 }

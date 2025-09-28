@@ -187,7 +187,8 @@ async function getAttrName (
   const { attrKey } = attributeUpdates
 
   try {
-    const attribute = hierarchy.getAttribute(objectClass, attrKey)
+    const attribute = hierarchy.findAttribute(objectClass, attrKey)
+    if (attribute === undefined) return
 
     const label = attribute.shortLabel ?? attribute.label
 
