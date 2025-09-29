@@ -24,7 +24,7 @@
 
   function handleClick (event: MouseEvent): void {
     if (event.target instanceof Node) {
-      const top = $popups[$popups.length - 1].id === popupId
+      const top = $popups.length > 0 && $popups[$popups.length - 1].id === popupId
       if (top && popup !== undefined && !popup.contains(event.target)) {
         event.preventDefault()
         event.stopPropagation()
