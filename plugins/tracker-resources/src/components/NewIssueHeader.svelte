@@ -14,11 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, {
-    AccountRole,
-    Ref,
-    Space,
-  } from '@hcengineering/core'
+  import core, { AccountRole, Ref, Space } from '@hcengineering/core'
   import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
   import { TrackerEvents } from '@hcengineering/tracker'
   import { HeaderButton, showPopup } from '@hcengineering/ui'
@@ -38,7 +34,9 @@
   const query = createQuery()
   const client = getClient()
   const draftController = new MultipleDraftController(tracker.ids.IssueDraft)
-  const newIssueKeyBindingPromise = client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then(p => p?.keyBinding)
+  const newIssueKeyBindingPromise = client
+    .findOne(view.class.Action, { _id: tracker.action.NewIssue })
+    .then((p) => p?.keyBinding)
 
   onDestroy(
     draftController.hasNext((res) => {
@@ -71,20 +69,13 @@
   function updateActions (draft: boolean, project: boolean, closed: boolean): void {
     mainActionId = draft || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
     if (project) {
-      visibleActions = [
-        tracker.string.CreateProject,
-        mainActionId,
-        tracker.string.Import
-      ]
+      visibleActions = [tracker.string.CreateProject, mainActionId, tracker.string.Import]
     } else {
-      visibleActions = [
-        tracker.string.CreateProject
-      ]
+      visibleActions = [tracker.string.CreateProject]
     }
   }
 
   $: updateActions(draftExists, projectExists, closed)
-
 </script>
 
 <HeaderButton
@@ -117,5 +108,6 @@
       label: tracker.string.Import,
       accountRole: AccountRole.User,
       callback: newIssue
-    }]}
+    }
+  ]}
 />

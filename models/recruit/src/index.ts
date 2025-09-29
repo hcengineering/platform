@@ -1020,24 +1020,27 @@ export function createModel (builder: Builder): void {
     },
     override: [recruit.action.CreateGlobalApplication]
   })
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: recruit.component.CreateCandidate,
-      element: 'top'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: recruit.component.CreateCandidate,
+        element: 'top'
+      },
+      label: recruit.string.CreateTalent,
+      icon: recruit.icon.Create,
+      keyBinding: ['keyC'],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: core.class.Doc,
+      context: {
+        mode: ['workbench', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'create'
+      }
     },
-    label: recruit.string.CreateTalent,
-    icon: recruit.icon.Create,
-    keyBinding: ['keyC'],
-    input: 'none',
-    category: recruit.category.Recruit,
-    target: core.class.Doc,
-    context: {
-      mode: ['workbench', 'browser'],
-      application: recruit.app.Recruit,
-      group: 'create'
-    }
-  }, recruit.action.CreateTalent
+    recruit.action.CreateTalent
   )
 
   createAction(builder, {
