@@ -29,7 +29,9 @@ import {
   type SpaceTypeDescriptor,
   type TypedSpace,
   type AccountUuid,
-  type TxAccessLevel
+  type TxAccessLevel,
+  type Tx,
+  type Doc
 } from '@hcengineering/core'
 import {
   ArrOf,

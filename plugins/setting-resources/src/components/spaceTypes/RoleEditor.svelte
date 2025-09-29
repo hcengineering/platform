@@ -43,7 +43,7 @@
   const client = getClient()
 
   let spacePermissions = descriptor.availablePermissions
-  if (spaceType._class === core.class.SpaceType) {
+  if (spaceType._id === core.spaceType.SpacesType) {
     const additionalPermissionsQuery = createQuery()
     additionalPermissionsQuery.query(core.class.Permission, { scope: 'workspace' }, (res) => {
       spacePermissions = descriptor.availablePermissions.concat(res.map((r) => r._id))

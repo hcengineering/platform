@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Blob, Ref, Timestamp } from '@hcengineering/core'
+import type { AccountRole, Blob, Permission, Ref, Timestamp, TypedSpace } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,

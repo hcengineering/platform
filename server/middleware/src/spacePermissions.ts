@@ -45,11 +45,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class SpacePermissionsMiddleware extends BaseMiddleware implements Middleware {
   private whitelistSpaces = new Set<Ref<Space>>()
   private assignmentBySpace: Record<Ref<Space>, RolesAssignment> = {}
-<<<<<<< ours
-  private permissionsBySpace: Record<Ref<Space>, Record<AccountUuid, Set<Ref<Permission>>>> = {}
-=======
-  private permissionsBySpace: Record<Ref<Space>, Record<Ref<Account>, Set<Permission>>> = {}
->>>>>>> theirs
+  private permissionsBySpace: Record<Ref<Space>, Record<AccountUuid, Set<Permission>>> = {}
   private typeBySpace: Record<Ref<Space>, Ref<SpaceType>> = {}
   wasInit: Promise<void> | boolean = false
 
@@ -162,11 +158,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    */
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, tx: TxCUD<Doc>): boolean {
     const account = ctx.contextData.account
-    const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? null
-
-<<<<<<< ours
-    return permissions !== null && permissions.has(id)
-=======
+    const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
     for (const permission of permissions) {
       if (permission.txClass === undefined || permission.txClass !== tx._class) continue
       if (permission.objectClass !== undefined && permission.objectClass !== tx.objectClass) continue
@@ -174,7 +166,6 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     }
 
     return true
->>>>>>> theirs
   }
 
   private throwForbidden (): void {

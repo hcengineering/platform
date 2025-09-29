@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MultipleDraftController } from '@hcengineering/presentation'
-  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import { getClient, MultipleDraftController } from '@hcengineering/presentation'
+  import { HeaderButton, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
   import { Analytics } from '@hcengineering/analytics'
   import { RecruitEvents } from '@hcengineering/recruit'
+  import view from '@hcengineering/view'
+  import { AccountRole } from '@hcengineering/core'
 
   let draftExists = false
 
@@ -28,7 +30,6 @@
   const newRecruitKeyBindingPromise = client
     .findOne(view.class.Action, { _id: recruit.action.CreateTalent })
     .then((p) => p?.keyBinding)
-
 
   onDestroy(
     draftController.hasNext((res) => {
