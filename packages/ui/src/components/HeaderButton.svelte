@@ -21,22 +21,23 @@
   export let loading = false
   export let client: TxOperations & Client
   export let actions: HeaderButtonAction[] = []
-  export let visibleActions: string[] = []
+  export let visibleActions: (string | number | null)[] = []
 
   let allowedActions: HeaderButtonAction[] = []
   let items: HeaderButtonAction[] = []
   let mainAction: HeaderButtonAction | undefined = undefined
   $: filterVisibleActions(allowedActions, visibleActions)
+  $: filterAllowedActions(actions).catch(() => {})
 
   function filterVisibleActions (allowed: HeaderButtonAction[], visible: (string | number | null)[]): void {
-    items = allowed.filter(action => visible.includes(action.id))
-    mainAction = items.find(a => a.id === mainActionId)
+    items = allowed.filter((action) => visible.includes(action.id))
+    mainAction = items.find((a) => a.id === mainActionId)
     if (mainAction === undefined && items.length > 0) {
       mainAction = items[0]
     }
   }
 
-  async function filterAllowedActions (): Promise<SelectPopupValueType[]> {
+  async function filterAllowedActions (actions: HeaderButtonAction[]): Promise<SelectPopupValueType[]> {
     const result: HeaderButtonAction[] = []
     for (const action of actions) {
       if (await isActionAllowed(action)) {
@@ -60,64 +61,60 @@
   }
 </script>
 
-{#await filterAllowedActions()}
-  <Loading shrink />
-{:then filtered}
-  {#if mainAction !== undefined}
-    {#if loading}
-      <Loading shrink />
-    {:else}
-      <div class="antiNav-subheader">
-        {#if items.length === 1}
-          <Button
-            icon={IconAdd}
-            justify="left"
-            kind="primary"
-            label={mainAction.label}
-            width="100%"
-            on:click={mainAction.callback}
-            showTooltip={{
-              direction: 'bottom',
-              label: mainAction.label,
-              keys: mainAction.keyBinding
-            }}
-          >
-            <div slot="content" class="draft-circle-container">
-              {#if mainAction.draft === true}
-                <div class="draft-circle" />
-              {/if}
-            </div>
-          </Button>
-        {:else}
-          <ButtonWithDropdown
-            icon={IconAdd}
-            justify={'left'}
-            kind={'primary'}
-            label={mainAction.label}
-            dropdownItems={items}
-            dropdownIcon={IconDropdown}
-            on:dropdown-selected={(ev) => {
-              items.find((a) => a.id === ev.detail)?.callback()
-            }}
-            on:click={mainAction.callback}
-            mainButtonId={mainAction.id !== null ? String(mainAction.id).replaceAll(':', '-') : undefined}
-            showTooltipMain={{
-              direction: 'bottom',
-              label: mainAction.label,
-              keys: mainAction.keyBinding
-            }}
-          >
-            <div slot="content" class="draft-circle-container">
-              {#if mainAction.draft === true}
-                <div class="draft-circle" />
-              {/if}
-            </div>
-          </ButtonWithDropdown>
-        {/if}
-      </div>
-    {/if}
+{#if mainAction !== undefined}
+  {#if loading}
+    <Loading shrink />
+  {:else}
+    <div class="antiNav-subheader">
+      {#if items.length === 1}
+        <Button
+          icon={IconAdd}
+          justify="left"
+          kind="primary"
+          label={mainAction.label}
+          width="100%"
+          on:click={mainAction.callback}
+          showTooltip={{
+            direction: 'bottom',
+            label: mainAction.label,
+            keys: mainAction.keyBinding
+          }}
+        >
+          <div slot="content" class="draft-circle-container">
+            {#if mainAction.draft === true}
+              <div class="draft-circle" />
+            {/if}
+          </div>
+        </Button>
+      {:else}
+        <ButtonWithDropdown
+          icon={IconAdd}
+          justify={'left'}
+          kind={'primary'}
+          label={mainAction.label}
+          dropdownItems={items}
+          dropdownIcon={IconDropdown}
+          on:dropdown-selected={(ev) => {
+            items.find((a) => a.id === ev.detail)?.callback()
+          }}
+          on:click={mainAction.callback}
+          mainButtonId={mainAction.id !== null ? String(mainAction.id).replaceAll(':', '-') : undefined}
+          showTooltipMain={{
+            direction: 'bottom',
+            label: mainAction.label,
+            keys: mainAction.keyBinding
+          }}
+        >
+          <div slot="content" class="draft-circle-container">
+            {#if mainAction.draft === true}
+              <div class="draft-circle" />
+            {/if}
+          </div>
+        </ButtonWithDropdown>
+      {/if}
+    </div>
   {/if}
-{/await}
+{/if}
 
 <style lang="scss">
   .draft-circle-container {
