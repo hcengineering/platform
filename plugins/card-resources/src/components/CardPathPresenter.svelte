@@ -18,7 +18,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { Icon, tooltip } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { IconForward } from '@hcengineering/presentation'
+  import TagDivider from './TagDivider.svelte'
 
   import { openCardInSidebar } from '../utils'
   import CardIcon from './CardIcon.svelte'
@@ -38,7 +38,7 @@
   {/if}
   {#if card.parent != null}
     {#if displaySpace && card.$lookup?.space !== undefined}
-      <IconForward size={'small'} />
+      <TagDivider />
     {/if}
     {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
     {#if info}
@@ -73,7 +73,7 @@
     border-radius: var(--extra-small-BorderRadius);
     white-space: nowrap;
     gap: 0.25rem;
-    background: var(--global-ui-hover-BackgroundColor);
+    background-color: var(--global-ui-BackgroundColor);
     border: var(--global-subtle-ui-BorderColor);
     color: var(--global-secondary-TextColor);
     cursor: pointer;
