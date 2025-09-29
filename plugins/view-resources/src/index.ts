@@ -236,7 +236,10 @@ export {
   NumberEditor,
   NumberPresenter,
   ObjectIcon,
-  ObjectMention, SortableDocList, SortableList, SortableListItem,
+  ObjectMention,
+  SortableDocList,
+  SortableList,
+  SortableListItem,
   SpaceHeader,
   SpacePresenter,
   StringEditor,
@@ -247,7 +250,9 @@ export {
   TreeItem,
   TreeNode,
   UpDownNavigator,
-  ViewletContentView, ViewletPanelHeader, ViewletSettingButton
+  ViewletContentView,
+  ViewletPanelHeader,
+  ViewletSettingButton
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
