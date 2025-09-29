@@ -4,10 +4,12 @@
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import { Ref, generateId } from '@hcengineering/core'
   import { ReferenceInput } from '@hcengineering/text-editor-resources'
+  import { popupstore as popups } from '@hcengineering/ui'
 
   import { addDocumentCommentFx } from '../../../stores/editors/document'
 
   export let nodeId: string | undefined
+  export let popupId: string | undefined
 
   const dispatch = createEventDispatcher()
 
@@ -22,7 +24,8 @@
 
   function handleClick (event: MouseEvent): void {
     if (event.target instanceof Node) {
-      if (popup !== undefined && !popup.contains(event.target)) {
+      const top = $popups[$popups.length - 1].id === popupId
+      if (top && popup !== undefined && !popup.contains(event.target)) {
         event.preventDefault()
         event.stopPropagation()
         dispatch('close', undefined)
