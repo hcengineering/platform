@@ -165,13 +165,13 @@ function hasSameKeys (target: any, value: any): boolean {
     }
     return true
   } else {
-    return true
+    return typeof target !== 'object' && typeof value !== 'object'
   }
 }
 
 function isModeMatch (mode: Mode, value: any): boolean {
-  if (typeof mode.query === 'object' && (typeof value !== 'object' || Array.isArray(value))) return false
   if (typeof mode.query !== 'object') return typeof value !== 'object' || Array.isArray(value)
+  if (typeof mode.query === 'object' && (typeof value !== 'object' || Array.isArray(value))) return false
   return hasSameKeys(mode.query, value)
 }
 

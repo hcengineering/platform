@@ -92,6 +92,7 @@
             justify: 'left',
             readonly,
             type: attribute?.type,
+            showNavigate: false,
             value: val,
             onChange,
             focus
