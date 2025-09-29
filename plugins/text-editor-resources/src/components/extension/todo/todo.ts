@@ -121,7 +121,7 @@ const todoItemInputRule: () => InputRule = () =>
     find: /^\s*(\[([ xX*])?\])\s$/,
     handler: ({ state, match, range }) => {
       const attributes = {
-        checked: match.length === 3 && match[2] !== ' '
+        checked: match[2] != null && match[2] !== ' '
       }
 
       const type = state.schema.nodes.todoItem
