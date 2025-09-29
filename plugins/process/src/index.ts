@@ -242,7 +242,10 @@ export default plugin(processId, {
     From: '' as IntlString,
     To: '' as IntlString,
     Trigger: '' as IntlString,
-    Actions: '' as IntlString
+    Actions: '' as IntlString,
+    ProcessRunned: '' as IntlString,
+    ProcessStateChanged: '' as IntlString,
+    ProcessFinished: '' as IntlString
   },
   error: {
     MethodNotFound: '' as IntlString,
@@ -291,6 +294,7 @@ export default plugin(processId, {
     Divide: '' as Ref<ProcessFunction>,
     Modulo: '' as Ref<ProcessFunction>,
     Power: '' as Ref<ProcessFunction>,
+    Sqrt: '' as Ref<ProcessFunction>,
     Round: '' as Ref<ProcessFunction>,
     Absolute: '' as Ref<ProcessFunction>,
     Ceil: '' as Ref<ProcessFunction>,

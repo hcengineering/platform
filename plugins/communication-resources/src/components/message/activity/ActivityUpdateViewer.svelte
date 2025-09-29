@@ -22,6 +22,7 @@
   import { Person } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
   import ActivityUpdateTypeViewer from './ActivityUpdateTypeViewer.svelte'
+  import ActivityUpdateProcessViewer from './ActivityUpdateProcessViewer.svelte'
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityUpdate
@@ -38,4 +39,6 @@
   <ActivityUpdateCollaboratorsViewer {update} {card} {author} />
 {:else if update.type === ActivityUpdateType.Type}
   <ActivityUpdateTypeViewer {update} />
+{:else if update.type === ActivityUpdateType.Process}
+  <ActivityUpdateProcessViewer {update} {content} />
 {/if}

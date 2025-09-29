@@ -12,7 +12,7 @@
 <!-- limitations under the License. -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Card, type MasterTag } from '@hcengineering/card'
+  import { Card, CardSpace, type MasterTag } from '@hcengineering/card'
   import core, { DocumentQuery, type Ref, SortingOrder } from '@hcengineering/core'
   import ui, { Label, Scroller, Loading } from '@hcengineering/ui'
   import card from '@hcengineering/card'
@@ -26,6 +26,7 @@
 
   export let _class: Ref<MasterTag> | undefined = undefined
   export let query: DocumentQuery<Card>
+  export let space: Ref<CardSpace> | undefined = undefined
 
   let divScroll: HTMLDivElement
   let limit = limitStep
@@ -109,7 +110,7 @@
 
 <Scroller bind:divScroll {onScroll} padding="2rem 4rem">
   <div class="home">
-    <NewCardForm type={_class !== card.class.Card ? _class : undefined} />
+    <NewCardForm type={_class !== card.class.Card ? _class : undefined} {space} />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}

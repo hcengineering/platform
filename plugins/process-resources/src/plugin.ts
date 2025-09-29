@@ -141,6 +141,7 @@ export default mergeIds(processId, process, {
     Divide: '' as IntlString,
     Modulo: '' as IntlString,
     Power: '' as IntlString,
+    Sqrt: '' as IntlString,
     Round: '' as IntlString,
     Absolute: '' as IntlString,
     Ceil: '' as IntlString,

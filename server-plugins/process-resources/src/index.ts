@@ -62,6 +62,7 @@ import {
   Multiply,
   Offset,
   Power,
+  Sqrt,
   Prepend,
   Random,
   Remove,
@@ -123,6 +124,7 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
       {
         event: process.trigger.OnToDoClose,
         execution: todo.execution,
+        createdOn: tx.modifiedOn,
         context: {
           todo
         }
@@ -143,6 +145,7 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
       {
         event: process.trigger.OnExecutionStart,
         execution: execution._id,
+        createdOn: tx.modifiedOn,
         context: {}
       },
       control
@@ -162,6 +165,7 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
       {
         event: process.trigger.OnToDoRemove,
         execution: removedTodo.execution,
+        createdOn: tx.modifiedOn,
         context: {
           todo: removedTodo
         }
@@ -190,6 +194,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
       {
         event: process.trigger.OnExecutionContinue,
         execution: execution._id,
+        createdOn: tx.modifiedOn,
         context: {}
       },
       control
@@ -271,6 +276,7 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
       {
         event: process.trigger.OnCardUpdate,
         card: cudTx.objectId,
+        createdOn: tx.modifiedOn,
         context: {
           card: card[0],
           operations: ops ?? {}
@@ -282,6 +288,7 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
       {
         event: process.trigger.WhenFieldChanges,
         card: cudTx.objectId,
+        createdOn: tx.modifiedOn,
         context: {
           card: card[0],
           operations: ops ?? {}
@@ -410,6 +417,7 @@ export default async () => ({
     Divide,
     Modulo,
     Power,
+    Sqrt,
     Round,
     Absolute,
     Ceil,

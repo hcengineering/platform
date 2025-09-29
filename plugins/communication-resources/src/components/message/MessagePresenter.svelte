@@ -17,7 +17,7 @@
   import { Person } from '@hcengineering/contact'
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Card } from '@hcengineering/card'
-  import { getEventPositionElement, showPopup, Action, Menu, ShowMore } from '@hcengineering/ui'
+  import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
   import type { MessageID, SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
@@ -151,22 +151,22 @@
   class:noHover={readonly}
   style:padding
 >
-  <ShowMore limit={parseFloat(maxHeight.replace('rem', '')) * 16} ignore={!collapsible}>
-    {#if message.type === MessageType.Activity}
-      <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
-    {:else}
-      <MessageBody
-        {message}
-        {card}
-        {author}
-        {isEditing}
-        compact={compact && message.threads.length === 0}
-        {hideAvatar}
-        {hideHeader}
-        {showThreads}
-      />
-    {/if}
-  </ShowMore>
+  {#if message.type === MessageType.Activity}
+    <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
+  {:else}
+    <MessageBody
+      {message}
+      {card}
+      {author}
+      {isEditing}
+      compact={compact && message.threads.length === 0}
+      {hideAvatar}
+      {hideHeader}
+      {showThreads}
+      {collapsible}
+      {maxHeight}
+    />
+  {/if}
 
   {#if showActions}
     <div class="message__actions" class:opened={isActionsPanelOpened}>
