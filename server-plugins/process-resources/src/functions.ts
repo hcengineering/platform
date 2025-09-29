@@ -120,7 +120,7 @@ export async function AddRelation (
   params: MethodParams<Relation>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
+): Promise<ExecuteResult> {
   const _id = generateId<Relation>()
   const association = params.association as Ref<Association>
   if (isEmpty(association)) {
@@ -140,6 +140,14 @@ export async function AddRelation (
     association,
     docA,
     docB
+  }
+  const exists = await control.client.findOne(core.class.Relation, { docA, docB, association })
+  if (exists !== undefined) {
+    return {
+      txes: [],
+      rollback: [],
+      context: []
+    }
   }
   const resTx = control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)
   const res: Tx[] = [resTx]
