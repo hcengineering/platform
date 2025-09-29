@@ -172,7 +172,7 @@
       bind:content={description}
       placeholder={core.string.Description}
       kind="indented"
-      isScrollable={false}
+      isScrollable={true}
       kitOptions={{ reference: true }}
       enableAttachments={false}
     />
