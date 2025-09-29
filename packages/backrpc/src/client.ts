@@ -164,7 +164,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           case backrpcOperations.responseError: {
             const req = this.requests.get(reqId)
             try {
-              req?.reject(JSON.parse(payload.toString()))
+              const { message, stack } = JSON.parse(payload.toString())
+              req?.reject(new Error(message + '\n' + stack))
             } catch (err: any) {
               console.error(err)
             }

@@ -272,7 +272,8 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             const reqID = reqId.toString()
             const req = this.backRequests.get(reqID)
             try {
-              req?.reject(JSON.parse(payload.toString()))
+              const { message, stack } = JSON.parse(payload.toString())
+              req?.reject(new Error(message + '\n' + stack))
             } catch (err: any) {
               console.error(err)
             }

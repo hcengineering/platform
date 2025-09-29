@@ -309,6 +309,7 @@ export class NetworkImpl implements Network, NetworkWithClients {
     kind: ContainerKind,
     options: GetOptions
   ): Promise<[ContainerUuid, ContainerEndpointRef]> {
+    console.log('Requesting container', clientUuid, kind, options)
     let client = this._clients.get(clientUuid)
     if (client === undefined) {
       client = { lastSeen: this.tickManager.now(), containers: new Set(), agents: new Set() }
