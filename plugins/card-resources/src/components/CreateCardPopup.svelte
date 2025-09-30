@@ -151,6 +151,7 @@
   okLoading={creating}
   canSave={data.title != null && data.title.trim().length > 0 && _space != null}
   onCancel={handleCancel}
+  max-width="90vw"
   on:close
 >
   <div class="hulyModal-content__titleGroup" style="padding: 0">
