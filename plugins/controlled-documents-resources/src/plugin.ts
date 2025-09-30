@@ -44,6 +44,9 @@ export default mergeIds(documentsId, documents, {
     CreateDocumentsSpace: '' as AnyComponent,
     CreateDocumentSpaceType: '' as AnyComponent
   },
+  ids: {
+    AddCommentPopup: '' as Resource<string>
+  },
   string: {
     ID: '' as IntlString,
     ValidationWorkflow: '' as IntlString,
