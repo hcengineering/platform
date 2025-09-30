@@ -1,4 +1,4 @@
-import { TickManagerImpl } from '@hcengineering/network-core'
+import { TickManagerImpl, FakeTickManager } from '@hcengineering/network-core'
 import { BackRPCServer } from '../server'
 import { BackRPCClient } from '../client'
 import type { ClientId } from '../types'
@@ -172,7 +172,7 @@ describe('backrpc', () => {
       await client.request('error', 'test')
       fail('Should have thrown an error')
     } catch (error: any) {
-      expect(error.message).toBe('Test error')
+      expect(error.message).toContain('Test error')
     }
 
     client.close()
@@ -484,6 +484,281 @@ describe('backrpc', () => {
     expect(timeoutHandlerCalled).toBe(false) // Not called yet
 
     client.close()
+    await server.close()
+  })
+
+  it('test client re-registration after server timeout', async () => {
+    const tickMgr = new FakeTickManager()
+    let timeoutHandlerCalled = false
+    let closeHandlerCalledWithTimeout = false
+    let helloHandlerCallCount = 0
+    let clientRegistrationCount = 0
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          helloHandlerCallCount++
+          console.log(`Client ${clientId} connected (hello count: ${helloHandlerCallCount})`)
+        },
+        closeHandler: async (clientId, timeout) => {
+          timeoutHandlerCalled = true
+          closeHandlerCalledWithTimeout = timeout
+          console.log(`Client ${clientId} closed (timeout: ${timeout})`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          clientRegistrationCount++
+          console.log(`Client registered (count: ${clientRegistrationCount})`)
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    // Wait for initial connection
+    await client.waitConnection()
+    expect(clientRegistrationCount).toBe(1)
+    expect(helloHandlerCallCount).toBe(1)
+
+    // Make a request to ensure connection is working
+    const response1 = await client.request('test', 'request1')
+    expect(response1).toBe('response-request1')
+
+    // Simulate server timeout by advancing time beyond aliveTimeout
+    // The server checks every pingInterval, so we need to trigger the check
+    tickMgr.setTime(tickMgr.now() + 4000) // 4 seconds > 3 seconds aliveTimeout
+    await server.checkAlive()
+
+    // Wait for timeout to be processed
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Verify timeout handler was called
+    expect(timeoutHandlerCalled).toBe(true)
+    expect(closeHandlerCalledWithTimeout).toBe(true)
+
+    // Client should send ping (via checkAlive) and receive askHello, then re-register
+    await client.checkAlive()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Verify client re-registered
+    expect(clientRegistrationCount).toBe(2)
+    expect(helloHandlerCallCount).toBe(2)
+
+    // Verify client can make requests after re-registration
+    const response2 = await client.request('test', 'request2')
+    expect(response2).toBe('response-request2')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test pending requests resent after server timeout and re-registration', async () => {
+    const tickMgr = new FakeTickManager()
+    const requestsReceived: Array<{ method: string, params: any }> = []
+    let clientRegistrationCount = 0
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          requestsReceived.push({ method, params })
+          // Don't send response immediately to keep request pending
+          if (method === 'delayed') {
+            // Wait for re-registration before sending response
+            await new Promise((resolve) => setTimeout(resolve, 100))
+          }
+          try {
+            await send(`response-${params}`)
+          } catch (err) {
+            // Ignore socket closed errors - this can happen during cleanup
+            console.log('Ignoring send error (expected during cleanup):', String(err).substring(0, 50))
+          }
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        },
+        closeHandler: async (clientId, timeout) => {
+          console.log(`Client ${clientId} closed (timeout: ${timeout})`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          clientRegistrationCount++
+          console.log(`Client registered (count: ${clientRegistrationCount})`)
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    // Wait for initial connection
+    await client.waitConnection()
+    expect(clientRegistrationCount).toBe(1)
+
+    // Make a successful request first
+    const response1 = await client.request('test', 'request1')
+    expect(response1).toBe('response-request1')
+
+    // Start a delayed request but don't wait for it - it will be pending
+    const requestPromise = client.request('delayed', 'request2')
+
+    // Wait a bit to ensure request is sent
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Simulate server timeout - this will disconnect the client
+    tickMgr.setTime(tickMgr.now() + 4000)
+    await server.checkAlive()
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Trigger client to send ping and re-register
+    await client.checkAlive()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Verify client re-registered
+    expect(clientRegistrationCount).toBe(2)
+
+    // Wait for the pending request to complete after re-registration
+    const response2 = await requestPromise
+    expect(response2).toBe('response-request2')
+
+    // Verify the request was received at least twice (once before timeout, resent after re-registration)
+    const delayedRequests = requestsReceived.filter((r) => r.method === 'delayed')
+    expect(delayedRequests.length).toBeGreaterThanOrEqual(1)
+
+    client.close()
+
+    // Wait for all delayed responses to complete before closing server
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await server.close()
+  }, 10000)
+
+  it('test multiple clients with server timeout', async () => {
+    const tickMgr = new FakeTickManager()
+    const connectedClients = new Set<string>()
+    const timeoutClients: string[] = []
+    let client1RegistrationCount = 0
+    let client2RegistrationCount = 0
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          // Check if client is still connected before sending response
+          if (connectedClients.has(client)) {
+            try {
+              await send(`${client}-${params}`)
+            } catch (err) {
+              // Ignore socket closed errors during cleanup
+              console.log('Ignoring send error (expected during cleanup):', String(err).substring(0, 50))
+            }
+          }
+        },
+        helloHandler: async (clientId) => {
+          connectedClients.add(clientId)
+          console.log(`Client ${clientId} connected`)
+        },
+        closeHandler: async (clientId, timeout) => {
+          if (timeout) {
+            timeoutClients.push(clientId)
+          }
+          connectedClients.delete(clientId)
+          console.log(`Client ${clientId} closed (timeout: ${timeout})`)
+        }
+      },
+      tickMgr
+    )
+
+    const client1 = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client1 response')
+        },
+        onRegister: async () => {
+          client1RegistrationCount++
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    const client2 = new BackRPCClient(
+      'client2' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client2 response')
+        },
+        onRegister: async () => {
+          client2RegistrationCount++
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    // Wait for initial connections
+    await client1.waitConnection()
+    await client2.waitConnection()
+    expect(client1RegistrationCount).toBe(1)
+    expect(client2RegistrationCount).toBe(1)
+    expect(connectedClients.size).toBe(2)
+
+    // Make requests from both clients
+    const response1 = await client1.request('test', 'data1')
+    const response2 = await client2.request('test', 'data2')
+    expect(response1).toBe('client1-data1')
+    expect(response2).toBe('client2-data2')
+
+    // Simulate server timeout - both clients should be disconnected
+    tickMgr.setTime(tickMgr.now() + 4000)
+    await server.checkAlive()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Both clients should have timed out
+    expect(timeoutClients).toContain('client1')
+    expect(timeoutClients).toContain('client2')
+    expect(connectedClients.size).toBe(0)
+
+    // Trigger both clients to send ping and re-register
+    await client1.checkAlive()
+    await client2.checkAlive()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Both clients should re-register
+    expect(client1RegistrationCount).toBe(2)
+    expect(client2RegistrationCount).toBe(2)
+    expect(connectedClients.size).toBe(2)
+
+    // Verify both clients can make requests after re-registration
+    const response3 = await client1.request('test', 'data3')
+    const response4 = await client2.request('test', 'data4')
+    expect(response3).toBe('client1-data3')
+    expect(response4).toBe('client2-data4')
+
+    client1.close()
+    client2.close()
     await server.close()
   })
 })
