@@ -1,0 +1,10 @@
+{
+  "string": {
+    "CreatePublicLink": "Genel bağlantı oluştur",
+    "PublicLink": "Genel bağlantı",
+    "Revoke": "İptal et",
+    "RevokeConfirmation": "Bu, önceden paylaşılan bağlantının çalışmayı durdurmasına neden olur. Bu genel bağlantıyı iptal etmek istediğinizden emin misiniz?",
+    "LinkWasRevoked": "Genel bağlantı iptal edildi",
+    "Copy": "Kopyala"
+  }
+}
