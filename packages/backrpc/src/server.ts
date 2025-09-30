@@ -209,6 +209,9 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             void this.doSend([clientId, backrpcOperations.pong, this.uuid, ''])
             if (client !== undefined) {
               this.handlers.onPing?.(client?.id)
+            } else {
+              // Ping from undefined client mean, we remove it because of inactivity, so we could ask for hello.
+              void this.doSend([clientId, backrpcOperations.askHello, this.uuid, ''])
             }
             break
           }

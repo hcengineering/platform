@@ -7,7 +7,8 @@ export const backrpcOperations = {
   ping: 5,
   pong: 6,
   retry: 7,
-  close: 8
+  close: 8,
+  askHello: 9
 }
 
 export type ClientId = string & { __clientId: string }

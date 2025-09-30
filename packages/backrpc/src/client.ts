@@ -48,6 +48,8 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
   stopTick?: () => void
 
+  lastPong: number = 0
+
   constructor (
     readonly clientId: ClientT,
     readonly client: BackRPCClientHandler,
@@ -190,6 +192,18 @@ export class BackRPCClient<ClientT extends string = ClientId> {
                 )
               })
             }
+            break
+          }
+          case backrpcOperations.pong: {
+            // Server it all fine
+            this.lastPong = this.tickMgr.now()
+            break
+          }
+          case backrpcOperations.askHello: {
+            // Server ask us to re-hello, probably because it has restarted
+            this.serverId = '' // Clear server id for re-register to be performed
+            await this.sendHello()
+            break
           }
         }
       } catch (err: any) {
