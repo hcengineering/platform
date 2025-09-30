@@ -3,7 +3,10 @@
 # Script to bump version of Node.js packages changed since a git revision
 # and update dependencies accordingly in a Rush.js monorepo
 #
-# Usage: ./bump-changes-from-tag.sh <git-revision> [major|minor|patch]
+# Usage: ./bump-changes-from-tag.sh [git-revision] [major|minor|patch]
+# Example: ./bump-changes-from-tag.sh                # Auto-detect latest v*.*.* tag
+# Example: ./bump-changes-from-tag.sh patch          # Auto-detect latest tag + patch bump
+# Example: ./bump-changes-from-tag.sh minor          # Auto-detect latest tag + minor bump
 # Example: ./bump-changes-from-tag.sh HEAD~5
 # Example: ./bump-changes-from-tag.sh HEAD~5 minor
 # Example: ./bump-changes-from-tag.sh v0.7.0 major
@@ -34,17 +37,58 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Function to get the latest tag matching pattern v*.*.* (e.g., v0.7.x)
+get_latest_version_tag() {
+    local latest_tag
+    # Get all tags matching v*.*.* pattern, sort them by version, and pick the latest
+    latest_tag=$(git tag -l 'v*.*.*' | sort -V | tail -n 1)
+    
+    if [ -z "$latest_tag" ]; then
+        print_warning "No version tags found matching v*.*.* pattern"
+        return 1
+    fi
+    
+    echo "$latest_tag"
+}
+
 # Check if git revision is provided
 if [ -z "$1" ]; then
-    print_error "Usage: $0 <git-revision> [major|minor|patch]"
-    print_error "Example: $0 HEAD~5"
-    print_error "Example: $0 HEAD~5 minor"
-    print_error "Example: $0 v0.7.0 major"
-    exit 1
+    # No arguments provided - auto-detect tag and use patch
+    print_info "No git revision provided, attempting to auto-detect latest version tag..."
+    GIT_REVISION=$(get_latest_version_tag)
+    
+    if [ -z "$GIT_REVISION" ]; then
+        print_error "Could not auto-detect latest version tag"
+        print_error ""
+        print_error "Usage: $0 [git-revision] [major|minor|patch]"
+        print_error "Example: $0                    # Auto-detect latest v*.*.* tag, patch bump"
+        print_error "Example: $0 patch              # Auto-detect latest tag + patch bump"
+        print_error "Example: $0 minor              # Auto-detect latest tag + minor bump"
+        print_error "Example: $0 HEAD~5"
+        print_error "Example: $0 HEAD~5 minor"
+        print_error "Example: $0 v0.7.0 major"
+        exit 1
+    fi
+    
+    print_success "Auto-detected latest version tag: $GIT_REVISION"
+    BUMP_TYPE="patch"
+elif [ "$1" = "major" ] || [ "$1" = "minor" ] || [ "$1" = "patch" ]; then
+    # First argument is bump type - auto-detect tag
+    print_info "Bump type '$1' provided, attempting to auto-detect latest version tag..."
+    GIT_REVISION=$(get_latest_version_tag)
+    
+    if [ -z "$GIT_REVISION" ]; then
+        print_error "Could not auto-detect latest version tag"
+        exit 1
+    fi
+    
+    print_success "Auto-detected latest version tag: $GIT_REVISION"
+    BUMP_TYPE="$1"
+else
+    # First argument is git revision
+    GIT_REVISION="$1"
+    BUMP_TYPE="${2:-patch}"  # Default to patch if not specified
 fi
-
-GIT_REVISION="$1"
-BUMP_TYPE="${2:-patch}"  # Default to patch if not specified
 REPO_ROOT=$(git rev-parse --show-toplevel)
 RUSH_JSON="${REPO_ROOT}/rush.json"
 
