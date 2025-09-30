@@ -23,12 +23,14 @@ export interface WorkspaceToken {
   token: string
   workspaceId: WorkspaceUuid
   info: WorkspaceLoginInfo
+  region: string
 }
 
 export async function getWorkspaceToken (
   url: string,
   options: AuthOptions,
-  config?: ServerConfig
+  config?: ServerConfig,
+  region?: string // TODO: Move region into account
 ): Promise<WorkspaceToken> {
   config ??= await loadServerConfig(url)
 
@@ -51,5 +53,5 @@ export async function getWorkspaceToken (
     throw new Error('Workspace not found')
   }
 
-  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace, info: ws }
+  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace, info: ws, region: region ?? '' }
 }

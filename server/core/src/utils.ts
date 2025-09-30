@@ -1,12 +1,11 @@
 import core, {
-  type AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
   systemAccount,
+  toFindResult,
   type Account,
-  type AccountUuid,
   type BackupClient,
   type BrandingMap,
   type BulkUpdateEvent,
@@ -22,18 +21,16 @@ import core, {
   type FindOptions,
   type FindResult,
   type MeasureContext,
-  type ModelDb,
   type OperationDomain,
-  type PersonId,
+  type PermissionsGrant,
   type Ref,
   type SearchResult,
   type SessionData,
+  type SocialStringsToUsers,
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIds,
-  type PermissionsGrant,
-  toFindResult
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -174,14 +171,7 @@ export class SessionDataImpl implements SessionData {
     readonly isAsyncContext: boolean,
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
-    readonly modelDb: ModelDb,
-    readonly socialStringsToUsers: Map<
-    PersonId,
-    {
-      accontUuid: AccountUuid
-      role: AccountRole
-    }
-    >,
+    readonly socialStringsToUsers: SocialStringsToUsers,
     readonly service: string,
     readonly grant?: PermissionsGrant
   ) {
@@ -261,7 +251,6 @@ export function wrapPipeline (
     true,
     undefined,
     undefined,
-    pipeline.context.modelDb,
     new Map(),
     'transactor'
   )

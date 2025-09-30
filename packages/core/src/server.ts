@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
 import { type MeasureContext } from '@hcengineering/measurements'
+import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
 import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
 import { PermissionsGrant, type WorkspaceIds } from './utils'
@@ -48,6 +48,9 @@ export interface BroadcastExcludeResult {
 
 export type BroadcastResult = BroadcastTargetResult | BroadcastExcludeResult | undefined
 export type BroadcastTargets = Record<string, (tx: Tx) => Promise<BroadcastResult>>
+export type SocialStringsToUsers = Map<PersonId, { accountUuid: AccountUuid, role: AccountRole }>
+
+export const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as AccountUuid
 
 export interface SessionData {
   broadcast: {
@@ -65,13 +68,7 @@ export interface SessionData {
   isTriggerCtx?: boolean
   hasDomainBroadcast?: boolean
   workspace: WorkspaceIds
-  socialStringsToUsers: Map<
-  PersonId,
-  {
-    accontUuid: AccountUuid
-    role: AccountRole
-  }
-  >
+  socialStringsToUsers: SocialStringsToUsers
   grant?: PermissionsGrant
 
   asyncRequests?: ((ctx: MeasureContext, id?: string) => Promise<void>)[]

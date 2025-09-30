@@ -143,8 +143,6 @@ export function startHttpServer (
 
   app.use(morgan('short', { stream: myStream }))
 
-  const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
-
   app.get('/api/v1/version', (req, res) => {
     res.writeHead(200, {
       'Content-Type': 'application/json',
@@ -178,7 +176,6 @@ export function startHttpServer (
       const admin = payload.extra?.admin === 'true'
       const jsonData = {
         ...getStatistics(ctx, sessions, admin),
-        users: getUsers(),
         admin,
         profiling
       }

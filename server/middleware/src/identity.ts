@@ -54,7 +54,7 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
       return this.provideTx(ctx, txes)
     }
     function checkTx (tx: Tx): void {
-      const mxAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accontUuid
+      const mxAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accountUuid
       if (mxAccount === undefined || mxAccount !== account.uuid) {
         throw new PlatformError(
           new Status(Severity.ERROR, platform.status.AccountMismatch, {

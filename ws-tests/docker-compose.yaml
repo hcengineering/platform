@@ -303,11 +303,46 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - NETWORK_HOST=huly.local:3737
+      - MODE=standalone
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - REGION=
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
+      - STATS_URL=http://huly.local:4901
+      - FULLTEXT_URL=http://huly.local:4710
+      - DB_URL=${DB_URL}
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8083
+      - ACCOUNTS_URL=http://huly.local:3003
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+      - AI_BOT_URL=http://huly.local:4011
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
+  net-transactor:
+    image: hardcoreeng/transactor
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - mongodb
+      - minio
+      - account
+      - stats
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    ports:
+      - 13738:13738
+    environment:
+      - NETWORK_HOST=huly.local:3737
+      - AGENT_HOST=huly.local:13738
+      - MODE=transactor
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - REGION=
+      - SERVER_SECRET=secret
       - STATS_URL=http://huly.local:4901
       - FULLTEXT_URL=http://huly.local:4710
       - DB_URL=${DB_URL}
@@ -338,6 +373,43 @@ services:
     environment:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3335
+      - REGION=europe
+      - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - FULLTEXT_URL=http://huly.local:4710
+      - STATS_URL=http://huly.local:4901
+      - DB_URL=${DB_EU_URL}
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8083
+      - ACCOUNTS_URL=http://huly.local:3003
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+      - AI_BOT_URL=http://huly.local:4011
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
+    restart: unless-stopped
+  net-transactor-europe:
+    image: hardcoreeng/transactor
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    pull_policy: never
+    links:
+      - cockroach
+      - minio
+      - account
+      - stats
+    ports:
+      - 13739:13739
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - NETWORK_HOST=huly.local:3737
+      - AGENT_HOST=huly.local:13739
+      - MODE=transactor
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      # - SERVER_PORT=3335
       - REGION=europe
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
@@ -428,3 +500,12 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4901
+  huly-net:
+    image: hardcoreeng/network-pod:latest
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 3737:3737
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1
+    restart: unless-stopped

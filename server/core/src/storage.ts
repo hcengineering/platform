@@ -30,6 +30,13 @@ export interface ChunkInfo {
   iterator: StorageIterator
 }
 
+export interface LoadChunkResult {
+  idx: number
+  size?: number
+  docs: DocInfo[]
+  finished: boolean
+}
+
 /**
  * @public
  */
@@ -39,16 +46,7 @@ export class BackupClientOps {
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
 
-  loadChunk (
-    ctx: MeasureContext,
-    domain: Domain,
-    idx?: number
-  ): Promise<{
-      idx: number
-      size?: number
-      docs: DocInfo[]
-      finished: boolean
-    }> {
+  loadChunk (ctx: MeasureContext, domain: Domain, idx?: number): Promise<LoadChunkResult> {
     return ctx.with('load-chunk', {}, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)

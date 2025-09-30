@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/server-client",
-  "version": "0.6.0",
+  "name": "@hcengineering/net-workspace",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -38,13 +38,11 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/client": "^0.6.18",
-    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
-    "ws": "^8.18.2",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/network-client": "^0.7.9",
-    "@hcengineering/network-core": "^0.7.9"
+    "@hcengineering/network-core": "^0.7.9",
+    "@hcengineering/network-server": "^0.7.9"
   }
 }

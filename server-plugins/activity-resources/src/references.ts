@@ -105,7 +105,7 @@ export async function getPersonNotificationTxes (
   const docSpace = (await control.findAll<Space>(control.ctx, core.class.Space, { _id: space }, { limit: 1 }))[0]
   if (docSpace === undefined) return res
 
-  const senderAccount = control.ctx.contextData.socialStringsToUsers.get(senderId)?.accontUuid
+  const senderAccount = control.ctx.contextData.socialStringsToUsers.get(senderId)?.accountUuid
 
   let collaborators: AccountUuid[] = []
 

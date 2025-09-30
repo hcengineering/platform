@@ -14,12 +14,12 @@ export interface ServerEnv {
   brandingPath: string | undefined
 }
 
-export function serverConfigFromEnv (): ServerEnv {
+export function serverConfigFromEnv (ignoreDbUrls: boolean = false): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
   const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'false') === 'true'
 
   const dbUrl = process.env.DB_URL
-  if (dbUrl === undefined) {
+  if (dbUrl === undefined && !ignoreDbUrls) {
     console.error('please provide DB_URL')
     process.exit(1)
   }
@@ -27,7 +27,7 @@ export function serverConfigFromEnv (): ServerEnv {
   const mongoUrl = process.env.MONGO_URL
 
   const fulltextUrl = process.env.FULLTEXT_URL
-  if (fulltextUrl === undefined) {
+  if (fulltextUrl === undefined && !ignoreDbUrls) {
     console.error('please provide Fulltext URL')
     process.exit(1)
   }
@@ -58,9 +58,9 @@ export function serverConfigFromEnv (): ServerEnv {
   const brandingPath = process.env.BRANDING_PATH
 
   return {
-    dbUrl,
+    dbUrl: dbUrl ?? '',
     mongoUrl,
-    fulltextUrl,
+    fulltextUrl: fulltextUrl ?? '',
     serverSecret,
     frontUrl,
     filesUrl,

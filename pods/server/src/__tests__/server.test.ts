@@ -20,14 +20,13 @@ import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 
 import {
-  Hierarchy,
   MeasureMetricsContext,
-  ModelDb,
+  systemAccountUuid,
   toFindResult,
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
-  type Domain,
   type FindOptions,
   type FindResult,
   type MeasureContext,
@@ -36,68 +35,26 @@ import {
   type Ref,
   type SessionData,
   type Space,
-  type Tx,
-  type TxResult,
+  type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { startSessionManager, type SessionManagerOptions } from '@hcengineering/server'
-import { createDummyQueue, createDummyStorageAdapter } from '@hcengineering/server-core'
+import {
+  startSessionManager,
+  type SessionManagerOptions,
+  type Workspace,
+  type WorkspaceFactoryOpt
+} from '@hcengineering/server'
+import { ClientSession, createDummyQueue, createDummyStorageAdapter, type Session } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
-import { genMinModel } from './minmodel'
 
 describe('server', () => {
   const port = 10000
   const handler = new RPCHandler()
-  async function getModelDb (): Promise<{ modelDb: ModelDb, hierarchy: Hierarchy }> {
-    const txes = genMinModel()
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) {
-      hierarchy.tx(tx)
-    }
-    const modelDb = new ModelDb(hierarchy)
-    for (const tx of txes) {
-      await modelDb.tx(tx)
-    }
-    return { modelDb, hierarchy }
-  }
 
   const toolCtx = new MeasureMetricsContext('test', {})
   const opt: SessionManagerOptions = {
-    pipelineFactory: async () => {
-      const { modelDb, hierarchy } = await getModelDb()
-      return {
-        hierarchy,
-        modelDb,
-        context: {} as any,
-        handleBroadcast: async (ctx) => {},
-        findAll: async <T extends Doc>(
-          ctx: MeasureContext,
-          _class: Ref<Class<T>>,
-          query: DocumentQuery<T>,
-          options?: FindOptions<T>
-        ): Promise<FindResult<T>> => toFindResult([]),
-        tx: async (ctx: MeasureContext, tx: Tx[]): Promise<[TxResult, Tx[], string[] | undefined]> => [
-          {},
-          [],
-          undefined
-        ],
-        domainRequest: async (ctx, domain, params) => ({ domain, value: null as any }),
-        closeSession: async (ctx, sessionId) => {},
-        close: async () => {},
-        domains: async () => [],
-        groupBy: async () => new Map(),
-        find: (ctx: MeasureContext, domain: Domain) => ({
-          next: async (ctx: MeasureContext) => undefined,
-          close: async (ctx: MeasureContext) => {}
-        }),
-        load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-        clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-        searchFulltext: async (ctx, query, options) => {
-          return { docs: [] }
-        },
-        loadModel: async (ctx, lastModelTx, hash) => []
-      }
+    workspaceFactory: (ctx, opt: WorkspaceFactoryOpt) => {
+      return createWS(opt.ids, opt.branding, ctx)
     },
     brandingMap: {},
     accountsUrl: '',
@@ -170,51 +127,26 @@ describe('server', () => {
 
   it('reconnect', async () => {
     const opt: SessionManagerOptions = {
-      pipelineFactory: async () => {
-        const { modelDb, hierarchy } = await getModelDb()
-        return {
-          hierarchy,
-          modelDb,
-          context: {} as any,
-          handleBroadcast: async (ctx) => {},
-          findAll: async <T extends Doc>(
-            ctx: MeasureContext<SessionData>,
-            _class: Ref<Class<T>>,
-            query: DocumentQuery<T>,
-            options?: FindOptions<T>
-          ): Promise<FindResult<T>> => {
-            const d: Doc & { sessionId: string } = {
-              _class: 'result' as Ref<Class<Doc>>,
-              _id: '1' as Ref<Doc & { sessionId: string }>,
-              space: '' as Ref<Space>,
-              modifiedBy: '' as PersonId,
-              modifiedOn: Date.now(),
-              sessionId: ctx.contextData.sessionId
-            }
-            return toFindResult([d as unknown as T])
-          },
-          tx: async (ctx: MeasureContext, tx: Tx[]): Promise<[TxResult, Tx[], string[] | undefined]> => [
-            {},
-            [],
-            undefined
-          ],
-          domainRequest: async (ctx, domain, params) => ({ domain, value: null as any }),
-          closeSession: async (ctx, sessionId) => {},
-          groupBy: async () => new Map(),
-          close: async () => {},
-          domains: async () => [],
-          find: (ctx: MeasureContext, domain: Domain) => ({
-            next: async (ctx: MeasureContext) => undefined,
-            close: async (ctx: MeasureContext) => {}
-          }),
-          load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-          upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-          clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-          searchFulltext: async (ctx, query, options) => {
-            return { docs: [] }
-          },
-          loadModel: async (ctx, lastModelTx, hash) => []
+      workspaceFactory: (ctx, opt: WorkspaceFactoryOpt) => {
+        const ws = createWS(opt.ids, opt.branding, ctx)
+        ws.findAll = async <T extends Doc>(
+          ctx: MeasureContext<SessionData>,
+          session: Session,
+          _class: Ref<Class<T>>,
+          query: DocumentQuery<T>,
+          options?: FindOptions<T>
+        ): Promise<FindResult<T>> => {
+          const d: Doc & { sessionId: string } = {
+            _class: 'result' as Ref<Class<Doc>>,
+            _id: '1' as Ref<Doc & { sessionId: string }>,
+            space: '' as Ref<Space>,
+            modifiedBy: '' as PersonId,
+            modifiedOn: Date.now(),
+            sessionId: ctx.contextData.sessionId
+          }
+          return toFindResult([d as unknown as T])
         }
+        return ws
       },
       brandingMap: {},
       accountsUrl: '',
@@ -294,3 +226,46 @@ describe('server', () => {
     }
   })
 })
+function createWS (ids: WorkspaceIds, branding: Branding | null, ctx: MeasureContext<any>): Workspace {
+  return {
+    maintenance: false,
+    softShutdown: 0,
+    tickHash: 0,
+    wsId: ids,
+    branding,
+    workspaceInitCompleted: true,
+    tickHandlers: new Map(),
+    context: ctx,
+    sessions: new Map(),
+    findAll: async () => toFindResult([]),
+    tx: async () => ({}),
+    domainRequest: async (ctx, session, domain) => ({ domain, value: {} }),
+    close: async () => {},
+    loadChunk: async () => ({ finished: true, idx: 0, docs: [] }),
+    closeChunk: async () => {},
+    getDomainHash: async () => '',
+    upload: async () => {},
+    clean: async () => {},
+    searchFulltext: async () => {
+      return { docs: [] }
+    },
+    loadModel: async () => [],
+    loadDocs: async () => [],
+    createSession: async (ctx, sid, token, account) => {
+      return new ClientSession(
+        {
+          account: systemAccountUuid,
+          workspace: ids.uuid
+        },
+        sid,
+        ids,
+        account,
+        true
+      )
+    },
+    closeSession: async () => {},
+    operations: 0,
+    getLastTxHash: async () => ({}),
+    socialStringsToUsers: new Map()
+  } satisfies Workspace
+}

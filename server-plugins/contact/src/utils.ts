@@ -86,7 +86,7 @@ export async function getPerson (control: TriggerControl, personId: PersonId): P
   const { contextData } = control.ctx
   const account: AccountUuid | undefined = contextData.account.socialIds.includes(personId)
     ? contextData.account.uuid
-    : contextData.socialStringsToUsers.get(personId)?.accontUuid
+    : contextData.socialStringsToUsers.get(personId)?.accountUuid
 
   if (account !== undefined) {
     return (await control.findAll(control.ctx, contact.class.Person, { personUuid: account }))[0]
@@ -182,7 +182,7 @@ export async function getSocialIdsByAccounts (
 }
 
 export async function getAccountBySocialId (control: TriggerControl, socialId: PersonId): Promise<AccountUuid | null> {
-  const contextAccount = control.ctx.contextData.socialStringsToUsers.get(socialId)?.accontUuid
+  const contextAccount = control.ctx.contextData.socialStringsToUsers.get(socialId)?.accountUuid
   if (contextAccount != null) {
     return contextAccount
   }

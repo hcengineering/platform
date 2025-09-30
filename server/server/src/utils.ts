@@ -83,7 +83,7 @@ export function processRequest (
 
 export function sendResponse (
   ctx: MeasureContext,
-  session: Session,
+  session: { binaryMode: boolean, useCompression: boolean },
   socket: ConnectionSocket,
   resp: Response<any>
 ): Promise<void> {
