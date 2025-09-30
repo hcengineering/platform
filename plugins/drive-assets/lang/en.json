@@ -27,6 +27,8 @@
     "Rename": "Rename",
     "Restore": "Restore",
     "RoleLabel": "Role",
-    "Root": "/"
+    "Root": "/",
+    "ForbidCreateDrivePermission": "Forbid create drive",
+    "ForbidCreateDrivePermissionDescription": "Forbid users creating new drives"
   }
 }

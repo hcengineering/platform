@@ -161,7 +161,7 @@ test.describe('Tracker tests', () => {
     await issuesPage.inputTextPlaceholderFill('1')
     await issuesPage.setDueDate('19')
     await issuesPage.pressEscapeTwice()
-    await issuesPage.clickOnNewIssue()
+    await issuesPage.clickOnDraftIssue()
     await checkIssueDraft(page, {
       name: issueName,
       description: issueName,

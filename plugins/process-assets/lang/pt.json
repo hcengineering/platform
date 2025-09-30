@@ -114,7 +114,10 @@
     "ProcessRunned": "Processo \"{process}\" iniciado",
     "ProcessStateChanged": "Processo \"{process}\" mudou de estado para \"{state}\"",
     "ProcessFinished": "Processo \"{process}\" finalizado em \"{state}\"",
-    "NewProcessToDo": "Nova ação de processo"
+    "NewProcessToDo": "Nova ação de processo",
+    "EmptyArray": "Array vazio",
+    "ExecutionInitiator": "Iniciador de Execução",
+    "ExecutionStarted": "Execução Iniciada"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

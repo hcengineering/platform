@@ -114,7 +114,10 @@
     "ProcessRunned": "过程 \"{process}\" 已启动",
     "ProcessStateChanged": "过程 \"{process}\" 状态已更改为 \"{state}\"",
     "ProcessFinished": "过程 \"{process}\" 已在状态 \"{state}\" 中完成",
-    "NewProcessToDo": "新过程待办事项"
+    "NewProcessToDo": "新过程待办事项",
+    "EmptyArray": "空数组",
+    "ExecutionInitiator": "执行发起者",
+    "ExecutionStarted": "执行已启动"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

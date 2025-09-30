@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Billing": "Faturalama",
+    "DriveSize": "Dosya boyutu",
+    "DriveCount": "Dosya sayısı",
+    "OfficeSessionsDuration": "Toplantı süresi",
+    "OfficeSessionsBandwidth": "Toplantı bant genişliği",
+    "OfficeEgressDuration": "Kayıt süresi"
+  }
+}

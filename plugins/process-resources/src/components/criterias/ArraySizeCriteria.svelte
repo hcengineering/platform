@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Context, parseContext, Process, SelectedContext } from '@hcengineering/process'
+  import { parseContext, Process, SelectedContext } from '@hcengineering/process'
   import { Button, Component, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
@@ -30,6 +30,7 @@
   export let attribute: AnyAttribute
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   $: context = getContext(client, process, core.class.TypeNumber, 'attribute')
 
@@ -58,8 +59,6 @@
     val = value
     dispatch('change', val)
   }
-
-  const client = getClient()
 </script>
 
 <div class="text-input" class:context={contextValue}>

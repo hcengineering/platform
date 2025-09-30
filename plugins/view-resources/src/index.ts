@@ -20,7 +20,9 @@ import { canCopyLink } from '@hcengineering/view'
 import { actionImpl } from './actionImpl'
 import ActionsPopup from './components/ActionsPopup.svelte'
 import ArrayEditor from './components/ArrayEditor.svelte'
+import AssociationPresenter from './components/AssociationPresenter.svelte'
 import AttachedDocPanel from './components/AttachedDocPanel.svelte'
+import BaseDocPresenter from './components/BaseDocPresenter.svelte'
 import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
@@ -59,6 +61,9 @@ import NumberPresenter from './components/NumberPresenter.svelte'
 import ObjectIcon from './components/ObjectIcon.svelte'
 import ObjectMention from './components/ObjectMention.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
+import PersonArrayEditor from './components/PersonArrayEditor.svelte'
+import PersonIdPresenter from './components/PersonIdPresenter.svelte'
+import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import SearchSelector from './components/SearchSelector.svelte'
 import SpaceHeader from './components/SpaceHeader.svelte'
@@ -70,21 +75,25 @@ import StringPresenter from './components/StringPresenter.svelte'
 import Table from './components/Table.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
+import TreeView from './components/TreeView.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
-import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ViewletPanelHeader from './components/ViewletPanelHeader.svelte'
+import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ArrayFilter from './components/filter/ArrayFilter.svelte'
 import DateFilter from './components/filter/DateFilter.svelte'
 import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
 import FilterBar from './components/filter/FilterBar.svelte'
 import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
+import PersonIdFilter from './components/filter/PersonIdFilter.svelte'
+import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import StringFilter from './components/filter/StringFilter.svelte'
 import StringFilterPresenter from './components/filter/StringFilterPresenter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
+import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
 import DividerPresenter from './components/list/DividerPresenter.svelte'
@@ -93,27 +102,19 @@ import ListView from './components/list/ListView.svelte'
 import SortableDocList from './components/list/SortableDocList.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
+import MasterDetailBrowser from './components/masterDetail/MasterDetailBrowser.svelte'
+import MasterDetailView from './components/masterDetail/MasterDetailView.svelte'
 import TreeElement from './components/navigator/TreeElement.svelte'
 import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
+import AddRelationPopup from './components/relation/AddRelationPopup.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
-import PersonArrayEditor from './components/PersonArrayEditor.svelte'
-import PersonIdPresenter from './components/PersonIdPresenter.svelte'
-import PersonIdFilter from './components/filter/PersonIdFilter.svelte'
-import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import AudioViewer from './components/viewer/AudioViewer.svelte'
 import ImageViewer from './components/viewer/ImageViewer.svelte'
-import VideoViewer from './components/viewer/VideoViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
-import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
-import BaseDocPresenter from './components/BaseDocPresenter.svelte'
-import MasterDetailView from './components/masterDetail/MasterDetailView.svelte'
-import AssociationPresenter from './components/AssociationPresenter.svelte'
-import TreeView from './components/TreeView.svelte'
-import MasterDetailBrowser from './components/masterDetail/MasterDetailBrowser.svelte'
-import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
+import VideoViewer from './components/viewer/VideoViewer.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -140,7 +141,9 @@ import {
   valueNinResult
 } from './filter'
 
+import ForbiddenNotification from './components/ForbiddenNotification.svelte'
 import { AggregationMiddleware, AnalyticsMiddleware, ReadOnlyAccessMiddleware } from './middleware'
+import { getLink, openDocFromRef } from './utils'
 import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
   canArchiveSpace,
@@ -151,9 +154,6 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
-import { getLink, openDocFromRef } from './utils'
-import ForbiddenNotification from './components/ForbiddenNotification.svelte'
-export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -170,33 +170,34 @@ export { default as ObjectBoxPopup } from './components/ObjectBoxPopup.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
 export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
 export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
+export { default as PersonIdPresenter } from './components/PersonIdPresenter.svelte'
+export { default as RelationsEditor } from './components/RelationsEditor.svelte'
 export { default as SpaceTypeSelector } from './components/SpaceTypeSelector.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
+export { default as ViewOptions } from './components/ViewOptions.svelte'
+export { default as ViewletClassSettings } from './components/ViewletClassSettings.svelte'
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
-export { default as List } from './components/list/List.svelte'
-export { default as NavLink } from './components/navigator/NavLink.svelte'
-export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
-export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
-export { default as PersonIdPresenter } from './components/PersonIdPresenter.svelte'
 export { default as PersonIdFilter } from './components/filter/PersonIdFilter.svelte'
 export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
-export { default as RelationsEditor } from './components/RelationsEditor.svelte'
+export { default as List } from './components/list/List.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
-export { default as ViewOptions } from './components/ViewOptions.svelte'
-export { default as ViewletClassSettings } from './components/ViewletClassSettings.svelte'
+export { default as NavLink } from './components/navigator/NavLink.svelte'
+export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
+export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 
 export * from './filter'
+export * from './icons'
 export * from './middleware'
+export * from './objectIterator'
 export * from './selection'
 export * from './status'
 export * from './utils'
-export * from './icons'
-export * from './objectIterator'
 export {
   buildModel,
   getActiveViewletId,
@@ -236,8 +237,8 @@ export {
   NumberPresenter,
   ObjectIcon,
   ObjectMention,
-  SortableList,
   SortableDocList,
+  SortableList,
   SortableListItem,
   SpaceHeader,
   SpacePresenter,
@@ -250,8 +251,8 @@ export {
   TreeNode,
   UpDownNavigator,
   ViewletContentView,
-  ViewletSettingButton,
-  ViewletPanelHeader
+  ViewletPanelHeader,
+  ViewletSettingButton
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
@@ -261,6 +262,7 @@ function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
 export default async (): Promise<Resources> => ({
   actionImpl,
   component: {
+    AddRelationPopup,
     ArrayFilter,
     ArrayEditor,
     ClassPresenter,

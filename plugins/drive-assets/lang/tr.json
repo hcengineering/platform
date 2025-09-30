@@ -1,0 +1,32 @@
+{
+  "string": {
+    "Drive": "Sürücü",
+    "Drives": "Sürücüler",
+    "Grid": "Izgara",
+    "File": "Dosya",
+    "Files": "Dosyalar",
+    "FileVersion": "Dosya sürümü",
+    "FileVersions": "Dosya sürümleri",
+    "Folder": "Klasör",
+    "Folders": "Klasörler",
+    "Resource": "Kaynak",
+    "Name": "İsim",
+    "Description": "Açıklama",
+    "Parent": "Üst",
+    "Path": "Yol",
+    "Version": "Sürüm",
+    "Size": "Boyut",
+    "ContentType": "İçerik türü",
+    "LastModified": "Son Değiştirilme",
+    "Download": "İndir",
+    "Upload": "Yükle",
+    "CreateDrive": "Sürücü Oluştur",
+    "CreateFolder": "Klasör Oluştur",
+    "UploadFile": "Dosya Yükle",
+    "EditDrive": "Sürücüyü Düzenle",
+    "Rename": "Yeniden adlandır",
+    "Restore": "Geri yükle",
+    "RoleLabel": "Rol",
+    "Root": "/"
+  }
+}

@@ -94,7 +94,10 @@ export default plugin(serverProcessId, {
     RemoveFirst: '' as Resource<TransformFunc>,
     RemoveLast: '' as Resource<TransformFunc>,
     CurrentUser: '' as Resource<TransformFunc>,
-    CurrentDate: '' as Resource<TransformFunc>
+    CurrentDate: '' as Resource<TransformFunc>,
+    EmptyArray: '' as Resource<TransformFunc>,
+    ExecutionInitiator: '' as Resource<TransformFunc>,
+    ExecutionStarted: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

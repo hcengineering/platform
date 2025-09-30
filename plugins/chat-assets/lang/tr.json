@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Channel": "Kanal",
+    "Channels": "Kanallar",
+    "Chat": "Sohbet",
+    "Description": "Açıklama",
+    "Loading": "Yükleniyor...",
+    "MessageIn": "#{title} içinde mesaj",
+    "Thread": "Başlık",
+    "Threads": "Başlıklar",
+    "Title": "Başlık",
+    "All": "Tüm güncellemeler",
+    "Inbox": "Gelen Kutusu",
+    "ReactedToYourMessage": "mesajınıza tepki verdi",
+    "ClearAll": "Tümünü temizle",
+    "InboxIsClear": "Gelen kutusu temiz",
+    "YouDontHaveAnyNewMessages": "Yeni mesajınız yok"
+  }
+}

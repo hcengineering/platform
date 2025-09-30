@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "İptal",
+    "Retry": "Tekrar Dene",
+    "UploadFiles": "Dosya Yükle",
+    "UploadFolders": "Klasör Yükle",
+    "UploadingTo": "{files, plural, =1 {# dosya} other {# dosya}} yükleniyor:"
+  },
+  "status": {
+    "Error": "Hata",
+    "Waiting": "Bekliyor",
+    "Uploading": "Yükleniyor",
+    "Completed": "Tamamlandı"
+  }
+}
