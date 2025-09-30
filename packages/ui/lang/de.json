@@ -57,6 +57,7 @@
     "Czech": "Tschechisch",
     "German": "Deutsch",
     "Japanese": "Japanisch",
+    "Turkish": "Türkçe",
     "MinutesBefore": "{minutes, plural, =1 {eine Minute vorher} other {# Minuten vorher}}",
     "HoursBefore": "{hours, plural, =1 {eine Stunde vorher} other {# Stunden vorher}}",
     "DaysBefore": "{days, plural, =1 {einen Tag vorher} other {# Tage vorher}}",
