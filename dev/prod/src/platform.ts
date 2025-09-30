@@ -168,7 +168,6 @@ export interface Config {
   GITHUB_APP?: string
   GITHUB_CLIENTID?: string
   GITHUB_URL: string
-  SENTRY_DSN?: string
   LOVE_ENDPOINT?: string
   LIVEKIT_WS?: string
   SIGN_URL?: string

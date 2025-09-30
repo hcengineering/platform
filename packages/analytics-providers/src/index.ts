@@ -15,7 +15,6 @@
 
 export * from './analyticsCollector'
 export * from './posthog'
-export * from './sentry'
 export * from './utils'
 export * from './types'
 export * from './configure'
