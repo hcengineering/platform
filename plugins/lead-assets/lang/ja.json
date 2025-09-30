@@ -34,6 +34,8 @@
     "ConfigDescription": "顧客関係管理のための拡張機能",
     "EditFunnel": "ファネルを編集",
     "FunnelMembers": "メンバー",
-    "RoleLabel": "ロール: {role}"
+    "RoleLabel": "ロール: {role}",
+    "ForbidCreateFunnelPermission": "ファネルの作成禁止",
+    "ForbidCreateFunnelPermissionDescription": "ユーザーが新しいファネルを作成することを禁止します"
   }
 }
