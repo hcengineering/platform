@@ -470,7 +470,7 @@ export function defineFunctions (builder: Builder): void {
     process.function.ExecutionInitiator
   )
 
-    builder.createDoc(
+  builder.createDoc(
     process.class.ProcessFunction,
     core.space.Model,
     {

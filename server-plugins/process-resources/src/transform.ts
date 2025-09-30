@@ -385,7 +385,9 @@ export async function ExecutionInitiator (
   control: ProcessControl,
   execution: Execution
 ): Promise<Ref<Person> | undefined> {
-  const socialId = await control.client.findOne(contact.class.SocialIdentity, { _id: (execution.createdBy ?? execution.modifiedBy) as any })
+  const socialId = await control.client.findOne(contact.class.SocialIdentity, {
+    _id: (execution.createdBy ?? execution.modifiedBy) as any
+  })
   return socialId?.attachedTo
 }
 
