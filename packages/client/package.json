@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@hcengineering/network-core": "workspace:^0.7.6",
-    "@hcengineering/network-backrpc": "workspace:^0.7.6",
+    "@hcengineering/network-backrpc": "workspace:^0.7.7",
     "uuid": "^8.3.2"
   },
   "repository": "https://github.com/hcengineering/huly.net",

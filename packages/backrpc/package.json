@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-backrpc",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
