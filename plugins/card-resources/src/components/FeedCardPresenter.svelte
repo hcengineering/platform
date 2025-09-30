@@ -13,11 +13,10 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { createMessagesQuery, MessageViewer } from '@hcengineering/presentation'
-  import { PersonId, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createMessagesQuery } from '@hcengineering/presentation'
+  import { SortingOrder, WithLookup } from '@hcengineering/core'
   import { CardID, Message, MessageType, Label as CardLabel } from '@hcengineering/communication-types'
-  import { getPersonByPersonIdStore } from '@hcengineering/contact-resources'
-  import { Person } from '@hcengineering/contact'
+
   import { MessagePresenter, labelsStore } from '@hcengineering/communication-resources'
   import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
@@ -27,11 +26,10 @@
   import CardTagsColored from './CardTagsColored.svelte'
   import CardPathPresenter from './CardPathPresenter.svelte'
   import CardTimestamp from './CardTimestamp.svelte'
-  import MessagePreview from './preview/MessagePreview.svelte'
 
   import { openCardInSidebar } from '../utils'
 
-  import InboxCardIcon from './InboxCardIcon.svelte'
+  import ColoredCardIcon from './ColoredCardIcon.svelte'
   import TagDivider from './TagDivider.svelte'
   import ContentPreview from './ContentPreview.svelte'
 
@@ -44,31 +42,33 @@
   let message: Message | undefined = undefined
   let messages: Message[] = []
 
-  let socialId: PersonId | undefined = undefined
-  let person: Person | undefined = undefined
+  // Check if the card is a thread type
+  $: isThreadCard = card._class === chat.masterTag.Thread
 
-  $: messagesQuery.query(
-    { cardId: card._id, limit: 5, order: SortingOrder.Ascending },
-    (res) => {
-      messages = res.getResult().reverse()
-      message = messages.findLast((msg) => msg.type === MessageType.Text)
-    },
-    {
-      attachments: true,
-      reactions: true
-    }
-  )
-
-  $: socialId = message?.creator ?? card.modifiedBy
-  $: personStore = getPersonByPersonIdStore([socialId])
-  $: person = $personStore.get(socialId)
+  // Only query messages if this is a thread card
+  $: if (isThreadCard) {
+    messagesQuery.query(
+      { cardId: card._id, limit: 3, order: SortingOrder.Ascending },
+      (res) => {
+        messages = res.getResult().reverse()
+        message = messages.findLast((msg) => msg.type === MessageType.Text)
+      },
+      {
+        attachments: true,
+        reactions: true
+      }
+    )
+  } else {
+    // Clear message data for non-thread cards
+    messages = []
+    message = undefined
+  }
 
   function hasNewMessages (labels: CardLabel[], cardId: CardID): boolean {
     return labels.some((it) => (it.labelId as string) === cardPlugin.label.NewMessages && it.cardId === cardId)
   }
 
-  // Check if the card is a thread type
-  $: isThreadCard = card._class === chat.masterTag.Thread
+  $: truncatedTitle = card.title.length > 300 ? card.title.substring(0, 300) + '...' : card.title
 
   let isActionsOpened = false
 </script>
@@ -77,7 +77,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
   <div class="card__avatar">
-    <InboxCardIcon {card} count={0} />
+    <ColoredCardIcon {card} count={0} />
   </div>
 
   <div class="card__body">
@@ -90,9 +90,9 @@
         {/if}
         <span
           class="card__title overflow-label"
-          use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}
+          use:tooltip={{ label: getEmbeddedLabel(truncatedTitle), textAlign: 'left' }}
         >
-          {card.title}
+          {truncatedTitle}
         </span>
       </div>
       <CardTimestamp date={card.modifiedOn} />
@@ -110,12 +110,6 @@
       {:else if !isThreadCard && card.content}
         <ContentPreview {card} maxHeight={'10rem'} />
       {/if}
-    </div>
-    <div class="card__updates">
-      <div class="card__update-item">
-        <div class="card__update-marker" />
-        <MessagePreview {card} {message} date={new Date(card.modifiedOn)} creator={message?.creator} />
-      </div>
     </div>
     <div class="card__parent" class:wrap={isComfortable2}>
       <CardPathPresenter {card} />
@@ -213,46 +207,6 @@
       display: flex;
       min-height: 1.375rem;
       color: var(--global-secondary-TextColor);
-    }
-
-    &__updates {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      min-width: 0;
-      margin-top: var(--spacing-1);
-      padding-left: 0.5rem;
-    }
-
-    &__update-item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      user-select: none;
-
-      &:first-child .card__update-marker {
-        border-top-left-radius: 0.5rem;
-        border-top-right-radius: 0.5rem;
-      }
-
-      &:last-child .card__update-marker {
-        border-bottom-left-radius: 0.5rem;
-        border-bottom-right-radius: 0.5rem;
-      }
-
-      &:hover .card__update-marker {
-        border-radius: 0.5rem;
-        background: var(--global-primary-LinkColor);
-      }
-    }
-
-    &__update-marker {
-      position: absolute;
-      width: 0.25rem;
-      height: 100%;
-      background: var(--global-ui-highlight-BackgroundColor);
-      border-radius: 0;
     }
 
     &__parent {

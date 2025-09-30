@@ -38,7 +38,11 @@
 <div class="content-preview" class:compact>
   <ShowMore limit={getMaxSize(maxHeight)} ignore={!collapsible}>
     <div class="content-wrapper">
-      <ContentEditor object={card} readonly={true} />
+      <ContentEditor
+        object={card}
+        readonly={true}
+        editorAttributes={{ style: 'font-size: 0.875rem; margin-top: -0.5rem;' }}
+      />
     </div>
   </ShowMore>
 </div>

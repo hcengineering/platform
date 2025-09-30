@@ -48,7 +48,7 @@
 
   {#if count > 0}
     <div class="card-icon__marker">
-      <NotifyMarker {count} size="small" />
+      <NotifyMarker size="small" />
     </div>
   {/if}
 </div>
