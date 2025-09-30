@@ -82,7 +82,7 @@ export class NetworkClientImpl implements NetworkClient {
 
   private readonly client: BackRPCClient<ClientUuid>
 
-  private readonly _agents = new Map<AgentUuid, ClientAgentRecord>()
+  readonly _agents = new Map<AgentUuid, ClientAgentRecord>()
 
   // A set of clients for individual containers or agent TORs
   containerConnections = new Map<ContainerUuid, ContainerConnectionImpl>()
