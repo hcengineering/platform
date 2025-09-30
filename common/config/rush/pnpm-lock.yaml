@@ -34,6 +34,12 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      '@hcengineering/measurements':
+        specifier: ^0.7.0
+        version: 0.7.0
+      '@hcengineering/measurements-otlp':
+        specifier: ^0.7.0
+        version: 0.7.0(encoding@0.1.13)
       '@hocuspocus/provider':
         specifier: ^2.15.2
         version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
@@ -61,48 +67,6 @@ importers:
       '@octokit/webhooks-types':
         specifier: ^7.3.1
         version: 7.5.1
-      '@opentelemetry/api':
-        specifier: ^1.9.0
-        version: 1.9.0
-      '@opentelemetry/api-logs':
-        specifier: ^0.203.0
-        version: 0.203.0
-      '@opentelemetry/auto-instrumentations-node':
-        specifier: ^0.62.0
-        version: 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
-      '@opentelemetry/core':
-        specifier: ^2.0.1
-        version: 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-logs-otlp-http':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-metrics-otlp-http':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-trace-otlp-http':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/id-generator-aws-xray':
-        specifier: ^2.0.0
-        version: 2.0.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/otlp-exporter-base':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources':
-        specifier: ^2.0.1
-        version: 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-metrics':
-        specifier: ^2.0.1
-        version: 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-node':
-        specifier: ^0.203.0
-        version: 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-node':
-        specifier: ^2.0.1
-        version: 2.0.1(@opentelemetry/api@1.9.0)
       '@playwright/test':
         specifier: ^1.48.2
         version: 1.49.1
@@ -165,7 +129,7 @@ importers:
         version: file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/analytics-service':
         specifier: file:./projects/analytics-service.tgz
-        version: file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+        version: file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/api-client':
         specifier: file:./projects/api-client.tgz
         version: file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(utf-8-validate@6.0.4)
@@ -535,12 +499,6 @@ importers:
       '@rush-temp/mail-common':
         specifier: file:./projects/mail-common.tgz
         version: file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
-      '@rush-temp/measurements':
-        specifier: file:./projects/measurements.tgz
-        version: file:projects/measurements.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      '@rush-temp/measurements-otlp':
-        specifier: file:./projects/measurements-otlp.tgz
-        version: file:projects/measurements-otlp.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/media':
         specifier: file:./projects/media.tgz
         version: file:projects/media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -3057,6 +3015,12 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  '@hcengineering/measurements-otlp@0.7.0':
+    resolution: {integrity: sha512-RTvUzeIKvCENCG1k8LOfBrC32GiF6fgPnqLRY5U7rXLZFISF+fLWXk1Kp7NtkbQXBUVj7C6jWfWb8psJKyIuKg==}
+
+  '@hcengineering/measurements@0.7.0':
+    resolution: {integrity: sha512-RxXi7LsInAZNkDPxoS/CcGoEM8FuzYvd5xDyaKu0gQblNXrmMpePzpf4Mk9riJkeocQvzeZnduGSUPdbC6FVCw==}
+
   '@hocuspocus/common@2.15.2':
     resolution: {integrity: sha512-wU1wxXNnQQMXyeL3mdSDYiQsm/r/QyJVjjQhF7sUBrLnjdsN7bA1cvfcSvJBr1ymrMSeYRmUL3UlQmEHEOaP7w==}
 
@@ -4419,7 +4383,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/analytics-service@file:projects/analytics-service.tgz':
-    resolution: {integrity: sha512-SbyEMU4sni8FrKq4fRlrYnrAXKOEXR+MtJq2rqR1H7tR+VHaCNToj9Sb4duvYetvhoMfrcMrJfDFdzALTmcmgw==, tarball: file:projects/analytics-service.tgz}
+    resolution: {integrity: sha512-nV/D7Umpfl8EbdeTJPWFf6TsSGJQBVJm0nzIkugVbscJxRPFXbvVQXvxIwIrciJHUSfJvyn+8PUGb4Io+urU+w==, tarball: file:projects/analytics-service.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics@file:projects/analytics.tgz':
@@ -4583,7 +4547,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-58n6XOZoF73Mv5xxduEr6qD7ROjeb/MfQk3l+0OUtZkYTex+O0bXw8sEuY4rG+zMLOxHVfJ3by+M3esndt2g6A==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-ZcX73ZcvQEn3fa+Pvs34vMTkSEnCnkMtEgTBzqTK+i6dKE4a1HZaTmu1JTTigG4lGmPv9nb+vkgfd8yHcSxiwA==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-rest-client@file:projects/communication-rest-client.tgz':
@@ -4603,7 +4567,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-types@file:projects/communication-types.tgz':
-    resolution: {integrity: sha512-uzZ82V1R+h+TmxBCrmKaAfUgoiX3Z8ciPGrkc42M++M5d5mlfIjTvPh0O+y50pHoFuQ5NQ3pNIjeDkrJE8Dp0w==, tarball: file:projects/communication-types.tgz}
+    resolution: {integrity: sha512-aXzOYngWVAf17BZO3jVuebv3HOlGDTs3l9+TQ7haGXEE4RbioRwfMEvDZUm7KiZvO/ejZlGc2Pu/3h7E54YWMA==, tarball: file:projects/communication-types.tgz}
     version: 0.0.0
 
   '@rush-temp/communication@file:projects/communication.tgz':
@@ -4635,7 +4599,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/core@file:projects/core.tgz':
-    resolution: {integrity: sha512-btPoIQ23cdSItu4ElKOMNXYuXZ5FxH5PjHKpl2aQXeRNgm48Wby1DAdYeTPseiLRRZhnr94amOd3StT1RbnUUA==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-UiUM+J5QIY+nftppcxUvIbrGVnOOrj3uGdiuCky1bYV9rWAvCBEotJ3oEyYhUUsQiGQlZIi82pyfXC1be0Pqrw==, tarball: file:projects/core.tgz}
     version: 0.0.0
 
   '@rush-temp/datalake@file:projects/datalake.tgz':
@@ -4918,14 +4882,6 @@ packages:
     resolution: {integrity: sha512-FmcRe6dmbRK99u1paZJ2+f+JIpt/6rOoCZaSTUW0isvhc5+hNZaqwYFsOMAMuWRNcWlwIclEXwlwkIogHFReKA==, tarball: file:projects/mail.tgz}
     version: 0.0.0
 
-  '@rush-temp/measurements-otlp@file:projects/measurements-otlp.tgz':
-    resolution: {integrity: sha512-OF0gOorTONul+LTXobiri6lEXqLNj5YcJnALqvFArHiEAdDnhu/2d9DqZF/+LyZ+SMtsEthL9UEbxTNb/v62Zg==, tarball: file:projects/measurements-otlp.tgz}
-    version: 0.0.0
-
-  '@rush-temp/measurements@file:projects/measurements.tgz':
-    resolution: {integrity: sha512-9yd6zagtxOkzBu0d8oBpu11i8L8a7mNJDQ4jQzb3qjlbLTeFXzOI49nJueQB4zO2d8lvSNrRWhTwJX0ZDHRp8w==, tarball: file:projects/measurements.tgz}
-    version: 0.0.0
-
   '@rush-temp/media-assets@file:projects/media-assets.tgz':
     resolution: {integrity: sha512-5Ppzy6nUxEpzPMKj0xuJTO5Ai0hLAnC7MpNSQ2/euFK56V7L4VeqP8RIuODpZbxtNQueZgVDe7/HrjQN6hDe+g==, tarball: file:projects/media-assets.tgz}
     version: 0.0.0
@@ -5103,7 +5059,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-process@file:projects/model-process.tgz':
-    resolution: {integrity: sha512-/Qar0A6nR5NxD11A64Alers7Dugvmcdo5h7TAV8NB20EroGB2ATe+rqEb6IQzGQ95zwU0QdZ6znWIAXseFCiHA==, tarball: file:projects/model-process.tgz}
+    resolution: {integrity: sha512-KYA1lJziZLHn/H7Af60nn3W1BCKCp5XDUSH1nCwf3s1vpX/4dRCw9WTGDUYIf0VnpFlr2IaNacsv270ixP64NA==, tarball: file:projects/model-process.tgz}
     version: 0.0.0
 
   '@rush-temp/model-products@file:projects/model-products.tgz':
@@ -5451,7 +5407,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz':
-    resolution: {integrity: sha512-7KLw9Zd8C5hcal9nFPc8zsuWXy8udYCz70h1dsJ9V5vQUnxEL1wyUH2WKSssAsi+yOSy0p0TynCIuIWuH4W0yQ==, tarball: file:projects/pod-process.tgz}
+    resolution: {integrity: sha512-HNjCJu8XARw6z69jefA0UpCQGz64Ieklyr/0rljMQgsle2/S9BJZDgPZbh9JKHctvRWGOO6666JvaYFAxCKF9A==, tarball: file:projects/pod-process.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
@@ -5603,7 +5559,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recruit@file:projects/recruit.tgz':
-    resolution: {integrity: sha512-haibbmoHj99CxThRcs1uk79phPTmJoU0N41EIR5nY76a8434F2H5HxAqVu+lLhZDGajZQitXtEQByDNqgK4kHg==, tarball: file:projects/recruit.tgz}
+    resolution: {integrity: sha512-Q6S3IsrawYcEoxt0bdEQri2gZUFXEw9muto9EviPHS/MUAr3WN/68WhNoq3uHmTbl2Un5zNXeM1nZeBLoo3rDQ==, tarball: file:projects/recruit.tgz}
     version: 0.0.0
 
   '@rush-temp/rekoni-service@file:projects/rekoni-service.tgz':
@@ -6059,7 +6015,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-2aRRXC4H573M3+OR/vRe5pGoA4tAB3jEbufqAe4/EgKkUHvRlGVZBBUyDAfYtsIHQd7IrAEEVK1NQoC6iZE1Lg==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-cuY6deLmbq73Rd72z7F2kq8olFFWw+6E053bWb0LqIcJqxPlK2eJkZLgmCpOghVSMzQCb00bQ6lPI4PIUFlJGg==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -6075,7 +6031,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz':
-    resolution: {integrity: sha512-EdNN9bQUsIb2qPGpotFbm5xIQDH1GJilcCiV66EVTlrsRkQSAjqVDPZyhQALE8200gR8K7OCSayKoQPnb/nPEA==, tarball: file:projects/text-ydoc.tgz}
+    resolution: {integrity: sha512-7gAsQxiYN/g2MBMo+mvH8ck91Sd4FligskIYDHpwl6uI4mtn2qTLT6yTT3rWbsr/dvbIaLeDrzb4mEkE1ugM9Q==, tarball: file:projects/text-ydoc.tgz}
     version: 0.0.0
 
   '@rush-temp/text@file:projects/text.tgz':
@@ -15587,6 +15543,29 @@ snapshots:
       protobufjs: 7.5.3
       yargs: 17.7.2
 
+  '@hcengineering/measurements-otlp@0.7.0(encoding@0.1.13)':
+    dependencies:
+      '@hcengineering/measurements': 0.7.0
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/api-logs': 0.203.0
+      '@opentelemetry/auto-instrumentations-node': 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
+      '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-logs-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-metrics-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/id-generator-aws-xray': 2.0.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/otlp-exporter-base': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 2.0.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-logs': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-metrics': 2.0.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-node': 0.203.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-node': 2.0.1(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
+  '@hcengineering/measurements@0.7.0': {}
+
   '@hocuspocus/common@2.15.2':
     dependencies:
       lib0: 0.2.114
@@ -17841,8 +17820,9 @@ snapshots:
       - svelte
       - ts-node
 
-  '@rush-temp/analytics-service@file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+  '@rush-temp/analytics-service@file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
+      '@hcengineering/measurements-otlp': 0.7.0(encoding@0.1.13)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -17864,6 +17844,7 @@ snapshots:
       - '@types/node'
       - babel-jest
       - babel-plugin-macros
+      - encoding
       - esbuild
       - node-notifier
       - supports-color
@@ -19473,6 +19454,7 @@ snapshots:
 
   '@rush-temp/core@file:projects/core.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
+      '@hcengineering/measurements': 0.7.0
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -21708,73 +21690,6 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-
-  '@rush-temp/measurements-otlp@file:projects/measurements-otlp.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/api-logs': 0.203.0
-      '@opentelemetry/auto-instrumentations-node': 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
-      '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-logs-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-metrics-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-trace-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/id-generator-aws-xray': 2.0.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/otlp-exporter-base': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-metrics': 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-node': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-node': 2.0.1(@opentelemetry/api@1.9.0)
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      prettier: 3.2.5
-      simplytyped: 3.3.0(typescript@5.8.3)
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - encoding
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-
-  '@rush-temp/measurements@file:projects/measurements.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      prettier: 3.2.5
-      simplytyped: 3.3.0(typescript@5.8.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -30027,7 +29942,6 @@ snapshots:
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      lib0: 0.2.114
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
@@ -32115,7 +32029,7 @@ snapshots:
 
   '@types/pg-pool@2.0.6':
     dependencies:
-      '@types/pg': 8.11.11
+      '@types/pg': 8.15.4
 
   '@types/pg@8.11.11':
     dependencies:
@@ -40650,19 +40564,19 @@ snapshots:
 
   y-indexeddb@9.0.12(yjs@13.6.27):
     dependencies:
-      lib0: 0.2.89
+      lib0: 0.2.114
       yjs: 13.6.27
 
   y-leveldb@0.1.2(yjs@13.6.27):
     dependencies:
       level: 6.0.1
-      lib0: 0.2.109
+      lib0: 0.2.114
       yjs: 13.6.27
     optional: true
 
   y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27):
     dependencies:
-      lib0: 0.2.109
+      lib0: 0.2.114
       prosemirror-model: 1.24.1
       prosemirror-state: 1.4.3
       prosemirror-view: 1.37.2
@@ -40671,7 +40585,7 @@ snapshots:
 
   y-protocols@1.0.6(yjs@13.6.27):
     dependencies:
-      lib0: 0.2.89
+      lib0: 0.2.114
       yjs: 13.6.27
 
   y-websocket@2.1.0(yjs@13.6.27):
@@ -40739,7 +40653,7 @@ snapshots:
 
   yjs@13.6.27:
     dependencies:
-      lib0: 0.2.109
+      lib0: 0.2.114
 
   ylru@1.3.2: {}
 
