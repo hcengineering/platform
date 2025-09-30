@@ -204,6 +204,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   abstract?: string
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
+  externalApprovers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
   ccReason?: string
   ccImpact?: string
@@ -223,6 +224,7 @@ export interface ImportControlledDocument extends ImportDoc {
   category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
+  externalApprovers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
   author?: Ref<Employee>
   owner?: Ref<Employee>
@@ -999,6 +1001,7 @@ export class WorkspaceImporter {
         category: template.category,
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
+        externalApprovers: template.externalApprovers ?? [],
         coAuthors: template.coAuthors ?? [],
         code,
         seqNumber,
@@ -1118,6 +1121,7 @@ export class WorkspaceImporter {
         abstract: document.abstract,
         reviewers: document.reviewers ?? [],
         approvers: document.approvers ?? [],
+        externalApprovers: document.externalApprovers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
         code,

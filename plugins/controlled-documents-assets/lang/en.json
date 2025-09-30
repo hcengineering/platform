@@ -42,6 +42,7 @@
     "SearchDocument": "Search document...",
     "CreateEnVersion": "Create version for review",
     "Approvers": "Approvers",
+    "ExternalApprovers": "External approvers",
     "CoAuthors": "Co-Authors",
     "Status": "Status",
     "TemplateName": "Template name",

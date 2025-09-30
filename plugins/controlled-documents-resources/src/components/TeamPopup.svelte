@@ -11,7 +11,7 @@
     ControlledDocumentState,
     DocumentRequest
   } from '@hcengineering/controlled-documents'
-  import { Class, Ref } from '@hcengineering/core'
+  import { Class, Ref, TxOperations } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { RequestStatus } from '@hcengineering/request'
   import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
@@ -20,6 +20,14 @@
   import documentsRes from '../plugin'
   import { sendApprovalRequest, sendReviewRequest } from '../utils'
   import SignatureDialog from './SignatureDialog.svelte'
+
+  type SendRequestFunc = (
+    client: TxOperations,
+    controlledDoc: ControlledDocument,
+    users: Array<Ref<Employee>>,
+    externalUsers: Array<Ref<Employee>>,
+    oldExternalUsers: Array<Ref<Employee>>
+  ) => Promise<void>
 
   export let controlledDoc: ControlledDocument
   export let requestClass: Ref<Class<DocumentRequest>>
@@ -34,7 +42,7 @@
 
   const docField: keyof ControlledDocument = isReviewRequest ? 'reviewers' : 'approvers'
   const label = isReviewRequest ? documentsRes.string.SelectReviewers : documentsRes.string.SelectApprovers
-  const sendRequestFunc = isReviewRequest ? sendReviewRequest : sendApprovalRequest
+  const sendRequestFunc: SendRequestFunc = isReviewRequest ? sendReviewRequest : sendApprovalRequest
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
@@ -54,12 +62,14 @@
     })
 
   let users: Ref<Employee>[] = controlledDoc[docField] ?? []
+  let externalUsers: Ref<Employee>[] = isReviewRequest ? [] : controlledDoc.externalApprovers ?? []
+  const existingExternalUsers = externalUsers
 
   async function submit (): Promise<void> {
     const complete = async (): Promise<void> => {
       loading = true
 
-      await sendRequestFunc?.(client, controlledDoc, users)
+      await sendRequestFunc?.(client, controlledDoc, users, isReviewRequest ? [] : externalUsers, existingExternalUsers)
 
       loading = false
 
@@ -86,11 +96,11 @@
     }
   }
 
-  $: canSubmit = docRequest === undefined && users.length > 0
+  $: canSubmit = docRequest === undefined && (users.length > 0 || externalUsers.length > 0)
 </script>
 
 <ModernDialog {loading} {label} {canSubmit} on:submit={submit} on:close>
-  <div class="flex-col pt-2">
+  <div class="flex-col pt-2 flex-gap-4">
     <div class="flex">
       <div class="flex labelContainer">
         <div class="label mr-1">
@@ -113,6 +123,31 @@
         />
       </div>
     </div>
+    {#if !isReviewRequest}
+      <div class="flex">
+        <div class="flex labelContainer">
+          <div class="label mr-1">
+            <Label label={documentsRes.string.ExternalApprovers} />
+          </div>
+          {users?.length}
+        </div>
+        <div class="flex-col">
+          <UserBoxItems
+            items={externalUsers}
+            label={documentsRes.string.ExternalApprovers}
+            readonly={controlledDoc.controlledState === ControlledDocumentState.InReview ||
+              controlledDoc.controlledState === ControlledDocumentState.InApproval ||
+              readonly}
+            docQuery={{
+              active: true,
+              role: 'GUEST',
+              _id: { $nin: permittedEmployees }
+            }}
+            on:update={({ detail }) => (externalUsers = detail)}
+          />
+        </div>
+      </div>
+    {/if}
   </div>
 </ModernDialog>
 
