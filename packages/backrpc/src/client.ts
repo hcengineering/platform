@@ -17,6 +17,7 @@ import { timeouts, type TickManager } from '@hcengineering/network-core'
 import * as zmq from 'zeromq'
 import { backrpcOperations, type ClientId } from './types'
 import { context } from './context'
+import { parseJSON, stringifyJSON } from './json-utils'
 
 export type BackRPCResponseSend = (response: any) => Promise<void>
 export interface BackRPCClientHandler {
@@ -113,7 +114,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     await this.doSend([
       backrpcOperations.hello,
       this.clientId as string,
-      JSON.stringify({ aliveTimeout: this.aliveTimeout }),
+      stringifyJSON({ aliveTimeout: this.aliveTimeout }),
       ''
     ])
   }
@@ -143,16 +144,16 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           }
           case backrpcOperations.request:
             {
-              const [method, params] = JSON.parse(payload.toString())
+              const [method, params] = parseJSON(payload.toString())
               void this.client
                 .requestHandler(method, params, async (response: any) => {
-                  await this.doSend([backrpcOperations.response, reqId, JSON.stringify(response)])
+                  await this.doSend([backrpcOperations.response, reqId, stringifyJSON(response)])
                 })
                 .catch((error) => {
                   void this.doSend([
                     backrpcOperations.responseError,
                     reqId,
-                    JSON.stringify({
+                    stringifyJSON({
                       message: error.message ?? '',
                       stack: error.stack ?? ''
                     })
@@ -165,7 +166,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           case backrpcOperations.response: {
             const req = this.requests.get(reqId)
             try {
-              req?.resolve(JSON.parse(payload.toString()))
+              req?.resolve(parseJSON(payload.toString()))
             } catch (err: any) {
               console.error(err)
             }
@@ -175,7 +176,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           case backrpcOperations.responseError: {
             const req = this.requests.get(reqId)
             try {
-              const { message, stack } = JSON.parse(payload.toString())
+              const { message, stack } = parseJSON(payload.toString())
               req?.reject(new Error(message + '\n' + stack))
             } catch (err: any) {
               console.error(err)
@@ -184,7 +185,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
             break
           }
           case backrpcOperations.event: {
-            void this.client.onEvent?.(JSON.parse(payload.toString())).catch((err) => {
+            void this.client.onEvent?.(parseJSON(payload.toString())).catch((err) => {
               console.error('Failed to handle event', err)
             })
             break
@@ -192,9 +193,9 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           case backrpcOperations.retry: {
             const req = this.requests.get(reqId)
             if (req !== undefined) {
-              const count = JSON.parse(payload.toString())
+              const count = parseJSON(payload.toString())
               void this.tickMgr.waitTick(count).then(() => {
-                void this.doSend([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])]).catch(
+                void this.doSend([backrpcOperations.request, reqId, stringifyJSON([req.method, req.params])]).catch(
                   (err) => {
                     console.error('Failed to resend request', err)
                   }
@@ -228,7 +229,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     }
     for (const [reqId, req] of Array.from(this.requests.entries())) {
       try {
-        await this.doSend([backrpcOperations.request, reqId, JSON.stringify([req.method, req.params])])
+        await this.doSend([backrpcOperations.request, reqId, stringifyJSON([req.method, req.params])])
       } catch (err: any) {
         console.error('Failed to resend request', err)
       }
@@ -251,7 +252,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
       const reqId = this.clientId + '-' + this.requestCounter++
       this.requests.set(reqId, { resolve, reject, method, params })
 
-      void this.doSend([backrpcOperations.request, reqId, JSON.stringify([method, params])]).catch((err) => {
+      void this.doSend([backrpcOperations.request, reqId, stringifyJSON([method, params])]).catch((err) => {
         this.requests.delete(reqId) // Cleanup on failure
         reject(err)
       })
@@ -259,7 +260,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   async send (body: any): Promise<any> {
-    await this.doSend([backrpcOperations.event, '', JSON.stringify(body), ''])
+    await this.doSend([backrpcOperations.event, '', stringifyJSON(body), ''])
   }
 
   close (): void {

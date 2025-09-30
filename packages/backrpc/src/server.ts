@@ -19,6 +19,7 @@ import * as zmq from 'zeromq'
 import { backrpcOperations, type ClientId } from './types'
 
 import { context } from './context'
+import { parseJSON, stringifyJSON } from './json-utils'
 
 export interface BackRPCServerHandler<ClientT> {
   requestHandler: (
@@ -182,7 +183,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             // Parse the timeout from the hello message
             let clientAliveTimeout = timeouts.aliveTimeout
             try {
-              const helloData = JSON.parse(payload.toString())
+              const helloData = parseJSON(payload.toString())
               if (helloData.aliveTimeout !== undefined) {
                 clientAliveTimeout = helloData.aliveTimeout
               }
@@ -235,7 +236,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               this.stats.requests++
               if (client === undefined) {
                 // No Client, requests are not possible
-                void this.doSend([clientId, backrpcOperations.retry, reqId, JSON.stringify(1)])
+                void this.doSend([clientId, backrpcOperations.retry, reqId, stringifyJSON(1)])
                 continue
               }
               if (client.requests.has(reqId)) {
@@ -244,20 +245,20 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               }
               if (client.requests.size > this.requestsLimit) {
                 // No Client, requests are not possible
-                void this.doSend([clientId, backrpcOperations.retry, reqId, JSON.stringify(client.requests.size)])
+                void this.doSend([clientId, backrpcOperations.retry, reqId, stringifyJSON(client.requests.size)])
                 continue
               }
 
               client.requestsTotal++
 
-              const [method, params] = JSON.parse(payload.toString())
+              const [method, params] = parseJSON(payload.toString())
 
               const sendError = async (err: Error): Promise<void> => {
                 void this.doSend([
                   clientId,
                   backrpcOperations.responseError,
                   reqId,
-                  JSON.stringify({
+                  stringifyJSON({
                     message: err.message ?? '',
                     stack: err.stack
                   })
@@ -267,7 +268,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               void this.handlers
                 .requestHandler(client.id, method, params, async (response: any) => {
                   client.requests.delete(reqId)
-                  void this.doSend([clientId, backrpcOperations.response, reqId, JSON.stringify(response)])
+                  void this.doSend([clientId, backrpcOperations.response, reqId, stringifyJSON(response)])
                 })
                 .catch((err) => {
                   client.requests.delete(reqId)
@@ -280,7 +281,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             const reqID = reqId.toString()
             const req = this.backRequests.get(reqID)
             try {
-              req?.resolve(JSON.parse(payload.toString()))
+              req?.resolve(parseJSON(payload.toString()))
             } catch (err: any) {
               console.error(err)
             }
@@ -292,7 +293,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             const reqID = reqId.toString()
             const req = this.backRequests.get(reqID)
             try {
-              const { message, stack } = JSON.parse(payload.toString())
+              const { message, stack } = parseJSON(payload.toString())
               req?.reject(new Error(message + '\n' + stack))
             } catch (err: any) {
               console.error(err)
@@ -316,7 +317,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
       const reqId = clientId + '-' + this.requestCounter++
       this.backRequests.set(reqId, { resolve, reject })
 
-      void this.doSend([clientIdentity, backrpcOperations.request, reqId, JSON.stringify([method, params])]).catch(
+      void this.doSend([clientIdentity, backrpcOperations.request, reqId, stringifyJSON([method, params])]).catch(
         (err) => {
           reject(err)
         }
@@ -329,7 +330,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     if (clientIdentity === undefined) {
       throw new Error(`Client ${clientId as string} not found`)
     }
-    await this.doSend([clientIdentity, backrpcOperations.event, '', JSON.stringify(body)])
+    await this.doSend([clientIdentity, backrpcOperations.event, '', stringifyJSON(body)])
   }
 
   async close (): Promise<void> {

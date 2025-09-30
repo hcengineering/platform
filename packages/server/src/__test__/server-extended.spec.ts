@@ -330,8 +330,7 @@ describe('NetworkServer extended tests', () => {
     const clientId = 'test-client' as ClientUuid
     const send = jest.fn()
 
-    await expect(server.requestHandler(clientId, 'unknownMethod', {}, send))
-      .rejects.toThrow('Unknown method')
+    await expect(server.requestHandler(clientId, 'unknownMethod', {}, send)).rejects.toThrow('Unknown method')
 
     await server.close()
   })
@@ -438,7 +437,7 @@ describe('NetworkServer extended tests', () => {
     tickMgr.start()
 
     // Wait for at least one check alive cycle (5 seconds interval)
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     tickMgr.stop()
     await server.close()
