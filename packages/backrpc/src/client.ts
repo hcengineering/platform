@@ -110,7 +110,12 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   private async sendHello (): Promise<void> {
-    await this.doSend([backrpcOperations.hello, this.clientId as string, JSON.stringify({ aliveTimeout: this.aliveTimeout }), ''])
+    await this.doSend([
+      backrpcOperations.hello,
+      this.clientId as string,
+      JSON.stringify({ aliveTimeout: this.aliveTimeout }),
+      ''
+    ])
   }
 
   private async start (): Promise<void> {

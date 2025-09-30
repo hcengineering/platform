@@ -49,7 +49,7 @@ describe('NetworkClientImpl extended tests', () => {
   test('waitConnection with timeout rejects on timeout', async () => {
     mockWaitConnection.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 2000)))
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     await expect(client.waitConnection(100)).rejects.toThrow('Connection timeout')
   })
 
@@ -96,13 +96,13 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler calls correct agent method - getContainer', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       kinds: ['test' as ContainerKind],
       get: jest.fn().mockResolvedValue({ uuid: 'container-1', endpoint: 'endpoint' })
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -118,7 +118,7 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler returns error for unknown agent', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const sendMock = jest.fn()
     await client.requestHandler('getContainer', ['unknown-agent', ['test', {}]], sendMock)
 
@@ -127,12 +127,12 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler calls listContainers', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       list: jest.fn().mockResolvedValue([])
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -148,12 +148,12 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler calls sendContainer', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       request: jest.fn().mockResolvedValue('response')
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -169,12 +169,12 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler calls terminate', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       terminate: jest.fn().mockResolvedValue(undefined)
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -190,11 +190,11 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('requestHandler throws on unknown method', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -207,10 +207,10 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('onEvent calls all listeners', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const listener1 = jest.fn()
     const listener2 = jest.fn()
-    
+
     client.onUpdate(listener1)
     client.onUpdate(listener2)
 
@@ -228,10 +228,10 @@ describe('NetworkClientImpl extended tests', () => {
   test('onEvent handles listener errors gracefully', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-    
+
     const listener1 = jest.fn().mockRejectedValue(new Error('Listener error'))
     const listener2 = jest.fn()
-    
+
     client.onUpdate(listener1)
     client.onUpdate(listener2)
 
@@ -244,13 +244,13 @@ describe('NetworkClientImpl extended tests', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalled()
     expect(listener2).toHaveBeenCalledWith(event)
-    
+
     consoleErrorSpy.mockRestore()
   })
 
   test('handleRefUpdate updates connection when endpoint changes', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const uuid = 'container-1' as ContainerUuid
     const oldEndpoint = JSON.stringify({
       kind: 0, // EndpointKind.direct
@@ -266,25 +266,25 @@ describe('NetworkClientImpl extended tests', () => {
       uuid,
       agentId: 'agent-1'
     }) as ContainerEndpointRef
-    
+
     const mockConnection: any = {
       setConnection: jest.fn(),
       connect: jest.fn().mockResolvedValue(undefined),
       close: jest.fn()
     }
-    
+
     const fakeRef: any = {
       uuid,
       endpoint: oldEndpoint
     }
-    
+
     client.references.set(uuid, {
       kind: 'test' as any,
       ref: fakeRef,
       request: {} as any,
       endpoint: oldEndpoint
     })
-    
+
     client.containerConnections.set(uuid, mockConnection)
 
     await client.handleRefUpdate(uuid, newEndpoint)
@@ -294,7 +294,7 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('handleNewContainer moves reference to new uuid', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const oldUuid = 'container-old' as ContainerUuid
     const newUuid = 'container-new' as ContainerUuid
     const endpoint = JSON.stringify({
@@ -304,12 +304,12 @@ describe('NetworkClientImpl extended tests', () => {
       uuid: oldUuid,
       agentId: 'agent-1'
     }) as ContainerEndpointRef
-    
+
     const fakeRef: any = {
       uuid: oldUuid,
       endpoint
     }
-    
+
     client.references.set(oldUuid, {
       kind: 'test' as any,
       ref: fakeRef,
@@ -327,7 +327,7 @@ describe('NetworkClientImpl extended tests', () => {
   test('onRegister re-registers all agents', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     mockRequest.mockResolvedValue([])
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       kinds: ['test' as ContainerKind],
@@ -335,7 +335,7 @@ describe('NetworkClientImpl extended tests', () => {
       list: jest.fn().mockResolvedValue([]),
       terminate: jest.fn()
     }
-    
+
     client._agents.set('agent-1' as AgentUuid, {
       agent: mockAgent as NetworkAgent,
       register: Promise.resolve(),
@@ -352,7 +352,7 @@ describe('NetworkClientImpl extended tests', () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     client.registered = true
     mockRequest.mockResolvedValue([])
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       kinds: ['test' as ContainerKind],
@@ -371,7 +371,7 @@ describe('NetworkClientImpl extended tests', () => {
   test('doRegister calls agent list and registers containers', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     mockRequest.mockResolvedValue([])
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       kinds: ['test' as ContainerKind],
@@ -400,9 +400,7 @@ describe('NetworkClientImpl extended tests', () => {
       'ar', // opNames.register
       expect.objectContaining({
         uuid: 'agent-1',
-        containers: expect.arrayContaining([
-          expect.objectContaining({ uuid: 'container-1' })
-        ])
+        containers: expect.arrayContaining([expect.objectContaining({ uuid: 'container-1' })])
       })
     )
   })
@@ -411,7 +409,7 @@ describe('NetworkClientImpl extended tests', () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     const containerToClean = 'container-to-clean' as ContainerUuid
     mockRequest.mockResolvedValue([containerToClean])
-    
+
     const mockAgent: Partial<NetworkAgent> = {
       uuid: 'agent-1' as AgentUuid,
       kinds: ['test' as ContainerKind],
@@ -456,7 +454,7 @@ describe('NetworkClientImpl extended tests', () => {
   test('release calls server to release container', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     mockRequest.mockResolvedValue(undefined)
-    
+
     const uuid = 'container-1' as ContainerUuid
     await client.release(uuid)
 
@@ -497,7 +495,7 @@ describe('NetworkClientImpl extended tests', () => {
 
   test('handleConnectionUpdates processes container removed events', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
-    
+
     const uuid = 'container-1' as ContainerUuid
     const endpoint = JSON.stringify({
       kind: 0, // EndpointKind.direct
@@ -506,12 +504,12 @@ describe('NetworkClientImpl extended tests', () => {
       uuid,
       agentId: 'agent-1'
     }) as ContainerEndpointRef
-    
+
     const fakeRef: any = {
       uuid,
       endpoint: 'old-endpoint'
     }
-    
+
     client.references.set(uuid, {
       kind: 'test' as any,
       ref: fakeRef,
@@ -521,16 +519,18 @@ describe('NetworkClientImpl extended tests', () => {
 
     const event: NetworkEvent = {
       agents: [],
-      containers: [{
-        event: NetworkEventKind.removed,
-        container: {
-          agentId: 'agent-1' as AgentUuid,
-          uuid,
-          endpoint,
-          kind: 'test' as ContainerKind,
-          lastVisit: 0
+      containers: [
+        {
+          event: NetworkEventKind.removed,
+          container: {
+            agentId: 'agent-1' as AgentUuid,
+            uuid,
+            endpoint,
+            kind: 'test' as ContainerKind,
+            lastVisit: 0
+          }
         }
-      }]
+      ]
     }
 
     await client.handleConnectionUpdates(event)
@@ -543,11 +543,18 @@ describe('NetworkClientImpl extended tests', () => {
   test('ContainerReferenceImpl close removes reference', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     const uuid = 'container-1' as ContainerUuid
-    const endpoint = JSON.stringify({ kind: 0, host: 'host', port: 3000, uuid, agentId: 'agent-1' }) as ContainerEndpointRef
-    
-    mockRequest.mockResolvedValueOnce([uuid, endpoint]) // For get()
+    const endpoint = JSON.stringify({
+      kind: 0,
+      host: 'host',
+      port: 3000,
+      uuid,
+      agentId: 'agent-1'
+    }) as ContainerEndpointRef
+
+    mockRequest
+      .mockResolvedValueOnce([uuid, endpoint]) // For get()
       .mockResolvedValueOnce(undefined) // For release()
-    
+
     const ref = await client.get('test' as ContainerKind, { uuid })
 
     await ref.close()
@@ -559,11 +566,18 @@ describe('NetworkClientImpl extended tests', () => {
   test('ContainerReferenceImpl request proxies to client', async () => {
     const client = new NetworkClientImpl('localhost', 3000, tickMgr as any)
     const uuid = 'container-1' as ContainerUuid
-    const endpoint = JSON.stringify({ kind: 0, host: 'host', port: 3000, uuid, agentId: 'agent-1' }) as ContainerEndpointRef
-    
-    mockRequest.mockResolvedValueOnce([uuid, endpoint]) // For get()
+    const endpoint = JSON.stringify({
+      kind: 0,
+      host: 'host',
+      port: 3000,
+      uuid,
+      agentId: 'agent-1'
+    }) as ContainerEndpointRef
+
+    mockRequest
+      .mockResolvedValueOnce([uuid, endpoint]) // For get()
       .mockResolvedValueOnce('response') // For request()
-    
+
     const ref = await client.get('test' as ContainerKind, {})
     const result = await ref.request('operation', 'data')
 
