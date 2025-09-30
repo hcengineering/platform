@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/network-core",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "author": "Huly Platform Contributors",

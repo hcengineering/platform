@@ -57,8 +57,8 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@hcengineering/network-core": "workspace:^0.7.5",
-    "@hcengineering/network-server": "workspace:^0.7.5",
+    "@hcengineering/network-core": "workspace:^0.7.6",
+    "@hcengineering/network-server": "workspace:^0.7.6",
     "uuid": "^8.3.2"
   },
   "repository": "https://github.com/hcengineering/huly.net",
