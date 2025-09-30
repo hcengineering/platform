@@ -22,9 +22,7 @@ export * from './utils'
 export * from './types'
 
 export function configureAnalyticsProviders (config: AnalyticsConfig): void {
-  const providers: AnalyticProvider[] = [
-    new AnalyticsCollectorProvider()
-  ]
+  const providers: AnalyticProvider[] = [new AnalyticsCollectorProvider()]
 
   for (const provider of providers) {
     Analytics.init(provider, config)
