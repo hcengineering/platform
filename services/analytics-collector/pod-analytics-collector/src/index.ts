@@ -17,4 +17,6 @@ import { config } from 'dotenv'
 import { main } from './main'
 
 config()
-void main()
+void main().catch((err) => {
+  console.error('Error occurred while starting the application:', err)
+})

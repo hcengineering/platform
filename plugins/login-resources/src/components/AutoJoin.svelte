@@ -72,6 +72,7 @@
         } else {
           if (result.email == null) {
             console.error('No email in auto join info')
+            Analytics.handleError(new Error('No email in auto join info'))
             navigate({ path: [loginId] })
             return
           }
@@ -82,6 +83,9 @@
       }
     } catch (err: any) {
       console.error('Failed to check auto join', err)
+      Analytics.handleError(
+        new Error('Failed to check auto join: ' + (err instanceof Error ? err.message : String(err)))
+      )
       navigate({ path: [loginId] })
       return
     }

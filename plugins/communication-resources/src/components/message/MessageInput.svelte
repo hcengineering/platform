@@ -14,51 +14,52 @@
 -->
 
 <script lang="ts">
-  import { Markup, RateLimiter, Ref, generateId } from '@hcengineering/core'
-  import { tick, createEventDispatcher } from 'svelte'
-  import {
-    uploadFile,
-    deleteFile,
-    getCommunicationClient,
-    getClient,
-    getFileMetadata,
-    isLinkPreviewEnabled
-  } from '@hcengineering/presentation'
-  import {
-    Message,
-    MessageID,
-    LinkPreviewParams,
-    BlobParams,
-    AttachmentID,
-    linkPreviewType,
-    BlobAttachment,
-    AppletParams
-  } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
-  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
-  import { clearTyping, setTyping } from '@hcengineering/presence-resources'
-  import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
-  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
-  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
-  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+  import {
+    AppletParams,
+    AttachmentID,
+    BlobAttachment,
+    BlobParams,
+    LinkPreviewParams,
+    linkPreviewType,
+    Message,
+    MessageID
+  } from '@hcengineering/communication-types'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { clearTyping, setTyping } from '@hcengineering/presence-resources'
+  import {
+    deleteFile,
+    getClient,
+    getCommunicationClient,
+    getFileMetadata,
+    isLinkPreviewEnabled,
+    uploadFile
+  } from '@hcengineering/presentation'
+  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
+  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
+  import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
+  import { createEventDispatcher, tick } from 'svelte'
 
-  import TextInput from '../TextInput.svelte'
-  import IconAttach from '../icons/Attach.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getDraft, getEmptyDraft, messageToDraft, removeDraft, saveDraft } from '../../draft'
+  import communication from '../../plugin'
+  import { messageEditingStore } from '../../stores'
+  import { type TextInputAction, AppletDraft, MessageDraft } from '../../types'
   import {
     defaultMessageInputActions,
-    toMarkdown,
-    toMarkup,
-    loadLinkPreviewParams,
     isCardAllowedForCommunications,
-    showForbidden
+    loadLinkPreviewParams,
+    showForbidden,
+    toMarkdown,
+    toMarkup
   } from '../../utils'
-  import communication from '../../plugin'
-  import { type TextInputAction, MessageDraft, AppletDraft } from '../../types'
+  import TextInput from '../TextInput.svelte'
   import TypingPresenter from '../TypingPresenter.svelte'
-  import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
-  import { messageEditingStore } from '../../stores'
+  import IconAttach from '../icons/Attach.svelte'
 
   export let card: Card
   export let message: Message | undefined = undefined
@@ -156,8 +157,8 @@
         const r = await getResource(ap.createFn)
         await r(card, messageId, appletDraft.params)
         toAttach.push(appletDraft)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     }
 

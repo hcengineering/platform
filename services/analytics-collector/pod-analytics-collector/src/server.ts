@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
+import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
+import type { MeasureContext } from '@hcengineering/core'
+import { extractToken } from '@hcengineering/server-client'
 import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
-import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
-import { extractToken } from '@hcengineering/server-client'
 import config from './config'
 import { ApiError } from './error'
-import { getGeoLocationFromIp, getClientIp, geoFieldMapping, getAllPossibleIps } from './geoip'
+import { geoFieldMapping, getAllPossibleIps, getClientIp, getGeoLocationFromIp } from './geoip'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -236,7 +237,7 @@ async function preparePostHogEvent (event: AnalyticEvent, req: Request): Promise
   return regularEventForPostHog
 }
 
-export function createServer (): Express {
+export function createServer (ctx: MeasureContext): Express {
   const app = express()
   app.use(cors())
   app.use(express.json({ limit: config.MaxPayloadSize }))
@@ -256,48 +257,23 @@ export function createServer (): Express {
       const payloadSize = JSON.stringify(req.body).length
 
       console.log(`Received batch: ${events.length} events, ${payloadSize} bytes`)
-
-      const posthogEvents = await Promise.all(
-        events.map(async (event) => {
-          return await preparePostHogEvent(event, req)
-        })
-      )
-
-      const payload = {
-        api_key: config.PostHogAPI,
-        batch: posthogEvents.reverse()
-      }
-
-      const posthogPayloadSize = JSON.stringify(payload).length
-      console.log(`Sending to PostHog: ${posthogEvents.length} events, ${posthogPayloadSize} bytes`)
-
-      try {
-        const response = await fetch(`${config.PostHogHost}/batch/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Analytics-Collector/1.0'
-          },
-          body: JSON.stringify(payload)
-        })
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error(`PostHog API error: ${response.status} ${response.statusText}`, errorText)
-        } else {
-          console.log(`Successfully sent ${posthogEvents.length} events to PostHog`)
-        }
-      } catch (error) {
-        console.error('Failed to send events to PostHog:', error)
-      }
-
       res.status(200)
-      res.json({
-        received: events.length,
-        processed: posthogEvents.length,
-        payloadSize,
-        timestamp: new Date().toISOString()
-      })
+      res.json({})
+
+      if (config.PostHogHost !== undefined) {
+        void sendEventsToPosthog(events, req).catch((err) => {
+          console.error('Error sending events to PostHog:', err)
+        })
+      }
+
+      for (const evt of events) {
+        if (evt.event === AnalyticEventType.Error) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { error_message, error_type, error_stack } = evt.properties ?? {}
+          ctx.error(error_message ?? '', { error_type, error_stack })
+        }
+        // TODO: Handle other events as gauges per minute
+      }
     })
   )
 
@@ -312,6 +288,41 @@ export function createServer (): Express {
   })
 
   return app
+}
+
+async function sendEventsToPosthog (events: AnalyticEvent[], req: Request): Promise<void> {
+  const posthogEvents: Record<string, any>[] = []
+  for (const evt of events) {
+    posthogEvents.push(await preparePostHogEvent(evt, req))
+  }
+
+  const payload = {
+    api_key: config.PostHogAPI,
+    batch: posthogEvents.reverse()
+  }
+
+  const posthogPayloadSize = JSON.stringify(payload).length
+  console.log(`Sending to PostHog: ${posthogEvents.length} events, ${posthogPayloadSize} bytes`)
+
+  try {
+    const response = await fetch(`${config.PostHogHost}/batch/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Analytics-Collector/1.0'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`PostHog API error: ${response.status} ${response.statusText}`, errorText)
+    } else {
+      console.log(`Successfully sent ${posthogEvents.length} events to PostHog`)
+    }
+  } catch (error) {
+    console.error('Failed to send events to PostHog:', error)
+  }
 }
 
 export function listen (e: Express, port: number, host?: string): Server {

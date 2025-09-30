@@ -74,7 +74,6 @@
         return await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
       } catch (err: any) {
         Analytics.handleError(err)
-        console.error(err)
       }
     }
   }

@@ -18,8 +18,12 @@ export interface Config {
   Secret: string
   ServiceID: string
   AccountsUrl: string
-  PostHogHost: string
-  PostHogAPI: string
+
+  // Optional PostHog configuration
+  // If posthog is not configured, will use OTLP for send events as measurements and errors as errors
+  PostHogHost?: string
+  PostHogAPI?: string
+
   MaxPayloadSize?: string
 }
 
@@ -36,7 +40,9 @@ const config: Config = (() => {
     MaxPayloadSize: process.env.MAX_PAYLOAD_SIZE ?? '10mb'
   }
 
-  const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
+  const requiredParams = ['Secret', 'AccountsUrl'] as Array<keyof Config>
+
+  const missingEnv = requiredParams.filter((key) => params[key] === undefined)
 
   if (missingEnv.length > 0) {
     throw Error(`Missing config for attributes: ${missingEnv.join(', ')}`)

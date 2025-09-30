@@ -18,7 +18,7 @@
   try {
     attr = getClient().getHierarchy().getAttribute(value.ofClass, value.attributeName)
   } catch (err: any) {
-    console.error(err)
+    Analytics.handleError(err)
   }
 </script>
 

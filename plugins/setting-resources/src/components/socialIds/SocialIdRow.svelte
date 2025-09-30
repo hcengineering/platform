@@ -29,6 +29,7 @@
 
   import setting from '../../plugin'
   import { getAccountClient } from '../../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let socialId: SocialId
   export let socialIdProvider: SocialIdentityProvider
@@ -79,7 +80,7 @@
       currAcc = updatedAccount
       dispatch('released')
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
       void setPlatformStatus(unknownError(err))
     }
   }

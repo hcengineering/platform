@@ -38,6 +38,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/login": "^0.6.12",
     "@hcengineering/core": "^0.6.32",
