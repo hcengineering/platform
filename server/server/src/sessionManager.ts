@@ -1477,11 +1477,19 @@ export class TSessionManager implements SessionManager {
 
       try {
         await workspace.with(async (pipeline) => {
-          await requestCtx.with('🧨 ' + method, { source, mode: 'rpc' }, (callTx) =>
-            operation(
-              this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
-              rateLimitStatus
-            )
+          await requestCtx.with(
+            '🧨 ' + method,
+            { source, mode: 'rpc' },
+            (callTx) =>
+              operation(
+                this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
+                rateLimitStatus
+              ),
+            {
+              user: service.getUser(),
+              socialId: service.getRawAccount().primarySocialId,
+              workspace: workspace.wsId.uuid
+            }
           )
         })
       } catch (err: any) {
