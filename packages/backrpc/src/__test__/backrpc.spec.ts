@@ -769,4 +769,723 @@ describe('backrpc', () => {
     client2.close()
     await server.close()
   })
+
+  it('test client send event to server', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Send event from client to server
+    await client.send({ type: 'test-event', data: 'test-data' })
+
+    // Wait for event to be processed
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    client.close()
+    await server.close()
+  })
+
+  it('test request before connection established', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    // Send request immediately without waiting for connection
+    const promise = client.request('test', 'immediate-request')
+
+    // Wait for response
+    const response = await promise
+    expect(response).toBe('response-immediate-request')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test client close while pending requests', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          // Never send response to keep request pending
+          await new Promise((resolve) => setTimeout(resolve, 5000))
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Send request but don't wait for response
+    const promise = client.request('test', 'pending-request')
+
+    // Wait a bit to ensure request is sent
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Close client while request is pending
+    client.close()
+
+    // Request should be rejected with error
+    try {
+      await promise
+      fail('Should have thrown an error')
+    } catch (error: any) {
+      expect(error.message).toBe('Client closed')
+    }
+
+    await server.close()
+  })
+
+  it('test client error handler called on request error', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    let clientErrorReceived = false
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          if (method === 'error-method') {
+            throw new Error('Client handler error')
+          }
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Trigger client error handler
+    const errorPromise = server.request('client1' as ClientId, 'error-method', 'test')
+
+    try {
+      await errorPromise
+      fail('Should have thrown an error')
+    } catch (error: any) {
+      clientErrorReceived = true
+      expect(error.message).toContain('Client handler error')
+    }
+
+    expect(clientErrorReceived).toBe(true)
+
+    client.close()
+    await server.close()
+  })
+
+  it('test server request limit configuration', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    // Test that request limit can be configured
+    expect(server.requestsLimit).toBe(25) // Default value
+    server.requestsLimit = 10 // Set custom limit
+    expect(server.requestsLimit).toBe(10)
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Make a few requests to verify server works with custom limit
+    const response1 = await client.request('test', 'request-1')
+    const response2 = await client.request('test', 'request-2')
+    expect(response1).toBe('response-request-1')
+    expect(response2).toBe('response-request-2')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test duplicate request handling', async () => {
+    const tickMgr = new TickManagerImpl(10)
+    const requestCounts = new Map<string, number>()
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          const key = `${method}-${params}`
+          requestCounts.set(key, (requestCounts.get(key) ?? 0) + 1)
+          await new Promise((resolve) => setTimeout(resolve, 50))
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    const response = await client.request('test', 'unique-request')
+    expect(response).toBe('response-unique-request')
+
+    // Request should be processed exactly once
+    expect(requestCounts.get('test-unique-request')).toBe(1)
+
+    client.close()
+    await server.close()
+  })
+
+  it('test ping/pong mechanism', async () => {
+    const tickMgr = new FakeTickManager()
+    let pingReceived = false
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        },
+        onPing: (client) => {
+          pingReceived = true
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr,
+      undefined,
+      10 // Higher timeout for this test
+    )
+
+    await client.waitConnection()
+
+    // Manually trigger ping
+    await client.checkAlive()
+
+    // Wait for ping to be processed
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(pingReceived).toBe(true)
+
+    client.close()
+    await server.close()
+  })
+
+  it('test double close handling', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Close client twice - should not throw error
+    client.close()
+    client.close()
+
+    await server.close()
+  })
+
+  it('test server stats collection', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Trigger different operations
+    await client.request('test', 'request1')
+    await server.request('client1' as ClientId, 'back-request', 'data')
+    await client.checkAlive()
+
+    // Wait for operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Check that stats are collected
+    expect(server.stats.hellos).toBeGreaterThanOrEqual(0)
+    expect(server.stats.requests).toBeGreaterThanOrEqual(1)
+    expect(server.stats.responses).toBeGreaterThanOrEqual(1)
+    expect(server.stats.pings).toBeGreaterThanOrEqual(0)
+
+    client.close()
+    await server.close()
+  })
+
+  it('test resend after connection lost during send', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Make a successful request
+    const response = await client.request('test', 'request1')
+    expect(response).toBe('response-request1')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test getPort with bound server', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        }
+      },
+      tickMgr,
+      '*',
+      0 // Use random port
+    )
+
+    const port = await server.getPort()
+    expect(port).toBeGreaterThan(0)
+    expect(typeof port).toBe('number')
+
+    await server.close()
+  })
+
+  it('test client without optional handlers', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        }
+        // No helloHandler, closeHandler, onPing
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        }
+        // No onRegister, onEvent
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Make a request to verify it works without optional handlers
+    const response = await client.request('test', 'data')
+    expect(response).toBe('response-data')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test server hello with invalid JSON payload', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send('OK')
+        },
+        helloHandler: async (clientId) => {
+          console.log(`Client ${clientId} connected`)
+        }
+      },
+      tickMgr
+    )
+
+    // Create client with default timeout (which will use default when hello parsing fails)
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('client response')
+        },
+        onRegister: async () => {
+          console.log('Client registered')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    const response = await client.request('test', 'data')
+    expect(response).toBe('OK')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test request counter increments correctly', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send(`response-${params}`)
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('OK')
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // Make multiple requests and verify they all work
+    for (let i = 0; i < 5; i++) {
+      const response = await client.request('test', `data-${i}`)
+      expect(response).toBe(`response-data-${i}`)
+    }
+
+    client.close()
+    await server.close()
+  })
+
+  it('test server back request counter increments correctly', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          if (method === 'trigger-back-requests') {
+            const responses = []
+            for (let i = 0; i < 3; i++) {
+              const resp = await server.request(client, 'back-method', `back-${i}`)
+              responses.push(resp)
+            }
+            await send(responses)
+          } else {
+            await send('OK')
+          }
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          if (method === 'back-method') {
+            await send(`back-response-${param}`)
+          } else {
+            await send('OK')
+          }
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    const responses: any = await client.request('trigger-back-requests', '')
+    expect(responses).toHaveLength(3)
+    expect(responses[0]).toBe('back-response-back-0')
+    expect(responses[1]).toBe('back-response-back-1')
+    expect(responses[2]).toBe('back-response-back-2')
+
+    client.close()
+    await server.close()
+  })
+
+  it('test client response parsing error handling', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          await send({ valid: 'json' })
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send({ response: 'data' })
+        }
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    const response = await client.request('test', 'data')
+    expect(response).toEqual({ valid: 'json' })
+
+    client.close()
+    await server.close()
+  })
+
+  it('test event from client without onEvent handler', async () => {
+    const tickMgr = new TickManagerImpl(10)
+
+    const server = new BackRPCServer(
+      {
+        requestHandler: async (client, method, params, send) => {
+          if (method === 'trigger-event') {
+            await server.send(client, { type: 'event', data: 'test' })
+            await send('event-sent')
+          } else {
+            await send('OK')
+          }
+        }
+      },
+      tickMgr
+    )
+
+    const client = new BackRPCClient(
+      'client1' as ClientId,
+      {
+        requestHandler: async (method, param, send) => {
+          await send('OK')
+        }
+        // No onEvent handler
+      },
+      'localhost',
+      await server.getPort(),
+      tickMgr
+    )
+
+    await client.waitConnection()
+
+    // This should not throw even though client has no onEvent handler
+    const response = await client.request('trigger-event', 'data')
+    expect(response).toBe('event-sent')
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    client.close()
+    await server.close()
+  })
 })

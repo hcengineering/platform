@@ -205,7 +205,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
           }
           case backrpcOperations.askHello: {
             // Server ask us to re-hello, probably because it has restarted
-            this.serverId = '' // Clear server id for re-register to be performed
+            this.setServerId('') // Clear server id for re-register to be performed
             await this.sendHello()
             break
           }
@@ -254,15 +254,15 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   async send (body: any): Promise<any> {
-    await this.doSend([backrpcOperations.event, body])
+    await this.doSend([backrpcOperations.event, '', JSON.stringify(body), ''])
   }
 
   close (): void {
-    if (!this.closed) {
-      void this.doSend([backrpcOperations.close, '', '']).catch((err) => {
-        console.error('Failed to send close', err)
-      })
+    if (this.closed) {
+      return
     }
+    this.closed = true
+
     // We need to reject all pending requests
     if (this.requests.size > 0) {
       for (const [reqId, req] of Array.from(this.requests.entries())) {
@@ -270,8 +270,14 @@ export class BackRPCClient<ClientT extends string = ClientId> {
         this.requests.delete(reqId)
       }
     }
-    this.closed = true
+
     this.stopTick?.()
+
+    // Try to send close message, but don't wait for it
+    void this.doSend([backrpcOperations.close, '', '', '']).catch((err) => {
+      console.error('Failed to send close', err)
+    })
+
     this.dealer.close()
   }
 }

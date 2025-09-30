@@ -266,9 +266,11 @@ export class BackRPCServer<ClientT extends string = ClientId> {
               client.requests.add(reqId)
               void this.handlers
                 .requestHandler(client.id, method, params, async (response: any) => {
+                  client.requests.delete(reqId)
                   void this.doSend([clientId, backrpcOperations.response, reqId, JSON.stringify(response)])
                 })
                 .catch((err) => {
+                  client.requests.delete(reqId)
                   void sendError(err)
                 })
             }
