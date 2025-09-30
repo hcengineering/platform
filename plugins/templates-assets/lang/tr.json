@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "İptal",
+    "Templates": "Metin Şablonları",
+    "TemplatesHeader": "METİN ŞABLONLARI",
+    "CreateTemplate": "ŞABLON OLUŞTUR",
+    "SaveTemplate": "Şablonu kaydet",
+    "EditTemplate": "Şablonu düzenle",
+    "ViewTemplate": "Şablonu görüntüle",
+    "Suggested": "ÖNERİLEN",
+    "SearchTemplate": "şablon ara",
+    "TemplatePlaceholder": "Yeni şablon",
+    "Title": "Başlık",
+    "Message": "Mesaj",
+    "Field": "Alan",
+    "TemplateCategory": "Şablon grubu",
+    "CreateTemplateCategory": "Grup oluştur",
+    "Copy": "Kopyala",
+    "Template": "Şablon"
+  }
+}
