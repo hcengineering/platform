@@ -15,11 +15,12 @@
 <script lang="ts">
   import { ButtonBaseSize, IconSize, ModernButton, showPopup } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
-  import { sendInvites } from '../../../meetings'
+  import { currentMeetingRoom, sendInvites } from '../../../meetings'
   import love from '../../../plugin'
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
+  import { infos } from '../../../stores'
 
   export let employee: Employee | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -39,11 +40,13 @@
   }
 
   function openSelectUsersPopup (): void {
+    const skipAccounts = $infos.filter((p) => p.room === currentMeetingRoom).map((p) => p.person)
     showPopup(
       SelectUsersPopup,
       {
         okLabel: love.string.Invite,
         skipCurrentAccount: true,
+        skipAccounts,
         skipInactive: true,
         showStatus: true
       },
