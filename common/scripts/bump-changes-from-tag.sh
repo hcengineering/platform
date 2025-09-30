@@ -333,18 +333,107 @@ while IFS='|' read -r package_name new_version project_folder publish_flag; do
     print_success "Updated $package_name to version $new_version"
 done < "$CHANGED_PACKAGES_FILE"
 
-# Update dependencies across all packages
+# Update dependencies across all packages and identify packages that need to be bumped due to dependency changes
 print_info "Updating dependencies across all packages..."
+DEPENDENT_PACKAGES_FILE="$TEMP_DIR/dependent_packages"
 while IFS='|' read -r package_name project_folder publish_flag; do
     package_file="${REPO_ROOT}/${project_folder}/package.json"
     
     if [ -f "$package_file" ]; then
-        # Update dependencies for each changed package
+        # Check if this package depends on any changed package
+        has_updated_dependency=false
         while IFS='|' read -r changed_package new_version changed_folder changed_publish; do
-            update_dependencies "$package_file" "$changed_package" "$new_version"
+            # Update the dependency
+            result=$(node -e "
+                const fs = require('fs');
+                const path = '$package_file';
+                try {
+                    const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+                    let updated = false;
+                    
+                    // Check and update in dependencies
+                    if (pkg.dependencies && pkg.dependencies['$changed_package']) {
+                        const oldDep = pkg.dependencies['$changed_package'];
+                        if (oldDep.startsWith('workspace:')) {
+                            pkg.dependencies['$changed_package'] = 'workspace:^$new_version';
+                        } else {
+                            pkg.dependencies['$changed_package'] = '^$new_version';
+                        }
+                        updated = true;
+                    }
+                    
+                    // Check and update in devDependencies
+                    if (pkg.devDependencies && pkg.devDependencies['$changed_package']) {
+                        const oldDep = pkg.devDependencies['$changed_package'];
+                        if (oldDep.startsWith('workspace:')) {
+                            pkg.devDependencies['$changed_package'] = 'workspace:^$new_version';
+                        } else {
+                            pkg.devDependencies['$changed_package'] = '^$new_version';
+                        }
+                        updated = true;
+                    }
+                    
+                    // Check and update in peerDependencies
+                    if (pkg.peerDependencies && pkg.peerDependencies['$changed_package']) {
+                        const oldDep = pkg.peerDependencies['$changed_package'];
+                        if (oldDep.startsWith('workspace:')) {
+                            pkg.peerDependencies['$changed_package'] = 'workspace:^$new_version';
+                        } else {
+                            pkg.peerDependencies['$changed_package'] = '^$new_version';
+                        }
+                        updated = true;
+                    }
+                    
+                    if (updated) {
+                        fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
+                        console.log('yes');
+                    } else {
+                        console.log('no');
+                    }
+                } catch (error) {
+                    console.error('Error updating dependencies:', error.message);
+                    console.log('no');
+                }
+            ")
+            
+            if [ "$result" = "yes" ]; then
+                has_updated_dependency=true
+            fi
         done < "$CHANGED_PACKAGES_FILE"
+        
+        # If this package had updated dependencies and is not already in changed packages, add it
+        if [ "$has_updated_dependency" = "true" ]; then
+            # Check if package is not already in CHANGED_PACKAGES_FILE
+            if ! grep -q "^${package_name}|" "$CHANGED_PACKAGES_FILE" 2>/dev/null; then
+                # Get current version and bump it
+                current_version=$(node -e "
+                    try {
+                        const pkg = JSON.parse(require('fs').readFileSync('$package_file', 'utf8'));
+                        console.log(pkg.version);
+                    } catch (error) {
+                        console.error('Error reading version from $package_file');
+                        process.exit(1);
+                    }
+                ")
+                new_version=$(increment_version "$current_version" "$BUMP_TYPE")
+                echo "$package_name|$new_version|$project_folder|$publish_flag" >> "$DEPENDENT_PACKAGES_FILE"
+                print_success "Package $package_name has updated dependencies: $current_version -> $new_version ($BUMP_TYPE)"
+            fi
+        fi
     fi
 done < "$PACKAGE_DATA_FILE"
+
+# Update versions for dependent packages
+if [ -f "$DEPENDENT_PACKAGES_FILE" ] && [ -s "$DEPENDENT_PACKAGES_FILE" ]; then
+    print_info "Updating versions for packages with dependency changes..."
+    while IFS='|' read -r package_name new_version project_folder publish_flag; do
+        package_file="${REPO_ROOT}/${project_folder}/package.json"
+        update_package_version "$package_file" "$new_version"
+        print_success "Updated $package_name to version $new_version (dependency change)"
+        # Add to changed packages for the summary
+        echo "$package_name|$new_version|$project_folder|$publish_flag" >> "$CHANGED_PACKAGES_FILE"
+    done < "$DEPENDENT_PACKAGES_FILE"
+fi
 
 print_success "Version bump complete!"
 
