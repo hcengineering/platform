@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 
-# Script to bump version of Node.js packages changed since a git revision
+# Script to bump version of ALL Node.js packages by incrementing from previous tag
 # and update dependencies accordingly in a Rush.js monorepo
 #
 # Usage: ./bump-changes-from-tag.sh [git-revision] [major|minor|patch]
-# Example: ./bump-changes-from-tag.sh                # Auto-detect latest v*.*.* tag
+# Example: ./bump-changes-from-tag.sh                # Auto-detect latest v*.*.* tag, patch bump
 # Example: ./bump-changes-from-tag.sh patch          # Auto-detect latest tag + patch bump
 # Example: ./bump-changes-from-tag.sh minor          # Auto-detect latest tag + minor bump
-# Example: ./bump-changes-from-tag.sh HEAD~5
-# Example: ./bump-changes-from-tag.sh HEAD~5 minor
-# Example: ./bump-changes-from-tag.sh v0.7.0 major
+# Example: ./bump-changes-from-tag.sh v0.7.0 major   # Use specific tag + major bump
 
 set -e
 
@@ -116,8 +114,16 @@ if [ ! -f "$RUSH_JSON" ]; then
 fi
 
 print_info "Repository root: $REPO_ROOT"
-print_info "Checking changes since: $GIT_REVISION"
+print_info "Reference tag: $GIT_REVISION"
 print_info "Bump type: $BUMP_TYPE"
+
+# Function to get version from previous tag
+get_tag_version() {
+    local tag="$1"
+    # Remove 'v' prefix if present
+    local version="${tag#v}"
+    echo "$version"
+}
 
 # Function to increment version based on bump type
 increment_version() {
@@ -184,11 +190,6 @@ get_rush_projects() {
             process.exit(1);
         }
     "
-}
-
-# Function to get changed files since git revision
-get_changed_files() {
-    git diff --name-only "$GIT_REVISION"..HEAD
 }
 
 # Function to update package.json version
@@ -269,82 +270,59 @@ update_dependencies() {
     "
 }
 
-# Get all changed files
-print_info "Getting changed files since $GIT_REVISION..."
-changed_files=$(get_changed_files)
+# Get base version from tag
+BASE_VERSION=$(get_tag_version "$GIT_REVISION")
+NEW_VERSION=$(increment_version "$BASE_VERSION" "$BUMP_TYPE")
 
-if [ -z "$changed_files" ]; then
-    print_warning "No files changed since $GIT_REVISION"
-    exit 0
-fi
+print_info "Base version from tag: $BASE_VERSION"
+print_success "New version for all packages: $NEW_VERSION"
 
-print_info "Changed files:"
-echo "$changed_files" | sed 's/^/  /'
-
-# Temporary files to store changed packages
+# Temporary files to store package information
 TEMP_DIR=$(mktemp -d)
-CHANGED_PACKAGES_FILE="$TEMP_DIR/changed_packages"
 PACKAGE_DATA_FILE="$TEMP_DIR/package_data"
+UPDATED_PACKAGES_FILE="$TEMP_DIR/updated_packages"
 
-# Get all Rush projects and identify which ones have changes
-print_info "Analyzing Rush projects for changes..."
+# Get all Rush projects
+print_info "Getting all Rush projects..."
 get_rush_projects > "$PACKAGE_DATA_FILE"
 
-while IFS='|' read -r package_name project_folder publish_flag; do
-    # Check if any files in the project folder have changed
-    if echo "$changed_files" | grep -q "^${project_folder}/"; then
-        package_file="${REPO_ROOT}/${project_folder}/package.json"
-        if [ -f "$package_file" ]; then
-            # Get current version
-            current_version=$(node -e "
-                try {
-                    const pkg = JSON.parse(require('fs').readFileSync('$package_file', 'utf8'));
-                    console.log(pkg.version);
-                } catch (error) {
-                    console.error('Error reading version from $package_file');
-                    process.exit(1);
-                }
-            ")
-            new_version=$(increment_version "$current_version" "$BUMP_TYPE")
-            
-            echo "$package_name|$new_version|$project_folder|$publish_flag" >> "$CHANGED_PACKAGES_FILE"
-            print_success "Package $package_name changed: $current_version -> $new_version ($BUMP_TYPE)"
-        else
-            print_warning "package.json not found for $package_name at $package_file"
-        fi
-    fi
-done < "$PACKAGE_DATA_FILE"
-
-# Check if any packages need to be updated
-if [ ! -f "$CHANGED_PACKAGES_FILE" ] || [ ! -s "$CHANGED_PACKAGES_FILE" ]; then
-    print_warning "No Rush packages have changes since $GIT_REVISION"
-    rm -rf "$TEMP_DIR"
-    exit 0
-fi
-
-package_count=$(wc -l < "$CHANGED_PACKAGES_FILE")
+package_count=$(wc -l < "$PACKAGE_DATA_FILE")
 print_info "Found $package_count package(s) to update"
 
-# Update versions in changed packages
-print_info "Updating package versions..."
-while IFS='|' read -r package_name new_version project_folder publish_flag; do
-    package_file="${REPO_ROOT}/${project_folder}/package.json"
-    update_package_version "$package_file" "$new_version"
-    print_success "Updated $package_name to version $new_version"
-done < "$CHANGED_PACKAGES_FILE"
-
-# Update dependencies across all packages and identify packages that need to be bumped due to dependency changes
-print_info "Updating dependencies across all packages..."
-DEPENDENT_PACKAGES_FILE="$TEMP_DIR/dependent_packages"
+# Step 1: Update all package versions to the new version
+print_info "Updating all package versions to $NEW_VERSION..."
 while IFS='|' read -r package_name project_folder publish_flag; do
     package_file="${REPO_ROOT}/${project_folder}/package.json"
     
     if [ -f "$package_file" ]; then
-        # Check if this package depends on any changed package
-        has_updated_dependency=false
-        while IFS='|' read -r changed_package new_version changed_folder changed_publish; do
-            # Update the dependency
-            result=$(node -e "
+        # Get current version
+        current_version=$(node -e "
+            try {
+                const pkg = JSON.parse(require('fs').readFileSync('$package_file', 'utf8'));
+                console.log(pkg.version);
+            } catch (error) {
+                console.error('Error reading version from $package_file');
+                process.exit(1);
+            }
+        ")
+        
+        update_package_version "$package_file" "$NEW_VERSION"
+        echo "$package_name|$NEW_VERSION|$project_folder|$publish_flag|$current_version" >> "$UPDATED_PACKAGES_FILE"
+        print_success "Updated $package_name: $current_version -> $NEW_VERSION"
+    else
+        print_warning "package.json not found for $package_name at $package_file"
+    fi
+done < "$PACKAGE_DATA_FILE"
+
+# Step 2: Update all internal dependencies to reference the new version
+print_info "Updating internal dependencies to version $NEW_VERSION..."
+while IFS='|' read -r package_name project_folder publish_flag; do
+    package_file="${REPO_ROOT}/${project_folder}/package.json"
+    
+    if [ -f "$package_file" ]; then
+        # Update dependencies for each package in the monorepo
+        while IFS='|' read -r dep_package_name dep_project_folder dep_publish_flag _old_version; do
+            node -e "
                 const fs = require('fs');
                 const path = '$package_file';
                 try {
@@ -352,113 +330,82 @@ while IFS='|' read -r package_name project_folder publish_flag; do
                     let updated = false;
                     
                     // Check and update in dependencies
-                    if (pkg.dependencies && pkg.dependencies['$changed_package']) {
-                        const oldDep = pkg.dependencies['$changed_package'];
+                    if (pkg.dependencies && pkg.dependencies['$dep_package_name']) {
+                        const oldDep = pkg.dependencies['$dep_package_name'];
                         if (oldDep.startsWith('workspace:')) {
-                            pkg.dependencies['$changed_package'] = 'workspace:^$new_version';
+                            pkg.dependencies['$dep_package_name'] = 'workspace:^$NEW_VERSION';
                         } else {
-                            pkg.dependencies['$changed_package'] = '^$new_version';
+                            pkg.dependencies['$dep_package_name'] = '^$NEW_VERSION';
                         }
                         updated = true;
                     }
                     
                     // Check and update in devDependencies
-                    if (pkg.devDependencies && pkg.devDependencies['$changed_package']) {
-                        const oldDep = pkg.devDependencies['$changed_package'];
+                    if (pkg.devDependencies && pkg.devDependencies['$dep_package_name']) {
+                        const oldDep = pkg.devDependencies['$dep_package_name'];
                         if (oldDep.startsWith('workspace:')) {
-                            pkg.devDependencies['$changed_package'] = 'workspace:^$new_version';
+                            pkg.devDependencies['$dep_package_name'] = 'workspace:^$NEW_VERSION';
                         } else {
-                            pkg.devDependencies['$changed_package'] = '^$new_version';
+                            pkg.devDependencies['$dep_package_name'] = '^$NEW_VERSION';
                         }
                         updated = true;
                     }
                     
                     // Check and update in peerDependencies
-                    if (pkg.peerDependencies && pkg.peerDependencies['$changed_package']) {
-                        const oldDep = pkg.peerDependencies['$changed_package'];
+                    if (pkg.peerDependencies && pkg.peerDependencies['$dep_package_name']) {
+                        const oldDep = pkg.peerDependencies['$dep_package_name'];
                         if (oldDep.startsWith('workspace:')) {
-                            pkg.peerDependencies['$changed_package'] = 'workspace:^$new_version';
+                            pkg.peerDependencies['$dep_package_name'] = 'workspace:^$NEW_VERSION';
                         } else {
-                            pkg.peerDependencies['$changed_package'] = '^$new_version';
+                            pkg.peerDependencies['$dep_package_name'] = '^$NEW_VERSION';
                         }
                         updated = true;
                     }
                     
                     if (updated) {
                         fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
-                        console.log('yes');
-                    } else {
-                        console.log('no');
                     }
                 } catch (error) {
                     console.error('Error updating dependencies:', error.message);
-                    console.log('no');
                 }
-            ")
-            
-            if [ "$result" = "yes" ]; then
-                has_updated_dependency=true
-            fi
-        done < "$CHANGED_PACKAGES_FILE"
-        
-        # If this package had updated dependencies and is not already in changed packages, add it
-        if [ "$has_updated_dependency" = "true" ]; then
-            # Check if package is not already in CHANGED_PACKAGES_FILE
-            if ! grep -q "^${package_name}|" "$CHANGED_PACKAGES_FILE" 2>/dev/null; then
-                # Get current version and bump it
-                current_version=$(node -e "
-                    try {
-                        const pkg = JSON.parse(require('fs').readFileSync('$package_file', 'utf8'));
-                        console.log(pkg.version);
-                    } catch (error) {
-                        console.error('Error reading version from $package_file');
-                        process.exit(1);
-                    }
-                ")
-                new_version=$(increment_version "$current_version" "$BUMP_TYPE")
-                echo "$package_name|$new_version|$project_folder|$publish_flag" >> "$DEPENDENT_PACKAGES_FILE"
-                print_success "Package $package_name has updated dependencies: $current_version -> $new_version ($BUMP_TYPE)"
-            fi
-        fi
+            " 2>/dev/null
+        done < "$UPDATED_PACKAGES_FILE"
     fi
 done < "$PACKAGE_DATA_FILE"
 
-# Update versions for dependent packages
-if [ -f "$DEPENDENT_PACKAGES_FILE" ] && [ -s "$DEPENDENT_PACKAGES_FILE" ]; then
-    print_info "Updating versions for packages with dependency changes..."
-    while IFS='|' read -r package_name new_version project_folder publish_flag; do
-        package_file="${REPO_ROOT}/${project_folder}/package.json"
-        update_package_version "$package_file" "$new_version"
-        print_success "Updated $package_name to version $new_version (dependency change)"
-        # Add to changed packages for the summary
-        echo "$package_name|$new_version|$project_folder|$publish_flag" >> "$CHANGED_PACKAGES_FILE"
-    done < "$DEPENDENT_PACKAGES_FILE"
-fi
+print_success "Updated internal dependencies across all packages"
 
 print_success "Version bump complete!"
 
 # Summary
 echo
 print_info "Summary of changes:"
-while IFS='|' read -r package_name new_version project_folder publish_flag; do
+echo -e "  ${BLUE}Base version (from tag ${GIT_REVISION}):${NC} $BASE_VERSION"
+echo -e "  ${GREEN}New version (${BUMP_TYPE} bump):${NC} $NEW_VERSION"
+echo
+print_info "Updated packages:"
+while IFS='|' read -r package_name new_version project_folder publish_flag old_version; do
     if [ "$publish_flag" = "true" ]; then
-        echo -e "  ${GREEN}✓${NC} $package_name -> $new_version ${YELLOW}(will be published)${NC}"
+        echo -e "  ${GREEN}✓${NC} $package_name: $old_version -> $new_version ${YELLOW}(will be published)${NC}"
     else
-        echo -e "  ${GREEN}✓${NC} $package_name -> $new_version ${BLUE}(private package)${NC}"
+        echo -e "  ${GREEN}✓${NC} $package_name: $old_version -> $new_version ${BLUE}(private package)${NC}"
     fi
-done < "$CHANGED_PACKAGES_FILE"
+done < "$UPDATED_PACKAGES_FILE"
 
 echo
 print_info "Next steps:"
 echo "  1. Review the changes: git diff"
-echo "  2. Run tests: rush test"
-echo "  3. Build all packages: rush build"
-echo "  4. Commit changes: git add . && git commit -m 'Bump versions'"
-echo "  5. For publishable packages, run: rush publish"
+echo "  2. Update lockfile: rush update"
+echo "  3. Run tests: rush test"
+echo "  4. Build all packages: rush build"
+echo "  5. Commit changes: git add . && git commit -m 'Bump all versions to $NEW_VERSION'"
+echo "  6. Tag the release: git tag v$NEW_VERSION && git push origin v$NEW_VERSION"
+echo "  7. For publishable packages, run: rush publish"
 
 # Cleanup
 rm -rf "$TEMP_DIR"
 
+print_info "Running rush update to sync lockfile..."
 rush update
 
 print_success "Done!"

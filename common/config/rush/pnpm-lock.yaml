@@ -13,7 +13,7 @@ importers:
   ../../packages/backrpc:
     dependencies:
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../core
       uuid:
         specifier: ^8.3.2
@@ -74,10 +74,10 @@ importers:
   ../../packages/client:
     dependencies:
       '@hcengineering/network-backrpc':
-        specifier: workspace:^0.7.7
+        specifier: workspace:^0.7.8
         version: link:../backrpc
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../core
       uuid:
         specifier: ^8.3.2
@@ -190,13 +190,13 @@ importers:
   ../../packages/server:
     dependencies:
       '@hcengineering/network-backrpc':
-        specifier: workspace:^0.7.7
+        specifier: workspace:^0.7.8
         version: link:../backrpc
       '@hcengineering/network-client':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../client
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../core
       uuid:
         specifier: ^8.3.2
@@ -254,10 +254,10 @@ importers:
   ../../pods/network-pod:
     dependencies:
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../../packages/core
       '@hcengineering/network-server':
-        specifier: workspace:^0.7.7
+        specifier: workspace:^0.7.8
         version: link:../../packages/server
       uuid:
         specifier: ^8.3.2
@@ -321,10 +321,10 @@ importers:
   ../../pods/network-tool:
     dependencies:
       '@hcengineering/network-client':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../../packages/client
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../../packages/core
       commander:
         specifier: ^14.0.0
@@ -394,10 +394,10 @@ importers:
   ../../tests:
     dependencies:
       '@hcengineering/network-client':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../packages/client
       '@hcengineering/network-core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.8
         version: link:../packages/core
     devDependencies:
       '@hcengineering/platform-rig':
