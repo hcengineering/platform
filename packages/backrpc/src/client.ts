@@ -50,14 +50,18 @@ export class BackRPCClient<ClientT extends string = ClientId> {
 
   lastPong: number = 0
 
+  aliveTimeout: number
+
   constructor (
     readonly clientId: ClientT,
     readonly client: BackRPCClientHandler,
     readonly host: string,
     readonly port: number,
     readonly tickMgr: TickManager,
-    options?: zmq.SocketOptions<zmq.Dealer>
+    options?: zmq.SocketOptions<zmq.Dealer>,
+    aliveTimeout?: number
   ) {
+    this.aliveTimeout = aliveTimeout ?? timeouts.aliveTimeout
     this.dealer = new zmq.Dealer({ ...options, context })
 
     this.setServerId = () => {}
@@ -106,7 +110,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
   }
 
   private async sendHello (): Promise<void> {
-    await this.doSend([backrpcOperations.hello, this.clientId as string, '', ''])
+    await this.doSend([backrpcOperations.hello, this.clientId as string, JSON.stringify({ aliveTimeout: this.aliveTimeout }), ''])
   }
 
   private async start (): Promise<void> {

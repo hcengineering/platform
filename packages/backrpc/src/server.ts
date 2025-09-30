@@ -39,6 +39,7 @@ interface RPCClientInfo<ClientT extends string> {
   requestsTotal: number
   requestsTime: number
   helloCounter: number
+  aliveTimeout: number // Per-client timeout in seconds
 }
 
 export class BackRPCServer<ClientT extends string = ClientId> {
@@ -93,9 +94,10 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     for (const [clientId, clientRecord] of [...this.revClientMapping.entries()]) {
       const timeSinceLastSeen = now - clientRecord.lastSeen
 
-      if (timeSinceLastSeen > timeouts.aliveTimeout * 1000) {
+      // Use per-client timeout instead of global timeout
+      if (timeSinceLastSeen > clientRecord.aliveTimeout * 1000) {
         console.warn(
-          `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s, marking as dead`
+          `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s (timeout: ${clientRecord.aliveTimeout}s), marking as dead`
         )
         this.handleClose(clientRecord.id, clientId, true)
       }
@@ -177,6 +179,17 @@ export class BackRPCServer<ClientT extends string = ClientId> {
             const needHello = !this.clientMapping.has(reqId.toString() as ClientT)
             this.clientMapping.set(reqId.toString() as ClientT, clientId)
 
+            // Parse the timeout from the hello message
+            let clientAliveTimeout = timeouts.aliveTimeout
+            try {
+              const helloData = JSON.parse(payload.toString())
+              if (helloData.aliveTimeout !== undefined) {
+                clientAliveTimeout = helloData.aliveTimeout
+              }
+            } catch (err) {
+              // If parsing fails, use default timeout
+            }
+
             const clientInfo: RPCClientInfo<ClientT> =
               this.revClientMapping.get(clientIdText) ??
               ({
@@ -185,9 +198,11 @@ export class BackRPCServer<ClientT extends string = ClientId> {
                 requests: new Set(),
                 requestsTime: 0,
                 requestsTotal: 0,
-                helloCounter: 0
+                helloCounter: 0,
+                aliveTimeout: clientAliveTimeout
               } satisfies RPCClientInfo<ClientT>)
             clientInfo.helloCounter++
+            clientInfo.aliveTimeout = clientAliveTimeout // Update timeout on reconnection
 
             this.revClientMapping.set(clientIdText, clientInfo)
             void this.doSend([clientId, backrpcOperations.hello, this.uuid, ''])

@@ -98,9 +98,11 @@ export class NetworkClientImpl implements NetworkClient {
   constructor (
     readonly host: string,
     port: number,
-    private readonly tickMgr: TickManager
+    private readonly tickMgr: TickManager,
+    aliveTimeout?: number
   ) {
-    this.client = new BackRPCClient<ClientUuid>(this.clientId, this, host, port, tickMgr)
+    const options = undefined
+    this.client = new BackRPCClient<ClientUuid>(this.clientId, this, host, port, tickMgr, options, aliveTimeout)
   }
 
   async waitConnection (timeout?: number): Promise<void> {

@@ -26,11 +26,11 @@ process.on('exit', () => {
   shutdownNetworkTickMgr()
 })
 
-export function createNetworkClient (url: string): NetworkClient {
+export function createNetworkClient (url: string, aliveTimeout?: number): NetworkClient {
   const [host, portStr] = url.split(':')
   const port = portStr != null ? parseInt(portStr, 10) : 3737
   tickMgr.start()
-  return new NetworkClientImpl(host, port, tickMgr)
+  return new NetworkClientImpl(host, port, tickMgr, aliveTimeout)
 }
 
 export async function createAgent (

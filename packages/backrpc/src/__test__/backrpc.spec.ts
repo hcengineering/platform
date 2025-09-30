@@ -525,7 +525,9 @@ describe('backrpc', () => {
       },
       'localhost',
       await server.getPort(),
-      tickMgr
+      tickMgr,
+      undefined,
+      3 // Set timeout to 3 seconds
     )
 
     // Wait for initial connection
@@ -609,7 +611,9 @@ describe('backrpc', () => {
       },
       'localhost',
       await server.getPort(),
-      tickMgr
+      tickMgr,
+      undefined,
+      3 // Set timeout to 3 seconds
     )
 
     // Wait for initial connection
@@ -700,7 +704,9 @@ describe('backrpc', () => {
       },
       'localhost',
       await server.getPort(),
-      tickMgr
+      tickMgr,
+      undefined,
+      3 // Set timeout to 3 seconds
     )
 
     const client2 = new BackRPCClient(
@@ -715,7 +721,9 @@ describe('backrpc', () => {
       },
       'localhost',
       await server.getPort(),
-      tickMgr
+      tickMgr,
+      undefined,
+      3 // Set timeout to 3 seconds
     )
 
     // Wait for initial connections
