@@ -15,17 +15,21 @@
 
 <script lang="ts">
   import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
-  import { Markdown, Message, MessageID } from '@hcengineering/communication-types'
+  import { CardID, Markdown, Message, MessageID } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
-  import { Label } from '@hcengineering/ui'
   import { Person } from '@hcengineering/contact'
   import { Markup } from '@hcengineering/core'
+  import { translationStore } from '@hcengineering/contact-resources'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
-  import communication from '../../plugin'
-  import { isShownTranslatedMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
+  import {
+    isShownTranslatedMessage,
+    TranslateMessagesStatus,
+    translateMessagesStore,
+    showOriginalMessagesStore
+  } from '../../stores'
   import { translateMessage } from '../../actions'
 
   export let card: Card
@@ -35,12 +39,29 @@
   let displayMarkup: Markup = toMarkup(message.content)
   let prevContent: Markdown | undefined = undefined
 
-  $: updateDisplayMarkup(message, $translateMessagesStore)
+  $: language = $translationStore?.enabled === true ? $translationStore?.translateTo : undefined
+  $: dontTranslate = $translationStore?.enabled === true ? $translationStore?.dontTranslate : []
+  $: updateDisplayMarkup(message, $translateMessagesStore, $showOriginalMessagesStore, language, dontTranslate)
 
-  function updateDisplayMarkup (message: Message, translateMessages: Map<MessageID, TranslateMessagesStatus>): void {
-    const translateResult = translateMessages.get(message.id)
-    if (translateResult?.shown === true && translateResult?.result != null) {
+  function updateDisplayMarkup (
+    message: Message,
+    translateMessages: TranslateMessagesStatus[],
+    showOriginalMessages: Array<[CardID, MessageID]>,
+    language?: string,
+    dontTranslate: string[] = []
+  ): void {
+    const translateResult = translateMessages.find((it) => it.cardId === card._id && it.messageId === message.id)
+    const showOriginal = showOriginalMessages.some(([cId, mId]) => cId === card._id && mId === message.id)
+    if (!showOriginal && translateResult?.result != null) {
       displayMarkup = translateResult.result
+    } else if (
+      language != null &&
+      message.translates?.[language] != null &&
+      !showOriginal &&
+      !dontTranslate?.includes(language) &&
+      message.language !== language
+    ) {
+      displayMarkup = toMarkup(message.translates[language])
     } else {
       displayMarkup = toMarkup(message.content)
     }
@@ -48,12 +69,11 @@
 
   $: if (prevContent !== message.content) {
     prevContent = message.content
-    if (isShownTranslatedMessage(message.id)) {
+    if (isShownTranslatedMessage(message.cardId, message.id)) {
       void translateMessage(message, card)
     } else {
       translateMessagesStore.update((store) => {
-        store.delete(message.id)
-        return store
+        return store.filter((it) => it.cardId !== message.cardId || it.messageId !== message.id)
       })
     }
   }
@@ -64,9 +84,3 @@
 {:else}
   <MarkupMessageViewer message={displayMarkup} />
 {/if}
-
-<style lang="scss">
-  .removed-label {
-    color: var(--theme-text-placeholder-color);
-  }
-</style>

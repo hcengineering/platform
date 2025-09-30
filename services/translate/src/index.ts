@@ -22,8 +22,12 @@ import { Analytics } from '@hcengineering/analytics'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { Tx } from '@hcengineering/core'
+import OpenAI from 'openai'
+import serverClient from '@hcengineering/server-client'
 
 import config from './config'
+import { extractCreateMessageData, extractRemoveMessageData, extractUpdateMessageData } from './utils'
+import { Controller } from './conroller'
 
 async function main (): Promise<void> {
   configureAnalytics(config.ServiceId, process.env.VERSION ?? '0.7.0')
@@ -44,14 +48,40 @@ async function main (): Promise<void> {
   Analytics.setTag('application', config.ServiceId)
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverToken.metadata.Service, config.ServiceId)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
+
+  const openai = new OpenAI({
+    apiKey: config.OpenAIKey,
+    baseURL: config.OpenAIBaseUrl === '' ? undefined : config.OpenAIBaseUrl
+  })
 
   const queue = getPlatformQueue(config.ServiceId, config.QueueRegion)
+  const controller = new Controller(ctx, openai, queue)
 
-  const consumer = queue.createConsumer<Tx>(ctx, QueueTopic.Tx, queue.getClientId(), async (ct, message) => {
-    const ws = message.workspace
-    const record = message.value
+  const consumer = queue.createConsumer<Tx>(ctx, QueueTopic.Tx, queue.getClientId(), async (ctx, queueMessage) => {
+    const ws = queueMessage.workspace
+    const tx = queueMessage.value
 
-    console.log(ws, record)
+    controller.processTx(ws, tx)
+
+    const createMessageData = extractCreateMessageData(tx)
+    const updateMessageData = extractUpdateMessageData(tx)
+    const removeMessageData = extractRemoveMessageData(tx)
+
+    if (createMessageData != null) {
+      const { message, blobId } = createMessageData
+      await controller.processMessageCreate(ctx.newChild('translate', {}), ws, message, blobId)
+    }
+
+    if (updateMessageData != null) {
+      const { cardId, content, blobId, messageId } = updateMessageData
+      await controller.processMessageUpdate(ctx.newChild('translate', {}), ws, cardId, messageId, content, blobId)
+    }
+
+    if (removeMessageData != null) {
+      const { messageId, blobId, cardId } = removeMessageData
+      await controller.processMessageRemove(ctx.newChild('translate', {}), ws, cardId, messageId, blobId)
+    }
   })
 
   const shutdown = (): void => {

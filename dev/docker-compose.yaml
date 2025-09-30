@@ -573,6 +573,7 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
+      - HULYLAKE_URL=http://huly.local:8096
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped

@@ -124,6 +124,11 @@
     "HereDescription": "Notifica tutti in questo {title}",
     "Guest": "Ospite",
     "Deleted": "Eliminato",
-    "CannotMerge": "Errore: Impossibile unire persone globali"
+    "CannotMerge": "Errore: Impossibile unire persone globali",
+    "AutoTranslation": "Traduzione automatica",
+    "TranslateTo": "Traduci in",
+    "DontTranslate": "Non tradurre",
+    "SelectLanguage": "Seleziona lingua",
+    "SelectLanguages": "Seleziona lingue"
   }
 }

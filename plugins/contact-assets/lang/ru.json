@@ -124,6 +124,11 @@
     "HereDescription": "Уведомить всех в этом {title}",
     "Guest": "Гость",
     "Deleted": "Удалён",
-    "CannotMerge": "Ошибка: Невозможно объединить глобальных персон"
+    "CannotMerge": "Ошибка: Невозможно объединить глобальных персон",
+    "AutoTranslation": "Автоматический перевод",
+    "TranslateTo": "Переводить на",
+    "DontTranslate": "Не переводить",
+    "SelectLanguage": "Выберите язык",
+    "SelectLanguages": "Выберите языки"
   }
 }

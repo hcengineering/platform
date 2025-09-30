@@ -13,23 +13,43 @@
 // limitations under the License.
 //
 import { config as dotenvConfig } from 'dotenv'
+import OpenAI from 'openai'
 
 dotenvConfig()
 
 export interface Config {
-  Secret: string
+  AccountsUrl: string
+  OpenAIBaseUrl: string
+  OpenAIKey: string
+  OpenAIModel: OpenAI.ChatModel
   QueueConfig: string
   QueueRegion: string
-  AccountsUrl: string
+  Secret: string
   ServiceId: string
+  HulylakeUrl: string
 }
 
-const config: Config = {
-  Secret: process.env.SECRET ?? 'secret',
-  QueueConfig: process.env.QUEUE_CONFIG ?? '',
-  QueueRegion: process.env.QUEUE_REGION ?? '',
-  AccountsUrl: process.env.ACCOUNTS_URL ?? '',
-  ServiceId: process.env.SERVICE_ID ?? 'translate'
-}
+const config: Config = (() => {
+  const params: Partial<Config> = {
+    Secret: process.env.SECRET ?? 'secret',
+    QueueConfig: process.env.QUEUE_CONFIG ?? '',
+    QueueRegion: process.env.QUEUE_REGION ?? '',
+    AccountsUrl: process.env.ACCOUNTS_URL ?? '',
+    HulylakeUrl: process.env.HULYLAKE_URL ?? '',
+    ServiceId: process.env.SERVICE_ID ?? 'translate',
+    OpenAIKey:
+      process.env.OPENAI_API_KEY,
+    OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? ''
+  }
+
+  const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
+
+  if (missingEnv.length > 0) {
+    throw Error(`Missing env variables: ${missingEnv.join(', ')}`)
+  }
+
+  return params as Config
+})()
 
 export default config
