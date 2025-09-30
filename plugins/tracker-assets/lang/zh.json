@@ -287,7 +287,9 @@
     "IssueStatus": "状态",
     "Extensions": "扩展",
     "RoleLabel": "角色：{role}",
-    "UnsetParentIssue": "取消父问题"
+    "UnsetParentIssue": "取消父问题",
+    "ForbidCreateProjectPermission": "禁止创建项目",
+    "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目"
   },
   "status": {}
 }

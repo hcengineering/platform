@@ -119,7 +119,9 @@
     "HideArchivedVacancies": "アーカイブされた求人を非表示",
     "HideApplicantsFromArchivedVacancies": "アーカイブされた求人から非表示",
     "CreateNewSkills": "既存のスキルが見つからない場合は新しいスキルを作成",
-    "SwapFirstAndLastNames": "名と姓を入れ替える"
+    "SwapFirstAndLastNames": "名と姓を入れ替える",
+    "ForbidCreateVacancyPermission": "求人の作成禁止",
+    "ForbidCreateVacancyPermissionDescription": "ユーザーが新しい求人を作成することを禁止します"
   },
   "status": {
     "ApplicationExists": "応募はすでに存在します",
