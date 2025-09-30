@@ -15,21 +15,15 @@
 
 import { type AnalyticProvider, Analytics } from '@hcengineering/analytics'
 import { AnalyticsCollectorProvider } from './analyticsCollector'
-import { PosthogAnalyticProvider } from './posthog'
-import { SentryAnalyticProvider } from './sentry'
 import { type AnalyticsConfig } from './types'
 
 export * from './analyticsCollector'
-export * from './posthog'
-export * from './sentry'
 export * from './utils'
 export * from './types'
 
 export function configureAnalyticsProviders (config: AnalyticsConfig): void {
   const providers: AnalyticProvider[] = [
-    new AnalyticsCollectorProvider(),
-    new SentryAnalyticProvider(),
-    new PosthogAnalyticProvider()
+    new AnalyticsCollectorProvider()
   ]
 
   for (const provider of providers) {

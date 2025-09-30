@@ -45,7 +45,6 @@
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/core": "^0.6.32",
-    "posthog-js": "^1.246.0",
     "ua-parser-js": "^2.0.4",
     "@hcengineering/ui": "^0.6.15"
   },
