@@ -129,7 +129,7 @@
           <div class="label mr-1">
             <Label label={documentsRes.string.ExternalApprovers} />
           </div>
-          {users?.length}
+          {externalUsers?.length}
         </div>
         <div class="flex-col">
           <UserBoxItems
