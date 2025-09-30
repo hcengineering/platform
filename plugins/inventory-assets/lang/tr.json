@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "Kategori gerekli",
+    "NameRequired": "İsim gerekli"
+  },
+  "string": {
+    "Categories": "Kategoriler",
+    "Category": "Kategori",
+    "CategoryCreateLabel": "Kategori",
+    "CreateCategory": "Kategori oluştur",
+    "CreateSubcategory": "Alt kategori oluştur",
+    "Inventory": "Envanter",
+    "ProductCreateLabel": "Ürün",
+    "CreateProduct": "Ürün oluştur",
+    "Products": "Ürünler",
+    "Product": "Ürün",
+    "Variant": "Varyant",
+    "SKU": "SKU",
+    "Variants": "Varyantlar",
+    "NoVariantsForProduct": "Bu ürün için varyant yok.",
+    "CreateVariant": "Varyant oluştur",
+    "ConfigLabel": "Envanter",
+    "ConfigDescription": "Envanteri yönetmek için uzantı"
+  }
+}

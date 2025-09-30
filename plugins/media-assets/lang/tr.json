@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Camera": "Kamera",
+    "Microphone": "Mikrofon",
+    "Speaker": "Hoparlör",
+    "DefaultCam": "Varsayılan kamera",
+    "DefaultMic": "Varsayılan mikrofon",
+    "DefaultSpeaker": "Varsayılan hoparlör",
+    "TurnOnCam": "Kamerayı aç",
+    "TurnOffCam": "Kamerayı kapat",
+    "TurnOnMic": "Mikrofonu aç",
+    "TurnOffMic": "Mikrofonu kapat",
+    "NoCam": "Kamera yok",
+    "NoMic": "Mikrofon yok",
+    "NoSpeaker": "Hoparlör yok",
+    "On": "Açık",
+    "Off": "Kapalı"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "string": {
+    "WorkspaceNamePattern": "İsim 40 karakter veya daha kısa, boş olmamalı ve özel karakterler (<, >, /) içermemelidir",
+    "Export": "Dışa Aktar",
+    "DataToExport": "Dışa aktarılacak veri",
+    "ExportDocuments": "Dokümanlar",
+    "ExportMilestones": "Kilometre Taşı",
+    "ExportIssues": "Sorunlar",
+    "ExportTestCases": "Test Senaryoları",
+    "ExportTestRuns": "Test Çalıştırmaları",
+    "ExportTestPlans": "Test Planları",
+    "ExportFormat": "Dışa aktarma formatı",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Huly Birleşik Format",
+    "ExportIncludeContent": "İçerik dahil et",
+    "ExportEverything": "Her şey",
+    "ExportAttributesOnly": "Sadece öznitelikler",
+    "ExportRequestSuccess": "Dışa aktarma başladı.",
+    "ExportRequestSuccessMessage": "Dışa aktarma başladı. Tamamlandığında Gelen Kutunuzda bir bildirim alacaksınız.",
+    "ExportRequestFailed": "Dışa aktarma gönderilemedi.",
+    "ExportRequestFailedMessage": "Dışa aktarma gönderirken hata oluştu. Lütfen daha sonra tekrar deneyin.",
+    "ExportCompleted": "Dışa aktarma tamamlandı. Dosyalarınız hazır. Bunları sürücüden indirebilirsiniz.",
+    "ExportFailed": "Veri dışa aktarılamadı. Lütfen daha sonra tekrar deneyin."
+  }
+}
