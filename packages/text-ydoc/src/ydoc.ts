@@ -15,6 +15,7 @@
 
 import { generateId, Markup } from '@hcengineering/core'
 import { jsonToMarkup, MarkupMarkType, MarkupNodeType, markupToJSON, type MarkupNode } from '@hcengineering/text'
+import { hashAttrs, stripHash } from '@hcengineering/text-core'
 import { Doc as YDoc, XmlElement as YXmlElement, XmlFragment as YXmlFragment, XmlText as YXmlText } from 'yjs'
 
 /**
@@ -49,14 +50,22 @@ function nodeToXmlElement (parent: YXmlFragment, node: MarkupNode): YXmlElement 
     if (node.content !== undefined && node.content.length > 0) {
       node.content.map((p) => nodeToXmlElement(elem, p))
     }
-  } else {
+  } else if (elem instanceof YXmlText) {
     // https://github.com/yjs/y-prosemirror/blob/master/src/plugins/sync-plugin.js#L777
     const attributes: Record<string, any> = {}
     if (node.marks !== undefined) {
+      const attrCount = new Map<string, number>()
       node.marks.forEach((mark) => {
-        attributes[mark.type] = mark.attrs ?? {}
+        attrCount.set(mark.type, (attrCount.get(mark.type) ?? 0) + 1)
+      })
+
+      node.marks.forEach((mark) => {
+        const count = attrCount.get(mark.type) ?? 0
+        const type = count > 1 ? `${mark.type}--${hashAttrs(mark.attrs)}` : mark.type
+        attributes[type] = mark.attrs ?? {}
       })
     }
+
     elem.applyDelta([
       {
         insert: node.text ?? '',
@@ -119,7 +128,7 @@ function xmlFragmentToNode (fragment: YXmlFragment): MarkupNode[] {
         // Convert attributes to marks
         if (op.attributes != null) {
           textNode.marks = Object.entries(op.attributes).map(([type, attrs]) => ({
-            type: type as MarkupMarkType,
+            type: stripHash(type) as MarkupMarkType,
             attrs: attrs as Record<string, any>
           }))
         }

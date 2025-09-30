@@ -4,10 +4,11 @@
   import { createQuery, getClient, ObjectCreate } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
   import { showMenu } from '../actions'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
   import view from '../plugin'
+  import ViewletsSettingButton from './ViewletsSettingButton.svelte'
 
   export let object: Doc
   export let docs: Doc[]
@@ -62,41 +63,7 @@
   let viewlet: WithLookup<Viewlet> | undefined
   let preference: ViewletPreference | undefined = undefined
 
-  const query = createQuery()
-
-  $: query.query(
-    view.class.Viewlet,
-    {
-      attachTo: client.getHierarchy().getBaseClass(_class)
-    },
-    (res) => {
-      viewlet = res[0]
-    },
-    {
-      lookup: {
-        descriptor: view.class.ViewletDescriptor
-      }
-    }
-  )
-
-  const preferenceQuery = createQuery()
-
-  $: if (viewlet != null) {
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        space: core.space.Workspace,
-        attachedTo: viewlet._id
-      },
-      (res) => {
-        preference = res[0]
-      },
-      { limit: 1 }
-    )
-  } else {
-    preferenceQuery.unsubscribe()
-    preference = undefined
-  }
+  $: baseClass = client.getHierarchy().getBaseClass(_class)
 
   $: selectedConfig = preference?.config ?? viewlet?.config
   $: config = selectedConfig?.filter((p) =>
@@ -133,6 +100,7 @@
       {#if classLabel}
         <Label label={classLabel} />
       {/if}
+      <ViewletsSettingButton viewletQuery={{ attachTo: baseClass }} kind={'tertiary'} bind:viewlet bind:preference />
       {#if !readonly && allowToCreate}
         <Button id={core.string.AddRelation} icon={IconAdd} kind={'ghost'} on:click={add} />
       {/if}

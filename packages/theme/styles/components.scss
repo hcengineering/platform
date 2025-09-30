@@ -642,6 +642,7 @@
     border: 1px solid var(--theme-popup-divider); // var(--global-surface-02-BorderColor);
     border-radius: var(--large-BorderRadius);
     box-shadow: var(--global-modal-ShadowX) var(--global-modal-ShadowY) var(--global-modal-ShadowBlur) var(--global-modal-ShadowSpread) var(--global-popover-ShadowColor);
+    max-width: 90vw;
 
     &.large {
       min-width: unset;

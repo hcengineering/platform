@@ -2023,6 +2023,9 @@ importers:
       graphql-binding:
         specifier: ^2.5.2
         version: 2.5.2
+      hash-it:
+        specifier: ^6.0.0
+        version: 6.0.0
       heic-decode:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2093,8 +2096,8 @@ importers:
         specifier: ~1.0.4
         version: 1.0.5
       lib0:
-        specifier: ^0.2.88
-        version: 0.2.89
+        specifier: ^0.2.109
+        version: 0.2.114
       libphonenumber-js:
         specifier: ^1.9.46
         version: 1.10.56
@@ -6048,7 +6051,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-core@file:projects/text-core.tgz':
-    resolution: {integrity: sha512-WezIZjq0OzkKSAy6wMqDFrvEsZ0HlLXzmctJ8w/io4+ywOUO2Cb9ZDXn80wwr5t3TFdb2rvfg1lMM5xDuC+RfA==, tarball: file:projects/text-core.tgz}
+    resolution: {integrity: sha512-wSRif2622acwkDHy2FtsEDhnDTsl8hydf/MFYSgAri0l5sQ6qOPHLuh8FZ2yf81EWTLfK/iuez70cAlYwkypMw==, tarball: file:projects/text-core.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor-assets@file:projects/text-editor-assets.tgz':
@@ -10154,6 +10157,9 @@ packages:
   has-unicode@2.0.1:
     resolution: {integrity: sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==}
 
+  hash-it@6.0.0:
+    resolution: {integrity: sha512-KHzmSFx1KwyMPw0kXeeUD752q/Kfbzhy6dAZrjXV9kAIXGqzGvv8vhkUqj+2MGZldTo0IBpw6v7iWE7uxsvH0w==}
+
   hasown@2.0.1:
     resolution: {integrity: sha512-1/th4MHjnwncwXsIW6QMzlvYL9kG5e/CpVvLRZe4XPa8TOUNbCELqmvhDmnkNsAjwaG4+I8gJJL0JBvTTLO9qA==}
     engines: {node: '>= 0.4'}
@@ -11147,18 +11153,8 @@ packages:
   lexorank@1.0.5:
     resolution: {integrity: sha512-K1B/Yr/gIU0wm68hk/yB0p/mv6xM3ShD5aci42vOwcjof8slG8Kpo3Q7+1WTv7DaRHKWRgLPqrFDt+4GtuFAtA==}
 
-  lib0@0.2.109:
-    resolution: {integrity: sha512-jP0gbnyW0kwlx1Atc4dcHkBbrVAkdHjuyHxtClUPYla7qCmwIif1qZ6vQeJdR5FrOVdn26HvQT0ko01rgW7/Xw==}
-    engines: {node: '>=16'}
-    hasBin: true
-
-  lib0@0.2.89:
-    resolution: {integrity: sha512-5j19vcCjsQhvLG6mcDD+nprtJUCbmqLz5Hzt5xgi9SV6RIW/Dty7ZkVZHGBuPOADMKjQuKDvuQTH495wsmw8DQ==}
-    engines: {node: '>=16'}
-    hasBin: true
-
-  lib0@0.2.99:
-    resolution: {integrity: sha512-vwztYuUf1uf/1zQxfzRfO5yzfNKhTtgOByCruuiQQxWQXnPb8Itaube5ylofcV0oM0aKal9Mv+S1s1Ky0UYP1w==}
+  lib0@0.2.114:
+    resolution: {integrity: sha512-gcxmNFzA4hv8UYi8j43uPlQ7CGcyMJ2KQb5kZASw6SnAKAf10hK12i2fjrS3Cl/ugZa5Ui6WwIu1/6MIXiHttQ==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -15593,13 +15589,13 @@ snapshots:
 
   '@hocuspocus/common@2.15.2':
     dependencies:
-      lib0: 0.2.99
+      lib0: 0.2.114
 
   '@hocuspocus/provider@2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)':
     dependencies:
       '@hocuspocus/common': 2.15.2
       '@lifeomic/attempt': 3.0.3
-      lib0: 0.2.99
+      lib0: 0.2.114
       ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       y-protocols: 1.0.6(yjs@13.6.27)
       yjs: 13.6.27
@@ -15612,7 +15608,7 @@ snapshots:
       '@hocuspocus/common': 2.15.2
       async-lock: 1.4.1
       kleur: 4.1.5
-      lib0: 0.2.99
+      lib0: 0.2.114
       uuid: 11.1.0
       ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       y-protocols: 1.0.6(yjs@13.6.27)
@@ -29800,6 +29796,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.2.2
+      hash-it: 6.0.0
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       prettier: 3.2.5
@@ -29887,7 +29884,7 @@ snapshots:
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      lib0: 0.2.89
+      lib0: 0.2.114
       lowlight: 3.3.0
       mermaid: 11.4.1
       prettier: 3.2.5
@@ -30030,6 +30027,7 @@ snapshots:
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      lib0: 0.2.114
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
@@ -35719,6 +35717,8 @@ snapshots:
 
   has-unicode@2.0.1: {}
 
+  hash-it@6.0.0: {}
+
   hasown@2.0.1:
     dependencies:
       function-bind: 1.1.2
@@ -36993,15 +36993,7 @@ snapshots:
 
   lexorank@1.0.5: {}
 
-  lib0@0.2.109:
-    dependencies:
-      isomorphic.js: 0.2.5
-
-  lib0@0.2.89:
-    dependencies:
-      isomorphic.js: 0.2.5
-
-  lib0@0.2.99:
+  lib0@0.2.114:
     dependencies:
       isomorphic.js: 0.2.5
 
@@ -40684,7 +40676,7 @@ snapshots:
 
   y-websocket@2.1.0(yjs@13.6.27):
     dependencies:
-      lib0: 0.2.89
+      lib0: 0.2.114
       lodash.debounce: 4.0.8
       y-protocols: 1.0.6(yjs@13.6.27)
       yjs: 13.6.27
