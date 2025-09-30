@@ -217,12 +217,15 @@
     {:else if selectedType}
       <ChatNavigationCategoryList type={selectedType} />
     {:else if selection?.type === 'all'}
-      <Component is={workbench.component.SpecialView} props={{
-        _class: cardPlugin.class.Card,
-        icon: chat.icon.All,
-        label: chat.string.All,
-        defaultViewletDescriptor: cardPlugin.viewlet.CardFeedDescriptor
-      }}/>
+      <Component
+        is={workbench.component.SpecialView}
+        props={{
+          _class: cardPlugin.class.Card,
+          icon: chat.icon.All,
+          label: chat.string.All,
+          defaultViewletDescriptor: cardPlugin.viewlet.CardFeedDescriptor
+        }}
+      />
     {/if}
   </div>
 </div>
