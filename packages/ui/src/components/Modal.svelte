@@ -70,7 +70,12 @@
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type} {width ?? ''}" class:hidden class:noTopIndent style={maxWidth ? `max-width: ${maxWidth};` : ''}>
+<div
+  class="hulyModal-container {type} {width ?? ''}"
+  class:hidden
+  class:noTopIndent
+  style={maxWidth ? `max-width: ${maxWidth};` : ''}
+>
   <Header
     {type}
     {adaptive}
