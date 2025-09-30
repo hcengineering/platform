@@ -375,4 +375,27 @@ export async function CurrentDate (): Promise<Timestamp> {
   return Date.now()
 }
 
+export function EmptyArray (): any[] {
+  return []
+}
+
+export async function ExecutionInitiator (
+  value: null,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<Ref<Person> | undefined> {
+  const socialId = await control.client.findOne(contact.class.SocialIdentity, { _id: (execution.createdBy ?? execution.modifiedBy) as any })
+  return socialId?.attachedTo
+}
+
+export async function ExecutionStarted (
+  value: null,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<Timestamp> {
+  return execution.createdOn ?? execution.modifiedOn
+}
+
 // #endregion

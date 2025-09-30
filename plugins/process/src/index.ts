@@ -309,6 +309,10 @@ export default plugin(processId, {
     RemoveLast: '' as Ref<ProcessFunction>,
     CurrentEmployee: '' as Ref<ProcessFunction>,
     CurrentUser: '' as Ref<ProcessFunction>,
+    ExecutionStarted: '' as Ref<ProcessFunction>,
+    ExecutionEmployeeInitiator: '' as Ref<ProcessFunction>,
+    ExecutionInitiator: '' as Ref<ProcessFunction>,
+    EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>
   }
 })
