@@ -438,6 +438,54 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.EmptyArray,
+      type: 'context'
+    },
+    process.function.EmptyArray
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.mixin.Employee,
+      category: 'attribute',
+      label: process.string.ExecutionInitiator,
+      type: 'context'
+    },
+    process.function.ExecutionEmployeeInitiator
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.class.Person,
+      category: 'attribute',
+      label: process.string.ExecutionInitiator,
+      type: 'context'
+    },
+    process.function.ExecutionInitiator
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.ExecutionStarted,
+      type: 'context'
+    },
+    process.function.ExecutionStarted
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: contact.class.Person,
       category: 'attribute',
       label: process.string.CurrentUser,

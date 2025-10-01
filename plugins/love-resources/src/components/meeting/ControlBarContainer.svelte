@@ -86,7 +86,6 @@
     border-top: 1px solid var(--theme-divider-color);
     container-type: inline-size;
     width: 100%;
-    overflow: hidden;
   }
 
   .row {

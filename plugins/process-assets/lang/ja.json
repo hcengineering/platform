@@ -113,7 +113,10 @@
     "ProcessRunned": "プロセス \"{process}\" が開始されました",
     "ProcessStateChanged": "プロセス \"{process}\" の状態が \"{state}\" に変更されました",
     "ProcessFinished": "プロセス \"{process}\" が状態 \"{state}\" で終了しました",
-    "NewProcessToDo": "新しいプロセスアクション"
+    "NewProcessToDo": "新しいプロセスアクション",
+    "EmptyArray": "空の配列",
+    "ExecutionInitiator": "実行の発起人",
+    "ExecutionStarted": "実行が開始されました"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

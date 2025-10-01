@@ -77,7 +77,7 @@
           }
 
           email = result.email
-          name = result.name
+          name = result.name ?? ''
         }
       }
     } catch (err: any) {
