@@ -179,6 +179,28 @@ export class NetworkClientImpl implements NetworkClient {
     // In case of container stopped, agent stopped or endpoint changed, we need to update direct connections to be re-established.
     await this.handleConnectionUpdates(event)
 
+    // Handle container removal for stateless containers - attempt to re-register
+    for (const containerEvent of event.containers) {
+      if (containerEvent.event === NetworkEventKind.removed) {
+        // Check if any of our agents have this container as stateless and need to re-register
+        for (const agentRecord of this._agents.values()) {
+          const agent = agentRecord.agent as any
+          const statelessContainers = agent.statelessContainers as Map<ContainerUuid, any> | undefined
+          if (statelessContainers !== undefined && statelessContainers.has(containerEvent.container.uuid)) {
+            console.log(
+              `HA: Container ${containerEvent.container.uuid} removed, attempting to re-register from agent ${agent.uuid}`
+            )
+            // Re-register this agent to attempt to claim the container
+            setTimeout(() => {
+              this.doRegister(agent).catch((err) => {
+                console.error(`Failed to re-register agent ${agent.uuid}:`, err)
+              })
+            }, 100) // Small delay to avoid thundering herd
+          }
+        }
+      }
+    }
+
     for (const listener of this.containerListeners.values()) {
       try {
         await listener(event)

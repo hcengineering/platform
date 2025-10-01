@@ -39,10 +39,60 @@ export class AgentImpl implements NetworkAgent {
 
   endpoint?: AgentEndpointRef | undefined
 
+  // Stateless containers that need to be registered
+  private readonly statelessContainers = new Map<ContainerUuid, ContainerRecordImpl>()
+
   constructor (
     readonly uuid: AgentUuid,
     private readonly factory: Record<ContainerKind, ContainerFactory>
   ) {}
+
+  /**
+   * Add a stateless container to the agent.
+   * Stateless containers are pre-existing containers that the agent wants to register with the network.
+   * Used for HA scenarios where multiple agents may try to register the same container UUID.
+   */
+  addStatelessContainer (
+    uuid: ContainerUuid,
+    kind: ContainerKind,
+    endpoint: ContainerEndpointRef,
+    container: Container
+  ): void {
+    const record: ContainerRecordImpl = {
+      container,
+      uuid,
+      endpoint,
+      kind,
+      lastVisit: Date.now()
+    }
+    this.statelessContainers.set(uuid, record)
+  }
+
+  /**
+   * Remove a stateless container from tracking.
+   * This is called when the network rejects our registration (another agent won).
+   */
+  removeStatelessContainer (uuid: ContainerUuid): void {
+    this.statelessContainers.delete(uuid)
+  }
+
+  /**
+   * Activate a stateless container after successful registration.
+   * Moves it from stateless tracking to active containers.
+   */
+  private activateStatelessContainer (uuid: ContainerUuid): void {
+    const record = this.statelessContainers.get(uuid)
+    if (record !== undefined) {
+      this._byId.set(uuid, record)
+      const byKind = this._byKind.get(record.kind)
+      if (byKind !== undefined) {
+        byKind.set(uuid, record)
+      } else {
+        this._byKind.set(record.kind, new Map([[uuid, record]]))
+      }
+      this.statelessContainers.delete(uuid)
+    }
+  }
 
   async register (network: Network): Promise<void> {
     const cleanContainers = await network.register(
@@ -54,13 +104,23 @@ export class AgentImpl implements NetworkAgent {
       },
       this
     )
+
+    // Activate stateless containers that were accepted
+    for (const record of this.statelessContainers.values()) {
+      if (!cleanContainers.includes(record.uuid)) {
+        this.activateStatelessContainer(record.uuid)
+      }
+    }
+
+    // Terminate containers that network wants cleaned up
     for (const c of cleanContainers) {
       await this.terminate(c)
     }
   }
 
   async list (kind?: ContainerKind): Promise<ContainerRecord[]> {
-    return Array.from(kind !== undefined ? (this._byKind.get(kind)?.values() ?? []) : this._byId.values())
+    // Include both active and stateless containers
+    const active = Array.from(kind !== undefined ? (this._byKind.get(kind)?.values() ?? []) : this._byId.values())
       .filter((it) => !(it instanceof Promise) && (kind === undefined || it.kind === kind))
       .map((it) => ({
         agentId: this.uuid,
@@ -69,6 +129,18 @@ export class AgentImpl implements NetworkAgent {
         kind: it.kind,
         lastVisit: it.lastVisit
       }))
+
+    const stateless = Array.from(this.statelessContainers.values())
+      .filter((it) => kind === undefined || it.kind === kind)
+      .map((it) => ({
+        agentId: this.uuid,
+        uuid: it.uuid,
+        endpoint: it.endpoint,
+        kind: it.kind,
+        lastVisit: it.lastVisit
+      }))
+
+    return [...active, ...stateless]
   }
 
   get kinds (): ContainerKind[] {
@@ -87,7 +159,12 @@ export class AgentImpl implements NetworkAgent {
   }
 
   async getContainer (uuid: ContainerUuid): Promise<Container | undefined> {
-    return this._byId.get(uuid)?.container
+    const active = this._byId.get(uuid)
+    if (active !== undefined) {
+      return active.container
+    }
+    // Check stateless containers too
+    return this.statelessContainers.get(uuid)?.container
   }
 
   async get (kind: ContainerKind, options: GetOptions): Promise<[ContainerUuid, ContainerEndpointRef]> {
@@ -160,6 +237,14 @@ export class AgentImpl implements NetworkAgent {
       } else {
         await current.container.terminate()
       }
+      return
+    }
+
+    // Also check stateless containers
+    const stateless = this.statelessContainers.get(uuid)
+    if (stateless !== undefined) {
+      this.statelessContainers.delete(uuid)
+      await stateless.container.terminate()
     }
   }
 

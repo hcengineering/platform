@@ -174,16 +174,24 @@ export class NetworkImpl implements Network, NetworkWithClients {
         this._containers.set(containerImpl.record.uuid, containerImpl)
         agentRecord.containers.add(containerImpl.record.uuid)
       } else {
+        // Container already exists - HA scenario
         if (existingContainer.agent.id !== record.agentId) {
-          // Container already started on different agent, need to shutdown old one.
+          // Container already started on different agent
+          // The first agent wins, tell this agent to shutdown this container
+          console.log(
+            `HA: Container ${containerImpl.record.uuid} already owned by agent ${existingContainer.agent.id}, rejecting agent ${record.agentId}`
+          )
           containersToShutdown.push(containerImpl.record.uuid)
-        }
-
-        if (existingContainer.record.endpoint !== containerImpl.record.endpoint) {
-          containerEvent.containers.push({
-            container: containerImpl.record,
-            event: NetworkEventKind.updated
-          })
+        } else {
+          // Same agent re-registering - update endpoint if changed
+          if (existingContainer.record.endpoint !== containerImpl.record.endpoint) {
+            containerEvent.containers.push({
+              container: containerImpl.record,
+              event: NetworkEventKind.updated
+            })
+            existingContainer.record.endpoint = containerImpl.record.endpoint
+            existingContainer.endpoint = containerImpl.record.endpoint
+          }
         }
       }
     }
