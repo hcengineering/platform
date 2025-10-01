@@ -20,7 +20,7 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "PORT": "37371",
+        "PORT": "3737",
         "DEVELOPMENT": "true"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
