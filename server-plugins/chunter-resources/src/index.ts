@@ -207,19 +207,24 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     }
   }
 
-  for (const collab of collaboratorsFromMessage) {
-    if (currentCollaborators.includes(collab)) {
-      continue
+  const classCollab = (
+    await control.findAll(control.ctx, core.class.ClassCollaborators, { attachedTo: targetDoc._class })
+  )[0]
+  if (classCollab?.provideSecurity !== true) {
+    for (const collab of collaboratorsFromMessage) {
+      if (currentCollaborators.includes(collab)) {
+        continue
+      }
+
+      const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
+        attachedTo: targetDoc._id,
+        attachedToClass: targetDoc._class,
+        collaborator: collab,
+        collection: 'collaborators'
+      })
+
+      res.push(tx)
     }
-
-    const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
-      attachedTo: targetDoc._id,
-      attachedToClass: targetDoc._class,
-      collaborator: collab,
-      collection: 'collaborators'
-    })
-
-    res.push(tx)
   }
 
   if (account != null && isChannel && !(targetDoc as Channel).members.includes(account)) {
