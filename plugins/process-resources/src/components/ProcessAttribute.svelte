@@ -86,7 +86,6 @@
   {#if contextValue}
     <ContextValue
       {process}
-      {masterTag}
       {contextValue}
       {context}
       {attribute}
