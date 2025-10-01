@@ -1297,6 +1297,7 @@ See our [Contributing Guide](CONTRIBUTING.md) for more detailed information.
 This project is licensed under the **Eclipse Public License 2.0** - see the [LICENSE](LICENSE) file for details.
 
 The EPL-2.0 is a business-friendly open source license that allows you to:
+
 - ✅ Use the software commercially
 - ✅ Modify the software
 - ✅ Distribute the software
@@ -1307,7 +1308,34 @@ Learn more about [EPL-2.0](https://www.eclipse.org/legal/epl-2.0/).
 
 ## 🔒 Security
 
-Security is a top priority. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
+**Important Security Notice**: Huly Network is currently suited for **private cloud installations** within trusted network environments.
+
+### Current Security Model
+
+- **No Built-in Authentication**: The network does not include authentication or authorization mechanisms
+- **No Encryption**: Communication between network components is unencrypted
+- **Trusted Environment Assumption**: All agents, containers, and clients are assumed to be trustworthy
+- **Performance Priority**: Security features are intentionally omitted to maximize performance, but will be added laterly.
+
+### Deployment Recommendations
+
+For production deployments, we strongly recommend:
+
+1. **Network Isolation**: Deploy within a private network or VPC
+2. **Firewall Rules**: Restrict access to network ports (default: 3737) using firewall rules
+3. **VPN/Private Network**: Use VPN or private network infrastructure for remote access
+4. **Network Segmentation**: Isolate the Huly Network from public-facing services
+
+### Future Security Enhancements
+
+We are considering adding optional security features in future releases:
+
+- TLS/SSL encryption for inter-component communication
+- Authentication mechanisms for agent registration
+- Authorization controls for container access
+- Audit logging for security monitoring
+
+If you have specific security requirements or concerns, please [open an issue](https://github.com/hcengineering/huly.net/issues) to discuss your use case.
 
 ## 🙏 Acknowledgments
 
