@@ -155,17 +155,17 @@ interface MyOptions {
 export class MyClass {
   // Private fields first
   private readonly config: MyOptions
-  
+
   // Constructor
   constructor(options: MyOptions) {
     this.config = options
   }
-  
+
   // Public methods
   async doSomething(): Promise<void> {
     // Implementation
   }
-  
+
   // Private methods
   private helper(): void {
     // Implementation
@@ -205,14 +205,14 @@ describe('ComponentName', () => {
     it('should behave correctly under normal conditions', async () => {
       // Arrange
       const component = new ComponentName()
-      
+
       // Act
       const result = await component.methodName()
-      
+
       // Assert
       expect(result).toBe(expected)
     })
-    
+
     it('should handle error conditions', async () => {
       // Test error cases
     })

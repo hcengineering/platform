@@ -15,6 +15,33 @@ Build enterprise-grade distributed systems with automatic service discovery, hig
 
 [Features](#-why-build-your-product-on-huly-network) • [Quick Start](#-getting-started) • [Documentation](#-documentation) • [Examples](#-examples) • [API Reference](#-api-reference) • [Contributing](#-contributing)
 
+```mermaid
+flowchart TD
+    subgraph Learn["📚 STEP 1: Core Concepts"]
+        direction TB
+        Network["🌐 Network Server<br/>Central hub, Port 3737<br/>⚠️ Single instance only"]
+        Agent["🤖 Agent<br/>Runs containers<br/>✅ Multiple instances OK"]
+        Container["📦 Container<br/>Your business logic<br/>Implements interface"]
+        Client["💻 Client<br/>Requests containers<br/>Sends operations"]
+    end
+
+    Learn --> Deploy
+
+    subgraph Deploy["🚀 STEP 2: Production Features"]
+        direction TB
+        P1["⚡ High Availability<br/>Multiple agents, auto-failover"]
+        P2["🎯 Multi-tenancy<br/>Labels & routing"]
+        P3["📡 Event Broadcasting<br/>Real-time updates"]
+        P4["📈 Scale & Monitor<br/>Add agents, track health"]
+    end
+
+    Deploy --> Success([🎉 Production Ready!])
+
+    style Success fill:#ffd700,stroke:#f57f17,stroke-width:3px
+    style Learn fill:#e3f2fd,stroke:#1976d2
+    style Deploy fill:#e8f5e9,stroke:#388e3c
+```
+
 </div>
 
 ---

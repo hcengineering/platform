@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Comprehensive documentation and examples
 - GitHub community health files (CONTRIBUTING.md, SECURITY.md)
 - Issue and PR templates
@@ -15,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.9] - 2025-10-01
 
 ### Added
+
 - Initial public release
 - Core network implementation with distributed architecture
 - ZeroMQ-based RPC communication layer
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full documentation and examples
 
 ### Features
+
 - Distributed load balancing across multiple agents
 - Container lifecycle management with reference counting
 - Event broadcasting capabilities
