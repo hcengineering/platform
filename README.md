@@ -250,7 +250,7 @@ async function main() {
   // 3. Create and start an agent
   const agent = new AgentImpl('agent-1' as any, {
     'my-service': async (options) => {
-      const uuid = options.uuid ?? ('container-' + Date.now()) as ContainerUuid
+      const uuid = options.uuid ?? (('container-' + Date.now()) as ContainerUuid)
       const container = new MyServiceContainer(uuid)
       return {
         uuid,
@@ -377,10 +377,10 @@ class ChatRoomContainer implements Container {
       case 'sendMessage':
         const message = `${data.username}: ${data.text}`
         this.messages.push(message)
-        
+
         // Broadcast to all connected clients
         await this.broadcast({ type: 'newMessage', message, timestamp: Date.now() })
-        
+
         return { success: true, messageId: this.messages.length - 1 }
 
       case 'getHistory':
@@ -405,7 +405,7 @@ class ChatRoomContainer implements Container {
   connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {
     console.log(`Client ${clientId} connected to ${this.roomName}`)
     this.clients.set(clientId, broadcast)
-    
+
     // Send welcome message to new client
     broadcast({ type: 'welcome', message: `Welcome to ${this.roomName}!` }).catch(console.error)
   }
@@ -416,15 +416,15 @@ class ChatRoomContainer implements Container {
   }
 
   private async broadcast(event: any): Promise<void> {
-    const promises = Array.from(this.clients.values()).map(handler => 
-      handler(event).catch(err => console.error('Broadcast error:', err))
+    const promises = Array.from(this.clients.values()).map((handler) =>
+      handler(event).catch((err) => console.error('Broadcast error:', err))
     )
     await Promise.all(promises)
   }
 }
 
 // Usage
-const chatRef = await client.get('chat-room' as any, { 
+const chatRef = await client.get('chat-room' as any, {
   uuid: 'room-general' as any,
   labels: ['public', 'general']
 })
@@ -436,9 +436,9 @@ connection.on = async (event) => {
 }
 
 // Send a message
-await connection.request('sendMessage', { 
-  username: 'Alice', 
-  text: 'Hello everyone!' 
+await connection.request('sendMessage', {
+  username: 'Alice',
+  text: 'Hello everyone!'
 })
 
 // Later, disconnect
@@ -458,16 +458,13 @@ import type { Container, ContainerUuid, ClientUuid, ContainerKind } from '@hceng
 class LeaderServiceContainer implements Container {
   private isActive = false
 
-  constructor(
-    readonly uuid: ContainerUuid,
-    readonly instanceName: string
-  ) {}
+  constructor(readonly uuid: ContainerUuid, readonly instanceName: string) {}
 
   async request(operation: string, data?: any): Promise<any> {
     switch (operation) {
       case 'status':
-        return { 
-          uuid: this.uuid, 
+        return {
+          uuid: this.uuid,
           instance: this.instanceName,
           active: this.isActive,
           timestamp: Date.now()
@@ -501,12 +498,7 @@ class LeaderServiceContainer implements Container {
   disconnect(clientId: ClientUuid): void {}
 }
 
-async function createHAAgent(
-  agentId: string,
-  instanceName: string,
-  sharedUuid: ContainerUuid,
-  port: number
-) {
+async function createHAAgent(agentId: string, instanceName: string, sharedUuid: ContainerUuid, port: number) {
   const tickManager = new TickManagerImpl(1)
   const agent = new AgentImpl(agentId as any, {})
 
@@ -547,7 +539,8 @@ async function runHAExample() {
   // Monitor failover events
   client.onUpdate(async (event) => {
     for (const container of event.containers) {
-      if (container.event === 2) { // NetworkEventKind.removed
+      if (container.event === 2) {
+        // NetworkEventKind.removed
         console.log(`Container removed: ${container.container.uuid}`)
         console.log('Failover should occur automatically...')
       }
@@ -562,13 +555,13 @@ async function runHAExample() {
   for (let i = 0; i < 3; i++) {
     const result = await leaderRef.request('processTask', { taskId: i, data: 'test' })
     console.log('Task result:', result)
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
   }
 
   // Simulate primary failure
   console.log('\n=== Simulating Primary Failure ===')
   await primary.agent.terminate(leaderUuid)
-  await new Promise(resolve => setTimeout(resolve, 2000)) // Wait for failover
+  await new Promise((resolve) => setTimeout(resolve, 2000)) // Wait for failover
 
   // Secondary should take over
   const newLeaderRef = await client.get('leader-service' as any, { uuid: leaderUuid })
@@ -599,10 +592,7 @@ class TenantWorkspaceContainer implements Container {
   private users = new Set<string>()
   private documents = new Map<string, any>()
 
-  constructor(
-    readonly uuid: ContainerUuid,
-    readonly tenantId: string
-  ) {
+  constructor(readonly uuid: ContainerUuid, readonly tenantId: string) {
     console.log(`Workspace created for tenant: ${tenantId}`)
   }
 
@@ -623,8 +613,8 @@ class TenantWorkspaceContainer implements Container {
         return { success: true, document: doc }
 
       case 'listDocuments':
-        return { 
-          success: true, 
+        return {
+          success: true,
           documents: Array.from(this.documents.entries()).map(([id, doc]) => ({ id, ...doc }))
         }
 
@@ -657,7 +647,7 @@ class TenantWorkspaceContainer implements Container {
 const agent = new AgentImpl('workspace-agent' as any, {
   'tenant-workspace': async (options: GetOptions) => {
     const tenantId = options.labels?.[0] || 'default'
-    const uuid = options.uuid ?? `workspace-${tenantId}-${Date.now()}` as ContainerUuid
+    const uuid = options.uuid ?? (`workspace-${tenantId}-${Date.now()}` as ContainerUuid)
     const container = new TenantWorkspaceContainer(uuid, tenantId)
     return {
       uuid,
@@ -678,9 +668,9 @@ async function getTenantWorkspace(client: any, tenantId: string) {
 // Example usage
 const tenant1Workspace = await getTenantWorkspace(client, 'tenant-acme')
 await tenant1Workspace.request('addUser', { userId: 'user-1' })
-await tenant1Workspace.request('createDocument', { 
-  title: 'Q1 Report', 
-  content: 'Financial data...' 
+await tenant1Workspace.request('createDocument', {
+  title: 'Q1 Report',
+  content: 'Financial data...'
 })
 
 const tenant2Workspace = await getTenantWorkspace(client, 'tenant-globex')
@@ -715,27 +705,27 @@ const customClient = createNetworkClient('localhost:3737', 30)
 
 async function developmentWorkflow() {
   await devClient.waitConnection(10000) // 10 second connection timeout
-  
+
   // Container will stay alive for 1 hour even without activity
   // Perfect for debugging and stepping through code
   const containerRef = await devClient.get('debug-service' as any, {})
-  
+
   // ... debug your code without worrying about timeouts
-  
+
   await containerRef.close()
   await devClient.close()
 }
 
 async function productionWorkflow() {
   await prodClient.waitConnection(5000) // 5 second connection timeout
-  
+
   // Container will be cleaned up after 3 seconds of inactivity
   // Ensures resources are freed quickly in production
   const containerRef = await prodClient.get('prod-service' as any, {})
-  
+
   // Do work...
   const result = await containerRef.request('process', { data: 'important' })
-  
+
   await containerRef.close()
   await prodClient.close()
 }
@@ -744,7 +734,7 @@ async function productionWorkflow() {
 function createClientForEnvironment(networkHost: string) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   const timeout = isDevelopment ? 3600 : 3 // 1 hour vs 3 seconds
-  
+
   return createNetworkClient(networkHost, timeout)
 }
 
@@ -801,14 +791,14 @@ import type { NetworkEvent, NetworkEventKind } from '@hcengineering/network-core
 // Monitor all network events
 const unsubscribe = client.onUpdate(async (event: NetworkEvent) => {
   console.log('=== Network Event ===')
-  
+
   // Agent events
   for (const agentEvent of event.agents) {
     const eventType = ['added', 'updated', 'removed'][agentEvent.event]
     console.log(`Agent ${agentEvent.id}: ${eventType}`)
     console.log('  Supports kinds:', agentEvent.kinds)
   }
-  
+
   // Container events
   for (const containerEvent of event.containers) {
     const eventType = ['added', 'updated', 'removed'][containerEvent.event]
@@ -816,8 +806,9 @@ const unsubscribe = client.onUpdate(async (event: NetworkEvent) => {
     console.log('  Kind:', containerEvent.container.kind)
     console.log('  Agent:', containerEvent.container.agentId)
     console.log('  Labels:', containerEvent.container.labels)
-    
-    if (containerEvent.event === 2) { // NetworkEventKind.removed
+
+    if (containerEvent.event === 2) {
+      // NetworkEventKind.removed
       console.log('  Container was removed - may trigger failover')
     }
   }
@@ -837,21 +828,16 @@ unsubscribe()
 This example shows proper error handling patterns:
 
 ```typescript
-async function robustContainerAccess(
-  client: any, 
-  kind: string, 
-  options: any, 
-  maxRetries = 3
-) {
+async function robustContainerAccess(client: any, kind: string, options: any, maxRetries = 3) {
   let lastError: Error | undefined
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Attempt ${attempt}/${maxRetries}...`)
-      
+
       // Try to get container
       const containerRef = await client.get(kind, options)
-      
+
       try {
         // Try to send request
         const result = await containerRef.request('process', { attempt })
@@ -860,37 +846,33 @@ async function robustContainerAccess(
       } catch (requestError: any) {
         console.error('Request failed:', requestError.message)
         lastError = requestError
-        
+
         // Release the failed container
         await containerRef.close().catch(() => {})
-        
+
         // Wait before retry with exponential backoff
         if (attempt < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
           console.log(`Waiting ${delay}ms before retry...`)
-          await new Promise(resolve => setTimeout(resolve, delay))
+          await new Promise((resolve) => setTimeout(resolve, delay))
         }
       }
     } catch (getError: any) {
       console.error('Failed to get container:', getError.message)
       lastError = getError
-      
+
       if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
   }
-  
+
   throw new Error(`Failed after ${maxRetries} attempts: ${lastError?.message}`)
 }
 
 // Usage
 try {
-  const result = await robustContainerAccess(
-    client, 
-    'unreliable-service' as any, 
-    { labels: ['production'] }
-  )
+  const result = await robustContainerAccess(client, 'unreliable-service' as any, { labels: ['production'] })
   console.log('Final result:', result)
 } catch (error: any) {
   console.error('All attempts failed:', error.message)
@@ -912,10 +894,7 @@ class ProductionContainer implements Container {
   private connections = new Map<ClientUuid, (data: any) => Promise<void>>()
   private shutdownRequested = false
 
-  constructor(
-    readonly uuid: ContainerUuid,
-    private readonly config: any
-  ) {
+  constructor(readonly uuid: ContainerUuid, private readonly config: any) {
     console.log(`[${uuid}] Container started`)
   }
 
@@ -943,16 +922,16 @@ class ProductionContainer implements Container {
 
   async terminate(): Promise<void> {
     if (this.shutdownRequested) return
-    
+
     this.shutdownRequested = true
     console.log(`[${this.uuid}] Terminating...`)
-    
+
     // Notify all connected clients
     await this.broadcastShutdown()
-    
+
     // Cleanup resources
     this.connections.clear()
-    
+
     console.log(`[${this.uuid}] Terminated`)
   }
 
@@ -967,9 +946,10 @@ class ProductionContainer implements Container {
   }
 
   private async broadcastShutdown(): Promise<void> {
-    const promises = Array.from(this.connections.values()).map(handler =>
-      handler({ type: 'shutdown', message: 'Container is terminating' })
-        .catch(err => console.error('Failed to notify client:', err))
+    const promises = Array.from(this.connections.values()).map((handler) =>
+      handler({ type: 'shutdown', message: 'Container is terminating' }).catch((err) =>
+        console.error('Failed to notify client:', err)
+      )
     )
     await Promise.all(promises)
   }
@@ -979,11 +959,11 @@ async function startProductionSystem() {
   // 1. Start network server
   const tickManager = new TickManagerImpl(1000)
   tickManager.start()
-  
+
   const network = new NetworkImpl(tickManager)
   const server = new NetworkServer(
-    network, 
-    tickManager, 
+    network,
+    tickManager,
     '*', // Bind to all interfaces
     3737
   )
@@ -994,7 +974,7 @@ async function startProductionSystem() {
   for (let i = 1; i <= 3; i++) {
     const agent = new AgentImpl(`agent-${i}` as any, {
       'production-service': async (options) => {
-        const uuid = options.uuid ?? `svc-${Date.now()}-${i}` as ContainerUuid
+        const uuid = options.uuid ?? (`svc-${Date.now()}-${i}` as ContainerUuid)
         const container = new ProductionContainer(uuid, { agentId: i })
         return {
           uuid,
@@ -1004,12 +984,7 @@ async function startProductionSystem() {
       }
     })
 
-    const agentServer = new NetworkAgentServer(
-      tickManager,
-      'localhost',
-      '*',
-      3738 + i
-    )
+    const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738 + i)
     await agentServer.start(agent)
     agents.push({ agent, server: agentServer })
     console.log(`✓ Agent ${i} started on port ${3738 + i}`)
@@ -1029,8 +1004,8 @@ async function startProductionSystem() {
   // 5. Setup monitoring
   client.onUpdate(async (event) => {
     // Log events for monitoring/alerting
-    event.agents.forEach(a => console.log(`Agent event: ${a.id}`))
-    event.containers.forEach(c => console.log(`Container event: ${c.container.uuid}`))
+    event.agents.forEach((a) => console.log(`Agent event: ${a.id}`))
+    event.containers.forEach((c) => console.log(`Container event: ${c.container.uuid}`))
   })
 
   console.log('✓ Production system ready')
@@ -1233,5 +1208,3 @@ This project is licensed under the Eclipse Public License 2.0 - see the [LICENSE
 ---
 
 **Note**: This is a foundational networking library for the Huly ecosystem. For application-level documentation, please refer to the main Huly platform repository.
-
-
