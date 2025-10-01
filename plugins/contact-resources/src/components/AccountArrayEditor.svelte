@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
   import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
@@ -48,7 +49,7 @@
         const empRef = $employeeRefByAccountUuidStore.get(uuid)
 
         if (empRef === undefined) {
-          console.error('Employee not found by account id', uuid)
+          Analytics.handleError(new Error(`Employee not found by account id ${uuid}`))
           return null
         }
 

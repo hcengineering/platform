@@ -17,6 +17,7 @@
 
   import chat from '../../plugin'
   import InboxViewSettings from './InboxViewSettings.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   const communicationClient = getCommunicationClient()
 
@@ -30,9 +31,9 @@
       const contexts = await communicationClient.findNotificationContexts({ order: SortingOrder.Ascending })
       await Promise.all(contexts.map((context) => communicationClient.removeNotificationContext(context.id)))
       clearing = false
-    } catch (e) {
+    } catch (e: any) {
       clearing = false
-      console.error(e)
+      Analytics.handleError(e)
     }
   }
 

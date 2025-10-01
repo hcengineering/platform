@@ -27,6 +27,7 @@
   import gmail from '../plugin'
   import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import GmailColor from './icons/GmailColor.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration
 
@@ -44,9 +45,10 @@
       personSpace = personSpaceObj?._id
       selectedSpace = integrationSpace ?? personSpace
       isLoading = false
-    } catch (err) {
+    } catch (err: any) {
       isLoading = false
       console.error('Failed to find person space:', err)
+      Analytics.handleError(err)
     }
   })
 

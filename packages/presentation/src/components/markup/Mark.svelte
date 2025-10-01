@@ -18,6 +18,7 @@
   import uiPlugin, { navigate, parseLocation } from '@hcengineering/ui'
 
   import presentation from '../../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let mark: MarkupMark
 
@@ -40,8 +41,8 @@
           }
         }
       }
-    } catch (err) {
-      console.error('Failed to handle link', mark, err)
+    } catch (err: any) {
+      Analytics.handleError(err)
     }
   }
 </script>

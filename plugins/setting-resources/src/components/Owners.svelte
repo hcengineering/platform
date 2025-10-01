@@ -22,6 +22,7 @@
 
   import setting from '../plugin'
   import { getAccountClient } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   const query = createQuery()
   const currentAccount = getCurrentAccount()
@@ -61,8 +62,8 @@
     try {
       await accountClient.updateWorkspaceRole(personUuid, value)
       workspaceMembers[personUuid] = value
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
     }
   }
   let search = ''

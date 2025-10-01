@@ -28,6 +28,7 @@
   import { getIntegrationClient } from '../api'
   import gmail from '../plugin'
   import { isNewGmailIntegration } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: AccountIntegration
   let integrationSettings: Integration | undefined
@@ -51,7 +52,9 @@
 
   async function change (shared: AccountUuid[]) {
     if (integrationSettings == null) {
-      console.error('Integrations settings are not found', integration.socialId, integration.kind)
+      Analytics.handleError(
+        new Error(`Integrations settings are not found for ${integration.socialId} ${integration.kind}`)
+      )
       return
     }
     integrationSettings.shared = shared

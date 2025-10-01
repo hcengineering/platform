@@ -42,8 +42,8 @@
     try {
       const _classLabel = hierarchy.getClass(_class)
       return _classLabel.label
-    } catch (err) {
-      console.error(err)
+    } catch (err: any) {
+      Analytics.handleError(err)
       return core.string.Class
     }
   }

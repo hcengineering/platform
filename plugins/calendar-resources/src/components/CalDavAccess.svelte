@@ -13,6 +13,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
   import { getAccountClient } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   const workspaceUuid = getCurrentWorkspaceUuid()
 
@@ -89,7 +90,7 @@
       selectedSocialId = socialId
       accessEnabled = integrationWs != null && integrationGlobal != null
     } catch (err: any) {
-      console.error('Failed to load CalDAV intergrations', err)
+      Analytics.handleError(err)
       error = `${err.message ?? 'Unable to load CalDAV intergrations'}`
     } finally {
       loading = false
@@ -151,7 +152,7 @@
       dispatch('close', true)
     } catch (err: any) {
       error = `${err.message ?? 'Unable to save CalDAV intergration'}`
-      console.error('Failed to save CalDAV integration', err)
+      Analytics.handleError(err)
     } finally {
       loading = false
     }

@@ -22,6 +22,7 @@
   import { IntlString, translateCB } from '@hcengineering/platform'
   import contact, { getCurrentEmployee, SocialIdentityRef } from '@hcengineering/contact'
   import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let mailboxOptions: MailboxOptions
 
@@ -83,6 +84,7 @@
       loading = false
       formatError(err)
       console.error('Failed to create mailbox', err)
+      Analytics.handleError(err)
     }
   }
 

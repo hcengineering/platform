@@ -37,6 +37,7 @@
   import presentation from '..'
   import { ObjectCreate } from '../types'
   import { getClient } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let _class: Ref<Class<Doc>>
   export let objects: Doc[] = []
@@ -184,7 +185,7 @@
           presenter = result
         })
         .catch((err) => {
-          console.error('Failed to find presenter for class ' + _class, err)
+          Analytics.handleError(err)
         })
     }
   }
