@@ -29,7 +29,7 @@
   export let canMaximize: boolean = true
   export let room: TypeRoom
 
-  let roomEl: HTMLDivElement
+  let roomElement: HTMLDivElement | undefined = undefined
 
   let withScreenSharing: boolean = false
   let loading: boolean = false
@@ -51,19 +51,21 @@
 
     await waitForOfficeLoaded()
 
-    roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
+    roomElement?.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
 
   onDestroy(() => {
-    roomEl.removeEventListener('fullscreenchange', handleFullScreen)
+    roomElement?.removeEventListener('fullscreenchange', handleFullScreen)
   })
 
-  const handleFullScreen = () => ($isFullScreen = document.fullscreenElement != null)
+  const handleFullScreen = (): void => {
+    $isFullScreen = document.fullscreenElement != null
+  }
 
   function checkFullscreen (): void {
     const needFullScreen = $isFullScreen
-    if (document.fullscreenElement && !needFullScreen) {
+    if (document.fullscreenElement != null && !needFullScreen) {
       document
         .exitFullscreen()
         .then(() => {
@@ -73,8 +75,8 @@
           console.log(`Error exiting fullscreen mode: ${err.message} (${err.name})`)
           $isFullScreen = false
         })
-    } else if (!document.fullscreenElement && needFullScreen && roomEl != null) {
-      roomEl
+    } else if (document.fullscreenElement == null && needFullScreen && roomElement != null) {
+      roomElement
         .requestFullscreen()
         .then(() => {
           $isFullScreen = true
@@ -88,8 +90,8 @@
 
   function onFullScreen (): void {
     const needFullScreen = !$isFullScreen
-    if (!document.fullscreenElement && needFullScreen && roomEl != null) {
-      roomEl
+    if (document.fullscreenElement == null && needFullScreen && roomElement != null) {
+      roomElement
         .requestFullscreen()
         .then(() => {
           $isFullScreen = true
@@ -111,10 +113,12 @@
     }
   }
 
-  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
+  $: if (((document.fullscreenElement != null && !$isFullScreen) || $isFullScreen) && roomElement !== undefined) {
+    checkFullscreen()
+  }
 </script>
 
-<div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+<div bind:this={roomElement} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
   <ActionContext context={{ mode: 'workbench' }} />
   {#if !configured}
     <div class="flex justify-center error h-full w-full clear-mins">

@@ -1,4 +1,3 @@
-import { type DefSeparators } from '@hcengineering/ui'
 import { type RoomLanguage } from '@hcengineering/love'
 
 export interface ResizeInitParams {
