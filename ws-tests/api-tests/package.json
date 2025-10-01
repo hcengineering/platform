@@ -46,6 +46,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/rpc": "^0.6.5",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/server-core": "^0.6.1",
     "bufferutil": "^4.0.8",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.2",
@@ -55,6 +56,7 @@
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/chunter": "^0.6.20"
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/net-workspace": "^0.7.0"
   }
 }

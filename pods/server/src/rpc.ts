@@ -12,7 +12,6 @@ import core, {
   pickPrimarySocialId,
   systemAccountUuid,
   TxFactory,
-  TxProcessor,
   type AttachedData,
   type Class,
   type Data,
@@ -22,11 +21,10 @@ import core, {
   type Ref,
   type SearchOptions,
   type SearchQuery,
-  type TxCUD,
   type TxDomainEvent
 } from '@hcengineering/core'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
-import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
+import type { ConnectionSocket, Session, SessionManager, WorkspaceService } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
@@ -141,8 +139,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     res: ExpressResponse,
     method: string,
     operation: (
-      ctx: ClientSessionCtx,
+      ctx: MeasureContext,
       session: Session,
+      workspace: WorkspaceService,
       rateLimit: RateLimitInfo | undefined,
       token: string
     ) => Promise<void>
@@ -189,8 +188,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         rpc.session,
         method,
         rpc.client,
-        async (ctx, rateLimit) => {
-          await operation(ctx, rpc.session, rateLimit, token)
+        async (ctx, workspace, rateLimit) => {
+          await operation(ctx, rpc.session, workspace, rateLimit, token)
         }
       )
       if (rateLimit !== undefined) {
@@ -219,15 +218,16 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   }
 
   app.get('/api/v1/ping/:workspaceId', (req, res) => {
-    void withSession(req, res, 'ping', async (ctx, session, rateLimit) => {
-      await session.ping(ctx)
+    void withSession(req, res, 'ping', async (ctx, session, workspace, rateLimit) => {
+      session.updateLast()
+      const { lastTx, lastHash } = await workspace.getLastTxHash(ctx)
       await sendJson(
         req,
         res,
         {
           pong: true,
-          lastTx: ctx.pipeline.context.lastTx,
-          lastHash: ctx.pipeline.context.lastHash
+          lastTx,
+          lastHash
         },
         rateLimitToHeaders(rateLimit)
       )
@@ -235,7 +235,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   })
 
   app.get('/api/v1/find-all/:workspaceId', (req, res) => {
-    void withSession(req, res, 'findAll', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'findAll', async (ctx, session, workspace, rateLimit) => {
       const _class = req.query.class as Ref<Class<Doc>>
       const query = req.query.query !== undefined ? JSON.parse(req.query.query as string) : {}
       const options = req.query.options !== undefined ? JSON.parse(req.query.options as string) : {}
@@ -243,33 +243,41 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         options.limit = parseInt(req.query.limit as string)
       }
 
-      const result = await session.findAllRaw(ctx, _class, query, options)
+      const result = await workspace.findAll(ctx, session, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.post('/api/v1/find-all/:workspaceId', (req, res) => {
-    void withSession(req, res, 'findAll', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'findAll', async (ctx, session, workspace, rateLimit) => {
       const { _class, query, options }: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.findAllRaw(ctx, _class, query, options)
+      const result = await workspace.findAll(ctx, session, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.post('/api/v1/tx/:workspaceId', (req, res) => {
-    void withSession(req, res, 'tx', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'tx', async (ctx, session, workspace, rateLimit) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
       if (tx._class === core.class.TxDomainEvent) {
         const domainTx = tx as TxDomainEvent
-        const { result } = await session.domainRequestRaw(ctx, domainTx.domain, {
-          event: domainTx.event
-        })
-        await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
+        await workspace.domainRequest(
+          ctx,
+          session,
+          domainTx.domain,
+          {
+            event: domainTx.event
+          },
+          async (result) => {
+            await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
+          }
+        )
       } else {
-        const result = await session.txRaw(ctx, tx)
-        await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+        await workspace.tx(ctx, session, tx, async (result) => {
+          await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
+        })
       }
     })
   })
@@ -278,58 +286,43 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
    * @deprecated Use /api/v1/tx/:workspaceIdd instead
    */
   app.post('/api/v1/event/:workspaceId', (req, res) => {
-    void withSession(req, res, 'domainRequest', async (ctx, session) => {
+    void withSession(req, res, 'domainRequest', async (ctx, session, workspace, rateLimit) => {
       const event: any = (await retrieveJson(req)) ?? {}
 
-      const { result } = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
-        event
-      })
-      await sendJson(req, res, result.value)
+      await workspace.domainRequest(
+        ctx,
+        session,
+        COMMUNICATION_DOMAIN,
+        {
+          event
+        },
+        async (result) => {
+          await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
+        }
+      )
     })
   })
 
   app.get('/api/v1/account/:workspaceId', (req, res) => {
-    void withSession(req, res, 'account', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'account', async (ctx, session, workspace, rateLimit) => {
       const result = session.getRawAccount()
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.get('/api/v1/load-model/:workspaceId', (req, res) => {
-    void withSession(req, res, 'loadModel', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'loadModel', async (ctx, session, workspace, rateLimit) => {
       const lastModelTx = parseInt((req.query.lastModelTx as string) ?? '0')
       const lastHash = req.query.lastHash as string
-      const result = await session.loadModelRaw(ctx, lastModelTx, lastHash)
-      const txes = Array.isArray(result) ? result : result.transactions
       const shouldFilter = req.query.full !== 'true'
-      if (shouldFilter) {
-        // we need to filter only hierarchy related txes.
-        const allowedClasess: Ref<Class<Doc>>[] = [
-          core.class.Class,
-          core.class.Attribute,
-          core.class.Mixin,
-          core.class.Type,
-          core.class.Status,
-          core.class.Permission,
-          core.class.Space,
-          core.class.Tx
-        ]
-        const h = ctx.pipeline.context.hierarchy
-        const filtered = txes.filter(
-          (it) =>
-            TxProcessor.isExtendsCUD(it._class) &&
-            allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
-        )
-
-        await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
-      } else {
-        await sendJson(req, res, txes, rateLimitToHeaders(rateLimit))
-      }
+      const result = await workspace.loadModel(ctx, session, lastModelTx, lastHash, shouldFilter)
+      const txes = Array.isArray(result) ? result : result.transactions
+      await sendJson(req, res, txes, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.get('/api/v1/search-fulltext/:workspaceId', (req, res) => {
-    void withSession(req, res, 'searchFulltext', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'searchFulltext', async (ctx, session, workspace, rateLimit) => {
       const query: SearchQuery = {
         query: req.query.query as string,
         classes: req.query.classes !== undefined ? JSON.parse(req.query.classes as string) : undefined,
@@ -338,36 +331,44 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const options: SearchOptions = {
         limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : undefined
       }
-      const result = await session.searchFulltextRaw(ctx, query, options)
+      const result = await workspace.searchFulltext(ctx, session, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.get('/api/v1/request/:domain/:operation/:workspaceId', (req, res) => {
-    void withSession(req, res, 'domainRequest', async (ctx, session) => {
+    void withSession(req, res, 'domainRequest', async (ctx, session, workspace, rateLimit) => {
       const domain = req.params.domain as OperationDomain
       const operation = req.params.operation
 
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const { result } = await session.domainRequestRaw(ctx, domain, {
-        [operation]: { params }
-      })
-      await sendJson(req, res, result.value)
+      await workspace.domainRequest(
+        ctx,
+        session,
+        domain,
+        {
+          [operation]: { params }
+        },
+        async (result) => {
+          await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
+        }
+      )
     })
   })
 
   app.post('/api/v1/request/:domain/:workspaceId', (req, res) => {
-    void withSession(req, res, 'domainRequest', async (ctx, session) => {
+    void withSession(req, res, 'domainRequest', async (ctx, session, workspace, rateLimit) => {
       const domain = req.params.domain as OperationDomain
-      const params = await retrieveJson(req)
-      const { result } = await session.domainRequestRaw(ctx, domain, params)
-      await sendJson(req, res, result.value)
+      const params = retrieveJson(req)
+      await workspace.domainRequest(ctx, session, domain, params, async (result) => {
+        await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
+      })
     })
   })
 
   app.post('/api/v1/ensure-person/:workspaceId', (req, res) => {
-    void withSession(req, res, 'ensurePerson', async (ctx, session, rateLimit, token) => {
+    void withSession(req, res, 'ensurePerson', async (ctx, session, workspace, rateLimit, token) => {
       const { socialType, socialValue, firstName, lastName } = (await retrieveJson(req)) ?? {}
       const accountClient = getAccountClient(token)
 
@@ -376,7 +377,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         session.getUser() === systemAccountUuid ? core.account.System : pickPrimarySocialId(session.getSocialIds())._id
       const txFactory: TxFactory = new TxFactory(primaryPersonId)
 
-      const [person] = await session.findAllRaw(ctx, contact.class.Person, { personUuid: uuid }, { limit: 1 })
+      const [person] = await workspace.findAll(ctx, session, contact.class.Person, { personUuid: uuid }, { limit: 1 })
       let personRef: Ref<Person> = person?._id
 
       if (personRef === undefined) {
@@ -399,12 +400,13 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
           'createLocalPerson'
         )
 
-        await session.txRaw(ctx, createUniquePersonTx)
+        await workspace.tx(ctx, session, createUniquePersonTx, async () => {})
         personRef = createPersonTx.objectId
       }
 
-      const [socialIdentity] = await session.findAllRaw(
+      const [socialIdentity] = await workspace.findAll(
         ctx,
+        session,
         contact.class.SocialIdentity,
         {
           attachedTo: personRef,
@@ -434,7 +436,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
           )
         )
 
-        await session.txRaw(ctx, addSocialIdentityTx)
+        await workspace.tx(ctx, session, addSocialIdentityTx, async () => {})
       }
 
       const result = { uuid, socialId, localPerson: personRef }
@@ -445,7 +447,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
   // To use in non-js (rust) clients that can't link to @hcengineering/core
   app.get('/api/v1/generate-id/:workspaceId', (req, res) => {
-    void withSession(req, res, 'generateId', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'generateId', async (ctx, session, workspace, rateLimit) => {
       const result = { id: generateId() }
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })

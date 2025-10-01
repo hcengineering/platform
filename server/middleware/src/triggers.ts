@@ -232,7 +232,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       true,
       sctx.removedMap,
       sctx.contextCache,
-      this.context.modelDb,
       sctx.socialStringsToUsers,
       sctx.service,
       sctx.grant

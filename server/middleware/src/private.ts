@@ -78,7 +78,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         ) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accontUuid
+        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accountUuid
         const target = [account.uuid, systemAccountUuid]
         if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
           target.push(modifiedByAccount)

@@ -2605,6 +2605,11 @@
       "packageName": "@hcengineering/hulylake-client",
       "projectFolder": "packages/hulylake-client",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/net-workspace",
+      "projectFolder": "server/net-workspace",
+      "shouldPublish": false
     }
   ]
 }

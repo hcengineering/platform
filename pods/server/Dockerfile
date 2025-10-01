@@ -1,6 +1,8 @@
 FROM hardcoreeng/base:v20250916
 WORKDIR /usr/src/app
 
+RUN npm install --ignore-scripts=false --verbose zeromq --unsafe-perm
+
 COPY bundle/model.json ./
 COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./

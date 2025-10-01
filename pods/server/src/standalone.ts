@@ -14,16 +14,30 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
-import { buildStorageFromConfig } from '@hcengineering/server-storage'
-
-import { startSessionManager } from '@hcengineering/server'
+// Add this to the VERY top of the first file loaded in your app
 import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
+import { type ServerEnv } from '@hcengineering/server'
+import {
+  loadBrandingMap,
   type CommunicationApiFactory,
+  type Pipeline,
   type PlatformQueue,
   type SessionManager,
-  type StorageConfiguration
+  type StorageConfiguration,
+  type WorkspaceStatistics
 } from '@hcengineering/server-core'
+import { buildStorageFromConfig } from '@hcengineering/server-storage'
+import { profileStart, profileStop } from './inspector'
+
+import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+
+import { startSessionManager } from '@hcengineering/server'
 
 import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
@@ -43,15 +57,11 @@ import {
   createMongoTxAdapter,
   shutdownMongo
 } from '@hcengineering/mongo'
-import {
-  createPostgreeDestroyAdapter,
-  createPostgresAdapter,
-  createPostgresTxAdapter,
-  setDBExtraOptions,
-  shutdownPostgres
-} from '@hcengineering/postgres'
+import type { WorkspaceFactory } from '@hcengineering/server/types/types'
 import { readFileSync } from 'node:fs'
+import { getWorkspaceConfig } from './config'
 import { startHttpServer } from './server_http'
+import { WorkspaceImpl } from './workspace'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -65,10 +75,59 @@ process.on('exit', () => {
     console.error(err)
   })
 })
+
+export function startStandaloneServer (metricsContext: MeasureContext): () => WorkspaceStatistics[] {
+  const {
+    config,
+    storageConfig,
+    queue
+  }: { config: ServerEnv, storageConfig: StorageConfiguration, queue: PlatformQueue } = getWorkspaceConfig('standalone')
+
+  const { shutdown, sessionManager } = startStandalone(metricsContext, config.dbUrl, {
+    fulltextUrl: config.fulltextUrl,
+    storageConfig,
+    port: config.serverPort,
+    brandingMap: loadBrandingMap(config.brandingPath),
+    accountsUrl: config.accountsUrl,
+    enableCompression: config.enableCompression,
+    communicationApiEnabled: process.env.COMMUNICATION_API_ENABLED === 'true',
+    profiling: {
+      start: profileStart,
+      stop: profileStop
+    },
+    mongoUrl: config.mongoUrl,
+    queue
+  })
+
+  const getStats = (): WorkspaceStatistics[] => {
+    return sessionManager.getStatistics()
+  }
+
+  const close = (): void => {
+    console.trace('Exiting from server')
+    console.log('Shutdown request accepted')
+    void queue.shutdown()
+    void shutdown().then(() => {
+      process.exit(0)
+    })
+  }
+  process.on('unhandledRejection', (reason, promise) => {
+    metricsContext.error('Unhandled Rejection at:', { reason, promise })
+  })
+
+  global.process.on('uncaughtException', (error, origin) => {
+    metricsContext.error('Uncaught Exception at:', { origin, error })
+  })
+
+  process.on('SIGINT', close)
+  process.on('SIGTERM', close)
+  return getStats
+}
+
 /**
  * @public
  */
-export function start (
+export function startStandalone (
   metrics: MeasureContext,
   dbUrl: string,
   opt: {
@@ -145,8 +204,16 @@ export function start (
     {}
   )
 
+  const workspaceFactory: WorkspaceFactory = (ctx, { pipelineCtx, broadcast, ids, branding }) => {
+    const factory = async (): Promise<Pipeline> => {
+      const pipeline = await pipelineFactory(pipelineCtx, ids, broadcast, branding)
+      return pipeline
+    }
+    return new WorkspaceImpl(ctx, factory, ids, branding)
+  }
+
   const sessionManager = startSessionManager(metrics, {
-    pipelineFactory,
+    workspaceFactory,
     brandingMap: opt.brandingMap,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,

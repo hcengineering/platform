@@ -322,7 +322,6 @@ export async function upgradeWorkspaceWith (
       true,
       undefined,
       undefined,
-      pipeline.context.modelDb,
       new Map(),
       'workspace'
     )

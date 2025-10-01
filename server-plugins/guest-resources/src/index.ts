@@ -24,9 +24,10 @@ import core, {
   TxProcessor,
   WorkspaceIds,
   concatLink,
-  generateId
+  generateId,
+  guestAccount
 } from '@hcengineering/core'
-import guest, { PublicLink, guestAccount, guestId } from '@hcengineering/guest'
+import guest, { PublicLink, guestId } from '@hcengineering/guest'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'

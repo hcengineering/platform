@@ -17,7 +17,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "get-model": "node ../../common/scripts/esbuild.js --entry=src/get-model.ts -keep-names=true --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION --bundle=true && node ./bundle/bundle.js > ./bundle/model.json",
-    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node --external=bufferutil --external=snappy --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION --external=utf-8-validate --external=msgpackr-extract",
+    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node --external=zeromq --external=bufferutil --external=snappy --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION --external=utf-8-validate --external=msgpackr-extract",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/transactor",
     "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
     "docker:abuild": "docker build -t hardcoreeng/transactor . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
@@ -92,6 +92,10 @@
     "morgan": "^1.10.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "@hcengineering/network-client": "^0.7.9",
+    "@hcengineering/network-core": "^0.7.9",
+    "@hcengineering/network-server": "^0.7.9",
+    "@hcengineering/net-workspace": "^0.7.0"
   }
 }
