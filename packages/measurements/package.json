@@ -1,13 +1,18 @@
 {
   "name": "@hcengineering/measurements",
-  "version": "0.7.0",
+  "version": "0.7.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
+    "!lib/**/__test__/**",
     "types/**/*",
-    "tsconfig.json"
+    "!types/**/__test__/**",
+    "src/**/*",
+    "!src/**/__test__/**",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -22,7 +27,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.0",
+    "@hcengineering/platform-rig": "workspace:^0.7.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
