@@ -2,6 +2,71 @@
 
 A distributed, scalable virtual network architecture that enables fault-tolerant communication across distributed containers and agents.
 
+## 🌟 Why Build Your Product on Huly Network?
+
+### Core Benefits
+
+#### 🚀 Zero-Configuration Service Discovery
+
+- No need for external service registries (Consul, etcd, ZooKeeper)
+- Automatic container location and routing by kind and UUID
+- Built-in label-based service discovery for flexible container selection
+
+#### ⚡ High Performance Architecture
+
+- ZeroMQ-based messaging for microsecond-latency communication
+- Direct peer-to-peer connections between containers when possible
+- Optimized routing through intelligent agent proxying
+
+#### 🔄 Built-in High Availability
+
+- Automatic failover with stateless container support
+- Leader election without external coordination services
+- Automatic orphaned container detection and cleanup
+- Configurable health checks and timeouts
+
+#### 📈 Effortless Horizontal Scaling
+
+- Add agents dynamically without service interruption
+- Round-robin load balancing across multiple agents
+- Container lifecycle automatically managed by the network
+- Support for thousands of concurrent containers
+
+#### 🎯 Simplified Multi-Tenancy
+
+- Natural isolation through container kinds and labels
+- Per-tenant container instances with automatic management
+- Secure client-to-container connections
+- Reference counting ensures resources are freed appropriately
+
+#### 🔌 Flexible Communication Patterns
+
+- Request/response for synchronous operations
+- Event broadcasting for real-time notifications
+- Fire-and-forget messaging for async workflows
+- Bidirectional streaming support
+
+#### 🛠️ Developer-Friendly
+
+- TypeScript-first with full type safety
+- Simple, intuitive API with minimal boilerplate
+- Comprehensive examples and documentation
+- Built-in testing utilities and mocks
+
+#### 🏢 Enterprise-Ready
+
+- Battle-tested in production environments
+- Comprehensive monitoring and observability
+- Docker-ready deployment with official images
+- Eclipse Public License 2.0 for commercial use
+
+#### 💪 Production-Proven Features
+
+- Automatic reconnection and retry logic
+- Graceful degradation on partial failures
+- Memory-efficient with automatic cleanup
+- Configurable timeouts for different environments
+
 ## 🚀 Overview
 
 The Huly Virtual Network is a sophisticated distributed system designed to handle enterprise-scale workloads with the following key capabilities:
@@ -140,71 +205,866 @@ docker run -p 3737:3737 hardcoreeng/network-pod
 
 ### Quick Start Example
 
-#### Setting up a Network Server
+Here's a complete end-to-end example to get you started:
 
 ```typescript
-import { NetworkImpl, TickManagerImpl } from '@hcengineering/network-core'
+import { NetworkImpl, TickManagerImpl, AgentImpl } from '@hcengineering/network-core'
 import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
+import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
 
-// Create network components
-const tickManager = new TickManagerImpl(1000) // 1000 ticks per second
-tickManager.start()
-const network = new NetworkImpl(tickManager)
-const server = new NetworkServer(network, tickManager, '*', 3737)
+// 1. Create a simple container implementation
+class MyServiceContainer implements Container {
+  constructor(readonly uuid: ContainerUuid) {}
 
-console.log('Network server started on port 3737')
-```
+  async request(operation: string, data?: any): Promise<any> {
+    console.log(`Processing ${operation}:`, data)
+    return { success: true, result: `Processed ${operation}` }
+  }
 
-#### Creating and Registering an Agent
+  async ping(): Promise<void> {
+    // Health check
+  }
 
-```typescript
-import { AgentImpl } from '@hcengineering/network-core'
-import { NetworkAgentServer } from '@hcengineering/network-client'
+  async terminate(): Promise<void> {
+    console.log('Container terminated')
+  }
 
-// Define container factory
-const containerFactory = {
-  session: async (uuid, request) => {
-    const container = new SessionContainer(uuid)
-    const endpoint = await container.start()
-    return [container, endpoint]
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {
+    // Store broadcast function for later use
+  }
+
+  disconnect(clientId: ClientUuid): void {
+    // Remove client connection
   }
 }
 
-// Create and start agent
-const agent = new AgentImpl('agent-1', containerFactory)
-const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
+async function main() {
+  // 2. Start the network server
+  const tickManager = new TickManagerImpl(1000)
+  tickManager.start()
+  const network = new NetworkImpl(tickManager)
+  const server = new NetworkServer(network, tickManager, '*', 3737)
+  console.log('Network server started on port 3737')
 
-await agentServer.start(agent)
-await networkClient.register(agent)
+  // 3. Create and start an agent
+  const agent = new AgentImpl('agent-1' as any, {
+    'my-service': async (options) => {
+      const uuid = options.uuid ?? ('container-' + Date.now()) as ContainerUuid
+      const container = new MyServiceContainer(uuid)
+      return {
+        uuid,
+        container,
+        endpoint: `my-service://localhost/${uuid}` as any
+      }
+    }
+  })
+
+  const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
+  await agentServer.start(agent)
+
+  // 4. Connect as a client
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
+  console.log('Client connected')
+
+  // 5. Register the agent
+  await client.register(agent)
+  console.log('Agent registered')
+
+  // 6. Request a container
+  const containerRef = await client.get('my-service' as any, {})
+  console.log('Got container:', containerRef.uuid)
+
+  // 7. Send a request
+  const result = await containerRef.request('processData', { value: 42 })
+  console.log('Result:', result)
+
+  // 8. Cleanup
+  await containerRef.close()
+  await client.close()
+  await agentServer.close()
+  await server.close()
+  tickManager.stop()
+}
+
+main().catch(console.error)
 ```
 
-#### Connecting and Using Containers
+## 📚 Comprehensive Examples
+
+### Example 1: Basic Container with Request/Response
+
+This example shows a simple container that handles requests and maintains state:
+
+```typescript
+import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
+
+class DataProcessorContainer implements Container {
+  private data: Map<string, any> = new Map()
+
+  constructor(readonly uuid: ContainerUuid) {
+    console.log(`DataProcessor ${uuid} created`)
+  }
+
+  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
+    switch (operation) {
+      case 'store':
+        this.data.set(data.key, data.value)
+        return { success: true, key: data.key }
+
+      case 'retrieve':
+        const value = this.data.get(data.key)
+        return { success: true, value, found: value !== undefined }
+
+      case 'delete':
+        const existed = this.data.delete(data.key)
+        return { success: true, deleted: existed }
+
+      case 'list':
+        return { success: true, keys: Array.from(this.data.keys()) }
+
+      default:
+        return { success: false, error: 'Unknown operation' }
+    }
+  }
+
+  async ping(): Promise<void> {
+    // Health check - container is alive
+  }
+
+  async terminate(): Promise<void> {
+    console.log(`DataProcessor ${this.uuid} terminating...`)
+    this.data.clear()
+  }
+
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {
+    // Not using events in this example
+  }
+
+  disconnect(clientId: ClientUuid): void {
+    // Cleanup client connection
+  }
+}
+
+// Usage
+const containerRef = await client.get('data-processor' as any, {})
+
+await containerRef.request('store', { key: 'user:123', value: { name: 'John' } })
+const result = await containerRef.request('retrieve', { key: 'user:123' })
+console.log(result) // { success: true, value: { name: 'John' }, found: true }
+
+await containerRef.close()
+```
+
+### Example 2: Event Broadcasting Container
+
+This example demonstrates real-time event broadcasting to multiple connected clients:
+
+```typescript
+import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
+
+class ChatRoomContainer implements Container {
+  private clients = new Map<ClientUuid, (data: any) => Promise<void>>()
+  private messages: string[] = []
+
+  constructor(readonly uuid: ContainerUuid, readonly roomName: string) {
+    console.log(`ChatRoom ${roomName} created`)
+  }
+
+  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
+    switch (operation) {
+      case 'sendMessage':
+        const message = `${data.username}: ${data.text}`
+        this.messages.push(message)
+        
+        // Broadcast to all connected clients
+        await this.broadcast({ type: 'newMessage', message, timestamp: Date.now() })
+        
+        return { success: true, messageId: this.messages.length - 1 }
+
+      case 'getHistory':
+        return { success: true, messages: this.messages }
+
+      case 'getUserCount':
+        return { success: true, count: this.clients.size }
+
+      default:
+        return { success: false, error: 'Unknown operation' }
+    }
+  }
+
+  async ping(): Promise<void> {}
+
+  async terminate(): Promise<void> {
+    console.log(`ChatRoom ${this.roomName} closing...`)
+    await this.broadcast({ type: 'roomClosed', roomName: this.roomName })
+    this.clients.clear()
+  }
+
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {
+    console.log(`Client ${clientId} connected to ${this.roomName}`)
+    this.clients.set(clientId, broadcast)
+    
+    // Send welcome message to new client
+    broadcast({ type: 'welcome', message: `Welcome to ${this.roomName}!` }).catch(console.error)
+  }
+
+  disconnect(clientId: ClientUuid): void {
+    console.log(`Client ${clientId} disconnected from ${this.roomName}`)
+    this.clients.delete(clientId)
+  }
+
+  private async broadcast(event: any): Promise<void> {
+    const promises = Array.from(this.clients.values()).map(handler => 
+      handler(event).catch(err => console.error('Broadcast error:', err))
+    )
+    await Promise.all(promises)
+  }
+}
+
+// Usage
+const chatRef = await client.get('chat-room' as any, { 
+  uuid: 'room-general' as any,
+  labels: ['public', 'general']
+})
+
+// Connect to receive events
+const connection = await chatRef.connect()
+connection.on = async (event) => {
+  console.log('Received event:', event.type, event.message)
+}
+
+// Send a message
+await connection.request('sendMessage', { 
+  username: 'Alice', 
+  text: 'Hello everyone!' 
+})
+
+// Later, disconnect
+await connection.close()
+await chatRef.close()
+```
+
+### Example 3: High Availability with Stateless Containers
+
+This example shows how to implement automatic failover for critical services:
+
+```typescript
+import { AgentImpl, TickManagerImpl } from '@hcengineering/network-core'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
+import type { Container, ContainerUuid, ClientUuid, ContainerKind } from '@hcengineering/network-core'
+
+class LeaderServiceContainer implements Container {
+  private isActive = false
+
+  constructor(
+    readonly uuid: ContainerUuid,
+    readonly instanceName: string
+  ) {}
+
+  async request(operation: string, data?: any): Promise<any> {
+    switch (operation) {
+      case 'status':
+        return { 
+          uuid: this.uuid, 
+          instance: this.instanceName,
+          active: this.isActive,
+          timestamp: Date.now()
+        }
+
+      case 'activate':
+        this.isActive = true
+        console.log(`[${this.instanceName}] Activated as leader`)
+        return { success: true }
+
+      case 'processTask':
+        if (!this.isActive) {
+          return { success: false, error: 'Not active leader' }
+        }
+        console.log(`[${this.instanceName}] Processing task:`, data)
+        return { success: true, processedBy: this.instanceName }
+
+      default:
+        return { success: false, error: 'Unknown operation' }
+    }
+  }
+
+  async ping(): Promise<void> {}
+
+  async terminate(): Promise<void> {
+    console.log(`[${this.instanceName}] Shutting down`)
+    this.isActive = false
+  }
+
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: ClientUuid): void {}
+}
+
+async function createHAAgent(
+  agentId: string,
+  instanceName: string,
+  sharedUuid: ContainerUuid,
+  port: number
+) {
+  const tickManager = new TickManagerImpl(1)
+  const agent = new AgentImpl(agentId as any, {})
+
+  // Add stateless container for HA
+  const container = new LeaderServiceContainer(sharedUuid, instanceName)
+  agent.addStatelessContainer(
+    sharedUuid,
+    'leader-service' as ContainerKind,
+    `leader://${instanceName}/${sharedUuid}` as any,
+    container
+  )
+
+  const server = new NetworkAgentServer(tickManager, 'localhost', '*', port)
+  await server.start(agent)
+
+  return { agent, server, container, tickManager }
+}
+
+async function runHAExample() {
+  // Shared UUID for the leader service
+  const leaderUuid = 'service-leader-001' as ContainerUuid
+
+  // Connect to network
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
+
+  // Create two competing agents
+  const primary = await createHAAgent('agent-primary', 'Primary', leaderUuid, 3801)
+  const secondary = await createHAAgent('agent-secondary', 'Secondary', leaderUuid, 3802)
+
+  // Register both - first wins
+  console.log('Registering primary agent...')
+  await client.register(primary.agent)
+
+  console.log('Registering secondary agent...')
+  await client.register(secondary.agent) // Will be rejected
+
+  // Monitor failover events
+  client.onUpdate(async (event) => {
+    for (const container of event.containers) {
+      if (container.event === 2) { // NetworkEventKind.removed
+        console.log(`Container removed: ${container.container.uuid}`)
+        console.log('Failover should occur automatically...')
+      }
+    }
+  })
+
+  // Activate primary
+  const leaderRef = await client.get('leader-service' as any, { uuid: leaderUuid })
+  await leaderRef.request('activate')
+
+  // Send some tasks
+  for (let i = 0; i < 3; i++) {
+    const result = await leaderRef.request('processTask', { taskId: i, data: 'test' })
+    console.log('Task result:', result)
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+
+  // Simulate primary failure
+  console.log('\n=== Simulating Primary Failure ===')
+  await primary.agent.terminate(leaderUuid)
+  await new Promise(resolve => setTimeout(resolve, 2000)) // Wait for failover
+
+  // Secondary should take over
+  const newLeaderRef = await client.get('leader-service' as any, { uuid: leaderUuid })
+  const status = await newLeaderRef.request('status')
+  console.log('New leader status:', status) // Should be Secondary
+
+  // Cleanup
+  await leaderRef.close()
+  await newLeaderRef.close()
+  await client.close()
+  await primary.server.close()
+  await secondary.server.close()
+  primary.tickManager.stop()
+  secondary.tickManager.stop()
+}
+
+runHAExample().catch(console.error)
+```
+
+### Example 4: Multi-Tenant Container Management
+
+This example demonstrates managing per-tenant containers with labels:
+
+```typescript
+import type { Container, ContainerUuid, ClientUuid, GetOptions } from '@hcengineering/network-core'
+
+class TenantWorkspaceContainer implements Container {
+  private users = new Set<string>()
+  private documents = new Map<string, any>()
+
+  constructor(
+    readonly uuid: ContainerUuid,
+    readonly tenantId: string
+  ) {
+    console.log(`Workspace created for tenant: ${tenantId}`)
+  }
+
+  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
+    // All operations are tenant-isolated
+    switch (operation) {
+      case 'addUser':
+        this.users.add(data.userId)
+        return { success: true, userCount: this.users.size }
+
+      case 'createDocument':
+        const docId = `doc-${Date.now()}`
+        this.documents.set(docId, { ...data, createdAt: Date.now() })
+        return { success: true, documentId: docId }
+
+      case 'getDocument':
+        const doc = this.documents.get(data.documentId)
+        return { success: true, document: doc }
+
+      case 'listDocuments':
+        return { 
+          success: true, 
+          documents: Array.from(this.documents.entries()).map(([id, doc]) => ({ id, ...doc }))
+        }
+
+      case 'getStats':
+        return {
+          success: true,
+          tenantId: this.tenantId,
+          userCount: this.users.size,
+          documentCount: this.documents.size
+        }
+
+      default:
+        return { success: false, error: 'Unknown operation' }
+    }
+  }
+
+  async ping(): Promise<void> {}
+
+  async terminate(): Promise<void> {
+    console.log(`Workspace for tenant ${this.tenantId} terminated`)
+    this.users.clear()
+    this.documents.clear()
+  }
+
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: ClientUuid): void {}
+}
+
+// Setup agent with tenant workspace factory
+const agent = new AgentImpl('workspace-agent' as any, {
+  'tenant-workspace': async (options: GetOptions) => {
+    const tenantId = options.labels?.[0] || 'default'
+    const uuid = options.uuid ?? `workspace-${tenantId}-${Date.now()}` as ContainerUuid
+    const container = new TenantWorkspaceContainer(uuid, tenantId)
+    return {
+      uuid,
+      container,
+      endpoint: `workspace://${tenantId}/${uuid}` as any
+    }
+  }
+})
+
+// Usage: Get workspace for specific tenant
+async function getTenantWorkspace(client: any, tenantId: string) {
+  return await client.get('tenant-workspace' as any, {
+    labels: [tenantId],
+    extra: { tenantId }
+  })
+}
+
+// Example usage
+const tenant1Workspace = await getTenantWorkspace(client, 'tenant-acme')
+await tenant1Workspace.request('addUser', { userId: 'user-1' })
+await tenant1Workspace.request('createDocument', { 
+  title: 'Q1 Report', 
+  content: 'Financial data...' 
+})
+
+const tenant2Workspace = await getTenantWorkspace(client, 'tenant-globex')
+await tenant2Workspace.request('addUser', { userId: 'user-2' })
+
+// Each tenant has isolated data
+const stats1 = await tenant1Workspace.request('getStats')
+const stats2 = await tenant2Workspace.request('getStats')
+
+console.log('Tenant 1 stats:', stats1)
+console.log('Tenant 2 stats:', stats2)
+
+await tenant1Workspace.close()
+await tenant2Workspace.close()
+```
+
+### Example 5: Custom Timeouts for Different Environments
+
+This example shows how to configure timeouts for development vs production:
 
 ```typescript
 import { createNetworkClient } from '@hcengineering/network-client'
 
-// Connect to network
-const client = await createNetworkClient('localhost:3737')
+// Development: Long timeout for debugging (1 hour)
+const devClient = createNetworkClient('localhost:3737', 3600)
 
-// Get or create a container
-const containerRef = await client.get('user-session-1', {
-  kind: 'session',
-  labels: { userId: 'user1' }
-})
+// Production: Short timeout for fast failure detection (3 seconds - default)
+const prodClient = createNetworkClient('production-network:3737')
 
-// Establish connection and communicate
-const connection = await containerRef.connect()
-const response = await connection.request('processData', { data: 'example' })
+// Custom timeout for specific use case (30 seconds)
+const customClient = createNetworkClient('localhost:3737', 30)
 
-// Handle events
-connection.on = async (event) => {
-  console.log('Received event:', event)
+async function developmentWorkflow() {
+  await devClient.waitConnection(10000) // 10 second connection timeout
+  
+  // Container will stay alive for 1 hour even without activity
+  // Perfect for debugging and stepping through code
+  const containerRef = await devClient.get('debug-service' as any, {})
+  
+  // ... debug your code without worrying about timeouts
+  
+  await containerRef.close()
+  await devClient.close()
 }
 
-// Cleanup
-await connection.close()
-await containerRef.release()
+async function productionWorkflow() {
+  await prodClient.waitConnection(5000) // 5 second connection timeout
+  
+  // Container will be cleaned up after 3 seconds of inactivity
+  // Ensures resources are freed quickly in production
+  const containerRef = await prodClient.get('prod-service' as any, {})
+  
+  // Do work...
+  const result = await containerRef.request('process', { data: 'important' })
+  
+  await containerRef.close()
+  await prodClient.close()
+}
+
+// Environment-based configuration
+function createClientForEnvironment(networkHost: string) {
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const timeout = isDevelopment ? 3600 : 3 // 1 hour vs 3 seconds
+  
+  return createNetworkClient(networkHost, timeout)
+}
+
+const client = createClientForEnvironment('localhost:3737')
 ```
+
+### Example 6: Direct Container Communication
+
+This example shows using direct connections vs routed connections:
+
+```typescript
+import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+
+class DirectAccessContainer implements Container {
+  constructor(readonly uuid: ContainerUuid) {}
+
+  async request(operation: string, data?: any): Promise<any> {
+    // High-performance direct request handling
+    return { result: `Processed ${operation} with data`, data }
+  }
+
+  async ping(): Promise<void> {}
+  async terminate(): Promise<void> {}
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: ClientUuid): void {}
+}
+
+// When you get a container reference, you can connect to it
+const containerRef = await client.get('direct-service' as any, {})
+
+// Option 1: Request through network (routed)
+const result1 = await containerRef.request('operation', { value: 1 })
+
+// Option 2: Establish direct connection (faster for multiple requests)
+const connection = await containerRef.connect()
+const result2 = await connection.request('operation', { value: 2 })
+const result3 = await connection.request('operation', { value: 3 })
+
+// Direct connections are faster because they bypass the network router
+// after the initial connection is established
+
+await connection.close()
+await containerRef.close()
+```
+
+### Example 7: Container Lifecycle Monitoring
+
+This example demonstrates monitoring container lifecycle and network events:
+
+```typescript
+import type { NetworkEvent, NetworkEventKind } from '@hcengineering/network-core'
+
+// Monitor all network events
+const unsubscribe = client.onUpdate(async (event: NetworkEvent) => {
+  console.log('=== Network Event ===')
+  
+  // Agent events
+  for (const agentEvent of event.agents) {
+    const eventType = ['added', 'updated', 'removed'][agentEvent.event]
+    console.log(`Agent ${agentEvent.id}: ${eventType}`)
+    console.log('  Supports kinds:', agentEvent.kinds)
+  }
+  
+  // Container events
+  for (const containerEvent of event.containers) {
+    const eventType = ['added', 'updated', 'removed'][containerEvent.event]
+    console.log(`Container ${containerEvent.container.uuid}: ${eventType}`)
+    console.log('  Kind:', containerEvent.container.kind)
+    console.log('  Agent:', containerEvent.container.agentId)
+    console.log('  Labels:', containerEvent.container.labels)
+    
+    if (containerEvent.event === 2) { // NetworkEventKind.removed
+      console.log('  Container was removed - may trigger failover')
+    }
+  }
+})
+
+// Do some work...
+const ref = await client.get('monitored-service' as any, {})
+await ref.request('doWork', {})
+await ref.close()
+
+// Stop monitoring
+unsubscribe()
+```
+
+### Example 8: Error Handling and Retry Logic
+
+This example shows proper error handling patterns:
+
+```typescript
+async function robustContainerAccess(
+  client: any, 
+  kind: string, 
+  options: any, 
+  maxRetries = 3
+) {
+  let lastError: Error | undefined
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Attempt ${attempt}/${maxRetries}...`)
+      
+      // Try to get container
+      const containerRef = await client.get(kind, options)
+      
+      try {
+        // Try to send request
+        const result = await containerRef.request('process', { attempt })
+        console.log('Success:', result)
+        return result
+      } catch (requestError: any) {
+        console.error('Request failed:', requestError.message)
+        lastError = requestError
+        
+        // Release the failed container
+        await containerRef.close().catch(() => {})
+        
+        // Wait before retry with exponential backoff
+        if (attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+          console.log(`Waiting ${delay}ms before retry...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+      }
+    } catch (getError: any) {
+      console.error('Failed to get container:', getError.message)
+      lastError = getError
+      
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+  }
+  
+  throw new Error(`Failed after ${maxRetries} attempts: ${lastError?.message}`)
+}
+
+// Usage
+try {
+  const result = await robustContainerAccess(
+    client, 
+    'unreliable-service' as any, 
+    { labels: ['production'] }
+  )
+  console.log('Final result:', result)
+} catch (error: any) {
+  console.error('All attempts failed:', error.message)
+  // Handle permanent failure (alerting, fallback, etc.)
+}
+```
+
+### Example 9: Complete Production Setup
+
+This example shows a complete production-ready setup:
+
+```typescript
+import { NetworkImpl, TickManagerImpl, AgentImpl } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
+
+// Production container with proper lifecycle management
+class ProductionContainer implements Container {
+  private connections = new Map<ClientUuid, (data: any) => Promise<void>>()
+  private shutdownRequested = false
+
+  constructor(
+    readonly uuid: ContainerUuid,
+    private readonly config: any
+  ) {
+    console.log(`[${uuid}] Container started`)
+  }
+
+  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
+    if (this.shutdownRequested) {
+      throw new Error('Container is shutting down')
+    }
+
+    try {
+      // Your business logic here
+      console.log(`[${this.uuid}] Processing ${operation}`)
+      return { success: true, operation, clientId }
+    } catch (error: any) {
+      console.error(`[${this.uuid}] Error processing ${operation}:`, error)
+      throw error
+    }
+  }
+
+  async ping(): Promise<void> {
+    // Health check - verify dependencies, connections, etc.
+    if (this.shutdownRequested) {
+      throw new Error('Container is shutting down')
+    }
+  }
+
+  async terminate(): Promise<void> {
+    if (this.shutdownRequested) return
+    
+    this.shutdownRequested = true
+    console.log(`[${this.uuid}] Terminating...`)
+    
+    // Notify all connected clients
+    await this.broadcastShutdown()
+    
+    // Cleanup resources
+    this.connections.clear()
+    
+    console.log(`[${this.uuid}] Terminated`)
+  }
+
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {
+    console.log(`[${this.uuid}] Client ${clientId} connected`)
+    this.connections.set(clientId, broadcast)
+  }
+
+  disconnect(clientId: ClientUuid): void {
+    console.log(`[${this.uuid}] Client ${clientId} disconnected`)
+    this.connections.delete(clientId)
+  }
+
+  private async broadcastShutdown(): Promise<void> {
+    const promises = Array.from(this.connections.values()).map(handler =>
+      handler({ type: 'shutdown', message: 'Container is terminating' })
+        .catch(err => console.error('Failed to notify client:', err))
+    )
+    await Promise.all(promises)
+  }
+}
+
+async function startProductionSystem() {
+  // 1. Start network server
+  const tickManager = new TickManagerImpl(1000)
+  tickManager.start()
+  
+  const network = new NetworkImpl(tickManager)
+  const server = new NetworkServer(
+    network, 
+    tickManager, 
+    '*', // Bind to all interfaces
+    3737
+  )
+  console.log('✓ Network server started on port 3737')
+
+  // 2. Start multiple agents for redundancy
+  const agents = []
+  for (let i = 1; i <= 3; i++) {
+    const agent = new AgentImpl(`agent-${i}` as any, {
+      'production-service': async (options) => {
+        const uuid = options.uuid ?? `svc-${Date.now()}-${i}` as ContainerUuid
+        const container = new ProductionContainer(uuid, { agentId: i })
+        return {
+          uuid,
+          container,
+          endpoint: `prod://${i}/${uuid}` as any
+        }
+      }
+    })
+
+    const agentServer = new NetworkAgentServer(
+      tickManager,
+      'localhost',
+      '*',
+      3738 + i
+    )
+    await agentServer.start(agent)
+    agents.push({ agent, server: agentServer })
+    console.log(`✓ Agent ${i} started on port ${3738 + i}`)
+  }
+
+  // 3. Connect clients
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
+  console.log('✓ Client connected')
+
+  // 4. Register all agents
+  for (const { agent } of agents) {
+    await client.register(agent)
+  }
+  console.log('✓ All agents registered')
+
+  // 5. Setup monitoring
+  client.onUpdate(async (event) => {
+    // Log events for monitoring/alerting
+    event.agents.forEach(a => console.log(`Agent event: ${a.id}`))
+    event.containers.forEach(c => console.log(`Container event: ${c.container.uuid}`))
+  })
+
+  console.log('✓ Production system ready')
+
+  // Return cleanup function
+  return async () => {
+    console.log('Shutting down...')
+    await client.close()
+    for (const { server } of agents) {
+      await server.close()
+    }
+    await server.close()
+    tickManager.stop()
+    console.log('✓ Shutdown complete')
+  }
+}
+
+// Start and handle graceful shutdown
+const cleanup = await startProductionSystem()
+
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM')
+  await cleanup()
+  process.exit(0)
+})
+
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT')
+  await cleanup()
+  process.exit(0)
+})
+```
+
+For more examples, see the `examples/` directory in the repository.
 
 ## 📚 API Reference
 
@@ -374,77 +1234,4 @@ This project is licensed under the Eclipse Public License 2.0 - see the [LICENSE
 
 **Note**: This is a foundational networking library for the Huly ecosystem. For application-level documentation, please refer to the main Huly platform repository.
 
-## Huly on Network example
 
-## Building Huly on top of Huly Network
-
-Huly could be managed by following set of container kinds, `session`, `query`, `transactor`.
-
-- session -> a map/reduce/find executor for queries and transactions from client.
-- query -> a DB query engine, execute `find` requests from session and pass them to DB, allow to search for all data per region. Should have access to tables of account -> workspace mapping for security.
-- transactor -> modification archestrator for all edit operations, do them one by one.
-
-```mermaid
-flowchart
-  Endpoint -.->|
-  connect
-  session/user1
-              |HulyNetwork[Huly Network]
-
-  Endpoint <-->|find,tx| parsonal-ws:user1
-
-  parsonal-ws:user1 -..->|get-workspace info| DatalakeDB
-
-  parsonal-ws:user1 -..->|find| query:europe
-
-  parsonal-ws:user1 -..->|event's| Endpoint
-
-  query:europe -..->|resp| parsonal-ws:user1
-
-  parsonal-ws:user1 -..->|response chunks| Endpoint
-
-  parsonal-ws:user1 -..->|tx| transactor:ws1
-
-  transactor:ws1 -..->|event's| HulyPulse
-  transactor:ws1 -..->|event's| parsonal-ws:user1
-
-  HulyPulse <--> Client
-
-  Client <--> Endpoint
-
-  query:europe -..->|"update"| QueryDB
-  transactor:ws1 -..->|update| DatalakeDB
-
-  transactor:ws1 -..->|txes| Kafka[Output Queue]
-
-  Kafka -..-> Indexer[Structure +
-  Fulltext Index]
-
-  Indexer -..-> QueryDB
-
-  Indexer -..->|indexed tx| HulyPulse
-
-  Indexer -..->|indexed tx| parsonal-ws:user1
-
-  Kafka -..-> AsyncTriggers
-
-  AsyncTriggers -..->|find| query:europe
-
-  AsyncTriggers -..->|derived txes| transactor:ws1
-
-  InputQueue -->|txes| transactor:ws1
-
-  Services[Services
-  Github/Telegram/Translate] -..-> InputQueue
-
-  Kafka -..-> Services
-
-  Services -..-> query:europe
-
-  QueryDB@{shape: database}
-  InputQueue@{shape: database}
-  DatalakeDB@{shape: database}
-  Kafka@{shape: database}
-  parsonal-ws:user1@{ shape: h-cyl}
-
-```
