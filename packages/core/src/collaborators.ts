@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Class, ClassCollaborators, Doc, Hierarchy, ModelDb, Ref } from '@hcengineering/core'
+import core, { Class, ClassCollaborators, Doc, Hierarchy, ModelDb, Ref } from '.'
 
 export function getClassCollaborators<T extends Doc> (
   model: ModelDb,

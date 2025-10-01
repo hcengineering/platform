@@ -382,6 +382,9 @@ export class TControlledDocument extends THierarchyDocument implements Controlle
   @Prop(ArrOf(TypeRef(contact.mixin.Employee)), documents.string.Approvers)
     approvers!: Ref<Employee>[]
 
+  @Prop(ArrOf(TypeRef(contact.mixin.Employee)), documents.string.ExternalApprovers)
+    externalApprovers!: Ref<Employee>[]
+
   @Prop(ArrOf(TypeRef(contact.mixin.Employee)), documents.string.CoAuthors)
     coAuthors!: Ref<Employee>[]
 

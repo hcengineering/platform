@@ -20,7 +20,10 @@ import documentsPlugin, {
   documentsId,
   DocumentState,
   type Document,
-  type DocumentSpace
+  type DocumentSpace,
+  type ProjectDocument,
+  type ChangeControl,
+  type DocumentRequest
 } from '@hcengineering/controlled-documents'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
@@ -977,9 +980,38 @@ export function defineNotifications (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
+  builder.createDoc<ClassCollaborators<Document>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.Document,
+    fields: ['author', 'owner'],
+    provideSecurity: true
+  })
+
+  builder.createDoc<ClassCollaborators<ProjectDocument>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.ProjectDocument,
+    fields: [],
+    provideSecurity: true
+  })
+
+  builder.createDoc<ClassCollaborators<ChangeControl>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.ChangeControl,
+    fields: [],
+    provideSecurity: true
+  })
+
+  builder.createDoc<ClassCollaborators<DocumentRequest>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.DocumentRequest,
+    fields: ['requested', 'createdBy'],
+    provideSecurity: true
+  })
+
+  builder.mixin(documents.class.DocumentApprovalRequest, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
+  })
+
   builder.createDoc<ClassCollaborators<ControlledDocument>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: documents.class.ControlledDocument,
-    fields: ['author', 'owner', 'reviewers', 'approvers', 'coAuthors']
+    fields: ['author', 'owner', 'reviewers', 'approvers', 'coAuthors', 'externalApprovers'],
+    provideSecurity: true
   })
 
   builder.createDoc(

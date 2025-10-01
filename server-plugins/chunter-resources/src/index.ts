@@ -36,9 +36,10 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   UserStatus,
+  getClassCollaborators,
   type MeasureContext
 } from '@hcengineering/core'
-import notification, { DocNotifyContext, getClassCollaborators, NotificationContent } from '@hcengineering/notification'
+import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'

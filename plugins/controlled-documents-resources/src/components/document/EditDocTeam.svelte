@@ -13,19 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, Person } from '@hcengineering/contact'
-  import {
+  import contact, { Employee, Person } from '@hcengineering/contact'
+  import documents, {
     ControlledDocument,
     ControlledDocumentState,
     DocumentApprovalRequest,
     DocumentReviewRequest,
     DocumentState
   } from '@hcengineering/controlled-documents'
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
+  import core, { AccountUuid, DocumentUpdate, notEmpty, PersonUuid, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
 
   import DocTeam from './DocTeam.svelte'
+  import { updateExternalApproversAccess } from '../../utils'
 
   export let controlledDoc: ControlledDocument
   export let editable: boolean = true
@@ -46,7 +47,8 @@
   $: canChangeApprovers = isEditableDraft && (inCleanState || inApproval || inReview || isReviewed)
 
   $: reviewers = (reviewRequest?.requested as Ref<Employee>[]) ?? controlledDoc.reviewers
-  $: approvers = (approvalRequest?.requested as Ref<Employee>[]) ?? controlledDoc.approvers
+  $: approvers = controlledDoc.approvers
+  $: externalApprovers = controlledDoc.externalApprovers
   $: coAuthors = controlledDoc.coAuthors
 
   const client = getClient()
@@ -54,13 +56,22 @@
   async function handleUpdate ({
     detail
   }: {
-    detail: { type: 'reviewers' | 'approvers', users: Ref<Person>[] }
+    detail: { type: 'reviewers' | 'approvers' | 'externalApprovers', users: Ref<Person>[] }
   }): Promise<void> {
     const { type, users } = detail
 
     const request = detail.type === 'reviewers' ? reviewRequest : approvalRequest
+    let requestUsers: Ref<Person>[] = []
 
-    const ops = client.apply()
+    if (type === 'reviewers') {
+      requestUsers = users
+    } else if (type === 'externalApprovers') {
+      requestUsers = [...controlledDoc.approvers, ...users]
+    } else if (type === 'approvers') {
+      requestUsers = [...users, ...controlledDoc.externalApprovers]
+    }
+
+    const ops = client.apply(controlledDoc._id)
 
     if (request?._id !== undefined) {
       const requested = request.requested?.slice() ?? []
@@ -69,7 +80,7 @@
       const addedPersons = new Set<Ref<Person>>()
       const removedPersons = new Set<Ref<Person>>(requested)
 
-      for (const u of users) {
+      for (const u of requestUsers) {
         if (requestedSet.has(u)) {
           removedPersons.delete(u)
         } else {
@@ -87,7 +98,7 @@
         approvedDates.splice(idx, 1)
       }
 
-      const requiredApprovesCount = users.length
+      const requiredApprovesCount = requestUsers.length
       const requestedQuery: DocumentUpdate<DocumentReviewRequest | DocumentApprovalRequest> = {}
 
       if (addedPersons.size > 0) {
@@ -107,8 +118,8 @@
       })
     }
 
-    const added = new Set()
-    const removed = new Set()
+    const added = new Set<Ref<Person>>()
+    const removed = new Set<Ref<Person>>()
 
     for (const user of users) {
       if (!controlledDoc[type].includes(user as Ref<Employee>)) {
@@ -133,6 +144,11 @@
     if (Object.keys(updateQuery).length > 0) {
       await ops.update(controlledDoc, updateQuery)
     }
+
+    if (type === 'externalApprovers') {
+      await updateExternalApproversAccess(client, controlledDoc, Array.from(added), Array.from(removed))
+    }
+
     await ops.commit()
   }
 </script>
@@ -148,6 +164,7 @@
         {canChangeApprovers}
         {reviewers}
         {approvers}
+        {externalApprovers}
         {coAuthors}
         on:update={handleUpdate}
       />

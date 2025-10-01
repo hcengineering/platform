@@ -41,6 +41,7 @@
     "SearchDocument": "ドキュメントを検索...",
     "CreateEnVersion": "レビュー用バージョンを作成",
     "Approvers": "承認者",
+    "ExternalApprovers": "外部承認者",
     "CoAuthors": "共同作成者",
     "Status": "ステータス",
     "TemplateName": "テンプレート名",
