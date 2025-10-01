@@ -36,7 +36,8 @@
     toIdMap,
     TxProcessor,
     WithLookup,
-    type Blob
+    type Blob,
+    type PersonId
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
@@ -456,7 +457,6 @@
       object.skills = [...object.skills, ...newSkills]
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 
@@ -464,8 +464,8 @@
     if (object.resumeUuid) {
       try {
         await deleteFile(object.resumeUuid)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     }
   }

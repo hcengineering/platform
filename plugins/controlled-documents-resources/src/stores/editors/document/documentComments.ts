@@ -16,7 +16,7 @@ import { type Attachment } from '@hcengineering/attachment'
 import { type Ref, generateId } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type CompAndProps, type PopupAlignment, popupstore, showPopup } from '@hcengineering/ui'
-import documents, { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
+import { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../../utils'
 import {
   type DocumentCommentsFilter,
@@ -35,6 +35,8 @@ import {
   savedAttachmentsUpdated,
   controlledDocumentOpened
 } from './actions'
+
+import documents from '../../../plugin'
 
 export const $areDocumentCommentPopupsOpened = createStore(false).on(
   documentCommentPopupsOpened,
@@ -118,7 +120,10 @@ export const showDocumentCommentsPopupFx = createEffect(
 export const showAddCommentPopupFx = createEffect((payload: { element?: PopupAlignment, nodeId?: string | null }) => {
   showPopup(
     documents.component.AddCommentPopup,
-    payload,
+    {
+      ...payload,
+      popupId: documents.ids.AddCommentPopup
+    },
     payload.element,
     (result) => {
       if (result === null || result === undefined) {
@@ -129,7 +134,11 @@ export const showAddCommentPopupFx = createEffect((payload: { element?: PopupAli
       }
     },
     undefined,
-    { category: DocumentCommentPopupCategory, overlay: true }
+    {
+      id: documents.ids.AddCommentPopup,
+      category: DocumentCommentPopupCategory,
+      overlay: true
+    }
   )
 })
 

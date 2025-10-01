@@ -22,6 +22,7 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import ProcessAttribute from '../ProcessAttribute.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let func: ProcessFunction
   export let process: Process
@@ -49,11 +50,11 @@
         .then((p) => {
           editor = p
         })
-        .catch((e) => {
-          console.error(e)
+        .catch((e: any) => {
+          Analytics.handleError(e)
         })
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
     }
   }
 

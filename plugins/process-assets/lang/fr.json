@@ -114,7 +114,10 @@
     "ProcessRunned": "Processus \"{process}\" démarré",
     "ProcessStateChanged": "État du processus \"{process}\" changé en \"{state}\"",
     "ProcessFinished": "Processus \"{process}\" terminé dans l'état \"{state}\"",
-    "NewProcessToDo": "Nouvel Action Item de processus"
+    "NewProcessToDo": "Nouvel Action Item de processus",
+    "EmptyArray": "Tableau vide",
+    "ExecutionInitiator": "Initiateur d'exécution",
+    "ExecutionStarted": "Exécution démarrée"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

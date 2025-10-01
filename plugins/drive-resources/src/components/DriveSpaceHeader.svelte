@@ -13,44 +13,66 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
   import { type Drive } from '@hcengineering/drive'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
-  import { FileUploadOptions, getUploadHandlers, UploadHandler } from '@hcengineering/uploader'
+  import { HeaderButton, HeaderButtonAction } from '@hcengineering/ui'
+  import { getUploadHandlers } from '@hcengineering/uploader'
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import {
-    showCreateDrivePopup,
-    showCreateFolderPopup,
-    uploadFilesToDrivePopup,
-    getUploadOptionsByFragment
-  } from '../utils'
+  import { showCreateDrivePopup, showCreateFolderPopup, getUploadOptionsByFragment } from '../utils'
   import { onMount } from 'svelte'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
+  const basicActions: HeaderButtonAction[] = [
+    {
+      id: drive.string.CreateDrive,
+      label: drive.string.CreateDrive,
+      icon: drive.icon.Drive,
+      accountRole: AccountRole.User,
+      callback: handleCreateDrive
+    },
+    {
+      id: drive.string.CreateFolder,
+      label: drive.string.CreateFolder,
+      icon: drive.icon.Folder,
+      callback: handleCreateFolder
+    }
+  ]
+
+  let uploadActions: HeaderButtonAction[] = []
+  let allActions: HeaderButtonAction[] = []
+
   const myAcc = getCurrentAccount()
 
   const client = getClient()
   const query = createQuery()
-  const actionWithExtensionMap = new Map<string, UploadHandler>()
 
   onMount(() => {
     const handlers = getUploadHandlers(client)
+    const newUploadActions: HeaderButtonAction[] = []
     for (const handler of handlers) {
-      dropdownItems.push({ id: handler._id, label: handler.label, icon: handler.icon })
-      const uploadHandler = async (opts: FileUploadOptions): Promise<void> => {
+      const uploadHandler = async (): Promise<void> => {
+        if (currentSpace === undefined) return
         const fn = await getResource(handler.handler)
+        const opts = await getUploadOptionsByFragment(currentSpace, currentFragment ?? '')
         await fn(opts)
       }
-      actionWithExtensionMap.set(handler._id, uploadHandler)
+      newUploadActions.push({
+        id: handler.label,
+        label: handler.label,
+        icon: handler.icon,
+        callback: () => {
+          void uploadHandler()
+        }
+      })
     }
+    uploadActions = newUploadActions
   })
 
-  let loading = true
   let hasDrive = false
   query.query(
     drive.class.Drive,
@@ -63,74 +85,25 @@
 
   $: parent = getFolderIdFromFragment(currentFragment ?? '') ?? drive.ids.Root
 
-  async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
-    if (res === drive.string.CreateDrive) {
-      await handleCreateDrive()
-    } else if (res === drive.string.CreateFolder) {
-      await handleCreateFolder()
-    } else if (typeof res === 'string' && currentSpace !== undefined) {
-      const opts = await getUploadOptionsByFragment(currentSpace, currentFragment ?? '')
-      const uploadFn = actionWithExtensionMap.get(res)
-      if (uploadFn === undefined) {
-        return
-      }
-      await uploadFn(opts)
+  function handleCreateDrive (): void {
+    void showCreateDrivePopup()
+  }
+
+  function handleCreateFolder (): void {
+    void showCreateFolderPopup(currentSpace, parent, true)
+  }
+
+  let visibleActions: (string | number | null)[] = []
+  function updateActions (hasSpace: boolean, uploadActions: HeaderButtonAction[]): void {
+    allActions = [...basicActions, ...uploadActions]
+    if (hasSpace) {
+      visibleActions = allActions.map((a) => a.id)
+    } else {
+      visibleActions = [drive.string.CreateDrive]
     }
   }
 
-  async function handleCreateDrive (): Promise<void> {
-    await showCreateDrivePopup()
-  }
-
-  async function handleCreateFolder (): Promise<void> {
-    await showCreateFolderPopup(currentSpace, parent, true)
-  }
-
-  async function handleUploadFile (): Promise<void> {
-    if (currentSpace !== undefined) {
-      await uploadFilesToDrivePopup(currentSpace, parent)
-    }
-  }
-
-  const dropdownItems: SelectPopupValueType[] = hasAccountRole(myAcc, AccountRole.User)
-    ? [
-        { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }
-      ]
-    : [{ id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }]
-
-  loading = false
+  $: updateActions(hasDrive, uploadActions)
 </script>
 
-{#if loading}
-  <Loading shrink />
-{:else}
-  <div class="antiNav-subheader">
-    {#if hasDrive}
-      <ButtonWithDropdown
-        icon={IconAdd}
-        justify={'left'}
-        kind={'primary'}
-        label={drive.string.UploadFile}
-        mainButtonId={'new-document'}
-        dropdownIcon={IconDropdown}
-        {dropdownItems}
-        disabled={currentSpace === undefined}
-        on:click={handleUploadFile}
-        on:dropdown-selected={(ev) => {
-          void handleDropdownItemSelected(ev.detail)
-        }}
-      />
-    {:else}
-      <Button
-        icon={IconAdd}
-        label={drive.string.CreateDrive}
-        justify={'left'}
-        width={'100%'}
-        kind={'primary'}
-        gap={'large'}
-        on:click={handleCreateDrive}
-      />
-    {/if}
-  </div>
-{/if}
+<HeaderButton loading={false} {client} mainActionId={uploadActions[0]?.id} {visibleActions} actions={allActions} />

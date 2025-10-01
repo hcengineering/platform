@@ -114,7 +114,10 @@
     "ProcessRunned": "Процесс \"{process}\" запущен",
     "ProcessStateChanged": "Состояние процесса \"{process}\" изменено на \"{state}\"",
     "ProcessFinished": "Процесс \"{process}\" завершен в состояние \"{state}\"",
-    "NewProcessToDo": "Новый Action Item процесса"
+    "NewProcessToDo": "Новый Action Item процесса",
+    "EmptyArray": "Пустой массив",
+    "ExecutionInitiator": "Инициатор выполнения",
+    "ExecutionStarted": "Выполнение начато"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

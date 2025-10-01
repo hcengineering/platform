@@ -17,7 +17,6 @@ import { type AnalyticEvent } from '@hcengineering/analytics-collector'
 
 export interface AnalyticsConfig {
   ANALYTICS_COLLECTOR_URL?: string
-  SENTRY_DSN?: string
   POSTHOG_API?: string
   POSTHOG_HOST?: string
   [key: string]: any

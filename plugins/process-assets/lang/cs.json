@@ -109,7 +109,10 @@
     "ProcessRunned": "Proces \"{process}\" spuštěn",
     "ProcessStateChanged": "Stav procesu \"{process}\" změněn na \"{state}\"",
     "ProcessFinished": "Proces \"{process}\" dokončen ve stavu \"{state}\"",
-    "NewProcessToDo": "Nový Action Item procesu"
+    "NewProcessToDo": "Nový Action Item procesu",
+    "EmptyArray": "Prázdné pole",
+    "ExecutionInitiator": "Iniciátor provedení",
+    "ExecutionStarted": "Provedení spuštěno"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

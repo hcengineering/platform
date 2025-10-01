@@ -30,6 +30,7 @@
   import { onMount } from 'svelte'
   import { MailboxInfo, MailboxOptions } from '@hcengineering/account-client'
   import MailboxItem from './MailboxItem.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   let boxesLoading = true
   let optionsLoading = true
@@ -61,6 +62,7 @@
       .catch((err: any) => {
         optionsLoading = false
         console.error('Failed to load mailbox options', err)
+        Analytics.handleError(err)
       })
   }
 

@@ -344,7 +344,6 @@
       return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 

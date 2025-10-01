@@ -41,7 +41,6 @@
       label = setting.string.Saved
     } catch (e: any) {
       Analytics.handleError(e)
-      console.error(e)
       label = presentation.string.Save
       saved = false
       error = true

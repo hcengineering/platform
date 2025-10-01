@@ -287,7 +287,9 @@
     "IssueStatus": "Status",
     "Extensions": "Extensions",
     "RoleLabel": "Role: {role}",
-    "UnsetParentIssue": "Unset parent issue"
+    "UnsetParentIssue": "Unset parent issue",
+    "ForbidCreateProjectPermission": "Forbid create project",
+    "ForbidCreateProjectPermissionDescription": "Forbid users creating new projects"
   },
   "status": {}
 }

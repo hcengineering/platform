@@ -36,6 +36,7 @@
   import DrawingBoardToolbarColorIcon from './DrawingBoardToolbarColorIcon.svelte'
   import DrawingBoardColorSelectorIcon from './DrawingBoardColorSelectorIcon.svelte'
   import { ColorsList, DrawingBoardColoringSetup } from '../drawingColors'
+  import { Analytics } from '@hcengineering/analytics'
 
   interface DrawingBoardToolbarEvents {
     undo: undefined
@@ -130,9 +131,7 @@
           break
         }
         default: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _exhaustive: never = id
-          console.error('Unknown command id', id)
+          Analytics.handleError(new Error(`Unknown command id '${id as any}'`))
         }
       }
     })

@@ -25,6 +25,7 @@
   import aiAssistant from '../plugin'
   import { buildSocialIdString, getCurrentAccount, SocialIdType, type PersonId } from '@hcengineering/core'
   import HulyAssistant from './icons/HulyAssistant.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration | undefined = undefined
 
@@ -51,9 +52,10 @@
 
       isLoading = false
       dispatch('close')
-    } catch (err) {
+    } catch (err: any) {
       isLoading = false
       console.error('Failed to find/create huly assistant social id/integration:', err)
+      Analytics.handleError(err)
     }
   })
 

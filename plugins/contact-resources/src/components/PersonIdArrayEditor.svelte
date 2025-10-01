@@ -22,6 +22,7 @@
   import contact from '../plugin'
   import { employeeByPersonIdStore, primarySocialIdByEmployeeRefStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let label: IntlString
   export let value: PersonId[]
@@ -47,6 +48,7 @@
 
         if (ref == null) {
           console.error('Employee not found for social id', p)
+          Analytics.handleError(new Error(`Employee not found for social id ${p}`))
           return null
         }
 
@@ -71,6 +73,7 @@
 
           if (primaryId === undefined) {
             console.error('Primary social id not found for person', person)
+            Analytics.handleError(new Error(`Primary social id not found for person ${person}`))
             continue
           }
 

@@ -297,7 +297,7 @@ function getContextFunctions (
     switch (category) {
       case 'array': {
         if (func.category === 'array') {
-          if (hierarchy.isDerived(func.of, target)) {
+          if (hierarchy.isDerived(func.of, target) || func.of === core.class.ArrOf) {
             matched.push(func._id)
           }
         }

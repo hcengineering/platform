@@ -31,6 +31,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
+  export let skipAccounts: Ref<Employee>[] = []
   export let disableDeselectFor: Ref<Employee>[] = []
   export let showStatus = true
   export let skipInactive = false
@@ -91,6 +92,7 @@
           {showStatus}
           {disableDeselectFor}
           {skipCurrentAccount}
+          {skipAccounts}
           {skipInactive}
           on:select={handleSelectionChanged}
         />
