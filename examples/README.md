@@ -225,10 +225,9 @@ await client.close()
 ### Agent Setup Template
 
 ```typescript
-import { AgentImpl } from '@hcengineering/network-core'
-import { NetworkAgentServer } from '@hcengineering/network-client'
+import { createAgent } from '@hcengineering/network-client'
 
-const agent = new AgentImpl('my-agent' as any, {
+const { agent, server } = await createAgent('localhost:3738', {
   'my-service': async (options) => {
     const uuid = options.uuid ?? generateUuid()
     const container = new MyContainer(uuid)
@@ -240,8 +239,7 @@ const agent = new AgentImpl('my-agent' as any, {
   }
 })
 
-const server = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
-await server.start(agent)
+// Agent server is already started, no need to call server.start()
 ```
 
 ## Troubleshooting

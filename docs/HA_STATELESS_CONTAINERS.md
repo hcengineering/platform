@@ -2,6 +2,22 @@
 
 This feature enables Huly Network to support stateless containers with automatic failover capabilities, allowing you to build highly available services that must ensure only one instance is active at any given time.
 
+## ⚠️ Important: Network Service Limitation
+
+The **Network Server** (central coordinator) does NOT support HA:
+
+- ❌ Network service must run as a single instance only
+- ❌ No clustering or multiple network servers allowed
+- ❌ Network service is a single point of failure
+
+**However**, agents and containers DO support HA through stateless container registration:
+
+- ✅ Multiple agents can register the same container UUID
+- ✅ Automatic failover when primary agent fails
+- ✅ Leader election without external coordination
+
+This document covers HA for **agents and containers only**.
+
 ## Overview
 
 The stateless container feature allows multiple agents to register pre-existing containers with the same UUID. The network will automatically:
@@ -59,6 +75,8 @@ Add a stateless container to the agent for registration.
 **Example:**
 
 ```typescript
+// Note: For production code, prefer using createAgent() from @hcengineering/network-client
+// This example uses AgentImpl directly for educational purposes
 const agent = new AgentImpl('my-agent-id', containerFactories)
 
 // Add a stateless container
@@ -99,6 +117,9 @@ import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-
 
 // Shared service UUID across all HA instances
 const SHARED_SERVICE_UUID = 'my-ha-service-001' as ContainerUuid
+
+// Note: For production code, prefer using createAgent() from @hcengineering/network-client
+// This example uses AgentImpl directly for educational purposes
 
 // Create Agent 1 (Primary)
 const agent1 = new AgentImpl('agent-1', containerFactories)

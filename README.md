@@ -92,6 +92,25 @@ This monorepo contains four main packages and deployment pods:
 
 - **`@hcengineering/network-pod`**: Dockerized network server for production deployment
 
+## ⚠️ Important Limitations
+
+### Network Service Constraints
+
+The **Network Server** (central coordinator) has the following limitations:
+
+- **Single Instance Only**: The network service must run as a single instance
+- **No HA Support**: The network service itself does not support high availability or clustering
+- **Single Point of Failure**: If the network service fails, the entire system becomes unavailable
+
+**Important**: While agents and containers support high availability through stateless container registration and automatic failover, the network service itself must be deployed as a singleton. For production deployments:
+
+- Use process monitoring (systemd, PM2, Kubernetes with restart policies)
+- Implement quick restart mechanisms
+- Monitor network service health closely
+- Plan for brief downtime during network service restarts
+
+Agents and containers will automatically reconnect when the network service restarts.
+
 ## 🏗️ Architecture
 
 ### Core Concepts
@@ -208,9 +227,9 @@ docker run -p 3737:3737 hardcoreeng/network-pod
 Here's a complete end-to-end example to get you started:
 
 ```typescript
-import { NetworkImpl, TickManagerImpl, AgentImpl } from '@hcengineering/network-core'
+import { NetworkImpl, TickManagerImpl } from '@hcengineering/network-core'
 import { NetworkServer } from '@hcengineering/network-server'
-import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
+import { createNetworkClient, createAgent } from '@hcengineering/network-client'
 import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
 
 // 1. Create a simple container implementation
@@ -240,7 +259,7 @@ class MyServiceContainer implements Container {
 }
 
 async function main() {
-  // 2. Start the network server
+  // 2. Start the network server (NOTE: Only one instance allowed - no HA support)
   const tickManager = new TickManagerImpl(1000)
   tickManager.start()
   const network = new NetworkImpl(tickManager)
@@ -248,7 +267,7 @@ async function main() {
   console.log('Network server started on port 3737')
 
   // 3. Create and start an agent
-  const agent = new AgentImpl('agent-1' as any, {
+  const { agent, server: agentServer } = await createAgent('localhost:3738', {
     'my-service': async (options) => {
       const uuid = options.uuid ?? (('container-' + Date.now()) as ContainerUuid)
       const container = new MyServiceContainer(uuid)
@@ -259,9 +278,6 @@ async function main() {
       }
     }
   })
-
-  const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
-  await agentServer.start(agent)
 
   // 4. Connect as a client
   const client = createNetworkClient('localhost:3737')
@@ -451,7 +467,7 @@ await chatRef.close()
 This example shows how to implement automatic failover for critical services:
 
 ```typescript
-import { AgentImpl, TickManagerImpl } from '@hcengineering/network-core'
+import { TickManagerImpl, AgentImpl } from '@hcengineering/network-core'
 import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { Container, ContainerUuid, ClientUuid, ContainerKind } from '@hcengineering/network-core'
 
@@ -644,7 +660,7 @@ class TenantWorkspaceContainer implements Container {
 }
 
 // Setup agent with tenant workspace factory
-const agent = new AgentImpl('workspace-agent' as any, {
+const { agent, server: agentServer } = await createAgent('localhost:3738', {
   'tenant-workspace': async (options: GetOptions) => {
     const tenantId = options.labels?.[0] || 'default'
     const uuid = options.uuid ?? (`workspace-${tenantId}-${Date.now()}` as ContainerUuid)

@@ -1,5 +1,15 @@
 # Quick Start: HA Stateless Containers
 
+## ⚠️ Important: Network Service Limitation
+
+The **Network Server** (central coordinator) does NOT support HA:
+
+- ❌ Network service must run as a single instance
+- ❌ No clustering or multiple network servers allowed
+- ✅ Agents and containers DO support HA (explained below)
+
+This guide covers HA for **agents and containers only**.
+
 ## 5-Minute Guide
 
 ### What is it?
@@ -37,7 +47,7 @@ class MyService implements Container {
 // 2. Create agents (both will try to register same UUID)
 const sharedUUID = 'my-service-001' as ContainerUuid
 
-// Agent 1 (Primary)
+// Agent 1 (Primary) - Note: In production, use createAgent() from @hcengineering/network-client
 const agent1 = new AgentImpl('agent-1', {})
 const service1 = new MyService(sharedUUID)
 agent1.addStatelessContainer(
@@ -47,7 +57,7 @@ agent1.addStatelessContainer(
   service1
 )
 
-// Agent 2 (Standby)
+// Agent 2 (Standby) - Note: In production, use createAgent() from @hcengineering/network-client
 const agent2 = new AgentImpl('agent-2', {})
 const service2 = new MyService(sharedUUID)
 agent2.addStatelessContainer(
