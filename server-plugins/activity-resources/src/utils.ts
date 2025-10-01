@@ -302,8 +302,8 @@ export async function getTxAttributesUpdates (
     }
 
     if (valueSizeExceedsLimit(attrValue)) {
-      attrValue = [activity.string.ValueTooLarge]
-      prevValue = [activity.string.ValueTooLarge]
+      attrValue = activity.string.ValueTooLarge
+      prevValue = activity.string.ValueTooLarge
     }
 
     let setAttr = []
