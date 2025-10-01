@@ -17,7 +17,7 @@ import { UAParser } from 'ua-parser-js'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
-import { generateUuid } from '@hcengineering/core'
+import { generateId } from '@hcengineering/core'
 import { Analytics } from '@hcengineering/analytics'
 
 let _isSignUp: boolean = false
@@ -43,10 +43,10 @@ class SessionManager {
   private currentUrl: string = ''
 
   private constructor () {
-    this.sessionId = generateUuid()
-    this.windowId = generateUuid()
+    this.sessionId = generateId()
+    this.windowId = generateId()
     this.sessionStartTime = Date.now()
-    this.pageviewId = generateUuid()
+    this.pageviewId = generateId()
     this.pageStartTime = Date.now()
     this.currentUrl = window.location.href
     this.pageViewCount = 1 // First page view
@@ -77,7 +77,7 @@ class SessionManager {
   onUrlChange (): void {
     if (window.location.href !== this.currentUrl) {
       this.currentUrl = window.location.href
-      this.pageviewId = generateUuid()
+      this.pageviewId = generateId()
       this.pageStartTime = Date.now()
       this.pageViewCount++
     }
