@@ -108,6 +108,42 @@ Introduce streaming capabilities to enable efficient partial data transfer from 
 **Use Cases**:
 
 - **Large Response Payloads**: Stream large datasets without loading everything in memory
+
+### 6. Security and External Client/Agent Support
+
+Enable secure external access to the Huly Network Server Hub, allowing trusted clients and agents outside the private installation to consume services safely.
+
+**Key Features**:
+
+- **Authentication & Authorization**: Implement robust token-based authentication (JWT, API keys) for external clients
+- **TLS/SSL Encryption**: Enforce encrypted connections for all external communication
+- **Rate Limiting**: Apply granular rate limits per client/agent to prevent abuse
+- **Access Control Lists (ACLs)**: Fine-grained permissions for external clients to access specific services
+- **Audit Logging**: Comprehensive logging of external access attempts and activities
+
+**Security Considerations**:
+
+- Network isolation between internal and external traffic
+- DDoS protection and request filtering
+- Certificate management and rotation
+- Secure credential storage and rotation policies
+- IP whitelisting/blacklisting capabilities
+
+**Use Cases**:
+
+- Third-party integrations accessing Huly services
+- Remote monitoring and management agents
+- External webhooks and event consumers
+- Partner applications requiring controlled access
+- Mobile/desktop clients connecting from public networks
+
+**Benefits**:
+
+- Secure extension of Huly Network beyond internal networks
+- Controlled exposure of services to external consumers
+- Enhanced flexibility for hybrid deployment scenarios
+- Support for distributed teams and remote workers
+
 - **Real-time Data Processing**: Push incremental results as they become available
 
 ## Other Important Tasks

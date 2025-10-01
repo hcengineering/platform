@@ -1,6 +1,37 @@
-# Huly Virtual Network
+<div align="center">
 
-A distributed, scalable virtual network architecture that enables fault-tolerant communication across distributed containers and agents.
+# 🌐 Huly Virtual Network
+
+[![License: EPL 2.0](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0)
+[![npm version](https://img.shields.io/npm/v/@hcengineering/network-core.svg)](https://www.npmjs.com/package/@hcengineering/network-core)
+[![CI](https://github.com/hcengineering/huly.net/workflows/CI/badge.svg)](https://github.com/hcengineering/huly.net/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178c6.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-339933.svg)](https://nodejs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+**A distributed, scalable virtual network architecture that enables fault-tolerant communication across distributed containers and agents.**
+
+Build enterprise-grade distributed systems with automatic service discovery, high availability, and zero-configuration deployment.
+
+[Features](#-why-build-your-product-on-huly-network) • [Quick Start](#-getting-started) • [Documentation](#-documentation) • [Examples](#-examples) • [API Reference](#-api-reference) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Why Huly Network?](#-why-build-your-product-on-huly-network)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Packages](#-packages)
+- [Quick Start](#-getting-started)
+- [Examples](#-examples)
+- [Documentation](#-documentation)
+- [API Reference](#-api-reference)
+- [Testing](#-testing)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🌟 Why Build Your Product on Huly Network?
 
@@ -307,7 +338,33 @@ async function main() {
 main().catch(console.error)
 ```
 
-## 📚 Comprehensive Examples
+## 📚 Documentation
+
+### 📖 Guides
+
+- **[Core Concepts](docs/CORE_CONCEPTS.md)** - Understand the architecture and design principles
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in minutes
+- **[Production Deployment](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to production environments
+- **[Container Development](docs/CONTAINER_DEVELOPMENT.md)** - Build custom containers
+- **[High Availability Setup](docs/QUICKSTART_HA.md)** - Configure HA with stateless containers
+- **[HA Stateless Containers](docs/HA_STATELESS_CONTAINERS.md)** - Deep dive into HA patterns
+- **[Multi-Tenant Architecture](docs/MULTI_TENANT.md)** - Implement multi-tenancy
+
+### 🎯 Examples
+
+All examples are available in the [`examples/`](examples/) directory:
+
+1. **[Basic Request/Response](examples/01-basic-container-request-response.ts)** - Simple container communication
+2. **[Event Broadcasting](examples/02-event-broadcasting.ts)** - Real-time event distribution
+3. **[Multi-Tenant Setup](examples/03-multi-tenant.ts)** - Per-tenant container isolation
+4. **[Production Setup](examples/04-complete-production-setup.ts)** - Complete production configuration
+5. **[Error Handling & Retry](examples/05-error-handling-retry.ts)** - Robust error handling patterns
+6. **[Custom Timeouts](examples/custom-timeout-example.ts)** - Environment-specific timeouts
+7. **[HA Stateless Containers](examples/ha-stateless-container-example.ts)** - Automatic failover
+
+See the [Examples README](examples/README.md) for detailed explanations and usage instructions.
+
+## � Detailed Example Walkthroughs
 
 ### Example 1: Basic Container with Request/Response
 
@@ -1055,7 +1112,7 @@ process.on('SIGINT', async () => {
 })
 ```
 
-For more examples, see the `examples/` directory in the repository.
+---
 
 ## 📚 API Reference
 
@@ -1193,34 +1250,104 @@ node common/scripts/install-run-rush.js build:watch
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Install dependencies: `node common/scripts/install-run-rush.js install`
-5. Ensure all tests pass: `node common/scripts/install-run-rush.js test`
-6. Format code: `node common/scripts/install-run-rush.js format`
-7. Build project: `node common/scripts/install-run-rush.js build`
-8. Commit changes: `git commit -s -m 'Add amazing feature'`
-9. Push to branch: `git push origin feature/amazing-feature`
-10. Open a Pull Request
+We love contributions! Huly Virtual Network is open source and we welcome contributions of all kinds:
 
-### Development Setup
+- 🐛 **Bug Reports**: Found a bug? [Open an issue](https://github.com/hcengineering/huly.net/issues/new?template=bug_report.md)
+- ✨ **Feature Requests**: Have an idea? [Request a feature](https://github.com/hcengineering/huly.net/issues/new?template=feature_request.md)
+- 📖 **Documentation**: Improve our docs, add examples, or fix typos
+- 💻 **Code**: Submit pull requests with bug fixes or new features
+- ❓ **Questions**: [Ask questions](https://github.com/hcengineering/huly.net/issues/new?template=question.md) to help improve our documentation
 
-The project uses Rush.js for monorepo management:
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our development process, coding standards, and how to submit pull requests.
 
-- All packages share common build configuration
-- Dependencies are managed at the workspace level
-- Incremental builds and caching for faster development
+### Quick Contribution Guide
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Make** your changes and add tests
+4. **Run** tests: `node common/scripts/install-run-rush.js test`
+5. **Format** code: `node common/scripts/install-run-rush.js format`
+6. **Commit** with sign-off: `git commit -s -m 'Add amazing feature'`
+7. **Push** to your fork: `git push origin feature/amazing-feature`
+8. **Open** a Pull Request
+
+### Development Commands
+
+```bash
+# Install dependencies
+node common/scripts/install-run-rush.js install
+
+# Build all packages
+node common/scripts/install-run-rush.js build
+
+# Run tests
+node common/scripts/install-run-rush.js test
+
+# Format code
+node common/scripts/install-run-rush.js format
+
+# Build with watch mode
+node common/scripts/install-run-rush.js build:watch
+```
+
+See our [Contributing Guide](CONTRIBUTING.md) for more detailed information.
 
 ## 📄 License
 
-This project is licensed under the Eclipse Public License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Eclipse Public License 2.0** - see the [LICENSE](LICENSE) file for details.
+
+The EPL-2.0 is a business-friendly open source license that allows you to:
+- ✅ Use the software commercially
+- ✅ Modify the software
+- ✅ Distribute the software
+- ✅ Use the software privately
+- ✅ Include it in proprietary software
+
+Learn more about [EPL-2.0](https://www.eclipse.org/legal/epl-2.0/).
+
+## 🔒 Security
+
+Security is a top priority. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
+
+## 🙏 Acknowledgments
+
+- Built with [ZeroMQ](https://zeromq.org/) for high-performance messaging
+- Managed with [Rush.js](https://rushjs.io/) for monorepo orchestration
+- Part of the [Huly Platform](https://github.com/hcengineering/platform) ecosystem
+
+## 📬 Contact & Support
+
+- **Issues**: [GitHub Issues](https://github.com/hcengineering/huly.net/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/hcengineering/huly.net/discussions)
+- **Website**: [huly.io](https://huly.io)
+- **Twitter**: [@huly_platform](https://twitter.com/huly_platform)
+
+## 🗺️ Roadmap
+
+See our [project roadmap](https://github.com/hcengineering/huly.net/projects) for upcoming features and improvements.
+
+## 📊 Project Status
+
+This project is actively maintained and used in production by the Huly Platform. We welcome contributions and feedback!
+
+## ⭐ Star History
+
+If you find this project useful, please consider giving it a star! It helps others discover the project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=hcengineering/huly.net&type=Date)](https://star-history.com/#hcengineering/huly.net&Date)
 
 ## 🔗 Related Projects
 
-- [Huly Platform](https://github.com/hcengineering/platform) - The main Huly platform
-- [ZeroMQ](https://zeromq.org/) - High-performance messaging library
+- **[Huly Platform](https://github.com/hcengineering/platform)** - The main Huly platform that uses this network
+- **[ZeroMQ](https://zeromq.org/)** - High-performance asynchronous messaging library
+- **[Rush.js](https://rushjs.io/)** - Scalable monorepo build orchestrator
 
 ---
 
-**Note**: This is a foundational networking library for the Huly ecosystem. For application-level documentation, please refer to the main Huly platform repository.
+<div align="center">
+
+**Built with ❤️ by the Huly Platform team**
+
+[⬆ back to top](#-huly-virtual-network)
+
+</div>
