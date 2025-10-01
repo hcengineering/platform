@@ -71,7 +71,7 @@ export async function Remove (
   control: ProcessControl,
   execution: Execution
 ): Promise<Doc[]> {
-    if (value == null) {
+  if (value == null) {
     value = []
   }
   if (!Array.isArray(value)) return value
@@ -94,7 +94,7 @@ export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
 }
 
 export function RemoveLast (value: Doc[], props: Record<string, any>): Doc[] {
-    if (value == null) {
+  if (value == null) {
     value = []
   }
   if (!Array.isArray(value)) return value
