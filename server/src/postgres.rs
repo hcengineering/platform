@@ -86,8 +86,15 @@ pub async fn pool() -> anyhow::Result<Pool, DbError> {
 }
 
 #[instrument(level = "debug", skip_all)]
+async fn get_connection(
+    pool: &Pool,
+) -> Result<bb8::PooledConnection<'_, PostgresConnectionManager<NoTls>>, DbError> {
+    Ok(pool.get().await?)
+}
+
+#[instrument(level = "debug", skip_all)]
 pub async fn find_blob_by_hash(pool: &Pool, hash: &str) -> anyhow::Result<Option<String>, DbError> {
-    let connection = pool.get().await?;
+    let connection = get_connection(pool).await?;
 
     let blob = connection
         .query("select key from blob where hash = $1", &[&hash])
@@ -103,7 +110,7 @@ pub async fn find_blob_by_hash(pool: &Pool, hash: &str) -> anyhow::Result<Option
 
 #[instrument(level = "debug", skip_all)]
 pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(), DbError> {
-    let connection = pool.get().await?;
+    let connection = get_connection(pool).await?;
 
     connection
         .execute(
@@ -121,12 +128,13 @@ pub struct ObjectPart<T: DeserializeOwned + std::fmt::Debug> {
     pub data: T,
 }
 
+#[instrument(level = "debug", skip_all)]
 pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     pool: &Pool,
     workspace: uuid::Uuid,
     key: &str,
 ) -> anyhow::Result<Vec<ObjectPart<T>>, DbError> {
-    let connection = pool.get().await?;
+    let connection = get_connection(pool).await?;
 
     let rows = connection
         .query(
@@ -148,6 +156,7 @@ pub async fn find_parts<T: DeserializeOwned + std::fmt::Debug>(
     Ok(parts)
 }
 
+#[instrument(level = "debug", skip_all)]
 pub async fn append_part<D: serde::Serialize>(
     pool: &Pool,
     workspace: uuid::Uuid,
@@ -156,7 +165,7 @@ pub async fn append_part<D: serde::Serialize>(
     inline: Option<Bytes>,
     data: &D,
 ) -> anyhow::Result<(), DbError> {
-    let connection = pool.get().await?;
+    let connection = get_connection(pool).await?;
 
     let data = serde_json::to_value(data)?;
     let inline = inline.map(|b| b.to_vec());
@@ -171,6 +180,7 @@ pub async fn append_part<D: serde::Serialize>(
     Ok(())
 }
 
+#[instrument(level = "debug", skip_all)]
 pub async fn set_part<D: serde::Serialize>(
     pool: &Pool,
     workspace: uuid::Uuid,
@@ -178,7 +188,7 @@ pub async fn set_part<D: serde::Serialize>(
     inline: Option<Bytes>,
     data: &D,
 ) -> anyhow::Result<(), DbError> {
-    let mut connection = pool.get().await?;
+    let mut connection = get_connection(pool).await?;
 
     let transaction = connection.transaction().await?;
 
