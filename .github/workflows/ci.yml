@@ -24,20 +24,8 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Rush validate
         run: node common/scripts/install-run-rush.js validate --verbose
-
-  publish:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v0.7.')
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-      - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
       - name: Publish packages
+        if: startsWith(github.ref, 'refs/tags/v0.7.')
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: node common/scripts/install-run-rush.js publish --include-all --publish
