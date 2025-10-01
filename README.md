@@ -1375,11 +1375,6 @@ If you have specific security requirements or concerns, please [open an issue](h
 - **Issues**: [GitHub Issues](https://github.com/hcengineering/huly.net/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/hcengineering/huly.net/discussions)
 - **Website**: [huly.io](https://huly.io)
-- **Twitter**: [@huly_platform](https://twitter.com/huly_platform)
-
-## 🗺️ Roadmap
-
-See our [project roadmap](https://github.com/hcengineering/huly.net/projects) for upcoming features and improvements.
 
 ## 📊 Project Status
 
