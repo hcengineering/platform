@@ -196,7 +196,7 @@
       if (widget === undefined) return
 
       if (!isMeetingWidgetCreated) {
-        createMeetingWidget(widget, room, meetingSessionConnected)
+        createMeetingWidget(widget, room)
       }
     } else {
       if (isMeetingWidgetCreated) {

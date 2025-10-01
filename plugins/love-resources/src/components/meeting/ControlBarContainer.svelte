@@ -119,7 +119,7 @@
   @container (max-width: 440px) {
     .bar[data-size='small'] .row {
       justify-content: center;
-      gap: var(--g);
+      gap: 0.2rem;
     }
     .bar[data-size='small'] .left,
     .bar[data-size='small'] .center,

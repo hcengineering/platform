@@ -420,18 +420,14 @@ export function isTranscriptionAllowed (): boolean {
   return url !== ''
 }
 
-export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boolean): void {
+export function createMeetingWidget (widget: Widget, room: Ref<Room>): void {
   const tabs: WidgetTab[] = [
-    ...(video
-      ? [
-          {
-            id: 'video',
-            label: love.string.Video,
-            icon: love.icon.Cam,
-            readonly: true
-          }
-        ]
-      : []),
+    {
+      id: 'video',
+      label: love.string.Video,
+      icon: love.icon.Cam,
+      readonly: true
+    },
     {
       id: 'chat',
       label: chunter.string.Chat,
