@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { Context, Process, SelectedContext } from '@hcengineering/process'
   import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
@@ -23,7 +22,6 @@
   import ContextValuePresenter from './ContextValuePresenter.svelte'
 
   export let process: Process
-  export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context
   export let attribute: AnyAttribute

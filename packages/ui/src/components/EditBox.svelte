@@ -66,10 +66,8 @@
     if (minValue !== undefined && maxValue !== undefined && maxValue < minValue) return
     if (minValue !== undefined && val < minValue) value = minValue
     if (maxValue !== undefined && val > maxValue) value = maxValue
-    dispatch('change')
+    dispatch('value', value)
   }
-
-  $: setValue(value, maxValue, minValue)
 
   $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
@@ -196,11 +194,17 @@
         type="number"
         bind:value
         placeholder={phTranslate}
+        min={minValue}
+        max={maxValue}
         on:input={handleInput}
-        on:change
+        on:change={() => {
+          setValue(value, maxValue, minValue)
+          dispatch('change', value)
+        }}
         on:keydown
         on:keypress
         on:blur={() => {
+          setValue(value, maxValue, minValue)
           dispatch('blur', value)
         }}
       />

@@ -68,7 +68,6 @@
   {#if contextValue}
     <ContextValue
       {process}
-      masterTag={process.masterTag}
       {contextValue}
       {context}
       {attribute}

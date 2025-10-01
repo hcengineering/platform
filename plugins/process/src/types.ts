@@ -34,7 +34,7 @@ export interface Func {
 }
 
 interface BaseSelectedContext {
-  type: 'attribute' | 'relation' | 'nested' | 'userRequest' | 'function' | 'context'
+  type: 'attribute' | 'relation' | 'nested' | 'userRequest' | 'function' | 'context' | 'const'
   // attribute key
   key: string
 
@@ -45,6 +45,11 @@ interface BaseSelectedContext {
   functions?: Func[]
 
   fallbackValue?: any
+}
+
+export interface SelectedConst extends BaseSelectedContext {
+  type: 'const'
+  value: any
 }
 
 export interface SelectedAttribute extends BaseSelectedContext {
@@ -87,3 +92,4 @@ export type SelectedContext =
   | SelectedUserRequest
   | SelectedContextFunc
   | SelectedExecutionContext
+  | SelectedConst

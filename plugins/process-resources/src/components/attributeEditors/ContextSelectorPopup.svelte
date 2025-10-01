@@ -24,11 +24,12 @@
     RelatedContext,
     SelectedContext
   } from '@hcengineering/process'
-  import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, resizeObserver, Scroller, showPopup, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { generateContextId, getRelationObjectReduceFunc, getValueReduceFunc } from '../../utils'
   import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
+  import ConstValuePopup from './ConstValuePopup.svelte'
 
   export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
@@ -41,11 +42,6 @@
 
   function onClick (val: SelectedContext): void {
     onSelect(val)
-    dispatch('close')
-  }
-
-  function onCustom (): void {
-    onSelect(null)
     dispatch('close')
   }
 
@@ -107,6 +103,19 @@
       sourceFunction: reduceFunc
     })
     dispatch('close')
+  }
+
+  function onConst (e: MouseEvent): void {
+    showPopup(ConstValuePopup, { attribute }, eventToHTMLElement(e), (res) => {
+      if (res != null) {
+        onSelect({
+          type: 'const',
+          key: attribute.name,
+          value: res
+        })
+      }
+      dispatch('close')
+    })
   }
 </script>
 
@@ -241,13 +250,7 @@
       <div class="menu-separator" />
     {/if}
     {#if !forbidValue}
-      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-      <button
-        on:click={() => {
-          onCustom()
-        }}
-        class="menu-item"
-      >
+      <button on:click={onConst} class="menu-item">
         <span class="overflow-label pr-1">
           <Label label={plugin.string.CustomValue} />
         </span>
