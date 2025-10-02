@@ -71,6 +71,6 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
     "dotenv": "~16.0.0",
-    "openai": "^5.23.0"
+    "openai": "^4.56.0"
   }
 }

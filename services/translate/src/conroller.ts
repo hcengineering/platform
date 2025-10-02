@@ -221,13 +221,21 @@ export class Controller {
   }
 
   private async translate (markdown: string, lang: string): Promise<string> {
-    const response = await this.openai.responses.create({
+    const response = await this.openai.chat.completions.create({
       model: config.OpenAIModel,
-      instructions: `You are a translation model.Your only task is to translate the given markdown text into the ${lang} language.
-Output only the translation, nothing else. Do not add explanations, comments, or formatting.Preserve names and terms if they have no clear equivalent. Be as literal and accurate as possible while keeping the meaning natural.`,
-      input: markdown
+      messages: [
+        {
+          role: 'system',
+          content: `You are a translation model.Your only task is to translate the given markdown text into the ${lang} language.
+Output only the translation, nothing else. Do not add explanations, comments, or formatting.Preserve names and terms if they have no clear equivalent. Be as literal and accurate as possible while keeping the meaning natural.`
+        },
+        {
+          role: 'user',
+          content: markdown
+        }
+      ]
     })
 
-    return response?.output_text?.trim() ?? ''
+    return response.choices[0].message.content ?? ''
   }
 }

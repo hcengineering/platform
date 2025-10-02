@@ -37,8 +37,7 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL ?? '',
     HulylakeUrl: process.env.HULYLAKE_URL ?? '',
     ServiceId: process.env.SERVICE_ID ?? 'translate',
-    OpenAIKey:
-      process.env.OPENAI_API_KEY,
+    OpenAIKey: process.env.OPENAI_API_KEY,
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
     OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? ''
   }
