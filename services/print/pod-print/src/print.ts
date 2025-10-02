@@ -4,6 +4,8 @@
 import { MeasureContext } from '@hcengineering/core'
 import puppeteer, { Page, Viewport } from 'puppeteer'
 
+import config from './config'
+
 export interface PrintOptions {
   kind?: ExportKind
   viewport?: Viewport
@@ -34,7 +36,8 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--disable-extensions',
-      '--disable-setuid-sandbox'
+      '--disable-setuid-sandbox',
+      ...config.PuppeteerArgs
     ]
   })
   const page = await browser.newPage()
