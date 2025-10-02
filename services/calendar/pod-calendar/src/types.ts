@@ -14,7 +14,7 @@
 //
 
 import { RecurringRule } from '@hcengineering/calendar'
-import type { PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
+import type { AccountUuid, PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 
@@ -56,8 +56,10 @@ export interface User {
   workspace: WorkspaceUuid
 }
 
-export type State = User & {
+export interface State {
   redirectURL: string
+  workspace: WorkspaceUuid
+  accountUuid: AccountUuid
 }
 
 export interface AttachedFile {
