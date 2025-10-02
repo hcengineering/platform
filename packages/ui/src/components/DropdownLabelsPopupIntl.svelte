@@ -46,6 +46,7 @@
   }
 
   let search: string = ''
+  $: lowerSearch = search.toLowerCase()
 
   async function fillSearchMap (items: DropdownIntlItem[], lang: string): Promise<void> {
     const result: Record<IntlString, string> = {}
@@ -62,7 +63,7 @@
     searchMap = {}
   }
 
-  $: filteredItems = withSearch ? items.filter((item) => searchMap[item.label]?.includes(search.toLowerCase())) : items
+  $: filteredItems = withSearch ? items.filter((item) => searchMap[item.label]?.includes(lowerSearch)) : items
   $: btns = btns.slice(0, filteredItems.length)
 </script>
 
