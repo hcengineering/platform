@@ -50,7 +50,6 @@
   export let type: Ref<MasterTag> = threadMasterTag
   export let space: Ref<CardSpace> | undefined = undefined
 
-  // Initialize DraftController with stable location-specific key
   const draftKey = getCardDraftKey()
   const draftController = new DraftController<CardDraft>(draftKey)
   $: currentDraft = $draftsStore[draftKey] as CardDraft | undefined
@@ -64,7 +63,6 @@
   let description: Markup = EmptyMarkup
   let initialized = false
 
-  // Initialize form fields once when draft is available
   $: if (currentDraft != null && !initialized) {
     title = currentDraft.title
     description = currentDraft.description
@@ -80,7 +78,6 @@
     initialized = true
   }
 
-  // Save draft when form state changes
   $: draftController.save({ title, description, type, space }, getEmptyCardDraft())
 
   let creating = false
