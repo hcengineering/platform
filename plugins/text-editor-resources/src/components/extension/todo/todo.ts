@@ -118,10 +118,10 @@ export const TodoListExtension = TaskList.extend({
 
 const todoItemInputRule: () => InputRule = () =>
   new InputRule({
-    find: /^\s*(\[([( |x|*])?\])\s$/,
+    find: /^\s*(\[([ xX*])?\])\s$/,
     handler: ({ state, match, range }) => {
       const attributes = {
-        checked: match[match.length - 1] === 'x' || match[match.length - 1] === '*'
+        checked: match[2] != null && match[2] !== ' '
       }
 
       const type = state.schema.nodes.todoItem

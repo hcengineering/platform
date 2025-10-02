@@ -102,7 +102,7 @@ export function setupWindowsSpecific (activateWindow: WindowAction, sendCommand:
         default: {
           // compile-time check: if jumpCommand is not a known value, this line errors
           const _exhaustive: never = jumpCommandCode
-          return // or handle error
+          break
         }
       }
 

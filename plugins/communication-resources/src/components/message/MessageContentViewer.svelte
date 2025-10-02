@@ -20,6 +20,7 @@
   import { Person } from '@hcengineering/contact'
   import { Markup } from '@hcengineering/core'
   import { translationStore } from '@hcengineering/contact-resources'
+  import { ShowMore } from '@hcengineering/ui'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
@@ -35,6 +36,9 @@
   export let card: Card
   export let message: Message
   export let author: Person | undefined
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
+  export let isShowMoreActive: boolean = false
 
   let displayMarkup: Markup = toMarkup(message.content)
   let prevContent: Markdown | undefined = undefined
@@ -77,10 +81,20 @@
       })
     }
   }
+
+  function getMaxSize (maxHeight: string): number {
+    const remValue = parseFloat(maxHeight.replace('rem', ''))
+    if (isNaN(remValue) || remValue <= 0) {
+      return 480 // 30rem * 16px
+    }
+    return remValue * 16
+  }
 </script>
 
-{#if isActivityMessage(message)}
-  <ActivityMessageViewer {message} {card} {author} />
-{:else}
-  <MarkupMessageViewer message={displayMarkup} />
-{/if}
+<ShowMore limit={getMaxSize(maxHeight)} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+  {#if isActivityMessage(message)}
+    <ActivityMessageViewer {message} {card} {author} />
+  {:else}
+    <MarkupMessageViewer message={displayMarkup} />
+  {/if}
+</ShowMore>

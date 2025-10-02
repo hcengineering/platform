@@ -18,7 +18,6 @@ dotenvConfig()
 
 interface Config {
   secret: string
-  sentryDSN: string
   accountsUrl: string
   smtpUrl: string
   queueRegion: string
@@ -26,7 +25,6 @@ interface Config {
 
 const config: Config = {
   secret: process.env.SECRET ?? 'secret',
-  sentryDSN: process.env.SENTRY_DSN ?? '',
   accountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
   smtpUrl: process.env.SMTP_URL ?? 'http://localhost:8097',
   queueRegion: process.env.QUEUE_REGION ?? 'localhost'

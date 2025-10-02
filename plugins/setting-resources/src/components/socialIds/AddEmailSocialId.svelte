@@ -24,6 +24,7 @@
   import AddSocialId from './AddSocialId.svelte'
   import setting from '../../plugin'
   import { getAccountClient } from '../../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let provider: SocialIdentityProvider
   export let onAdded: (socialId: SocialId) => void | Promise<void>
@@ -62,7 +63,7 @@
       retryOn = otpInfo.retryOn
       canResend = false
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
       if (err instanceof PlatformError) {
         status = err.status
       } else {
@@ -97,7 +98,9 @@
 
       const newSocialId = socialIds.find((it) => it._id === newSocialIdLoginInfo.socialId)
       if (newSocialId == null) {
-        console.error(`New social id ${newSocialIdLoginInfo.socialId} not found in the updated social ids list`)
+        Analytics.handleError(
+          new Error(`New social id ${newSocialIdLoginInfo.socialId} not found in the updated social ids list`)
+        )
         return
       }
 
@@ -142,7 +145,7 @@
       }
       dispatch('close')
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
       if (err instanceof PlatformError) {
         status = err.status
       } else {

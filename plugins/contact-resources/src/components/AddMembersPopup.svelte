@@ -7,6 +7,7 @@
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
   import { employeeByIdStore, employeeRefByAccountUuidStore } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let value: Space
   const dispatch = createEventDispatcher()
@@ -19,6 +20,7 @@
 
       if (employeeRef === undefined) {
         console.error(`Employee with account ${acc} not found`)
+        Analytics.handleError(new Error(`Employee with account ${acc} not found`))
         return undefined
       }
 

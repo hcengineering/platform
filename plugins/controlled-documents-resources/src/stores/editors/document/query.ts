@@ -145,22 +145,20 @@ const queryReviewRequestHistoryFx = createEffect(
   }
 )
 
-const queryApprovalRequestFx = createEffect(
-  (payload: { _id: Ref<ControlledDocument>, _class: Ref<Class<ControlledDocument>> }) => {
-    const { _id, _class } = payload
-    if (_id == null || _class == null) {
-      approvalRequestQuery.unsubscribe()
-      return
-    }
-    approvalRequestQuery.query(
-      documents.class.DocumentApprovalRequest,
-      { attachedTo: _id, attachedToClass: _class, status: RequestStatus.Active },
-      (result) => {
-        approvalRequestUpdated(result[0] ?? null)
-      }
-    )
+const queryApprovalRequestFx = createEffect((payload: { _id: Ref<ControlledDocument> }) => {
+  const { _id } = payload
+  if (_id == null) {
+    approvalRequestQuery.unsubscribe()
+    return
   }
-)
+  approvalRequestQuery.query(
+    documents.class.DocumentApprovalRequest,
+    { attachedTo: _id, status: RequestStatus.Active },
+    (result) => {
+      approvalRequestUpdated(result[0] ?? null)
+    }
+  )
+})
 
 const queryDocumentCommentsFx = createEffect(
   (payload: { document: Document | null, filter: DocumentCommentsFilter }) => {

@@ -50,6 +50,9 @@ export async function Insert (
   control: ProcessControl,
   execution: Execution
 ): Promise<Doc[]> {
+  if (value == null) {
+    value = []
+  }
   if (!Array.isArray(value)) return value
   if (props.value == null) return value
   const context = parseContext(props.value)
@@ -68,6 +71,9 @@ export async function Remove (
   control: ProcessControl,
   execution: Execution
 ): Promise<Doc[]> {
+  if (value == null) {
+    value = []
+  }
   if (!Array.isArray(value)) return value
   if (props.value == null) return value
   const context = parseContext(props.value)
@@ -80,11 +86,17 @@ export async function Remove (
 }
 
 export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
+  if (value == null) {
+    value = []
+  }
   if (!Array.isArray(value)) return value
   return value.slice(1)
 }
 
 export function RemoveLast (value: Doc[], props: Record<string, any>): Doc[] {
+  if (value == null) {
+    value = []
+  }
   if (!Array.isArray(value)) return value
   return value.slice(0, -1)
 }
@@ -311,6 +323,13 @@ export async function Power (
   return value
 }
 
+export function Sqrt (value: number): number {
+  if (typeof value === 'number') {
+    return Math.sqrt(value)
+  }
+  return value
+}
+
 export function Round (value: number): number {
   if (typeof value === 'number') {
     return Math.round(value)
@@ -366,6 +385,31 @@ export async function CurrentUser (
 
 export async function CurrentDate (): Promise<Timestamp> {
   return Date.now()
+}
+
+export function EmptyArray (): any[] {
+  return []
+}
+
+export async function ExecutionInitiator (
+  value: null,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<Ref<Person> | undefined> {
+  const socialId = await control.client.findOne(contact.class.SocialIdentity, {
+    _id: (execution.createdBy ?? execution.modifiedBy) as any
+  })
+  return socialId?.attachedTo
+}
+
+export async function ExecutionStarted (
+  value: null,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<Timestamp> {
+  return execution.createdOn ?? execution.modifiedOn
 }
 
 // #endregion

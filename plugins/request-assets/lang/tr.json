@@ -1,0 +1,25 @@
+{
+  "string": {
+    "Requests": "Talepler",
+    "Request": "Talep",
+    "Approve": "Onayla",
+    "Approved": "Onaylandı",
+    "CreatedRequest": "Oluşturuldu: ",
+    "For": "İçin",
+    "Change": "Değiştir",
+    "Add": "Ekle",
+    "Remove": "Kaldır",
+    "Status": "Durum",
+    "Requested": "Talep Edildi",
+    "Completed": "Tamamlandı",
+    "Reject": "Reddet",
+    "Rejected": "Reddedildi",
+    "Comment": "Yorum",
+    "PleaseTypeMessage": "Devam etmek için lütfen yorum mesajı yazın...",
+    "NoRequests": "Talep yok",
+    "Cancel": "İptal",
+    "Cancelled": "İptal Edildi",
+    "NewRequest": "Yeni Talep",
+    "CancelRequest": "Talebi İptal Et"
+  }
+}

@@ -1793,6 +1793,7 @@ export class GithubWorker implements IntegrationManager {
 
       const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
       if (githubEnabled === false) {
+        await client.close()
         return undefined
       }
 

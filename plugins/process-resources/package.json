@@ -39,6 +39,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/setting-resources": "^0.6.0",

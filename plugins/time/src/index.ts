@@ -135,7 +135,8 @@ export default plugin(timeId, {
     ItemPresenter: '' as Ref<Mixin<ItemPresenter>>
   },
   ids: {
-    NotAttached: '' as Ref<Doc>
+    NotAttached: '' as Ref<Doc>,
+    TimeNotificationGroup: '' as Ref<Doc>
   },
   space: {
     ToDos: '' as Ref<Space>

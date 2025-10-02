@@ -21,7 +21,6 @@ import core, {
 import login from '@hcengineering/login'
 import {
   isOffice,
-  type JoinRequest,
   LoveEvents,
   loveId,
   type Meeting,
@@ -29,7 +28,8 @@ import {
   type MeetingSchedule,
   type Room,
   type RoomMetadata,
-  TranscriptionStatus
+  TranscriptionStatus,
+  MeetingStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -267,7 +267,17 @@ export async function navigateToOfficeDoc (object: Doc): Promise<void> {
   navigate(loc)
 }
 
-export const joinRequest: Ref<JoinRequest> | undefined = undefined
+export async function navigateToMeetingMinutes (room: Room): Promise<void> {
+  const meeting = await getClient().findOne(love.class.MeetingMinutes, {
+    attachedTo: room._id,
+    status: MeetingStatus.Active
+  })
+  if (meeting !== undefined) {
+    await navigateToOfficeDoc(meeting)
+    return
+  }
+  await navigateToOfficeDoc(room)
+}
 
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
   let fH: number = 5

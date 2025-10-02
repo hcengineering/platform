@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import cardPlugin from '@hcengineering/card'
+import cardPlugin, { Card } from '@hcengineering/card'
 import core, {
   Doc,
   generateId,
   getDiffUpdate,
   MeasureContext,
+  OperationDomain,
   Ref,
   SortingOrder,
   Tx,
@@ -59,6 +60,8 @@ import config from './config'
 import { isError } from './errors'
 import { getTemporalClient } from './temporal'
 import { getClient, releaseClient } from './utils'
+import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { ActivityUpdateType, ActivityProcess, MessageType } from '@hcengineering/communication-types'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -71,7 +74,9 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
         client,
         cache: new Map<string, any>(),
         messageContext: record.context,
-        workspace: ws
+        workspace: ws,
+        modifiedBy: record.account,
+        modifiedOn: record.createdOn
       }
       ctx.info('Processing event', { event: record.event, ws, record })
       if (record.execution !== undefined) {
@@ -372,11 +377,11 @@ async function executeTransition (
     } else {
       rollback.push(client.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
     }
-    if (!control.cache.has(execution.card)) {
-      const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
-      if (card !== undefined) {
-        control.cache.set(execution.card, card)
-      }
+    const card: Card =
+      control.cache.get(execution.card) ??
+      (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
+    if (card !== undefined) {
+      control.cache.set(execution.card, card)
     }
     const context: Record<string, any> = {}
     for (const action of transition.actions) {
@@ -439,6 +444,7 @@ async function executeTransition (
         await client.tx(tx)
         clearTimeout(timeout)
       }
+      await sendEvent(control, execution, transition, card, isDone)
       if (isDone && execution.parentId !== undefined) {
         await checkParent(execution, control)
       }
@@ -452,6 +458,58 @@ async function executeTransition (
       break
     }
   }
+}
+
+async function sendEvent (
+  control: ProcessControl,
+  execution: Execution,
+  transition: Transition,
+  card: Card,
+  isDone: boolean
+): Promise<void> {
+  const eventData: ActivityProcess = {
+    type: ActivityUpdateType.Process,
+    process: execution.process,
+    action: isDone ? 'complete' : transition.from == null ? 'started' : 'transition',
+    transitionTo: transition.to
+  }
+  const event: CreateMessageEvent = {
+    type: MessageEventType.CreateMessage,
+    messageType: MessageType.Activity,
+    cardId: execution.card,
+    cardType: card._class,
+    extra: {
+      action: 'update',
+      update: eventData
+    },
+    content: await getActivityContent(control, eventData),
+    socialId: control.modifiedBy,
+    date: new Date(control.modifiedOn)
+  }
+  await control.client.domainRequest('communication' as OperationDomain, { event })
+}
+
+async function getActivityContent (control: ProcessControl, extra: ActivityProcess): Promise<string> {
+  const process = control.client.getModel().findObject(extra.process)
+  if (process === undefined) return ''
+
+  if (extra.action === 'started') {
+    return `Process ${process.name} started`
+  }
+  if (extra.action === 'complete' && extra.transitionTo != null) {
+    const state = control.client.getModel().findObject(extra.transitionTo)
+    if (state != null) {
+      return `Process ${process.name} completed with state ${state.title}`
+    }
+  }
+  if (extra.action === 'transition' && extra.transitionTo != null) {
+    const state = control.client.getModel().findObject(extra.transitionTo)
+    if (state != null) {
+      return `Process ${process.name} moved to state ${state.title}`
+    }
+  }
+
+  return ''
 }
 
 async function updateTimers (control: ProcessControl, record: ProcessMessage): Promise<void> {

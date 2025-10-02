@@ -15,6 +15,7 @@ export async function SendTimeEvent (ws: WorkspaceUuid, _execution: Ref<Executio
     {
       account: core.account.System,
       event: process.trigger.OnTime,
+      createdOn: Date.now(),
       context: {},
       execution: _execution
     }

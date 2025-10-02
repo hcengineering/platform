@@ -45,6 +45,7 @@
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/model-time": "^0.6.0",
     "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/notification": "^0.6.23",
     "@hcengineering/process": "^0.6.0",
     "@hcengineering/process-resources": "^0.6.0",
     "@hcengineering/model-presentation": "^0.6.0",

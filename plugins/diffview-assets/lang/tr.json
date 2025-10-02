@@ -1,0 +1,14 @@
+{
+  "string": {
+    "ViewMode": "Görüntüleme modu",
+    "Unified": "Birleşik",
+    "Split": "Bölünmüş",
+    "Viewed": "Görüntülendi",
+    "ShowDiff": "Farkı göster",
+    "NoChanges": "Dosya farkında değişiklik yok",
+    "LargeDiffsAreHidden": "Büyük farklar varsayılan olarak gösterilmez.",
+    "FileIsTooLarge": "Dosya görüntülenemeyecek kadar büyük.",
+    "FileWasRenamed": "Dosya değişiklik olmadan yeniden adlandırıldı.",
+    "FileWasDeleted": "Dosya silindi."
+  }
+}

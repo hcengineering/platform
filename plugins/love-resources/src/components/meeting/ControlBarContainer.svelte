@@ -13,11 +13,62 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte'
+
   export let size: 'small' | 'big' = 'big'
+
+  let barContainer: HTMLDivElement | undefined
+  let rowContainer: HTMLDivElement | undefined
+  let scale = 1
+
+  let resizeObserver: ResizeObserver | undefined
+  const HORIZONTAL_PADDING = 60
+  const SCALE_CHANGE_THRESHOLD = 0.001
+
+  function measureWidths (): { barWidth: number, rowWidth: number } {
+    if (barContainer === undefined || rowContainer === undefined) {
+      return { barWidth: 0, rowWidth: 0 }
+    }
+
+    const availableWidth = barContainer.clientWidth - HORIZONTAL_PADDING
+    const barWidth = availableWidth > 0 ? availableWidth : 0
+    const rowWidth = rowContainer.scrollWidth
+
+    return { barWidth, rowWidth }
+  }
+
+  function updateScale (): void {
+    const { barWidth: containerWidth, rowWidth } = measureWidths()
+
+    if (containerWidth === 0 || rowWidth === 0) {
+      if (scale !== 1) scale = 1
+      return
+    }
+
+    const nextScale = Math.min(1, containerWidth / rowWidth)
+
+    if (Math.abs(nextScale - scale) > SCALE_CHANGE_THRESHOLD) {
+      scale = Number(nextScale.toFixed(3))
+    }
+  }
+
+  onMount(() => {
+    resizeObserver = new ResizeObserver(() => {
+      updateScale()
+    })
+    if (barContainer !== undefined) resizeObserver.observe(barContainer)
+    if (rowContainer !== undefined) resizeObserver.observe(rowContainer)
+    updateScale()
+  })
+
+  onDestroy(() => {
+    resizeObserver?.disconnect()
+    resizeObserver = undefined
+  })
 </script>
 
-<div class="bar" data-size={size}>
-  <div class="row">
+<div class="bar" data-size={size} bind:this={barContainer}>
+  <div class="row" bind:this={rowContainer} style={`--row-scale:${scale};`}>
     <div class="left"><slot name="left" /></div>
     <div class="center"><slot name="center" /></div>
     <div class="right"><slot name="right" /></div>
@@ -38,11 +89,15 @@
   }
 
   .row {
+    --row-scale: 1;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--g);
+    transform-origin: center center;
+    transform: scale(var(--row-scale));
+    will-change: transform;
   }
   .left,
   .center,
@@ -52,6 +107,7 @@
     gap: var(--g);
     white-space: nowrap;
     min-width: 0;
+    flex-shrink: 0;
   }
   .center {
     position: absolute;
@@ -59,7 +115,7 @@
     transform: translateX(-50%);
   }
 
-  @container (max-width: 350px) {
+  @container (max-width: 440px) {
     .bar[data-size='small'] .row {
       justify-content: center;
       gap: var(--g);

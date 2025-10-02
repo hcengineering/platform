@@ -1,22 +1,13 @@
 import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
-import love, {
-  getFreeRoomPlace,
-  MeetingStatus,
-  type Room,
-  RoomType,
-  isOffice,
-  RoomAccess,
-  RequestStatus,
-  type JoinRequest,
-  type Invite
-} from '@hcengineering/love'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import love, { getFreeRoomPlace, MeetingStatus, type Room, RoomType, isOffice, RoomAccess } from '@hcengineering/love'
+import presentation, { getClient } from '@hcengineering/presentation'
 import {
   closeMeetingMinutes,
   getLiveKitEndpoint,
   getRoomName,
   liveKitClient,
   loveClient,
+  navigateToMeetingMinutes,
   navigateToOfficeDoc
 } from './utils'
 import { get } from 'svelte/store'
@@ -24,10 +15,9 @@ import { infos, myInfo, myOffice, rooms } from './stores'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
+import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
 
 export let currentMeetingRoom: Ref<Room> | undefined
-const requestsQuery = createQuery(true)
-const invitesQuery = createQuery(true)
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
@@ -36,7 +26,7 @@ export async function createMeeting (room: Room): Promise<void> {
   const currentPerson = await getPersonByPersonRef(me)
 
   if (isOffice(room) && room.person !== currentPerson?._id) {
-    await sendJoinRequest(room)
+    sendJoinRequest(room._id)
     return
   }
 
@@ -78,6 +68,7 @@ export async function leaveMeeting (): Promise<void> {
     }
   }
   await liveKitClient.disconnect()
+  await unsubscribeJoinRequests()
   closeMeetingMinutes()
   currentMeetingRoom = undefined
 }
@@ -87,17 +78,18 @@ export async function joinMeeting (room: Room): Promise<void> {
 
   const isGuest = getCurrentAccount().role === AccountRole.Guest
   if (room.access === RoomAccess.Knock || isOffice(room) || isGuest) {
-    await sendJoinRequest(room)
+    sendJoinRequest(room._id)
     return
   }
 
   await connectToMeeting(room)
 }
 
-export async function acceptInvite (invite: Invite): Promise<void> {
+export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
+  if (currentMeetingRoom === roomId) return
+
   const client = getClient()
-  await client.update(invite, { status: RequestStatus.Approved })
-  const room = getRoomById(invite.room)
+  const room = getRoomById(roomId)
 
   if (room === undefined) return
 
@@ -110,111 +102,6 @@ export async function acceptInvite (invite: Invite): Promise<void> {
   }
 
   await connectToMeeting(room)
-}
-
-export async function rejectInvite (invite: Invite): Promise<void> {
-  const client = getClient()
-  await client.update(invite, { status: RequestStatus.Rejected })
-}
-
-export async function cancelInvites (invites: Invite[]): Promise<void> {
-  const client = getClient()
-  for (const invite of invites) {
-    if (invite.status === RequestStatus.Pending) {
-      await client.remove(invite)
-    }
-  }
-}
-
-export async function sendInvites (persons: Array<Ref<Person>>): Promise<void> {
-  const myParticipation = get(myInfo)
-  const room = myParticipation?.room
-  if (room === undefined || room === love.ids.Reception) return
-  const client = getClient()
-  const me = getCurrentEmployee()
-  const inviteIds: Array<Ref<Invite>> = []
-  for (const person of persons) {
-    inviteIds.push(
-      await client.createDoc(love.class.Invite, core.space.Workspace, {
-        target: person,
-        room,
-        status: RequestStatus.Pending,
-        from: me
-      })
-    )
-  }
-  invitesQuery.query(love.class.Invite, { from: me, _id: { $in: inviteIds } }, (res) => {
-    for (const invite of res) {
-      if (invite === undefined || invite.status !== RequestStatus.Approved) {
-        continue
-      }
-      invitesQuery.unsubscribe()
-      const room = getRoomById(invite.room)
-      if (room === undefined) return
-      void connectToMeeting(room)
-    }
-  })
-}
-
-export async function acceptJoinRequest (request: JoinRequest): Promise<void> {
-  const client = getClient()
-  const room = getRoomById(request.room)
-
-  if (room === undefined) return
-
-  const meeting = await client.findOne(love.class.MeetingMinutes, {
-    attachedTo: room._id,
-    status: MeetingStatus.Active
-  })
-  if (meeting === undefined) {
-    await createMeetingDocument(room)
-  }
-
-  await client.update(request, { status: RequestStatus.Approved })
-  await connectToMeeting(room)
-}
-
-export async function rejectJoinRequest (request: JoinRequest): Promise<void> {
-  const client = getClient()
-  await client.update(request, { status: RequestStatus.Rejected })
-}
-
-export async function cancelJoinRequest (request: JoinRequest): Promise<void> {
-  if (request.status === RequestStatus.Pending) {
-    const client = getClient()
-    await client.remove(request)
-  }
-}
-
-async function sendJoinRequest (room: Room): Promise<void> {
-  if (room.access === RoomAccess.DND) return
-
-  const me = getCurrentEmployee()
-  const currentPerson = await getPersonByPersonRef(me)
-
-  if (currentPerson == null) {
-    return
-  }
-
-  if (isOffice(room) && room.person === currentPerson._id) {
-    return
-  }
-
-  const client = getClient()
-  const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
-    person: currentPerson._id,
-    room: room._id,
-    status: RequestStatus.Pending
-  })
-  requestsQuery.query(love.class.JoinRequest, { person: me, _id }, (res) => {
-    const req = res[0]
-    if (req === undefined) return
-    if (req.status === RequestStatus.Pending) return
-    requestsQuery.unsubscribe()
-    if (req.status === RequestStatus.Approved) {
-      void connectToMeeting(room)
-    }
-  })
 }
 
 export async function kick (person: Ref<Person>): Promise<void> {
@@ -244,6 +131,7 @@ async function connectToMeeting (room: Room): Promise<void> {
     const token = await loveClient.getRoomToken(room)
     const wsURL = getLiveKitEndpoint()
     await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
+    await navigateToMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveMeeting()

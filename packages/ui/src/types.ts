@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Blob, Ref, Timestamp } from '@hcengineering/core'
+import type { AccountRole, Blob, Permission, Ref, Timestamp, TypedSpace } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,
@@ -517,6 +517,21 @@ export interface SelectPopupValueType {
     icon?: Asset
     label: IntlString
   }
+}
+
+/**
+ * @public
+ */
+export interface HeaderButtonAction extends SelectPopupValueType {
+  callback: () => void
+  keyBindingPromise?: Promise<string[] | undefined>
+  keyBinding?: string[] | undefined
+  draft?: boolean
+  accountRole?: AccountRole
+  permissions?: Array<{
+    id: Ref<Permission>
+    space: Ref<TypedSpace>
+  }>
 }
 
 /**

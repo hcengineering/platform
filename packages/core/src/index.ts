@@ -42,5 +42,6 @@ export * from './clone'
 export * from './common'
 export * from './time'
 export * from './benchmark'
+export * from './collaborators'
 
 export default core

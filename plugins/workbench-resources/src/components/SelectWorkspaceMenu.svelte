@@ -19,25 +19,26 @@
   import { getMetadata, getResource } from '@hcengineering/platform'
   import presentation, { decodeTokenPayload, isAdminUser } from '@hcengineering/presentation'
   import {
-    Icon,
-    IconCheck,
-    Label,
-    Loading,
-    Location,
-    SearchEdit,
     closePopup,
     fetchMetadataLocalStorage,
     getCurrentLocation,
+    Icon,
+    IconCheck,
     isSameSegments,
+    Label,
+    Loading,
+    Location,
     locationStorageKeyId,
     locationToUrl,
     navigate,
     resolvedLocationStore,
+    SearchEdit,
     ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import { workspacesStore } from '../utils'
   // import Drag from './icons/Drag.svelte'
 
@@ -124,8 +125,8 @@
         .then(async (json) => {
           data = await json.json()
         })
-        .catch((err) => {
-          console.error(err)
+        .catch((err: any) => {
+          Analytics.handleError(err)
         })
     })
   )

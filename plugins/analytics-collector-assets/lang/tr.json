@@ -1,0 +1,22 @@
+{
+  "string": {
+      "OnboardingChannelDescription": "Kullanıcı: {user}; Çalışma alanı: {workspace}",
+      "Error": "Hata: ",
+      "InProject": " projede ",
+      "NavigateToSpecial": "{app}: {special} aç",
+      "OpenSpecial": "{special} aç ",
+      "Set": "Ayarla ",
+      "To": " değerine ",
+      "Open": "aç ",
+      "Workbench": "Çalışma Masası: ",
+      "OnboardingChannel": "Karşılama Kanalı",
+      "OnboardingChannels": "Karşılama Kanalları",
+      "WorkspaceId": "Çalışma alanı id",
+      "WorkspaceName": "Çalışma alanı adı",
+      "WorkspaceUrl": "Çalışma alanı url",
+      "Account": "Hesap",
+      "UserName": "Kullanıcı adı",
+      "DisableAIReplies": "AI yanıtlarını devre dışı bırak",
+      "ShowAIReplies": "AI yanıtlarını göster"
+  }
+}

@@ -28,6 +28,7 @@
   export let search: string = ''
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
+  export let skipAccounts: Ref<Employee>[] = []
   export let disableDeselectFor: Ref<Employee>[] = []
   export let showStatus = true
   export let skipInactive = false
@@ -52,7 +53,7 @@
           ? { $search: search }
           : { [searchField]: { $like: '%' + search + '%' } }
         : {}),
-      ...(skipCurrentAccount ? { _id: { $ne: me } } : {}),
+      ...{ _id: { $nin: skipCurrentAccount ? [...skipAccounts, me] : [...skipAccounts] } },
       ...(skipInactive ? { active: true } : {}),
       ...(skipOnlyLocal ? { personUuid: { $exists: true } } : {})
     },

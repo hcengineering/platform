@@ -82,7 +82,7 @@ class RestTxClient implements Client {
     params: DomainParams,
     options?: DomainRequestOptions
   ): Promise<DomainResult<T>> {
-    throw new Error('Domain request operation not supported')
+    return await this.client.domainRequest(domain, params, options)
   }
 
   async findOne<T extends Doc>(

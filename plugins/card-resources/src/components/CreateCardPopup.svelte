@@ -151,6 +151,7 @@
   okLoading={creating}
   canSave={data.title != null && data.title.trim().length > 0 && _space != null}
   onCancel={handleCancel}
+  maxWidth="90vw"
   on:close
 >
   <div class="hulyModal-content__titleGroup" style="padding: 0">
@@ -172,7 +173,7 @@
       bind:content={description}
       placeholder={core.string.Description}
       kind="indented"
-      isScrollable={false}
+      isScrollable={true}
       kitOptions={{ reference: true }}
       enableAttachments={false}
     />
