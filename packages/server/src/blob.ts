@@ -12,7 +12,6 @@
 // limitations under the License.
 
 import {
-  generateUuid,
   MeasureContext,
   PersonUuid,
   SortingOrder,
@@ -41,6 +40,8 @@ import {
   Thread
   , ComparisonOperator
 } from '@hcengineering/communication-types'
+import { v4 as uuid } from 'uuid'
+
 import { Metadata } from './types'
 
 export class Blob {
@@ -217,7 +218,7 @@ export class Blob {
       try {
         const groupDoc: MessagesGroupDoc = {
           cardId,
-          blobId: generateUuid() as BlobID,
+          blobId: uuid() as BlobID,
           fromDate: date.toISOString(),
           toDate: date.toISOString(),
           count: 0
