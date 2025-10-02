@@ -13,6 +13,7 @@
 
 import activity from '@hcengineering/activity'
 import {
+  type CanCreateCardResource,
   type Card,
   cardId,
   type CardNavigation,
@@ -20,7 +21,6 @@ import {
   type CardSpace,
   type CardViewDefaults,
   type CreateCardExtension,
-  type CanCreateCardResource,
   DOMAIN_CARD,
   type FavoriteCard,
   type MasterTag,
@@ -60,17 +60,18 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
-import view, { createAction, type Viewlet } from '@hcengineering/model-view'
+import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
-import preference, { TPreference } from '@hcengineering/model-preference'
 import card from './plugin'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { createActions } from './actions'
 
 export { cardId } from '@hcengineering/card'
 
@@ -399,37 +400,7 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  createAction(builder, {
-    action: card.actionImpl.EditSpace,
-    label: presentation.string.Edit,
-    icon: view.icon.Edit,
-    input: 'focus',
-    category: view.category.General,
-    target: card.class.CardSpace,
-    visibilityTester: view.function.CanEditSpace,
-    query: {},
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    action: view.actionImpl.CopyTextToClipboard,
-    actionProps: {
-      textProvider: card.function.GetSpaceAccessPublicLink
-    },
-    label: card.string.GetIndividualPublicLink,
-    icon: view.icon.CopyLink,
-    input: 'any',
-    category: view.category.General,
-    target: card.class.CardSpace,
-    query: {},
-    visibilityTester: card.function.CanGetSpaceAccessPublicLink,
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
+  createActions(builder)
 
   builder.mixin(card.class.CardSpace, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -450,6 +421,19 @@ export function createModel (builder: Builder): void {
       locationDataResolver: card.resolver.LocationData,
       navigatorModel: {
         specials: [
+          {
+            id: 'all',
+            label: card.string.AllCards,
+            icon: card.icon.All,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: card.class.Card,
+              icon: card.icon.All,
+              label: card.string.AllCards,
+              defaultViewletDescriptor: card.viewlet.CardFeedDescriptor
+            },
+            position: 'top'
+          },
           {
             id: 'browser',
             label: core.string.Spaces,
@@ -484,31 +468,6 @@ export function createModel (builder: Builder): void {
     presenter: card.component.SpacePresenter
   })
 
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: card.component.SetParentActionPopup,
-        element: 'top',
-        fillProps: {
-          _objects: 'value'
-        }
-      },
-      label: card.string.SetParent,
-      icon: card.icon.MasterTag,
-      input: 'none',
-      category: card.category.Card,
-      target: card.class.Card,
-      context: {
-        mode: ['context'],
-        application: card.app.Card,
-        group: 'associate'
-      }
-    },
-    card.action.SetParent
-  )
-
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: card.component.CardEditor
   })
@@ -516,31 +475,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: card.component.CardArrayEditor
   })
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.UpdateDocument,
-      actionProps: {
-        key: 'parent',
-        value: null
-      },
-      query: {
-        parent: { $ne: null, $exists: true }
-      },
-      label: card.string.UnsetParent,
-      icon: card.icon.MasterTag,
-      input: 'none',
-      category: card.category.Card,
-      target: card.class.Card,
-      context: {
-        mode: ['context'],
-        application: card.app.Card,
-        group: 'associate'
-      }
-    },
-    card.action.UnsetParent
-  )
 
   builder.createDoc(
     view.class.Viewlet,
@@ -680,127 +614,12 @@ export function createModel (builder: Builder): void {
     encode: card.function.GetCardLink
   })
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: card.component.CreateTag,
-      props: {
-        _class: card.class.Tag
-      },
-      fillProps: {
-        _object: 'parent'
-      }
-    },
-    label: card.string.CreateTag,
-    input: 'focus',
-    icon: view.icon.Add,
-    category: setting.category.Settings,
-    target: card.class.MasterTag,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: card.component.CreateTag,
-      props: {
-        _class: card.class.Tag
-      },
-      fillProps: {
-        _object: 'parent'
-      }
-    },
-    label: card.string.CreateTag,
-    input: 'focus',
-    icon: view.icon.Add,
-    category: setting.category.Settings,
-    target: card.class.Tag,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
   builder.mixin(card.class.MasterTag, core.class.Class, view.mixin.IgnoreActions, {
     actions: [setting.action.CreateMixin, view.action.OpenInNewTab, view.action.Delete, setting.action.DeleteMixin]
   })
 
   builder.mixin(card.class.Tag, core.class.Class, view.mixin.IgnoreActions, {
     actions: [setting.action.CreateMixin, view.action.OpenInNewTab, view.action.Delete, setting.action.DeleteMixin]
-  })
-
-  createAction(
-    builder,
-    {
-      action: card.actionImpl.DeleteMasterTag,
-      label: workbench.string.Delete,
-      icon: view.icon.Delete,
-      input: 'any',
-      category: view.category.General,
-      target: card.class.MasterTag,
-      context: {
-        mode: ['context', 'browser'],
-        group: 'remove'
-      }
-    },
-    card.action.DeleteMasterTag
-  )
-
-  createAction(builder, {
-    action: card.actionImpl.DeleteMasterTag,
-    label: workbench.string.Delete,
-    icon: view.icon.Delete,
-    input: 'any',
-    category: view.category.General,
-    target: card.class.Tag,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'remove'
-    }
-  })
-
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: card.component.ChangeType,
-      fillProps: {
-        _object: 'value'
-      }
-    },
-    label: card.string.ChangeType,
-    input: 'focus',
-    icon: card.icon.MasterTag,
-    category: setting.category.Settings,
-    target: card.class.Card,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: card.component.CreateTag,
-      props: {
-        _class: card.class.MasterTag
-      },
-      fillProps: {
-        _object: 'parent'
-      }
-    },
-    label: card.string.CreateMasterTag,
-    input: 'focus',
-    icon: card.icon.MasterTag,
-    category: setting.category.Settings,
-    target: card.class.MasterTag,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
   })
 
   builder.createDoc(
@@ -847,6 +666,10 @@ export function createModel (builder: Builder): void {
     toClass: card.class.Card,
     fullTextSummary: true,
     forceIndex: true
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectFactory, {
+    create: card.function.CardFactory
   })
 
   builder.createDoc(

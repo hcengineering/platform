@@ -83,9 +83,7 @@
         />
       </div>
       {#if trigger.editor !== undefined}
-        <div class="editor">
-          <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
-        </div>
+        <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
       {/if}
     {/if}
   </div>
@@ -93,11 +91,7 @@
 
 <style lang="scss">
   .header {
-    padding: 1rem 1.25rem 2rem 1.25rem;
-  }
-
-  .editor {
-    margin: 0.25rem 2rem 0;
+    padding-left: 2rem;
   }
 
   .title {

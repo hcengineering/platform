@@ -35,7 +35,7 @@
 
   let total = 0
 
-  notificationsQuery.query({ limit: 1, total: true, read: false, strict: true, context: context.id }, (res) => {
+  notificationsQuery.query({ limit: 1, total: true, read: false, strict: true, contextId: context.id }, (res) => {
     total = res.getTotal()
   })
 

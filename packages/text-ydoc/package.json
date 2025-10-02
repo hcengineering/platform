@@ -37,12 +37,13 @@
     "@types/jest": "^29.5.5",
     "jest-environment-jsdom": "^29.7.0",
     "fast-equals": "^5.2.2",
-    "y-prosemirror": "^1.3.6"
+    "y-prosemirror": "^1.3.7"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/text": "^0.6.5",
-    "yjs": "^13.6.23"
+    "@hcengineering/text-core": "^0.6.0",
+    "yjs": "^13.6.27"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

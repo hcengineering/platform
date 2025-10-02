@@ -65,6 +65,7 @@ export default mergeIds(processId, process, {
     AddRelationPresenter: '' as AnyComponent,
     CardUpdateEditor: '' as AnyComponent,
     CardUpdatePresenter: '' as AnyComponent,
+    FieldChangesEditor: '' as AnyComponent,
     ToDoSettingPresenter: '' as AnyComponent,
     TimeEditor: '' as AnyComponent,
     TimePresenter: '' as AnyComponent,
@@ -72,13 +73,9 @@ export default mergeIds(processId, process, {
     AddTagPresenter: '' as AnyComponent
   },
   criteriaEditor: {
-    StringCriteria: '' as AnyComponent,
-    NumberCriteria: '' as AnyComponent,
-    DateCriteria: '' as AnyComponent,
-    BooleanCriteria: '' as AnyComponent,
-    ArrayCriteria: '' as AnyComponent,
-    EnumCriteria: '' as AnyComponent,
-    RefCriteria: '' as AnyComponent
+    BaseCriteria: '' as AnyComponent,
+    RangeCriteria: '' as AnyComponent,
+    ArraySizeCriteria: '' as AnyComponent
   },
   transformEditor: {
     MultiArrayElementEditor: '' as AnyComponent,
@@ -144,6 +141,7 @@ export default mergeIds(processId, process, {
     Divide: '' as IntlString,
     Modulo: '' as IntlString,
     Power: '' as IntlString,
+    Sqrt: '' as IntlString,
     Round: '' as IntlString,
     Absolute: '' as IntlString,
     Ceil: '' as IntlString,
@@ -165,7 +163,8 @@ export default mergeIds(processId, process, {
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
     WaitUntil: '' as IntlString,
-    OnCardUpdate: '' as IntlString,
+    WhenCardMatches: '' as IntlString,
+    WhenFieldChanges: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,
     NoResultRequired: '' as IntlString,
@@ -199,6 +198,9 @@ export default mergeIds(processId, process, {
     AddResult: '' as IntlString,
     For: '' as IntlString,
     Attribute: '' as IntlString,
-    Context: '' as IntlString
+    Context: '' as IntlString,
+    EmptyArray: '' as IntlString,
+    ExecutionInitiator: '' as IntlString,
+    ExecutionStarted: '' as IntlString
   }
 })

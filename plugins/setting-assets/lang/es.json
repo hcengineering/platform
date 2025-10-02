@@ -186,6 +186,9 @@
     "Connected": "Conectado",
     "Available": "Disponible",
     "NotConnectedIntegration": "La cuenta {account} no está integrada con el espacio de trabajo",
-    "IntegrationIsUnstable": "El servicio de integración está experimentando problemas. Algunas funciones pueden no funcionar correctamente."
+    "IntegrationIsUnstable": "El servicio de integración está experimentando problemas. Es posible que algunas funciones no funcionen correctamente.",
+    "MinValue": "Valor mínimo",
+    "MaxValue": "Valor máximo",
+    "IntegerOnly": "Solo números enteros"
   }
 }

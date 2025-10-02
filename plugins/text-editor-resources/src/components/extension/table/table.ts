@@ -45,6 +45,18 @@ export const Table = TiptapTable.extend({
 
   addKeyboardShortcuts () {
     return {
+      Tab: () => {
+        if (this.editor.commands.goToNextCell()) {
+          return true
+        }
+
+        if (!this.editor.can().addRowAfter()) {
+          return false
+        }
+
+        return this.editor.chain().addRowAfter().goToNextCell().run()
+      },
+      'Shift-Tab': () => this.editor.commands.goToPreviousCell(),
       Backspace: () => handleDelete(this.editor),
       Delete: () => handleDelete(this.editor),
       'Mod-Backspace': () => handleModDelete(this.editor),

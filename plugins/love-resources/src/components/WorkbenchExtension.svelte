@@ -3,7 +3,7 @@
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
-  import { disconnect, lk } from '../utils'
+  import { liveKitClient, lk } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
 
   let parentElement: HTMLDivElement
@@ -11,7 +11,7 @@
   function handleTrackSubscribed (
     track: RemoteTrack,
     publication: RemoteTrackPublication,
-    participant: RemoteParticipant
+    _participant: RemoteParticipant
   ): void {
     if (track.kind === Track.Kind.Audio) {
       const element = track.attach()
@@ -23,7 +23,7 @@
   function handleTrackUnsubscribed (
     track: RemoteTrack,
     publication: RemoteTrackPublication,
-    participant: RemoteParticipant
+    _participant: RemoteParticipant
   ): void {
     if (track.kind === Track.Kind.Audio) {
       const element = document.getElementById(publication.trackSid)
@@ -43,7 +43,7 @@
     lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     if ($lkSessionConnected) {
-      await disconnect()
+      await liveKitClient.disconnect()
     }
   })
 </script>

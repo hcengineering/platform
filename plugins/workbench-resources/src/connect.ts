@@ -366,8 +366,13 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
                 const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
                 if (currentFrontVersion !== undefined) {
-                  const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
-                  if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                  try {
+                    const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
+                    if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                      location.reload()
+                    }
+                  } catch (err: any) {
+                    // Failed to load server config, reload location
                     location.reload()
                   }
                 }

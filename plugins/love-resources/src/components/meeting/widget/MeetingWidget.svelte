@@ -25,12 +25,13 @@
   import TranscriptionTab from './TranscriptionTab.svelte'
   import { lkSessionConnected } from '../../../liveKitClient'
   import LeaveRoomButton from '../controls/LeaveRoomButton.svelte'
-  import RoomAccessButton from '../controls/RoomAccessButton.svelte'
-  import RecordingButton from '../controls/RecordingButton.svelte'
-  import TranscriptionButton from '../controls/TranscriptionButton.svelte'
   import ControlBarContainer from '../ControlBarContainer.svelte'
   import SendReactionButton from '../controls/SendReactionButton.svelte'
   import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
+  import InviteEmployeeButton from '../invites/InviteEmployeeButton.svelte'
+  import MicrophoneButton from '../controls/MicrophoneButton.svelte'
+  import CameraButton from '../controls/CameraButton.svelte'
+  import ShareScreenButton from '../controls/ShareScreenButton.svelte'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -107,17 +108,24 @@
       {/if}
     {/if}
   </div>
-  <ControlBarContainer>
-    <svelte:fragment slot="right">
-      <RoomAccessButton {room} size="small" />
+  <ControlBarContainer size="small">
+    <svelte:fragment slot="left">
+      <InviteEmployeeButton
+        kind="secondary"
+        type="type-button-icon"
+        size="large"
+        iconSize="medium"
+        withBackground={false}
+      />
     </svelte:fragment>
     <svelte:fragment slot="center">
-      <SendReactionButton size="small" />
-      <RecordingButton {room} size="small" />
-      <TranscriptionButton {room} size="small" />
+      <SendReactionButton />
+      <MicrophoneButton />
+      <CameraButton />
+      <ShareScreenButton />
     </svelte:fragment>
-    <svelte:fragment slot="left">
-      <LeaveRoomButton {room} noLabel={true} size="small" />
+    <svelte:fragment slot="right">
+      <LeaveRoomButton {room} noLabel={true} />
     </svelte:fragment>
   </ControlBarContainer>
 {/if}

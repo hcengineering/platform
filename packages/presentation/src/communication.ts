@@ -33,26 +33,24 @@ import {
   type UpdateAttachmentsOperation,
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
-  type UpdateNotificationQuery,
+  type NotificationQuery,
   type UpdatePatchEvent
 } from '@hcengineering/communication-sdk-types'
 import {
-  type AccountID,
+  type AccountUuid,
   type CardID,
   type CardType,
   type Collaborator,
   type ContextID,
   type FindCollaboratorsParams,
   type FindLabelsParams,
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
+  type FindMessagesMetaParams,
   type Label,
   type Markdown,
   type Message,
   type MessageID,
-  type MessagesGroup,
   MessageType,
   type Notification,
   type NotificationContext,
@@ -61,7 +59,12 @@ import {
   type AttachmentData,
   type AttachmentParams,
   type AttachmentUpdateData,
-  type WithTotal
+  type WithTotal,
+  type NotificationID,
+  type Emoji,
+  type MessageMeta,
+  type FindMessagesGroupParams,
+  type MessagesGroup
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -71,17 +74,19 @@ import core, {
   SocialIdType,
   type Tx,
   type TxDomainEvent,
-  AccountRole
+  AccountRole,
+  generateUuid
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import { addNotification, NotificationSeverity, languageStore } from '@hcengineering/ui'
-import { translate } from '@hcengineering/platform'
+import { getMetadata, translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
-import { v4 as uuid } from 'uuid'
-
-import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
-import { addTxListener, removeTxListener, type TxListener } from './utils'
 import { get } from 'svelte/store'
+import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+
+import { getCurrentWorkspaceUuid } from './file'
+import { addTxListener, removeTxListener, type TxListener } from './utils'
+import presentation from './plugin'
 
 export {
   createCollaboratorsQuery,
@@ -107,7 +112,12 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
     client.close()
   }
   const _client = new Client(platformClient)
-  initLiveQueries(_client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
+
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const hulylakeUrl = getMetadata(presentation.metadata.HulylakeUrl) ?? ''
+  const hulylake = getHulylakeClient(hulylakeUrl, getCurrentWorkspaceUuid(), token)
+
+  initLiveQueries(_client, hulylake, onDestroy)
   client = _client
   onClientListeners.forEach((fn) => {
     fn()
@@ -161,7 +171,7 @@ class Client {
   async createMessage (cardId: CardID, cardType: CardType, content: Markdown): Promise<CreateMessageResult> {
     const event: CreateMessageEvent = {
       type: MessageEventType.CreateMessage,
-      messageType: MessageType.Message,
+      messageType: MessageType.Text,
       cardId,
       cardType,
       content,
@@ -198,28 +208,28 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async addReaction (cardId: CardID, messageId: MessageID, reaction: string): Promise<void> {
+  async addReaction (cardId: CardID, messageId: MessageID, emoji: Emoji): Promise<void> {
     const event: ReactionPatchEvent = {
       type: MessageEventType.ReactionPatch,
       cardId,
       messageId,
       operation: {
         opcode: 'add',
-        reaction
+        reaction: emoji
       },
       socialId: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
-  async removeReaction (cardId: CardID, messageId: MessageID, reaction: string): Promise<void> {
+  async removeReaction (cardId: CardID, messageId: MessageID, emoji: Emoji): Promise<void> {
     const event: ReactionPatchEvent = {
       type: MessageEventType.ReactionPatch,
       cardId,
       messageId,
       operation: {
         opcode: 'remove',
-        reaction
+        reaction: emoji
       },
       socialId: this.getSocialId()
     }
@@ -245,7 +255,7 @@ class Client {
         opcode: 'add',
         attachments: ops.add.map((it) => ({
           ...it,
-          id: it.id ?? (uuid() as AttachmentID)
+          id: it.id ?? (generateUuid() as AttachmentID)
         }))
       })
     }
@@ -262,7 +272,7 @@ class Client {
         opcode: 'set',
         attachments: ops.set.map((it) => ({
           ...it,
-          id: it.id ?? (uuid() as AttachmentID)
+          id: it.id ?? (generateUuid() as AttachmentID)
         }))
       })
     }
@@ -286,7 +296,7 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async addCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
+  async addCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountUuid[]): Promise<void> {
     const event: AddCollaboratorsEvent = {
       type: NotificationEventType.AddCollaborators,
       cardId,
@@ -297,7 +307,7 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async removeCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
+  async removeCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountUuid[]): Promise<void> {
     const event: RemoveCollaboratorsEvent = {
       type: NotificationEventType.RemoveCollaborators,
       cardId,
@@ -329,7 +339,11 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async updateNotifications (contextId: ContextID, query: UpdateNotificationQuery, read: boolean): Promise<void> {
+  async updateNotifications (
+    contextId: ContextID,
+    query: Pick<NotificationQuery, 'type' | 'untilDate'> & { id?: NotificationID },
+    read: boolean
+  ): Promise<void> {
     const event: UpdateNotificationEvent = {
       type: NotificationEventType.UpdateNotification,
       contextId,
@@ -342,15 +356,15 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
+  async findMessagesMeta (params: FindMessagesMetaParams): Promise<MessageMeta[]> {
     return (
-      await this.connection.domainRequest<Message[]>(COMMUNICATION, {
-        findMessages: { params, queryId }
+      await this.connection.domainRequest<MessageMeta[]>(COMMUNICATION, {
+        findMessagesMeta: { params }
       })
     ).value
   }
 
-  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups (params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
     return (
       await this.connection.domainRequest<MessagesGroup[]>(COMMUNICATION, {
         findMessagesGroups: { params }
@@ -360,19 +374,22 @@ class Client {
 
   async findNotificationContexts (
     params: FindNotificationContextParams,
-    queryId?: number
+    subscription?: number | string
   ): Promise<NotificationContext[]> {
     return (
       await this.connection.domainRequest<NotificationContext[]>(COMMUNICATION, {
-        findNotificationContexts: { params, queryId }
+        findNotificationContexts: { params, subscription }
       })
     ).value
   }
 
-  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<WithTotal<Notification>> {
+  async findNotifications (
+    params: FindNotificationsParams,
+    subscription?: number | string
+  ): Promise<WithTotal<Notification>> {
     return (
       await this.connection.domainRequest<WithTotal<Notification>>(COMMUNICATION, {
-        findNotifications: { params, queryId }
+        findNotifications: { params, subscription }
       })
     ).value
   }
@@ -393,9 +410,15 @@ class Client {
     ).value
   }
 
-  async unsubscribeQuery (id: number): Promise<void> {
+  async subscribeCard (cardId: CardID, subscription: string | number): Promise<void> {
     await this.connection.domainRequest<Message[]>(COMMUNICATION, {
-      unsubscribeQuery: id
+      subscribeCard: { cardId, subscription }
+    })
+  }
+
+  async unsubscribeCard (cardId: CardID, subscription: string | number): Promise<void> {
+    await this.connection.domainRequest<Message[]>(COMMUNICATION, {
+      unsubscribeCard: { cardId, subscription }
     })
   }
 
@@ -438,7 +461,7 @@ class Client {
     return id
   }
 
-  private getAccount (): AccountID {
+  private getAccount (): AccountUuid {
     return getCurrentAccount().uuid
   }
 }

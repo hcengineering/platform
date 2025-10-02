@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
-import { type Employee } from '@hcengineering/contact'
+import contact, { type Person, type Employee } from '@hcengineering/contact'
+import { getClient } from '@hcengineering/presentation'
 
 export async function canResendInvitation (employee: Employee): Promise<boolean> {
   return !employee.active
+}
+
+export async function canMergePersons (person: Person): Promise<boolean> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  return hierarchy.hasMixin(person, contact.mixin.Employee)
 }

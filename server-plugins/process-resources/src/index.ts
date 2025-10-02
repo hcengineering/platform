@@ -21,6 +21,7 @@ import core, {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -28,12 +29,16 @@ import core, {
 import process, {
   ContextId,
   Execution,
+  Method,
+  parseContext,
   Process,
   ProcessContext,
   ProcessToDo,
   SelectedExecutionContext,
   State,
-  Transition
+  Step,
+  Transition,
+  isUpdateTx
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -57,6 +62,7 @@ import {
   Multiply,
   Offset,
   Power,
+  Sqrt,
   Prepend,
   Random,
   Remove,
@@ -80,9 +86,10 @@ import {
   AddTag,
   CheckToDoDone,
   CheckToDoCancelled,
-  OnCardUpdateCheck,
+  MatchCardCheck,
   CheckSubProcessesDone,
-  CheckTime
+  CheckTime,
+  FieldChangedCheck
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -117,6 +124,7 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
       {
         event: process.trigger.OnToDoClose,
         execution: todo.execution,
+        createdOn: tx.modifiedOn,
         context: {
           todo
         }
@@ -137,6 +145,7 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
       {
         event: process.trigger.OnExecutionStart,
         execution: execution._id,
+        createdOn: tx.modifiedOn,
         context: {}
       },
       control
@@ -156,6 +165,7 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
       {
         event: process.trigger.OnToDoRemove,
         execution: removedTodo.execution,
+        createdOn: tx.modifiedOn,
         context: {
           todo: removedTodo
         }
@@ -184,6 +194,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
       {
         event: process.trigger.OnExecutionContinue,
         execution: execution._id,
+        createdOn: tx.modifiedOn,
         context: {}
       },
       control
@@ -255,22 +266,47 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
   const res: Tx[] = []
   for (const tx of txes) {
     if (!control.hierarchy.isDerived(tx._class, core.class.TxCUD)) continue
-    const cudTx = tx as TxCUD<Card>
+    if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) continue
+    const cudTx = tx as TxUpdateDoc<Card> | TxMixin<Card, Card>
     if (!control.hierarchy.isDerived(cudTx.objectClass, cardPlugin.class.Card)) continue
     const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: cudTx.objectId }, { limit: 1 })
     if (card.length === 0) continue
+    const ops = isUpdateTx(cudTx) ? cudTx.operations : cudTx.mixin
     await putEventToQueue(
       {
         event: process.trigger.OnCardUpdate,
         card: cudTx.objectId,
+        createdOn: tx.modifiedOn,
         context: {
-          card: card[0]
+          card: card[0],
+          operations: ops ?? {}
+        }
+      },
+      control
+    )
+    await putEventToQueue(
+      {
+        event: process.trigger.WhenFieldChanges,
+        card: cudTx.objectId,
+        createdOn: tx.modifiedOn,
+        context: {
+          card: card[0],
+          operations: ops ?? {}
         }
       },
       control
     )
   }
   return res
+}
+
+function getName (current: ProcessContext | undefined, method: Method<Doc>, action: Step<Doc>): string {
+  const nameField = method.createdContext?.nameField
+  if (nameField !== undefined) {
+    const name = action.params[nameField]
+    if (name !== undefined && typeof name === 'string' && name !== '' && parseContext(name) === undefined) return name
+  }
+  return current?.name ?? ''
 }
 
 async function syncContext (control: TriggerControl, _process: Process): Promise<Tx | undefined> {
@@ -284,7 +320,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
         exists.add(action.context._id)
         const method = control.modelDb.findObject(action.methodId)
         const current = _process.context[action.context._id]
-        if (method?.contextClass != null) {
+        if (method?.createdContext != null) {
           changed = true
           const ctx: SelectedExecutionContext = {
             type: 'context',
@@ -292,8 +328,8 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             key: ''
           }
           _process.context[action.context._id] = {
-            name: current?.name ?? '',
-            _class: action.context._class ?? method.contextClass,
+            name: getName(current, method, action),
+            _class: action.context._class ?? method.createdContext._class,
             action: action._id,
             index: index++,
             producer: transition._id,
@@ -304,7 +340,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
       if (action.results != null) {
         for (const result of action.results) {
           exists.add(result._id)
-          const context = _process.context[result._id]
           changed = true
           const ctx: SelectedExecutionContext = {
             type: 'context',
@@ -314,9 +349,10 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
           const parentType = result.type._class === core.class.ArrOf ? (result.type as ArrOf<Doc>).of : result.type
           const _class = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
           _process.context[result._id] = {
-            name: context?.name ?? result.name,
+            name: result.name,
             isResult: true,
             type: result.type,
+            action: action._id,
             _class,
             index: index++,
             producer: transition._id,
@@ -354,7 +390,8 @@ export default async () => ({
     AddTag,
     CheckToDoDone,
     CheckToDoCancelled,
-    OnCardUpdateCheck,
+    FieldChangedCheck,
+    MatchCardCheck,
     CheckSubProcessesDone,
     CheckTime
   },
@@ -380,6 +417,7 @@ export default async () => ({
     Divide,
     Modulo,
     Power,
+    Sqrt,
     Round,
     Absolute,
     Ceil,

@@ -30,6 +30,7 @@
   export let collection: string | undefined
   export let isThread = false
   export let autofocus = true
+  export let onKeyDown: ((e: KeyboardEvent) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -86,7 +87,7 @@
     <ActivityExtensionComponent
       kind="input"
       {extensions}
-      props={{ object, boundary, collection, autofocus, withTypingInfo: true }}
+      props={{ object, boundary, collection, autofocus, withTypingInfo: true, onKeyDown }}
     />
   </div>
 {:else}

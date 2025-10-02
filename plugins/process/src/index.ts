@@ -38,7 +38,7 @@ export interface Process extends Doc {
 export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
-  action?: StepId
+  action: StepId
   index: number
   producer: Ref<Transition>
   isResult?: boolean
@@ -165,8 +165,13 @@ export interface Method<T extends Doc> extends Doc {
   description?: IntlString
   editor?: AnyComponent
   presenter?: AnyComponent
-  contextClass: Ref<Class<Doc>> | null
+  createdContext: CreatedContext | null
   defaultParams?: MethodParams<T>
+}
+
+export interface CreatedContext {
+  _class: Ref<Class<Doc>>
+  nameField?: string
 }
 
 export interface ProcessFunction extends Doc {
@@ -183,6 +188,7 @@ export interface UpdateCriteriaComponent extends Doc {
   category: AttributeCategory
   editor: AnyComponent
   of: Ref<Class<Doc>>
+  props: Record<string, any>
 }
 
 export * from './errors'
@@ -211,7 +217,8 @@ export default plugin(processId, {
     AddTag: '' as Ref<Method<Tag>>
   },
   trigger: {
-    OnCardUpdate: '' as Ref<Trigger>,
+    OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
+    WhenFieldChanges: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
@@ -221,7 +228,8 @@ export default plugin(processId, {
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
-    UpdateCheck: '' as Resource<CheckFunc>,
+    MatchCheck: '' as Resource<CheckFunc>,
+    FieldChangedCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>
   },
@@ -234,7 +242,10 @@ export default plugin(processId, {
     From: '' as IntlString,
     To: '' as IntlString,
     Trigger: '' as IntlString,
-    Actions: '' as IntlString
+    Actions: '' as IntlString,
+    ProcessRunned: '' as IntlString,
+    ProcessStateChanged: '' as IntlString,
+    ProcessFinished: '' as IntlString
   },
   error: {
     MethodNotFound: '' as IntlString,
@@ -257,7 +268,8 @@ export default plugin(processId, {
     Steps: '' as Asset,
     States: '' as Asset,
     ToDo: '' as Asset,
-    OnCardUpdate: '' as Asset,
+    WhenCardMatches: '' as Asset,
+    WhenFieldChanges: '' as Asset,
     WaitSubprocesses: '' as Asset,
     ToDoRemove: '' as Asset,
     Start: '' as Asset,
@@ -282,6 +294,7 @@ export default plugin(processId, {
     Divide: '' as Ref<ProcessFunction>,
     Modulo: '' as Ref<ProcessFunction>,
     Power: '' as Ref<ProcessFunction>,
+    Sqrt: '' as Ref<ProcessFunction>,
     Round: '' as Ref<ProcessFunction>,
     Absolute: '' as Ref<ProcessFunction>,
     Ceil: '' as Ref<ProcessFunction>,
@@ -296,6 +309,10 @@ export default plugin(processId, {
     RemoveLast: '' as Ref<ProcessFunction>,
     CurrentEmployee: '' as Ref<ProcessFunction>,
     CurrentUser: '' as Ref<ProcessFunction>,
+    ExecutionStarted: '' as Ref<ProcessFunction>,
+    ExecutionEmployeeInitiator: '' as Ref<ProcessFunction>,
+    ExecutionInitiator: '' as Ref<ProcessFunction>,
+    EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>
   }
 })

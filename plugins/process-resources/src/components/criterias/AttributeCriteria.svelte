@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
-  import { findAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { Component, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -33,9 +33,8 @@
   $: attribute = hierarchy.getAttribute(process.masterTag, key)
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
-  $: editor = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
-
-  $: baseEditor = findAttributeEditor(client, process.masterTag, key)
+  $: updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+  $: editor = updateCriteria?.editor
 
   $: value = params[key]
 
@@ -59,7 +58,7 @@
   </div>
   <Component
     is={editor}
-    props={{ value, readonly, context, process, attribute, baseEditor }}
+    props={{ value, readonly, context, process, attribute, ...updateCriteria?.props }}
     on:change={onChange}
     on:delete
   />

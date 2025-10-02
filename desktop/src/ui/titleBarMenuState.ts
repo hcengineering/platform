@@ -14,113 +14,113 @@
 //
 
 export class TitleBarMenuState {
-    private altModeActive: boolean = false
-    private topLevelMenuExpanded: boolean = false
-    private focusedTopLevelMenuIndex: number | null = null
-    private focusedChildMenuIndex: number | null = null
+  private altModeActive: boolean = false
+  private topLevelMenuExpanded: boolean = false
+  private focusedTopLevelMenuIndex: number | null = null
+  private focusedChildMenuIndex: number | null = null
 
-    private readonly topLevelMenuCount: () => number;
-    private readonly menuItemsCount: (topLevelMenuIndex: number) => number;
+  private readonly topLevelMenuCount: () => number
+  private readonly menuItemsCount: (topLevelMenuIndex: number) => number
 
-    public constructor(
-        topLevelMenuCount: () => number,
-        menuItemsCount: (topLevelMenuIndex: number) => number
-    ) {
-        this.topLevelMenuCount = topLevelMenuCount
-        this.menuItemsCount = menuItemsCount
+  public constructor (
+    topLevelMenuCount: () => number,
+    menuItemsCount: (topLevelMenuIndex: number) => number
+  ) {
+    this.topLevelMenuCount = topLevelMenuCount
+    this.menuItemsCount = menuItemsCount
+  }
+
+  public focusChildMenu (): void {
+    if (this.focusedTopLevelMenuIndex != null && this.topLevelMenuExpanded) {
+      this.focusedChildMenuIndex = 0
+    }
+  }
+
+  public expandTopLevelMenu (topLevelMenuIndex: number): void {
+    if (topLevelMenuIndex < 0 || topLevelMenuIndex >= this.topLevelMenuCount()) {
+      return
     }
 
-    public focusChildMenu() {
-        if (null != this.focusedTopLevelMenuIndex && this.topLevelMenuExpanded) {
-            this.focusedChildMenuIndex = 0
-        }
+    if (this.focusedTopLevelMenuIndex === topLevelMenuIndex && this.topLevelMenuExpanded) {
+      this.closeAll()
+    } else {
+      this.focusedTopLevelMenuIndex = topLevelMenuIndex
+      this.topLevelMenuExpanded = true
+    }
+  }
+
+  public exitAltMode (): void {
+    this.altModeActive = false
+  }
+
+  public enterAltMode (topLevelMenuIndex: number | null): void {
+    this.altModeActive = true
+
+    if (topLevelMenuIndex == null || topLevelMenuIndex < 0 || topLevelMenuIndex >= this.topLevelMenuCount()) {
+      return
     }
 
-    public expandTopLevelMenu(topLevelMenuIndex: number): void {
-        if (0 > topLevelMenuIndex || topLevelMenuIndex >= this.topLevelMenuCount()) {
-            return
-        }
-        
-        if (this.focusedTopLevelMenuIndex === topLevelMenuIndex && this.topLevelMenuExpanded) {
-            this.closeAll()
-        } else {
-            this.focusedTopLevelMenuIndex = topLevelMenuIndex
-            this.topLevelMenuExpanded = true
-        }
+    this.focusedTopLevelMenuIndex = topLevelMenuIndex
+  }
+
+  public closeAll (): void {
+    this.altModeActive = false
+    this.topLevelMenuExpanded = false
+    this.focusedTopLevelMenuIndex = null
+    this.focusedChildMenuIndex = null
+  }
+
+  public defocus (): void {
+    if (this.topLevelMenuExpanded) {
+      this.topLevelMenuExpanded = false
+      this.focusedChildMenuIndex = null
+    } else {
+      this.closeAll()
+    }
+  }
+
+  public moveFocusHorizontal (increment: number): void {
+    if (Math.abs(increment) !== 1 || this.focusedTopLevelMenuIndex == null) {
+      return
     }
 
-    public exitAltMode(): void {
-        this.altModeActive = false
+    const topLevelMenuCount = this.topLevelMenuCount()
+    this.focusedTopLevelMenuIndex = (this.focusedTopLevelMenuIndex + topLevelMenuCount + increment) % topLevelMenuCount
+
+    if (this.topLevelMenuExpanded) {
+      this.focusedChildMenuIndex = 0
+    }
+  }
+
+  public moveFocusVertical (increment: number): void {
+    if (Math.abs(increment) !== 1 || this.focusedTopLevelMenuIndex == null) {
+      return
     }
 
-    public enterAltMode(topLevelMenuIndex: number | null): void {
-        this.altModeActive = true
-        
-        if (null == topLevelMenuIndex || 0 > topLevelMenuIndex || topLevelMenuIndex >= this.topLevelMenuCount()) {
-            return
-        }
-        
-        this.focusedTopLevelMenuIndex = topLevelMenuIndex
+    const menuItemsCount = this.menuItemsCount(this.focusedTopLevelMenuIndex)
+
+    this.topLevelMenuExpanded = true
+
+    if (menuItemsCount === 0) {
+      return
     }
 
-    public closeAll(): void {
-        this.altModeActive = false
-        this.topLevelMenuExpanded = false
-        this.focusedTopLevelMenuIndex = null
-        this.focusedChildMenuIndex = null
-    }
+    this.focusedChildMenuIndex = ((this.focusedChildMenuIndex ?? -1) + menuItemsCount + increment) % menuItemsCount
+  }
 
-    public defocus(): void {
-        if (this.topLevelMenuExpanded) {
-            this.topLevelMenuExpanded = false
-            this.focusedChildMenuIndex = null
-        } else {
-            this.closeAll();
-        }
-    }
+  public get isAltModeActive (): boolean {
+    return this.altModeActive
+  }
 
-    public moveFocusHorizontal(increment: number): void {
-        if (Math.abs(increment) != 1 || null == this.focusedTopLevelMenuIndex) {
-            return;
-        }
-        
-        const topLevelMenuCount = this.topLevelMenuCount()
-        this.focusedTopLevelMenuIndex = (this.focusedTopLevelMenuIndex + topLevelMenuCount + increment) % topLevelMenuCount
-        
-        if (this.topLevelMenuExpanded) {
-            this.focusedChildMenuIndex = 0
-        }
-    }
+  public get isTopLevelMenuExpanded (): boolean {
+    return this.topLevelMenuExpanded
+  }
 
-    public moveFocusVertical(increment: number): void {
-        if (Math.abs(increment) != 1 || null == this.focusedTopLevelMenuIndex) {
-            return;
-        }
+  public get FocusedTopLevelMenuIndex (): number | null {
+    return this.focusedTopLevelMenuIndex
+  }
 
-        const menuItemsCount = this.menuItemsCount(this.focusedTopLevelMenuIndex)
-
-        this.topLevelMenuExpanded = true
-
-        if (menuItemsCount === 0) {
-            return;
-        }
-
-        this.focusedChildMenuIndex = ((this.focusedChildMenuIndex ?? -1) + menuItemsCount + increment) % menuItemsCount
-    }
-
-    public get isAltModeActive(): boolean {
-        return this.altModeActive
-    }
-
-    public get isTopLevelMenuExpanded(): boolean {
-        return this.topLevelMenuExpanded
-    }
-
-    public get FocusedTopLevelMenuIndex(): number | null {
-        return this.focusedTopLevelMenuIndex
-    }
-
-    public get FocusedChildMenuIndex(): number | null {
-        return this.focusedChildMenuIndex
-    }
+  public get FocusedChildMenuIndex (): number | null {
+    return this.focusedChildMenuIndex
+  }
 }

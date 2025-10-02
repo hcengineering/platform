@@ -81,7 +81,7 @@ export async function CheckSubProcessesDone (control: ProcessControl, execution:
   return res === undefined
 }
 
-export function OnCardUpdateCheck (
+export function MatchCardCheck (
   control: ProcessControl,
   execution: Execution,
   params: Record<string, any>,
@@ -90,6 +90,23 @@ export function OnCardUpdateCheck (
   if (context.card === undefined) return false
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
+  const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
+  return res.length > 0
+}
+
+export function FieldChangedCheck (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  if (context.card === undefined) return false
+  const process = control.client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  if (context.operations === undefined) return false
+  const changedFields = Object.keys(context.operations)
+  const target = Object.keys(params)[0]
+  if (!changedFields.includes(target)) return false
   const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
@@ -103,7 +120,7 @@ export async function AddRelation (
   params: MethodParams<Relation>,
   execution: Execution,
   control: ProcessControl
-): Promise<ExecuteResult | undefined> {
+): Promise<ExecuteResult> {
   const _id = generateId<Relation>()
   const association = params.association as Ref<Association>
   if (isEmpty(association)) {
@@ -123,6 +140,14 @@ export async function AddRelation (
     association,
     docA,
     docB
+  }
+  const exists = await control.client.findOne(core.class.Relation, { docA, docB, association })
+  if (exists !== undefined) {
+    return {
+      txes: [],
+      rollback: [],
+      context: []
+    }
   }
   const resTx = control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)
   const res: Tx[] = [resTx]

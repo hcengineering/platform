@@ -20,7 +20,7 @@
     DisplayActivityMessage,
     WithReferences
   } from '@hcengineering/activity'
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Section, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
@@ -30,7 +30,7 @@
   import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
   import { canGroupMessages, getMessageFromLoc, getSpace, getActivityNewestFirst } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
-  import { messageInFocus } from '../activity'
+  import { editingMessageStore, messageInFocus } from '../activity'
 
   export let object: WithReferences<Doc>
   export let showCommenInput: boolean = true
@@ -125,7 +125,7 @@
     }, delay)
   }
 
-  async function scrollToMessage (id?: Ref<ActivityMessage>): Promise<void> {
+  async function scrollToMessage (id?: Ref<ActivityMessage>, withoutAnimation?: boolean): Promise<void> {
     if (!id || boundary == null || activityBox == null) {
       return
     }
@@ -144,7 +144,9 @@
     isAutoScroll = true
     prevScrollTimestamp = 0
 
-    restartAnimation(msgElement)
+    if (!withoutAnimation) {
+      restartAnimation(msgElement)
+    }
     msgElement.scrollIntoView({ behavior: 'instant' })
   }
 
@@ -250,6 +252,41 @@
   }
 
   $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
+
+  export function editLastMessage (): void {
+    if (isMessagesLoading) return
+
+    const me = getCurrentAccount()
+    const mySocialIds = new Set(me.socialIds)
+
+    const start = isNewestFirst ? 0 : filteredMessages.length - 1
+    const end = isNewestFirst ? filteredMessages.length : -1
+    const step = isNewestFirst ? 1 : -1
+
+    let lastMessage: ActivityMessage | undefined
+
+    for (let i = start; i !== end; i += step) {
+      const m = filteredMessages[i]
+      if (m.collection === 'comments' && m.createdBy != null && mySocialIds.has(m.createdBy)) {
+        lastMessage = m
+        break
+      }
+    }
+
+    if (lastMessage == null) return
+    editingMessageStore.set(lastMessage._id)
+
+    void scrollToMessage(lastMessage._id, true)
+  }
+
+  function handleKeyDown (e: KeyboardEvent): void {
+    const key = e.key
+
+    if ((key === 'ArrowUp' && !isNewestFirst) || (key === 'ArrowDown' && isNewestFirst)) {
+      if ($editingMessageStore !== undefined) return
+      editLastMessage()
+    }
+  }
 </script>
 
 <Section label={activity.string.Activity} icon={activity.icon.Activity}>
@@ -275,7 +312,7 @@
         <ActivityExtensionComponent
           kind="input"
           {extensions}
-          props={{ object, boundary, focusIndex, withTypingInfo: true }}
+          props={{ object, boundary, focusIndex, withTypingInfo: true, onKeyDown: handleKeyDown }}
         />
       </div>
     {/if}
@@ -319,7 +356,7 @@
         <ActivityExtensionComponent
           kind="input"
           {extensions}
-          props={{ object, boundary, focusIndex, withTypingInfo: true }}
+          props={{ object, boundary, focusIndex, withTypingInfo: true, onKeyDown: handleKeyDown }}
         />
       </div>
     {/if}

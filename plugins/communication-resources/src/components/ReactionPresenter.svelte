@@ -13,7 +13,7 @@
 
 <script lang="ts">
   import { Icon, IconComponent, IconSize, tooltip } from '@hcengineering/ui'
-  import { PersonId } from '@hcengineering/core'
+  import { PersonUuid } from '@hcengineering/core'
   import { EmojiPresenter } from '@hcengineering/emoji-resources'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
@@ -24,7 +24,7 @@
   export let count: number | undefined = undefined
   export let selected: boolean = false
   export let active: boolean = false
-  export let socialIds: PersonId[] = []
+  export let persons: PersonUuid[] = []
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -34,7 +34,7 @@
   class:selected
   class:active
   on:click
-  use:tooltip={(count ?? 0) > 0 ? { component: ReactionsTooltip, props: { socialIds } } : undefined}
+  use:tooltip={(count ?? 0) > 0 ? { component: ReactionsTooltip, props: { persons, emoji } } : undefined}
 >
   <div class="reaction__emoji" class:foreground={icon != null}>
     {#if icon}
@@ -43,7 +43,7 @@
       <EmojiPresenter {emoji} />
     {/if}
   </div>
-  {#if count !== undefined}
+  {#if count !== undefined && count > 0}
     <div class="reaction__count">{count}</div>
   {/if}
 </div>

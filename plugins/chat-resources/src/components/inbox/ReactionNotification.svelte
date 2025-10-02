@@ -13,7 +13,7 @@
 -->
 
 <script lang="ts">
-  import { Notification, ReactionNotificationContent, SocialID } from '@hcengineering/communication-types'
+  import { Message, Notification, ReactionNotificationContent, SocialID } from '@hcengineering/communication-types'
   import { EmojiPresenter } from '@hcengineering/emoji-resources'
   import { Card } from '@hcengineering/card'
   import { Label } from '@hcengineering/ui'
@@ -31,7 +31,7 @@
   $: content = notification.content as ReactionNotificationContent
 
   let author: Person | undefined
-  $: void updateAuthor(content.creator)
+  $: void updateAuthor(notification.creator)
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
     author = $employeeByPersonIdStore.get(socialId)
@@ -40,11 +40,19 @@
       author = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
+
+  let message: Message | undefined = undefined
+  $: message = notification.message
 </script>
 
 {#if notification.message}
   <div class="reaction-notification">
-    <PreviewTemplate socialId={content.creator} date={notification.created} color="secondary" showSeparator={false}>
+    <PreviewTemplate
+      socialId={notification.creator}
+      date={notification.created}
+      color="secondary"
+      showSeparator={false}
+    >
       <svelte:fragment slot="content">
         <span class="ml-1-5" />
         <Label label={chat.string.ReactedToYourMessage} />
@@ -57,7 +65,8 @@
       </div>
       <NotificationPreview
         {card}
-        message={notification.message}
+        {message}
+        creator={notification.creator}
         date={notification.created}
         kind="column"
         padding="0"
@@ -84,11 +93,11 @@
     &__emoji {
       display: flex;
       align-items: center;
-      font-size: 2rem;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      min-height: 2.5rem;
-      height: 2.5rem;
+      font-size: 1.5rem;
+      width: 2rem;
+      min-width: 2rem;
+      min-height: 2rem;
+      height: 2rem;
       overflow: hidden;
     }
   }

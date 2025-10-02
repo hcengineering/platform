@@ -18,6 +18,7 @@ import presentation, {
   loadServerConfig,
   refreshClient,
   setClient,
+  setCommunicationClient,
   setPresentationCookie,
   upgradeDownloadProgress
 } from '@hcengineering/presentation'
@@ -245,6 +246,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   document.title = [wsUrl, title].filter((it) => it).join(' - ')
   _clientSet = true
   await setClient(_client)
+  await setCommunicationClient(_client)
 
   return _client
 }

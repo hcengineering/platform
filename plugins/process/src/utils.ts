@@ -1,4 +1,7 @@
+import { Tx, TxUpdateDoc } from '@hcengineering/core/types/tx'
 import { SelectedContext } from './types'
+import core from '@hcengineering/core'
+import { Card } from '@hcengineering/card'
 
 export function parseContext (value: any): SelectedContext | undefined {
   if (value === undefined) return
@@ -13,4 +16,8 @@ export function parseContext (value: any): SelectedContext | undefined {
     if (res.type === undefined) return
     return res
   } catch {}
+}
+
+export function isUpdateTx (etx: Tx): etx is TxUpdateDoc<Card> {
+  return etx._class === core.class.TxUpdateDoc
 }

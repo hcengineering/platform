@@ -921,6 +921,10 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonPresenter
   })
 
+  builder.mixin(contact.class.SocialIdentity, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: contact.component.SocialIdentityPresenter
+  })
+
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.AccountArrayEditor
   })
@@ -1141,6 +1145,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.MergePersons,
       category: contact.category.Contact,
       target: contact.class.Person,
+      visibilityTester: contact.function.CanMergePersons,
       input: 'focus',
       context: {
         mode: ['context'],

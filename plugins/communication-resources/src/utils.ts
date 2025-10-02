@@ -21,16 +21,16 @@ import { type Card } from '@hcengineering/card'
 import { AccountRole, type Data, getCurrentAccount, type Ref, type Space, type Markup } from '@hcengineering/core'
 import { getMetadata, translate } from '@hcengineering/platform'
 import { addNotification, languageStore, NotificationSeverity, showPopup } from '@hcengineering/ui'
-import { type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
+import { type Emoji, type LinkPreviewParams, type Message } from '@hcengineering/communication-types'
 import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
 
+import { isCardSubscribed, guestCommunicationAllowedCards } from './stores'
 import IconAt from './components/icons/At.svelte'
 
 import communication from './plugin'
 import { type TextInputAction } from './types'
-import { guestCommunicationAllowedCards } from './stores'
 import { get } from 'svelte/store'
 import view from '@hcengineering/view'
 import { type Direct } from '@hcengineering/communication'
@@ -51,19 +51,14 @@ export async function subscribe (card: Card): Promise<void> {
 export async function canSubscribe (card: Card): Promise<boolean> {
   const isEnabled = getMetadata(communication.metadata.Enabled) === true
   if (!isEnabled) return false
-  const client = getCommunicationClient()
-  const me = getCurrentAccount()
-  const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]
-  return collaborator === undefined
+
+  return !isCardSubscribed(card._id)
 }
 
 export async function canUnsubscribe (card: Card): Promise<boolean> {
   const isEnabled = getMetadata(communication.metadata.Enabled) === true
   if (!isEnabled) return false
-  const client = getCommunicationClient()
-  const me = getCurrentAccount()
-  const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]
-  return collaborator !== undefined
+  return isCardSubscribed(card._id)
 }
 
 export const defaultMessageInputActions: TextInputAction[] = [
@@ -107,12 +102,11 @@ export function toMarkup (markdown: string): Markup {
   return jsonToMarkup(markdownToMarkup(markdown))
 }
 
-export async function toggleReaction (message: Message, emoji: string): Promise<void> {
+export async function toggleReaction (message: Message, emoji: Emoji): Promise<void> {
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
-  const { socialIds } = me
-  const reaction = message.reactions.find((it) => it.reaction === emoji && socialIds.includes(it.creator))
-  if (reaction !== undefined) {
+  const alreadyAdded = (message.reactions[emoji] ?? []).some((it) => it.person === me.uuid)
+  if (alreadyAdded) {
     await communicationClient.removeReaction(message.cardId, message.id, emoji)
   } else {
     await communicationClient.addReaction(message.cardId, message.id, emoji)

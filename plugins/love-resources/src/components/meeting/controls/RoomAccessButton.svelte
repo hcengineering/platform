@@ -1,12 +1,13 @@
 <script lang="ts">
   import { isOffice, Room, RoomAccess, roomAccessIcon } from '@hcengineering/love'
   import love from '../../../plugin'
-  import { eventToHTMLElement, ModernButton, showPopup } from '@hcengineering/ui'
+  import { ButtonBaseSize, eventToHTMLElement, ModernButton, showPopup } from '@hcengineering/ui'
   import RoomAccessPopup from '../../RoomAccessPopup.svelte'
   import { getCurrentEmployee } from '@hcengineering/contact'
 
   export let room: Room
-  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
+  export let size: ButtonBaseSize = 'large'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
 
   const me = getCurrentEmployee()
 
@@ -27,7 +28,7 @@
           : 'currentColor'
   }}
   tooltip={{ label: love.string.ChangeAccess }}
-  kind={'secondary'}
+  {kind}
   {size}
   disabled={isOffice(room) && room.person !== me}
   on:click={setAccess}

@@ -3,29 +3,42 @@ import {
   type RemoteParticipant,
   Room as LKRoom,
   RoomEvent,
-  type VideoCaptureOptions
+  type VideoCaptureOptions,
+  type RemoteTrack,
+  type RemoteTrackPublication,
+  Track,
+  type LocalTrackPublication,
+  type LocalParticipant,
+  type TrackPublication,
+  type Participant
 } from 'livekit-client'
-import { getMetadata, translate } from '@hcengineering/platform'
+import { translate } from '@hcengineering/platform'
 import { getMediaDevices, getSelectedSpeakerId, type MediaSession } from '@hcengineering/media'
 import { LoveEvents } from '@hcengineering/love'
 import { useMedia } from '@hcengineering/media-resources'
-import { get, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import { Analytics } from '@hcengineering/analytics'
 import { addNotification, NotificationSeverity } from '@hcengineering/ui'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
 import love from './plugin'
-import { leaveRoom } from './utils'
-import { $myPreferences, myInfo, myOffice } from './stores'
+import { $myPreferences } from './stores'
+import { leaveMeeting } from './meetings'
 
+export enum ScreenSharingState {
+  Inactive,
+  Local,
+  Remote
+}
+
+export const screenSharingState = writable<ScreenSharingState>(ScreenSharingState.Inactive)
 export const lkSessionConnected = writable<boolean>(false)
 
 const LAST_PARTICIPANT_NOTIFICATION_DELAY_MS = 2 * 60 * 1000
 const AUTO_DISCONNECT_DELAY_MS = 60 * 1000
 
 export function getLiveKitClient (): LiveKitClient {
-  const wsURL = getMetadata(love.metadata.WebSocketURL)
-  return new LiveKitClient(wsURL ?? '')
+  return new LiveKitClient()
 }
 
 const defaultCaptureOptions: VideoCaptureOptions = {
@@ -46,7 +59,7 @@ export class LiveKitClient {
   private lastParticipantNotificationTimeout: number = -1
   private lastParticipantDisconnectTimeout: number = -1
 
-  constructor (wsUrl: string) {
+  constructor () {
     const lkRoom = new LKRoom({
       adaptiveStream: true,
       dynacast: true,
@@ -68,10 +81,13 @@ export class LiveKitClient {
       },
       videoCaptureDefaults: defaultCaptureOptions
     })
-    void lkRoom.prepareConnection(wsUrl)
     lkRoom.on(RoomEvent.Connected, this.onConnected)
     lkRoom.on(RoomEvent.Disconnected, this.onDisconnected)
     this.liveKitRoom = lkRoom
+  }
+
+  async prepareConnection (wsUrl: string, token: string): Promise<void> {
+    await this.liveKitRoom.prepareConnection(wsUrl, token)
   }
 
   async connect (wsURL: string, token: string, withVideo: boolean): Promise<void> {
@@ -127,6 +143,7 @@ export class LiveKitClient {
   }
 
   async disconnect (): Promise<void> {
+    screenSharingState.set(ScreenSharingState.Inactive)
     clearTimeout(this.lastParticipantNotificationTimeout)
     const me = this.liveKitRoom.localParticipant
     await Promise.all([me.setScreenShareEnabled(false), me.setCameraEnabled(false), me.setMicrophoneEnabled(false)])
@@ -153,27 +170,111 @@ export class LiveKitClient {
     lkSessionConnected.set(true)
     this.liveKitRoom.on(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.on(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
+    this.liveKitRoom.on(RoomEvent.TrackSubscribed, this.onTrackSubscribed)
+    this.liveKitRoom.on(RoomEvent.TrackUnsubscribed, this.onTrackUnsubscribed)
+    this.liveKitRoom.on(RoomEvent.LocalTrackPublished, this.onLocalTrackPublished)
+    this.liveKitRoom.on(RoomEvent.LocalTrackUnpublished, this.onLocalTrackUnpublished)
+    this.liveKitRoom.on(RoomEvent.TrackMuted, this.onTrackMuted)
+    this.liveKitRoom.on(RoomEvent.TrackUnmuted, this.onTrackUnmuted)
   }
 
   onDisconnected = (): void => {
     lkSessionConnected.set(false)
     this.liveKitRoom.off(RoomEvent.ParticipantConnected, this.onParticipantConnected)
     this.liveKitRoom.off(RoomEvent.ParticipantDisconnected, this.onParticipantDisconnected)
+    this.liveKitRoom.off(RoomEvent.TrackSubscribed, this.onTrackSubscribed)
+    this.liveKitRoom.off(RoomEvent.TrackUnsubscribed, this.onTrackUnsubscribed)
+    this.liveKitRoom.off(RoomEvent.LocalTrackPublished, this.onLocalTrackPublished)
+    this.liveKitRoom.off(RoomEvent.LocalTrackUnpublished, this.onLocalTrackUnpublished)
+    this.liveKitRoom.off(RoomEvent.TrackMuted, this.onTrackMuted)
+    this.liveKitRoom.off(RoomEvent.TrackUnmuted, this.onTrackUnmuted)
     Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
   }
 
-  onParticipantConnected = (participant: RemoteParticipant): void => {
+  onParticipantConnected = (_participant: RemoteParticipant): void => {
     clearTimeout(this.lastParticipantDisconnectTimeout)
     clearTimeout(this.lastParticipantNotificationTimeout)
   }
 
-  onParticipantDisconnected = (participant: RemoteParticipant): void => {
+  onParticipantDisconnected = (_participant: RemoteParticipant): void => {
     if (this.liveKitRoom.remoteParticipants.size === 0) {
       clearTimeout(this.lastParticipantDisconnectTimeout)
       clearTimeout(this.lastParticipantNotificationTimeout)
       this.lastParticipantNotificationTimeout = window.setTimeout(() => {
         void this.showLastParticipantNotification()
       }, LAST_PARTICIPANT_NOTIFICATION_DELAY_MS)
+    }
+  }
+
+  onTrackSubscribed = (
+    track: RemoteTrack,
+    _publication: RemoteTrackPublication,
+    _participant: RemoteParticipant
+  ): void => {
+    if (track.kind === Track.Kind.Video && track.source === Track.Source.ScreenShare) {
+      screenSharingState.set(ScreenSharingState.Remote)
+    }
+  }
+
+  onTrackUnsubscribed = (
+    track: RemoteTrack,
+    _publication: RemoteTrackPublication,
+    _participant: RemoteParticipant
+  ): void => {
+    if (track.kind === Track.Kind.Video && track.source === Track.Source.ScreenShare) {
+      screenSharingState.set(ScreenSharingState.Inactive)
+    }
+  }
+
+  onLocalTrackPublished = (publication: LocalTrackPublication, _participant: LocalParticipant): void => {
+    const session = this.currentMediaSession
+    const track = publication.track?.mediaStreamTrack
+    const deviceId = track?.getSettings().deviceId
+    if (publication.track?.kind === Track.Kind.Video) {
+      if (publication.track.source === Track.Source.ScreenShare) {
+        session?.setFeature('sharing', { enabled: true, track, deviceId })
+        screenSharingState.set(ScreenSharingState.Local)
+      } else {
+        session?.setCamera({ enabled: true, track, deviceId })
+      }
+    } else if (publication.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: true, track, deviceId })
+    }
+  }
+
+  onLocalTrackUnpublished = (publication: LocalTrackPublication, _participant: LocalParticipant): void => {
+    const session = this.currentMediaSession
+    if (publication.track?.kind === Track.Kind.Video) {
+      if (publication.track.source === Track.Source.ScreenShare) {
+        session?.setFeature('sharing', { enabled: false })
+        screenSharingState.set(ScreenSharingState.Inactive)
+      } else {
+        session?.setCamera({ enabled: false })
+      }
+    } else if (publication.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: false })
+    }
+  }
+
+  onTrackMuted = (publication: TrackPublication, participant: Participant): void => {
+    if (!participant.isLocal) return
+    const session = this.currentMediaSession
+    if (publication.track?.kind === Track.Kind.Video && publication.track.source === Track.Source.Camera) {
+      session?.setCamera({ enabled: false })
+    } else if (publication.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: false })
+    }
+  }
+
+  onTrackUnmuted = (publication: TrackPublication, participant: Participant): void => {
+    if (!participant.isLocal) return
+    const session = this.currentMediaSession
+    const track = publication.track?.mediaStreamTrack
+    const deviceId = track?.getSettings().deviceId
+    if (publication.track?.kind === Track.Kind.Video && publication.track?.source === Track.Source.Camera) {
+      session?.setCamera({ enabled: true, track, deviceId })
+    } else if (publication.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: true, track, deviceId })
     }
   }
 
@@ -187,7 +288,7 @@ export class LiveKitClient {
       'love'
     )
     this.lastParticipantDisconnectTimeout = window.setTimeout(() => {
-      void leaveRoom(get(myInfo), get(myOffice))
+      void leaveMeeting()
     }, AUTO_DISCONNECT_DELAY_MS)
   }
 

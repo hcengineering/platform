@@ -23,8 +23,9 @@
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
-  import { getSpace } from '@hcengineering/activity-resources'
+  import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
+
   import { getChannelSpace } from '../../utils'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
@@ -37,6 +38,7 @@
   export let collection: string = 'comments'
   export let autofocus = false
   export let withTypingInfo = false
+  export let onKeyDown: ((e: KeyboardEvent) => void) | undefined = undefined
 
   import { setTyping, clearTyping } from '@hcengineering/presence-resources'
 
@@ -102,14 +104,14 @@
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    clearTyping(me, object._id)
+    void clearTyping(me, object._id)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
 
     throttle.call(() => {
-      setTyping(me, object._id)
+      void setTyping(me, object._id)
     })
   }
 
@@ -216,6 +218,22 @@
   export function submit (): void {
     inputRef.submit()
   }
+
+  function handleKeyDown (event: KeyboardEvent): boolean {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      if (inputRef.isEmptyDraft() && chatMessage == null) {
+        onKeyDown?.(event)
+      }
+    }
+
+    if (event.key === 'Escape') {
+      if ($editingMessageStore === undefined) return false
+      event.stopPropagation()
+      event.preventDefault()
+      editingMessageStore.set(undefined)
+    }
+    return false
+  }
 </script>
 
 <AttachmentRefInput
@@ -236,6 +254,7 @@
   on:focus
   on:blur
   bind:loading
+  onKeyDown={handleKeyDown}
 />
 
 {#if withTypingInfo}

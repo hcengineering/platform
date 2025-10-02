@@ -18,10 +18,9 @@
   import { AppItem } from '@hcengineering/workbench-resources'
   import { RoomType } from '@hcengineering/love'
   import { currentRoom } from '../../../stores'
-  import { isSharingEnabled } from '../../../utils'
   import { state } from '@hcengineering/media-resources'
   import love from '../../../plugin'
-  import { lkSessionConnected } from '../../../liveKitClient'
+  import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../../../liveKitClient'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -35,7 +34,7 @@
 
 <AppItem
   {label}
-  icon={$isSharingEnabled
+  icon={$screenSharingState === ScreenSharingState.Local
     ? love.icon.SharingDisabled
     : $lkSessionConnected && allowCam && !isCamEnabled && !isMicEnabled
       ? love.icon.CamDisabled
@@ -46,7 +45,7 @@
             : icon}
   {selected}
   {size}
-  kind={$isSharingEnabled
+  kind={$screenSharingState === ScreenSharingState.Local
     ? 'negative'
     : $lkSessionConnected && isCamEnabled
       ? 'positive'

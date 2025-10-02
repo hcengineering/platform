@@ -69,6 +69,7 @@ export type JsonPatch =
   | { op: 'test', path: string, value: any }
   | { hop: 'add', path: string, value: any, safe?: boolean }
   | { hop: 'inc', path: string, value: number, safe?: boolean }
+  | { hop: 'remove', path: string, safe?: boolean }
 
 export interface HulyResponse<Body = ArrayBuffer | string | any> {
   ok: boolean

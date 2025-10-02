@@ -13,15 +13,17 @@
 // limitations under the License.
 //
 
-import cardPlugin from '@hcengineering/card'
+import cardPlugin, { Card } from '@hcengineering/card'
 import core, {
   Doc,
   generateId,
   getDiffUpdate,
   MeasureContext,
+  OperationDomain,
   Ref,
   SortingOrder,
   Tx,
+  TxMixin,
   TxProcessor,
   TxUpdateDoc,
   WorkspaceUuid
@@ -32,6 +34,7 @@ import process, {
   ExecutionError,
   ExecutionLogAction,
   ExecutionStatus,
+  isUpdateTx,
   MethodParams,
   parseContext,
   parseError,
@@ -41,6 +44,7 @@ import process, {
   State,
   Step,
   Transition,
+  Trigger,
   UserResult
 } from '@hcengineering/process'
 import serverProcess, {
@@ -56,6 +60,8 @@ import config from './config'
 import { isError } from './errors'
 import { getTemporalClient } from './temporal'
 import { getClient, releaseClient } from './utils'
+import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { ActivityUpdateType, ActivityProcess, MessageType } from '@hcengineering/communication-types'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -67,12 +73,15 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
         ctx,
         client,
         cache: new Map<string, any>(),
-        messageContext: record.context
+        messageContext: record.context,
+        workspace: ws,
+        modifiedBy: record.account,
+        modifiedOn: record.createdOn
       }
       ctx.info('Processing event', { event: record.event, ws, record })
       if (record.execution !== undefined) {
         const execution = await control.client.findOne(process.class.Execution, { _id: record.execution })
-        if (execution !== undefined) {
+        if (execution !== undefined && isActiveExecution(execution, record.event)) {
           await processExecution(control, record, execution)
         }
       } else if (record.card !== undefined) {
@@ -88,6 +97,12 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
   }
 }
 
+function isActiveExecution (execution: Execution, trigger: Ref<Trigger>): boolean {
+  if (execution.status !== ExecutionStatus.Active) return false
+  if (execution.error != null && trigger !== process.trigger.OnExecutionContinue) return false
+  return true
+}
+
 async function processBroadcast (control: ProcessControl, record: ProcessMessage): Promise<void> {
   const transitions = control.client.getModel().findAllSync(process.class.Transition, {
     trigger: record.event
@@ -99,7 +114,9 @@ async function processBroadcast (control: ProcessControl, record: ProcessMessage
       currentState: transition.from
     })
     for (const execution of executions) {
-      await execute(execution, transition, control)
+      if (isActiveExecution(execution, record.event)) {
+        await execute(execution, transition, control)
+      }
     }
   }
 }
@@ -121,12 +138,14 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
       currentState: { $in: Array.from(states) }
     })
     for (const execution of executions) {
-      await processExecution(control, record, execution)
+      if (isActiveExecution(execution, record.event)) {
+        await processExecution(control, record, execution)
+      }
     }
   }
 
   // we should update timers, probably context value changed
-  if (record.event === process.trigger.OnCardUpdate) {
+  if ([process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges].includes(record.event)) {
     await updateTimers(control, record)
   }
 }
@@ -308,116 +327,189 @@ async function execute (execution: Execution, transition: Transition, control: P
   }
 }
 
-async function executeTransition (execution: Execution, transition: Transition, control: ProcessControl): Promise<void> {
-  let deep = control.cache.get(execution._id + 'transition') ?? 0
-  deep++
-  control.cache.set(execution._id + 'transition', deep)
-  if (deep > 100) {
-    const error = parseError(
-      processError(process.error.TooDeepTransitionRecursion, undefined, undefined, true),
-      transition._id
-    )
-    await control.client.update(execution, { error: [error] })
-    return
-  }
-  const trigger = control.client.getModel().findObject(transition.trigger)
-  if (trigger === undefined) return
-  const rollback: Tx[] = []
-  const triggerImpl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
-  const disableRollback = triggerImpl?.preventRollback ?? false
-  const triggerRollback = await getTriggerRollback(triggerImpl, control)
-  if (triggerRollback !== undefined) {
-    rollback.push(triggerRollback)
-  }
-  const client = control.client
-  const res: Tx[] = []
-  const _process = client.getModel().findObject(execution.process)
-  if (_process === undefined) return
+async function executeTransition (
+  execution: Execution,
+  _transition: Transition,
+  control: ProcessControl
+): Promise<void> {
+  let transition: Transition | undefined = _transition
+  while (transition !== undefined) {
+    let deep = control.cache.get(execution._id + 'transition') ?? 0
+    deep++
+    control.cache.set(execution._id + 'transition', deep)
+    if (deep > 100) {
+      const error = parseError(
+        processError(process.error.TooDeepTransitionRecursion, undefined, undefined, true),
+        transition._id
+      )
+      await control.client.update(execution, { error: [error] })
+      return
+    }
+    const trigger = control.client.getModel().findObject(transition.trigger)
+    if (trigger === undefined) return
+    const rollback: Tx[] = []
+    const triggerImpl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
+    const disableRollback = triggerImpl?.preventRollback ?? false
+    const triggerRollback = await getTriggerRollback(triggerImpl, control)
+    if (triggerRollback !== undefined) {
+      rollback.push(triggerRollback)
+    }
+    const client = control.client
+    const res: Tx[] = []
+    const _process = client.getModel().findObject(execution.process)
+    if (_process === undefined) return
 
-  const state = client.getModel().findObject(transition.to)
-  if (state === undefined) return
-  const isDone =
-    client.getModel().findAllSync(process.class.Transition, {
-      from: transition.to,
-      process: transition.process
-    }).length === 0
-  const errors: ExecutionError[] = []
-  if (execution.currentState !== null) {
-    rollback.push(
-      client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        currentState: execution.currentState,
-        status: execution.status
-      })
-    )
-  } else {
-    rollback.push(client.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
-  }
-  if (!control.cache.has(execution.card)) {
-    const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+    const state = client.getModel().findObject(transition.to)
+    if (state === undefined) return
+    const isDone =
+      client.getModel().findAllSync(process.class.Transition, {
+        from: transition.to,
+        process: transition.process
+      }).length === 0
+    const errors: ExecutionError[] = []
+    if (execution.currentState !== null) {
+      rollback.push(
+        client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+          currentState: execution.currentState,
+          status: execution.status
+        })
+      )
+    } else {
+      rollback.push(client.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+    }
+    const card: Card =
+      control.cache.get(execution.card) ??
+      (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
     if (card !== undefined) {
       control.cache.set(execution.card, card)
     }
-  }
-  for (const action of transition.actions) {
-    const actionResult = await executeAction(action, transition._id, execution, control)
-    if (isError(actionResult)) {
-      errors.push(actionResult)
-    } else {
-      if (actionResult.rollback !== undefined) {
-        rollback.push(...actionResult.rollback)
-      }
-      res.push(...actionResult.txes)
-      for (const tx of actionResult.txes) {
-        const updateTx = tx as TxUpdateDoc<Doc>
-        if (updateTx._class === core.class.TxUpdateDoc && updateTx.objectId === execution.card) {
-          const updatedCard = TxProcessor.updateDoc2Doc(
-            control.client.getHierarchy().clone(control.cache.get(execution.card)),
-            updateTx
-          )
-          control.cache.set(execution.card, updatedCard)
+    const context: Record<string, any> = {}
+    for (const action of transition.actions) {
+      const actionResult = await executeAction(action, transition._id, execution, control)
+      if (isError(actionResult)) {
+        errors.push(actionResult)
+      } else {
+        if (actionResult.rollback !== undefined) {
+          rollback.push(...actionResult.rollback)
+        }
+        res.push(...actionResult.txes)
+        for (const tx of actionResult.txes) {
+          const updateTx = tx as TxUpdateDoc<Doc> | TxMixin<Doc, Doc>
+          if (updateTx.objectId === execution.card) {
+            if (isUpdateTx(updateTx)) {
+              const updatedCard = TxProcessor.updateDoc2Doc(
+                control.client.getHierarchy().clone(control.cache.get(execution.card)),
+                updateTx
+              )
+              context.operations = { ...context.operations, ...updateTx.operations }
+              control.cache.set(execution.card, updatedCard)
+            } else if (updateTx._class === core.class.TxMixin) {
+              const mixinTx = updateTx as TxMixin<Doc, Doc>
+              const updatedCard = TxProcessor.updateMixin4Doc(
+                control.client.getHierarchy().clone(control.cache.get(execution.card)),
+                mixinTx
+              )
+              context.operations = { ...context.operations, ...mixinTx.attributes }
+              control.cache.set(execution.card, updatedCard)
+            }
+          }
         }
       }
     }
-  }
-  if (!disableRollback) {
-    execution.rollback.push(rollback)
-  }
-  const executionUpdate = getDiffUpdate(execution, {
-    currentState: state._id,
-    status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active,
-    error: null
-  })
-  executionUpdate.context = execution.context
-  executionUpdate.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
-  res.push(client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, executionUpdate))
-  res.push(
-    client.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
-      execution: execution._id,
-      process: execution.process,
-      card: execution.card,
-      transition: transition._id,
-      action: transition.from === null ? ExecutionLogAction.Started : ExecutionLogAction.Transition
+    if (!disableRollback) {
+      execution.rollback.push(rollback)
+    }
+    const executionUpdate = getDiffUpdate(execution, {
+      currentState: state._id,
+      status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active,
+      error: null
     })
-  )
-  if (errors.length === 0) {
-    for (const tx of res) {
-      const timeout = setTimeout(() => {
-        control.ctx.warn('TX HANG', tx)
-      }, 30000)
-      await client.tx(tx)
-      clearTimeout(timeout)
+    executionUpdate.context = execution.context
+    executionUpdate.rollback = execution.rollback.length > 30 ? execution.rollback.slice(-30) : execution.rollback
+    res.push(client.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, executionUpdate))
+    res.push(
+      client.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
+        execution: execution._id,
+        process: execution.process,
+        card: execution.card,
+        transition: transition._id,
+        action: transition.from === null ? ExecutionLogAction.Started : ExecutionLogAction.Transition
+      })
+    )
+    if (errors.length === 0) {
+      for (const tx of res) {
+        const timeout = setTimeout(() => {
+          control.ctx.warn('TX HANG', tx)
+        }, 30000)
+        await client.tx(tx)
+        clearTimeout(timeout)
+      }
+      await sendEvent(control, execution, transition, card, isDone)
+      if (isDone && execution.parentId !== undefined) {
+        await checkParent(execution, control)
+      }
+      TxProcessor.applyUpdate(execution, executionUpdate)
+      transition = await checkNext(control, execution, context)
+      if (transition === undefined) {
+        await setNextTimers(control, execution)
+      }
+    } else {
+      await client.update(execution, { error: errors })
+      break
     }
-    if (isDone && execution.parentId !== undefined) {
-      await checkParent(execution, control)
-    }
-    TxProcessor.applyUpdate(execution, executionUpdate)
-    const next = await checkNext(control, execution)
-    if (!next) {
-      await setNextTimers(control, execution)
-    }
-  } else {
-    await client.update(execution, { error: errors })
   }
+}
+
+async function sendEvent (
+  control: ProcessControl,
+  execution: Execution,
+  transition: Transition,
+  card: Card,
+  isDone: boolean
+): Promise<void> {
+  const eventData: ActivityProcess = {
+    type: ActivityUpdateType.Process,
+    process: execution.process,
+    action: isDone ? 'complete' : transition.from == null ? 'started' : 'transition',
+    transitionTo: transition.to
+  }
+  const event: CreateMessageEvent = {
+    type: MessageEventType.CreateMessage,
+    messageType: MessageType.Activity,
+    cardId: execution.card,
+    cardType: card._class,
+    extra: {
+      action: 'update',
+      update: eventData
+    },
+    content: await getActivityContent(control, eventData),
+    socialId: control.modifiedBy,
+    date: new Date(control.modifiedOn)
+  }
+  await control.client.domainRequest('communication' as OperationDomain, { event })
+}
+
+async function getActivityContent (control: ProcessControl, extra: ActivityProcess): Promise<string> {
+  const process = control.client.getModel().findObject(extra.process)
+  if (process === undefined) return ''
+
+  if (extra.action === 'started') {
+    return `Process ${process.name} started`
+  }
+  if (extra.action === 'complete' && extra.transitionTo != null) {
+    const state = control.client.getModel().findObject(extra.transitionTo)
+    if (state != null) {
+      return `Process ${process.name} completed with state ${state.title}`
+    }
+  }
+  if (extra.action === 'transition' && extra.transitionTo != null) {
+    const state = control.client.getModel().findObject(extra.transitionTo)
+    if (state != null) {
+      return `Process ${process.name} moved to state ${state.title}`
+    }
+  }
+
+  return ''
 }
 
 async function updateTimers (control: ProcessControl, record: ProcessMessage): Promise<void> {
@@ -528,7 +620,7 @@ async function setTimer (
     await temporalClient.workflow.signalWithStart('processTimeWorkflow', {
       taskQueue: 'process',
       signal: 'setDate',
-      args: [targetDate, 'workspace', execution._id],
+      args: [targetDate, control.workspace, execution._id],
       signalArgs: [targetDate],
       workflowId: `${execution._id}_${transition._id}`,
       searchAttributes: {
@@ -622,7 +714,11 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
   }
 }
 
-async function checkNext (control: ProcessControl, execution: Execution): Promise<boolean> {
+async function checkNext (
+  control: ProcessControl,
+  execution: Execution,
+  context: Record<string, any>
+): Promise<Transition | undefined> {
   const autoTriggers = control.client.getModel().findAllSync(process.class.Trigger, { auto: true })
   const transitions = control.client.getModel().findAllSync(
     process.class.Transition,
@@ -638,15 +734,12 @@ async function checkNext (control: ProcessControl, execution: Execution): Promis
     if (doc !== undefined) {
       control.cache.set(execution.card, doc)
       const transition = await pickTransition(control, execution, transitions, {
+        ...context,
         card: doc
       })
-      if (transition !== undefined) {
-        await executeTransition(execution, transition, control)
-        return true
-      }
+      return transition
     }
   }
-  return false
 }
 
 export async function pickTransition (

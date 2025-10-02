@@ -104,9 +104,12 @@
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "QUEUE_CONFIG": "localhost:19092",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "REGION": "cockroach",
+        "QUEUE_REGION": "cockroach",
         "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
-        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
+        "BRANDING_PATH": "${workspaceRoot}/dev/branding.json"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -972,25 +975,6 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/export/pod-export"
-    },
-    {
-      "name": "Msg2File",
-      "type": "node",
-      "request": "launch",
-      "args": ["src/index.ts"],
-      "env": {
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
-        "PORT": "9087",
-        "SECRET": "secret",
-        "SERVICE_ID": "msg2file-service",
-        "STORAGE_CONFIG": "datalake|http://huly.local:4030"
-      },
-      "runtimeVersion": "20",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}/services/msg2file"
     }
   ]
 }

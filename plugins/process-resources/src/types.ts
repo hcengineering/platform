@@ -13,10 +13,12 @@
 
 import { type DocumentQuery } from '@hcengineering/core'
 import { type IntlString } from '@hcengineering/platform'
-import { type Execution } from '@hcengineering/process'
+import { type ProcessContext, type Execution } from '@hcengineering/process'
 
 export interface Special {
   _id: string
   label: IntlString
   baseQuery: DocumentQuery<Execution>
 }
+
+export type ProcessContextView = Pick<ProcessContext, 'name' | '_class'> & { index?: number }

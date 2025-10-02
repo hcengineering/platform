@@ -34,7 +34,7 @@
 
 <div
   class="flex justify-center w-full"
-  style:aspect-ratio={fit ? undefined : aspectRatio}
+  style:aspect-ratio={aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
 >

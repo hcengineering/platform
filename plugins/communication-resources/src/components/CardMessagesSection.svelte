@@ -61,6 +61,10 @@
     return list?.canScrollDown() ?? false
   }
 
+  export function editLastMessage (): void {
+    list?.editLastMessage()
+  }
+
   onMount(() => {
     if (active && navigation === MessagesNavigationAnchors.LatestMessages) {
       position = MessagesNavigationAnchors.LatestMessages

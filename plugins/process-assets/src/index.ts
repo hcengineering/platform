@@ -25,6 +25,7 @@ loadMetadata(process.icon, {
   ToDoRemove: `${icons}#todo-remove`,
   WaitSubprocesses: `${icons}#subprocesses`,
   Start: `${icons}#start`,
-  OnCardUpdate: `${icons}#card-update`,
+  WhenCardMatches: `${icons}#card-matches`,
+  WhenFieldChanges: `${icons}#field-change`,
   Time: `${icons}#time`
 })

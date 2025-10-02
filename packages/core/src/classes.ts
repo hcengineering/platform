@@ -17,6 +17,7 @@
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
 import { type WorkspaceDataId, type WorkspaceUuid } from './utils'
+import { Tx } from '.'
 
 /**
  * @public
@@ -336,6 +337,15 @@ export interface TypeDate extends Type<Date> {
 /**
  * @public
  */
+export interface TypeNumber extends Type<number> {
+  min?: number
+  max?: number
+  digits?: number // Number of digits after comma
+}
+
+/**
+ * @public
+ */
 export interface RefTo<T extends Doc> extends Type<Ref<Class<T>>> {
   to: Ref<Class<T>>
 }
@@ -520,6 +530,10 @@ export type RolesAssignment = Record<Ref<Role>, AccountUuid[] | undefined>
  */
 export interface Permission extends Doc {
   label: IntlString
+  txClass?: Ref<Class<Tx>>
+  forbid?: boolean
+  objectClass?: Ref<Class<Doc>>
+  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }

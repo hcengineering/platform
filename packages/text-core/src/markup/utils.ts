@@ -16,9 +16,11 @@
 import { Markup } from '@hcengineering/core'
 
 import { deepEqual } from 'fast-equals'
+import hashIt from 'hash-it'
+
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
-import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
-import { traverseNode } from './traverse'
+import { MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
+import { traverseAllMarks, traverseNode } from './traverse'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -124,7 +126,11 @@ export function markupToJSON (markup: Markup): MarkupNode {
     // But there seem to be some cases when it contains HTML or plain text
     // So we need to handle those cases and produce valid MarkupNode
     if (markup.startsWith('{')) {
-      return JSON.parse(markup) as MarkupNode
+      const json = JSON.parse(markup) as MarkupNode
+      traverseAllMarks(json, (node, mark) => {
+        mark.type = stripHash(mark.type) as MarkupMarkType
+      })
+      return json
     } else {
       return nodeDoc(nodeParagraph(nodeText(markup)))
     }
@@ -206,4 +212,18 @@ export function markupToText (markup: Markup): string {
   })
 
   return fragments.join('').trim()
+}
+
+// see https://github.com/yjs/y-prosemirror/blob/master/src/lib.js#L402
+const hashedMarkNameRegex = /(.*)(--[a-zA-Z0-9+/=]{8})$/
+
+/** @public */
+export function stripHash (attrName: string): string {
+  return hashedMarkNameRegex.exec(attrName)?.[1] ?? attrName
+}
+
+/** @public */
+export function hashAttrs (attrs: any): string {
+  const hash = hashIt(attrs)
+  return (hash >>> 0).toString(16).padStart(8, '0')
 }

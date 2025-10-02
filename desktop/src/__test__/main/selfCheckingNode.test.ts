@@ -14,9 +14,8 @@
 //
 
 describe('node environment self checking', () => {
-    test('check Jest\'s node environment', () => {
-        const isNodeAvailable = typeof process !== 'undefined';
-        expect(isNodeAvailable).toBe(true);
-    })
-
+  test('check Jest\'s node environment', () => {
+    const isNodeAvailable = typeof process !== 'undefined'
+    expect(isNodeAvailable).toBe(true)
+  })
 })

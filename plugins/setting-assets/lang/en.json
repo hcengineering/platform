@@ -195,6 +195,9 @@
     "Connected": "Connected",
     "Available": "Available",
     "NotConnectedIntegration": "The account {account} is not integrated with the workspace",
-    "IntegrationIsUnstable": "Integration service is experiencing issues. Some features may not work properly."
+    "IntegrationIsUnstable": "Integration service is experiencing issues. Some features may not work properly.",
+    "MinValue": "Minimum value",
+    "MaxValue": "Maximum value",
+    "IntegerOnly": "Integer numbers only"
   }
 }

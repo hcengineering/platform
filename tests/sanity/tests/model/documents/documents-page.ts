@@ -18,7 +18,7 @@ export class DocumentsPage extends CommonPage {
   readonly popupMoveDocument: DocumentMovePopup
 
   readonly buttonCreateDocument = (): Locator =>
-    this.page.locator('div[data-float="navigator"] button[id="new-document"]')
+    this.page.locator('div[data-float="navigator"] button[id="document-string-CreateDocument"]')
 
   readonly buttonDocumentWrapper = (name: string): Locator =>
     this.page.locator(`button.hulyNavItem-container:has-text("${name}")`)

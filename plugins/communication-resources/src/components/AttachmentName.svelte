@@ -31,7 +31,7 @@
 {/if}
 
 {#if isAppletAttachment(attachment)}
-  {@const applet = applets.find((it) => it.type === attachment.type)}
+  {@const applet = applets.find((it) => it.type === attachment.mimeType)}
   {#if applet}
     <span class:lower>
       <Label label={applet.label} />:

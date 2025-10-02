@@ -236,7 +236,6 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
-      - MSG2FILE_URL=http://huly.local:9087
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
     restart: unless-stopped
   fulltext_cockroach:
@@ -284,6 +283,22 @@ services:
       - STREAM_URL=http://huly.local:1080/recording
       - DB_URL=${DB_CR_URL}
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
+  redis:
+    image: redis:8.0.2-alpine3.21
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+  hulypulse:
+    image: hardcoreeng/hulypulse
+    depends_on:
+      redis:
+        condition: service_started
+    ports:
+      - 8099:8099
+    environment:
+      - HULY_REDIS_URLS=redis://redis:6379
+      - HULY_BIND_PORT=8099
     restart: unless-stopped
 volumes:
   db:

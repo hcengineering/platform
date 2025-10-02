@@ -193,6 +193,9 @@
     "Connected": "Připojené",
     "Available": "Dostupné",
     "NotConnectedIntegration": "Účet {account} není integrován s pracovním prostorem",
-    "IntegrationIsUnstable": "Služba integrace má problémy. Některé funkce nemusí fungovat správně."
+    "IntegrationIsUnstable": "Integrační služba má problémy. Některé funkce nemusí fungovat správně.",
+    "MinValue": "Minimální hodnota",
+    "MaxValue": "Maximální hodnota",
+    "IntegerOnly": "Pouze celá čísla"
   }
 }

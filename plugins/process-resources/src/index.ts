@@ -48,13 +48,9 @@ import MultiArrayElementEditor from './components/transformEditors/MultiArrayEle
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
-import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
-import BooleanCriteria from './components/criterias/BooleanCriteria.svelte'
-import DateCriteria from './components/criterias/DateCriteria.svelte'
-import EnumCriteria from './components/criterias/EnumCriteria.svelte'
-import NumberCriteria from './components/criterias/NumberCriteria.svelte'
-import RefCriteria from './components/criterias/RefCriteria.svelte'
-import StringCriteria from './components/criterias/StringCriteria.svelte'
+import ArraySizeCriteria from './components/criterias/ArraySizeCriteria.svelte'
+import BaseCriteria from './components/criterias/BaseCriteria.svelte'
+import RangeCriteria from './components/criterias/RangeCriteria.svelte'
 import LogActionPresenter from './components/LogActionPresenter.svelte'
 import NotifierExtension from './components/NotifierExtension.svelte'
 import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
@@ -81,9 +77,11 @@ import {
   showDoneQuery,
   timeTransitionCheck,
   todoTranstionCheck,
-  updateCardTranstionCheck,
-  subProcessesDoneCheck
+  matchCardCheck,
+  subProcessesDoneCheck,
+  fieldChangesCheck
 } from './utils'
+import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
 export * from './query'
 
@@ -136,16 +134,13 @@ export default async (): Promise<Resources> => ({
     TimePresenter,
     AddTagEditor,
     AddTagPresenter,
-    ExecutionMyToDos
+    ExecutionMyToDos,
+    FieldChangesEditor
   },
   criteriaEditor: {
-    DateCriteria,
-    StringCriteria,
-    BooleanCriteria,
-    NumberCriteria,
-    RefCriteria,
-    EnumCriteria,
-    ArrayCriteria
+    BaseCriteria,
+    ArraySizeCriteria,
+    RangeCriteria
   },
   transformPresenter: {
     NumberPresenter,
@@ -162,7 +157,8 @@ export default async (): Promise<Resources> => ({
     CutEditor
   },
   triggerCheck: {
-    UpdateCheck: updateCardTranstionCheck,
+    MatchCheck: matchCardCheck,
+    FieldChangedCheck: fieldChangesCheck,
     SubProcessesDoneCheck: subProcessesDoneCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck

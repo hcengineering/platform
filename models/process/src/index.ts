@@ -12,7 +12,6 @@
 // limitations under the License.
 
 import card, { type Card, type MasterTag, type Tag } from '@hcengineering/card'
-import contact from '@hcengineering/contact'
 import core, {
   AccountRole,
   type Class,
@@ -43,10 +42,12 @@ import presentation from '@hcengineering/model-presentation'
 import { TToDo } from '@hcengineering/model-time'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import {
   type CheckFunc,
   type ContextId,
+  type CreatedContext,
   type Execution,
   type ExecutionContext,
   type ExecutionError,
@@ -69,6 +70,9 @@ import {
 import time from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
+import { defineMethods } from './actions'
+import { defineTriggers } from './triggers'
+import { defineFunctions } from './functions'
 import process from './plugin'
 
 const DOMAIN_PROCESS = 'process' as Domain
@@ -206,7 +210,7 @@ export class TMethod extends TDoc implements Method<Doc> {
 
   editor!: AnyComponent
 
-  contextClass!: Ref<Class<Doc>> | null
+  createdContext!: CreatedContext
 
   presenter?: AnyComponent
 
@@ -247,6 +251,8 @@ export class TUpdateCriteriaComponent extends TDoc implements UpdateCriteriaComp
   editor!: AnyComponent
 
   of!: Ref<Class<Doc<Space>>>
+
+  props!: Record<string, any>
 }
 
 export * from './migration'
@@ -263,6 +269,28 @@ export function createModel (builder: Builder): void {
     TTrigger,
     TExecutionLog,
     TUpdateCriteriaComponent
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      allowedForAuthor: true,
+      label: process.string.NewProcessToDo,
+      group: time.ids.TimeNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: process.class.ProcessToDo,
+      onlyOwn: true,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
+    },
+    process.ids.ProcessToDoCreated
   )
 
   createAction(builder, {
@@ -339,444 +367,9 @@ export function createModel (builder: Builder): void {
     process.pipeline.ProcessMiddleware
   )
 
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.UpperCase,
-      type: 'transform'
-    },
-    process.function.UpperCase
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.LowerCase,
-      type: 'transform'
-    },
-    process.function.LowerCase
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Trim,
-      type: 'transform'
-    },
-    process.function.Trim
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Prepend,
-      allowMany: true,
-      type: 'transform',
-      editor: process.transformEditor.AppendEditor
-    },
-    process.function.Prepend
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Append,
-      allowMany: true,
-      type: 'transform',
-      editor: process.transformEditor.AppendEditor
-    },
-    process.function.Append
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Replace,
-      allowMany: true,
-      type: 'transform',
-      editor: process.transformEditor.ReplaceEditor
-    },
-    process.function.Replace
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.ReplaceAll,
-      allowMany: true,
-      type: 'transform',
-      editor: process.transformEditor.ReplaceEditor
-    },
-    process.function.ReplaceAll
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Split,
-      allowMany: true,
-      type: 'transform',
-      editor: process.transformEditor.SplitEditor
-    },
-    process.function.Split
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeString,
-      category: 'attribute',
-      label: process.string.Cut,
-      allowMany: true,
-      editor: process.transformEditor.CutEditor,
-      type: 'transform'
-    },
-    process.function.Cut
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: undefined,
-      label: process.string.FirstValue,
-      type: 'reduce'
-    },
-    process.function.FirstValue
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      type: 'reduce',
-      category: undefined,
-      label: process.string.LastValue
-    },
-    process.function.LastValue
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      type: 'reduce',
-      category: undefined,
-      label: process.string.Random
-    },
-    process.function.Random
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.Each,
-      type: 'reduce'
-    },
-    process.function.All
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      type: 'transform',
-      category: 'attribute',
-      label: process.string.Add,
-      presenter: process.transformPresenter.NumberPresenter,
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor
-    },
-    process.function.Add
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Subtract,
-      presenter: process.transformPresenter.NumberPresenter,
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor,
-      type: 'transform'
-    },
-    process.function.Subtract
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Multiply,
-      presenter: process.transformPresenter.NumberPresenter,
-      type: 'transform',
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor
-    },
-    process.function.Multiply
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Divide,
-      presenter: process.transformPresenter.NumberPresenter,
-      type: 'transform',
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor
-    },
-    process.function.Divide
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Modulo,
-      presenter: process.transformPresenter.NumberPresenter,
-      type: 'transform',
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor
-    },
-    process.function.Modulo
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Power,
-      presenter: process.transformPresenter.NumberPresenter,
-      type: 'transform',
-      allowMany: true,
-      editor: process.transformEditor.NumberEditor
-    },
-    process.function.Power
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Round,
-      type: 'transform',
-      allowMany: true
-    },
-    process.function.Round
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Absolute,
-      type: 'transform',
-      allowMany: true
-    },
-    process.function.Absolute
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Ceil,
-      type: 'transform',
-      allowMany: true
-    },
-    process.function.Ceil
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeNumber,
-      category: 'attribute',
-      label: process.string.Floor,
-      type: 'transform',
-      allowMany: true
-    },
-    process.function.Floor
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeDate,
-      category: 'attribute',
-      label: process.string.Offset,
-      editor: process.transformEditor.DateOffsetEditor,
-      type: 'transform'
-    },
-    process.function.Offset
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeDate,
-      category: 'attribute',
-      label: process.string.FirstWorkingDayAfter,
-      type: 'transform'
-    },
-    process.function.FirstWorkingDayAfter
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.Insert,
-      allowMany: true,
-      editor: process.transformEditor.MultiArrayElementEditor,
-      type: 'transform'
-    },
-    process.function.Insert
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.Remove,
-      allowMany: true,
-      editor: process.transformEditor.ArrayElementEditor,
-      type: 'transform'
-    },
-    process.function.Remove
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.RemoveFirst,
-      allowMany: true,
-      type: 'transform'
-    },
-    process.function.RemoveFirst
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.ArrOf,
-      category: 'array',
-      label: process.string.RemoveLast,
-      allowMany: true,
-      type: 'transform'
-    },
-    process.function.RemoveLast
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: contact.mixin.Employee,
-      editor: process.component.RoleEditor,
-      presenter: process.transformPresenter.RolePresenter,
-      category: 'array',
-      label: core.string.Role,
-      type: 'context'
-    },
-    process.function.RoleContext
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: contact.class.Person,
-      category: 'attribute',
-      label: process.string.CurrentUser,
-      type: 'context'
-    },
-    process.function.CurrentUser
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: contact.mixin.Employee,
-      category: 'attribute',
-      label: process.string.CurrentUser,
-      type: 'context'
-    },
-    process.function.CurrentEmployee
-  )
-
-  builder.createDoc(
-    process.class.ProcessFunction,
-    core.space.Model,
-    {
-      of: core.class.TypeDate,
-      category: 'attribute',
-      label: process.string.CurrentDate,
-      type: 'context'
-    },
-    process.function.CurrentDate
-  )
+  defineFunctions(builder)
+  defineMethods(builder)
+  defineTriggers(builder)
 
   builder.mixin(process.class.Process, core.class.Class, view.mixin.AttributePresenter, {
     presenter: process.component.ProcessPresenter
@@ -989,183 +582,6 @@ export function createModel (builder: Builder): void {
     process.section.CardProcesses
   )
 
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: process.string.RunProcess,
-      objectClass: process.class.Process,
-      editor: process.component.SubProcessEditor,
-      presenter: process.component.SubProcessPresenter,
-      contextClass: process.class.Execution,
-      requiredParams: ['_id']
-    },
-    process.method.RunSubProcess
-  )
-
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: process.string.CreateToDo,
-      editor: process.component.ToDoEditor,
-      objectClass: process.class.ProcessToDo,
-      presenter: process.component.ToDoPresenter,
-      contextClass: process.class.ProcessToDo,
-      requiredParams: ['state', 'title', 'user'],
-      defaultParams: {
-        withRollback: true
-      }
-    },
-    process.method.CreateToDo
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnExecutionStart,
-      icon: process.icon.Process,
-      init: true,
-      requiredParams: []
-    },
-    process.trigger.OnExecutionStart
-  )
-
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: process.string.UpdateCard,
-      editor: process.component.UpdateCardEditor,
-      objectClass: card.class.Card,
-      contextClass: null,
-      presenter: process.component.UpdateCardPresenter,
-      requiredParams: []
-    },
-    process.method.UpdateCard
-  )
-
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: process.string.CreateCard,
-      objectClass: card.class.Card,
-      editor: process.component.CreateCardEditor,
-      presenter: process.component.CreateCardPresenter,
-      contextClass: card.class.Card,
-      requiredParams: ['title', '_class']
-    },
-    process.method.CreateCard
-  )
-
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: core.string.AddRelation,
-      objectClass: core.class.Relation,
-      editor: process.component.AddRelationEditor,
-      presenter: process.component.AddRelationPresenter,
-      contextClass: core.class.Relation,
-      requiredParams: ['association', 'direction', '_id']
-    },
-    process.method.AddRelation
-  )
-
-  builder.createDoc(
-    process.class.Method,
-    core.space.Model,
-    {
-      label: card.string.AddTag,
-      objectClass: card.class.Tag,
-      editor: process.component.AddTagEditor,
-      presenter: process.component.AddTagPresenter,
-      contextClass: card.class.Card,
-      requiredParams: ['_id']
-    },
-    process.method.AddTag
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnToDoDone,
-      icon: process.icon.ToDo,
-      editor: process.component.ToDoCloseEditor,
-      presenter: process.component.ToDoSettingPresenter,
-      requiredParams: ['_id'],
-      checkFunction: process.triggerCheck.ToDo,
-      init: false,
-      auto: true
-    },
-    process.trigger.OnToDoClose
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnToDoCancelled,
-      icon: process.icon.ToDoRemove,
-      editor: process.component.ToDoRemoveEditor,
-      presenter: process.component.ToDoSettingPresenter,
-      requiredParams: ['_id'],
-      checkFunction: process.triggerCheck.ToDo,
-      init: false,
-      auto: true
-    },
-    process.trigger.OnToDoRemove
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnCardUpdate,
-      icon: process.icon.OnCardUpdate,
-      editor: process.component.CardUpdateEditor,
-      presenter: process.component.CardUpdatePresenter,
-      requiredParams: [],
-      checkFunction: process.triggerCheck.UpdateCheck,
-      init: false,
-      auto: true
-    },
-    process.trigger.OnCardUpdate
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnSubProcessesDone,
-      icon: process.icon.WaitSubprocesses,
-      checkFunction: process.triggerCheck.SubProcessesDoneCheck,
-      requiredParams: [],
-      init: false,
-      auto: true
-    },
-    process.trigger.OnSubProcessesDone
-  )
-
-  builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.WaitUntil,
-      icon: process.icon.Time,
-      requiredParams: [],
-      init: false,
-      auto: true,
-      editor: process.component.TimeEditor,
-      presenter: process.component.TimePresenter,
-      checkFunction: process.triggerCheck.Time
-    },
-    process.trigger.OnTime
-  )
-
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
     id: 'processes',
     label: process.string.Processes,
@@ -1179,50 +595,83 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeString
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeString,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.StringCriteria,
-    of: core.class.TypeHyperlink
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeHyperlink,
+    props: {
+      modes: ['Equal', 'StringContains', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.NumberCriteria,
-    of: core.class.TypeNumber
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeNumber,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.DateCriteria,
-    of: core.class.TypeDate
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeDate,
+    props: {
+      modes: ['Equal', 'GT', 'LT', 'Between', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.BooleanCriteria,
-    of: core.class.TypeBoolean
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeBoolean,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'array',
-    editor: process.criteriaEditor.ArrayCriteria,
-    of: core.class.ArrOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.ArrOf,
+    props: {
+      modes: [
+        'ArrayAll',
+        'ArrayAny',
+        'ArrayNotIncludes',
+        'ArraySizeEquals',
+        'ArraySizeGt',
+        'ArraySizeGte',
+        'ArraySizeLt',
+        'ArraySizeLte'
+      ]
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
-    editor: process.criteriaEditor.EnumCriteria,
-    of: core.class.EnumOf
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.EnumOf,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'object',
-    editor: process.criteriaEditor.RefCriteria,
-    of: core.class.RefTo
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.RefTo,
+    props: {
+      modes: ['Equal', 'NotEqual', 'Exists']
+    }
   })
 }
 

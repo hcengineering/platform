@@ -56,6 +56,14 @@ import {
   type Account as OldAccount,
   type Workspace as OldWorkspace
 } from '@hcengineering/account-service'
+import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import {
+  getDBClient,
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -69,6 +77,7 @@ import {
   isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
+  SocialId,
   SocialIdType,
   systemAccountEmail,
   systemAccountUuid,
@@ -80,7 +89,8 @@ import {
   type Tx,
   type Version,
   type WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type PersonUuid
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import {
@@ -92,12 +102,6 @@ import {
 } from '@hcengineering/mongo'
 
 import { getModelVersion } from '@hcengineering/model-all'
-import {
-  createPostgreeDestroyAdapter,
-  createPostgresAdapter,
-  createPostgresTxAdapter,
-  shutdownPostgres
-} from '@hcengineering/postgres'
 import {
   QueueTopic,
   workspaceEvents,
@@ -131,6 +135,8 @@ import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
 import { restoreGithubIntegrations } from './restoreGithub'
+import { migrateWorkspaceMessages } from './communication'
+import { type CardID } from '@hcengineering/communication-types'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2842,6 +2848,54 @@ export function devTool (
           dbUrl,
           { conflictSuffix: suffix, region, branding, force }
         )
+      }, dbUrl)
+    })
+
+  program
+    .command('migrate-communication-to-hulylake <workspace>')
+    .description('Migrate communication messages to hulylake')
+    .option('-c, --card <card>', 'Card to migrate')
+    .action(async (workspace: WorkspaceUuid, cmd: { card?: CardID }) => {
+      const { dbUrl } = prepareTools()
+      const hulylakeUrl = process.env.HULYLAKE_URL ?? ''
+
+      console.log('Workspace', workspace)
+      console.log('Card', cmd.card)
+      if (hulylakeUrl === '') {
+        throw new Error('HULYLAKE_URL should be specified')
+      }
+
+      const token = generateToken(systemAccountUuid, undefined, {
+        service: 'tool'
+      })
+      const db = getDBClient(dbUrl, undefined, 'tool')
+      const dbClient = await db.getClient()
+      const accountClient = getAccountClient(token)
+      const personUuidBySocialId = new Map<PersonId, PersonUuid>()
+
+      await withAccountDatabase(async (accountDb) => {
+        const ws = (await accountDb.workspace.find({ uuid: workspace }))[0]
+        if (ws === undefined) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+        try {
+          const hulylake = getHulylakeClient(hulylakeUrl, ws.uuid, token)
+          console.log('start workspace migration', ws.name)
+          await migrateWorkspaceMessages(
+            toolCtx.newChild(ws.name, {}),
+            ws,
+            cmd.card,
+            dbClient,
+            hulylake,
+            accountClient,
+            personUuidBySocialId
+          )
+          console.log('done workspace migration', ws.name)
+        } catch (err: any) {
+          console.error('failed to migrate workspace', ws.name)
+          console.error(err)
+        }
+        db.close()
       }, dbUrl)
     })
 

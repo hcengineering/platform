@@ -43,13 +43,13 @@
   export let hideAvatar: boolean = false
   export let hideHeader: boolean = false
   export let readonly: boolean = false
-  export let thread: boolean = true
+  export let showThreads: boolean = true
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
 
   let isEditing = false
-  let isDeleted = false
   let author: Person | undefined
 
-  $: isDeleted = message.removed
   $: isEditing = $messageEditingStore === message.id
   $: void updateAuthor(message.creator)
 
@@ -138,8 +138,7 @@
 
   let isActionsPanelOpened = false
 
-  $: showActions = !isEditing && !isDeleted && !readonly
-  $: isThread = message.thread != null
+  $: showActions = !isEditing && !readonly
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -152,7 +151,7 @@
   class:noHover={readonly}
   style:padding
 >
-  {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
+  {#if message.type === MessageType.Activity}
     <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
   {:else}
     <MessageBody
@@ -160,10 +159,12 @@
       {card}
       {author}
       {isEditing}
-      compact={compact && !isThread}
+      compact={compact && message.threads.length === 0}
       {hideAvatar}
       {hideHeader}
-      {thread}
+      {showThreads}
+      {collapsible}
+      {maxHeight}
     />
   {/if}
 

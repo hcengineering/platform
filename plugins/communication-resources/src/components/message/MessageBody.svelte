@@ -18,7 +18,7 @@
   import { formatName, Person } from '@hcengineering/contact'
   import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
-  import { IconDelete, Label } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
 
   import communication from '../../plugin'
   import MessageInput from './MessageInput.svelte'
@@ -34,7 +34,11 @@
   export let compact: boolean = false
   export let hideAvatar: boolean = false
   export let hideHeader: boolean = false
-  export let thread: boolean = true
+  export let showThreads: boolean = true
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
+
+  let isShowMoreActive: boolean = false
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -58,8 +62,8 @@
 
     <div class="message__content">
       {#if !isEditing && message.content !== ''}
-        <div class="message__text">
-          <MessageContentViewer {message} {card} {author} />
+        <div class="message__text" class:with-showmore={isShowMoreActive}>
+          <MessageContentViewer {message} {card} {author} {collapsible} {maxHeight} bind:isShowMoreActive />
         </div>
       {:else if isEditing}
         <MessageInput
@@ -74,7 +78,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} {thread} />
+        <MessageFooter {message} {showThreads} />
       {/if}
     </div>
   </div>
@@ -82,46 +86,40 @@
   <div class="message__body">
     {#if !hideAvatar}
       <div class="message__avatar">
-        {#if !message.removed}
-          <PersonPreviewProvider value={author}>
-            <Avatar name={author?.name} person={author} size="medium" />
-          </PersonPreviewProvider>
-        {:else}
-          <Avatar icon={IconDelete} size="medium" />
-        {/if}
+        <PersonPreviewProvider value={author}>
+          <Avatar name={author?.name} person={author} size="medium" />
+        </PersonPreviewProvider>
       </div>
     {/if}
     <div class="message__content">
       <div class="message__header">
-        {#if !message.removed}
-          <PersonPreviewProvider value={author}>
-            <div class="message__username">
-              {formatName(author?.name ?? '')}
-            </div>
-          </PersonPreviewProvider>
-        {/if}
+        <PersonPreviewProvider value={author}>
+          <div class="message__username">
+            {formatName(author?.name ?? '')}
+          </div>
+        </PersonPreviewProvider>
         <div class="message__date">
           {formatDate(message.created)}
         </div>
-        {#if message.edited && !message.removed}
+        {#if message.modified}
           <div class="message__edited-marker">
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
-        {#if !message.removed && $translateMessagesStore.get(message.id)?.inProgress === true}
+        {#if $translateMessagesStore.get(message.id)?.inProgress === true}
           <div class="message__translating">
             <Label label={communication.string.Translating} />
           </div>
         {/if}
-        {#if !message.removed && $translateMessagesStore.get(message.id)?.shown === true}
+        {#if $translateMessagesStore.get(message.id)?.shown === true}
           <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
             <Label label={communication.string.ShowOriginal} />
           </div>
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text">
-          <MessageContentViewer {message} {card} {author} />
+        <div class="message__text" class:with-showmore={isShowMoreActive}>
+          <MessageContentViewer {message} {card} {author} {collapsible} {maxHeight} bind:isShowMoreActive />
         </div>
       {:else if isEditing}
         <MessageInput
@@ -136,7 +134,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} {thread} />
+        <MessageFooter {message} {showThreads} />
       {/if}
     </div>
   </div>
@@ -225,6 +223,11 @@
     max-width: 100%;
     user-select: text;
     flex: 1;
+
+    &.with-showmore {
+      position: relative; // This ensures ShowMore button positions relative to this container
+      margin-bottom: 1rem;
+    }
   }
 
   .time-container {

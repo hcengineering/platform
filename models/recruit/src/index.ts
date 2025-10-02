@@ -37,6 +37,7 @@ import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@h
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { defineSpaceType } from './spaceType'
+import { definePermissions } from './permissions'
 import { TApplicant, TApplicantMatch, TCandidate, TOpinion, TReview, TVacancy, TVacancyList } from './types'
 
 export { recruitId } from '@hcengineering/recruit'
@@ -1019,24 +1020,28 @@ export function createModel (builder: Builder): void {
     },
     override: [recruit.action.CreateGlobalApplication]
   })
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: recruit.component.CreateCandidate,
-      element: 'top'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: recruit.component.CreateCandidate,
+        element: 'top'
+      },
+      label: recruit.string.CreateTalent,
+      icon: recruit.icon.Create,
+      keyBinding: ['keyC'],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: core.class.Doc,
+      context: {
+        mode: ['workbench', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'create'
+      }
     },
-    label: recruit.string.CreateTalent,
-    icon: recruit.icon.Create,
-    keyBinding: ['keyC'],
-    input: 'none',
-    category: recruit.category.Recruit,
-    target: core.class.Doc,
-    context: {
-      mode: ['workbench', 'browser'],
-      application: recruit.app.Recruit,
-      group: 'create'
-    }
-  })
+    recruit.action.CreateTalent
+  )
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
@@ -1596,4 +1601,5 @@ export function createModel (builder: Builder): void {
   )
 
   defineSpaceType(builder)
+  definePermissions(builder)
 }
