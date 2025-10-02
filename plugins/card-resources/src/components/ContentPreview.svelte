@@ -25,13 +25,15 @@
   export let collapsible: boolean = true
   export let compact: boolean = false
 
+  const remFactor = 16
+
   // Function to safely parse maxHeight with fallback
   function getMaxSize (maxHeight: string): number {
     const remValue = parseFloat(maxHeight.replace('rem', ''))
     if (isNaN(remValue) || remValue <= 0) {
-      return 480
+      return 30 * remFactor
     }
-    return remValue * 16
+    return remValue * remFactor
   }
 </script>
 
