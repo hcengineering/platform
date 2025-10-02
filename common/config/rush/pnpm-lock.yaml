@@ -4562,7 +4562,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-HfKzdbndaS3opK1inqcTOrVnKvU7PS2asLmKuR4JHooiTTvFFCHcXXYO++t1QmdGmankZRn3Qsq59CIt/UPgsA==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-NqgsYYbjEFDp0w3T3g9pjDaYwAfMfqE5PkZoZ2dY/YTudJcRfnYV4uHuyIDKw6HceDKfLZSd3zScMXjR5m3uNA==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
@@ -19177,6 +19177,7 @@ snapshots:
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       esbuild: 0.25.9
@@ -19189,6 +19190,7 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
       typescript: 5.8.3
+      uuid: 8.3.2
       zod: 3.24.2
     transitivePeerDependencies:
       - '@types/node'
