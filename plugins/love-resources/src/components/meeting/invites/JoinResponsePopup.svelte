@@ -13,35 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
-  import { playNotificationSound } from '@hcengineering/presentation'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite } from '@hcengineering/love'
-  import { onDestroy, onMount } from 'svelte'
-
   import love from '../../../plugin'
-  import { acceptInvite, rejectInvite } from '../../../meetings'
+  import { onDestroy, onMount } from 'svelte'
+  import { responseToJoinRequest, JoinRequest } from '../../../joinRequests'
 
-  export let invite: Invite
+  export let request: JoinRequest
 
-  let person: Person | undefined = undefined
-  $: getPersonByPersonRefCb(invite.from, (p) => {
-    person = p ?? undefined
-  })
+  $: personByRefStore = getPersonByPersonRefStore([request.from])
+  $: person = $personByRefStore.get(request.from)
 
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await acceptInvite(invite)
+    await responseToJoinRequest(request, true)
   }
 
   async function decline (): Promise<void> {
-    await rejectInvite(invite)
+    await responseToJoinRequest(request, false)
   }
 
   onMount(async () => {
-    stopSound = await playNotificationSound(love.sound.Knock, love.class.Invite, true)
+    stopSound = await playSound(love.sound.Knock, true)
   })
 
   onDestroy(() => {
@@ -54,7 +50,7 @@
     <div class="p-4 flex-col-center flex-gap-4">
       <Avatar {person} size={'large'} name={person.name} />
       <span class="title">
-        <Label label={love.string.InvitingYou} params={{ name: formatName(person.name) }} />
+        <Label label={love.string.IsKnocking} params={{ name: formatName(person.name) }} />
       </span>
     </div>
   {/if}
@@ -81,12 +77,6 @@
 
   .title {
     color: var(--caption-color);
-    font-weight: 700;
-  }
-
-  .roomTitle {
-    color: var(--caption-color);
-    font-weight: 700;
-    font-size: 1rem;
+    font-size: 700;
   }
 </style>

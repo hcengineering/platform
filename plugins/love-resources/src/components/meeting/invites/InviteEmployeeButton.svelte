@@ -15,11 +15,12 @@
 <script lang="ts">
   import { ButtonBaseSize, IconSize, ModernButton, showPopup } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
-  import { currentMeetingRoom, sendInvites } from '../../../meetings'
+  import { currentMeetingRoom } from '../../../meetings'
   import love from '../../../plugin'
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
+  import { sendInvites } from '../../../invites'
   import { infos } from '../../../stores'
 
   export let employee: Employee | undefined = undefined
@@ -33,7 +34,7 @@
 
   async function invite (): Promise<void> {
     if (employee !== undefined) {
-      await sendInvites([employee._id])
+      sendInvites([employee._id])
     } else {
       openSelectUsersPopup()
     }
@@ -53,7 +54,7 @@
       'top',
       (result?: Ref<Employee>[]) => {
         if (result != null) {
-          void sendInvites(result)
+          sendInvites(result)
         }
         dispatch('close')
       }
