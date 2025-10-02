@@ -17,6 +17,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
+  type ApplyOperations,
   ClassifierKind,
   DocManager,
   Hierarchy,
@@ -1117,7 +1118,7 @@ export function calcSørensenDiceCoefficient (a: string, b: string): number {
  * @public
  */
 export async function moveToSpace (
-  client: TxOperations,
+  client: ApplyOperations,
   doc: Doc,
   space: Ref<Space>,
   extra?: DocumentUpdate<any>
@@ -1127,7 +1128,7 @@ export async function moveToSpace (
   for (const [name, attribute] of attributes) {
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
       const collection = attribute.type as Collection<AttachedDoc>
-      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id, space: doc.space })
       for (const attached of allAttached) {
         // Do not use extra for childs.
         await moveToSpace(client, attached, space).catch((err: any) => {
