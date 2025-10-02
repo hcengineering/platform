@@ -89,7 +89,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
 
   private async callAsyncTriggers (ctx: TriggerCtx, session: SessionData, events: Enriched<Event>[]): Promise<void> {
     const fromTriggers = await this.runTriggers({ ...ctx, ctx: this.ctx }, events)
-    await Promise.all(fromTriggers.map((d) => this.context.head?.event(session, d as Enriched<Event>, true)))
+
+    for (const event of fromTriggers) {
+      await this.context.head?.event(session, event as Enriched<Event>, true)
+    }
+
     const triggersDerived = (fromTriggers as Enriched<Event>[]).filter((it) => it.skipPropagate !== true)
     session.asyncData = [...session.asyncData, ...triggersDerived]
 
