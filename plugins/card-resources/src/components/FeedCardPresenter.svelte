@@ -106,7 +106,16 @@
     </div>
     <div class="card__message">
       {#if isThreadCard && message}
-        <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" showThreads={false} />
+        <MessagePresenter
+          {card}
+          {message}
+          hideHeader
+          hideAvatar
+          readonly
+          padding="0"
+          showThreads={false}
+          maxHeight={'10rem'}
+        />
       {:else if !isThreadCard && card.content}
         <ContentPreview {card} maxHeight={'10rem'} />
       {/if}
