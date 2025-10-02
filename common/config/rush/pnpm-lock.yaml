@@ -4860,7 +4860,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-d/rTH5piCl8x3YfKoZ2yIWklH/MU9h8WrccgwV9VS3a1lYQ2i6l+JVpO/hdMGTN6llF3REFNnMYndfcu8Siy4w==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-x0absw3NgqbkqySe1iwOWefvQQJspKnQyAaLddJB8v6XDi2Y/E+8m0nD9E/tmgAIJKiHE5ZcAZZHfFKyZ4LAUA==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -5456,7 +5456,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-r1AG89qg5hvx+usQjP8KLtkNL/j5z/8OHDcURyAb6yOhWAWNkY5Frs05L9qcPsJoN6raUaZ164jzlk0P2SiPqQ==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-oan6DDcf+BzxmKzwYlls96alD6ZHH2VUgOiSFx/sHlg9Dj+MiEVxji6xpHpeEWHylg6Xent0pgUoYGpgwH/ofA==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
