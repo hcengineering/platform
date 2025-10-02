@@ -63,7 +63,7 @@
   let description: Markup = EmptyMarkup
   let initialized = false
 
-  function initializeFromDraft(draft: CardDraft) {
+  function initializeFromDraft (draft: CardDraft): void {
     title = draft.title
     description = draft.description
     if (draft.type !== undefined) {
