@@ -75,7 +75,10 @@ import {
   Split,
   Subtract,
   Trim,
-  UpperCase
+  UpperCase,
+  EmptyArray,
+  ExecutionInitiator,
+  ExecutionStarted
 } from './transform'
 import {
   RunSubProcess,
@@ -428,7 +431,10 @@ export default async () => ({
     Insert,
     Remove,
     RemoveFirst,
-    RemoveLast
+    RemoveLast,
+    EmptyArray,
+    ExecutionInitiator,
+    ExecutionStarted
   },
   rollbacks: {
     ToDoCloseRollback,
