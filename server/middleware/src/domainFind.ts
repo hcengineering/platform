@@ -72,7 +72,8 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
       (ctx) => {
         return this.adapterManager.getAdapter(domain, false).findAll(ctx, _class, query, options)
       },
-      { _class, query, options: this.toPrintableOptions(options) }
+      { _class, query, options: this.toPrintableOptions(options) },
+      { span: 'skip' }
     )
   }
 
