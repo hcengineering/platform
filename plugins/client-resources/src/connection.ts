@@ -686,7 +686,7 @@ class Connection implements ClientConnection {
     overrideId?: number
   }): Promise<any> {
     return this.ctx.with(
-      'connection-' + data.method,
+      'send-request',
       {},
       async (ctx) => {
         if (this.closed) {
@@ -757,9 +757,9 @@ class Connection implements ClientConnection {
           return await promise.promise
         }
       },
-      undefined,
+      { method: data.method },
       {
-        span: 'inherit'
+        span: 'skip'
       }
     )
   }

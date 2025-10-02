@@ -15,9 +15,7 @@ import { type Employee, type Person } from '@hcengineering/contact'
 import { type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
-
-import { createPulseClient } from './pulse'
+import presentation, { createPulseClient } from '@hcengineering/presentation'
 
 export interface PresenceInfo {
   personId: Ref<Person>

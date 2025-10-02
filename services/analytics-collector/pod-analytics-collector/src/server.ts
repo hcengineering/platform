@@ -14,6 +14,7 @@
 //
 
 import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
+import { reportOTEL, reportOTELError } from '@hcengineering/analytics-service'
 import type { MeasureContext } from '@hcengineering/core'
 import { extractToken } from '@hcengineering/server-client'
 import { Token } from '@hcengineering/server-token'
@@ -270,9 +271,10 @@ export function createServer (ctx: MeasureContext): Express {
         if (evt.event === AnalyticEventType.Error) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { error_message, error_type, error_stack } = evt.properties ?? {}
-          ctx.error(error_message ?? '', { error_type, error_stack })
+          reportOTELError({ message: error_message ?? 'Unknown error', stack: error_stack, name: error_type ?? '' })
+        } else {
+          reportOTEL('info', evt.event, evt.timestamp, { ...evt.properties, distinct_id: evt.distinct_id })
         }
-        // TODO: Handle other events as gauges per minute
       }
     })
   )

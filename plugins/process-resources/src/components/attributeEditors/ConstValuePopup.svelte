@@ -37,7 +37,6 @@
 </script>
 
 <Card width={'menu'} label={attribute.label} canSave={value != null} on:close okAction={save}>
-  {value}
   {#if editor != null}
     <Component
       is={editor}

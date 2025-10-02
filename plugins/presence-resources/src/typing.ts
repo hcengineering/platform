@@ -14,9 +14,8 @@
 import { type Employee, type Person } from '@hcengineering/contact'
 import { type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import presentation, { createPulseClient } from '@hcengineering/presentation'
 import { type Doc, type Ref } from '@hcengineering/core'
-import { createPulseClient } from './pulse'
 
 const typingDelaySeconds = 2
 
