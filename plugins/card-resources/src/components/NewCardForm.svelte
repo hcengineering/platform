@@ -63,21 +63,24 @@
   let description: Markup = EmptyMarkup
   let initialized = false
 
-  $: if (currentDraft != null && !initialized) {
-    title = currentDraft.title
-    description = currentDraft.description
-    if (currentDraft.type !== undefined) {
-      type = currentDraft.type
+  function initializeFromDraft(draft: CardDraft) {
+    title = draft.title
+    description = draft.description
+    if (draft.type !== undefined) {
+      type = draft.type
     }
-    if (currentDraft.space !== undefined) {
-      space = currentDraft.space
+    if (draft.space !== undefined) {
+      space = draft.space
     }
-    if (currentDraft.title !== '' || !isEmptyMarkup(currentDraft.description)) {
+    if (draft.title !== '' || !isEmptyMarkup(draft.description)) {
       isExpanded = true
     }
     initialized = true
   }
 
+  $: if (currentDraft != null && !initialized) {
+    initializeFromDraft(currentDraft)
+  }
   $: draftController.save({ title, description, type, space }, getEmptyCardDraft())
 
   let creating = false
