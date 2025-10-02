@@ -67,7 +67,7 @@
     "png-chunks-extract": "^1.0.0",
     "svelte": "^4.2.20",
     "uuid": "^8.3.2",
-    "yjs": "^13.6.23"
+    "yjs": "^13.6.27"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

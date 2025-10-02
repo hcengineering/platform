@@ -44,6 +44,8 @@
   export let hideHeader: boolean = false
   export let readonly: boolean = false
   export let showThreads: boolean = true
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
 
   let isEditing = false
   let author: Person | undefined
@@ -161,6 +163,8 @@
       {hideAvatar}
       {hideHeader}
       {showThreads}
+      {collapsible}
+      {maxHeight}
     />
   {/if}
 

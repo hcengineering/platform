@@ -96,7 +96,8 @@ export default mergeIds(viewId, view, {
     BaseDocPresenter: '' as AnyComponent,
     MasterDetailView: '' as AnyComponent,
     AssociationPresenter: '' as AnyComponent,
-    TreeView: '' as AnyComponent
+    TreeView: '' as AnyComponent,
+    AddRelationPopup: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

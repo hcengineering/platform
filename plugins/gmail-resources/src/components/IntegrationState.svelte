@@ -23,6 +23,7 @@
   import gmail from '../plugin'
   import { getState } from '../api'
   import platform, { IntlString, OK, ERROR, Status, Severity } from '@hcengineering/platform'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration
 
@@ -40,7 +41,7 @@
       isLoading = false
       subscribe()
       status = state?.status === 'inactive' ? new Status(Severity.WARNING, platform.status.OK, {}) : OK
-    } catch (err) {
+    } catch (err: any) {
       status = ERROR
       error = err instanceof Error ? err.message : 'Failed to load gmail state'
       if (error.includes('Failed to fetch')) {
@@ -48,6 +49,7 @@
       }
       isLoading = false
       console.error('Error loading gmail state:', err)
+      Analytics.handleError(err)
     }
   })
 
@@ -75,6 +77,7 @@
       state = await getState(integration.socialId)
     } catch (err: any) {
       console.error('Error refresh gmail state:', err.message)
+      Analytics.handleError(err)
     }
   }
 

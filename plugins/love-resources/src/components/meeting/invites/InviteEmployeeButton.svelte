@@ -15,6 +15,7 @@
 <script lang="ts">
   import { ButtonBaseSize, IconSize, ModernButton, showPopup } from '@hcengineering/ui'
   import { Employee } from '@hcengineering/contact'
+  import { currentMeetingRoom, sendInvites } from '../../../meetings'
   import love from '../../../plugin'
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
@@ -39,11 +40,13 @@
   }
 
   function openSelectUsersPopup (): void {
+    const skipAccounts = $infos.filter((p) => p.room === currentMeetingRoom).map((p) => p.person)
     showPopup(
       SelectUsersPopup,
       {
         okLabel: love.string.Invite,
         skipCurrentAccount: true,
+        skipAccounts,
         skipInactive: true,
         showStatus: true
       },

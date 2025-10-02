@@ -76,6 +76,7 @@ export type LoginInfoRequest = {
 export interface WorkspaceInviteInfo {
   workspace: WorkspaceUuid
   email?: string
+  name?: string
 }
 
 export interface OtpInfo {

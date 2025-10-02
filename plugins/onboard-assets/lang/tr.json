@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Gerekli alan {field}",
+    "FieldsDoNotMatch": "{field}, {field2} ile eşleşmiyor",
+    "ConnectingToServer": "Sunucuya bağlanılıyor...."
+  },
+  "string": {
+    "CreateWorkspace": "Çalışma alanı oluştur",
+    "LastName": "Soyad",
+    "FirstName": "Ad",
+    "Workspace": "Çalışma alanı adı",
+    "FillInProfile": "Profilinizi doldurun",
+    "SetUpPassword": "Şifrenizi ayarlayın",
+    "Next": "İleri",
+    "Skip": "Atla",
+    "SignUpCompleted": "Kayıt tamamlandı",
+    "StartUsingHuly": "Huly'yi kullanmaya başla"
+  }
+}

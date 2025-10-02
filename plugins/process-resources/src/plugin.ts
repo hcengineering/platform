@@ -141,6 +141,7 @@ export default mergeIds(processId, process, {
     Divide: '' as IntlString,
     Modulo: '' as IntlString,
     Power: '' as IntlString,
+    Sqrt: '' as IntlString,
     Round: '' as IntlString,
     Absolute: '' as IntlString,
     Ceil: '' as IntlString,
@@ -197,6 +198,9 @@ export default mergeIds(processId, process, {
     AddResult: '' as IntlString,
     For: '' as IntlString,
     Attribute: '' as IntlString,
-    Context: '' as IntlString
+    Context: '' as IntlString,
+    EmptyArray: '' as IntlString,
+    ExecutionInitiator: '' as IntlString,
+    ExecutionStarted: '' as IntlString
   }
 })

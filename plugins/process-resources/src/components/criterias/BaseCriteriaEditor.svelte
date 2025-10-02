@@ -68,7 +68,6 @@
   {#if contextValue}
     <ContextValue
       {process}
-      masterTag={process.masterTag}
       {contextValue}
       {context}
       {attribute}
@@ -92,6 +91,7 @@
             justify: 'left',
             readonly,
             type: attribute?.type,
+            showNavigate: false,
             value: val,
             onChange,
             focus

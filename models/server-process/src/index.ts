@@ -177,6 +177,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Power
   })
 
+  builder.mixin(process.function.Sqrt, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Sqrt
+  })
+
   builder.mixin(process.function.Round, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Round
   })
@@ -231,6 +235,27 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.RemoveLast, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.RemoveLast
+  })
+
+  builder.mixin(process.function.EmptyArray, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.EmptyArray
+  })
+
+  builder.mixin(
+    process.function.ExecutionEmployeeInitiator,
+    process.class.ProcessFunction,
+    serverProcess.mixin.FuncImpl,
+    {
+      func: serverProcess.transform.ExecutionInitiator
+    }
+  )
+
+  builder.mixin(process.function.ExecutionInitiator, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ExecutionInitiator
+  })
+
+  builder.mixin(process.function.ExecutionStarted, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ExecutionStarted
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

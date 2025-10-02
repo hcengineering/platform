@@ -34,13 +34,13 @@ import core, {
   type Ref,
   SortingOrder,
   type TxOperations,
-  type WithLookup
+  type WithLookup,
+  getClassCollaborators
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
   type DisplayInboxNotification,
   type DocNotifyContext,
-  getClassCollaborators,
   type InboxNotification,
   type MentionInboxNotification,
   notificationId,

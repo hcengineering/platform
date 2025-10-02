@@ -24,6 +24,7 @@
   import { getContext } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let readonly: boolean
   export let process: Process
@@ -57,11 +58,11 @@
         .then((p) => {
           editor = p
         })
-        .catch((e) => {
-          console.error(e)
+        .catch((e: any) => {
+          Analytics.handleError(e)
         })
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
     }
   }
 

@@ -23,6 +23,7 @@
 
   import { getChannelName, getObjectIcon } from '../utils'
   import chunter from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: Doc
   export let readonly = false
@@ -48,8 +49,8 @@
         }
         clazz = hierarchy.getClass(clazz).extends
       }
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
       return []
     }
     return []

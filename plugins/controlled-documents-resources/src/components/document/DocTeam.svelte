@@ -27,6 +27,7 @@
   export let canChangeCoAuthors: boolean = true
   export let reviewers: Ref<Employee>[] = controlledDoc?.reviewers ?? []
   export let approvers: Ref<Employee>[] = controlledDoc?.approvers ?? []
+  export let externalApprovers: Ref<Employee>[] = controlledDoc?.externalApprovers ?? []
   export let coAuthors: Ref<Employee>[] = controlledDoc?.coAuthors ?? []
 
   const dispatch = createEventDispatcher()
@@ -52,7 +53,10 @@
     $permissionsStore
   ).filter((person) => person !== currentEmployee) as Ref<Employee>[]
 
-  function handleUsersUpdated (type: 'reviewers' | 'approvers' | 'coAuthors', users: Ref<Employee>[]): void {
+  function handleUsersUpdated (
+    type: 'reviewers' | 'approvers' | 'coAuthors' | 'externalApprovers',
+    users: Ref<Employee>[]
+  ): void {
     dispatch('update', { type, users })
   }
 </script>
@@ -117,6 +121,28 @@
       readonly={!canChangeApprovers}
       on:update={({ detail }) => {
         handleUsersUpdated('approvers', detail)
+      }}
+    />
+  </div>
+  <div class="mt-6 mb-6 divider" />
+  <div class="flex labelContainer">
+    <div class="label mr-1">
+      <Label label={documents.string.ExternalApprovers} />
+    </div>
+    {externalApprovers?.length}
+  </div>
+  <div class="flex-col mt-4">
+    <UserBoxItems
+      items={externalApprovers}
+      docQuery={{
+        active: true,
+        role: 'GUEST',
+        _id: { $nin: permittedApprovers }
+      }}
+      label={documents.string.ExternalApprovers}
+      readonly={!canChangeApprovers}
+      on:update={({ detail }) => {
+        handleUsersUpdated('externalApprovers', detail)
       }}
     />
   </div>

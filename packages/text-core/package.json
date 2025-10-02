@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
-    "fast-equals": "^5.2.2"
+    "fast-equals": "^5.2.2",
+    "hash-it": "^6.0.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

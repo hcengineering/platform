@@ -1,0 +1,29 @@
+{
+  "status": {
+    "LoadingPlugin": "{plugin} eklentisi yükleniyor...",
+    "UnknownError": "Bilinmeyen hata: {message}",
+    "InvalidId": "Geçersiz Id: {id}",
+    "BadRequest": "Hatalı istek",
+    "Forbidden": "Yasak",
+    "Conflict": "Çakışma",
+    "ExpiredLink": "Bu davet bağlantısının süresi dolmuş",
+    "Unauthorized": "Yetkisiz",
+    "UnknownMethod": "Bilinmeyen metod: {method}",
+    "InternalServerError": "Dahili sunucu hatası",
+    "MaintenanceWarning": "Bakım Planlandı:",
+    "MaintenanceWarningTime": "{time, plural, =1 {bir dakikadan az} other {# dakika}}",
+    "AccountNotFound": "Hesap bulunamadı veya girilen kimlik bilgileri yanlış",
+    "AccountNotConfirmed": "Hesap doğrulanmadı",
+    "WorkspaceNotFound": "Çalışma alanı bulunamadı",
+    "AccountAlreadyExists": "Hesap zaten mevcut",
+    "WorkspaceRateLimit": "Sunucu meşgul, Lütfen biraz bekleyin ve tekrar deneyin",
+    "AccountAlreadyConfirmed": "Hesap zaten doğrulandı",
+    "WorkspaceAlreadyExists": "Çalışma alanı zaten mevcut",
+    "InvalidOtp": "Geçersiz kod",
+    "InviteNotFound": "E-posta ile davet bulunamadı: {email}",
+    "WorkspaceLimitReached": "Çalışma alanı limitine ulaştınız. Lütfen bizimle iletişime geçin...",
+    "ReadOnlyAccount": "Anonim Misafir Demo",
+    "SystemAccount": "Sistem hesabı",
+    "SocialIdAlreadyExists": "Sosyal ID zaten mevcut"
+  }
+}

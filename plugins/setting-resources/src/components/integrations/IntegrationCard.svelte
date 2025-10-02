@@ -76,7 +76,7 @@
         await disconnect(integration)
       }
     } catch (err: any) {
-      console.error('Error disconnecting integration:', err)
+      Analytics.handleError(err)
       const errorMessage: string = err.message ?? 'Unknown error'
       const integrationError = errorMessage.includes('Failed to fetch')
         ? setting.string.ServiceIsUnavailable
@@ -102,7 +102,7 @@
         await disconnectAll(integration)
       }
     } catch (err: any) {
-      console.error('Error disconnecting integration:', err)
+      Analytics.handleError(err)
       const errorMessage: string = err.message ?? 'Unknown error'
       const integrationError = errorMessage.includes('Failed to fetch')
         ? setting.string.ServiceIsUnavailable

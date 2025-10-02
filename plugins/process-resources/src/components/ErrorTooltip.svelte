@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { translate } from '@hcengineering/platform'
   import { ExecutionError } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
@@ -24,8 +25,8 @@
       for (const key in val.intlProps) {
         try {
           val.props[key] = await translate(val.intlProps[key], {})
-        } catch (err) {
-          console.error(err)
+        } catch (err: any) {
+          Analytics.handleError(err)
         }
       }
     }

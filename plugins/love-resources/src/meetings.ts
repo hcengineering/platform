@@ -7,6 +7,7 @@ import {
   getRoomName,
   liveKitClient,
   loveClient,
+  navigateToMeetingMinutes,
   navigateToOfficeDoc
 } from './utils'
 import { get } from 'svelte/store'
@@ -130,6 +131,7 @@ async function connectToMeeting (room: Room): Promise<void> {
     const token = await loveClient.getRoomToken(room)
     const wsURL = getLiveKitEndpoint()
     await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
+    await navigateToMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveMeeting()

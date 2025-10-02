@@ -42,6 +42,7 @@
     "SearchDocument": "搜索文档...",
     "CreateEnVersion": "创建审核版本",
     "Approvers": "批准人",
+    "ExternalApprovers": "外部批准人",
     "CoAuthors": "共同作者",
     "Status": "状态",
     "TemplateName": "模板名称",
