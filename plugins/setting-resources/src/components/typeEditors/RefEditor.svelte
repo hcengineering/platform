@@ -79,7 +79,15 @@
   <Label label={core.string.Class} />
 </span>
 {#if editable}
-  <DropdownLabelsIntl label={core.string.Class} items={classes} {width} bind:selected={refClass} {kind} {size} />
+  <DropdownLabelsIntl
+    label={core.string.Class}
+    items={classes}
+    {width}
+    bind:selected={refClass}
+    {kind}
+    {size}
+    withSearch
+  />
 {:else if selected}
   <Label label={selected.label} />
 {/if}
