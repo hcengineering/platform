@@ -21,7 +21,6 @@ import core, {
 import login from '@hcengineering/login'
 import {
   isOffice,
-  type JoinRequest,
   LoveEvents,
   loveId,
   type Meeting,
@@ -279,8 +278,6 @@ export async function navigateToMeetingMinutes (room: Room): Promise<void> {
   }
   await navigateToOfficeDoc(room)
 }
-
-export const joinRequest: Ref<JoinRequest> | undefined = undefined
 
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
   let fH: number = 5

@@ -168,13 +168,10 @@ export interface Config {
   GITHUB_APP?: string
   GITHUB_CLIENTID?: string
   GITHUB_URL: string
-  SENTRY_DSN?: string
   LOVE_ENDPOINT?: string
   LIVEKIT_WS?: string
   SIGN_URL?: string
   PRINT_URL?: string
-  POSTHOG_API_KEY?: string
-  POSTHOG_HOST?: string
   ANALYTICS_COLLECTOR_URL?: string
   BRANDING_URL?: string
   TELEGRAM_BOT_URL?: string

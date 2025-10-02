@@ -26,6 +26,7 @@ import core, {
   DOMAIN_MODEL,
   type FindResult,
   generateId,
+  getClassCollaborators,
   type LookupData,
   type MeasureContext,
   type ObjQueryType,
@@ -456,12 +457,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
 
     ctx.contextData.broadcast.targets.spaceSec = async (tx) => {
+      const cud = tx as TxCUD<Doc>
+      if (cud.objectClass === undefined) return undefined
+
+      // For system and main spaces broadcast to all users except guests that are not collaborators for objects with collab security enabled
       if (this.systemSpaces.has(tx.objectSpace) || this.mainSpaces.has(tx.objectSpace)) {
-        const cud = tx as TxCUD<Doc>
-        if (cud.objectClass === undefined) return undefined
-        const collabSec = this.context.modelDb.findAllSync(core.class.ClassCollaborators, {
-          attachedTo: cud.objectClass
-        })[0]
+        const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cud.objectClass)
         if (collabSec?.provideSecurity === true) {
           const guests = new Set<AccountUuid>()
           for (const val of ctx.contextData.socialStringsToUsers.values()) {
@@ -483,7 +484,26 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const space = this.spacesMap.get(tx.objectSpace)
       if (space === undefined) return undefined
 
-      return space.members.length === 0 ? undefined : { target: this.getTargets(space?.members) }
+      // For all other spaces broadcast to space members + guests that are collaborators for objects with collab security enabled
+      let collabTargets: AccountUuid[] = []
+      const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cud.objectClass)
+      if (collabSec?.provideSecurity === true) {
+        const guests = new Set<AccountUuid>()
+        for (const val of ctx.contextData.socialStringsToUsers.values()) {
+          if ([AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(val.role)) {
+            guests.add(val.accontUuid)
+          }
+        }
+        const collaboratorObjs = (await this.next?.findAll(ctx, core.class.Collaborator, {
+          attachedTo: cud.objectId
+        })) as Collaborator[]
+
+        collabTargets = collaboratorObjs.map((it) => it.collaborator).filter((it) => guests.has(it))
+      }
+      const spaceTargets = space.members.length === 0 ? [] : this.getTargets(space?.members)
+      const target = [...collabTargets, ...spaceTargets]
+
+      return target.length === 0 ? undefined : { target }
     }
 
     await this.next?.handleBroadcast(ctx)

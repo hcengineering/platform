@@ -42,6 +42,7 @@
     "SearchDocument": "Dokument suchen...",
     "CreateEnVersion": "Version zur Überprüfung erstellen",
     "Approvers": "Genehmiger",
+    "ExternalApprovers": "Externe Genehmiger",
     "CoAuthors": "Co-Autoren",
     "Status": "Status",
     "TemplateName": "Vorlagenname",

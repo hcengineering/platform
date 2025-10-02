@@ -33,6 +33,7 @@
   import chat from '@hcengineering/chat'
 
   import EditorActions from './EditorActions.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
@@ -90,7 +91,7 @@
       const createdCard = await createCard(type, space, data, cardDescription, _id)
       if (isThread) {
         if (createdCard == null) {
-          console.error('Failed to create thread card')
+          Analytics.handleError(new Error('Failed to create thread card'))
           return
         }
         const blobs: (BlobParams & { mimeType: string })[] = descriptionBox.getAttachments().map((attachment) => ({

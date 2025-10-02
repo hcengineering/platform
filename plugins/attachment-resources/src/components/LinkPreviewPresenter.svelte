@@ -27,6 +27,7 @@
   import { getImageDimensions } from '../utils'
   import LinkPreviewIcon from './LinkPreviewIcon.svelte'
   import LinkPreviewImage from './LinkPreviewImage.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let attachment: WithLookup<Attachment>
   export let isOwn = false
@@ -56,7 +57,7 @@
       })
       .catch((err) => {
         viewModel = undefined
-        console.error(err)
+        Analytics.handleError(err)
       })
   })
 

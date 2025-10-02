@@ -67,6 +67,7 @@
     snapshots: 0,
     reviewers: [],
     approvers: [],
+    externalApprovers: [],
     coAuthors: [],
     changeControl: '' as Ref<ChangeControl>,
     content: null

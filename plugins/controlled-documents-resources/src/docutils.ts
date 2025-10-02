@@ -122,6 +122,7 @@ export async function createNewDraftForControlledDoc (
     abstract: document.abstract ?? '',
     reviewers: document.reviewers,
     approvers: document.approvers,
+    externalApprovers: [], // Require manual request for all external approvers for new versions of documents. Automatic carry-on would require to set collaborators to all related documents.
     coAuthors: document.coAuthors,
     reviewInterval: document.reviewInterval,
     changeControl: newCCId,

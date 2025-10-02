@@ -90,7 +90,6 @@
       {#if firstContextValue}
         <ContextValue
           {process}
-          masterTag={process.masterTag}
           contextValue={firstContextValue}
           {context}
           {attribute}
@@ -136,7 +135,6 @@
       {#if secondContextValue}
         <ContextValue
           {process}
-          masterTag={process.masterTag}
           contextValue={secondContextValue}
           {context}
           {attribute}

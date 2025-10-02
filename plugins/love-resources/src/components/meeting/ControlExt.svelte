@@ -14,29 +14,17 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { Invite, isOffice, JoinRequest, ParticipantInfo, RequestStatus, Room } from '@hcengineering/love'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    closePopup,
-    eventToHTMLElement,
-    Location,
-    location,
-    PopupResult,
-    showPopup,
-    closeTooltip
-  } from '@hcengineering/ui'
+  import { isOffice, ParticipantInfo, Room } from '@hcengineering/love'
+  import { getClient } from '@hcengineering/presentation'
+  import { closePopup, eventToHTMLElement, Location, location, showPopup, closeTooltip } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
   import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
-  import { activeInvites, currentRoom, infos, myInfo, myInvites, myRequests, rooms } from '../../stores'
+  import { currentRoom, infos, myInfo, rooms } from '../../stores'
   import { createMeetingWidget, getRoomName } from '../../utils'
-  import ActiveInvitesPopup from './invites/ActiveInvitesPopup.svelte'
-  import InvitePopup from './invites/InvitePopup.svelte'
   import PersonActionPopup from '../PersonActionPopup.svelte'
-  import RequestPopup from './invites/RequestPopup.svelte'
-  import RequestingPopup from './invites/RequestingPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
   import { leaveMeeting, currentMeetingRoom } from '../../meetings'
@@ -70,56 +58,6 @@
 
   $: activeRooms = getActiveRooms($rooms, $infos)
 
-  const query = createQuery()
-  let requests: JoinRequest[] = []
-  query.query(love.class.JoinRequest, { status: RequestStatus.Pending }, (res) => {
-    requests = res
-  })
-
-  let activeRequest: JoinRequest | undefined = undefined
-  const joinRequestCategory = 'joinRequest'
-  function checkRequests (requests: JoinRequest[], $myInfo: ParticipantInfo | undefined): void {
-    if (activeRequest !== undefined) {
-      // try to find active request, if it not exists close popup
-      if (requests.find((r) => r._id === activeRequest?._id && r.room === $myInfo?.room) === undefined) {
-        closePopup(joinRequestCategory)
-        activeRequest = undefined
-      }
-    }
-    if (activeRequest === undefined) {
-      activeRequest = requests.find((r) => r.room === $myInfo?.room)
-      if (activeRequest !== undefined) {
-        showPopup(RequestPopup, { request: activeRequest }, undefined, undefined, undefined, {
-          category: joinRequestCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    }
-  }
-
-  const myJoinRequestCategory = 'MyJoinRequest'
-  let myRequestsPopup: PopupResult | undefined = undefined
-
-  function checkMyRequests (requests: JoinRequest[]): void {
-    if (requests.length > 0) {
-      if (myRequestsPopup === undefined) {
-        myRequestsPopup = showPopup(RequestingPopup, { request: requests[0] }, undefined, undefined, undefined, {
-          category: myJoinRequestCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    } else if (myRequestsPopup !== undefined) {
-      myRequestsPopup.close()
-      myRequestsPopup = undefined
-    }
-  }
-
-  $: checkMyRequests($myRequests)
-
-  $: checkRequests(requests, $myInfo)
-
   function openRoom (room: Room): (e: MouseEvent) => void {
     return (e: MouseEvent) => {
       closeTooltip()
@@ -127,54 +65,11 @@
     }
   }
 
-  let activeInvite: Invite | undefined = undefined
-  const inviteCategory = 'inviteReq'
-  function checkInvites (invites: Invite[]): void {
-    if (activeInvite !== undefined) {
-      // try to find active request, if it not exists close popup
-      if (invites.find((r) => r._id === activeInvite?._id) === undefined) {
-        closePopup(inviteCategory)
-        activeInvite = undefined
-      }
-    }
-    if (activeInvite === undefined) {
-      activeInvite = invites[0]
-      if (activeInvite !== undefined) {
-        showPopup(InvitePopup, { invite: activeInvite }, undefined, undefined, undefined, {
-          category: inviteCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    }
-  }
-
-  $: checkInvites($myInvites)
-
   const myInvitesCategory = 'myInvites'
-
-  let myInvitesPopup: PopupResult | undefined = undefined
-
-  function checkActiveInvites (invites: Invite[]): void {
-    if (invites.length > 0) {
-      if (myInvitesPopup === undefined) {
-        myInvitesPopup = showPopup(ActiveInvitesPopup, {}, undefined, undefined, undefined, {
-          category: myInvitesCategory,
-          overlay: false,
-          fixed: true
-        })
-      }
-    } else if (myInvitesPopup !== undefined) {
-      myInvitesPopup.close()
-      myInvitesPopup = undefined
-    }
-  }
 
   $: reception = $rooms.find((f) => f._id === love.ids.Reception)
 
   $: receptionParticipants = $infos.filter((p) => p.room === love.ids.Reception)
-
-  $: checkActiveInvites($activeInvites)
 
   function checkActiveMeeting (loc: Location, meetingSessionConnected: boolean, room: Ref<Room> | undefined): void {
     const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
@@ -211,9 +106,6 @@
 
   onDestroy(() => {
     closePopup(myInvitesCategory)
-    closePopup(inviteCategory)
-    closePopup(joinRequestCategory)
-    closePopup(myJoinRequestCategory)
     closeWidget(love.ids.MeetingWidget)
   })
 

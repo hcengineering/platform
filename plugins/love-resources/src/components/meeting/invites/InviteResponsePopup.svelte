@@ -13,32 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { playNotificationSound } from '@hcengineering/presentation'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
+  import { playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest } from '@hcengineering/love'
-  import love from '../../../plugin'
   import { onDestroy, onMount } from 'svelte'
-  import { acceptJoinRequest, rejectJoinRequest } from '../../../meetings'
 
-  export let request: JoinRequest
+  import love from '../../../plugin'
+  import { InviteRequest, responseToInviteRequest } from '../../../invites'
 
-  $: personByRefStore = getPersonByPersonRefStore([request.person])
-  $: person = $personByRefStore.get(request.person)
+  export let invite: InviteRequest
+  let person: Person | undefined = undefined
+
+  $: getPersonByPersonRefCb(invite.from, (p) => {
+    person = p ?? undefined
+  })
 
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await acceptJoinRequest(request)
+    await responseToInviteRequest(true)
   }
 
   async function decline (): Promise<void> {
-    await rejectJoinRequest(request)
+    await responseToInviteRequest(false)
   }
 
   onMount(async () => {
-    stopSound = await playNotificationSound(love.sound.Knock, love.class.JoinRequest, true)
+    stopSound = await playSound(love.sound.Knock, true)
   })
 
   onDestroy(() => {
@@ -51,7 +53,7 @@
     <div class="p-4 flex-col-center flex-gap-4">
       <Avatar {person} size={'large'} name={person.name} />
       <span class="title">
-        <Label label={love.string.IsKnocking} params={{ name: formatName(person.name) }} />
+        <Label label={love.string.InvitingYou} params={{ name: formatName(person.name) }} />
       </span>
     </div>
   {/if}
@@ -78,6 +80,6 @@
 
   .title {
     color: var(--caption-color);
-    font-size: 700;
+    font-weight: 700;
   }
 </style>

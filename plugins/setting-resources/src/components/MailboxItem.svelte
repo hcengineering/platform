@@ -29,6 +29,7 @@
   import { getAccountClient } from '../utils'
   import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let mailbox: MailboxInfo
   export let mailboxIdx: number
@@ -49,8 +50,9 @@
           loadingRequested()
           try {
             await deleteMailbox()
-          } catch (err) {
+          } catch (err: any) {
             console.error('Failed to delete mailbox', err)
+            Analytics.handleError(err)
           }
           reloadRequested()
         }

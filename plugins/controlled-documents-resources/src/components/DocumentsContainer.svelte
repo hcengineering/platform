@@ -17,11 +17,10 @@
   import { Class, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import type { IntlString, Asset } from '@hcengineering/platform'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
-  import documents, { type Document, type DocumentSpace, DocumentState } from '@hcengineering/controlled-documents'
+  import { type Document, DocumentState } from '@hcengineering/controlled-documents'
 
   import Documents from './Documents.svelte'
   import document from '../plugin'
-  import { createQuery } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Document>> = document.class.Document
   export let query: DocumentQuery<Document> = {}
@@ -36,29 +35,13 @@
   let mode: string | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  let spaces: Ref<DocumentSpace>[] = []
-  const spacesQuery = createQuery()
-
-  $: spacesQuery.query(
-    documents.class.DocumentSpace,
-    {},
-    (res) => {
-      spaces = res.map((s) => s._id)
-    },
-    {
-      projection: {
-        _id: 1
-      }
-    }
-  )
-
   // NOTE: we have to use "{ type: { $in:" queries below. Otherwise, it breaks when combined
   // with custom Filters added by State.
-  $: inProgress = { state: { $in: [DocumentState.Draft] }, space: { $in: spaces } }
-  $: effective = { state: { $in: [DocumentState.Effective] }, space: { $in: spaces } }
-  $: archived = { state: { $in: [DocumentState.Archived, DocumentState.Deleted] }, space: { $in: spaces } }
-  $: obsolete = { state: { $in: [DocumentState.Obsolete] }, space: { $in: spaces } }
-  $: all = { space: { $in: spaces } }
+  $: inProgress = { state: { $in: [DocumentState.Draft] } }
+  $: effective = { state: { $in: [DocumentState.Effective] } }
+  $: archived = { state: { $in: [DocumentState.Archived, DocumentState.Deleted] } }
+  $: obsolete = { state: { $in: [DocumentState.Obsolete] } }
+  $: all = {}
 
   $: queries = { inProgress, effective, archived, obsolete, all }
 

@@ -47,13 +47,13 @@ import core, {
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  getClassCollaborators
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
   CommonInboxNotification,
   DocNotifyContext,
-  getClassCollaborators,
   InboxNotification,
   MentionInboxNotification,
   NotificationType

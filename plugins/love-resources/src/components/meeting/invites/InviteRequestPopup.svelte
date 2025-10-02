@@ -13,32 +13,50 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact, { Person } from '@hcengineering/contact'
+  import { CombineAvatars } from '@hcengineering/contact-resources'
   import { Button, Label } from '@hcengineering/ui'
-  import { JoinRequest } from '@hcengineering/love'
   import love from '../../../plugin'
-  import { rooms } from '../../../stores'
-  import { getRoomLabel } from '../../../utils'
-  import { cancelJoinRequest } from '../../../meetings'
+  import { Ref } from '@hcengineering/core'
+  import { onMount } from 'svelte'
+  import {
+    cancelInvites,
+    closeInvitesPopup,
+    inviteRequestSecondsToLive,
+    subscribeInviteResponses,
+    unsubscribeInviteResponses,
+    updateInvites
+  } from '../../../invites'
 
-  export let request: JoinRequest
+  export let persons: Array<Ref<Person>>
+  export let meetingId: string
 
-  $: room = $rooms.find((p) => p._id === request.room)
+  onMount(() => {
+    void subscribeInviteResponses()
+    void doUpdateInvites()
+    const interval = setInterval(doUpdateInvites, (inviteRequestSecondsToLive - 2) * 1000)
+    return () => {
+      void unsubscribeInviteResponses()
+      clearInterval(interval)
+      void cancelInvites(meetingId)
+    }
+  })
+
+  async function doUpdateInvites (): Promise<void> {
+    await updateInvites(persons, meetingId)
+  }
 
   async function cancel (): Promise<void> {
-    await cancelJoinRequest(request)
+    closeInvitesPopup()
   }
 </script>
 
 <div class="antiPopup flex-col-center">
-  <div class="mb-4 flex-col-center flex-gap-2">
-    <Label label={love.string.KnockingTo} params={{ name: room?.name }} />
-    <span class="title">
-      {#if room}
-        {#await getRoomLabel(room) then label}
-          <Label {label} />
-        {/await}
-      {/if}
-    </span>
+  <span class="title">
+    <Label label={love.string.YouInivite} />
+  </span>
+  <div class="p-4">
+    <CombineAvatars _class={contact.class.Person} size={'large'} items={persons} limit={5} />
   </div>
   <div class="flex-row-center p-1 w-full">
     <Button label={love.string.Cancel} width={'100%'} on:click={cancel} />

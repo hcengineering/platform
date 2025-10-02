@@ -37,6 +37,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
