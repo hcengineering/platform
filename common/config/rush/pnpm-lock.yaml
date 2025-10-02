@@ -35,11 +35,11 @@ importers:
         specifier: ^8.4.1
         version: 8.4.1
       '@hcengineering/measurements':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/measurements-otlp':
-        specifier: ^0.7.6
-        version: 0.7.6(encoding@0.1.13)
+        specifier: ^0.7.7
+        version: 0.7.7(encoding@0.1.13)
       '@hcengineering/postgres-base':
         specifier: ^0.7.6
         version: 0.7.6
@@ -129,7 +129,7 @@ importers:
         version: file:projects/analytics-collector-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/analytics-providers':
         specifier: file:./projects/analytics-providers.tgz
-        version: file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+        version: file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/analytics-service':
         specifier: file:./projects/analytics-service.tgz
         version: file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
@@ -1432,9 +1432,6 @@ importers:
       '@rush-temp/workspace-service':
         specifier: file:./projects/workspace-service.tgz
         version: file:projects/workspace-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))
-      '@sentry/svelte':
-        specifier: ^9.22.0
-        version: 9.22.0(svelte@4.2.20)
       '@signpdf/placeholder-pdf-lib':
         specifier: ^3.2.4
         version: 3.2.4(pdf-lib@1.17.1)
@@ -2170,9 +2167,6 @@ importers:
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
-      posthog-js:
-        specifier: ^1.246.0
-        version: 1.246.0
       prettier:
         specifier: ^3.1.0
         version: 3.2.5
@@ -3015,11 +3009,11 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hcengineering/measurements-otlp@0.7.6':
-    resolution: {integrity: sha512-Mf578I2f2xAOVHgROdLtjv9TGY6NH1xvYCqzOGXMFpP8EblOE/FJT94GNYF/jh5V5xb/6sqRe0W+NDw+XYUc4A==}
+  '@hcengineering/measurements-otlp@0.7.7':
+    resolution: {integrity: sha512-dr3cB96eotsEPzpJGjyWhyfEYtRVvhQx4Gog7hhJunxIOqJT8JJgBNoCbJqiDkQAS93Y0pnBgKHAR3+ybmLsGw==}
 
-  '@hcengineering/measurements@0.7.6':
-    resolution: {integrity: sha512-uB4GmDvf5qgkcKc6hZO4iQXbtl7I6JKJrQ4qzyM86cQ6Z6eJqrGL5rBROi2V8U/SbM7wOyMO41ciDRBTZ68EIQ==}
+  '@hcengineering/measurements@0.7.7':
+    resolution: {integrity: sha512-ZcdorQbFm4zbcp5fw4AGEe9EQI++dmrKS0PwVWmqy8ImhKKnceaT8CPvBAmyZ0LbVWqhPfzlbs+6ad5++prJCg==}
 
   '@hcengineering/postgres-base@0.7.6':
     resolution: {integrity: sha512-6Vc1uTkPYj3iZV2AwFlG6k0FyQ5kwMujV/INn7wM6EnjdcAZ90F313+69YnkEpbUT5xBc8PetDXyaRx+uTye1w==}
@@ -4342,7 +4336,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/activity-resources@file:projects/activity-resources.tgz':
-    resolution: {integrity: sha512-ENQkwr8qXtc8FpsPf2VCmpq0rVDyNfuFAxvMcGhFwnvqeM/1gJIbOQFkLpdbGWnXNuQsNjHOOwe+PVcoya/Y9A==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-1JAHpQPbCqUznO1N7z8hpzqtYT3zCZ04G2iVdNEsCfV8kGEV66A6e4GTmb30U31js+BYkdMmrLy0khcxGY+FBA==, tarball: file:projects/activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/activity@file:projects/activity.tgz':
@@ -4382,11 +4376,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz':
-    resolution: {integrity: sha512-cj4sqUL50SOLx+NLTUVazbnVDPLfQtg04GoKpbnInKshwrLrDwyTc00J7fRQDzcrO4gQ6g0fvSVhdvLXv5ElFw==, tarball: file:projects/analytics-providers.tgz}
+    resolution: {integrity: sha512-vZ8cgWNTwHS0Tn5/cFbAg0IwvygL+spKJ0qDz4UuFtDP4lBXlYB6ZD9w3/tnit6kyFOpQAD2iL1AxozAsGn9Sw==, tarball: file:projects/analytics-providers.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics-service@file:projects/analytics-service.tgz':
-    resolution: {integrity: sha512-UtRndXv25cD90t9awupy3D7rbE/HRzDqwOl8Kz4uWWUJA7OSGQgnaMufRVT1sNEwRMbK99FCu4LLReSUpgvz+g==, tarball: file:projects/analytics-service.tgz}
+    resolution: {integrity: sha512-a2kfppgi90Ly0Z7L6/W5YxXGUOS6b9aR1zsvHmeBp5WYzWpaMpS41plMKs+SI2h7qtaCRaPvYyqetdAMcHrSfg==, tarball: file:projects/analytics-service.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics@file:projects/analytics.tgz':
@@ -4470,7 +4464,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz':
-    resolution: {integrity: sha512-Mvx65GvL0V8WK2vxO5k4kMciw5YUbJ3CG+/m7rAtJnKvzSb6KIXx6gDD0xWaPLM/bobuFAOef5LKrEj1mFrdaQ==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-6x06C2GPS6Ur93/+hm0RzrWS8Clr5yr9yX1ij5gdbt3bBqrCHlHLMS76ZwwOqoZmGks/vXUQUEgONZpm1PzWew==, tarball: file:projects/calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
@@ -4550,7 +4544,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-ZcX73ZcvQEn3fa+Pvs34vMTkSEnCnkMtEgTBzqTK+i6dKE4a1HZaTmu1JTTigG4lGmPv9nb+vkgfd8yHcSxiwA==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-+Qh+eBdrnPtWE1KJK/7GAgmRj/XCjCpPBXSKHK/JF03tKQElbA85g/5OGfHbTKjJ8xJsrb2REEsUq/dVlKWfAQ==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-rest-client@file:projects/communication-rest-client.tgz':
@@ -4602,7 +4596,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/core@file:projects/core.tgz':
-    resolution: {integrity: sha512-l0qBuyNZPVCtmAy0F9XDwy71liMh1viprhGl2iWSv0a57eASARgMCJQJFlX52mNQfwuoMUOp5Zj8UIb60qaRig==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-h/yL5c06KMv0HDc9yg5JQLZ3S79ch7ad2jqnjytKTXyOCvTxMy1Lu7bHBfonGIcfk1+DUKXih7Z60nG7Grqkow==, tarball: file:projects/core.tgz}
     version: 0.0.0
 
   '@rush-temp/datalake@file:projects/datalake.tgz':
@@ -4866,7 +4860,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-d/rTH5piCl8x3YfKoZ2yIWklH/MU9h8WrccgwV9VS3a1lYQ2i6l+JVpO/hdMGTN6llF3REFNnMYndfcu8Siy4w==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-x0absw3NgqbkqySe1iwOWefvQQJspKnQyAaLddJB8v6XDi2Y/E+8m0nD9E/tmgAIJKiHE5ZcAZZHfFKyZ4LAUA==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -5462,7 +5456,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-r1AG89qg5hvx+usQjP8KLtkNL/j5z/8OHDcURyAb6yOhWAWNkY5Frs05L9qcPsJoN6raUaZ164jzlk0P2SiPqQ==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-oan6DDcf+BzxmKzwYlls96alD6ZHH2VUgOiSFx/sHlg9Dj+MiEVxji6xpHpeEWHylg6Xent0pgUoYGpgwH/ofA==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5482,7 +5476,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-oE8AV/FxaPReVuZdIA/Qu7cqQ4SXO0Dnn6Vhys7wWcOy9DDbv3uHkQldkcxwBaTliUmxiknbsnDez/ctzaaugw==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-QXjVafPpYszh9x3Jh5mJMbPvPea2JfrSZM1rKlXy6BnK6UKTG9y+dTC4Omc4q89In6eJ9QoH8xGs3/bYBcV+ug==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
@@ -5490,7 +5484,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-LkECK91CfEPLwDVaCQWN4XSeBlM1jXqboKuXtu7ftZkgG66wtt1/AlVDqwRY6o1iuvVNvuTJBSp03DMfDzBIKw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-A30NYPTwvGcO8GRpoDMsSp/Z1fGT/WV1zkk4eYxkhwkMYuZTd8bKn9inJOTk8EUVjEICk+2OiB8cSXvaSFcipg==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5930,7 +5924,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/survey-resources@file:projects/survey-resources.tgz':
-    resolution: {integrity: sha512-8NhqMrqF9ZAGFCuq1OmNa13nLvU/o0iIj/h+595X1xyePQkGGm99wY2g7cq4jecMJN0eN4HpxyAwSxIWJK5A5Q==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-8PpO4QEsdEbAjEKcAUAMK5fp+9c63IFj/2b9RovBT+qAQcxYw2d4LQK3lncf2XcpVGLVwkOXHPaK6ohjCOk+GQ==, tarball: file:projects/survey-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/survey@file:projects/survey.tgz':
@@ -6127,36 +6121,6 @@ packages:
 
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
-
-  '@sentry-internal/browser-utils@9.22.0':
-    resolution: {integrity: sha512-Ou1tBnVxFAIn8i9gvrWzRotNJQYiu3awNXpsFCw6qFwmiKAVPa6b13vCdolhXnrIiuR77jY1LQnKh9hXpoRzsg==}
-    engines: {node: '>=18'}
-
-  '@sentry-internal/feedback@9.22.0':
-    resolution: {integrity: sha512-zgMVkoC61fgi41zLcSZA59vOtKxcLrKBo1ECYhPD1hxEaneNqY5fhXDwlQBw96P5l2yqkgfX6YZtSdU4ejI9yA==}
-    engines: {node: '>=18'}
-
-  '@sentry-internal/replay-canvas@9.22.0':
-    resolution: {integrity: sha512-EcG9IMSEalFe49kowBTJObWjof/iHteDwpyuAszsFDdQUYATrVUtwpwN7o52vDYWJud4arhjrQnMamIGxa79eQ==}
-    engines: {node: '>=18'}
-
-  '@sentry-internal/replay@9.22.0':
-    resolution: {integrity: sha512-9GOycoKbrclcRXfcbNV8svbmAsOS5R4wXBQmKF4pFLkmFA/lJv9kdZSNYkRvkrxdNfbMIJXP+DV9EqTZcryXig==}
-    engines: {node: '>=18'}
-
-  '@sentry/browser@9.22.0':
-    resolution: {integrity: sha512-3TeRm74dvX0JdjX0AgkQa+22iUHwHnY+Q6M05NZ+tDeCNHGK/mEBTeqquS1oQX67jWyuvYmG3VV6RJUxtG9Paw==}
-    engines: {node: '>=18'}
-
-  '@sentry/core@9.22.0':
-    resolution: {integrity: sha512-ixvtKmPF42Y6ckGUbFlB54OWI75H2gO5UYHojO6eXFpS7xO3ZGgV/QH6wb40mWK+0w5XZ0233FuU9VpsuE6mKA==}
-    engines: {node: '>=18'}
-
-  '@sentry/svelte@9.22.0':
-    resolution: {integrity: sha512-ainvUpLPbTUKSxVwqcAnRJhAOzWFGsFGXNo6oEJ30pKSGhg3SrW7R5G3kwg7S7/MPr1/fWRPXjhAE1UGmzXIsA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      svelte: 3.x || 4.x || 5.x
 
   '@signpdf/placeholder-pdf-lib@3.2.4':
     resolution: {integrity: sha512-pNYzvLPWiHPir86pDWOK015S0whjNVvItvlTo9kwk1+99l2luIrwmubEvPjxSmDAWQ67UpKxA5lEYQsbZ7Q/og==}
@@ -9678,9 +9642,6 @@ packages:
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
 
-  fflate@0.4.8:
-    resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
-
   file-api@0.10.4:
     resolution: {integrity: sha512-RVBXJGmsnQxokdpy264pmsdBjbUuxE6QT2xxhOrO2pzwTetbTNoWVFgkONFWmopm5mellsXrQIQhMY9fjufi9g==}
 
@@ -12463,20 +12424,6 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.246.0:
-    resolution: {integrity: sha512-5lN/UMqDfxsLeSnT3LsY4P+eD1H+P9qxgN/iUk473LmhCM7IV8TAfdjJj23nnXk/euGNQtvyINYoD2DG+d4eEw==}
-    peerDependencies:
-      '@rrweb/types': 2.0.0-alpha.17
-      rrweb-snapshot: 2.0.0-alpha.17
-    peerDependenciesMeta:
-      '@rrweb/types':
-        optional: true
-      rrweb-snapshot:
-        optional: true
-
-  preact@10.22.1:
-    resolution: {integrity: sha512-jRYbDDgMpIb5LHq3hkI0bbl+l/TQ9UnkdQ0ww+lp+4MMOdqaUYdFc5qeyP+IV8FAd/2Em7drVPeKdQxsiWCf/A==}
-
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -14134,9 +14081,6 @@ packages:
     resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
     engines: {node: '>= 14'}
 
-  web-vitals@4.2.4:
-    resolution: {integrity: sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==}
-
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -15542,9 +15486,9 @@ snapshots:
       protobufjs: 7.5.3
       yargs: 17.7.2
 
-  '@hcengineering/measurements-otlp@0.7.6(encoding@0.1.13)':
+  '@hcengineering/measurements-otlp@0.7.7(encoding@0.1.13)':
     dependencies:
-      '@hcengineering/measurements': 0.7.6
+      '@hcengineering/measurements': 0.7.7
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.203.0
       '@opentelemetry/auto-instrumentations-node': 0.62.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)
@@ -15563,7 +15507,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@hcengineering/measurements@0.7.6': {}
+  '@hcengineering/measurements@0.7.7': {}
 
   '@hcengineering/postgres-base@0.7.6':
     dependencies:
@@ -17790,9 +17734,8 @@ snapshots:
       - svelte
       - ts-node
 
-  '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
+  '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@sentry/svelte': 9.22.0(svelte@4.2.20)
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -17805,7 +17748,6 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
-      posthog-js: 1.246.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
@@ -17813,19 +17755,16 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
-      - '@rrweb/types'
       - babel-jest
       - babel-plugin-macros
       - encoding
       - node-notifier
-      - rrweb-snapshot
       - supports-color
-      - svelte
       - ts-node
 
   '@rush-temp/analytics-service@file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@hcengineering/measurements-otlp': 0.7.6(encoding@0.1.13)
+      '@hcengineering/measurements-otlp': 0.7.7(encoding@0.1.13)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -19459,7 +19398,7 @@ snapshots:
 
   '@rush-temp/core@file:projects/core.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
-      '@hcengineering/measurements': 0.7.6
+      '@hcengineering/measurements': 0.7.7
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
@@ -26142,7 +26081,6 @@ snapshots:
 
   '@rush-temp/prod@file:projects/prod.tgz(@babel/core@7.23.9)(@swc/core@1.13.5)(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))(utf-8-validate@6.0.4)':
     dependencies:
-      '@sentry/svelte': 9.22.0(svelte@4.2.20)
       '@types/node': 22.15.29
       autoprefixer: 10.4.17(postcss@8.5.3)
       browserslist: 4.25.0
@@ -26159,7 +26097,6 @@ snapshots:
       postcss: 8.5.3
       postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.8.3)(webpack@5.97.1)
-      posthog-js: 1.246.0
       readable-stream: 4.7.0
       sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
@@ -26176,7 +26113,6 @@ snapshots:
       webpack-dev-server: 4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)(webpack-cli@5.1.4)(webpack@5.97.1)
     transitivePeerDependencies:
       - '@babel/core'
-      - '@rrweb/types'
       - '@rspack/core'
       - '@swc/core'
       - '@webpack-cli/generators'
@@ -26187,7 +26123,6 @@ snapshots:
       - less
       - node-sass
       - pug
-      - rrweb-snapshot
       - sass
       - sass-embedded
       - stylus
@@ -30748,41 +30683,6 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@sentry-internal/browser-utils@9.22.0':
-    dependencies:
-      '@sentry/core': 9.22.0
-
-  '@sentry-internal/feedback@9.22.0':
-    dependencies:
-      '@sentry/core': 9.22.0
-
-  '@sentry-internal/replay-canvas@9.22.0':
-    dependencies:
-      '@sentry-internal/replay': 9.22.0
-      '@sentry/core': 9.22.0
-
-  '@sentry-internal/replay@9.22.0':
-    dependencies:
-      '@sentry-internal/browser-utils': 9.22.0
-      '@sentry/core': 9.22.0
-
-  '@sentry/browser@9.22.0':
-    dependencies:
-      '@sentry-internal/browser-utils': 9.22.0
-      '@sentry-internal/feedback': 9.22.0
-      '@sentry-internal/replay': 9.22.0
-      '@sentry-internal/replay-canvas': 9.22.0
-      '@sentry/core': 9.22.0
-
-  '@sentry/core@9.22.0': {}
-
-  '@sentry/svelte@9.22.0(svelte@4.2.20)':
-    dependencies:
-      '@sentry/browser': 9.22.0
-      '@sentry/core': 9.22.0
-      magic-string: 0.30.7
-      svelte: 4.2.20
-
   '@signpdf/placeholder-pdf-lib@3.2.4(pdf-lib@1.17.1)':
     dependencies:
       '@signpdf/utils': 3.2.4
@@ -35077,8 +34977,6 @@ snapshots:
 
   fecha@4.2.3: {}
 
-  fflate@0.4.8: {}
-
   file-api@0.10.4:
     dependencies:
       File: 0.10.2
@@ -38238,15 +38136,6 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.246.0:
-    dependencies:
-      core-js: 3.41.0
-      fflate: 0.4.8
-      preact: 10.22.1
-      web-vitals: 4.2.4
-
-  preact@10.22.1: {}
-
   prelude-ls@1.2.1: {}
 
   prettier-plugin-svelte@3.2.2(prettier@3.2.5)(svelte@4.2.20):
@@ -40193,8 +40082,6 @@ snapshots:
       - supports-color
 
   web-streams-polyfill@4.0.0-beta.3: {}
-
-  web-vitals@4.2.4: {}
 
   webidl-conversions@3.0.1: {}
 

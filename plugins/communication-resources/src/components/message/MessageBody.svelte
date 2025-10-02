@@ -227,6 +227,7 @@
     &.with-showmore {
       position: relative; // This ensures ShowMore button positions relative to this container
       margin-bottom: 1rem;
+      overflow: visible;
     }
   }
 
