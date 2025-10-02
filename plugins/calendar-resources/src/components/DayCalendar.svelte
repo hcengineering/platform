@@ -1372,7 +1372,7 @@
       padding: 0.375rem;
       font-size: 0.625rem;
       color: var(--theme-dark-color);
-      background-color: rgba(64, 109, 223, 0.1);
+      background-color: var(--theme-calendar-zone);
       border-radius: 0.25rem;
 
       &.mini {
