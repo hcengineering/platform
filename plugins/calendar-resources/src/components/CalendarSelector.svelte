@@ -24,7 +24,7 @@
 
   q.query(
     calendar.class.Calendar,
-    { user: me.primarySocialId, hidden: false, access: { $in: [AccessLevel.Owner, AccessLevel.Writer] } },
+    { user: { $in: me.socialIds }, hidden: false, access: { $in: [AccessLevel.Owner, AccessLevel.Writer] } },
     (res) => {
       calendarsLoaded = true
       calendars = res

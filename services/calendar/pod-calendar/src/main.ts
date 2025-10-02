@@ -15,15 +15,15 @@
 
 import { SplitLogger } from '@hcengineering/analytics-service'
 import { createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service/src'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { newMetrics } from '@hcengineering/core'
+import { getIntegrationClient } from '@hcengineering/integration-client'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
-import { getIntegrationClient } from '@hcengineering/integration-client'
 
 import { AuthController } from './auth'
 import { decode64 } from './base64'
@@ -93,9 +93,8 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { account, workspace } = decodeToken(token)
-          const userId = await AuthController.getUserId(account, workspace, token)
-          const url = AuthController.getAuthUrl(redirectURL, workspace, userId, token)
+          const { workspace } = decodeToken(token)
+          const url = AuthController.getAuthUrl(redirectURL, workspace, token)
           res.send(url)
         } catch (err) {
           ctx.error('signin error', { message: (err as any).message })
@@ -135,7 +134,7 @@ export const main = async (): Promise<void> => {
 
           const value = req.query.value as GoogleEmail
           const { account, workspace } = decodeToken(token)
-          const userId = await AuthController.getUserId(account, workspace, token)
+          const userId = await AuthController.getUserId(account, workspace, token, value)
           await AuthController.signout(ctx, accountClient, integrationClient, userId, workspace, value)
         } catch (err) {
           ctx.error('signout', { message: (err as any).message })
