@@ -12,7 +12,7 @@ use actix_web::{
 };
 use aws_sdk_s3::error::SdkError;
 use chrono::{DateTime, Utc};
-use futures::StreamExt;
+use futures::{StreamExt, stream};
 use lockable::LockPool;
 use serde::{Deserialize, Serialize};
 use size::Size;
