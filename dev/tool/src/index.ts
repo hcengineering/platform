@@ -729,7 +729,7 @@ export function devTool (
 
         const bucketName = process.env.BUCKET_NAME
         if (bucketName === '' || bucketName == null) {
-          console.error('please provide butket name env')
+          console.error('please provide bucket name env')
           process.exit(1)
         }
 
@@ -1134,6 +1134,159 @@ export function devTool (
     )
 
   program
+    .command('backup-to-storage <workspace>')
+    .description('dump workspace transactions and minio resources to storage')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--full', 'Full recheck', false)
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-f, --force', 'Force backup', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .option('-in, --internal <internal>', 'Use internal transactor connection', false)
+    .option('-d, --disable <disable>', 'Disable after backup', false)
+    .action(
+      async (
+        workspace: string,
+        cmd: {
+          skip: string
+          force: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+          full: boolean
+          internal: boolean
+          disable: boolean
+        }
+      ) => {
+        const bucketName = process.env.BUCKET_NAME
+        if (bucketName === '' || bucketName == null) {
+          console.error('please provide bucket name env')
+          process.exit(1)
+        }
+
+        await withAccountDatabase(async (db) => {
+          const workspaceInfo = await getWorkspaceById(db, workspace)
+          if (workspaceInfo === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          const root = workspaceInfo.uuid ?? workspaceInfo.workspace
+          const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+          const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+          const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), root)
+          const wsid = getWorkspaceId(workspace)
+          const endpoint = await getTransactorEndpoint(
+            generateToken(systemAccountEmail, wsid),
+            cmd.internal ? 'internal' : 'external'
+          )
+          await backup(toolCtx, endpoint, wsid, storage, {
+            force: cmd.force,
+            include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+            skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+            timeout: 0,
+            connectTimeout: parseInt(cmd.timeout) * 1000,
+            blobDownloadLimit: parseInt(cmd.blobLimit),
+            skipBlobContentTypes: cmd.contentTypes
+              .split(';')
+              .map((it) => it.trim())
+              .filter((it) => it.length > 0),
+            fullVerify: cmd.full
+          })
+          if (cmd.disable) {
+            await db.workspace.updateOne({ _id: workspaceInfo._id }, { disabled: true })
+          }
+        })
+      }
+    )
+
+  program
+    .command('backup-all-to-storage')
+    .description('dump workspace transactions and minio resources to storage')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('-sw, --skipWorkspaces <skipWorkspaces>', 'A list of ; separated workspace ids to skip during backup', '')
+    .option('--full', 'Full recheck', false)
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-f, --force', 'Force backup', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .option('-in, --internal <internal>', 'Use internal transactor connection', false)
+    .option('-d, --disable <disable>', 'Disable after backup', false)
+    .action(
+      async (
+        cmd: {
+          skip: string
+          skipWorkspaces: string
+          force: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+          full: boolean
+          internal: boolean
+          disable: boolean
+        }
+      ) => {
+        const bucketName = process.env.BUCKET_NAME
+        if (bucketName === '' || bucketName == null) {
+          console.error('please provide bucket name env')
+          process.exit(1)
+        }
+
+        await withAccountDatabase(async (db) => {
+          const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+          const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+
+          const workspaces = await listWorkspacesPure(db)
+          const skipWorkspaces = new Set((cmd.skipWorkspaces ?? '').split(';').map((it) => it.trim()))
+          let processed = 0
+
+          for (const ws of workspaces) {
+            if (skipWorkspaces.has(ws.workspace)) {
+              toolCtx.info('skipping workspace', { workspace: ws.workspace })
+              continue
+            }
+
+            const root = ws.uuid ?? ws.workspace
+            const wsBakStorage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), root)
+            const wsid = getWorkspaceId(ws.workspace)
+            const endpoint = await getTransactorEndpoint(
+              generateToken(systemAccountEmail, wsid),
+              cmd.internal ? 'internal' : 'external'
+            )
+            await backup(toolCtx, endpoint, wsid, wsBakStorage, {
+              force: cmd.force,
+              include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+              skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+              timeout: 0,
+              connectTimeout: parseInt(cmd.timeout) * 1000,
+              blobDownloadLimit: parseInt(cmd.blobLimit),
+              skipBlobContentTypes: cmd.contentTypes
+                .split(';')
+                .map((it) => it.trim())
+                .filter((it) => it.length > 0),
+              fullVerify: cmd.full
+            })
+            if (cmd.disable) {
+              await db.workspace.updateOne({ _id: ws._id }, { disabled: true })
+            }
+            processed++
+          }
+          toolCtx.info('Processed workspaces', { processed })
+        })
+      }
+    )
+
+  program
     .command('backup-find <dirName> <fileId>')
     .description('dump workspace transactions and minio resources')
     .option('-d, --domain <domain>', 'Check only domain')
@@ -1170,7 +1323,7 @@ export function devTool (
     .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, skip: string }) => {
       const bucketName = process.env.BUCKET_NAME
       if (bucketName === '' || bucketName == null) {
-        console.error('please provide butket name env')
+        console.error('please provide bucket name env')
         process.exit(1)
       }
 
@@ -2481,6 +2634,26 @@ export function devTool (
     .description('dump accounts database collections')
     .action(async (dirName: string) => {
       const storage = await createFileBackupStorage(dirName)
+      await withAccountDatabase(async (db) => {
+        await backupAccounts(toolCtx, db, storage)
+      })
+    })
+
+  program
+    .command('backup-accounts-to-storage')
+    .description('dump accounts database collections')
+    .action(async () => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide bucket name env')
+        process.exit(1)
+      }
+
+      const root = `accounts-backup-${Date.now()}`
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), root)
+
       await withAccountDatabase(async (db) => {
         await backupAccounts(toolCtx, db, storage)
       })
