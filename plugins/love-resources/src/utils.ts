@@ -279,8 +279,6 @@ export async function navigateToMeetingMinutes (room: Room): Promise<void> {
   await navigateToOfficeDoc(room)
 }
 
-export const joinRequest: Ref<JoinRequest> | undefined = undefined
-
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
   let fH: number = 5
   _rooms.forEach((room) => {
