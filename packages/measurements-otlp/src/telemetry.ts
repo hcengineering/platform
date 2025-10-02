@@ -479,7 +479,7 @@ export function initOpenTelemetrySDK (serviceName: string, version: string): boo
   return true
 }
 
-export function reportOTELError (error: Error): void {
+export function reportOTELError (error: Error, attributes?: Record<string, any>): void {
   if (sdkServiceName !== undefined && sdkServiceVersion !== undefined && loggerProvider !== undefined) {
     const otlpLogger = loggerProvider?.getLogger(sdkServiceName, sdkServiceVersion)
     otlpLogger?.emit({
@@ -488,9 +488,33 @@ export function reportOTELError (error: Error): void {
       body: error.message,
       context: context.active(),
       attributes: {
+        ...attributes,
         'service.name': sdkServiceName,
         'service.version': sdkServiceVersion,
         'error.stack': error.stack
+      }
+    })
+  }
+}
+
+export function reportOTEL (
+  severity: 'info' | 'warning',
+  message: string,
+  time: number,
+  attributes?: Record<string, any>
+): void {
+  if (sdkServiceName !== undefined && sdkServiceVersion !== undefined && loggerProvider !== undefined) {
+    const otlpLogger = loggerProvider?.getLogger(sdkServiceName, sdkServiceVersion)
+    otlpLogger?.emit({
+      severityNumber: severity === 'info' ? SeverityNumber.INFO : SeverityNumber.WARN,
+      body: message,
+      severityText: severity,
+      timestamp: time,
+      context: context.active(),
+      attributes: {
+        ...attributes,
+        'service.name': sdkServiceName,
+        'service.version': sdkServiceVersion
       }
     })
   }
