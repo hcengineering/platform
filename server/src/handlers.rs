@@ -5,14 +5,14 @@ use actix_web::{
     body::SizedStream,
     dev::ServiceRequest,
     http::{
-        self,
-        header::{self, ContentLength, ContentType, EntityTag, HttpDate},
+        self, StatusCode,
+        header::{self, ContentLength, ContentType, EntityTag, HttpDate, Range},
     },
     web::{Data, Header, Path, Payload},
 };
 use aws_sdk_s3::error::SdkError;
 use chrono::{DateTime, Utc};
-use futures::{StreamExt, stream};
+use futures::StreamExt;
 use lockable::LockPool;
 use serde::{Deserialize, Serialize};
 use size::Size;
@@ -181,6 +181,13 @@ async fn extract_headers(request: &mut ServiceRequest) -> HandlerResult<(Headers
     ))
 }
 
+async fn extract_range_header(request: &mut ServiceRequest) -> Option<String> {
+    request
+        .extract::<Header<Range>>()
+        .await
+        .map(|header| header.0.to_string())
+        .ok()
+}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PartData {
     workspace: Uuid,
@@ -397,6 +404,8 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
         let etag = objectpart_etag(&parts).unwrap();
         let date = objectpart_date(&parts).unwrap();
 
+        let range = extract_range_header(&mut request).await;
+
         match none_match(request.request(), Some(etag.clone()))? {
             Some(false) => HttpResponse::NotModified()
                 .insert_header((header::ETAG, etag))
@@ -419,10 +428,31 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                     }
                 }
 
+                let accept_ranges = objectpart_accept_ranges(&parts);
+                if let Some(accept_ranges) = accept_ranges {
+                    response.insert_header((header::ACCEPT_RANGES, accept_ranges));
+                }
+
                 response.insert_header((header::ETAG, etag));
                 response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
                 response.insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()));
-                response.body(merge::stream(s3, parts).await?)
+
+                match range {
+                    Some(range) => {
+                        let partial = merge::partial(s3, parts, range).await?;
+
+                        if partial.partial {
+                            response.status(StatusCode::PARTIAL_CONTENT);
+                        }
+
+                        if let Some(content_range) = partial.content_range {
+                            response.insert_header((header::CONTENT_RANGE, content_range));
+                        }
+
+                        response.body(partial.stream)
+                    }
+                    None => response.body(merge::stream(s3, parts).await?),
+                }
             }
         }
     } else {
@@ -467,6 +497,11 @@ pub async fn head(request: HttpRequest) -> HandlerResult<HttpResponse> {
                     }
                 }
 
+                let accept_ranges = objectpart_accept_ranges(&parts);
+                if let Some(accept_ranges) = accept_ranges {
+                    response.insert_header((header::ACCEPT_RANGES, accept_ranges));
+                }
+
                 response.insert_header((header::ETAG, etag));
                 response.insert_header((header::LAST_MODIFIED, HttpDate::from(date)));
                 response.insert_header((header::CACHE_CONTROL, CONFIG.cache_control.clone()));
@@ -505,6 +540,20 @@ fn objectpart_date(parts: &Vec<ObjectPart<PartData>>) -> Option<SystemTime> {
 
 fn objectpart_strategy(parts: &Vec<ObjectPart<PartData>>) -> Option<MergeStrategy> {
     parts.first().map(|p| p.data.merge_strategy.unwrap())
+}
+
+fn objectpart_accept_ranges(parts: &Vec<ObjectPart<PartData>>) -> Option<&str> {
+    let strategy = objectpart_strategy(parts)?;
+    match strategy {
+        MergeStrategy::JsonPatch => None,
+        _ => {
+            if parts.len() == 1 {
+                Some("bytes")
+            } else {
+                None
+            }
+        }
+    }
 }
 
 fn validate_patch_conditionals(

@@ -85,6 +85,44 @@ pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> Handle
     }
 }
 
+pub struct PartialResponse {
+    pub partial: bool,
+    pub content_range: Option<String>,
+    pub stream: SizedStream<Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>>,
+}
+
+#[instrument(level = "debug", skip_all)]
+pub async fn partial(
+    s3: Arc<S3Client>,
+    parts: Vec<ObjectPart<PartData>>,
+    range: String,
+) -> anyhow::Result<PartialResponse> {
+    let part = parts.first().unwrap();
+
+    let mut response = s3
+        .get_object()
+        .bucket(&CONFIG.s3_bucket)
+        .key(&part.data.blob)
+        .range(range)
+        .send()
+        .await?;
+
+    let content_range = response.content_range().map(|s| s.to_string());
+    let content_length = response.content_length().map_or(0, |c| c as u64);
+
+    let stream = stream! {
+        while let Some(chunk) = response.body.next().await {
+            yield Ok(Bytes::from(chunk?));
+        };
+    };
+
+    Ok(PartialResponse {
+        partial: part.data.size != content_length as usize,
+        content_range,
+        stream: SizedStream::new(content_length, Box::pin(stream)),
+    })
+}
+
 #[instrument(level = "debug", skip_all)]
 pub async fn stream(
     s3: Arc<S3Client>,
