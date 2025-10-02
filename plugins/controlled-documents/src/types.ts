@@ -207,6 +207,7 @@ export interface ControlledDocument extends HierarchyDocument {
   requests: CollectionSize<DocumentRequest> // A collection of attached review and approval requests for the document
   reviewers: Ref<Employee>[]
   approvers: Ref<Employee>[]
+  externalApprovers: Ref<Employee>[]
   coAuthors: Ref<Employee>[]
   reviewInterval?: number // A period (in months) after which the released document must be reviewed again
   controlledState?: ControlledDocumentState

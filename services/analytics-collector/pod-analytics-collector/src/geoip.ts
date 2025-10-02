@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
+import { type MeasureContext } from '@hcengineering/core'
+import * as fs from 'fs'
 import * as maxmind from 'maxmind'
 import * as path from 'path'
-import * as fs from 'fs'
-import { type MeasureContext } from '@hcengineering/core'
 
 // MaxMind reader instances
 let cityReader: maxmind.Reader<maxmind.CityResponse> | null = null

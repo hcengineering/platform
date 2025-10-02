@@ -72,7 +72,7 @@ export class TemplatesPage extends CalendarPage {
     }
 
     if (data.approvers != null) {
-      await this.page.locator('div.addButton').last().click()
+      await this.page.locator('div.addButton').nth(2).click()
       for (const approver of data.approvers) {
         await this.selectListItemWithSearch(this.page, approver)
       }

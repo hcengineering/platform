@@ -8,9 +8,6 @@ export interface Config {
   ACCOUNTS_URL: string
   AI_URL?: string
   ANALYTICS_COLLECTOR_URL?: string
-  POSTHOG_API_KEY?: string
-  POSTHOG_HOST?: string
-  SENTRY_DSN?: string
   BRANDING_URL?: string
   CALENDAR_URL: string
   COLLABORATOR?: string

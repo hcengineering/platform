@@ -4,11 +4,12 @@
 -->
 
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { getFileUrl } from '@hcengineering/presentation'
-  import { EmbeddedPDF, Spinner, themeStore } from '@hcengineering/ui'
   import { convertToHTML } from '@hcengineering/print'
+  import { EmbeddedPDF, Spinner, themeStore } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
@@ -29,8 +30,8 @@
         convertedFile = res
         isLoading = false
       },
-      (err) => {
-        console.error(err)
+      (err: any) => {
+        Analytics.handleError(err)
         isLoading = false
       }
     )

@@ -21,6 +21,7 @@ import process, {
   parseContext,
   ProcessError,
   processError,
+  SelectedConst,
   SelectedContext,
   SelectedContextFunc,
   SelectedExecutionContext,
@@ -47,6 +48,8 @@ export async function getContextValue (value: any, control: ProcessControl, exec
         value = await getFunctionValue(control, execution, context)
       } else if (context.type === 'context') {
         value = await getExecutionContextValue(control, execution, context)
+      } else if (context.type === 'const') {
+        value = getConstValue(control, execution, context)
       }
       return await fillValue(value, context, control, execution)
     } catch (err: any) {
@@ -71,6 +74,10 @@ function getValue (control: ProcessControl, execution: Execution, rawKey: string
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
   const key = checkMixinKey(rawKey, _process.masterTag, hierarchy)
   return getObjectValue(key, card)
+}
+
+function getConstValue (control: ProcessControl, execution: Execution, context: SelectedConst): any {
+  return context.value
 }
 
 function getAttributeValue (control: ProcessControl, execution: Execution, context: SelectedContext): any {

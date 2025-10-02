@@ -35,6 +35,7 @@
   import IntegrationCard from './IntegrationCard.svelte'
   import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
   import { getAccountClient } from '../../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   const typeQuery = createQuery()
 
@@ -76,7 +77,7 @@
 
       if (error != null) {
         const decodedError = decodeURIComponent(error)
-        console.error('Integration error:', decodedError)
+        Analytics.handleError(new Error(`Integration error: ${decodedError}`))
         await showErrorNotification(decodedError)
         // Clean up integrationError parameter from the URL
         urlParams.delete('integrationError')
@@ -89,8 +90,8 @@
       }
       subscribe()
       startRefreshTimer()
-    } catch (err) {
-      console.error('Error loading integrations:', err)
+    } catch (err: any) {
+      Analytics.handleError(err)
       await showLoadErrorNotification()
       connections = []
       integrations = []
@@ -149,8 +150,8 @@
         connections = await accountClient.listIntegrations({ workspaceUuid: null })
         integrations = await accountClient.listIntegrations({ workspaceUuid: workspace })
         lastEventTime = Date.now() // Update last event time after successful refresh
-      } catch (err) {
-        console.error('Error refreshing integrations:', err)
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     })()
 

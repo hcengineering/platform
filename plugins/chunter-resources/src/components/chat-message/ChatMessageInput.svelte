@@ -138,7 +138,6 @@
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 
@@ -151,7 +150,6 @@
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 

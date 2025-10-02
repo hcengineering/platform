@@ -42,6 +42,7 @@
     "SearchDocument": "Cerca documento...",
     "CreateEnVersion": "Crea versione per revisione",
     "Approvers": "Approvatori",
+    "ExternalApprovers": "Approvatori esterni",
     "CoAuthors": "Co-autori",
     "Status": "Stato",
     "TemplateName": "Nome del modello",

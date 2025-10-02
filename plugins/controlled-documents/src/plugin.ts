@@ -183,6 +183,7 @@ export const documentsPlugin = plugin(documentsId, {
     Approval: '' as IntlString,
     Reviewers: '' as IntlString,
     Approvers: '' as IntlString,
+    ExternalApprovers: '' as IntlString,
     CoAuthors: '' as IntlString,
     ReviewInterval: '' as IntlString,
     EffectiveDate: '' as IntlString,

@@ -53,6 +53,7 @@
     currentStepUpdated
   } from '../../stores/wizards/create-document'
   import FailedToCreateDocument from '../FailedToCreateDocument.svelte'
+  import { updateExternalApproversAccess } from '../../utils'
 
   export let _class: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
 
@@ -119,6 +120,7 @@
     requests: 0,
     reviewers: [],
     approvers: [],
+    externalApprovers: [],
     coAuthors: [],
     plannedEffectiveDate: 0,
     reviewInterval: DEFAULT_PERIODIC_REVIEW_INTERVAL
@@ -175,6 +177,14 @@
     }
 
     await createChangeControl(client, ccRecordId, ccRecord, _space)
+
+    if (docObject.externalApprovers.length > 0) {
+      const controlledDoc = await client.findOne(documents.class.ControlledDocument, { _id: newDocId })
+
+      if (controlledDoc !== undefined) {
+        await updateExternalApproversAccess(client, controlledDoc, docObject.externalApprovers, [])
+      }
+    }
 
     const loc = getProjectDocumentLink(newDocId, $locationStep.project)
     navigate(loc)

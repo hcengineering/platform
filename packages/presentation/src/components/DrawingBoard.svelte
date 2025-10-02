@@ -136,7 +136,6 @@
       } catch (error: any) {
         commandProcessor.set([])
         Analytics.handleError(error)
-        console.error('Failed to parse drawing content', error)
       }
     } else {
       commandProcessor.set([])
@@ -151,7 +150,6 @@
       }
       createDrawing(data).catch((error) => {
         Analytics.handleError(error)
-        console.error('Failed to save drawing', error)
       })
     }
   }

@@ -56,7 +56,7 @@ export const main = async (): Promise<void> => {
     accountsUrl: config.AccountsUrl
   })
 
-  const app = createServer()
+  const app = createServer(ctx)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {

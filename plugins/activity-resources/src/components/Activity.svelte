@@ -22,15 +22,16 @@
   } from '@hcengineering/activity'
   import { Class, Doc, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Section, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { Grid, Lazy, location, Section, Spinner } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
+  import { editingMessageStore, messageInFocus } from '../activity'
+  import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
+  import { canGroupMessages, getActivityNewestFirst, getMessageFromLoc, getSpace } from '../utils'
+  import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
-  import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages, getMessageFromLoc, getSpace, getActivityNewestFirst } from '../utils'
-  import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
-  import { editingMessageStore, messageInFocus } from '../activity'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: WithReferences<Doc>
   export let showCommenInput: boolean = true
@@ -185,8 +186,8 @@
         }
         clazz = hierarchy.getClass(clazz).extends
       }
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
       return []
     }
     return []

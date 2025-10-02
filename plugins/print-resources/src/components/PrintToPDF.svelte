@@ -58,7 +58,6 @@
             },
             (err) => {
               Analytics.handleError(err)
-              console.error(err)
               isLoading = false
             }
           )
@@ -69,7 +68,6 @@
       },
       (err) => {
         Analytics.handleError(err)
-        console.error(err)
         isLoading = false
       }
     )

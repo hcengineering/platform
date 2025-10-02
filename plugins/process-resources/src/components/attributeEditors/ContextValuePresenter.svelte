@@ -21,6 +21,7 @@
   import RelContextPresenter from './RelContextPresenter.svelte'
   import FunctionContextPresenter from './FunctionContextPresenter.svelte'
   import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
+  import ConstContextPresenter from './ConstContextPresenter.svelte'
   import FunctionPresenter from './FunctionPresenter.svelte'
 
   export let process: Process
@@ -42,6 +43,8 @@
       <FunctionContextPresenter {contextValue} {context} {process} />
     {:else if contextValue.type === 'context'}
       <ExecutionContextPresenter {contextValue} {process} />
+    {:else if contextValue.type === 'const'}
+      <ConstContextPresenter {contextValue} {process} />
     {/if}
   </div>
   {#if contextValue.sourceFunction}
