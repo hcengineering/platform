@@ -97,7 +97,7 @@ import {
   sendEmailConfirmation,
   sendOtp,
   setPassword,
-  setTimezoneIfNotDefined,
+  setTimezone,
   signUpByEmail,
   updateWorkspaceRole,
   verifyAllowedRole,
@@ -281,7 +281,7 @@ export async function signUp (
     await confirmHulyIds(ctx, db, account)
   }
 
-  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezone(ctx, db, account, null, meta)
   return {
     account,
     name: getPersonName(person),
@@ -1151,7 +1151,7 @@ export async function signUpJoin (
   })
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
-  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezone(ctx, db, account, null, meta)
 
   return await doJoinByInvite(
     ctx,
@@ -1749,7 +1749,7 @@ export async function getLoginInfoByToken (
   }
 
   if (!isSystem) {
-    void setTimezoneIfNotDefined(ctx, db, accountUuid, null, meta)
+    void setTimezone(ctx, db, accountUuid, null, meta)
   }
 
   if (workspaceUuid != null && workspaceUuid !== '') {
