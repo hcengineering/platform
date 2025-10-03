@@ -7,18 +7,21 @@ export interface Config {
   Secret: string
   AccountsUrl: string
   AllowedHostnames: string[]
+  PuppeteerArgs: string[]
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const allowedHostnames = process.env.ALLOWED_HOSTNAMES
+  const puppeteerArgs = process.env.PUPPETEER_ARGS ?? ''
 
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4005,
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
-    AllowedHostnames: allowedHostnames == null ? [] : allowedHostnames.split(',')
+    AllowedHostnames: allowedHostnames == null ? [] : allowedHostnames.split(','),
+    PuppeteerArgs: puppeteerArgs.split(',')
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

@@ -13,22 +13,25 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { createMessagesQuery, IconForward } from '@hcengineering/presentation'
-  import core, { PersonId, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { CardID, Message, Label as CardLabel } from '@hcengineering/communication-types'
-  import { Avatar, getPersonByPersonIdStore, PersonPreviewProvider } from '@hcengineering/contact-resources'
-  import { Person } from '@hcengineering/contact'
-  import { MessagePresenter, labelsStore, MessagePreview } from '@hcengineering/communication-resources'
+  import { createMessagesQuery } from '@hcengineering/presentation'
+  import { SortingOrder, WithLookup } from '@hcengineering/core'
+  import { CardID, Message, MessageType, Label as CardLabel } from '@hcengineering/communication-types'
+
+  import { MessagePresenter, labelsStore } from '@hcengineering/communication-resources'
   import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import chat from '@hcengineering/chat'
+
   import CardTagsColored from './CardTagsColored.svelte'
   import CardPathPresenter from './CardPathPresenter.svelte'
   import CardTimestamp from './CardTimestamp.svelte'
 
   import { openCardInSidebar } from '../utils'
 
-  import SystemAvatar from '@hcengineering/contact-resources/src/components/SystemAvatar.svelte'
+  import ColoredCardIcon from './ColoredCardIcon.svelte'
+  import TagDivider from './TagDivider.svelte'
+  import ContentPreview from './ContentPreview.svelte'
 
   export let card: WithLookup<Card>
   export let isCompact = false
@@ -37,29 +40,36 @@
   const messagesQuery = createMessagesQuery()
 
   let message: Message | undefined = undefined
+  let messages: Message[] = []
 
-  let socialId: PersonId | undefined = undefined
-  let person: Person | undefined = undefined
+  // Check if the card is a thread type
+  $: isThreadCard = card._class === chat.masterTag.Thread
 
-  $: messagesQuery.query(
-    { cardId: card._id, limit: 1, order: SortingOrder.Descending },
-    (res) => {
-      const msgs = res.getResult().reverse()
-      message = msgs[msgs.length - 1]
-    },
-    {
-      attachments: true,
-      reactions: true
-    }
-  )
-
-  $: socialId = message?.creator ?? card.modifiedBy
-  $: personStore = getPersonByPersonIdStore([socialId])
-  $: person = $personStore.get(socialId)
+  // Only query messages if this is a thread card
+  $: if (isThreadCard) {
+    messagesQuery.query(
+      { cardId: card._id, limit: 3, order: SortingOrder.Ascending },
+      (res) => {
+        messages = res.getResult().reverse()
+        message = messages.findLast((msg) => msg.type === MessageType.Text)
+      },
+      {
+        attachments: true,
+        reactions: true
+      }
+    )
+  } else {
+    // Clear message data for non-thread cards
+    messages = []
+    message = undefined
+  }
 
   function hasNewMessages (labels: CardLabel[], cardId: CardID): boolean {
     return labels.some((it) => (it.labelId as string) === cardPlugin.label.NewMessages && it.cardId === cardId)
   }
+
+  $: truncatedTitle = card.title.length > 300 ? card.title.substring(0, 300) + '...' : card.title
+
   let isActionsOpened = false
 </script>
 
@@ -67,13 +77,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
   <div class="card__avatar">
-    {#if socialId !== core.account.System}
-      <PersonPreviewProvider value={person}>
-        <Avatar name={person?.name} {person} size="medium" />
-      </PersonPreviewProvider>
-    {:else}
-      <SystemAvatar size="medium" />
-    {/if}
+    <ColoredCardIcon {card} count={0} />
   </div>
 
   <div class="card__body">
@@ -86,38 +90,44 @@
         {/if}
         <span
           class="card__title overflow-label"
-          use:tooltip={{ label: getEmbeddedLabel(card.title), textAlign: 'left' }}
+          use:tooltip={{ label: getEmbeddedLabel(truncatedTitle), textAlign: 'left' }}
         >
-          {card.title}
+          {truncatedTitle}
         </span>
       </div>
       <CardTimestamp date={card.modifiedOn} />
       {#if !isComfortable2}
         <div class="flex-presenter flex-gap-0-5 tags-container">
-          <CardPathPresenter {card} />
-          <IconForward size={'small'} />
           <div class="card__tags">
-            <CardTagsColored value={card} collapsable fullWidth />
+            <CardTagsColored value={card} showType={false} collapsable fullWidth />
           </div>
         </div>
       {/if}
     </div>
     <div class="card__message">
-      {#if message}
-        {#if isCompact}
-          <MessagePreview {card} {message} colorInherit />
-        {:else}
-          <MessagePresenter {card} {message} hideHeader hideAvatar readonly padding="0" showThreads={false} />
-        {/if}
+      {#if isThreadCard && message}
+        <MessagePresenter
+          {card}
+          {message}
+          hideHeader
+          hideAvatar
+          readonly
+          padding="0"
+          showThreads={false}
+          maxHeight={'10rem'}
+        />
+      {:else if !isThreadCard && card.content}
+        <ContentPreview {card} maxHeight={'10rem'} />
       {/if}
     </div>
     <div class="card__parent" class:wrap={isComfortable2}>
+      <CardPathPresenter {card} />
       {#if isComfortable2}
         <div class="flex-presenter flex-gap-0-5 tags-container">
           <CardPathPresenter {card} />
-          <IconForward size={'small'} />
+          <TagDivider />
           <div class="card__tags mr-2">
-            <CardTagsColored value={card} collapsable fullWidth />
+            <CardTagsColored value={card} showType={false} collapsable fullWidth />
           </div>
         </div>
       {/if}
@@ -204,14 +214,12 @@
 
     &__message {
       display: flex;
-      min-height: 1.375rem;
       color: var(--global-secondary-TextColor);
     }
 
     &__parent {
       display: flex;
       align-items: center;
-      margin-top: 0.5rem;
 
       &.wrap {
         flex-wrap: wrap;
@@ -245,7 +253,6 @@
       height: 0.5rem;
     }
     .tags-container {
-      min-width: 14rem;
       max-width: none;
       flex-grow: 1;
     }

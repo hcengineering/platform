@@ -22,7 +22,7 @@ import {
   type Timestamp
 } from '@hcengineering/core'
 import { type Poll, type PollAnswer } from '@hcengineering/communication'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, getCommunicationClient } from '@hcengineering/presentation'
 import card, { type Card } from '@hcengineering/card'
 import { makeRank } from '@hcengineering/rank'
 import { type AppletAttachment, type MessageID } from '@hcengineering/communication-types'
@@ -69,6 +69,7 @@ export function getEmptyPollConfig (): PollConfig {
 
 export async function createPoll (parent: Card, message: MessageID, params: PollConfig): Promise<void> {
   const client = getClient()
+  const communicationClient = getCommunicationClient()
   const hierarchy = client.getHierarchy()
   const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
 
@@ -85,6 +86,7 @@ export async function createPoll (parent: Card, message: MessageID, params: Poll
   const filledData = fillDefaults(hierarchy, data, communication.type.Poll)
 
   await client.createDoc(communication.type.Poll, parent.space, filledData, params.id)
+  await communicationClient.attachThread(parent._id, message, params.id, communication.type.Poll)
 }
 
 export function getPollTitle (attachment: AppletAttachment): string {

@@ -1406,6 +1406,11 @@ export class TSessionManager implements SessionManager {
           await ws.backpressure(requestCtx)
         }
 
+        if (request.method === 'ping') {
+          service.lastRequest = Date.now()
+          ws.sendPong()
+          return
+        }
         await workspace.with(async (pipeline) => {
           await requestCtx.with(
             '🧨' + request.method,

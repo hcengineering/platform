@@ -14,37 +14,85 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { IntlString, translate } from '@hcengineering/platform'
+
   import type { DropdownIntlItem } from '../types'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
-  import { Icon, resizeObserver } from '..'
+  import { deviceOptionsStore, EditWithIcon, Icon, IconSearch, languageStore, resizeObserver } from '..'
+  import ui from '../plugin'
 
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let params: Record<string, any> = {}
+  export let withSearch: boolean = false
+  export let searchPlaceholder: IntlString = ui.string.Search
 
   const dispatch = createEventDispatcher()
-  const btns: HTMLButtonElement[] = []
+  let btns: HTMLButtonElement[] = []
 
-  const keyDown = (ev: KeyboardEvent, n: number): void => {
+  const keyDown = (ev: KeyboardEvent, n?: number): void => {
     if (ev.key === 'ArrowDown') {
-      if (n === btns.length - 1) btns[0].focus()
+      ev.stopPropagation()
+      ev.preventDefault()
+      if (n === undefined || n === btns.length - 1) btns[0].focus()
       else btns[n + 1].focus()
     } else if (ev.key === 'ArrowUp') {
-      if (n === 0) btns[btns.length - 1].focus()
+      ev.stopPropagation()
+      ev.preventDefault()
+      if (n === undefined || n === 0) btns[btns.length - 1].focus()
       else btns[n - 1].focus()
     }
   }
+
+  let search: string = ''
+  $: lowerSearch = search.toLowerCase()
+
+  async function fillSearchMap (items: DropdownIntlItem[], lang: string): Promise<void> {
+    const result: Record<IntlString, string> = {}
+    for (const item of items) {
+      result[item.label] = (await translate(item.label, item.params, lang)).toLowerCase()
+    }
+    searchMap = result
+  }
+
+  let searchMap: Record<IntlString, string> = {}
+  $: if (withSearch) {
+    void fillSearchMap(items, $languageStore)
+  } else {
+    searchMap = {}
+  }
+
+  $: filteredItems = withSearch ? items.filter((item) => searchMap[item.label]?.includes(lowerSearch)) : items
+  $: btns = btns.slice(0, filteredItems.length)
 </script>
 
-<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="menu-space" />
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={keyDown}>
+  {#if withSearch}
+    <div class="search">
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        autoFocus={!$deviceOptionsStore.isMobile}
+        bind:value={search}
+        on:change={() => dispatch('search', search)}
+        on:input={() => dispatch('search', search)}
+        placeholder={searchPlaceholder}
+      />
+    </div>
+    <div class="menu-separator" />
+  {:else}
+    <div class="menu-space" />
+  {/if}
   <div class="scroll">
     <div class="box">
-      {#each items as item, i}
+      {#each filteredItems as item, i}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
           class="menu-item flex-between"
+          bind:this={btns[i]}
           on:mouseover={(ev) => {
             ev.currentTarget.focus()
           }}
@@ -70,3 +118,10 @@
   </div>
   <div class="menu-space" />
 </div>
+
+<style lang="scss">
+  .search {
+    display: flex;
+    padding: 0.5rem 0.5rem 0 0.5rem;
+  }
+</style>
