@@ -8,6 +8,7 @@ commit.sh
 /src/GOT.sh
 GO.sh
 TEST.sh
+TEST_WS.sh
 DROP_DB.sh
 TODO.txt
 DOCKER.sh
