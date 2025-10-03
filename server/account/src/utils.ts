@@ -709,7 +709,7 @@ export async function selectWorkspace (
   }
 
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
-    void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
+    void setTimezone(ctx, db, accountUuid, account, meta)
   }
 
   if (role === AccountRole.ReadOnlyGuest) {
@@ -1780,7 +1780,7 @@ export function generatePassword (len: number = 24): string {
   return randomBytes(len).toString('base64').slice(0, len)
 }
 
-export async function setTimezoneIfNotDefined (
+export async function setTimezone (
   ctx: MeasureContext,
   db: AccountDB,
   accountId: AccountUuid,
@@ -1794,7 +1794,7 @@ export async function setTimezoneIfNotDefined (
       ctx.warn('Failed to find account')
       return
     }
-    if (existingAccount.timezone != null) return
+    if (existingAccount.timezone === meta?.timezone) return
     await db.account.update({ uuid: accountId }, { timezone: meta.timezone })
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
