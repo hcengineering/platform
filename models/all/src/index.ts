@@ -118,6 +118,7 @@ import survey, { surveyId, createModel as surveyModel } from '@hcengineering/mod
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
+import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
 import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
@@ -479,6 +480,11 @@ export default function buildModel (): Builder {
       chatModel,
       chatId,
       { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
+    [
+      inboxModel,
+      inboxId,
+      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
     ],
     [achievementModel, achievementId],
     [emojiModel, emojiId],

@@ -1,0 +1,9 @@
+{
+  "string": {
+    "Inbox": "Bande",
+    "ReactedToYourMessage": "reaccionó a tu mensaje",
+    "ClearAll": "Borrar todo",
+    "InboxIsClear": "Bande está vacía",
+    "YouDontHaveAnyNewMessages": "No tienes ninguna nueva mensaje"
+  }
+}

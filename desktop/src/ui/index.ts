@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
-import { chatId } from '@hcengineering/chat'
+import { inboxId } from '@hcengineering/inbox'
 import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
 import view, { Action, encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
@@ -202,7 +202,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Support for new inbox with cardId (card-based)
     if (notificationParams.cardId != null) {
       const currentLocation = getCurrentResolvedLocation()
-      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${chatId}/${notificationParams.cardId}`)
+      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${inboxId}/${notificationParams.cardId}`)
       return
     }
 
