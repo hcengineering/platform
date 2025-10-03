@@ -58,7 +58,7 @@
       {/each}
     {:else}
       {@const parentInfo = value.parentInfo[0]}
-      {@const shortTitle = parentInfo.title.charAt(0) + '...'}
+      {@const shortTitle = (parentInfo.title?.charAt(0) ?? '') + '...'}
       <NavLink
         href={getHref(parentInfo)}
         title={parentInfo.title}
