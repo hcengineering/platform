@@ -17,7 +17,7 @@
   import ui, { Label, Scroller, Loading } from '@hcengineering/ui'
   import card from '@hcengineering/card'
 
-  import HomeCardPresenter from './FeedCardPresenter.svelte'
+  import FeedCardPresenter from './FeedCardPresenter.svelte'
   import NewCardForm from './NewCardForm.svelte'
 
   const cardsQuery = createQuery()
@@ -135,7 +135,9 @@
             {/if}
           </div>
         {/if}
-        <HomeCardPresenter {card} />
+        {#key card._id}
+          <FeedCardPresenter {card} />
+        {/key}
       {/each}
       {#if isLoading}
         <div class="flex-center pb-2">
