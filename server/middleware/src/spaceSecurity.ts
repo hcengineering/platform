@@ -509,13 +509,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.next?.handleBroadcast(ctx)
   }
 
-  private getAllAllowedSpaces (account: Account, isData: boolean, showArchived: boolean, forSearch: boolean = false): Ref<Space>[] {
+  private getAllAllowedSpaces (
+    account: Account,
+    isData: boolean,
+    showArchived: boolean,
+    forSearch: boolean = false
+  ): Ref<Space>[] {
     const userSpaces = this.allowedSpaces[account.uuid] ?? []
-    let res = [
-      ...Array.from(userSpaces),
-      account.uuid as unknown as Ref<Space>,
-      ...this.mainSpaces
-    ]
+    let res = [...Array.from(userSpaces), account.uuid as unknown as Ref<Space>, ...this.mainSpaces]
     if (!forSearch || ![AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)) {
       res = [...res, ...this.systemSpaces]
     }
