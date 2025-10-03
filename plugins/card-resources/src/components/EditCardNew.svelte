@@ -33,7 +33,7 @@
   } from '@hcengineering/ui'
   import presence from '@hcengineering/presence'
   import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
-  import { ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
 
@@ -41,6 +41,7 @@
   import CardIcon from './CardIcon.svelte'
   import TagsEditor from './TagsEditor.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import { openCardInSidebar } from '../utils'
   import { afterUpdate } from 'svelte'
 
@@ -172,7 +173,7 @@
 
     <svelte:fragment slot="title">
       {#if showParents}
-        <ParentsNavigator element={doc} maxWidth={'10rem'} />
+        <ParentNamesPresenter value={doc} maxWidth={'12rem'} />
       {/if}
       <div class="title flex-row-center">
         {#if !_readonly}

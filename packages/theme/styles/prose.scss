@@ -540,6 +540,7 @@ pre.proseCodeBlock>pre.proseCode {
   .mermaidPreviewContainer {
     padding: 0.5rem;
     cursor: default;
+    overflow-x: auto;
   }
 
   &:not(.folded) .mermaidPreviewContainer {

@@ -13,7 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, getCommunicationClient, SpaceSelector } from '@hcengineering/presentation'
+  import {
+    getClient,
+    getCommunicationClient,
+    SpaceSelector,
+    DraftController,
+    draftsStore
+  } from '@hcengineering/presentation'
   import { ModernButton, ModernEditbox, ButtonIcon, IconSend, IconMinimize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -24,6 +30,7 @@
   import { getResource } from '@hcengineering/platform'
   import { EmptyMarkup, markupToText, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
   import { createCard } from '../utils'
+  import { getCardDraftKey, getEmptyCardDraft, type CardDraft } from '../draft'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { AttachIcon } from '@hcengineering/text-editor-resources'
   import { AttachmentID, BlobParams } from '@hcengineering/communication-types'
@@ -31,9 +38,9 @@
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { defaultMessageInputActions } from '@hcengineering/communication-resources'
   import chat from '@hcengineering/chat'
+  import { Analytics } from '@hcengineering/analytics'
 
   import EditorActions from './EditorActions.svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
@@ -43,11 +50,38 @@
   export let type: Ref<MasterTag> = threadMasterTag
   export let space: Ref<CardSpace> | undefined = undefined
 
-  let title: string = ''
-  let description = EmptyMarkup
+  const draftKey = getCardDraftKey()
+  const draftController = new DraftController<CardDraft>(draftKey)
+  $: currentDraft = $draftsStore[draftKey] as CardDraft | undefined
+
   let _id = generateId<Card>()
   let isExpanded = false
   let descriptionBox: AttachmentStyledBox
+
+  // Initialize form state from draft or defaults
+  let title: string = ''
+  let description: Markup = EmptyMarkup
+  let initialized = false
+
+  function initializeFromDraft (draft: CardDraft): void {
+    title = draft.title
+    description = draft.description
+    if (draft.type !== undefined) {
+      type = draft.type
+    }
+    if (draft.space !== undefined) {
+      space = draft.space
+    }
+    if (draft.title !== '' || !isEmptyMarkup(draft.description)) {
+      isExpanded = true
+    }
+    initialized = true
+  }
+
+  $: if (currentDraft != null && !initialized) {
+    initializeFromDraft(currentDraft)
+  }
+  $: draftController.save({ title, description, type, space }, getEmptyCardDraft())
 
   let creating = false
   $: applyDisabled = (title.trim() === '' && isEmptyMarkup(description)) || space == null || type == null || creating
@@ -137,6 +171,7 @@
     title = ''
     description = EmptyMarkup
     _id = generateId<Card>()
+    draftController.remove()
   }
 
   function expand (): void {

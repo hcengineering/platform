@@ -116,7 +116,13 @@ export async function attachCardToMessage (
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
       blobs: {},
-      parentInfo: []
+      parentInfo: [
+        {
+          _id: parentCard._id,
+          _class: parentCard._class,
+          title: parentCard.title
+        }
+      ]
     },
     type
   )

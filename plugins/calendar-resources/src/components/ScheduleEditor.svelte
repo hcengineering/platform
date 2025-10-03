@@ -352,7 +352,7 @@
       </div>
       <div class="flex-row-center flex-gap-1-5">
         <Icon icon={calendar.icon.Calendar} size={'small'} />
-        <CalendarSelector bind:value={_calendar} />
+        <CalendarSelector bind:value={_calendar} withIcon={false} />
       </div>
     </div>
     <div class="block">

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { type IntegrationSecret } from '@hcengineering/account-client'
 import {
   AccessLevel,
   type Calendar,
@@ -21,10 +22,13 @@ import {
   type ExternalCalendar,
   type ReccuringEvent
 } from '@hcengineering/calendar'
+import contact, { type SocialIdentity, type SocialIdentityRef } from '@hcengineering/contact'
 import core, {
   type AccountUuid,
+  buildSocialIdString,
   type Doc,
   DOMAIN_TX,
+  type IntegrationKind,
   type PersonId,
   pickPrimarySocialId,
   type Ref,
@@ -50,7 +54,6 @@ import {
   getSocialKeyByOldAccount
 } from '@hcengineering/model-core'
 import setting, { DOMAIN_SETTING, type Integration } from '@hcengineering/setting'
-import contact, { type SocialIdentityRef, type SocialIdentity } from '@hcengineering/contact'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
@@ -455,6 +458,116 @@ async function migrateTimezone (client: MigrationClient): Promise<void> {
   )
 }
 
+async function moveMigration (client: MigrationClient, secret: IntegrationSecret, socialId: PersonId): Promise<void> {
+  await client.accountClient.deleteIntegrationSecret(secret)
+  const exists = await client.accountClient.listIntegrations({
+    kind: secret.kind,
+    socialId,
+    workspaceUuid: secret.workspaceUuid
+  })
+  if (exists.length === 0) {
+    await client.accountClient.createIntegration({
+      kind: secret.kind,
+      workspaceUuid: secret.workspaceUuid,
+      socialId,
+      data: {
+        email: secret.key
+      }
+    })
+  }
+  await client.accountClient.addIntegrationSecret({
+    ...secret,
+    socialId
+  })
+}
+
+async function migrateIntegrations (client: MigrationClient): Promise<void> {
+  const secrets = await client.accountClient.listIntegrationsSecrets({
+    kind: 'google-calendar' as IntegrationKind
+  })
+  const map = new Map<PersonId, PersonId | null>()
+  for (const secret of secrets) {
+    try {
+      const exists = map.get(secret.socialId)
+      if (exists == null) continue
+      if (exists !== undefined) {
+        await moveMigration(client, secret, exists)
+      } else {
+        const socials = await client.accountClient.findFullSocialIds([secret.socialId])
+        if (socials.length === 0) continue
+        if (socials[0].type === SocialIdType.GOOGLE && socials[0].value === secret.key) continue
+        const person = socials[0].personUuid
+
+        const target = await client.accountClient.findFullSocialIdBySocialKey(
+          buildSocialIdString({
+            type: SocialIdType.GOOGLE,
+            value: secret.key
+          })
+        )
+        if (target?.personUuid === person) {
+          // Ok, it is the same person, just recreate integration
+          map.set(secret.socialId, target._id)
+          await moveMigration(client, secret, target._id)
+        } else if (target == null) {
+          const newOne = await client.accountClient.addSocialIdToPerson(
+            person,
+            SocialIdType.GOOGLE,
+            secret.key,
+            true,
+            secret.key
+          )
+          map.set(secret.socialId, newOne)
+          await moveMigration(client, secret, newOne)
+        } else {
+          // oh, shit, it's a different person, let's remove it
+          await client.accountClient.deleteIntegrationSecret(secret)
+        }
+      }
+    } catch (err) {
+      client.logger.error('Error while migrating integration', { secret, error: err })
+    }
+  }
+}
+
+async function updateCalendarUser (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<ExternalCalendar>(DOMAIN_CALENDAR, {
+    _class: calendar.class.ExternalCalendar
+  })
+  const accs = new Map<string, PersonId>()
+  for (const calendar of calendars) {
+    try {
+      const exists = accs.get(calendar.user)
+      if (exists !== undefined) {
+        await client.update(DOMAIN_CALENDAR, { _id: calendar._id }, { user: exists })
+        continue
+      }
+      const accId = await client.accountClient.findPersonBySocialId(calendar.user)
+      if (accId === undefined) continue
+      const socialId = await client.accountClient.findFullSocialIdBySocialKey(
+        buildSocialIdString({
+          type: SocialIdType.GOOGLE,
+          value: calendar.externalUser
+        })
+      )
+      if (socialId === undefined) {
+        const newOne = await client.accountClient.addSocialIdToPerson(
+          accId,
+          SocialIdType.GOOGLE,
+          calendar.externalUser,
+          true,
+          calendar.externalUser
+        )
+        accs.set(calendar.user, newOne)
+      } else if (socialId.personUuid === accId) {
+        accs.set(calendar.user, socialId._id)
+        await client.update(DOMAIN_CALENDAR, { _id: calendar._id }, { user: accId })
+      }
+    } catch (e) {
+      client.logger.error('Error while updating calendar user', { calendar: calendar._id, error: e })
+    }
+  }
+}
+
 export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, calendarId, [
@@ -528,6 +641,16 @@ export const calendarOperation: MigrateOperation = {
         state: 'migrate-ev-user-for-deleted',
         mode: 'upgrade',
         func: migrateEventUserForDeleted
+      },
+      {
+        state: 'migrate-integrations',
+        mode: 'upgrade',
+        func: migrateIntegrations
+      },
+      {
+        state: 'update-calendar-user',
+        mode: 'upgrade',
+        func: updateCalendarUser
       }
     ])
   },

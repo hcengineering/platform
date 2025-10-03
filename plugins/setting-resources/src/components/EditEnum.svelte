@@ -181,8 +181,10 @@
 
   function showConfirmationDialog (): void {
     const isEnumEmpty = values.length === 0
+    const oldValues = value?.enumValues ?? []
+    const isEnumSame = values.length === oldValues.length && values.every((it, i) => it === oldValues[i])
 
-    if (isEnumEmpty) {
+    if (isEnumEmpty || isEnumSame) {
       dispatch('close')
     } else {
       showPopup(

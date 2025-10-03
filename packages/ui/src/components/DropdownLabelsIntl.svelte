@@ -43,6 +43,7 @@
   export let focusIndex: number = -1
   export let dataId: string | undefined = undefined
   export let noFocus: boolean = false
+  export let withSearch: boolean = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -58,7 +59,7 @@
   function openPopup () {
     if (!opened) {
       opened = true
-      showPopup(DropdownLabelsPopupIntl, { items, selected, params }, container, (result) => {
+      showPopup(DropdownLabelsPopupIntl, { items, selected, params, withSearch }, container, (result) => {
         if (result) {
           selected = result
           dispatch('selected', result)
