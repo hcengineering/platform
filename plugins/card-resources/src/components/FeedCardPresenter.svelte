@@ -214,14 +214,12 @@
 
     &__message {
       display: flex;
-      min-height: 1.375rem;
       color: var(--global-secondary-TextColor);
     }
 
     &__parent {
       display: flex;
       align-items: center;
-      margin-top: 0.5rem;
 
       &.wrap {
         flex-wrap: wrap;
