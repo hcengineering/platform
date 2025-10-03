@@ -14,7 +14,7 @@
 import { type Builder } from '@hcengineering/model'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import card from './plugin'
 
@@ -210,6 +210,15 @@ export function createActions (builder: Builder): void {
     icon: card.icon.MasterTag,
     category: setting.category.Settings,
     target: card.class.MasterTag,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    ...actionTemplates.move,
+    target: card.class.Card,
     context: {
       mode: ['context', 'browser'],
       group: 'edit'
