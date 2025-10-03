@@ -59,7 +59,7 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
   })
   await page.waitForNetworkIdle({ idleTime: 1000 })
 
-  let res: Buffer | undefined
+  let res: Uint8Array | undefined
 
   if (kind === 'pdf') {
     await page.emulateMediaType('print')
@@ -104,7 +104,7 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
 
   await browser.close()
 
-  return res
+  return res !== undefined ? Buffer.from(res) : undefined
 }
 
 async function scrollThrough (page: Page): Promise<void> {
