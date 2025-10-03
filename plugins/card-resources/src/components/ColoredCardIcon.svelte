@@ -15,7 +15,7 @@
 <script lang="ts">
   import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { Component, getPlatformColorDef, themeStore, tooltip } from '@hcengineering/ui'
   import communication from '@hcengineering/communication'
 
   import NotifyMarker from './NotifyMarker.svelte'
@@ -43,7 +43,7 @@
   }
 </script>
 
-<div class="card-icon" style={getIconStyle(platformColor)}>
+<div class="card-icon" style={getIconStyle(platformColor)} use:tooltip={{ label: clazz.label }}>
   <Component is={cardPlugin.component.CardIcon} props={{ value: card, size }} />
 
   {#if count > 0}
