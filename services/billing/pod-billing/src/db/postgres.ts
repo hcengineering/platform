@@ -184,8 +184,13 @@ export class PostgresDB implements BillingDB {
   }
 
   async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE)
+    const uniqueSessions = new Map<string, LiveKitSessionData>()
+    for (const item of data) {
+      uniqueSessions.set(`${item.workspace}::${item.sessionId}`, item)
+    }
+    const uniqueSessionsValues = uniqueSessions.values()
+    for (let i = 0; i < uniqueSessions.size; i += BATCH_SIZE) {
+      const batch = uniqueSessionsValues.take(BATCH_SIZE)
       const values = []
       const params = []
       let paramIndex = 1
@@ -198,6 +203,8 @@ export class PostgresDB implements BillingDB {
         params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes)
       }
 
+      if (values.length === 0) continue
+
       const query = `
         UPSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
         VALUES ${values.join(',')}
@@ -207,8 +214,13 @@ export class PostgresDB implements BillingDB {
   }
 
   async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE)
+    const uniqueSessions = new Map<string, LiveKitEgressData>()
+    for (const item of data) {
+      uniqueSessions.set(`${item.workspace}::${item.egressId}`, item)
+    }
+    const uniqueSessionsValues = uniqueSessions.values()
+    for (let i = 0; i < uniqueSessions.size; i += BATCH_SIZE) {
+      const batch = uniqueSessionsValues.take(BATCH_SIZE)
       const values = []
       const params = []
       let paramIndex = 1
@@ -220,6 +232,8 @@ export class PostgresDB implements BillingDB {
         )
         params.push(workspace, egressId, egressStart, egressEnd, room, duration)
       }
+
+      if (values.length === 0) continue
 
       const query = `
         UPSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
