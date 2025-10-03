@@ -32,7 +32,6 @@
   $: clazz = hierarchy.getClass(card._class) as MasterTag
   $: color = clazz.background ?? 0
   $: platformColor = getPlatformColorDef(color, $themeStore.dark)
-  $: typeName = clazz.label
 
   function getIconStyle (platformColor: any): string {
     return `
@@ -44,7 +43,7 @@
   }
 </script>
 
-<div class="card-icon" style={getIconStyle(platformColor)} use:tooltip={{ label: typeName }}>
+<div class="card-icon" style={getIconStyle(platformColor)} use:tooltip={{ label: clazz.label }}>
   <Component is={cardPlugin.component.CardIcon} props={{ value: card, size }} />
 
   {#if count > 0}
