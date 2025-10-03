@@ -22,10 +22,11 @@
   export let value: Card | undefined
 
   export let maxWidth = ''
+  export let compact = false
 
   const MIN_WIDTH = 2 // rem
 
-  function getHref (parentInfo: ParentInfo) {
+  function getHref (parentInfo: ParentInfo): string {
     const loc = getCurrentLocation()
     loc.path[2] = cardId
     loc.path[3] = parentInfo._id
@@ -35,26 +36,39 @@
   }
 </script>
 
-{#if value && Array.isArray(value.parentInfo) && (value.parentInfo.length > 0 || $$slots.default)}
+{#if value != null && Array.isArray(value.parentInfo) && (value.parentInfo.length > 0 || $$slots.default)}
   <div
     class="cards-container cropped-text-presenters"
+    class:compact
     style:max-width={maxWidth}
     style:--cards-container-card-min-width={`${MIN_WIDTH}rem`}
     style:--cards-container-parents={value.parentInfo.length}
   >
-    {#each value.parentInfo as parentInfo}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
+    {#if !compact}
+      {#each value.parentInfo as parentInfo}
+        <NavLink
+          href={getHref(parentInfo)}
+          title={parentInfo.title}
+          shrink={parentInfo.title.length > 100 ? 2 : 1}
+          colorInherit
+        >
+          {parentInfo.title}
+        </NavLink>
+        <span class="separator">›</span>
+      {/each}
+    {:else}
+      {@const parentInfo = value.parentInfo[0]}
+      {@const shortTitle = parentInfo.title.charAt(0) + '...'}
       <NavLink
         href={getHref(parentInfo)}
         title={parentInfo.title}
         shrink={parentInfo.title.length > 100 ? 2 : 1}
         colorInherit
       >
-        {parentInfo.title}
+        {shortTitle}
       </NavLink>
-      <span class="separator">›</span>
-    {/each}
+      <span class="separator compact">›</span>
+    {/if}
     <slot />
   </div>
 {:else if $$slots.default}
@@ -66,17 +80,23 @@
     display: inline-flex;
     flex-shrink: 1;
     margin-left: 0;
-    min-width: 0;
     min-width: calc(
       (var(--cards-container-card-min-width, 2rem) + 1.26rem) * var(--cards-container-parents, 1) +
         var(--cards-container-card-min-width, 2rem)
     );
     color: var(--theme-darker-color);
 
+    &.compact {
+      min-width: 1rem;
+    }
+
     .separator {
       flex-shrink: 0;
       padding: 0 0.5rem;
       color: var(--theme-content-color);
+      &.compact {
+        padding: 0 0.5rem 0 0;
+      }
     }
     :global(a:hover) {
       color: var(--theme-caption-color);
