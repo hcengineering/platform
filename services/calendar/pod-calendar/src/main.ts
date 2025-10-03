@@ -19,10 +19,9 @@ import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { newMetrics } from '@hcengineering/core'
 import { getIntegrationClient } from '@hcengineering/integration-client'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient, { getAccountClient } from '@hcengineering/server-client'
+import serverClient, { extractToken, readToken, getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
 
 import { AuthController } from './auth'
@@ -35,14 +34,6 @@ import { createServer, listen } from './server'
 import { GoogleEmail, type Endpoint, type State } from './types'
 import { getServiceToken } from './utils'
 import { WatchController } from './watch'
-
-const extractToken = (header: IncomingHttpHeaders): any => {
-  try {
-    return header.authorization?.slice(7) ?? ''
-  } catch {
-    return undefined
-  }
-}
 
 export const main = async (): Promise<void> => {
   const ctx = initStatisticsContext(calendarIntegrationKind, {
@@ -93,8 +84,7 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { workspace } = decodeToken(token)
-          const url = AuthController.getAuthUrl(redirectURL, workspace, token)
+          const url = AuthController.getAuthUrl(redirectURL, token.workspace, token.account)
           res.send(url)
         } catch (err) {
           ctx.error('signin error', { message: (err as any).message })
@@ -125,7 +115,7 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
-          const token = extractToken(req.headers)
+          const token = readToken(req.headers)
 
           if (token === undefined) {
             res.status(401).send()
@@ -171,6 +161,13 @@ export const main = async (): Promise<void> => {
       endpoint: '/event',
       type: 'post',
       handler: async (req, res) => {
+        const token = extractToken(req.headers)
+
+        if (token === undefined) {
+          res.status(401).send()
+          return
+        }
+
         const { event, workspace, type } = req.body
 
         if (event === undefined || workspace === undefined || type === undefined) {
