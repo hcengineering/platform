@@ -509,14 +509,17 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.next?.handleBroadcast(ctx)
   }
 
-  private getAllAllowedSpaces (account: Account, isData: boolean, showArchived: boolean): Ref<Space>[] {
+  private getAllAllowedSpaces (
+    account: Account,
+    isData: boolean,
+    showArchived: boolean,
+    forSearch: boolean = false
+  ): Ref<Space>[] {
     const userSpaces = this.allowedSpaces[account.uuid] ?? []
-    const res = [
-      ...Array.from(userSpaces),
-      account.uuid as unknown as Ref<Space>,
-      ...this.systemSpaces,
-      ...this.mainSpaces
-    ]
+    let res = [...Array.from(userSpaces), account.uuid as unknown as Ref<Space>, ...this.mainSpaces]
+    if (!forSearch || ![AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)) {
+      res = [...res, ...this.systemSpaces]
+    }
     const ignorePublicSpaces = isData || account.role === AccountRole.ReadOnlyGuest
     const unfilteredRes = ignorePublicSpaces ? res : [...res, ...this.publicSpaces]
     if (showArchived) {
@@ -690,7 +693,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const newQuery = { ...query }
     const account = ctx.contextData.account
     if (!isSystem(account, ctx)) {
-      const allSpaces = this.getAllAllowedSpaces(account, true, false)
+      const allSpaces = this.getAllAllowedSpaces(account, true, false, true)
       if (query.classes !== undefined) {
         const res = new Set<Ref<Space>>()
         const passedDomains = new Set<string>()
