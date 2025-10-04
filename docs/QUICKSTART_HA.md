@@ -27,7 +27,7 @@ A feature that lets multiple agents compete to manage the same container UUID. T
 
 ```typescript
 import { AgentImpl } from '@hcengineering/network-core'
-import { createNetworkClient } from '@hcengineering/network-client'
+import { createNetworkClient, containerOnAgentEndpointRef } from '@hcengineering/network-client'
 
 // 1. Create your container
 class MyService implements Container {
@@ -44,52 +44,67 @@ class MyService implements Container {
   // ... other required methods
 }
 
-// 2. Create agents (both will try to register same UUID)
+// 2. Create agents with serveAgent (both will try to register same UUID)
 const sharedUUID = 'my-service-001' as ContainerUuid
 
-// Agent 1 (Primary) - Note: In production, use serveAgent() on the client
-const agent1 = new AgentImpl('agent-1', {})
-const service1 = new MyService(sharedUUID)
-agent1.addStatelessContainer(
-  sharedUUID,
-  'my-service' as ContainerKind,
-  'service://agent1/service-001' as ContainerEndpointRef,
-  service1
-)
-
-// Agent 2 (Standby) - Note: In production, use serveAgent() on the client
-const agent2 = new AgentImpl('agent-2', {})
-const service2 = new MyService(sharedUUID)
-agent2.addStatelessContainer(
-  sharedUUID,
-  'my-service' as ContainerKind,
-  'service://agent2/service-001' as ContainerEndpointRef,
-  service2
-)
-
-// 3. Connect and register
+// Connect to network
 const client = createNetworkClient('localhost:3737')
 await client.waitConnection()
 
-await client.register(agent1) // ✅ Accepted
-await client.register(agent2) // ❌ Rejected (agent1 already owns it)
+// Agent 1 (Primary) - uses serveAgent with stateless containers
+await client.serveAgent(
+  'localhost:3801',
+  {}, // Container factories for dynamic containers
+  (agentEndpoint) => {
+    // Return stateless containers
+    const service1 = new MyService(sharedUUID)
+    return [
+      {
+        uuid: sharedUUID,
+        kind: 'my-service' as ContainerKind,
+        endpoint: containerOnAgentEndpointRef(agentEndpoint, sharedUUID),
+        container: service1
+      }
+    ]
+  }
+)
 
-// 4. Failover happens automatically
-await agent1.terminate(sharedUUID) // Agent1 stops
-// After ~100ms, agent2 automatically takes over
+// Agent 2 (Standby) - uses serveAgent with stateless containers
+await client.serveAgent(
+  'localhost:3802',
+  {}, // Container factories for dynamic containers
+  (agentEndpoint) => {
+    // Return stateless containers
+    const service2 = new MyService(sharedUUID)
+    return [
+      {
+        uuid: sharedUUID,
+        kind: 'my-service' as ContainerKind,
+        endpoint: containerOnAgentEndpointRef(agentEndpoint, sharedUUID),
+        container: service2
+      }
+    ]
+  }
+)
+
+// Agent 1 accepted, Agent 2 rejected (agent1 already owns it)
+// Failover happens automatically when container is removed
 ```
 
 ### Key Methods
 
 ```typescript
-// Add a stateless container to agent
-agent.addStatelessContainer(uuid, kind, endpoint, container)
-
-// Remove from tracking (if needed)
-agent.removeStatelessContainer(uuid)
-
-// Register with network (handles conflicts automatically)
-await client.register(agent)
+// Use serveAgent to create agents with stateless containers
+await client.serveAgent(
+  endpointUrl,
+  containerFactories,
+  (agentEndpoint) => [{
+    uuid,
+    kind,
+    endpoint,
+    container
+  }]
+)
 
 // Monitor for failover events
 client.onUpdate(async (event) => {
@@ -98,12 +113,21 @@ client.onUpdate(async (event) => {
       console.log('Container removed - failover in progress')
     }
   }
-})
 ```
+
+````
+
+### Key Methods
+
+```typescript
+// Add a stateless container to agent
+agent.addStatelessContainer(uuid, kind, endpoint, container)
+
+````
 
 ### What Happens?
 
-1. **Both agents register** → First one is accepted, second is rejected
+1. **Both agents register via serveAgent** → First one's container is accepted, second is rejected
 2. **Rejected agent** → Terminates its container instance
 3. **Active container fails** → Network broadcasts removal event
 4. **Standby agents** → Automatically re-register (100ms delay)
@@ -115,24 +139,48 @@ client.onUpdate(async (event) => {
 
 ```typescript
 const leaderId = `cluster-${clusterId}-leader` as ContainerUuid
-agent.addStatelessContainer(leaderId, 'leader', endpoint, leaderService)
+
+await client.serveAgent(`localhost:${port}`, {}, (agentEndpoint) => [
+  {
+    uuid: leaderId,
+    kind: 'leader' as ContainerKind,
+    endpoint: containerOnAgentEndpointRef(agentEndpoint, leaderId),
+    container: leaderService
+  }
+])
 // First agent to register becomes leader
 ```
 
-#### Singleton Service
+#### Singleton Services
 
 ```typescript
 const singletonId = 'migration-service' as ContainerUuid
-agent.addStatelessContainer(singletonId, 'migration', endpoint, migrationService)
-// Only one instance will run migrations
+
+await client.serveAgent(`localhost:${port}`, {}, (agentEndpoint) => [
+  {
+    uuid: singletonId,
+    kind: 'migration' as ContainerKind,
+    endpoint: containerOnAgentEndpointRef(agentEndpoint, singletonId),
+    container: migrationService
+  }
+])
+// Only one instance runs across cluster
 ```
 
-#### Active-Standby Database
+#### Database Replica
 
 ```typescript
-const dbId = 'database-primary' as ContainerUuid
-agent.addStatelessContainer(dbId, 'database', endpoint, databaseReplica)
-// Primary serves writes, standby automatically promotes on failure
+const dbId = `database-replica-${replicaId}` as ContainerUuid
+
+await client.serveAgent(`localhost:${port}`, {}, (agentEndpoint) => [
+  {
+    uuid: dbId,
+    kind: 'database' as ContainerKind,
+    endpoint: containerOnAgentEndpointRef(agentEndpoint, dbId),
+    container: databaseReplica
+  }
+])
+// Multiple replicas with same UUID for HA
 ```
 
 ### Gotchas
@@ -140,8 +188,8 @@ agent.addStatelessContainer(dbId, 'database', endpoint, databaseReplica)
 ❌ **Don't** use different UUIDs on different agents (they won't compete)
 ✅ **Do** use the same UUID across all HA agents
 
-❌ **Don't** forget to handle termination of rejected containers
-✅ **Do** let the agent.register() method handle it automatically
+❌ **Don't** manually call `agent.addStatelessContainer()` - use `serveAgent` instead
+✅ **Do** use the stateless containers factory parameter in `serveAgent`
 
 ❌ **Don't** expect instant failover (there's a ~100ms delay)
 ✅ **Do** design for eventual consistency

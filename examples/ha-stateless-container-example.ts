@@ -16,13 +16,14 @@
  * // npx ts-node examples/ha-stateless-container-example.ts
  */
 
-import { AgentImpl, containerUuid as generateContainerUuid, TickManagerImpl } from '../packages/core/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { AgentImpl, containerUuid as generateContainerUuid, TickManagerImpl, containerOnAgentEndpointRef } from '../packages/core/src'
+import { createNetworkClient, type StatelessContainersFactory } from '../packages/client/src'
 import type { 
   Container, 
   ContainerUuid, 
   ContainerKind,
   ContainerEndpointRef,
+  AgentEndpointRef,
   ClientUuid,
   GetOptions
 } from '../packages/core/src'
@@ -77,49 +78,46 @@ class HAServiceContainer implements Container {
 }
 
 /**
- * Create an agent with stateless container support
+ * Create an agent with stateless container support using serveAgent
  */
 async function createHAAgent(
-  agentId: string,
+  client: any,
   agentName: string,
   sharedServiceUuid: ContainerUuid,
   port: number
-): Promise<{ agent: AgentImpl, server: NetworkAgentServer }> {
-  const tickManager = new TickManagerImpl(1)
-  
-  // Create the agent with a container factory (for dynamic containers)
-  const agent = new AgentImpl(
-    agentId as any,
+): Promise<void> {
+  console.log(`[${agentName}] Creating agent with stateless container ${sharedServiceUuid}`)
+
+  // Use serveAgent to create agent with container factory and stateless containers
+  // The stateless containers factory receives the agent endpoint
+  await client.serveAgent(
+    `localhost:${port}`,
     {
-      'ha-service': async (options: GetOptions) => {
+      'ha-service': async (options: GetOptions, agentEndpoint?: AgentEndpointRef) => {
         const uuid = options.uuid ?? generateContainerUuid()
         const container = new HAServiceContainer(uuid, `${agentName}-dynamic`)
         return {
           uuid,
           container,
-          endpoint: `ha-service://${agentName}/${uuid}` as ContainerEndpointRef
+          endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
         }
       }
-    } as any
+    } as any,
+    (agentEndpoint: AgentEndpointRef) => {
+      // Prepare the stateless container that already exists
+      // This simulates a pre-existing service that the agent wants to register
+      const statelessContainer = new HAServiceContainer(sharedServiceUuid, agentName)
+      
+      return [{
+        uuid: sharedServiceUuid,
+        kind: 'ha-service' as ContainerKind,
+        endpoint: containerOnAgentEndpointRef(agentEndpoint, sharedServiceUuid),
+        container: statelessContainer
+      }]
+    }
   )
 
-  // Add a stateless container that already exists
-  // This simulates a pre-existing service that the agent wants to register
-  const statelessContainer = new HAServiceContainer(sharedServiceUuid, agentName)
-  agent.addStatelessContainer(
-    sharedServiceUuid,
-    'ha-service' as ContainerKind,
-    `ha-service://${agentName}/${sharedServiceUuid}` as ContainerEndpointRef,
-    statelessContainer
-  )
-
-  console.log(`[${agentName}] Agent created with stateless container ${sharedServiceUuid}`)
-
-  // Start the agent server
-  const server = new NetworkAgentServer(tickManager, 'localhost', '*', port)
-  await server.start(agent)
-
-  return { agent, server }
+  console.log(`[${agentName}] Agent created and registered`)
 }
 
 /**
@@ -137,31 +135,25 @@ async function main(): Promise<void> {
   console.log('Connected to Huly Network\n')
 
   // Create two agents that will compete for the same container
+  // serveAgent now handles agent creation, registration, and stateless container setup
   console.log('Creating Agent 1 (Primary)...')
-  const { agent: agent1, server: server1 } = await createHAAgent(
-    'ha-agent-1',
+  await createHAAgent(
+    client,
     'Primary',
     sharedServiceUuid,
     3801
   )
 
   console.log('Creating Agent 2 (Secondary)...')
-  const { agent: agent2, server: server2 } = await createHAAgent(
-    'ha-agent-2', 
+  await createHAAgent(
+    client,
     'Secondary',
     sharedServiceUuid,
     3802
   )
 
-  // Register Agent 1 first - it should win
-  console.log('\n--- Registering Agent 1 ---')
-  await client.register(agent1)
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  // Register Agent 2 - it should be rejected for the shared container
-  console.log('\n--- Registering Agent 2 ---')
-  await client.register(agent2)
-  await new Promise(resolve => setTimeout(resolve, 500))
+  // Wait for both agents to be registered
+  await new Promise(resolve => setTimeout(resolve, 1000))
 
   // Monitor container events
   client.onUpdate(async (event: any) => {
@@ -182,10 +174,7 @@ async function main(): Promise<void> {
   // Simulate failover: terminate the active container
   console.log('\n--- Simulating Failover ---')
   console.log('Shutting down primary container...')
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // Shutdown the primary agent's container
-  await agent1.terminate(sharedServiceUuid)
+  await containerRef.request('shutdown')
   
   // Wait for secondary to take over
   console.log('Waiting for secondary agent to take over...')
@@ -198,6 +187,7 @@ async function main(): Promise<void> {
     })
     const newStatus = await newContainerRef.request('status')
     console.log('New container status after failover:', newStatus)
+    await newContainerRef.close()
   } catch (error) {
     console.error('Failover verification failed:', error)
   }
@@ -205,8 +195,6 @@ async function main(): Promise<void> {
   // Cleanup
   console.log('\n--- Cleanup ---')
   await containerRef.close()
-  await server1.close()
-  await server2.close()
   
   console.log('\nExample completed!')
 }

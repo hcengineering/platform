@@ -329,13 +329,13 @@ async function main() {
   await client.waitConnection(5000)
 
   await client.serveAgent('localhost:3738', {
-    'my-service': async (options) => {
+    'my-service': async (options, agentEndpoint) => {
       const uuid = options.uuid ?? (('container-' + Date.now()) as ContainerUuid)
       const container = new MyServiceContainer(uuid)
       return {
         uuid,
         container,
-        endpoint: `my-service://localhost/${uuid}` as any
+        endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
       }
     }
   })
@@ -344,10 +344,6 @@ async function main() {
   const client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('Client connected')
-
-  // 5. Register the agent
-  await client.register(agent)
-  console.log('Agent registered')
 
   // 6. Request a container
   const containerRef = await client.get('my-service' as any, {})
@@ -605,19 +601,24 @@ async function createHAAgent(agentId: string, instanceName: string, sharedUuid: 
   const tickManager = new TickManagerImpl(1)
   const agent = new AgentImpl(agentId as any, {})
 
-  // Add stateless container for HA
-  const container = new LeaderServiceContainer(sharedUuid, instanceName)
-  agent.addStatelessContainer(
-    sharedUuid,
-    'leader-service' as ContainerKind,
-    `leader://${instanceName}/${sharedUuid}` as any,
-    container
-  )
+  // Use serveAgent with stateless containers factory
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
 
-  const server = new NetworkAgentServer(tickManager, 'localhost', '*', port)
-  await server.start(agent)
+  await client.serveAgent(`localhost:${port}`, {}, (agentEndpoint) => {
+    // Add stateless container for HA
+    const container = new LeaderServiceContainer(sharedUuid, instanceName)
+    return [
+      {
+        uuid: sharedUuid,
+        kind: 'leader-service' as ContainerKind,
+        endpoint: containerOnAgentEndpointRef(agentEndpoint, sharedUuid),
+        container
+      }
+    ]
+  })
 
-  return { agent, server, container, tickManager }
+  return { client }
 }
 
 async function runHAExample() {
@@ -752,14 +753,14 @@ await client.waitConnection(5000)
 
 // Setup agent with tenant workspace factory
 await client.serveAgent('localhost:3738', {
-  'tenant-workspace': async (options: GetOptions) => {
+  'tenant-workspace': async (options: GetOptions, agentEndpoint?: AgentEndpointRef) => {
     const tenantId = options.labels?.[0] || 'default'
     const uuid = options.uuid ?? (`workspace-${tenantId}-${Date.now()}` as ContainerUuid)
     const container = new TenantWorkspaceContainer(uuid, tenantId)
     return {
       uuid,
       container,
-      endpoint: `workspace://${tenantId}/${uuid}` as any
+      endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
     }
   }
 })
@@ -1080,13 +1081,13 @@ async function startProductionSystem() {
   const agents = []
   for (let i = 1; i <= 3; i++) {
     const agent = new AgentImpl(`agent-${i}` as any, {
-      'production-service': async (options) => {
+      'production-service': async (options, agentEndpoint?: AgentEndpointRef) => {
         const uuid = options.uuid ?? (`svc-${Date.now()}-${i}` as ContainerUuid)
         const container = new ProductionContainer(uuid, { agentId: i })
         return {
           uuid,
           container,
-          endpoint: `prod://${i}/${uuid}` as any
+          endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
         }
       }
     })
