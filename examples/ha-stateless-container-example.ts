@@ -132,7 +132,7 @@ async function main(): Promise<void> {
   const sharedServiceUuid = 'service-leader-election-001' as ContainerUuid
 
   // Create network client
-  const client = createNetworkClient('localhost:3737')
+  await using client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('Connected to Huly Network\n')
 
@@ -205,7 +205,6 @@ async function main(): Promise<void> {
   // Cleanup
   console.log('\n--- Cleanup ---')
   await containerRef.close()
-  await client.close()
   await server1.close()
   await server2.close()
   

@@ -204,7 +204,7 @@ async function startProductionSystem() {
   console.log()
 
   // 3. Connect client with production timeout (3 seconds)
-  const client = createNetworkClient('localhost:3737')
+  await using client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('✓ Client connected')
 
@@ -299,10 +299,6 @@ async function startProductionSystem() {
     await container.close()
   }
   console.log('✓ All containers released\n')
-
-  console.log('Disconnecting client...')
-  await client.close()
-  console.log('✓ Client disconnected\n')
 
   console.log('Stopping agents...')
   for (const { server, id } of agents) {

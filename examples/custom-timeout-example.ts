@@ -9,16 +9,16 @@ import { createNetworkClient } from '@hcengineering/network-client'
 // Example 1: Default behavior - uses environment-based timeout
 // In development (NODE_ENV=development): 3600 seconds (1 hour)
 // In production: 3 seconds
-const defaultClient = createNetworkClient('localhost:3737')
+await using defaultClient = createNetworkClient('localhost:3737')
 
 // Example 2: Custom timeout - 10 minutes
-const customTimeoutClient = createNetworkClient('localhost:3737', 600)
+await using customTimeoutClient = createNetworkClient('localhost:3737', 600)
 
 // Example 3: Short timeout for fast failure detection - 1 second
-const fastFailClient = createNetworkClient('localhost:3737', 1)
+await using fastFailClient = createNetworkClient('localhost:3737', 1)
 
 // Example 4: Very long timeout for debugging - 2 hours
-const debugClient = createNetworkClient('localhost:3737', 7200)
+await using debugClient = createNetworkClient('localhost:3737', 7200)
 
 async function main() {
   try {

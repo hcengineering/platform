@@ -2,6 +2,10 @@
 
 This directory contains comprehensive examples demonstrating various aspects of the Huly Virtual Network.
 
+## Important Note: Auto-Disposal
+
+All examples in this directory use the `await using` keyword for automatic client disposal. This ensures proper cleanup when the example completes or if an error occurs. For production services that need to run indefinitely, you should use manual lifecycle management instead. See [docs/AUTO_DISPOSAL_GUIDE.md](../docs/AUTO_DISPOSAL_GUIDE.md) for detailed guidance.
+
 ## Quick Start
 
 Before running any example, make sure you have:

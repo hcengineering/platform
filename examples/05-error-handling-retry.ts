@@ -179,7 +179,7 @@ async function main(): Promise<void> {
   console.log('✓ Agent server started\n')
 
   // 3. Connect client
-  const client = createNetworkClient('localhost:3737')
+  await using client = createNetworkClient('localhost:3737')
   
   try {
     await withTimeout(
@@ -378,7 +378,6 @@ async function main(): Promise<void> {
 
   // 10. Cleanup
   console.log('--- Cleanup ---')
-  await client.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()

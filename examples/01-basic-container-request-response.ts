@@ -92,7 +92,7 @@ async function main(): Promise<void> {
 
   // 2. Create agent with container factory
   const agent = new AgentImpl('data-agent' as any, {
-    'data-processor': async (options: GetOptions) => {
+    ['data-processor' as ContainerKind]: async (options: GetOptions) => {
       const uuid = options.uuid ?? `processor-${Date.now()}` as ContainerUuid
       const container = new DataProcessorContainer(uuid)
       return {
@@ -108,7 +108,7 @@ async function main(): Promise<void> {
   console.log('✓ Agent server started on port 3738\n')
 
   // 3. Connect as client
-  const client = createNetworkClient('localhost:3737')
+  await using client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('✓ Client connected\n')
 
@@ -160,7 +160,6 @@ async function main(): Promise<void> {
   // 7. Cleanup
   console.log('--- Cleanup ---')
   await containerRef.close()
-  await client.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()

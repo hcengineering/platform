@@ -192,7 +192,7 @@ async function main(): Promise<void> {
   console.log('✓ Agent server started\n')
 
   // 3. Connect client
-  const client = createNetworkClient('localhost:3737')
+  await using client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('✓ Client connected\n')
 
@@ -309,7 +309,6 @@ async function main(): Promise<void> {
   await acmeWorkspace.close()
   await globexWorkspace.close()
   await startupWorkspace.close()
-  await client.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()

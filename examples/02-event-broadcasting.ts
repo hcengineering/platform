@@ -2,7 +2,19 @@
  * Example 2: Event Broadcasting Container
  * 
  * This example demonstrates real-time event broadcasting to multiple connected clients.
- * Shows how to implement a chat room where messages are broadcast to all participants.
+ * Shows how to implement a cha  const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
+  await agentServer.start(agent)
+  console.log('✓ Agent server started on port 3738\n')
+
+  // 3. Connect three clients
+  console.log('--- Connecting clients ---')
+  await using client1 = createNetworkClient('localhost:3737')
+  await client1.waitConnection(5000)
+  await using client2 = createNetworkClient('localhost:3737')
+  await client2.waitConnection(5000)
+  await using client3 = createNetworkClient('localhost:3737')
+  await client3.waitConnection(5000)
+  console.log('✓ Three clients connected\n') messages are broadcast to all participants.
  * 
  * @example
  * // Start the network server first:
@@ -274,9 +286,6 @@ async function main(): Promise<void> {
   await conn2.close()
   await chatRef1.close()
   await chatRef2.close()
-  await client1.close()
-  await client2.close()
-  await client3.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()
