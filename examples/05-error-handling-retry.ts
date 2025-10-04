@@ -12,19 +12,19 @@
  * // cd pods/network-pod && rushx dev
  * 
  * // Then run this example:
- * // npx ts-node examples/05-error-handling-retry.ts
+ * // cd examples && rushx run:retry
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl } from '../packages/core/src'
-import { NetworkServer } from '../packages/server/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { 
   Container, 
   ContainerUuid, 
   ClientUuid,
   ContainerKind,
   GetOptions
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 class UnreliableServiceContainer implements Container {
   private callCount = 0
@@ -103,14 +103,19 @@ async function robustContainerAccess(
   options: GetOptions,
   operation: string,
   data?: any,
-  maxRetries = 3
+  maxRetries = 3,
+  acquireTimeoutMs = 5000
 ): Promise<any> {
   let containerRef: any
   
   try {
-    // Get container with retry
+    // Get container with retry and timeout
     containerRef = await retryWithBackoff(async () => {
-      return await client.get(kind, options)
+      return await withTimeout(
+        client.get(kind, options),
+        acquireTimeoutMs,
+        'Container acquisition'
+      )
     }, maxRetries)
     
     console.log(`✓ Container acquired: ${containerRef.uuid}`)
@@ -163,7 +168,7 @@ async function main(): Promise<void> {
 
   // 2. Create agent
   const agent = new AgentImpl('unreliable-agent' as any, {
-    'unreliable-service': async (options: GetOptions) => {
+    ['unreliable-service' as ContainerKind]: async (options: GetOptions) => {
       const uuid = options.uuid ?? `unreliable-${Date.now()}` as ContainerUuid
       const container = new UnreliableServiceContainer(uuid)
       return {
@@ -241,25 +246,33 @@ async function main(): Promise<void> {
 
   // 7. Test timeout handling
   console.log('=== Test 3: Timeout Handling ===\n')
-  const containerRef = await client.get('unreliable-service' as ContainerKind, {})
-  console.log(`✓ Container acquired: ${containerRef.uuid}\n`)
+  try {
+    const containerRef = await withTimeout(
+      client.get('unreliable-service' as ContainerKind, {}),
+      3000,
+      'Container acquisition'
+    )
+    console.log(`✓ Container acquired: ${containerRef.uuid}\n`)
 
-  // Try with short timeout (likely to timeout on slow responses)
-  for (let i = 0; i < 3; i++) {
-    try {
-      console.log(`Request ${i + 1} with 500ms timeout...`)
-      const result = await withTimeout(
-        containerRef.request('process', { value: i }),
-        500,
-        'Request'
-      )
-      console.log('  ✓ Completed:', result)
-    } catch (error: any) {
-      console.log('  ✗', error.message)
+    // Try with short timeout (likely to timeout on slow responses)
+    for (let i = 0; i < 3; i++) {
+      try {
+        console.log(`Request ${i + 1} with 500ms timeout...`)
+        const result = await withTimeout(
+          containerRef.request('process', { value: i }),
+          500,
+          'Request'
+        )
+        console.log('  ✓ Completed:', result)
+      } catch (error: any) {
+        console.log('  ✗', error.message)
+      }
     }
+    
+    await containerRef.close()
+  } catch (error: any) {
+    console.log('  ✗ Could not acquire container:', error.message)
   }
-  
-  await containerRef.close()
   console.log()
 
   // 8. Test graceful degradation
@@ -378,9 +391,11 @@ async function main(): Promise<void> {
 
   // 10. Cleanup
   console.log('--- Cleanup ---')
+  client.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()
+  console.log('✓ Cleanup complete')
   
   console.log('\n✓ Example completed successfully!')
   console.log('\nKey patterns demonstrated:')
@@ -389,6 +404,10 @@ async function main(): Promise<void> {
   console.log('  3. Graceful degradation with fallbacks')
   console.log('  4. Circuit breaker pattern')
   console.log('  5. Proper resource cleanup')
+  
+  // Exit cleanly
+  await new Promise(resolve => setTimeout(resolve, 500))
+  process.exit(0)
 }
 
 main().catch(console.error)

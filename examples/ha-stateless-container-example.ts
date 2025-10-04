@@ -13,11 +13,12 @@
  * // cd pods/network-pod && rushx dev
  * 
  * // Then run this example:
- * // npx ts-node examples/ha-stateless-container-example.ts
+ * // cd examples && rushx run:ha
  */
 
-import { AgentImpl, containerUuid as generateContainerUuid, TickManagerImpl, containerOnAgentEndpointRef } from '../packages/core/src'
-import { createNetworkClient, type StatelessContainersFactory } from '../packages/client/src'
+import { AgentImpl, containerUuid as generateContainerUuid, TickManagerImpl, containerOnAgentEndpointRef, NetworkImpl } from '@hcengineering/network-core'
+import { createNetworkClient, type StatelessContainersFactory, NetworkAgentServer } from '@hcengineering/network-client'
+import { NetworkServer } from '@hcengineering/network-server'
 import type { 
   Container, 
   ContainerUuid, 
@@ -26,7 +27,7 @@ import type {
   AgentEndpointRef,
   ClientUuid,
   GetOptions
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 // Example stateless container implementation
 class HAServiceContainer implements Container {
@@ -126,16 +127,25 @@ async function createHAAgent(
 async function main(): Promise<void> {
   console.log('=== HA Stateless Container Example ===\n')
 
+  // 1. Setup network infrastructure
+  console.log('--- Setting up network infrastructure ---')
+  const tickManager = new TickManagerImpl(1)
+  tickManager.start()
+  const network = new NetworkImpl(tickManager)
+  const server = new NetworkServer(network, tickManager, '*', 3737)
+  console.log('✓ Network server started on port 3737\n')
+
   // Shared service UUID - both agents will try to register this
   const sharedServiceUuid = 'service-leader-election-001' as ContainerUuid
 
   // Create network client
   await using client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
-  console.log('Connected to Huly Network\n')
+  console.log('✓ Connected to network\n')
 
   // Create two agents that will compete for the same container
   // serveAgent now handles agent creation, registration, and stateless container setup
+  console.log('--- Creating competing agents ---')
   console.log('Creating Agent 1 (Primary)...')
   await createHAAgent(
     client,
@@ -155,13 +165,8 @@ async function main(): Promise<void> {
   // Wait for both agents to be registered
   await new Promise(resolve => setTimeout(resolve, 1000))
 
-  // Monitor container events
-  client.onUpdate(async (event: any) => {
-    console.log('\n>>> Network Event:')
-    for (const container of event.containers) {
-      console.log(`  Container ${container.container.uuid}: ${['added', 'updated', 'removed'][container.event]}`)
-    }
-  })
+  console.log('\n--- Agents Registered ---')
+  console.log('Both agents have been created and stateless containers registered')
 
   // Verify which agent owns the container
   console.log('\n--- Testing Container Access ---')
@@ -195,8 +200,16 @@ async function main(): Promise<void> {
   // Cleanup
   console.log('\n--- Cleanup ---')
   await containerRef.close()
+  await server.close()
+  tickManager.stop()
   
-  console.log('\nExample completed!')
+  console.log('\n✓ Example completed successfully!')
+  console.log('\nNote: This example demonstrates HA with stateless containers.')
+  console.log('In production, agents would continue running for automatic failover.')
+  
+  // Exit cleanly after a short delay
+  await new Promise(resolve => setTimeout(resolve, 500))
+  process.exit(0)
 }
 
 // Run the example

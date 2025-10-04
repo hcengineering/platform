@@ -9,19 +9,19 @@
  * // cd pods/network-pod && rushx dev
  * 
  * // Then run this example:
- * // npx ts-node examples/03-multi-tenant.ts
+ * // cd examples && rushx run:multi-tenant
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl } from '../packages/core/src'
-import { NetworkServer } from '../packages/server/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { 
   Container, 
   ContainerUuid, 
   ClientUuid,
   ContainerKind,
   GetOptions
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 interface Document {
   id: string

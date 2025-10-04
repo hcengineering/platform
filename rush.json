@@ -369,6 +369,11 @@
       "packageName": "@hcengineering/network-tests",
       "projectFolder": "tests",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/network-examples",
+      "projectFolder": "examples",
+      "shouldPublish": false
     }
   ]
 }

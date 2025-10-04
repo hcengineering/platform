@@ -72,9 +72,9 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     private readonly options: zmq.SocketOptions<zmq.Router> = {}
   ) {
     this.router = new zmq.Router({
+      linger: 0,
       ...options,
       context,
-      // linger: 0,
       tcpKeepalive: 1
     })
 

@@ -9,19 +9,19 @@
  * // cd pods/network-pod && rushx dev
  * 
  * // Then run this example:
- * // npx ts-node examples/01-basic-container-request-response.ts
+ * // cd examples && rushx run:basic
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '../packages/core/src'
-import { NetworkServer } from '../packages/server/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { 
   Container, 
   ContainerUuid, 
   ClientUuid,
   ContainerKind,
   GetOptions
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 // Define the service interface for type-safe proxy usage
 interface DataProcessorService {

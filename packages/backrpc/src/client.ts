@@ -63,7 +63,7 @@ export class BackRPCClient<ClientT extends string = ClientId> {
     aliveTimeout?: number
   ) {
     this.aliveTimeout = aliveTimeout ?? timeouts.aliveTimeout
-    this.dealer = new zmq.Dealer({ ...options, context })
+    this.dealer = new zmq.Dealer({ linger: 0, ...options, context })
 
     this.setServerId = () => {}
     this.serverId = new Promise<string>((resolve) => {

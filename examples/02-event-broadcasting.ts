@@ -2,38 +2,26 @@
  * Example 2: Event Broadcasting Container
  * 
  * This example demonstrates real-time event broadcasting to multiple connected clients.
- * Shows how to implement a cha  const agentServer = new NetworkAgentServer(tickManager, 'localhost', '*', 3738)
-  await agentServer.start(agent)
-  console.log('✓ Agent server started on port 3738\n')
-
-  // 3. Connect three clients
-  console.log('--- Connecting clients ---')
-  await using client1 = createNetworkClient('localhost:3737')
-  await client1.waitConnection(5000)
-  await using client2 = createNetworkClient('localhost:3737')
-  await client2.waitConnection(5000)
-  await using client3 = createNetworkClient('localhost:3737')
-  await client3.waitConnection(5000)
-  console.log('✓ Three clients connected\n') messages are broadcast to all participants.
+ * Shows how to implement a chat room where messages are broadcast to all participants.
  * 
  * @example
  * // Start the network server first:
  * // cd pods/network-pod && rushx dev
  * 
  * // Then run this example:
- * // npx ts-node examples/02-event-broadcasting.ts
+ * // cd examples && rushx run:events
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '../packages/core/src'
-import { NetworkServer } from '../packages/server/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { 
   Container, 
   ContainerUuid, 
   ClientUuid,
   ContainerKind,
   GetOptions
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 interface ChatMessage {
   username: string
@@ -244,89 +232,56 @@ async function main(): Promise<void> {
   })
   console.log('✓ All clients have chat room references\n')
 
-  // 6. Connect and setup event listeners
-  console.log('--- Setting up event listeners ---')
-  const conn1 = await chatRef1.connect()
-  conn1.on = async (event: any) => {
-    console.log('[Client1 Event]', event.type, ':', JSON.stringify(event).substring(0, 100))
-  }
-
-  const conn2 = await chatRef2.connect()
-  conn2.on = async (event: any) => {
-    console.log('[Client2 Event]', event.type, ':', JSON.stringify(event).substring(0, 100))
-  }
-
-  const conn3 = await chatRef3.connect()
-  conn3.on = async (event: any) => {
-    console.log('[Client3 Event]', event.type, ':', JSON.stringify(event).substring(0, 100))
-  }
-  
-  // Wait for connections to establish
-  await new Promise(resolve => setTimeout(resolve, 500))
-  console.log('✓ Event listeners ready\n')
-
-  // 7. Create typed proxies using cast method
-  const chat1 = conn1.cast<ChatRoomService>('ChatRoomService')
-  const chat2 = conn2.cast<ChatRoomService>('ChatRoomService')
-  const chat3 = conn3.cast<ChatRoomService>('ChatRoomService')
+  // 6. Create typed proxies for RPC calls (no need for explicit connect)
+  console.log('--- Creating typed proxies ---')
+  const chat1 = chatRef1.cast<ChatRoomService>()
+  const chat2 = chatRef2.cast<ChatRoomService>()
+  const chat3 = chatRef3.cast<ChatRoomService>()
   console.log('✓ Created typed proxies\n')
 
-  // 8. Check room status
-  console.log('--- Room info ---')
-  const roomInfo = await chat1.getUserCount()
-  console.log('Users in room:', roomInfo)
-  console.log()
+  // 7. Get room info
+  console.log('--- Room Information ---')
+  const info = await chat1.getRoomInfo()
+  console.log('Room:', info)
 
-  // 9. Send messages using typed methods (will be broadcast to all clients)
-  console.log('--- Broadcasting messages ---')
-  await chat1.sendMessage('Alice', 'Hello everyone!')
-  await new Promise(resolve => setTimeout(resolve, 200))
+  // 8. Send messages (these will be broadcast to all clients)
+  console.log('\n--- Sending messages ---')
+  const msg1 = await chat1.sendMessage('Alice', 'Hello everyone!')
+  console.log('Message 1:', msg1)
+  
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  const msg2 = await chat2.sendMessage('Bob', 'Hi Alice!')
+  console.log('Message 2:', msg2)
+  
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  const msg3 = await chat3.sendMessage('Charlie', 'Hey folks!')
+  console.log('Message 3:', msg3)
 
-  await chat2.sendMessage('Bob', 'Hi Alice!')
-  await new Promise(resolve => setTimeout(resolve, 200))
+  // 9. Get user count
+  console.log('\n--- User Count ---')
+  const userCount = await chat1.getUserCount()
+  console.log('Users in room:', userCount)
 
-  await chat3.sendMessage('Charlie', 'Hey folks! 👋')
-  await new Promise(resolve => setTimeout(resolve, 200))
-
-  await chat1.sendMessage('Alice', 'Nice to meet you all!')
-  await new Promise(resolve => setTimeout(resolve, 200))
-  console.log()
-
-  // 10. Retrieve chat history
-  console.log('--- Chat history ---')
+  // 10. Get message history
+  console.log('\n--- Message History ---')
   const history = await chat2.getHistory()
-  console.log(`Total messages: ${history.totalMessages}`)
-  history.messages.forEach((msg: ChatMessage, idx: number) => {
-    const time = new Date(msg.timestamp).toISOString()
-    console.log(`  ${idx + 1}. [${time}] ${msg.username}: ${msg.text}`)
+  console.log('Total messages:', history.totalMessages)
+  history.messages.forEach((msg, idx) => {
+    console.log(`  ${idx + 1}. [${new Date(msg.timestamp).toISOString()}] ${msg.username}: ${msg.text}`)
   })
-  console.log()
 
-  // 11. Simulate one client leaving
-  console.log('--- Client3 disconnecting ---')
-  await conn3.close()
-  await chatRef3.close()
-  await new Promise(resolve => setTimeout(resolve, 500))
-  console.log()
-
-  // 12. Check updated user count
-  const updatedInfo = await chat1.getUserCount()
-  console.log('Users remaining in room:', updatedInfo.count)
-  console.log()
-
-  // 13. Cleanup
-  console.log('--- Cleanup ---')
-  await conn1.close()
-  await conn2.close()
+  // 11. Cleanup
+  console.log('\n--- Cleanup ---')
   await chatRef1.close()
   await chatRef2.close()
+  await chatRef3.close()
   await agentServer.close()
   await server.close()
   tickManager.stop()
   
-  console.log('\n✓ Example completed successfully!')
+  console.log('✓ Example completed successfully!\n')
 }
 
 main().catch(console.error)
-
-export { ChatRoomContainer }

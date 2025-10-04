@@ -10,12 +10,12 @@
  * 
  * @example
  * // Run this example:
- * // npx ts-node examples/04-complete-production-setup.ts
+ * // cd examples && rushx run:production
  */
 
-import { NetworkImpl, TickManagerImpl, AgentImpl } from '../packages/core/src'
-import { NetworkServer } from '../packages/server/src'
-import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
+import { NetworkImpl, TickManagerImpl, AgentImpl } from '@hcengineering/network-core'
+import { NetworkServer } from '@hcengineering/network-server'
+import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-client'
 import type { 
   Container, 
   ContainerUuid, 
@@ -23,7 +23,7 @@ import type {
   ContainerKind,
   GetOptions,
   NetworkEvent
-} from '../packages/core/src'
+} from '@hcengineering/network-core'
 
 // Production container with proper lifecycle management
 class ProductionServiceContainer implements Container {
@@ -204,7 +204,7 @@ async function startProductionSystem() {
   console.log()
 
   // 3. Connect client with production timeout (3 seconds)
-  await using client = createNetworkClient('localhost:3737')
+  const client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('✓ Client connected')
 
@@ -316,6 +316,9 @@ async function startProductionSystem() {
   console.log(`Total events monitored: ${eventCount}\n`)
   console.log('✓ Production system shutdown complete!')
   
+  // Close client (will not wait due to linger: 0)
+  client.close()
+  
   return {
     eventCount,
     containersCreated: containers.length,
@@ -323,22 +326,8 @@ async function startProductionSystem() {
   }
 }
 
-// Main execution with signal handling
+// Main execution
 async function main() {
-  let cleanupFn: (() => Promise<void>) | undefined
-
-  // Setup graceful shutdown on signals
-  const handleShutdown = async (signal: string) => {
-    console.log(`\n\nReceived ${signal} - initiating graceful shutdown...`)
-    if (cleanupFn) {
-      await cleanupFn()
-    }
-    process.exit(0)
-  }
-
-  process.on('SIGTERM', () => handleShutdown('SIGTERM'))
-  process.on('SIGINT', () => handleShutdown('SIGINT'))
-
   try {
     const stats = await startProductionSystem()
     
@@ -351,8 +340,14 @@ async function main() {
     console.error('\n✗ Production system error:', error.message)
     process.exit(1)
   }
+  
+  // Force exit - something in the production setup keeps the event loop alive
+  process.exit(0)
 }
 
-main().catch(console.error)
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
 
 export { ProductionServiceContainer }

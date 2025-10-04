@@ -10,6 +10,28 @@ importers:
 
   .: {}
 
+  ../../examples:
+    dependencies:
+      '@hcengineering/network-client':
+        specifier: workspace:^0.7.9
+        version: link:../packages/client
+      '@hcengineering/network-core':
+        specifier: workspace:^0.7.9
+        version: link:../packages/core
+      '@hcengineering/network-server':
+        specifier: workspace:^0.7.9
+        version: link:../packages/server
+    devDependencies:
+      '@types/node':
+        specifier: ^22.18.1
+        version: 22.18.1
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@22.18.1)(typescript@5.9.2)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
   ../../packages/backrpc:
     dependencies:
       '@hcengineering/network-core':

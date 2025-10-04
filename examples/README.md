@@ -4,7 +4,11 @@ This directory contains comprehensive examples demonstrating various aspects of 
 
 ## 🆕 Updated to Use Typed Proxies
 
-All examples have been updated to demonstrate the new **typed proxy pattern** using the `cast<T>()` method. This provides:
+All examples have been updated to demonstrate the new \*\*typed p## Running Examples
+
+## Running Examples
+
+### Run with custom network hostern\*\* using the `cast<T>()` method. This provides:
 
 - ✅ **Full type safety** - TypeScript checks method signatures
 - ✅ **IDE autocomplete** - Get suggestions for available methods
@@ -54,8 +58,10 @@ Before running any example, make sure you have:
    Or let the example start its own network server (most examples do this).
 
 3. Run an example:
+
    ```bash
-   npx ts-node examples/01-basic-container-request-response.ts
+   cd examples
+   rushx run:basic
    ```
 
 ## Examples
@@ -223,13 +229,32 @@ Production-ready patterns:
 
 ## Running Examples
 
-### Run a single example:
+### Prerequisites
+
+Make sure you have installed dependencies:
 
 ```bash
-npx ts-node examples/01-basic-container-request-response.ts
+rush install
 ```
 
-### Run with custom network host:
+### Run a single example
+
+```bash
+cd examples
+rushx run:basic  # Run basic container request-response example
+```
+
+All available examples:
+
+- `rushx run:basic` - Basic container request-response
+- `rushx run:events` - Event broadcasting
+- `rushx run:multi-tenant` - Multi-tenant setup
+- `rushx run:production` - Complete production setup
+- `rushx run:retry` - Error handling and retry
+- `rushx run:timeout` - Custom timeout configuration
+- `rushx run:ha` - High-availability stateless containers
+
+### Run with custom network host
 
 Most examples connect to `localhost:3737` by default. To use a different host:
 
@@ -237,12 +262,13 @@ Most examples connect to `localhost:3737` by default. To use a different host:
 const client = createNetworkClient('your-host:3737')
 ```
 
-### Debug mode:
+### Debug mode
 
 Run with longer timeouts for debugging:
 
 ```bash
-NODE_ENV=development npx ts-node examples/01-basic-container-request-response.ts
+cd examples
+NODE_ENV=development rushx run:basic
 ```
 
 ## Common Patterns
