@@ -11,6 +11,13 @@ import type {
 export type NetworkUpdateListener = (event: NetworkEvent) => Promise<void>
 
 /**
+ * Interface for request handler (used by proxy)
+ */
+export interface RequestHandler {
+  request: (method: string, params: any[]) => Promise<any>
+}
+
+/**
  * Interface to Huly network.
  *
  * Identification is generated during instantions of client.
@@ -57,8 +64,9 @@ export interface ConnectionManager {
 
 /**
  * A client reference to container, until closed, client will notify network about container is still required.
+ * Implements RequestHandler for proxy support.
  */
-export interface ContainerReference {
+export interface ContainerReference extends RequestHandler {
   uuid: ContainerUuid
 
   endpoint: ContainerEndpointRef
@@ -67,18 +75,64 @@ export interface ContainerReference {
 
   connect: () => Promise<ContainerConnection>
 
-  request: (operation: string, data?: any) => Promise<any>
+  /**
+   * Send a request to the container
+   * Can be called directly or via proxy with method name and params array
+   */
+  request: (operationOrMethod: string, dataOrParams?: any) => Promise<any>
+
+  /**
+   * Create a typed proxy for this container reference
+   * @template T - The interface to implement
+   * @param interfaceName - Optional name of the interface for better error messages
+   * @returns A proxy object that implements the interface T
+   *
+   * @example
+   * ```typescript
+   * interface MyService {
+   *   sayHello(name: string): Promise<string>
+   * }
+   *
+   * const containerRef = await client.get('my-service', {})
+   * const service = containerRef.cast<MyService>('MyService')
+   * const greeting = await service.sayHello('Alice')
+   * ```
+   */
+  cast: <T extends object>(interfaceName?: string) => T
 
   // A notification will be called if container changed container endpoint reference
   onEndpointUpdate?: () => void
 }
 
 // A request/reponse interface to container.
-export interface ContainerConnection {
+// Implements RequestHandler for proxy support.
+export interface ContainerConnection extends RequestHandler {
   containerId: ContainerUuid
 
-  // A simple request/response to container.
-  request: (operation: string, data?: any) => Promise<any>
+  /**
+   * Send a request to the container
+   * Can be called directly or via proxy with method name and params array
+   */
+  request: (operationOrMethod: string, dataOrParams?: any) => Promise<any>
+
+  /**
+   * Create a typed proxy for this container connection
+   * @template T - The interface to implement
+   * @param interfaceName - Optional name of the interface for better error messages
+   * @returns A proxy object that implements the interface T
+   *
+   * @example
+   * ```typescript
+   * interface MyService {
+   *   calculate(a: number, b: number): Promise<number>
+   * }
+   *
+   * const connection = await containerRef.connect()
+   * const service = connection.cast<MyService>('MyService')
+   * const result = await service.calculate(10, 20)
+   * ```
+   */
+  cast: <T extends object>(interfaceName?: string) => T
 
   // A chunk streaming of results
   // stream: (data: any) => Iterable<any>

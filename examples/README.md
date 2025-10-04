@@ -2,6 +2,35 @@
 
 This directory contains comprehensive examples demonstrating various aspects of the Huly Virtual Network.
 
+## 🆕 Updated to Use Typed Proxies
+
+All examples have been updated to demonstrate the new **typed proxy pattern** using the `cast<T>()` method. This provides:
+
+- ✅ **Full type safety** - TypeScript checks method signatures
+- ✅ **IDE autocomplete** - Get suggestions for available methods
+- ✅ **Better documentation** - Interfaces serve as contracts
+- ✅ **Refactoring safety** - Compile-time errors catch issues
+
+See [PROXY_MIGRATION.md](./PROXY_MIGRATION.md) for detailed migration guide.
+
+### Example Usage
+
+```typescript
+// Define your service interface
+interface MyService {
+  getData: (id: string) => Promise<{ data: any }>
+  updateData: (id: string, data: any) => Promise<boolean>
+}
+
+// On client side - use cast() for typed proxy
+const containerRef = await client.get('my-service', {})
+const service = containerRef.cast<MyService>('MyService')
+
+// Call methods with full type safety
+const result = await service.getData('123')
+await service.updateData('123', { updated: true })
+```
+
 ## Important Note: Auto-Disposal
 
 All examples in this directory use the `await using` keyword for automatic client disposal. This ensures proper cleanup when the example completes or if an error occurs. For production services that need to run indefinitely, you should use manual lifecycle management instead. See [docs/AUTO_DISPOSAL_GUIDE.md](../docs/AUTO_DISPOSAL_GUIDE.md) for detailed guidance.
@@ -35,12 +64,28 @@ Before running any example, make sure you have:
 
 **File**: `01-basic-container-request-response.ts`
 
-Learn the fundamentals of creating containers that handle various operations. This example shows:
+Learn the fundamentals of creating containers with typed proxies. This example shows:
 
-- Container implementation basics
-- Request/response pattern
+- Defining service interfaces for type safety
+- Container implementation with `createProxyHandler`
+- Using `cast<T>()` method for typed proxies
+- Request/response pattern with full TypeScript support
 - State management within containers
 - Proper lifecycle management
+
+**Key concepts**:
+
+```typescript
+// Define interface
+interface DataProcessorService {
+  store: (key: string, value: any) => Promise<{ success: boolean }>
+  retrieve: (key: string) => Promise<{ success: boolean; value: any }>
+}
+
+// Use typed proxy
+const processor = containerRef.cast<DataProcessorService>('DataProcessorService')
+await processor.store('key', value)
+```
 
 **Use case**: Simple data storage service, key-value stores, stateful services
 
@@ -50,12 +95,28 @@ Learn the fundamentals of creating containers that handle various operations. Th
 
 **File**: `02-event-broadcasting.ts`
 
-Demonstrates real-time event broadcasting to multiple connected clients. Features:
+Demonstrates real-time event broadcasting to multiple connected clients with typed proxies. Features:
 
+- Defining chat service interface with typed methods
 - Multiple clients connecting to the same container
 - Broadcasting events to all connected clients
-- Chat room implementation
+- Using typed proxies for chat operations
 - Connection lifecycle management
+
+**Key concepts**:
+
+```typescript
+// Define interface
+interface ChatRoomService {
+  sendMessage: (username: string, text: string) => Promise<{ success: boolean }>
+  getHistory: () => Promise<{ messages: ChatMessage[] }>
+}
+
+// Use typed proxy
+const chat = connection.cast<ChatRoomService>('ChatRoomService')
+await chat.sendMessage('Alice', 'Hello!')
+const history = await chat.getHistory()
+```
 
 **Use case**: Chat systems, real-time notifications, collaborative editing, live dashboards
 

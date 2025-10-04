@@ -19,7 +19,8 @@ import {
   type NetworkAgent,
   type NetworkClient,
   type TickManager,
-  NetworkEventKind
+  NetworkEventKind,
+  createProxy
 } from '@hcengineering/network-core'
 import { v4 as uuidv4 } from 'uuid'
 import { ContainerConnectionImpl, NetworkDirectConnectionImpl, RoutedNetworkAgentConnectionImpl } from './agent'
@@ -52,6 +53,10 @@ class ContainerReferenceImpl implements ContainerReference {
 
   async request (operation: string, data?: any): Promise<any> {
     return await this.client.request(this.uuid, operation, data)
+  }
+
+  cast<T extends object>(interfaceName?: string): T {
+    return createProxy<T>(this, interfaceName)
   }
 
   async connect (): Promise<ContainerConnection> {

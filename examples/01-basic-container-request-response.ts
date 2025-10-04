@@ -12,7 +12,7 @@
  * // npx ts-node examples/01-basic-container-request-response.ts
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl } from '../packages/core/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '../packages/core/src'
 import { NetworkServer } from '../packages/server/src'
 import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
 import type { 
@@ -23,6 +23,15 @@ import type {
   GetOptions
 } from '../packages/core/src'
 
+// Define the service interface for type-safe proxy usage
+interface DataProcessorService {
+  store: (key: string, value: any) => Promise<{ success: boolean; key: string }>
+  retrieve: (key: string) => Promise<{ success: boolean; value: any; found: boolean }>
+  delete: (key: string) => Promise<{ success: boolean; deleted: boolean }>
+  list: () => Promise<{ success: boolean; keys: string[] }>
+  stats: () => Promise<{ success: boolean; totalKeys: number; uuid: ContainerUuid }>
+}
+
 class DataProcessorContainer implements Container {
   private data: Map<string, any> = new Map()
 
@@ -30,36 +39,38 @@ class DataProcessorContainer implements Container {
     console.log(`[DataProcessor] Container ${uuid} created`)
   }
 
-  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
-    console.log(`[DataProcessor] Operation: ${operation}`, data)
-    
-    switch (operation) {
-      case 'store':
-        this.data.set(data.key, data.value)
-        return { success: true, key: data.key }
+  // Implement the service interface
+  private serviceImpl: DataProcessorService = {
+    store: async (key: string, value: any) => {
+      this.data.set(key, value)
+      return { success: true, key }
+    },
 
-      case 'retrieve':
-        const value = this.data.get(data.key)
-        return { success: true, value, found: value !== undefined }
+    retrieve: async (key: string) => {
+      const value = this.data.get(key)
+      return { success: true, value, found: value !== undefined }
+    },
 
-      case 'delete':
-        const existed = this.data.delete(data.key)
-        return { success: true, deleted: existed }
+    delete: async (key: string) => {
+      const deleted = this.data.delete(key)
+      return { success: true, deleted }
+    },
 
-      case 'list':
-        return { success: true, keys: Array.from(this.data.keys()) }
+    list: async () => {
+      return { success: true, keys: Array.from(this.data.keys()) }
+    },
 
-      case 'stats':
-        return { 
-          success: true, 
-          totalKeys: this.data.size,
-          uuid: this.uuid 
-        }
-
-      default:
-        return { success: false, error: 'Unknown operation' }
+    stats: async () => {
+      return { 
+        success: true, 
+        totalKeys: this.data.size,
+        uuid: this.uuid 
+      }
     }
   }
+
+  // Use proxy handler to route requests to service implementation
+  request = createProxyHandler(this.serviceImpl as any, 'DataProcessorService')
 
   async ping(): Promise<void> {
     // Health check - container is alive
@@ -121,43 +132,47 @@ async function main(): Promise<void> {
   const containerRef = await client.get('data-processor' as ContainerKind, {})
   console.log(`✓ Got container: ${containerRef.uuid}\n`)
 
-  // 6. Perform various operations
+  // 6. Create typed proxy using cast method
+  const processor = containerRef.cast<DataProcessorService>('DataProcessorService')
+  console.log('✓ Created typed proxy\n')
+
+  // 7. Perform various operations using typed methods
   console.log('--- Storing data ---')
-  await containerRef.request('store', { key: 'user:123', value: { name: 'Alice', age: 30 } })
-  await containerRef.request('store', { key: 'user:456', value: { name: 'Bob', age: 25 } })
-  await containerRef.request('store', { key: 'config:app', value: { theme: 'dark' } })
+  await processor.store('user:123', { name: 'Alice', age: 30 })
+  await processor.store('user:456', { name: 'Bob', age: 25 })
+  await processor.store('config:app', { theme: 'dark' })
   console.log('✓ Data stored\n')
 
   console.log('--- Retrieving data ---')
-  const result1 = await containerRef.request('retrieve', { key: 'user:123' })
+  const result1 = await processor.retrieve('user:123')
   console.log('Retrieved:', result1)
 
-  const result2 = await containerRef.request('retrieve', { key: 'user:456' })
+  const result2 = await processor.retrieve('user:456')
   console.log('Retrieved:', result2)
 
-  const result3 = await containerRef.request('retrieve', { key: 'nonexistent' })
+  const result3 = await processor.retrieve('nonexistent')
   console.log('Retrieved (not found):', result3)
   console.log()
 
   console.log('--- Listing all keys ---')
-  const listResult = await containerRef.request('list')
+  const listResult = await processor.list()
   console.log('All keys:', listResult)
   console.log()
 
   console.log('--- Getting stats ---')
-  const stats = await containerRef.request('stats')
+  const stats = await processor.stats()
   console.log('Stats:', stats)
   console.log()
 
   console.log('--- Deleting data ---')
-  const deleteResult = await containerRef.request('delete', { key: 'user:456' })
+  const deleteResult = await processor.delete('user:456')
   console.log('Delete result:', deleteResult)
 
-  const statsAfterDelete = await containerRef.request('stats')
+  const statsAfterDelete = await processor.stats()
   console.log('Stats after delete:', statsAfterDelete)
   console.log()
 
-  // 7. Cleanup
+  // 8. Cleanup
   console.log('--- Cleanup ---')
   await containerRef.close()
   await agentServer.close()

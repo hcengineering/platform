@@ -12,7 +12,8 @@ import {
   type ContainerUuid,
   type NetworkAgent,
   type NetworkEvent,
-  type TickManager
+  type TickManager,
+  createProxy
 } from '@hcengineering/network-core'
 import { opNames } from './types'
 
@@ -144,7 +145,10 @@ export class RoutedNetworkAgentConnectionImpl<ClientT extends string = ClientId>
         }
       },
       request: async (operation, data) =>
-        await this.client.request(opNames.sendContainer, [containerUuid, operation, data])
+        await this.client.request(opNames.sendContainer, [containerUuid, operation, data]),
+      cast<T extends object>(interfaceName?: string): T {
+        return createProxy<T>(connection, interfaceName)
+      }
     }
     this.containers.set(containerUuid, connection)
     return connection
@@ -193,6 +197,10 @@ export class NetworkDirectConnectionImpl implements ContainerConnection {
 
   async request (operation: string, data?: any): Promise<any> {
     return await this.client.request(operation, data)
+  }
+
+  cast<T extends object>(interfaceName?: string): T {
+    return createProxy<T>(this, interfaceName)
   }
 
   async requestHandler (method: string, params: any, send: BackRPCResponseSend): Promise<void> {
@@ -270,6 +278,10 @@ export class ContainerConnectionImpl implements ContainerConnection {
       this.connection = await this.connection
     }
     return await this.connection.request(operation, data)
+  }
+
+  cast<T extends object>(interfaceName?: string): T {
+    return createProxy<T>(this, interfaceName)
   }
 
   async close (): Promise<void> {

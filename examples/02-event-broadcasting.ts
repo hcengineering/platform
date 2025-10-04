@@ -24,7 +24,7 @@
  * // npx ts-node examples/02-event-broadcasting.ts
  */
 
-import { AgentImpl, TickManagerImpl, NetworkImpl } from '../packages/core/src'
+import { AgentImpl, TickManagerImpl, NetworkImpl, createProxyHandler } from '../packages/core/src'
 import { NetworkServer } from '../packages/server/src'
 import { createNetworkClient, NetworkAgentServer } from '../packages/client/src'
 import type { 
@@ -41,6 +41,32 @@ interface ChatMessage {
   timestamp: number
 }
 
+// Define the service interface for type-safe proxy usage
+interface ChatRoomService {
+  sendMessage: (username: string, text: string) => Promise<{ 
+    success: boolean; 
+    messageId: number; 
+    timestamp: number 
+  }>
+  getHistory: () => Promise<{ 
+    success: boolean; 
+    messages: ChatMessage[]; 
+    totalMessages: number 
+  }>
+  getUserCount: () => Promise<{ 
+    success: boolean; 
+    count: number; 
+    connectedClients: ClientUuid[] 
+  }>
+  getRoomInfo: () => Promise<{
+    success: boolean;
+    roomName: string;
+    uuid: ContainerUuid;
+    messageCount: number;
+    clientCount: number;
+  }>
+}
+
 class ChatRoomContainer implements Container {
   private clients = new Map<ClientUuid, (data: any) => Promise<void>>()
   private messages: ChatMessage[] = []
@@ -52,59 +78,61 @@ class ChatRoomContainer implements Container {
     console.log(`[ChatRoom] Room '${roomName}' created (${uuid})`)
   }
 
-  async request(operation: string, data?: any, clientId?: ClientUuid): Promise<any> {
-    switch (operation) {
-      case 'sendMessage': {
-        const message: ChatMessage = {
-          username: data.username,
-          text: data.text,
-          timestamp: Date.now()
-        }
-        this.messages.push(message)
-        
-        console.log(`[ChatRoom] ${message.username}: ${message.text}`)
-        
-        // Broadcast to all connected clients
-        await this.broadcastToAll({ 
-          type: 'newMessage', 
-          message,
-          messageCount: this.messages.length 
-        })
-        
-        return { 
-          success: true, 
-          messageId: this.messages.length - 1,
-          timestamp: message.timestamp
-        }
+  // Implement the service interface
+  private serviceImpl: ChatRoomService = {
+    sendMessage: async (username: string, text: string) => {
+      const message: ChatMessage = {
+        username,
+        text,
+        timestamp: Date.now()
       }
+      this.messages.push(message)
+      
+      console.log(`[ChatRoom] ${message.username}: ${message.text}`)
+      
+      // Broadcast to all connected clients
+      await this.broadcastToAll({ 
+        type: 'newMessage', 
+        message,
+        messageCount: this.messages.length 
+      })
+      
+      return { 
+        success: true, 
+        messageId: this.messages.length - 1,
+        timestamp: message.timestamp
+      }
+    },
 
-      case 'getHistory':
-        return { 
-          success: true, 
-          messages: this.messages,
-          totalMessages: this.messages.length 
-        }
+    getHistory: async () => {
+      return { 
+        success: true, 
+        messages: this.messages,
+        totalMessages: this.messages.length 
+      }
+    },
 
-      case 'getUserCount':
-        return { 
-          success: true, 
-          count: this.clients.size,
-          connectedClients: Array.from(this.clients.keys())
-        }
+    getUserCount: async () => {
+      return { 
+        success: true, 
+        count: this.clients.size,
+        connectedClients: Array.from(this.clients.keys())
+      }
+    },
 
-      case 'getRoomInfo':
-        return {
-          success: true,
-          roomName: this.roomName,
-          uuid: this.uuid,
-          messageCount: this.messages.size,
-          clientCount: this.clients.size
-        }
-
-      default:
-        return { success: false, error: 'Unknown operation' }
+    getRoomInfo: async () => {
+      return {
+        success: true,
+        roomName: this.roomName,
+        uuid: this.uuid,
+        messageCount: this.messages.length,
+        clientCount: this.clients.size
+      }
     }
   }
+
+  // Use proxy handler to route requests to service implementation
+  request = createProxyHandler(this.serviceImpl as any, 'ChatRoomService')
 
   async ping(): Promise<void> {}
 
@@ -169,7 +197,7 @@ async function main(): Promise<void> {
 
   // 2. Create agent
   const agent = new AgentImpl('chat-agent' as any, {
-    'chat-room': async (options: GetOptions) => {
+    ['chat-room' as ContainerKind]: async (options: GetOptions) => {
       const roomName = options.labels?.[0] || 'general'
       const uuid = options.uuid ?? `room-${roomName}-${Date.now()}` as ContainerUuid
       const container = new ChatRoomContainer(uuid, roomName)
@@ -237,30 +265,36 @@ async function main(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 500))
   console.log('✓ Event listeners ready\n')
 
-  // 7. Check room status
+  // 7. Create typed proxies using cast method
+  const chat1 = conn1.cast<ChatRoomService>('ChatRoomService')
+  const chat2 = conn2.cast<ChatRoomService>('ChatRoomService')
+  const chat3 = conn3.cast<ChatRoomService>('ChatRoomService')
+  console.log('✓ Created typed proxies\n')
+
+  // 8. Check room status
   console.log('--- Room info ---')
-  const roomInfo = await conn1.request('getUserCount')
+  const roomInfo = await chat1.getUserCount()
   console.log('Users in room:', roomInfo)
   console.log()
 
-  // 8. Send messages (will be broadcast to all clients)
+  // 9. Send messages using typed methods (will be broadcast to all clients)
   console.log('--- Broadcasting messages ---')
-  await conn1.request('sendMessage', { username: 'Alice', text: 'Hello everyone!' })
+  await chat1.sendMessage('Alice', 'Hello everyone!')
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  await conn2.request('sendMessage', { username: 'Bob', text: 'Hi Alice!' })
+  await chat2.sendMessage('Bob', 'Hi Alice!')
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  await conn3.request('sendMessage', { username: 'Charlie', text: 'Hey folks! 👋' })
+  await chat3.sendMessage('Charlie', 'Hey folks! 👋')
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  await conn1.request('sendMessage', { username: 'Alice', text: 'Nice to meet you all!' })
+  await chat1.sendMessage('Alice', 'Nice to meet you all!')
   await new Promise(resolve => setTimeout(resolve, 200))
   console.log()
 
-  // 9. Retrieve chat history
+  // 10. Retrieve chat history
   console.log('--- Chat history ---')
-  const history = await conn2.request('getHistory')
+  const history = await chat2.getHistory()
   console.log(`Total messages: ${history.totalMessages}`)
   history.messages.forEach((msg: ChatMessage, idx: number) => {
     const time = new Date(msg.timestamp).toISOString()
@@ -268,19 +302,19 @@ async function main(): Promise<void> {
   })
   console.log()
 
-  // 10. Simulate one client leaving
+  // 11. Simulate one client leaving
   console.log('--- Client3 disconnecting ---')
   await conn3.close()
   await chatRef3.close()
   await new Promise(resolve => setTimeout(resolve, 500))
   console.log()
 
-  // 11. Check updated user count
-  const updatedInfo = await conn1.request('getUserCount')
+  // 12. Check updated user count
+  const updatedInfo = await chat1.getUserCount()
   console.log('Users remaining in room:', updatedInfo.count)
   console.log()
 
-  // 12. Cleanup
+  // 13. Cleanup
   console.log('--- Cleanup ---')
   await conn1.close()
   await conn2.close()
