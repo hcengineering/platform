@@ -81,7 +81,7 @@ function encodeValue (val: any): string {
     case 'boolean':
       return val ? 'true' : 'false'
     case 'string':
-      return `"${val.replace(/"/g, '\\"')}"`
+      return `"${val.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
     case 'object':
       try {
         return JSON.stringify(val)
@@ -316,10 +316,8 @@ function splitTopLevel (s: string, separator: string): string[] {
           continue
         }
       } else {
-        // multi-char separator (e.g. '=>') - detect sequence
-        if (s.substr(i, sep.length) === sep) {
+        if (s.substring(i, i + sep.length) === sep) {
           if (cur.length > 0) res.push(cur)
-          // start new token with separator (so modifiers keep leading '=>')
           cur = sep
           i += sep.length - 1
           continue
@@ -330,7 +328,7 @@ function splitTopLevel (s: string, separator: string): string[] {
     cur += ch
   }
 
-  if (cur.length > 0) res.push(separator !== undefined ? cur.trim() : cur)
+  if (cur.length > 0) res.push(cur.trim())
   return res
 }
 
@@ -374,7 +372,9 @@ function decodeValue (s: string): any {
     return str.slice(1, -1).replace(/\\"/g, '"')
   }
   if (str.startsWith('[') && str.endsWith(']')) {
-    return str.slice(1, -1).split(',').map(decodeValue)
+    const inner = str.slice(1, -1).trim()
+    if (inner === '') return []
+    return inner.split(',').map(decodeValue)
   }
   return str
 }
