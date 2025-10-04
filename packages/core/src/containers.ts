@@ -1,5 +1,5 @@
-import type { ClientUuid, ContainerEndpointRef, ContainerUuid, GetOptions } from './api/types'
 import { v4 as uuidv4 } from 'uuid'
+import type { AgentEndpointRef, ClientUuid, ContainerEndpointRef, ContainerUuid, GetOptions } from './api/types'
 
 export interface Container {
   request: (operation: string, data?: any, clientId?: ClientUuid) => Promise<any>
@@ -16,7 +16,8 @@ export interface Container {
 }
 
 export type ContainerFactory = (
-  request: GetOptions
+  request: GetOptions,
+  agentEndpoint?: AgentEndpointRef
 ) => Promise<{ uuid: ContainerUuid, container: Container, endpoint: ContainerEndpointRef }>
 
 export function containerUuid (): ContainerUuid {

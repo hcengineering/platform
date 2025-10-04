@@ -129,12 +129,15 @@ process.on('SIGINT', async () => {
 Create a file `agent.ts`:
 
 ```typescript
-import { createAgent } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 import { HelloWorldContainer } from './my-container'
 import type { GetOptions, ContainerUuid } from '@hcengineering/network-core'
 
-// Create agent with container factory
-const { agent, server: agentServer } = await createAgent('localhost:3738', {
+// Create client and serve agent with container factory
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   'hello-world': async (options: GetOptions) => {
     const uuid = options.uuid ?? (`hello-${Date.now()}` as ContainerUuid)
     const container = new HelloWorldContainer(uuid)
@@ -151,8 +154,7 @@ console.log('🤖 Agent server started on port 3738')
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\nShutting down agent...')
-  await agentServer.close()
-  tickManager.stop()
+  await client.close()
   process.exit(0)
 })
 ```
@@ -232,7 +234,7 @@ For a single-file demo, create `demo.ts`:
 ```typescript
 import { NetworkImpl, TickManagerImpl } from '@hcengineering/network-core'
 import { NetworkServer } from '@hcengineering/network-server'
-import { createNetworkClient, createAgent } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 import type { Container, ContainerUuid, ClientUuid, GetOptions } from '@hcengineering/network-core'
 
 class DemoContainer implements Container {
@@ -256,8 +258,11 @@ async function demo() {
   const server = new NetworkServer(network, tickManager, '*', 3737)
   console.log('✅ Network started')
 
-  // 2. Start agent
-  const { agent, server: agentServer } = await createAgent('localhost:3738', {
+  // 2. Connect client and serve agent
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
+
+  await client.serveAgent('localhost:3738', {
     demo: async (options: GetOptions) => {
       const uuid = options.uuid ?? (`demo-${Date.now()}` as ContainerUuid)
       return {
@@ -268,14 +273,9 @@ async function demo() {
     }
   })
   console.log('✅ Agent started')
-
-  // 3. Connect client and register agent
-  const client = createNetworkClient('localhost:3737')
-  await client.waitConnection(5000)
-  await client.register(agent)
   console.log('✅ Client connected')
 
-  // 4. Use container
+  // 3. Use container
   const ref = await client.get('demo' as any, {})
   const result = await ref.request('test', { value: 42 })
   console.log('✅ Result:', result)

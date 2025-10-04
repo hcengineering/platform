@@ -225,9 +225,12 @@ await client.close()
 ### Agent Setup Template
 
 ```typescript
-import { createAgent } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 
-const { agent, server } = await createAgent('localhost:3738', {
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   'my-service': async (options) => {
     const uuid = options.uuid ?? generateUuid()
     const container = new MyContainer(uuid)
@@ -239,7 +242,7 @@ const { agent, server } = await createAgent('localhost:3738', {
   }
 })
 
-// Agent server is already started, no need to call server.start()
+// Agent server is already started and registered to network
 ```
 
 ## Troubleshooting

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { createNetworkClient, shutdownNetworkTickMgr } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 import type { NetworkClient } from '@hcengineering/network-core'
 
 jest.setTimeout(6000000)
@@ -38,8 +38,5 @@ describe('network client tests', () => {
     for (const client of clients) {
       await client.close()
     }
-  })
-  afterAll(async () => {
-    shutdownNetworkTickMgr()
   })
 })

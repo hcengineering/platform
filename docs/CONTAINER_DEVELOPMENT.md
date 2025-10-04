@@ -125,9 +125,12 @@ Containers are created by factory functions:
 
 ```typescript
 import type { GetOptions, ContainerUuid } from '@hcengineering/network-core'
-import { createAgent } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 
-const { agent, server } = await createAgent('localhost:3738', {
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   'my-service': async (options: GetOptions) => {
     // Extract creation parameters
     const uuid = options.uuid ?? generateUuid()
@@ -697,7 +700,6 @@ describe('CalculatorContainer', () => {
 describe('Container Integration', () => {
   let tickManager: TickManager
   let network: Network
-  let agent: NetworkAgent
   let client: NetworkClient
 
   beforeAll(async () => {
@@ -706,20 +708,17 @@ describe('Container Integration', () => {
     tickManager.start()
     network = new NetworkImpl(tickManager)
 
-    // Create agent using createAgent
-    const agentResult = await createAgent('localhost:3738', {
+    // Connect client and serve agent using serveAgent
+    client = createNetworkClient('localhost:3737')
+    await client.waitConnection()
+
+    await client.serveAgent('localhost:3738', {
       calculator: async (options) => ({
         uuid: options.uuid ?? ('calc-1' as ContainerUuid),
         container: new CalculatorContainer('calc-1' as ContainerUuid),
         endpoint: 'test://calc-1' as any
       })
     })
-    agent = agentResult.agent
-
-    // Connect client
-    client = createNetworkClient('localhost:3737')
-    await client.waitConnection()
-    await client.register(agent)
   })
 
   afterAll(async () => {
@@ -918,7 +917,10 @@ For resource-intensive containers:
 // Agent maintains a pool
 const containerPool = new ContainerPool(5) // Max 5 instances
 
-const { agent, server } = await createAgent('localhost:3738', {
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   worker: async (options) => {
     const container = await containerPool.acquire()
     return {

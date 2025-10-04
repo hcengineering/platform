@@ -8,7 +8,10 @@ import type { Container, ContainerUuid, ContainerKind, ClientUuid, ContainerEndp
 class MockHAContainer implements Container {
   terminated = false
 
-  constructor (readonly uuid: ContainerUuid, readonly name: string) {}
+  constructor (
+    readonly uuid: ContainerUuid,
+    readonly name: string
+  ) {}
 
   async request (operation: string, data?: any): Promise<any> {
     return { uuid: this.uuid, name: this.name, operation, data }
@@ -67,13 +70,13 @@ describe('HA Stateless Containers', () => {
     // Register agent1 first
     await agent1.register(network)
     const list1 = await agent1.list()
-    expect(list1.some(c => c.uuid === sharedUuid)).toBe(true) // Should be accepted
+    expect(list1.some((c) => c.uuid === sharedUuid)).toBe(true) // Should be accepted
 
     // Register agent2 - should be rejected for the shared UUID
     await agent2.register(network)
     const list2 = await agent2.list()
     // Container should have been removed from agent2's list after rejection
-    expect(list2.some(c => c.uuid === sharedUuid)).toBe(false)
+    expect(list2.some((c) => c.uuid === sharedUuid)).toBe(false)
 
     // Verify agent1 owns the container
     const [uuid, endpoint] = await network.get(clientId1, haServiceKind, { uuid: sharedUuid })

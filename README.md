@@ -287,7 +287,7 @@ Here's a complete end-to-end example to get you started:
 ```typescript
 import { NetworkImpl, TickManagerImpl } from '@hcengineering/network-core'
 import { NetworkServer } from '@hcengineering/network-server'
-import { createNetworkClient, createAgent } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
 
 // 1. Create a simple container implementation
@@ -324,8 +324,11 @@ async function main() {
   const server = new NetworkServer(network, tickManager, '*', 3737)
   console.log('Network server started on port 3737')
 
-  // 3. Create and start an agent
-  const { agent, server: agentServer } = await createAgent('localhost:3738', {
+  // 3. Connect as a client and serve an agent
+  const client = createNetworkClient('localhost:3737')
+  await client.waitConnection(5000)
+
+  await client.serveAgent('localhost:3738', {
     'my-service': async (options) => {
       const uuid = options.uuid ?? (('container-' + Date.now()) as ContainerUuid)
       const container = new MyServiceContainer(uuid)
@@ -337,7 +340,7 @@ async function main() {
     }
   })
 
-  // 4. Connect as a client
+  // 4. Use as a client
   const client = createNetworkClient('localhost:3737')
   await client.waitConnection(5000)
   console.log('Client connected')
@@ -743,8 +746,12 @@ class TenantWorkspaceContainer implements Container {
   disconnect(clientId: ClientUuid): void {}
 }
 
+// Connect as a client
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
 // Setup agent with tenant workspace factory
-const { agent, server: agentServer } = await createAgent('localhost:3738', {
+await client.serveAgent('localhost:3738', {
   'tenant-workspace': async (options: GetOptions) => {
     const tenantId = options.labels?.[0] || 'default'
     const uuid = options.uuid ?? (`workspace-${tenantId}-${Date.now()}` as ContainerUuid)

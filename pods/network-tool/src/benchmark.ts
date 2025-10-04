@@ -1,4 +1,4 @@
-import { createAgent, createNetworkClient } from '@hcengineering/network-client'
+import { createNetworkClient } from '@hcengineering/network-client'
 import {
   containerOnAgentEndpointRef,
   containerUuid,
@@ -53,29 +53,27 @@ export function registerBenchmark (): void {
       console.log('Starting benchmark agent')
       const network = process.env.NETWORK_HOST ?? cmd.network
       const client = createNetworkClient(network)
+      await client.waitConnection(5000)
 
-      const { agent, server } = await createAgent(cmd.endpoint, {
-        [benchmarkContainer]: async (options: GetOptions) => {
+      await client.serveAgent(cmd.endpoint, {
+        [benchmarkContainer]: async (options: GetOptions, agentEndpoint?: AgentEndpointRef) => {
           console.log('Starting bench container')
           const uuid = options.uuid ?? containerUuid()
           return {
             uuid,
             container: new BenchmarkContainer(uuid),
-            endpoint: containerOnAgentEndpointRef(agent.endpoint as AgentEndpointRef, uuid)
+            endpoint: containerOnAgentEndpointRef(agentEndpoint as AgentEndpointRef, uuid)
           }
         }
       })
 
-      await client.register(agent)
-
       const stop = tickManager.register(async () => {
         const containers = await client.list(benchmarkContainer)
-        console.log(`Benchmark Agent: ${agent.uuid} has ${containers.length} '${benchmarkContainer}' containers`)
+        console.log(`Benchmark Agent has ${containers.length} '${benchmarkContainer}' containers`)
       }, 10)
 
       addShutdownHandler(async () => {
         stop()
-        await server.close()
         await client.close()
       })
     })

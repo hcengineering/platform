@@ -47,7 +47,7 @@ class MyService implements Container {
 // 2. Create agents (both will try to register same UUID)
 const sharedUUID = 'my-service-001' as ContainerUuid
 
-// Agent 1 (Primary) - Note: In production, use createAgent() from @hcengineering/network-client
+// Agent 1 (Primary) - Note: In production, use serveAgent() on the client
 const agent1 = new AgentImpl('agent-1', {})
 const service1 = new MyService(sharedUUID)
 agent1.addStatelessContainer(
@@ -57,7 +57,7 @@ agent1.addStatelessContainer(
   service1
 )
 
-// Agent 2 (Standby) - Note: In production, use createAgent() from @hcengineering/network-client
+// Agent 2 (Standby) - Note: In production, use serveAgent() on the client
 const agent2 = new AgentImpl('agent-2', {})
 const service2 = new MyService(sharedUUID)
 agent2.addStatelessContainer(

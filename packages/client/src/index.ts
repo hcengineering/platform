@@ -5,7 +5,6 @@ import {
   type AgentUuid,
   type ContainerFactory,
   type ContainerKind,
-  type NetworkAgent,
   type NetworkClient
 } from '@hcengineering/network-core'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,35 +15,56 @@ export * from './agent'
 export * from './client'
 export * from './types'
 
-const tickMgr = new TickManagerImpl(timeouts.pingInterval * 2)
-
-export function shutdownNetworkTickMgr (): void {
-  tickMgr.stop()
+export interface ClientWithAgents extends NetworkClient {
+  // Will create agent and register it to network
+  serveAgent: (endpointUrl: string, factory: Record<ContainerKind, ContainerFactory>) => Promise<void>
 }
 
-process.on('exit', () => {
-  shutdownNetworkTickMgr()
-})
+class NetworkClientWithAgents extends NetworkClientImpl implements ClientWithAgents {
+  servers: [string, NetworkAgentServer][] = []
 
-export function createNetworkClient (url: string, aliveTimeout?: number): NetworkClient {
+  constructor (host: string, port: number, aliveTimeout?: number) {
+    super(host, port, new TickManagerImpl(timeouts.pingInterval * 2), aliveTimeout)
+  }
+
+  async serveAgent (endpointUrl: string, factory: Record<ContainerKind, ContainerFactory>): Promise<void> {
+    if (this.servers.find((s) => s[0] === endpointUrl) != null) {
+      throw new Error(`Agent server already running at ${endpointUrl}`)
+    }
+    const agent = new AgentImpl(uuidv4() as AgentUuid, factory)
+
+    const [host, portStr] = endpointUrl.split(':')
+    const port = portStr != null ? parseInt(portStr, 10) : 3738
+
+    const server = new NetworkAgentServer(this.tickMgr, host, '*', port)
+    this.servers.push([endpointUrl, server])
+    await server.start(agent)
+
+    await this.register(agent)
+  }
+
+  async close (): Promise<void> {
+    this.tickMgr.stop()
+    for (const [, server] of this.servers) {
+      await server.close()
+    }
+    await super.close()
+  }
+
+  async [Symbol.asyncDispose] (): Promise<void> {
+    await this.close()
+  }
+
+  [Symbol.dispose] (): void {
+    void this.close().catch((err) => {
+      console.error('Error during dispose:', err)
+    })
+  }
+}
+
+export function createNetworkClient (url: string, aliveTimeout?: number): NetworkClientWithAgents {
   const [host, portStr] = url.split(':')
   const port = portStr != null ? parseInt(portStr, 10) : 3737
-  tickMgr.start()
-  return new NetworkClientImpl(host, port, tickMgr, aliveTimeout)
-}
 
-export async function createAgent (
-  endpointUrl: string,
-  factory: Record<ContainerKind, ContainerFactory>
-): Promise<{ agent: NetworkAgent, server: NetworkAgentServer }> {
-  const agent = new AgentImpl(uuidv4() as AgentUuid, factory)
-
-  const [host, portStr] = endpointUrl.split(':')
-  const port = portStr != null ? parseInt(portStr, 10) : 3738
-
-  tickMgr.start()
-  const server = new NetworkAgentServer(tickMgr, host, '*', port)
-
-  await server.start(agent)
-  return { agent, server }
+  return new NetworkClientWithAgents(host, port, aliveTimeout)
 }

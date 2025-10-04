@@ -204,7 +204,7 @@ export class AgentImpl implements NetworkAgent {
 
     const pendingId = this.pidCounter++
 
-    const container = this.factory[kind](options).then(({ uuid, container, endpoint }) => ({
+    const container = this.factory[kind](options, this.endpoint).then(({ uuid, container, endpoint }) => ({
       container,
       endpoint,
       kind,

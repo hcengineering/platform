@@ -139,7 +139,7 @@ console.log('Network server running on port 3737')
 Each agent declares which **container kinds** it can create:
 
 ```typescript
-// Note: For production code, use createAgent() from @hcengineering/network-client
+// Note: For production code, use serveAgent() on the client
 // This example uses AgentImpl directly for educational purposes
 const agent = new AgentImpl('my-agent' as AgentUuid, {
   session: async (options) => {
@@ -252,7 +252,7 @@ stateDiagram-v2
 Created on-demand when requested:
 
 ```typescript
-// Note: For production code, use createAgent() from @hcengineering/network-client
+// Note: For production code, use serveAgent() on the client
 // This example uses AgentImpl directly for educational purposes
 const agent = new AgentImpl('agent-1' as any, {
   'user-session': async (options: GetOptions) => {
@@ -604,7 +604,7 @@ Examples:
 Agents declare which kinds they support:
 
 ```typescript
-// Note: For production code, use createAgent() from @hcengineering/network-client
+// Note: For production code, use serveAgent() on the client
 // This example uses AgentImpl directly for educational purposes
 const agent = new AgentImpl('agent-1' as any, {
   'user-session': sessionFactory,

@@ -98,7 +98,7 @@ export class NetworkClientImpl implements NetworkClient {
   constructor (
     readonly host: string,
     port: number,
-    private readonly tickMgr: TickManager,
+    protected readonly tickMgr: TickManager,
     aliveTimeout?: number
   ) {
     const options = undefined

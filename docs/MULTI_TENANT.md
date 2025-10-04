@@ -106,10 +106,13 @@ const workspace = await client.get('workspace' as ContainerKind, {
 
 ```typescript
 // Agent factory with tenant-aware containers
-// Note: For production code, use createAgent() from @hcengineering/network-client
-import { createAgent } from '@hcengineering/network-client'
+// Note: For production code, use serveAgent() on the client
+import { createNetworkClient } from '@hcengineering/network-client'
 
-const { agent, server } = await createAgent('localhost:3738', {
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   'tenant-workspace': async (options: GetOptions) => {
     const tenantId = options.labels?.[0]
     if (!tenantId) {
@@ -595,8 +598,11 @@ class SaaSTenantContainer implements Container {
 }
 
 // Create agent
-// Note: For production code, use createAgent() from @hcengineering/network-client
-const { agent, server } = await createAgent('localhost:3738', {
+// Note: For production code, use serveAgent() on the client
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
   'tenant-workspace': async (options: GetOptions) => {
     const tenantId = options.labels?.[0]
     const tier = options.extra?.tier || 'free'

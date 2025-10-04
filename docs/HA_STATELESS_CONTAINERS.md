@@ -75,7 +75,7 @@ Add a stateless container to the agent for registration.
 **Example:**
 
 ```typescript
-// Note: For production code, prefer using createAgent() from @hcengineering/network-client
+// Note: For production code, prefer using serveAgent() on the client
 // This example uses AgentImpl directly for educational purposes
 const agent = new AgentImpl('my-agent-id', containerFactories)
 
@@ -118,7 +118,7 @@ import { createNetworkClient, NetworkAgentServer } from '@hcengineering/network-
 // Shared service UUID across all HA instances
 const SHARED_SERVICE_UUID = 'my-ha-service-001' as ContainerUuid
 
-// Note: For production code, prefer using createAgent() from @hcengineering/network-client
+// Note: For production code, prefer using serveAgent() on the client
 // This example uses AgentImpl directly for educational purposes
 
 // Create Agent 1 (Primary)
