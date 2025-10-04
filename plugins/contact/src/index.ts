@@ -40,6 +40,8 @@ import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, Compone
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 import type { Readable } from 'svelte/store'
 import { Card, MasterTag, Role } from '@hcengineering/card'
+import { Preference } from '@hcengineering/preference'
+
 import { PermissionsStore } from './types'
 
 /**
@@ -208,6 +210,13 @@ export interface PersonSpace extends Space {
   person: Ref<Person>
 }
 
+export interface Translation extends Preference {
+  attachedTo: Ref<Employee>
+  enabled: boolean
+  translateTo?: string
+  dontTranslate: string[]
+}
+
 /**
  * @public
  */
@@ -226,7 +235,8 @@ export const contactPlugin = plugin(contactId, {
     PersonSpace: '' as Ref<Class<PersonSpace>>,
     SocialIdentity: '' as Ref<Class<SocialIdentity>>,
     UserProfile: '' as Ref<MasterTag>,
-    UserRole: '' as Ref<Class<UserRole>>
+    UserRole: '' as Ref<Class<UserRole>>,
+    Translation: '' as Ref<Class<Translation>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>

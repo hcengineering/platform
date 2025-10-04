@@ -124,6 +124,11 @@
     "HereDescription": "Notificar todos neste {title}",
     "Guest": "Convidado",
     "Deleted": "Excluído",
-    "CannotMerge": "Erro: Não é possível mesclar pessoas globais"
+    "CannotMerge": "Erro: Não é possível mesclar pessoas globais",
+    "AutoTranslation": "Tradução automática",
+    "TranslateTo": "Traduzir para",
+    "DontTranslate": "Não traduzir",
+    "SelectLanguage": "Selecionar idioma",
+    "SelectLanguages": "Selecionar idiomas"
   }
 }

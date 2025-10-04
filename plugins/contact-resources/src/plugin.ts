@@ -85,7 +85,12 @@ export default mergeIds(contactId, contact, {
     DeleteEmployeeDescr: '' as IntlString,
     HasMessagesIn: '' as IntlString,
     HasNewMessagesIn: '' as IntlString,
-    CannotMerge: '' as IntlString
+    CannotMerge: '' as IntlString,
+    AutoTranslation: '' as IntlString,
+    TranslateTo: '' as IntlString,
+    DontTranslate: '' as IntlString,
+    SelectLanguage: '' as IntlString,
+    SelectLanguages: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

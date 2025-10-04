@@ -126,6 +126,7 @@ import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 import PersonPreviewProvider from './components/person/PersonPreviewProvider.svelte'
+import TranslationSettings from './components/TranslationSettings.svelte'
 
 import { get } from 'svelte/store'
 import { canMergePersons, canResendInvitation } from './visibilityTester'
@@ -156,6 +157,7 @@ import {
 export * from './utils'
 export { employeeByIdStore } from './utils'
 export * from './assignee'
+export * from './translation'
 export {
   PersonIdArrayEditor,
   AccountArrayEditor,
@@ -399,7 +401,8 @@ export default async (): Promise<Resources> => ({
     SpaceMembersEditor,
     ContactNamePresenter,
     PersonIdFilter,
-    AssigneePopup
+    AssigneePopup,
+    TranslationSettings
   },
   completion: {
     EmployeeQuery: async (

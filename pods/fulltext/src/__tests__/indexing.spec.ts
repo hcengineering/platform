@@ -31,6 +31,7 @@ import { createDoc, test, type TestDocument } from './minmodel'
 import { dbConfig, dbUrl, elasticIndexName, model, prepare, preparePipeline } from './utils'
 
 prepare()
+jest.mock('franc-min', () => ({ franc: () => 'en' }), { virtual: true })
 
 jest.setTimeout(500000)
 

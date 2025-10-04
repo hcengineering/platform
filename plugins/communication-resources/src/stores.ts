@@ -13,7 +13,7 @@
 
 import { get, writable } from 'svelte/store'
 import { createLabelsQuery, createQuery, onClient, onCommunicationClient } from '@hcengineering/presentation'
-import { type Label, type LabelID, type Message, type MessageID } from '@hcengineering/communication-types'
+import { type CardID, type Label, type LabelID, type Message, type MessageID } from '@hcengineering/communication-types'
 import core, { getCurrentAccount, type Markup, type Ref } from '@hcengineering/core'
 import { languageStore } from '@hcengineering/ui'
 import cardPlugin, { type Card } from '@hcengineering/card'
@@ -21,35 +21,36 @@ import communication from '@hcengineering/communication'
 
 export const labelsStore = writable<Label[]>([])
 export const messageEditingStore = writable<MessageID | undefined>(undefined)
-export const translateMessagesStore = writable<Map<MessageID, TranslateMessagesStatus>>(new Map())
+export const translateMessagesStore = writable<TranslateMessagesStatus[]>([])
+export const showOriginalMessagesStore = writable<Array<[CardID, MessageID]>>([])
 export const threadCreateMessageStore = writable<Message | undefined>(undefined)
 export const guestCommunicationAllowedCards = writable<Array<Ref<Card>>>([])
 
 export interface TranslateMessagesStatus {
+  cardId: CardID
+  messageId: MessageID
   inProgress: boolean
-  shown: boolean
   result?: Markup
 }
 
 languageStore.subscribe(() => {
-  translateMessagesStore.set(new Map())
+  translateMessagesStore.set([])
 })
 
-export function isMessageTranslated (messageId: MessageID): boolean {
-  return get(translateMessagesStore).get(messageId)?.result != null
+export function isMessageTranslated (cardId: CardID, messageId: MessageID): boolean {
+  return get(translateMessagesStore).find((it) => it.cardId === cardId && messageId === it.messageId)?.result != null
 }
 
-export function isMessageTranslating (messageId: MessageID): boolean {
-  return get(translateMessagesStore).get(messageId)?.inProgress === true
+export function isMessageTranslating (cardId: CardID, messageId: MessageID): boolean {
+  return (
+    get(translateMessagesStore).find((it) => it.cardId === cardId && messageId === it.messageId)?.inProgress === true
+  )
 }
 
-export function getMessageTranslatedMarkup (messageId: MessageID): Markup | undefined {
-  return get(translateMessagesStore).get(messageId)?.result
-}
-
-export function isShownTranslatedMessage (messageId: MessageID): boolean {
-  const result = get(translateMessagesStore).get(messageId)
-  return result?.shown === true && result?.result != null
+export function isShownTranslatedMessage (cardId: CardID, messageId: MessageID): boolean {
+  const result = get(translateMessagesStore).find((it) => it.cardId === cardId && messageId === it.messageId)
+  const showOriginal = get(showOriginalMessagesStore).some(([cId, mId]) => cId === cardId && mId === messageId)
+  return !showOriginal && result?.result != null
 }
 
 export function isCardSubscribed (cardId: Ref<Card>): boolean {

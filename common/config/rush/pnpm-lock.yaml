@@ -34,9 +34,6 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
-      '@hcengineering/measurements':
-        specifier: ^0.7.7
-        version: 0.7.7
       '@hcengineering/measurements-otlp':
         specifier: ^0.7.7
         version: 0.7.7(encoding@0.1.13)
@@ -913,6 +910,9 @@ importers:
       '@rush-temp/pod-telegram-bot':
         specifier: file:./projects/pod-telegram-bot.tgz
         version: file:projects/pod-telegram-bot.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
+      '@rush-temp/pod-translate':
+        specifier: file:./projects/pod-translate.tgz
+        version: file:projects/pod-translate.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(zod@3.24.2)
       '@rush-temp/pod-worker':
         specifier: file:./projects/pod-worker.tgz
         version: file:projects/pod-worker.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(webpack-cli@5.1.4)
@@ -1963,6 +1963,9 @@ importers:
       form-data:
         specifier: ^4.0.0
         version: 4.0.0
+      franc-min:
+        specifier: ^6.2.0
+        version: 6.2.0
       gaxios:
         specifier: ^5.0.1
         version: 5.1.3(encoding@0.1.13)
@@ -4556,7 +4559,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-NqgsYYbjEFDp0w3T3g9pjDaYwAfMfqE5PkZoZ2dY/YTudJcRfnYV4uHuyIDKw6HceDKfLZSd3zScMXjR5m3uNA==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-o3A6bkNKoPybTtuDaNrpgzglNb4Z/YaKOO9XoMdGkbtnVpVBwehnffKiphB9GKZ0SNzUYXRCXbYbBgPnTIoC5g==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
@@ -4580,7 +4583,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
-    resolution: {integrity: sha512-J2aOTd+H6SyUEBDB5+3eOs3OiWnqvYy0cGRs/Cpz6+Oqbunn4Hvj+laQqIps3c2t8bQH3u2IBiI3e0jzaPK/Fw==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-R1RbX6FWTeUs0TqyJYDUZUiMV7W4mwZ3lWCWFIJfFSGcWE+5Sk+aww2jyVIYh8eiunUo/uSBwXIbSaYBcoyrmQ==, tarball: file:projects/contact.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents-assets@file:projects/controlled-documents-assets.tgz':
@@ -4940,7 +4943,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-calendar@file:projects/model-calendar.tgz':
-    resolution: {integrity: sha512-KIpD8iFaZEadGlgNoSsM7/34DiKaZ8PAH7iFYy6e/sijyGvgwtTvDardwNZ6xQfACmBu8CH6zNzn3XcGrYBx5A==, tarball: file:projects/model-calendar.tgz}
+    resolution: {integrity: sha512-bo+cfLn56htDm9GYZ4sFPx/YFVk6hnoTq0eBHvUoGi9QQTalHRlREiv+c4gZniVpx2sH/OaUMWAXDIfkcTPXkQ==, tarball: file:projects/model-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/model-card@file:projects/model-card.tgz':
@@ -4960,7 +4963,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
-    resolution: {integrity: sha512-F8VPbPQ/7oKCWNW/sqc7ul2CZJ8pRUTW2Tu7wpUU9pCo6AJOMPwB4mBI+M35pWYpoj7FLiojZmwATERl3JH/0g==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-2SQj04no5IbxGV5MxaO7k3CmOt1jt9Os0/s3yeRbbgHHFNl6uJ6yaOo9Qfq6eaquBfV9nPzJuzmBH2VsTkKA9w==, tarball: file:projects/model-contact.tgz}
     version: 0.0.0
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -5408,7 +5411,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-z4m5kjmQbBtpRI+5G9R5oylh5Z6IuWrTpC82zkrShOHVYLnLwKwDciVN5bbfAlISdb59ThXyiOzIA5Dr/gfl8g==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-3n0/hgmREmz0totaUlNjkuPuS+kGz5ekL8OO3z/HsQyI/2vDx+p3O0DsDga2m1fGt296awP3MP/iqQIWwFPcNw==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-sign@file:projects/pod-sign.tgz':
@@ -5425,6 +5428,10 @@ packages:
 
   '@rush-temp/pod-telegram@file:projects/pod-telegram.tgz':
     resolution: {integrity: sha512-JxdvigAw/njFUV7DoAoepnhVtYX3vvIuL4cvHy4ZpK5LYx6PjxP5AOcUD3dTb/WZXDAnZAc6APKpAKgmHA5UXQ==, tarball: file:projects/pod-telegram.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-translate@file:projects/pod-translate.tgz':
+    resolution: {integrity: sha512-n2WumWwe2S5s0LBStlOuDVU/99zH1tTOvejx65KReHGy8c/8GzsfbcPapYs2zkLeKnInC0d99iC02Dl32Bnhjw==, tarball: file:projects/pod-translate.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-worker@file:projects/pod-worker.tgz':
@@ -8221,6 +8228,9 @@ packages:
   code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
 
+  collapse-white-space@2.1.0:
+    resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
+
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
 
@@ -9828,6 +9838,9 @@ packages:
 
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
+
+  franc-min@6.2.0:
+    resolution: {integrity: sha512-1uDIEUSlUZgvJa2AKYR/dmJC66v/PvGQ9mWfI9nOr/kPpMFyvswK0gPXOwpYJYiYD008PpHLkGfG58SPjQJFxw==}
 
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
@@ -11696,6 +11709,9 @@ packages:
 
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
+
+  n-gram@2.0.2:
+    resolution: {integrity: sha512-S24aGsn+HLBxUGVAUFOwGpKs7LBcG4RudKU//eWzt/mQ97/NMKQxDWHyHx63UNWk/OOdihgmzoETn1tf5nQDzQ==}
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
@@ -13715,6 +13731,9 @@ packages:
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
     hasBin: true
+
+  trigram-utils@2.0.1:
+    resolution: {integrity: sha512-nfWIXHEaB+HdyslAfMxSqWKDdmqY9I32jS7GnqpdWQnLH89r6A5sdk3fDVYqGAZ0CrT8ovAFSAo6HRiWcWNIGQ==}
 
   triple-beam@1.4.1:
     resolution: {integrity: sha512-aZbgViZrg1QNcG+LULa7nhZpJTZSLm/mXnHXnbAbjmN5aSa0y7V+wvv6+4WaBtpISJzThKy+PIPxc1Nq1EJ9mg==}
@@ -19188,6 +19207,7 @@ snapshots:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      franc-min: 6.2.0
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
       typescript: 5.8.3
@@ -25690,6 +25710,42 @@ snapshots:
       - supports-color
       - ts-node
       - utf-8-validate
+
+  '@rush-temp/pod-translate@file:projects/pod-translate.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(zod@3.24.2)':
+    dependencies:
+      '@hcengineering/measurements': 0.7.7
+      '@tsconfig/node16': 1.0.4
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@types/uuid': 8.3.4
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      dotenv: 16.0.3
+      esbuild: 0.25.9
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3))
+      openai: 4.56.0(encoding@0.1.13)(zod@3.24.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - encoding
+      - node-notifier
+      - supports-color
+      - zod
 
   '@rush-temp/pod-worker@file:projects/pod-worker.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(webpack-cli@5.1.4)':
     dependencies:
@@ -33317,6 +33373,8 @@ snapshots:
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
+  collapse-white-space@2.1.0: {}
+
   collect-v8-coverage@1.0.2: {}
 
   color-convert@1.9.3:
@@ -35230,6 +35288,10 @@ snapshots:
   forwarded@0.2.0: {}
 
   fraction.js@4.3.7: {}
+
+  franc-min@6.2.0:
+    dependencies:
+      trigram-utils: 2.0.1
 
   fresh@0.5.2: {}
 
@@ -37482,6 +37544,8 @@ snapshots:
       any-promise: 1.3.0
       object-assign: 4.1.1
       thenify-all: 1.6.0
+
+  n-gram@2.0.2: {}
 
   nanoid@3.3.11: {}
 
@@ -39744,6 +39808,11 @@ snapshots:
       tslib: 2.8.1
 
   tree-kill@1.2.2: {}
+
+  trigram-utils@2.0.1:
+    dependencies:
+      collapse-white-space: 2.1.0
+      n-gram: 2.0.2
 
   triple-beam@1.4.1: {}
 
