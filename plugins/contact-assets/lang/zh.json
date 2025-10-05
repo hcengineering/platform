@@ -124,6 +124,11 @@
     "HereDescription": "通知所有人在此{title}",
     "Guest": "访客",
     "Deleted": "已删除",
-    "CannotMerge": "错误：无法合并全局人员"
+    "CannotMerge": "错误：无法合并全局人员",
+    "AutoTranslation": "自动翻译",
+    "TranslateTo": "翻译为",
+    "DontTranslate": "不翻译",
+    "SelectLanguage": "选择语言",
+    "SelectLanguages": "选择语言"
   }
 }

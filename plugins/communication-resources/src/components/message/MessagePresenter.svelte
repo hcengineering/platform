@@ -15,10 +15,10 @@
 
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { employeeByPersonIdStore, getPersonByPersonId, translationStore } from '@hcengineering/contact-resources'
   import { Card } from '@hcengineering/card'
   import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
-  import type { MessageID, SocialID } from '@hcengineering/communication-types'
+  import type { CardID, MessageID, SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
   import { MessageAction } from '@hcengineering/communication'
@@ -31,7 +31,8 @@
     messageEditingStore,
     TranslateMessagesStatus,
     translateMessagesStore,
-    threadCreateMessageStore
+    threadCreateMessageStore,
+    showOriginalMessagesStore
   } from '../../stores'
   import { getMessageActions } from '../../actions'
   import communication from '../../plugin'
@@ -94,11 +95,20 @@
     return false
   }
 
+  $: language = $translationStore?.enabled === true ? $translationStore?.translateTo : undefined
+  $: dontTranslate = $translationStore?.enabled === true ? $translationStore?.dontTranslate : undefined
+
   let allActions: MessageAction[] = []
   let excludedActions: Ref<MessageAction>[] = []
   let actions: MessageAction[] = []
 
-  $: excludedActions = getExcludedActions($translateMessagesStore)
+  $: excludedActions = getExcludedActions(
+    $translateMessagesStore,
+    $showOriginalMessagesStore,
+    message,
+    language,
+    dontTranslate
+  )
 
   $: void getMessageActions(message).then((res) => {
     allActions = res
@@ -106,11 +116,23 @@
 
   $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
 
-  function getExcludedActions (translatedMessages: Map<MessageID, TranslateMessagesStatus>): Ref<MessageAction>[] {
-    const result: TranslateMessagesStatus | undefined = translatedMessages.get(message.id)
-    if (result === undefined || result.inProgress || !result.shown) {
+  function getExcludedActions (
+    translatedMessages: TranslateMessagesStatus[],
+    showOriginalMessage: Array<[CardID, MessageID]>,
+    message: Message,
+    lang?: string,
+    dontTranslate: string[] = []
+  ): Ref<MessageAction>[] {
+    const result: TranslateMessagesStatus | undefined = translatedMessages.find(
+      (it) => it.cardId === message.cardId && it.messageId === message.id
+    )
+    const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
+    const isTranslated =
+      lang != null && message?.translates?.[lang] != null && !dontTranslate.includes(message.language ?? '')
+
+    if ((result === undefined && !isTranslated) || result?.inProgress || showOriginal) {
       return [communication.messageAction.ShowOriginalMessage]
-    } else if (result.shown) {
+    } else if ((result?.result != null || isTranslated) && !showOriginal) {
       return [communication.messageAction.TranslateMessage]
     }
 
