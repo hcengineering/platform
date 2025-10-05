@@ -147,7 +147,6 @@ export class HulypulseClient implements Disposable {
             this.ws?.send('pong')
             return
           }
-
           if (event.data === 'pong') {
             return
           }
@@ -203,17 +202,17 @@ export class HulypulseClient implements Disposable {
   private startPing (): void {
     this.stopPing()
     this.pingInterval = setInterval(() => {
-      if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      if (this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send('ping')
       }
       if (this.pingTimeout !== undefined) {
         clearTimeout(this.pingTimeout)
       }
       this.pingTimeout = setTimeout(() => {
-        if (this.ws !== null) {
+        if (this.ws?.readyState !== WebSocket.OPEN) {
           console.log('no response from server')
           clearInterval(this.pingInterval)
-          this.ws.close(WS_CLOSE_NORMAL)
+          this.ws?.close(WS_CLOSE_NORMAL)
         }
       }, this.PING_TIMEOUT_MS)
     }, this.PING_INTERVAL_MS)
@@ -237,8 +236,8 @@ export class HulypulseClient implements Disposable {
   private reconnect (): void {
     if (this.reconnectTimeout !== undefined) {
       clearTimeout(this.reconnectTimeout)
+      this.reconnectTimeout = undefined
     }
-    this.reconnectTimeout = undefined
     this.stopPing()
 
     if (!this.closed) {
@@ -267,7 +266,7 @@ export class HulypulseClient implements Disposable {
 
   public async info (): Promise<string> {
     const reply = await this.send({ type: 'info' })
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       throw new Error(reply.error)
     }
     return reply.result ?? ''
@@ -275,7 +274,7 @@ export class HulypulseClient implements Disposable {
 
   public async list (): Promise<string> {
     const reply = await this.send({ type: 'list' })
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       throw new Error(reply.error)
     }
     return reply.result ?? ''
@@ -283,7 +282,7 @@ export class HulypulseClient implements Disposable {
 
   public async subscribe (key: string, callback: Callback<any>): Promise<UnsubscribeCallback> {
     let list = this.subscribes.get(key)
-    if (list == null) {
+    if (list === undefined) {
       list = []
       this.subscribes.set(key, list)
     }
@@ -293,7 +292,7 @@ export class HulypulseClient implements Disposable {
       list.push(callback)
       if (list.length === 1) {
         const reply = await this.send({ type: 'sub', key })
-        if (reply.error != null) {
+        if (reply.error !== undefined) {
           this.reconnect()
         }
       }
@@ -301,7 +300,7 @@ export class HulypulseClient implements Disposable {
 
     // callback for every old item (expires_at > 1 sec for atomicity)
     const prevlist = await this.send({ type: 'list', key })
-    if (prevlist.error != null) {
+    if (prevlist.error !== undefined) {
       this.reconnect()
     } else if (Array.isArray(prevlist.result)) {
       for (const item of prevlist.result) {
@@ -324,14 +323,14 @@ export class HulypulseClient implements Disposable {
 
   public async unsubscribe (key: string, callback: Callback<any>): Promise<boolean> {
     const list = this.subscribes.get(key)
-    if (list?.includes(callback) == null) {
+    if (list === undefined || !list.includes(callback)) {
       return false
     }
     const newList = list.filter((cb) => cb !== callback)
     if (newList.length === 0) {
       this.subscribes.delete(key)
       const reply = await this.send({ type: 'unsub', key })
-      if (reply.error != null) {
+      if (reply?.error !== undefined) {
         this.reconnect()
         return true
       }
@@ -359,14 +358,14 @@ export class HulypulseClient implements Disposable {
       ...(typeof third === 'number' ? { TTL: third } : third)
     }
     const reply = await this.send(message)
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       throw new Error(reply.error)
     }
   }
 
   public async get<T>(key: string): Promise<T | undefined> {
     const reply = await this.send({ type: 'get', key })
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       if (reply.error === 'not found') {
         return undefined
       }
@@ -377,7 +376,7 @@ export class HulypulseClient implements Disposable {
 
   public async get_full<T>(key: string): Promise<GetFullResult<T> | undefined> {
     const reply = await this.send({ type: 'get', key })
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       if (reply.error === 'not found') {
         return undefined
       }
@@ -393,7 +392,7 @@ export class HulypulseClient implements Disposable {
   public async delete (key: string, options?: Pick<DeleteMessage, 'ifMatch'>): Promise<boolean> {
     const message: Omit<DeleteMessage, 'correlation'> = { type: 'delete', key, ...options }
     const reply = await this.send(message)
-    if (reply.error != null) {
+    if (reply.error !== undefined) {
       if (reply.error === 'not found') {
         return false
       }
@@ -407,13 +406,13 @@ export class HulypulseClient implements Disposable {
     const message = { ...msg, correlation: id.toString() } satisfies M
 
     // connect if needed
-    if (this.ws == null || this.ws.readyState !== WebSocket.OPEN) {
+    if (this.ws?.readyState !== WebSocket.OPEN) {
       this.reconnect()
-      await this.connect()
+      return // await this.connect()
     }
 
     return await new Promise((resolve, reject) => {
-      if (this.ws == null || this.ws.readyState !== WebSocket.OPEN) {
+      if (this.ws?.readyState !== WebSocket.OPEN) {
         resolve({ error: 'WebSocket is not open.' })
         return
       }
@@ -426,7 +425,8 @@ export class HulypulseClient implements Disposable {
       }, this.SEND_TIMEOUT_MS)
       this.pending.set(id, { resolve, reject, send_timeout: sendTimeout })
       this.ws.send(JSON.stringify(message))
-      this.startPing() // reset ping timer on any send
+      // TODO: RENEW HULYPULSE SERVER BEFORE 
+      // this.startPing() // reset ping timer on any send
     })
   }
 }
