@@ -36,7 +36,8 @@ export class ConfigurationManager {
   ) {}
 
   has (plugin: Plugin): boolean {
-    return this.configuration.get(plugin)?.enabled !== false
+    const configuration = this.configuration.get(plugin)
+    return configuration !== undefined && configuration.enabled
   }
 
   hasResource<T>(resource?: Resource<T> | null): boolean | undefined {
