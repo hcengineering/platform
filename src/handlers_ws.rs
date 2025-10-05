@@ -196,14 +196,16 @@ impl actix::Handler<ForceDisconnect> for WsSession {
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         tracing::debug!("WebSocket message: {:?}", msg);
+
+        // renew heartbeat to unixtime (all messages is activity, including "ping")
+        let hub_state = self.hub_state.clone();
+        let id = self.id.clone();
+        let fut = async move { hub_state.write().await.renew_heartbeat(id) };
+        ctx.wait(fut::wrap_future(fut).map(|_, _, _| ()));
+
         match msg {
             // String "ping" - answer "pong"
             Ok(ws::Message::Text(text)) if text == "ping" => {
-                // renew heartbeat to unixtime
-                let hub_state = self.hub_state.clone();
-                let id = self.id.clone();
-                let fut = async move { hub_state.write().await.renew_heartbeat(id) };
-                ctx.wait(fut::wrap_future(fut).map(|_, _, _| ()));
                 ctx.text("pong");
             }
             Ok(ws::Message::Text(text)) => match serde_json::from_str::<WsCommand>(&text) {
