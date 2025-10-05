@@ -33,6 +33,7 @@ import { getClient } from '@hcengineering/presentation'
 import {
   type Context,
   type ContextId,
+  createContext,
   type Execution,
   type ExecutionContext,
   ExecutionStatus,
@@ -564,7 +565,7 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
     params: {
       state: prevState._id,
       title: prevState.title,
-      user: '$' + JSON.stringify(context)
+      user: createContext(context)
     }
   }
   return endAction
