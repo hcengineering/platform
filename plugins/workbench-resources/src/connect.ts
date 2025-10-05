@@ -331,10 +331,11 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             void (async () => {
               if (_client !== undefined) {
+                const client = _client
                 const newVersion = await ctx.with(
                   'find-version',
                   {},
-                  async () => await newClient.findOne<Version>(core.class.Version, {})
+                  async () => await client.findOne<Version>(core.class.Version, {})
                 )
                 console.log('Reconnect Model version', newVersion)
 
