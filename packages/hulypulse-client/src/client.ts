@@ -312,7 +312,7 @@ export class HulypulseClient implements Disposable {
           }
           callback(item.key, value)
         } catch (err) {
-          console.error(`Error in initial callback for key "${key}":`, err)
+          console.error('Error in initial callback', err)
         }
       }
     }
@@ -414,14 +414,12 @@ export class HulypulseClient implements Disposable {
 
     return await new Promise((resolve, reject) => {
       if (this.ws == null || this.ws.readyState !== WebSocket.OPEN) {
-        // reject(new Error('WebSocket is not open.'))
         resolve({ error: 'WebSocket is not open.' })
         return
       }
       const sendTimeout = setTimeout(() => {
         const pending = this.pending.get(id)
         if (pending !== undefined) {
-          // pending.reject(new Error('Timeout waiting for response'))
           pending.resolve({ error: 'Timeout waiting for response' })
           this.pending.delete(id)
         }
@@ -434,5 +432,6 @@ export class HulypulseClient implements Disposable {
 }
 
 export function escapeString (str: string): string {
-  return str.replace(/[\*\?\[\]\\\x00-\x1F\x7F"']/g, '_')
+  // eslint-disable-next-line no-control-regex, no-useless-escape
+  return str.replace(/[*?\[\]\\\x00-\x1F\x7F"']/g, '_')
 }
