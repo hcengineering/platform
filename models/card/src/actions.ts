@@ -218,6 +218,7 @@ export function createActions (builder: Builder): void {
 
   createAction(builder, {
     ...actionTemplates.move,
+    input: 'any',
     target: card.class.Card,
     context: {
       mode: ['context', 'browser'],
