@@ -192,7 +192,7 @@ export class HulypulseClient implements Disposable {
   }
 
   private resubscribe (): void {
-    for (const [key, callbacks] of this.subscribes) {
+    for (const [key] of this.subscribes) {
       this.send({ type: 'sub', key }).catch((error) => {
         throw new Error(`Resubscription failed for key=${key}: ${error.message ?? error}`)
       })
