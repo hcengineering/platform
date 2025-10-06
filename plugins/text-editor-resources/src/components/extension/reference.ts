@@ -156,14 +156,14 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
       const icon =
         objectclass !== undefined && !hierarchy.isDerived(objectclass, contact.class.Contact)
-          ? hierarchy.getClass(objectclass).icon
+          ? hierarchy.findClass(objectclass)?.icon
           : undefined
 
       let iconUrl = ''
       let emojiCode: number | undefined
 
       if (icon === view.ids.IconWithEmoji) {
-        emojiCode = (hierarchy.getClass(objectclass) as any).color ?? 0
+        emojiCode = hierarchy.findClass(objectclass)?.color ?? 0
       } else if (typeof icon === 'string') {
         iconUrl = getMetadata(icon) ?? 'https://anticrm.org/logo.svg'
       }
