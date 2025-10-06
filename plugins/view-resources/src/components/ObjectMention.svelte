@@ -61,7 +61,7 @@
   }
 
   $: cl = doc?._class ?? _class
-  $: clazz = cl ? hierarchy.getClass(cl) : undefined
+  $: clazz = cl ? hierarchy.findClass(cl) : undefined
   $: icon =
     doc !== undefined && !hierarchy.isDerived(doc._class, contact.class.Contact) ? classIcon(client, doc._class) : null
 
