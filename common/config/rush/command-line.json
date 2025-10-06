@@ -207,12 +207,7 @@
       "summary": "docker:build",
       "commandKind": "phased",
       "name": "docker:build",
-      "phases": [
-        "_phase:build",
-        "_phase:bundle",
-        "_phase:package",
-        "_phase:docker-build"
-      ],
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
       "enableParallelism": true,
       "incremental": true
     },
@@ -220,12 +215,7 @@
       "summary": "docker:rebuild",
       "commandKind": "phased",
       "name": "docker:rebuild",
-      "phases": [
-        "_phase:build",
-        "_phase:bundle",
-        "_phase:package",
-        "_phase:docker-build"
-      ],
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
       "enableParallelism": true,
       "incremental": false
     },
@@ -233,12 +223,7 @@
       "summary": "docker:staging",
       "commandKind": "phased",
       "name": "docker:staging",
-      "phases": [
-        "_phase:build",
-        "_phase:bundle",
-        "_phase:package",
-        "_phase:docker-staging"
-      ],
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-staging"],
       "enableParallelism": true,
       "incremental": true
     },
@@ -389,16 +374,6 @@
       "shortName": "-f",
       "description": "Force formatting",
       "associatedCommands": ["format"]
-    },
-    {
-      "parameterKind": "string",
-      "argumentName": "BRANCH",
-      "required": false,
-      "associatedPhases": [],
-      "shortName": "-b",
-      "longName": "--branch",
-      "description": "Force formatting of branch",
-      "associatedCommands": ["fast-format"]
     }
     // {
     //   /**
