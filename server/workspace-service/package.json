@@ -50,7 +50,7 @@
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/server-tool": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-pipeline": "^0.7.0",
     "@hcengineering/server-client": "^0.7.0",
     "@hcengineering/server-token": "^0.7.0",

@@ -59,7 +59,7 @@
     "@hcengineering/drive": "^0.7.0",
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/client": "^0.7.3",
     "@hcengineering/client-resources": "^0.7.3",
     "@hcengineering/platform": "^0.7.3",

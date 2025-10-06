@@ -73,7 +73,7 @@
     "@hcengineering/server-ai-bot": "^0.7.0",
     "@hcengineering/server-client": "^0.7.0",
     "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-token": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/text": "^0.7.3",

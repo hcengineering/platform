@@ -102,7 +102,7 @@
     "@hcengineering/server-collaboration-resources": "^0.7.0",
     "@hcengineering/server-backup": "^0.7.0",
     "@hcengineering/backup-service": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-calendar": "^0.7.0",
     "@hcengineering/server-calendar-resources": "^0.7.0",
     "@hcengineering/server-card": "^0.7.0",
@@ -182,7 +182,7 @@
     "@hcengineering/kafka": "^0.7.0",
     "@hcengineering/api-client": "^0.7.3",
     "@faker-js/faker": "^8.4.1",
-    "@hcengineering/hulylake-client": "^0.7.3",
-    "@hcengineering/communication-types": "^0.7.2"
+    "@hcengineering/hulylake-client": "^0.7.4",
+    "@hcengineering/communication-types": "^0.7.3"
   }
 }

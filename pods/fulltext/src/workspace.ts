@@ -16,7 +16,7 @@ import core, {
   WorkspaceEvent,
   type WorkspaceIds
 } from '@hcengineering/core'
-import { type HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 import {
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
@@ -62,7 +62,7 @@ export class WorkspaceIndexer {
     externalStorage: StorageAdapter,
     ftadapter: FullTextAdapter,
     contentAdapter: ContentTextAdapter,
-    hulylake: HulylakeClient,
+    hulylake: HulylakeWorkspaceClient,
     endpointProvider: (token: string) => Promise<string | undefined>,
     listener?: FulltextListener
   ): Promise<WorkspaceIndexer> {

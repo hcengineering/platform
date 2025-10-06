@@ -72,12 +72,12 @@
     "@hcengineering/server-collaboration": "^0.7.0",
     "@hcengineering/middleware": "^0.7.1",
     "@hcengineering/server-client": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/postgres": "^0.7.0",
     "@hcengineering/mongo": "^0.7.0",
     "@hcengineering/kafka": "^0.7.0",
-    "@hcengineering/communication-server": "^0.7.2",
-    "@hcengineering/communication-sdk-types": "^0.7.2",
-    "@hcengineering/hulylake-client": "^0.7.3"
+    "@hcengineering/communication-server": "^0.7.3",
+    "@hcengineering/communication-sdk-types": "^0.7.3",
+    "@hcengineering/hulylake-client": "^0.7.4"
   }
 }

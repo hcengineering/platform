@@ -52,7 +52,7 @@
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/server-client": "^0.7.0",
     "@hcengineering/server": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/mongo": "^0.7.0",
     "@hcengineering/collaboration": "^0.7.0",
     "@hcengineering/minio": "^0.7.0",
