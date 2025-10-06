@@ -14,11 +14,14 @@
   import { SortingOrder } from '@hcengineering/core'
   import { IconDelete, IconSettings, Label, ModernButton, showPopup, eventToHTMLElement } from '@hcengineering/ui'
   import { getCommunicationClient } from '@hcengineering/presentation'
+  import { Analytics } from '@hcengineering/analytics'
 
   import inbox from '../plugin'
   import InboxViewSettings from './InboxViewSettings.svelte'
 
   const communicationClient = getCommunicationClient()
+
+  export let mode: 'chat' | 'inbox' = 'chat'
 
   let clearing = false
   async function clearInbox (): Promise<void> {
@@ -28,14 +31,18 @@
       const contexts = await communicationClient.findNotificationContexts({ order: SortingOrder.Ascending })
       await Promise.all(contexts.map((context) => communicationClient.removeNotificationContext(context.id)))
       clearing = false
-    } catch (e) {
+    } catch (e: any) {
       clearing = false
-      console.error(e)
+      Analytics.handleError(e)
     }
   }
 
   function click (e: MouseEvent): void {
     showPopup(InboxViewSettings, {}, eventToHTMLElement(e))
+  }
+
+  function goToChat (): void {
+    mode = 'chat'
   }
 </script>
 
@@ -43,7 +50,7 @@
   <span class="overflow-label"><Label label={inbox.string.Inbox} /></span>
   <div class="flex-row-center flex-gap-2">
     <ModernButton
-      label={inbox.string.ClearAll}
+      tooltip={{ label: inbox.string.ClearAll }}
       icon={IconDelete}
       size="small"
       iconSize="small"
@@ -56,6 +63,7 @@
 
 <style lang="scss">
   .inbox-header {
+    background-color: var(--theme-popup-color);
     border-bottom: 1px solid var(--theme-navpanel-border);
   }
 </style>
