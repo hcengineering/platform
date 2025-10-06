@@ -492,6 +492,8 @@ pub async fn client() -> anyhow::Result<Client> {
     if CONFIG.redis_mode == RedisMode::Sentinel {
         use redis::sentinel::{SentinelClientBuilder, SentinelServerType};
 
+        debug!(urls=?urls, service=CONFIG.redis_service, "sentinel configuration");
+
         let mut sentinel = SentinelClientBuilder::new(
             urls,
             CONFIG.redis_service.to_owned(),
