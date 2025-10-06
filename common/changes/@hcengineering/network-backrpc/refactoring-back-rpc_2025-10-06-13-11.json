@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/network-backrpc",
+      "comment": "typing refactoring",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/network-backrpc"
+}

@@ -40,7 +40,7 @@ interface RPCClientInfo<ClientT extends string> {
   requestsTotal: number
   requestsTime: number
   helloCounter: number
-  aliveTimeout: number // Per-client timeout in seconds
+  perClientAliveTimeoutSeconds: number
 }
 
 export class BackRPCServer<ClientT extends string = ClientId> {
@@ -59,8 +59,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
 
   private bound: Promise<void> | undefined
 
-  // A limit of requests per one client.
-  requestsLimit: number = 25
+  requestsLimitPerClient: number = 25
 
   stopTick?: () => void
 
@@ -68,7 +67,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     private readonly handlers: BackRPCServerHandler<ClientT>,
     private readonly tickMgr: TickManager,
     readonly host: string = '*',
-    private readonly port: number = 0,
+    private readonly port: number | 'random' = 'random',
     private readonly options: zmq.SocketOptions<zmq.Router> = {}
   ) {
     this.router = new zmq.Router({
@@ -96,9 +95,9 @@ export class BackRPCServer<ClientT extends string = ClientId> {
       const timeSinceLastSeen = now - clientRecord.lastSeen
 
       // Use per-client timeout instead of global timeout
-      if (timeSinceLastSeen > clientRecord.aliveTimeout * 1000) {
+      if (timeSinceLastSeen > clientRecord.perClientAliveTimeoutSeconds * 1000) {
         console.warn(
-          `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s (timeout: ${clientRecord.aliveTimeout}s), marking as dead`
+          `Client ${clientId} has been inactive for ${Math.round(timeSinceLastSeen / 1000)}s (timeout: ${clientRecord.perClientAliveTimeoutSeconds}s), marking as dead`
         )
         this.handleClose(clientRecord.id, clientId, true)
       }
@@ -156,7 +155,8 @@ export class BackRPCServer<ClientT extends string = ClientId> {
     }
 
   private async start (): Promise<void> {
-    this.bound = this.router.bind(`tcp://${this.host}:${this.port}`)
+    const port = this.port === 'random' ? 0 : this.port
+    this.bound = this.router.bind(`tcp://${this.host}:${port}`)
     await this.bound
 
     // Read messages from clients.
@@ -200,10 +200,10 @@ export class BackRPCServer<ClientT extends string = ClientId> {
                 requestsTime: 0,
                 requestsTotal: 0,
                 helloCounter: 0,
-                aliveTimeout: clientAliveTimeout
+                perClientAliveTimeoutSeconds: clientAliveTimeout
               } satisfies RPCClientInfo<ClientT>)
             clientInfo.helloCounter++
-            clientInfo.aliveTimeout = clientAliveTimeout // Update timeout on reconnection
+            clientInfo.perClientAliveTimeoutSeconds = clientAliveTimeout // Update timeout on reconnection
 
             this.revClientMapping.set(clientIdText, clientInfo)
             void this.doSend([clientId, backrpcOperations.hello, this.uuid, ''])
@@ -243,7 +243,7 @@ export class BackRPCServer<ClientT extends string = ClientId> {
                 // We already had this request, so continue waiting for response.
                 continue
               }
-              if (client.requests.size > this.requestsLimit) {
+              if (client.requests.size > this.requestsLimitPerClient) {
                 // No Client, requests are not possible
                 void this.doSend([clientId, backrpcOperations.retry, reqId, stringifyJSON(client.requests.size)])
                 continue
