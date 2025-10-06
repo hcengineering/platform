@@ -25,8 +25,6 @@
   const client = getClient()
 
   onMount(() => {
-    console.log('value', value)
-    console.log('shouldShowAvatar', shouldShowAvatar)
     if (socialIdProvider == null) {
       socialIdProvider = client.getModel().findAllSync(contact.class.SocialIdentityProvider, { type: value.type })[0]
     }
