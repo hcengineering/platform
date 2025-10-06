@@ -225,6 +225,7 @@ export interface AccountClient {
   mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
   addEmailSocialId: (email: string) => Promise<OtpInfo>
   addHulyAssistantSocialId: () => Promise<PersonId>
+  refreshHulyAssistantToken: () => Promise<void>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1116,6 +1117,15 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async refreshHulyAssistantToken (): Promise<void> {
+    const request = {
+      method: 'refreshHulyAssistantToken' as const,
+      params: {}
+    }
+
+    await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {
