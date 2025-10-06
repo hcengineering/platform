@@ -190,6 +190,7 @@ export default function buildModel (): Builder {
         label: contact.string.ConfigLabel,
         description: contact.string.ConfigDescription,
         enabled: true,
+        system: true,
         beta: false,
         icon: contact.icon.ContactApplication,
         classFilter: defaultFilter
@@ -354,10 +355,11 @@ export default function buildModel (): Builder {
       requestModel,
       requestId,
       {
-        // label: request.string.ConfigLabel,
+        label: setting.string.Configure,
         // description: request.string.ConfigDescription,
         enabled: false,
         beta: false,
+        hidden: true,
         classFilter: defaultFilter
       }
     ],
@@ -421,8 +423,10 @@ export default function buildModel (): Builder {
       questionsModel,
       questionsId,
       {
+        label: setting.string.Configure,
         enabled: false,
         beta: false,
+        hidden: true,
         classFilter: defaultFilter
       }
     ],
@@ -480,7 +484,16 @@ export default function buildModel (): Builder {
     [emojiModel, emojiId],
     [communicationModel, communicationId],
     [mailModel, mailId],
-    [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
+    [
+      billingModel,
+      billingId,
+      {
+        label: setting.string.Configure,
+        beta: false,
+        hidden: true,
+        enabled: true
+      }
+    ],
     [hulyMailModel, hulyMailId],
     [
       aiAssistantModel,
@@ -543,7 +556,9 @@ export default function buildModel (): Builder {
         pluginId: id,
         transactions: txes.map((it) => it._id),
         ...config,
-        enabled: config?.label === undefined || ((config?.enabled ?? true) && !(config.hidden ?? false)),
+        label: config?.label ?? setting.string.Configure,
+        hidden: config !== undefined ? config.hidden : true,
+        enabled: (config?.enabled ?? true) && !(config?.hidden ?? false),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>

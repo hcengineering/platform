@@ -2600,6 +2600,11 @@
       "packageName": "@hcengineering/hulylake-client",
       "projectFolder": "packages/hulylake-client",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-translate",
+      "projectFolder": "services/translate",
+      "shouldPublish": false
     }
   ]
 }

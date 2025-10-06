@@ -194,6 +194,7 @@ export interface UpdateCriteriaComponent extends Doc {
 export * from './errors'
 export * from './types'
 export * from './utils'
+export * from './dslContext'
 
 export default plugin(processId, {
   class: {

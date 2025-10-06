@@ -178,6 +178,7 @@ describe('client', () => {
 
     const pluginData1: Data<PluginConfiguration> = {
       pluginId: 'testPlugin1' as Plugin,
+      label: 'Test Plugin 1' as IntlString,
       transactions: [],
       beta: true,
       enabled: true
@@ -198,6 +199,7 @@ describe('client', () => {
 
     const pluginData2 = {
       pluginId: 'testPlugin2' as Plugin,
+      label: 'Test Plugin 2' as IntlString,
       transactions: [],
       beta: true,
       enabled: true
@@ -219,6 +221,7 @@ describe('client', () => {
 
     const pluginData3 = {
       pluginId: 'testPlugin3' as Plugin,
+      label: 'Test Plugin 3' as IntlString,
       transactions: [txCreateDoc1._id],
       beta: true,
       enabled: true

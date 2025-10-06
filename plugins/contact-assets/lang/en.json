@@ -124,6 +124,11 @@
     "HereDescription": "Notify every online member in this {title}",
     "Guest": "Guest",
     "Deleted": "Deleted",
-    "CannotMerge": "Error: Cannot merge global persons"
+    "CannotMerge": "Error: Cannot merge global persons",
+    "AutoTranslation": "Auto translation",
+    "TranslateTo": "Translate to",
+    "DontTranslate": "Don't translate",
+    "SelectLanguage": "Select language",
+    "SelectLanguages": "Select languages"
   }
 }
