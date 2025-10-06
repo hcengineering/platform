@@ -387,6 +387,7 @@ export async function configurePlatform() {
         if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
+        console.log('reload due to loading error')
         location.reload()
       }
     }
