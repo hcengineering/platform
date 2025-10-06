@@ -36,7 +36,7 @@
   let broken: boolean = false
   const withoutDoc: Ref<Doc>[] = [contact.mention.Here, contact.mention.Everyone]
 
-  $: clazz = _class ? hierarchy.getClass(_class) : undefined
+  $: clazz = _class ? hierarchy.findClass(_class) : undefined
 
   $: icon =
     _class !== undefined &&
