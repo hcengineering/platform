@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import {
@@ -64,11 +64,22 @@
     }
   }
 
-  const reduceFuncs = client
-    .getModel()
-    .findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
-    .filter((p) => p.category === undefined || (allowArray && p.category === 'array'))
-    .map((it) => it._id)
+  function getReduceFunctions (): Ref<ProcessFunction>[] {
+    const model = client.getModel()
+    const h = client.getHierarchy()
+    const res: Ref<ProcessFunction>[] = []
+    const all = model.findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
+    for (const f of all) {
+      if (f.category === undefined || (allowArray && f.category === 'array')) {
+        if (f.of === core.class.ArrOf || h.isDerived(f.of, attrClass)) {
+          res.push(f._id)
+        }
+      }
+    }
+    return res
+  }
+
+  const reduceFuncs = getReduceFunctions()
 
   $: availableFunctions = getAvailableFunctions(contextValue.functions, attrClass, category)
 

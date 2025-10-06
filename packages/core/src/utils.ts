@@ -819,7 +819,9 @@ export function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfig
       if (ut.objectClass === core.class.PluginConfiguration) {
         const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
         if (c !== undefined) {
-          TxProcessor.updateDoc2Doc(c, ut)
+          if (c.system !== true || ut.modifiedBy === core.account.ConfigUser) {
+            TxProcessor.updateDoc2Doc(c, ut)
+          }
         }
       }
     }

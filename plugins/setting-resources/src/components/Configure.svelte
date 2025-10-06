@@ -38,7 +38,7 @@
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="flex-row-center flex-wrap gap-around-4">
         {#each $pluginConfigurationStore.list as config}
-          {#if config.label && !(config.hidden ?? false)}
+          {#if config.hidden !== true && config.system !== true}
             <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
               <div class="flex-row-center">
                 <span class="mr-2">

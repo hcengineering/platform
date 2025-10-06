@@ -284,6 +284,9 @@ export function getGoogleClient (): {
   auth: OAuth2Client
   google: calendar_v3.Calendar
 } {
+  if (config.Credentials === undefined) {
+    throw new Error('Google Credentials not provided')
+  }
   const credentials = JSON.parse(config.Credentials)
   const { client_secret, client_id, redirect_uris } = credentials.web // eslint-disable-line
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]) // eslint-disable-line
