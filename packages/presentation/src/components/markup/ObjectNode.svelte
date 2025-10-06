@@ -21,6 +21,7 @@
   import { createQuery, getClient } from '../../utils'
   import MessageBox from '../MessageBox.svelte'
   import presentation from '../../plugin'
+  import { IconWithEmoji } from '../../index'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -35,12 +36,14 @@
   let broken: boolean = false
   const withoutDoc: Ref<Doc>[] = [contact.mention.Here, contact.mention.Everyone]
 
+  $: clazz = _class ? hierarchy.getClass(_class) : undefined
+
   $: icon =
     _class !== undefined &&
     hierarchy.hasClass(_class) &&
     !withoutDoc.includes(_id as any) &&
     !hierarchy.isDerived(_class, contact.class.Contact)
-      ? hierarchy.getClass(_class).icon
+      ? clazz?.icon
       : null
 
   $: if (_class != null && _id != null && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)) {
@@ -64,8 +67,12 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="antiMention" class:transparent class:broken on:click={onBrokenLinkClick}>
-    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{#if _id === contact.mention.Here}<span class="lower"
-        ><Label label={contact.string.Here} /></span
+    {#if icon}{#if icon === view.ids.IconWithEmoji}<IconWithEmoji
+          icon={clazz?.color ?? 0}
+          size={'smaller'}
+          inline
+        />{:else}<Icon {icon} size="small" />{/if}{' '}{:else}@{/if}{#if _id === contact.mention.Here}<span
+        class="lower"><Label label={contact.string.Here} /></span
       >{:else if _id === contact.mention.Everyone}<span class="lower"><Label label={contact.string.Everyone} /></span
       >{:else}{title}{/if}
   </span>

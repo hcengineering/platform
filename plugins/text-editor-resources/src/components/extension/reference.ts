@@ -21,13 +21,13 @@ import { SvelteRenderer } from '../node-view'
 import { ReferenceNode, type ReferenceNodeProps, type ReferenceOptions } from '@hcengineering/text'
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type SuggestionProps } from './suggestion'
 
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+import presentation, { createQuery, getBlobRef, getClient, MessageBox } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 
 import contact from '@hcengineering/contact'
-import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location } from '@hcengineering/ui'
+import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location, fromCodePoint } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
@@ -145,7 +145,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
           titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${trans}`
           root.classList.add('lower')
         } else {
-          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
+          titleSpan.innerText = `${iconUrl !== '' || emojiCode != null ? '' : options.suggestion.char}${props.label ?? props.id}`
         }
         if (broken) {
           root.classList.add('broken')
@@ -159,7 +159,14 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
           ? hierarchy.getClass(objectclass).icon
           : undefined
 
-      const iconUrl = typeof icon === 'string' ? getMetadata(icon) ?? 'https://anticrm.org/logo.svg' : ''
+      let iconUrl = ''
+      let emojiCode: number | undefined
+
+      if (icon === view.ids.IconWithEmoji) {
+        emojiCode = (hierarchy.getClass(objectclass) as any).color ?? 0
+      } else if (typeof icon === 'string') {
+        iconUrl = getMetadata(icon) ?? 'https://anticrm.org/logo.svg'
+      }
 
       if (iconUrl !== '') {
         const svg = root.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
@@ -168,6 +175,10 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         svg.setAttribute('fill', 'currentColor')
         const use = svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'use'))
         use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconUrl)
+      } else if (emojiCode !== undefined) {
+        const emojiEl = createEmojiElement(emojiCode)
+        root.appendChild(emojiEl)
+        root.appendChild(document.createTextNode(' '))
       }
 
       let tooltipHandle: any
@@ -574,4 +585,50 @@ function makeQuery (obj: Record<string, string | number | boolean | null | undef
       return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k] as string | number | boolean)
     })
     .join('&')
+}
+
+function parseEmoji (icon: number | number[] | Ref<Blob>): string | undefined {
+  if (typeof icon === 'object' && '__ref' in icon) {
+    return undefined
+  }
+  try {
+    return Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon as number)
+  } catch (err) {}
+  return undefined
+}
+
+function createEmojiElement (emojiCode: number | number[] | Ref<Blob>): HTMLElement {
+  const root = document.createElement('span')
+  Object.assign(root.style, {
+    display: 'inline',
+    flexShrink: '0',
+    color: 'black'
+  })
+
+  const value = parseEmoji(emojiCode as any)
+  if (value !== undefined) {
+    root.textContent = value
+    return root
+  }
+
+  const placeholder = document.createElement('span')
+  placeholder.textContent = '@'
+  root.appendChild(placeholder)
+
+  void getBlobRef(emojiCode as Ref<Blob>).then((iconBlob) => {
+    if (!root.isConnected) return
+
+    const img = document.createElement('img')
+    img.alt = 'icon'
+    img.src = iconBlob.src
+    if (iconBlob.srcset != null) img.srcset = iconBlob.srcset
+    img.style.display = 'inline'
+    img.style.margin = '0'
+    img.style.maxHeight = '0.875rem'
+    img.style.marginBottom = '-0.125rem'
+    img.style.verticalAlign = 'unset'
+    root.replaceChild(img, placeholder)
+  })
+
+  return root
 }
