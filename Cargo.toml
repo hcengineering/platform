@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.1.26"
+version = "0.1.27"
 edition = "2024"
 
 [dependencies]
@@ -14,14 +14,10 @@ actix = "0.13.5"
 actix-web = "4.10.2"
 actix-cors = "0.7.1"
 actix-web-actors = "4.2.0"
-refinery = { version = "0.8.16", features = ["tokio-postgres"] }
-bb8 = "0.9.0"
-bb8-redis = "0.24"
 redis = { version = "0.32.2", features = ["aio", "tokio-comp", "sentinel"] }
 md5 = "0.8.0"
 serde_with = "3"
 url = "2"
-jsonwebtoken = "9.3.1"
 size = { version = "0.5.0", features = ["serde"] }
 uuid = { version = "1.7", features = ["v4", "serde"] }
 hex = "0.4.3"
@@ -32,17 +28,17 @@ hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
 secrecy = "0.10.3"
 tokio-stream = "0.1"
 strum = { version = "0.27.2", features = ["derive"] }
-reqwest = { version = "0.12.23", features = ["json"] }
 
 [[bin]]
 name = "hulypulse"
 path = "src/main.rs"
 
 [dev-dependencies]
-tokio-tungstenite = { version = "0.21", default-features = false, features = ["rustls-tls-native-roots", "connect"] }
+tokio-tungstenite = { version = "0.21", default-features = false, features = [
+    "rustls-tls-native-roots",
+    "connect",
+] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 futures-util = "0.3"
 serde_json = "1"
 uuid = "1"
-
-
