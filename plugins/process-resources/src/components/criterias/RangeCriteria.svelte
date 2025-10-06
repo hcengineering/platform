@@ -16,7 +16,7 @@
 <script lang="ts">
   import { AnyAttribute } from '@hcengineering/core'
   import { findAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { Context, parseContext, Process, SelectedContext } from '@hcengineering/process'
+  import { Context, createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import { Button, Component, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import ContextSelectorPopup from '../attributeEditors/ContextSelectorPopup.svelte'
@@ -52,7 +52,7 @@
   }
 
   function onSelect (res: SelectedContext | null, index: number): void {
-    val[index] = res === null ? undefined : '$' + JSON.stringify(res)
+    val[index] = res === null ? undefined : createContext(res)
     dispatch('change', val)
   }
 
