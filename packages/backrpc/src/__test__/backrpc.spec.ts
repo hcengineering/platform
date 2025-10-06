@@ -976,9 +976,9 @@ describe('backrpc', () => {
     )
 
     // Test that request limit can be configured
-    expect(server.requestsLimit).toBe(25) // Default value
-    server.requestsLimit = 10 // Set custom limit
-    expect(server.requestsLimit).toBe(10)
+    expect(server.requestsLimitPerClient).toBe(25) // Default value
+    server.requestsLimitPerClient = 10 // Set custom limit
+    expect(server.requestsLimitPerClient).toBe(10)
 
     const client = new BackRPCClient(
       'client1' as ClientId,

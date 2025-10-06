@@ -30,7 +30,7 @@ export class NetworkAgentServer implements BackRPCServerHandler<ClientUuid> {
     tickMgr: TickManager,
     readonly endpointHost: string, // An endpoint construction host, will be used to register
     host: string = '*', // A socket visibility
-    port: number = 3738 // If 0, port will be free random one.
+    port: number | 'random' = 3738
   ) {
     this.rpcServer = new BackRPCServer<ClientUuid>(this, tickMgr, host, port)
   }
