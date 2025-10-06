@@ -37,6 +37,7 @@ export interface Message {
   type: MessageType
   content: Markdown
   extra?: MessageExtra
+  language?: string
 
   creator: SocialID
   created: Date
@@ -45,7 +46,10 @@ export interface Message {
   reactions: Record<Emoji, EmojiData[]>
   attachments: Attachment[]
   threads: Thread[]
+  translates?: Record<string, Markdown>
 }
+
+export type TranslatedMessage = Pick<Message, 'id' | 'content' | 'creator' | 'created'>
 
 export interface EmojiData {
   count: number

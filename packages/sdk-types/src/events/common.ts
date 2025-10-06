@@ -15,4 +15,5 @@
 
 export interface BaseEvent {
   _id?: string
+  _eventExtra?: Record<string, any>
 }

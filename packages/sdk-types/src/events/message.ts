@@ -28,7 +28,8 @@ export enum MessageEventType {
    */
   BlobPatch = 'blobPatch',
   AttachmentPatch = 'attachmentPatch',
-  ThreadPatch = 'threadPatch'
+  ThreadPatch = 'threadPatch',
+  TranslateMessage = 'translateMessage'
 }
 
 export type PatchEvent =
@@ -39,17 +40,21 @@ export type PatchEvent =
   | AttachmentPatchEvent
   | ThreadPatchEvent
 
-export type MessageEvent = CreateMessageEvent | PatchEvent
+export type MessageEvent = CreateMessageEvent | PatchEvent | TranslateMessageEvent
 
 export interface CreateMessageOptions {
   // Available for regular users (Not implemented yet)
   skipLinkPreviews?: boolean
   // Available only for system
   noNotify?: boolean
+  // Dont add to collaborators mentioned users
+  ignoreMentions?: boolean
 }
 export interface UpdatePatchOptions {
   // Available for regular users (Not implemented yet)
   skipLinkPreviewsUpdate?: boolean
+  // Dont add to collaborators mentioned users
+  ignoreMentions?: boolean
 }
 
 export interface CreateMessageEvent extends BaseEvent {
@@ -62,12 +67,22 @@ export interface CreateMessageEvent extends BaseEvent {
   messageType: MessageType
 
   content: Markdown
+  language?: string
   extra?: MessageExtra
 
   socialId: SocialID
   date?: Date
 
   options?: CreateMessageOptions
+}
+
+export interface TranslateMessageEvent extends BaseEvent {
+  type: MessageEventType.TranslateMessage
+
+  cardId: CardID
+  messageId: MessageID
+  content: Markdown
+  language: string
 }
 
 // Available for author and system
@@ -79,6 +94,7 @@ export interface UpdatePatchEvent extends BaseEvent {
 
   content?: Markdown
   extra?: MessageExtra
+  language?: string
 
   socialId: SocialID
   date?: Date

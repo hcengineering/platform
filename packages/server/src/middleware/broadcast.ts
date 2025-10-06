@@ -173,6 +173,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case MessageEventType.AttachmentPatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.UpdatePatch:
+      case MessageEventType.TranslateMessage:
         return info.subscriptions.has(event.cardId)
       case NotificationEventType.RemoveNotifications:
       case NotificationEventType.CreateNotification:

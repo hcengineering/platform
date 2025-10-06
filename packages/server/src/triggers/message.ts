@@ -40,19 +40,21 @@ async function addCollaborators (ctx: TriggerCtx, event: Enriched<CreateMessageE
     collaborators.add(account)
   }
 
-  const markup = markdownToMarkup(content)
-  const references = extractReferences(markup)
-  const personIds = references
-    .filter((it) => ['contact:class:Person', 'contact:mixin:Employee'].includes(it.objectClass))
-    .map((it) => it.objectId)
-    .filter((it) => it != null) as string[]
-  const accounts = await ctx.client.db.getAccountsByPersonIds(personIds)
+  if (event.options?.ignoreMentions !== true) {
+    const markup = markdownToMarkup(content)
+    const references = extractReferences(markup)
+    const personIds = references
+      .filter((it) => ['contact:class:Person', 'contact:mixin:Employee'].includes(it.objectClass))
+      .map((it) => it.objectId)
+      .filter((it) => it != null) as string[]
+    const accounts = await ctx.client.db.getAccountsByPersonIds(personIds)
 
-  if (accounts.length > 0) {
-    const spaceMembers = await ctx.client.db.getCardSpaceMembers(cardId)
-    for (const account of accounts) {
-      if (spaceMembers.includes(account)) {
-        collaborators.add(account)
+    if (accounts.length > 0) {
+      const spaceMembers = await ctx.client.db.getCardSpaceMembers(cardId)
+      for (const account of accounts) {
+        if (spaceMembers.includes(account)) {
+          collaborators.add(account)
+        }
       }
     }
   }

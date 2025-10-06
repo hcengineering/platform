@@ -60,7 +60,8 @@ export class MessageProcessor {
       content: event.content,
       extra: event.extra,
       creator: event.socialId,
-      created: event.date ?? new Date(),
+      created: new Date(event.date ?? Date.now()),
+      language: event.language,
       reactions: {},
       attachments: [],
       threads: []
@@ -144,7 +145,8 @@ function applyPatchEvent (message: Message, event: PatchEvent): Message | undefi
         ...message,
         modified: date,
         content: event.content ?? message.content,
-        extra: event.extra ?? message.extra
+        extra: event.extra ?? message.extra,
+        language: event.language ?? message.language
       }
     }
     case MessageEventType.RemovePatch: {

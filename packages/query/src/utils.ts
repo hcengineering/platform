@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { parseMessagesDoc } from '@hcengineering/communication-shared'
+import { parseMessagesDoc, parseTranslatedMessagesDoc } from '@hcengineering/communication-shared'
 import {
   BlobID,
   type CardID,
@@ -22,9 +22,20 @@ import {
   type FindNotificationsParams,
   type Message,
   MessagesDoc,
-  type Notification
+  type Notification, TranslatedMessage, TranslatedMessagesDoc
 } from '@hcengineering/communication-types'
 import { HulylakeClient } from '@hcengineering/hulylake-client'
+
+export async function loadTranslatedMessages (client: HulylakeClient, cardId: CardID, blobId: BlobID, lang: string): Promise<TranslatedMessage[]> {
+  try {
+    const res = await client.getJson<TranslatedMessagesDoc>(`${cardId}/messages/${lang}/${blobId}`)
+    if (res?.body == null) return []
+    return parseTranslatedMessagesDoc(res.body)
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}
 
 export async function loadMessages (client: HulylakeClient, cardId: CardID, blobId: BlobID, params: FindMessagesParams, options?: FindMessagesOptions, cache?: Map<BlobID, Promise<MessagesDoc | undefined>>): Promise<Message[]> {
   const doc = await loadMessagesDoc(client, cardId, blobId, cache)

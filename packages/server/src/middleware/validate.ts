@@ -272,11 +272,13 @@ const CreateMessageEventSchema = BaseEventSchema.extend({
 
   socialId: SocialIDSchema,
   date: DateSchema,
+  language: z.string().optional(),
 
   options: z
     .object({
       skipLinkPreviews: z.boolean().optional(),
-      noNotify: z.boolean().optional()
+      noNotify: z.boolean().optional(),
+      ignoreMentions: z.boolean().optional()
     })
     .optional()
 }).strict()
@@ -288,13 +290,15 @@ const UpdatePatchEventSchema = BaseEventSchema.extend({
 
   content: MarkdownSchema.optional(),
   extra: z.record(z.any()).optional(),
+  language: z.string().optional(),
 
   socialId: SocialIDSchema,
   date: DateSchema,
 
   options: z
     .object({
-      skipLinkPreviewsUpdate: z.boolean().optional()
+      skipLinkPreviewsUpdate: z.boolean().optional(),
+      ignoreMentions: z.boolean().optional()
     })
     .optional()
 }).strict()

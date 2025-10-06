@@ -33,6 +33,8 @@ import {
   MessagesGroupsDoc,
   type PersonUuid,
   SortingOrder,
+  TranslatedMessage,
+  TranslatedMessagesDoc,
   WithTotal
 } from '@hcengineering/communication-types'
 import { type HulylakeClient } from '@hcengineering/hulylake-client'
@@ -172,6 +174,7 @@ export function parseMessagesDoc (
       type: m.type,
       content: m.content,
       extra: m.extra,
+      language: m.language ?? undefined,
       modified: m.modified != null ? new Date(m.modified) : undefined,
       reactions: {},
       attachments: [],
@@ -226,5 +229,22 @@ export function parseMessagesDoc (
   } else if (params.order === SortingOrder.Descending) {
     result.sort((a, b) => b.created.getTime() - a.created.getTime())
   }
+  return result
+}
+
+export function parseTranslatedMessagesDoc (json: TranslatedMessagesDoc): TranslatedMessage[] {
+  const result: TranslatedMessage[] = []
+  for (const m of Object.values(json.messages)) {
+    const message: TranslatedMessage = {
+      id: m.id,
+      created: new Date(m.created),
+      creator: m.creator,
+      content: m.content
+    }
+
+    result.push(message)
+  }
+
+  result.sort((a, b) => a.created.getTime() - b.created.getTime())
   return result
 }

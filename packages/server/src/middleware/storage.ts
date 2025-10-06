@@ -53,7 +53,6 @@ import {
   NotificationEventType,
   PeerEventType,
   ReactionPatchEvent,
-  type RemoveCardEvent,
   type RemoveCollaboratorsEvent,
   type RemoveLabelEvent,
   type RemoveNotificationContextEvent,
@@ -62,7 +61,6 @@ import {
   RemovePeerEvent,
   type SessionData,
   ThreadPatchEvent,
-  type UpdateCardTypeEvent,
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
   UpdatePatchEvent
@@ -161,6 +159,8 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
         return await this.updatePatch(event)
       case MessageEventType.RemovePatch:
         return await this.removePatch(event)
+      case MessageEventType.TranslateMessage:
+        return {}
 
       case MessageEventType.ReactionPatch:
         return await this.reactionPatch(event, session)
@@ -179,9 +179,8 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
 
       // Cards
       case CardEventType.UpdateCardType:
-        return await this.updateCardType(event)
       case CardEventType.RemoveCard:
-        return await this.removeCard(event)
+        return {}
 
       // Peers
       case PeerEventType.RemovePeer:
@@ -249,7 +248,7 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
       event.messageId,
       event.socialId,
       event.date,
-      group?.blobId
+      group.blobId
     )
 
     if (!created) {
@@ -260,6 +259,8 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
     }
     await this.blob.insertMessage(event.cardId, group, MessageProcessor.create(event))
 
+    event._eventExtra.blobId = group.blobId
+
     return {
       result
     }
@@ -268,7 +269,8 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
   private async updatePatch (event: Enriched<UpdatePatchEvent>): Promise<Result> {
     const data = {
       content: event.content,
-      extra: event.extra
+      extra: event.extra,
+      language: event.language
     }
     const meta = await this.context.client.getMessageMeta(event.cardId, event.messageId)
 
@@ -277,6 +279,7 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
     }
 
     await this.blob.updateMessage(event.cardId, meta.blobId, event.messageId, data, event.date)
+    event._eventExtra.blobId = meta.blobId
 
     return {}
   }
@@ -289,6 +292,7 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
     }
     await this.blob.removeMessage(event.cardId, meta.blobId, event.messageId)
     await this.context.client.removeMessageMeta(event.cardId, event.messageId)
+    event._eventExtra.blobId = meta.blobId
     return {}
   }
 
@@ -601,14 +605,6 @@ export class StorageMiddleware extends BaseMiddleware implements Middleware {
 
   private async removePeer (event: Enriched<RemovePeerEvent>): Promise<Result> {
     await this.db.removePeer(event.workspaceId, event.cardId, event.kind, event.value)
-    return {}
-  }
-
-  private async updateCardType (event: Enriched<UpdateCardTypeEvent>): Promise<Result> {
-    return {}
-  }
-
-  private async removeCard (event: Enriched<RemoveCardEvent>): Promise<Result> {
     return {}
   }
 

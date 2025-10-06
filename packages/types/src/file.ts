@@ -32,7 +32,8 @@ export interface MessageDoc {
   type: MessageType
   content: Markdown
   extra: MessageExtra
-  modified: string | null // ISO date
+  language?: string | null
+  modified?: string | null // ISO date
 
   reactions: Record<Emoji, Record<PersonUuid, { count: number, date: string }>>
   attachments: Record<AttachmentID, AttachmentDoc>
@@ -64,4 +65,17 @@ export interface MessagesGroupDoc {
   fromDate: string // ISO date
   toDate: string // ISO date
   count: number
+}
+
+export interface TranslatedMessagesDoc {
+  cardId: CardID
+  messages: Record<MessageID, MessageDoc>
+  language: string
+}
+
+export interface TranslatesMessageDoc {
+  id: MessageID
+  created: string // ISO date
+  creator: SocialID
+  content: Markdown
 }

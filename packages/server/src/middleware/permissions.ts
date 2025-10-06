@@ -72,6 +72,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         this.checkAccount(session, event.account)
         break
       }
+      case MessageEventType.TranslateMessage:
       case PeerEventType.CreatePeer:
       case PeerEventType.RemovePeer: {
         this.onlySystemAccount(session)

@@ -34,7 +34,7 @@ export class DateMiddleware extends BaseMiddleware implements Middleware {
       event.date = new Date()
     }
 
-    event._eventExtra = {}
+    event._eventExtra = event._eventExtra ?? {}
 
     return await this.provideEvent(session, event, derived)
   }

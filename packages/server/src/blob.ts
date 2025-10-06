@@ -299,6 +299,7 @@ export class Blob {
   }
 
   async updateMessage (cardId: CardID, blobId: BlobID, messageId: MessageID, update: {
+    language?: string
     content?: Markdown
     extra?: MessageExtra
   }, date: Date): Promise<void> {
@@ -317,6 +318,14 @@ export class Blob {
         op: 'replace',
         path: `/messages/${messageId}/extra`,
         value: update.extra
+      })
+    }
+
+    if (update.language != null) {
+      patches.push({
+        op: 'replace',
+        path: `/messages/${messageId}/language`,
+        value: update.language
       })
     }
 
@@ -534,7 +543,7 @@ export class Blob {
       ...message,
       extra: message.extra ?? {},
       created: message.created.toISOString(),
-      modified: message.modified?.toISOString() ?? null,
+      modified: message.modified?.toISOString(),
       reactions: {},
       attachments: {},
       threads: {}

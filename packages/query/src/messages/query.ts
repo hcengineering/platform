@@ -32,7 +32,8 @@ import {
   MessageEventType,
   type PagedQueryCallback,
   PatchEvent,
-  RemoveCardEvent
+  RemoveCardEvent,
+  TranslateMessageEvent
 } from '@hcengineering/communication-sdk-types'
 import { MessageProcessor } from '@hcengineering/communication-shared'
 import { v4 as uuid } from 'uuid'
@@ -49,7 +50,7 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-import { loadMessages } from '../utils'
+import { loadMessages, loadTranslatedMessages } from '../utils'
 
 export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private result: Promise<QueryResult<Message>> | QueryResult<Message>
@@ -77,6 +78,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private readonly tmpMessages = new Map<string, MessageID>()
   private isCardRemoved = false
+
+  private readonly translateBlobs: BlobID[] = []
+  private translatePromise: Promise<void> | undefined = undefined
 
   constructor (
     private readonly client: FindClient,
@@ -221,6 +225,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         await this.onMessageCreatedEvent(event)
         break
       }
+      case MessageEventType.TranslateMessage:
+        await this.onMessageTranslatedEvent(event)
+        break
       case MessageEventType.UpdatePatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.ThreadPatch:
@@ -360,6 +367,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (notify) {
       await this.notify()
     }
+    void this.translate()
     return { isDone: r.isTail() }
   }
 
@@ -376,7 +384,37 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (notify) {
       await this.notify()
     }
+
+    void this.translate()
     return { isDone: r.isHead() }
+  }
+
+  async translate (): Promise<void> {
+    if (this.translateBlobs.length === 0) return
+    if (this.translatePromise instanceof Promise) await this.translatePromise
+    const lang = this.options?.language
+    if (lang == null) return
+
+    const promise = async (): Promise<void> => {
+      while (this.translateBlobs.length > 0) {
+        const [blob] = this.translateBlobs.splice(0, 1)
+        const translates = await loadTranslatedMessages(this.hulylake, this.params.cardId, blob, lang)
+        if (translates.length === 0) continue
+        if (this.result instanceof Promise) this.result = await this.result
+        for (const translate of translates) {
+          const msg = this.result.get(translate.id)
+          if (msg == null) continue
+          this.result.update({
+            ...msg,
+            translates: Object.assign(msg.translates ?? {}, { [lang]: translate.content })
+          })
+        }
+        void this.notify()
+      }
+    }
+
+    this.translatePromise = promise()
+    await promise()
   }
 
   removeCallback (): void {
@@ -554,6 +592,12 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       this.params.order === SortingOrder.Ascending ? result.getFirst() : result.getLast()
     )
 
+    if (this.options?.language != null) {
+      groups.forEach((group) => {
+        this.translateBlobs.push(group.blobId)
+      })
+    }
+
     if (direction === Direction.Forward) {
       this.next.buffer.push(...matched.next)
       this.prev.buffer.push(...matched.prev)
@@ -701,6 +745,47 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
 
       await this.notify()
+    }
+  }
+
+  private async onMessageTranslatedEvent (event: TranslateMessageEvent): Promise<void> {
+    if (this.options?.language == null) return
+    if (this.params.cardId !== event.cardId || event.language !== this.options.language) return
+    if (this.result instanceof Promise) this.result = await this.result
+
+    const { messageId } = event
+
+    const message = this.result.get(messageId)
+    if (message != null) {
+      const updatedMessage = {
+        ...message,
+        translates: Object.assign(message.translates ?? {}, { [event.language]: event.content })
+      }
+      this.result.update(updatedMessage)
+      await this.notify()
+    } else {
+      this.next.buffer = this.next.buffer
+        .map((it) => {
+          if (it.id === event.messageId) {
+            return {
+              ...it,
+              translates: Object.assign(it.translates ?? {}, { [event.language]: event.content })
+            }
+          }
+          return it
+        })
+        .filter((it): it is Message => it != null)
+      this.prev.buffer = this.next.buffer
+        .map((it) => {
+          if (it.id === event.messageId) {
+            return {
+              ...it,
+              translates: Object.assign(it.translates ?? {}, { [event.language]: event.content })
+            }
+          }
+          return it
+        })
+        .filter((it): it is Message => it != null)
     }
   }
 
