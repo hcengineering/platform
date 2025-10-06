@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.1.27"
+version = "0.1.28"
 edition = "2024"
 
 [dependencies]
@@ -14,7 +14,7 @@ actix = "0.13.5"
 actix-web = "4.10.2"
 actix-cors = "0.7.1"
 actix-web-actors = "4.2.0"
-redis = { version = "0.32.2", features = ["aio", "tokio-comp", "sentinel"] }
+redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"] }
 md5 = "0.8.0"
 serde_with = "3"
 url = "2"
