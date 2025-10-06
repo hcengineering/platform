@@ -48,7 +48,7 @@
   $: _class && translate(_class, {}, $themeStore.language).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
-    const op = client.apply(doc._id, 'move-to-space')
+    const op = client.apply(undefined, 'move-to-space')
     const needRank = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.Project) : false
     if (needRank) {
       const lastOne = await client.findOne((doc as Task)._class, { space }, { sort: { rank: SortingOrder.Descending } })
@@ -59,16 +59,17 @@
       await moveToSpace(op, doc, space)
     }
     await op.commit()
-
-    dispatch('close')
   }
 
   const moveAll = async (): Promise<void> => {
-    await Promise.all(
-      docs.map(async (doc) => {
+    for (const doc of docs) {
+      try {
         await move(doc)
-      })
-    )
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    dispatch('close')
   }
 
   async function getSpace (): Promise<Space | undefined> {
