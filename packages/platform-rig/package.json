@@ -20,7 +20,8 @@
     "format": "./bin/format.js",
     "compile": "./bin/compile.js",
     "do-svelte-check": "./bin/do-svelte-check.js",
-    "bump-package-version": "./bin/bump-package-version.js"
+    "bump-package-version": "./bin/bump-package-version.js",
+    "bump-changes-from-tag": "./bin/bump-changes-from-tag.js"
   },
   "peerDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.11.0",
