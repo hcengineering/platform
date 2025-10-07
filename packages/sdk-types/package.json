@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.1",
-    "@hcengineering/communication-types": "workspace:^0.1.0"
+    "@hcengineering/communication-types": "workspace:^0.7.0"
   },
   "repository": {
     "type": "git",

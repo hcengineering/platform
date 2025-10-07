@@ -36,9 +36,9 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:^0.1.0",
-    "@hcengineering/communication-sdk-types": "workspace:^0.1.0",
-    "@hcengineering/communication-shared": "workspace:^0.1.0",
+    "@hcengineering/communication-types": "workspace:^0.7.0",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.0",
+    "@hcengineering/communication-shared": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.1",
     "snappyjs": "^0.7.0"
   },

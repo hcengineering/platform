@@ -35,9 +35,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:^0.1.0",
-    "@hcengineering/communication-sdk-types": "workspace:^0.1.0",
-    "@hcengineering/communication-query": "workspace:^0.1.0",
+    "@hcengineering/communication-types": "workspace:^0.7.0",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.0",
+    "@hcengineering/communication-query": "workspace:^0.7.0",
     "@hcengineering/hulylake-client": "^0.7.1",
     "fast-equals": "^5.2.2"
   },
