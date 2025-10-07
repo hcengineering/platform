@@ -126,7 +126,7 @@ importers:
         specifier: workspace:^0.6.32
         version: link:../core
       '@hcengineering/measurements-otlp':
-        specifier: ^0.7.7
+        specifier: ^0.7.8
         version: 0.7.8
       '@hcengineering/platform':
         specifier: workspace:^0.6.11
@@ -444,7 +444,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../analytics
       '@hcengineering/measurements':
-        specifier: ^0.7.7
+        specifier: ^0.7.8
         version: 0.7.8
       '@hcengineering/platform':
         specifier: workspace:^0.6.11
