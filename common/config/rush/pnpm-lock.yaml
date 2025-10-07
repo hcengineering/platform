@@ -13,7 +13,7 @@ importers:
   ../../packages/measurements:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.8
+        specifier: workspace:^0.7.9
         version: link:../platform-rig
       '@types/jest':
         specifier: ^29.5.5
@@ -58,7 +58,7 @@ importers:
   ../../packages/measurements-otlp:
     dependencies:
       '@hcengineering/measurements':
-        specifier: workspace:^0.7.8
+        specifier: workspace:^0.7.9
         version: link:../measurements
       '@opentelemetry/api':
         specifier: ^1.9.0
@@ -104,7 +104,7 @@ importers:
         version: 2.1.0(@opentelemetry/api@1.9.0)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.8
+        specifier: workspace:^0.7.9
         version: link:../platform-rig
       '@types/jest':
         specifier: ^29.5.5
@@ -166,7 +166,7 @@ importers:
         version: 3.4.7
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.8
+        specifier: workspace:^0.7.9
         version: link:../platform-rig
       '@types/jest':
         specifier: ^29.5.5

@@ -331,22 +331,6 @@
       "description": "Clean package-deps-*.json files",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep .rush/temp/package-deps_ | xargs rm"
-    },
-    {
-      "commandKind": "global",
-      "name": "fast-format",
-      "summary": "Format changed projects",
-      "description": "Format and autofix linting issues in changed projects",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "./common/scripts/fast-format.sh"
-    },
-    {
-      "commandKind": "global",
-      "name": "desktop",
-      "summary": "Build desktop build",
-      "description": "use to build all docker containers required for platform",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
     }
   ],
 
