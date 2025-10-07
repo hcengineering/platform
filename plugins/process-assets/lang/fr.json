@@ -117,7 +117,9 @@
     "NewProcessToDo": "Nouvel Action Item de processus",
     "EmptyArray": "Tableau vide",
     "ExecutionInitiator": "Initiateur d'exécution",
-    "ExecutionStarted": "Exécution démarrée"
+    "ExecutionStarted": "Exécution démarrée",
+    "Filter": "Filtrer",
+    "FirstMatchValue": "Première valeur correspondante"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

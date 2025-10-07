@@ -12,39 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { MasterTag } from '@hcengineering/card'
-  import core, { AnyAttribute, Class, Ref } from '@hcengineering/core'
-  import presentation, { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { Process } from '@hcengineering/process'
-  import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
+  import core, { AnyAttribute } from '@hcengineering/core'
+  import presentation, { Card, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { Process, ProcessFunction } from '@hcengineering/process'
+  import { Button, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getCirteriaEditor } from '../../utils'
   import CriteriasEditor from '../criterias/CriteriasEditor.svelte'
 
-  export let readonly: boolean
+  export let func: ProcessFunction
   export let process: Process
-  export let params: Record<string, any>
+  export let attribute: AnyAttribute
+  export let props: Record<string, any> = {}
 
   const dispatch = createEventDispatcher()
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
-  function change (e: CustomEvent<any>): void {
-    if (readonly || e.detail == null) return
-    params = e.detail
-    dispatch('change', { params })
+  function save (): void {
+    dispatch('close', {
+      ...props,
+      _class: presenterClass.attrClass
+    })
   }
 
-  function getKeys (_class: Ref<Class<MasterTag>>): AnyAttribute[] {
-    const ignoreKeys = ['_class', 'content', 'parent', 'attachments', 'todos']
-    const attributes = hierarchy.getAllAttributes(_class, core.class.Doc)
+  function getKeys (): AnyAttribute[] {
+    const attributes = hierarchy.getAllAttributes(presenterClass.attrClass, core.class.Doc)
     const res: AnyAttribute[] = []
     for (const [key, attr] of attributes) {
+      if (key === '_id' || key === '_class') continue
       if (attr.hidden === true) continue
-      if (ignoreKeys.includes(key)) continue
       const presenterClass = getAttributePresenterClass(hierarchy, attr.type)
       const updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
       const editor = updateCriteria?.editor
@@ -54,11 +53,9 @@
     return res
   }
 
-  let keys = Object.keys(params).filter((key) => {
-    return key !== '_class'
-  })
+  let keys = Object.keys(props).filter((p) => p !== '_class')
 
-  const allAttrs = getKeys(process.masterTag)
+  const allAttrs = getKeys()
   $: possibleAttrs = allAttrs.filter((attr) => !keys.includes(attr.name))
 
   function onAdd (e: MouseEvent): void {
@@ -87,23 +84,29 @@
       const key = e.detail.key
       keys = keys.filter((k) => k !== key)
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete (params as any)[key]
-      dispatch('change', { params })
+      delete (props as any)[key]
     }
+  }
+
+  function change (e: CustomEvent<any>): void {
+    if (e.detail == null) return
+    props = e.detail
   }
 </script>
 
-<CriteriasEditor
-  _class={process.masterTag}
-  {keys}
-  {readonly}
-  {process}
-  {params}
-  on:remove={remove}
-  on:change={change}
-/>
-{#if possibleAttrs.length > 0}
-  <div class="flex-center mt-4">
-    <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
-  </div>
-{/if}
+<Card on:close width={'x-small'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
+  <CriteriasEditor
+    _class={presenterClass.attrClass}
+    readonly={false}
+    {keys}
+    {process}
+    params={props}
+    on:remove={remove}
+    on:change={change}
+  />
+  {#if possibleAttrs.length > 0}
+    <div class="flex-center mt-4">
+      <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+    </div>
+  {/if}
+</Card>

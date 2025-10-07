@@ -96,6 +96,8 @@ export default plugin(serverProcessId, {
     CurrentUser: '' as Resource<TransformFunc>,
     CurrentDate: '' as Resource<TransformFunc>,
     EmptyArray: '' as Resource<TransformFunc>,
+    Filter: '' as Resource<TransformFunc>,
+    FirstMatchValue: '' as Resource<TransformFunc>,
     ExecutionInitiator: '' as Resource<TransformFunc>,
     ExecutionStarted: '' as Resource<TransformFunc>
   },
