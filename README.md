@@ -1151,21 +1151,222 @@ process.on('SIGINT', async () => {
 
 ## 📚 API Reference
 
-### Network Interface
+### NetworkClient Interface
 
-The core `Network` interface provides:
+The `NetworkClient` interface is the main entry point for interacting with the Huly Virtual Network:
 
-- `register(record, agent)`: Register an agent with the network
-- `unregister(agentId)`: Unregister an agent from the network
-- `ping(agentId | clientId)`: Mark an agent or client as alive
-- `get(client, uuid, request)`: Get or create a container
-- `list(kind)`: List containers of a specific kind
-- `release(client, uuid)`: Release a container reference
-- `request(target, operation, data)`: Send request to container
-- `agents()`: Get all registered agents
-- `kinds()`: Get all supported container kinds
+- `register(agent)`: Register a NetworkAgent to be processed by the network
+- `agents()`: Get all registered agents with their information
+- `kinds()`: Get a full unique set of supported container kinds
+- `get(kind, options)`: Get or start a container of the specified kind
+- `list(kind?)`: List all containers, optionally filtered by kind
+- `request(target, operation, data?)`: Send a request to a container using proxy connection
+- `onUpdate(listener)`: Register a listener for network events (returns unsubscribe function)
+- `waitConnection(timeout?)`: Wait for network connection (0 = wait indefinitely)
+- `close()`: Close the client connection
 
-### Agent Interface
+### ClientWithAgents Interface
+
+The `ClientWithAgents` interface extends `NetworkClient` and is returned by `createNetworkClient()`. It adds agent hosting capabilities:
+
+- **All NetworkClient methods** (listed above)
+- `serveAgent(endpointUrl, factory, statelessContainers?)`: Create and register an agent with container factories
+
+#### serveAgent Method
+
+The `serveAgent` method allows a client to act as both a client and an agent host:
+
+```typescript
+serveAgent(
+  endpointUrl: string,
+  factory: Record<ContainerKind, ContainerFactory>,
+  statelessContainers?: StatelessContainersFactory
+): Promise<void>
+```
+
+**Parameters:**
+
+- `endpointUrl`: The endpoint URL for the agent (e.g., `'localhost:3738'`)
+- `factory`: A record mapping container kinds to factory functions for creating containers on-demand
+- `statelessContainers`: Optional factory for creating stateless containers that support high availability
+
+**Basic Usage Example:**
+
+```typescript
+import { createNetworkClient, containerOnAgentEndpointRef } from '@hcengineering/network-client'
+import type { Container, ContainerUuid, ClientUuid } from '@hcengineering/network-core'
+
+// 1. Create a container implementation
+class MyServiceContainer implements Container {
+  constructor(readonly uuid: ContainerUuid) {}
+
+  async request(operation: string, data?: any): Promise<any> {
+    return { success: true, operation, data }
+  }
+
+  async ping(): Promise<void> {}
+  async terminate(): Promise<void> {}
+  connect(clientId: ClientUuid, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: ClientUuid): void {}
+}
+
+// 2. Connect and serve an agent
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
+  'my-service': async (options, agentEndpoint) => {
+    const uuid = options.uuid ?? (`container-${Date.now()}` as ContainerUuid)
+    const container = new MyServiceContainer(uuid)
+    return {
+      uuid,
+      container,
+      endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
+    }
+  }
+})
+
+// 3. Now this client can also request containers
+const containerRef = await client.get('my-service' as any, {})
+const result = await containerRef.request('test', { value: 42 })
+await containerRef.close()
+```
+
+**High Availability Example with Stateless Containers:**
+
+```typescript
+import { createNetworkClient, containerOnAgentEndpointRef } from '@hcengineering/network-client'
+import type { Container, ContainerUuid, ContainerKind } from '@hcengineering/network-core'
+
+class LeaderServiceContainer implements Container {
+  constructor(readonly uuid: ContainerUuid, readonly instanceName: string) {}
+
+  async request(operation: string, data?: any): Promise<any> {
+    return { instance: this.instanceName, operation, data }
+  }
+
+  async ping(): Promise<void> {}
+  async terminate(): Promise<void> {}
+  connect(clientId: any, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: any): void {}
+}
+
+// Shared UUID for HA failover
+const leaderUuid = 'service-leader-001' as ContainerUuid
+
+// Primary agent
+const primaryClient = createNetworkClient('localhost:3737')
+await primaryClient.waitConnection(5000)
+
+await primaryClient.serveAgent(
+  'localhost:3801',
+  {}, // No on-demand factories
+  (agentEndpoint) => {
+    // Stateless container for automatic failover
+    const container = new LeaderServiceContainer(leaderUuid, 'Primary')
+    return [
+      {
+        uuid: leaderUuid,
+        kind: 'leader-service' as ContainerKind,
+        endpoint: containerOnAgentEndpointRef(agentEndpoint, leaderUuid),
+        container
+      }
+    ]
+  }
+)
+
+// Secondary agent (backup)
+const secondaryClient = createNetworkClient('localhost:3737')
+await secondaryClient.waitConnection(5000)
+
+await secondaryClient.serveAgent('localhost:3802', {}, (agentEndpoint) => {
+  const container = new LeaderServiceContainer(leaderUuid, 'Secondary')
+  return [
+    {
+      uuid: leaderUuid,
+      kind: 'leader-service' as ContainerKind,
+      endpoint: containerOnAgentEndpointRef(agentEndpoint, leaderUuid),
+      container
+    }
+  ]
+})
+
+// Primary wins, Secondary automatically takes over if Primary fails
+const leaderRef = await primaryClient.get('leader-service' as any, { uuid: leaderUuid })
+const result = await leaderRef.request('status')
+console.log('Active leader:', result.instance) // "Primary"
+```
+
+**Multi-Tenant Example:**
+
+```typescript
+class TenantContainer implements Container {
+  constructor(readonly uuid: ContainerUuid, readonly tenantId: string) {}
+
+  async request(operation: string, data?: any): Promise<any> {
+    return { tenantId: this.tenantId, operation, data }
+  }
+
+  async ping(): Promise<void> {}
+  async terminate(): Promise<void> {}
+  connect(clientId: any, broadcast: (data: any) => Promise<void>): void {}
+  disconnect(clientId: any): void {}
+}
+
+const client = createNetworkClient('localhost:3737')
+await client.waitConnection(5000)
+
+await client.serveAgent('localhost:3738', {
+  'tenant-workspace': async (options, agentEndpoint) => {
+    const tenantId = options.labels?.[0] || 'default'
+    const uuid = options.uuid ?? (`workspace-${tenantId}` as ContainerUuid)
+    const container = new TenantContainer(uuid, tenantId)
+    return {
+      uuid,
+      container,
+      endpoint: containerOnAgentEndpointRef(agentEndpoint!, uuid)
+    }
+  }
+})
+
+// Request tenant-specific containers
+const tenant1 = await client.get('tenant-workspace' as any, { labels: ['tenant-1'] })
+const tenant2 = await client.get('tenant-workspace' as any, { labels: ['tenant-2'] })
+
+// Each tenant has isolated containers
+await tenant1.request('getData')
+await tenant2.request('getData')
+```
+
+**See Also:**
+
+- [Quick Start Example](#-getting-started) - Basic `serveAgent` usage
+- [HA Stateless Containers Example](examples/ha-stateless-container-example.ts) - Full HA setup with `serveAgent`
+- [Production Setup Example](examples/04-complete-production-setup.ts) - Complete production configuration
+
+### ContainerReference Interface
+
+The `ContainerReference` is returned by `client.get()` and represents a reference to a container:
+
+- `uuid`: The unique identifier of the container
+- `endpoint`: The container's endpoint reference
+- `request(operation, data?)`: Send a request to the container
+- `connect()`: Establish a direct connection to the container (returns `ContainerConnection`)
+- `cast<T>(interfaceName?)`: Create a typed proxy for the container
+- `close()`: Release the container reference
+- `onEndpointUpdate?()`: Optional callback when container endpoint changes
+
+### ContainerConnection Interface
+
+The `ContainerConnection` is returned by `containerRef.connect()` for direct bidirectional communication:
+
+- `containerId`: The UUID of the connected container
+- `request(operation, data?)`: Send a request to the container
+- `cast<T>(interfaceName?)`: Create a typed proxy for the connection
+- `on?(data)`: Optional handler for receiving notifications from the container
+- `close()`: Close the connection
+
+### NetworkAgent Interface
 
 The `NetworkAgent` interface defines:
 
@@ -1186,16 +1387,6 @@ The `Container` interface includes:
 - `terminate()`: Cleanup and shutdown
 - `ping()`: Health check response
 - Optional: `onTerminated()`: Cleanup callback
-
-### TickManager Interface
-
-The `TickManager` handles time-based operations:
-
-- `now()`: Get current timestamp
-- `register(handler, interval)`: Register periodic handler (interval in seconds)
-- `start()`: Start the tick manager
-- `stop()`: Stop the tick manager
-- `waitTick(ticks)`: Wait for specific number of ticks
 
 ## 🏗️ Building Applications
 
