@@ -36,6 +36,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@testing-library/jest-dom": "^6.6.3",
+    "jest-environment-jsdom": "^30.2.0",
     "svelte-eslint-parser": "^0.33.1",
     "@types/png-chunks-extract": "^1.0.2",
     "@types/uuid": "^8.3.1"
