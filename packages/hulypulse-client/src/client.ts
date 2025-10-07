@@ -298,7 +298,7 @@ export class HulypulseClient implements Disposable {
       }
     }
 
-    // callback for every old item (expires_at > 1 sec for atomicity)
+    // callback for every old item (ttl > 1 sec for atomicity)
     const prevlist = await this.send({ type: 'list', key })
     if (prevlist.error !== undefined) {
       throw new Error(prevlist.error)
@@ -306,7 +306,7 @@ export class HulypulseClient implements Disposable {
       for (const item of prevlist.result) {
         try {
           const value = item.data !== undefined ? JSON.parse(item.data) : undefined
-          if (item.expires_at <= 1 || value === undefined) {
+          if (item.ttl <= 1 || value === undefined) {
             continue
           }
           callback(item.key, value)
