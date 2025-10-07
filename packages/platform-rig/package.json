@@ -10,8 +10,8 @@
     "./profiles/*": "./profiles/*"
   },
   "dependencies": {
-    "typescript": "^5.8.3",
-    "esbuild": "^0.25.9",
+    "typescript": "^5.9.3",
+    "esbuild": "^0.25.10",
     "esbuild-plugin-copy": "^2.1.1",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
