@@ -27,7 +27,7 @@
     {
       "packageName": "@hcengineering/scripts",
       "projectFolder": "common/scripts",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/communication-types",
