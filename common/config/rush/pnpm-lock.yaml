@@ -45,15 +45,9 @@ importers:
       prettier:
         specifier: ^3.1.0
         version: 3.6.2
-      simplytyped:
-        specifier: ^3.3.0
-        version: 3.3.0(typescript@5.9.2)
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.2
 
   ../../packages/measurements-otlp:
     dependencies:
@@ -136,15 +130,9 @@ importers:
       prettier:
         specifier: ^3.1.0
         version: 3.6.2
-      simplytyped:
-        specifier: ^3.3.0
-        version: 3.3.0(typescript@5.9.2)
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.2
 
   ../../packages/platform-rig:
     dependencies:
@@ -204,9 +192,6 @@ importers:
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.2
 
 packages:
 
@@ -2778,11 +2763,6 @@ packages:
 
   signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
-
-  simplytyped@3.3.0:
-    resolution: {integrity: sha512-mz4RaNdKTZiaKXgi6P1k/cdsxV3gz+y1Wh2NXHWD40dExktLh4Xx/h6MFakmQWODZHj/2rKe59acacpL74ZhQA==}
-    peerDependencies:
-      typescript: '>=2.8.0'
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
@@ -6336,10 +6316,6 @@ snapshots:
       side-channel-weakmap: 1.0.2
 
   signal-exit@3.0.7: {}
-
-  simplytyped@3.3.0(typescript@5.9.2):
-    dependencies:
-      typescript: 5.9.2
 
   sisteransi@1.0.5: {}
 
