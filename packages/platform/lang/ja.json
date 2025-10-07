@@ -1,0 +1,29 @@
+{
+  "status": {
+    "LoadingPlugin": "プラグイン {plugin} を読み込み中…",
+    "UnknownError": "不明なエラー: {message}",
+    "InvalidId": "無効なID: {id}",
+    "BadRequest": "不正なリクエスト",
+    "Forbidden": "アクセスが禁止されています",
+    "Conflict": "競合",
+    "ExpiredLink": "この招待リンクは期限切れです",
+    "Unauthorized": "認証されていません",
+    "UnknownMethod": "不明なメソッド: {method}",
+    "InternalServerError": "サーバー内部エラー",
+    "MaintenanceWarning": "メンテナンスが予定されています",
+    "MaintenanceWarningTime": "{time, plural, =1 {1分以内に} other {#分後に}}",
+    "AccountNotFound": "アカウントが見つからないか、認証情報が間違っています",
+    "AccountNotConfirmed": "アカウントが確認されていません",
+    "WorkspaceNotFound": "ワークスペースが見つかりません",
+    "AccountAlreadyExists": "このアカウントはすでに存在します",
+    "WorkspaceRateLimit": "サーバーが混雑しています。しばらく待ってから再度お試しください",
+    "AccountAlreadyConfirmed": "このアカウントはすでに確認済みです",
+    "WorkspaceAlreadyExists": "ワークスペースはすでに存在します",
+    "InvalidOtp": "無効なコードです",
+    "InviteNotFound": "メールアドレス {email} に対する招待が見つかりませんでした",
+    "WorkspaceLimitReached": "作成可能なワークスペースの上限に達しました。お問い合わせください",
+    "ReadOnlyAccount": "匿名ゲストデモ",
+    "SystemAccount": "システムアカウント",
+    "SocialIdAlreadyExists": "ソーシャルIDは既に存在します"
+  }
+}

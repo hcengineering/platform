@@ -1,0 +1,65 @@
+{
+  "name": "@hcengineering/platform",
+  "entries": [
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/platform_v0.6.5",
+      "date": "Sun, 08 Aug 2021 11:34:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "ES6 target"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/platform_v0.6.4",
+      "date": "Sun, 08 Aug 2021 10:14:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Export status codes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/platform_v0.6.3",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/platform_v0.6.2",
+      "date": "Wed, 04 Aug 2021 20:48:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "npmignore"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/platform_v0.6.1",
+      "date": "Wed, 04 Aug 2021 17:38:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Minor changes for publish"
+          }
+        ]
+      }
+    }
+  ]
+}

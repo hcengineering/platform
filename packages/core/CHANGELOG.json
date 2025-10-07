@@ -1,0 +1,135 @@
+{
+  "name": "@hcengineering/core",
+  "entries": [
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.11",
+      "date": "Fri, 20 Aug 2021 16:21:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Transaction ordering"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.10",
+      "date": "Wed, 11 Aug 2021 09:37:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Server support for workspaces"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.8",
+      "date": "Sun, 08 Aug 2021 21:05:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix server connection"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.7",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.2` to `~0.6.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.6",
+      "date": "Wed, 04 Aug 2021 21:00:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "npmigonre"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.5",
+      "date": "Wed, 04 Aug 2021 20:26:15 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missed docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.4",
+      "date": "Wed, 04 Aug 2021 18:12:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add `memdb` docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.3",
+      "date": "Wed, 04 Aug 2021 18:05:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add `hierarchy.ts` docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.2",
+      "date": "Wed, 04 Aug 2021 17:53:24 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.1",
+      "date": "Wed, 04 Aug 2021 17:38:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Minor changes for publish"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.0` to `~0.6.1`"
+          }
+        ]
+      }
+    }
+  ]
+}

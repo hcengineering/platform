@@ -1,0 +1,30 @@
+{
+  "status": {
+    "LoadingPlugin": "Загрузка плагина {plugin}...",
+    "UnknownError": "Неизвестная ошибка: {message}",
+    "InvalidId": "Некорректный Id: {id}",
+    "BadRequest": "Некорректный запрос",
+    "Forbidden": "Запрещено",
+    "Conflict": "Конфликт",
+    "ExpiredLink": "Ссылка истекла",
+    "Unauthorized": "Неавторизован",
+    "UnknownMethod": "Неизвестный метод: {method}",
+    "InternalServerError": "Внутренняя ошибка сервера",
+    "MaintenanceWarning": "Серверные работы запланированы через",
+    "MaintenanceWarningTime": "{time, plural, one {# минуту} few {# минуты} other {# минут}}",
+    "AccountNotFound": "Аккаунт не найден",
+    "AccountNotConfirmed": "Аккаунт не подтвержден",
+    "WorkspaceNotFound": "Рабочее пространство не найдено",
+    "InvalidPassword": "Неверный пароль",
+    "AccountAlreadyExists": "Аккаунт уже существует",
+    "WorkspaceRateLimit": "Сервер перегружен, пожалуйста, подождите",
+    "AccountAlreadyConfirmed": "Аккаунт уже подтвержден",
+    "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
+    "InvalidOtp": "Неверный код",
+    "InviteNotFound": "Приглашение с email:{email} не найдено.",
+    "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами...",
+    "ReadOnlyAccount": "Анонимное гостевое демо",
+    "SystemAccount": "Системный аккаунт",
+    "SocialIdAlreadyExists": "Социальный ID уже существует"
+  }
+}
