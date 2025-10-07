@@ -183,7 +183,7 @@ export class WorkspaceManager {
       } else {
         this.ctx.error('Could not send failed transaction to dead letter queue - no producer available', { m })
       }
-      this.ctx.error('Could not send process transactions', { err, m })
+      this.ctx.error('Could not process transactions', { err, m })
     }
   }
 
