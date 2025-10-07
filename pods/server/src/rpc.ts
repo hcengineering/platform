@@ -163,7 +163,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       const decodedToken = decodeToken(token)
       if (workspaceId !== decodedToken.workspace) {
-        sendError(res, 401, { message: 'Invalid workspace', workspace: decodedToken.workspace })
+        sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
       }
 
@@ -173,7 +173,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
         const s = await sessions.addSession(ctx, cs, decodedToken, token, token)
         if (!('session' in s)) {
-          sendError(res, 401, {
+          sendError(res, 403, {
             message: 'Failed to create session',
             mode: 'specialError' in s ? s.specialError ?? '' : 'upgrading'
           })
