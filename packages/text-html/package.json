@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text-html",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -39,7 +39,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/text-core": "workspace:^0.7.2",
+    "@hcengineering/text-core": "workspace:^0.7.3",
     "htmlparser2": "^9.0.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",

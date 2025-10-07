@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text-markdown",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -40,8 +40,8 @@
     "@types/markdown-it": "~13.0.0"
   },
   "dependencies": {
-    "@hcengineering/text-core": "workspace:^0.7.2",
-    "@hcengineering/text-html": "workspace:^0.7.2",
+    "@hcengineering/text-core": "workspace:^0.7.3",
+    "@hcengineering/text-html": "workspace:^0.7.3",
     "markdown-it": "^14.0.0",
     "fast-equals": "^5.2.2"
   },

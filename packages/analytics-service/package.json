@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/analytics-service",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -39,10 +39,10 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.2",
-    "@hcengineering/core": "workspace:^0.7.2",
-    "@hcengineering/analytics": "workspace:^0.7.2",
-    "@hcengineering/measurements-otlp": "^0.7.8",
+    "@hcengineering/platform": "workspace:^0.7.3",
+    "@hcengineering/core": "workspace:^0.7.3",
+    "@hcengineering/analytics": "workspace:^0.7.3",
+    "@hcengineering/measurements-otlp": "^0.7.10",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
