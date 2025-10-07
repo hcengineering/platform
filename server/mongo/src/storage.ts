@@ -179,7 +179,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         const sort: Sort = {}
         for (const key in options.sort) {
           const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
-          sort[key] = order
+          ;(sort as any)[key] = order
         }
         cursor = cursor.sort(sort)
       }
@@ -236,7 +236,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         const sort: Sort = {}
         for (const key in options.sort) {
           const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
-          sort[key] = order
+          ;(sort as any)[key] = order
         }
         cursor = cursor.sort(sort)
       }
@@ -1006,7 +1006,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     for (const key in options.sort) {
       const ckey = this.checkMixinKey<T>(key, _class)
       const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
-      sort[ckey] = order
+      ;(sort as any)[ckey] = order
       count++
     }
     if (count === 0) {

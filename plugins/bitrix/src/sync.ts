@@ -867,8 +867,10 @@ async function downloadComments (
             _class: gmail.class.Message,
             content: comm.DESCRIPTION,
             textContent:
-              parser.parseFromString(comm.DESCRIPTION, 'text/html').textContent?.split('\n').slice(0, 3).join('\n') ??
-              '',
+              (parser.parseFromString(comm.DESCRIPTION, 'text/html').textContent ?? '')
+                .split('\n')
+                .slice(0, 3)
+                .join('\n') ?? '',
             incoming: comm.DIRECTION === '1',
             sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
             subject: comm.SUBJECT,

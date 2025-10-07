@@ -2,7 +2,7 @@
   "name": "@hcengineering/mongo",
   "entries": [
     {
-      "version": "0.6.1",
+      "version": "0.7.0",
       "tag": "@hcengineering/mongo_v0.6.1",
       "date": "Fri, 20 Aug 2021 16:21:03 GMT",
       "comments": {

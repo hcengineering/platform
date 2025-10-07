@@ -267,7 +267,10 @@ export class DatalakeClient {
     const url = concatLink(this.endpoint, path)
 
     const buffer = await toBuffer(stream)
-    const file = new File([buffer], objectName, { type: params.type, lastModified: params.lastModified })
+    const file = new File([new Uint8Array(buffer)], objectName, {
+      type: params.type,
+      lastModified: params.lastModified
+    })
 
     const form = new FormData()
     form.append('file', file)
@@ -421,7 +424,7 @@ export class DatalakeClient {
     try {
       const response = await fetchSafe(ctx, url, {
         method: 'PUT',
-        body,
+        body: body as BodyInit,
         headers: { ...this.headers }
       })
       return (await response.json()) as MultipartUploadPart

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/emoji-resources",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -39,14 +39,14 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/theme": "^0.6.5",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/emoji": "^0.6.0",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/presentation": "^0.7.0",
+    "@hcengineering/theme": "^0.7.0",
+    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/emoji": "^0.7.0",
+    "@hcengineering/view": "^0.7.0",
+    "@hcengineering/view-resources": "^0.7.0",
     "svelte": "^4.2.20"
   }
 }

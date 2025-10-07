@@ -331,48 +331,13 @@
     // },
     //
     {
-      "packageName": "@hcengineering/platform-rig",
-      "projectFolder": "packages/platform-rig",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/platform",
-      "projectFolder": "packages/platform",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/core",
-      "projectFolder": "packages/core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/analytics",
-      "projectFolder": "packages/analytics",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/analytics-providers",
       "projectFolder": "packages/analytics-providers",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/analytics-service",
-      "projectFolder": "packages/analytics-service",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/storage",
-      "projectFolder": "packages/storage",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/highlight",
       "projectFolder": "packages/highlight",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/api-client",
-      "projectFolder": "packages/api-client",
       "shouldPublish": false
     },
     {
@@ -398,31 +363,6 @@
     {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-core",
-      "projectFolder": "packages/text-core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-markdown",
-      "projectFolder": "packages/text-markdown",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-html",
-      "projectFolder": "packages/text-html",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text",
-      "projectFolder": "packages/text",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-ydoc",
-      "projectFolder": "packages/text-ydoc",
       "shouldPublish": true
     },
     {
@@ -506,16 +446,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/collaborator-client",
-      "projectFolder": "packages/collaborator-client",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/account-client",
-      "projectFolder": "packages/account-client",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@hcengineering/billing-client",
       "projectFolder": "packages/billing-client",
       "shouldPublish": true
@@ -534,11 +464,6 @@
       "packageName": "@hcengineering/server-indexer",
       "projectFolder": "server/indexer",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-token",
-      "projectFolder": "server/token",
-      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/server",
@@ -611,26 +536,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/client",
-      "projectFolder": "plugins/client",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/client-resources",
-      "projectFolder": "plugins/client-resources",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/query",
-      "projectFolder": "packages/query",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/rank",
-      "projectFolder": "packages/rank",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@hcengineering/view",
       "projectFolder": "plugins/view",
       "shouldPublish": true
@@ -644,11 +549,6 @@
       "packageName": "@hcengineering/view-resources",
       "projectFolder": "plugins/view-resources",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model",
-      "projectFolder": "packages/model",
-      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-core",
@@ -839,11 +739,6 @@
       "packageName": "@hcengineering/elastic",
       "projectFolder": "server/elastic",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/rpc",
-      "projectFolder": "server/rpc",
-      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/pod-front",
@@ -2472,51 +2367,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/retry",
-      "projectFolder": "packages/retry",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-types",
-      "projectFolder": "communication/packages/types",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-sdk-types",
-      "projectFolder": "communication/packages/sdk-types",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-shared",
-      "projectFolder": "communication/packages/shared",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-rest-client",
-      "projectFolder": "communication/packages/rest-client",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-cockroach",
-      "projectFolder": "communication/packages/cockroach",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-server",
-      "projectFolder": "communication/packages/server",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-query",
-      "projectFolder": "communication/packages/query",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-client-query",
-      "projectFolder": "communication/packages/client-query",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/backup-api-pod",
       "projectFolder": "services/backup/backup-api-pod",
       "shouldPublish": false
@@ -2594,11 +2444,6 @@
     {
       "packageName": "@hcengineering/pod-worker",
       "projectFolder": "services/worker",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/hulylake-client",
-      "projectFolder": "packages/hulylake-client",
       "shouldPublish": false
     },
     {
