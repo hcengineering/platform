@@ -16,16 +16,16 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
 
-  import presentation, { Card, getClient, getCurrentWorkspaceUuid, SpaceSelector } from '@hcengineering/presentation'
+  import presentation, { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { Label, Loading } from '@hcengineering/ui'
   import { type Integration } from '@hcengineering/account-client'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
+  import { Analytics } from '@hcengineering/analytics'
 
   import { getIntegrationClient, getAccountClient } from '../utils'
   import aiAssistant from '../plugin'
   import { buildSocialIdString, getCurrentAccount, SocialIdType, type PersonId } from '@hcengineering/core'
   import HulyAssistant from './icons/HulyAssistant.svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration | undefined = undefined
 
@@ -44,6 +44,7 @@
       const integrationClient = await getIntegrationClient()
       if (integration === undefined) {
         integration = await integrationClient.connect(socialId)
+        await accountClient.refreshHulyAssistantToken()
       }
 
       integration = isWorkspaceIntegration(integration)
