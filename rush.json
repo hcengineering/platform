@@ -331,6 +331,11 @@
    */
   "projects": [
     {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/account-client",
       "projectFolder": "packages/account-client",
       "shouldPublish": true

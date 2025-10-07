@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/rank",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -24,7 +24,7 @@
     "format": "format src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.8",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -39,7 +39,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/core": "workspace:^0.7.1",
     "lexorank": "~1.0.4"
   },
   "repository": "https://github.com/hcengineering/huly.core",

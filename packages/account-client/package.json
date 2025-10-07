@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/account-client",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.8",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
@@ -42,8 +42,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.6.32",
-    "@hcengineering/platform": "workspace:^0.6.11"
+    "@hcengineering/core": "workspace:^0.7.1",
+    "@hcengineering/platform": "workspace:^0.7.1"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {

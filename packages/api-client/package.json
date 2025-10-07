@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/api-client",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "exports": {
     ".": {
@@ -32,7 +32,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.8",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -52,14 +52,14 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.0",
-    "@hcengineering/client": "workspace:^0.7.0",
-    "@hcengineering/client-resources": "workspace:^0.7.0",
-    "@hcengineering/collaborator-client": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.0",
-    "@hcengineering/text": "workspace:^0.7.0",
-    "@hcengineering/text-markdown": "workspace:^0.7.0",
+    "@hcengineering/account-client": "workspace:^0.7.1",
+    "@hcengineering/client": "workspace:^0.7.1",
+    "@hcengineering/client-resources": "workspace:^0.7.1",
+    "@hcengineering/collaborator-client": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.1",
+    "@hcengineering/platform": "workspace:^0.7.1",
+    "@hcengineering/text": "workspace:^0.7.1",
+    "@hcengineering/text-markdown": "workspace:^0.7.1",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/core",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -28,7 +28,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.8",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -45,8 +45,8 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.6.11",
-    "@hcengineering/analytics": "workspace:^0.7.0",
+    "@hcengineering/platform": "workspace:^0.7.1",
+    "@hcengineering/analytics": "workspace:^0.7.1",
     "@hcengineering/measurements": "^0.7.8",
     "fast-equals": "^5.2.2"
   },

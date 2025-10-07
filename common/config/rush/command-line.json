@@ -350,11 +350,11 @@
     },
     {
       "commandKind": "global",
-      "name": "desktop",
-      "summary": "Build desktop build",
-      "description": "use to build all docker containers required for platform",
+      "name": "bump-changes",
+      "summary": "Bump changes from tag",
+      "description": "Bump changes from previous tag",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
+      "shellCommand": "./common/scripts/node_modules/.bin/bump-changes-from-tag"
     }
   ],
 
