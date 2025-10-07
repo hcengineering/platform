@@ -7,7 +7,10 @@
   "files": [
     "lib/**/*",
     "types/**/*",
-    "tsconfig.json"
+    "src/**/*",
+    "!src/**/__test__/**",
+    "tsconfig.json",
+    "lang/**/*"
   ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",

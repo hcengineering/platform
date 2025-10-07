@@ -38,5 +38,21 @@
     "@hcengineering/platform": "workspace:^0.6.11",
     "@hcengineering/core": "workspace:^0.6.32",
     "fast-equals": "^5.2.2"
+  },
+  "files": [
+    "lib/**/*",
+    "!lib/**/__test__/**",
+    "types/**/*",
+    "!types/**/__test__/**",
+    "src/**/*",
+    "!src/**/__test__/**",
+    "tsconfig.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }

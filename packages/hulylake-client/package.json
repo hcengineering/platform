@@ -7,6 +7,8 @@
   "files": [
     "lib/**/*",
     "types/**/*",
+    "src/**/*",
+    "!src/**/__test__/**",
     "tsconfig.json"
   ],
   "author": "Hardcore Engineering Inc.",

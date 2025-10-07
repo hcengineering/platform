@@ -510,7 +510,7 @@ function getInNiN (query1: any, query2: any): any {
         ? aIn.length - bIn.length < 0
           ? bIn.filter((c: any) => aIn.includes(c))
           : aIn.filter((c: any) => bIn.includes(c))
-        : aIn ?? bIn
+        : (aIn ?? bIn)
     return { $in: finalIn.filter((p: any) => !finalNin.includes(p)) }
   }
   // try to preserve original $ne instead of $nin

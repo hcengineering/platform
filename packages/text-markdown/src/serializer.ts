@@ -819,7 +819,7 @@ export class MarkdownState implements IState {
       }
       value = open ? info.open : info.close
     }
-    return typeof value === 'string' ? value : value(this, mark, parent, index) ?? ''
+    return typeof value === 'string' ? value : (value(this, mark, parent, index) ?? '')
   }
 }
 

@@ -36,7 +36,7 @@ export function jsonToYDoc (json: MarkupNode, field: string): YDoc {
   const ydoc = new YDoc({ guid: generateId() })
   const fragment = ydoc.getXmlFragment(field)
 
-  const nodes = json.type === 'doc' ? json.content ?? [] : [json]
+  const nodes = json.type === 'doc' ? (json.content ?? []) : [json]
   nodes.map((p) => nodeToXmlElement(fragment, p))
 
   return ydoc
