@@ -16,10 +16,10 @@
   "scripts": {
     "_phase:build": "compile transpile src",
     "_phase:validate": "compile validate",
-    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:test": "jest --passWithNoTests --silent --coverage",
     "_phase:format": "format src",
     "build": "compile",
-    "test": "jest --passWithNoTests --silent",
+    "test": "jest --passWithNoTests --silent --coverage",
     "build:watch": "compile",
     "format": "format src"
   },

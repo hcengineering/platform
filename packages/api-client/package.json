@@ -24,10 +24,10 @@
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
-    "test": "jest --passWithNoTests --silent",
+    "test": "jest --passWithNoTests --silent --coverage",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:test": "jest --passWithNoTests --silent --coverage",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },

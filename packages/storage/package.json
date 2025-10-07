@@ -9,11 +9,11 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
-    "test": "jest --passWithNoTests --silent --forceExit",
+    "test": "jest --passWithNoTests --silent --forceExit --coverage",
     "build:watch": "compile",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit --coverage",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
