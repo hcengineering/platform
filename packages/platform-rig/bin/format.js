@@ -10,8 +10,9 @@ const {
   rmSync,
   current
 } = require('fs')
-const { spawnSync, execSync } = require('child_process')
 const crypto = require('crypto')
+const prettier = require('prettier')
+const { ESLint } = require('eslint')
 
 if (!existsSync('.format')) {
   mkdirSync('.format', { recursive: true })
@@ -91,61 +92,102 @@ if (process.argv.includes('-f') || process.argv.includes('--force')) {
 }
 
 if (filesToCheck.length > 0) {
-  console.info(`running prettier ${filesToCheck.length}`)
-  // Changes detected.
-  const prettier = spawnSync(join(process.cwd(), 'node_modules/.bin/prettier'), ['--color', '--write', ...filesToCheck])
-  if (prettier.stdout != null) {
-    writeFileSync('.format/prettier.log', prettier.stdout)
-    if (prettier.status === null || prettier.status === 0) {
-      console.info(prettier.stdout.toString())
-    } else {
-      console.error(prettier.stdout.toString())
-    }
-  }
-  if (prettier.stderr != null) {
-    writeFileSync('.format/prettier.err', prettier.stderr)
-    const data = prettier.stderr.toString()
-    if (data.length > 0) {
-      console.error(data)
-    }
-  }
+  ;(async () => {
+    try {
+      console.info(`running prettier ${filesToCheck.length}`)
 
-  console.log(`running eslint ${filesToCheck.length}`)
-  const eslint = spawnSync(join(process.cwd(), 'node_modules/.bin/eslint'), ['--color', '--fix', ...filesToCheck], {
-    env: { ...process.env, NODE_ENV: '--max-old-space-size=4096' }
-  })
-  if (eslint.stdout != null) {
-    writeFileSync('.format/eslint.log', eslint.stdout)
-    if (prettier.status === null || prettier.status === 0) {
-      console.info(eslint.stdout.toString())
-    } else {
-      console.error(eslint.stdout.toString())
-    }
-  }
-  if (eslint.stderr != null) {
-    writeFileSync('.format/eslint.err', eslint.stderr)
-    const data = eslint.stderr.toString()
-    if (data.length > 0) {
-      console.error(data)
-    }
-  }
-  console.log(eslint.error, prettier.error)
-  if (prettier.status || eslint.status || eslint.error || prettier.error) {
-    console.info('prettier or eslint failed', prettier.status, eslint.status, prettier.error, eslint.error)
-    // Make file empty, to prevent false passing if called without -f or --force.
-    writeFileSync('.format/format.json', JSON.stringify({}, undefined, 2))
-    process.exit(1)
-  }
+      // Run Prettier
+      const prettierLog = []
+      const prettierErrors = []
 
-  hash = newHash
-  for (const v of process.argv.slice(2)) {
-    if (existsSync(v)) {
-      calcHash(join(process.cwd(), v), 'updated')
+      for (const file of filesToCheck) {
+        try {
+          const options = await prettier.resolveConfig(file)
+          const fileInfo = await prettier.getFileInfo(file)
+
+          if (!fileInfo.ignored) {
+            const input = readFileSync(file, 'utf8')
+            const formatted = await prettier.format(input, {
+              ...options,
+              filepath: file
+            })
+
+            if (input !== formatted) {
+              writeFileSync(file, formatted, 'utf8')
+              prettierLog.push(`Formatted: ${relative(process.cwd(), file)}`)
+            }
+          }
+        } catch (error) {
+          prettierErrors.push(`Error formatting ${file}: ${error.message}`)
+        }
+      }
+
+      const prettierLogData = prettierLog.join('\n')
+      const prettierErrData = prettierErrors.join('\n')
+
+      if (prettierLogData) {
+        writeFileSync('.format/prettier.log', prettierLogData)
+        console.info(prettierLogData)
+      }
+
+      if (prettierErrData) {
+        writeFileSync('.format/prettier.err', prettierErrData)
+        console.error(prettierErrData)
+      }
+
+      console.log(`running eslint ${filesToCheck.length}`)
+
+      // Run ESLint
+      const eslint = new ESLint({ fix: true })
+      const results = await eslint.lintFiles(filesToCheck)
+
+      // Apply fixes
+      await ESLint.outputFixes(results)
+
+      const formatter = await eslint.loadFormatter('stylish')
+      const resultText = formatter.format(results)
+
+      writeFileSync('.format/eslint.log', resultText)
+
+      // Check for errors
+      const hasErrors = results.some((result) => result.errorCount > 0)
+      const hasWarnings = results.some((result) => result.warningCount > 0)
+
+      if (resultText) {
+        if (hasErrors) {
+          console.error(resultText)
+        } else {
+          console.info(resultText)
+        }
+      }
+
+      const prettierFailed = prettierErrors.length > 0
+      const eslintFailed = hasErrors
+
+      if (prettierFailed || eslintFailed) {
+        console.info('prettier or eslint failed')
+        // Make file empty, to prevent false passing if called without -f or --force.
+        writeFileSync('.format/format.json', JSON.stringify({}, undefined, 2))
+        process.exit(1)
+      }
+
+      hash = newHash
+      for (const v of process.argv.slice(2)) {
+        if (existsSync(v)) {
+          calcHash(join(process.cwd(), v), 'updated')
+        }
+      }
+      writeFileSync('.format/format.json', JSON.stringify(newHash, undefined, 2))
+
+      console.info('Formatting completed successfully.')
+      process.exit(0)
+    } catch (error) {
+      console.error('Formatting failed:', error)
+      writeFileSync('.format/format.json', JSON.stringify({}, undefined, 2))
+      process.exit(1)
     }
-  }
-  writeFileSync('.format/format.json', JSON.stringify(newHash, undefined, 2))
+  })()
 } else {
   console.info('No changes detected.')
+  process.exit(0)
 }
-
-process.exit(0)

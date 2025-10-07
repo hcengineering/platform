@@ -18,33 +18,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.2)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.32.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.1)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
@@ -103,12 +79,27 @@ importers:
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.18.1)
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
+
+  ../../packages/platform-rig:
+    dependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/parser':
         specifier: ^6.11.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
+      esbuild:
+        specifier: ^0.25.9
+        version: 0.25.9
+      esbuild-plugin-copy:
+        specifier: ^2.1.1
+        version: 2.1.1(esbuild@0.25.9)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
@@ -124,25 +115,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.18.1)
       prettier:
         specifier: ^3.1.0
         version: 3.6.2
-      ts-jest:
-        specifier: ^29.1.1
-        version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
-
-  ../../packages/platform-rig:
-    dependencies:
-      esbuild:
-        specifier: ^0.25.9
-        version: 0.25.9
-      esbuild-plugin-copy:
-        specifier: ^2.1.1
-        version: 2.1.1(esbuild@0.25.9)
-    devDependencies:
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
@@ -162,33 +137,9 @@ importers:
       '@types/node':
         specifier: ^22.15.29
         version: 22.18.1
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.2)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.32.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.1)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.1(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.4))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.18.1))(typescript@5.9.2)
@@ -1897,6 +1848,10 @@ packages:
     resolution: {integrity: sha512-a4tiq7E0/5fTjxPAaH4jpjkSv/uCaU2p5KC6HVGrvl0cDjA8iBZv4vv1gyzlmK0ZUKqwpOyQMKzZQe3lTit77A==}
     engines: {node: '>=14'}
 
+  generator-function@2.0.1:
+    resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
+    engines: {node: '>= 0.4'}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -2092,8 +2047,8 @@ packages:
     resolution: {integrity: sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==}
     engines: {node: '>=6'}
 
-  is-generator-function@1.1.0:
-    resolution: {integrity: sha512-nPUB5km40q9e8UfN/Zc24eLlzdSf9OfKByBw9CIdw4H1giPMeA0OIJvbchsCu4npfI2QcMVBsGEBHKZ7wLTWmQ==}
+  is-generator-function@1.1.2:
+    resolution: {integrity: sha512-upqt1SkGkODW9tsGNG5mtXTXtECizwtS2kA161M+gJPc1xdb/Ax629af6YrTwcOeQHbewrPNlE5Dx7kzvXTizA==}
     engines: {node: '>= 0.4'}
 
   is-glob@4.0.3:
@@ -5253,6 +5208,8 @@ snapshots:
       - encoding
       - supports-color
 
+  generator-function@2.0.1: {}
+
   gensync@1.0.0-beta.2: {}
 
   get-caller-file@2.0.5: {}
@@ -5460,9 +5417,10 @@ snapshots:
 
   is-generator-fn@2.1.0: {}
 
-  is-generator-function@1.1.0:
+  is-generator-function@1.1.2:
     dependencies:
       call-bound: 1.0.4
+      generator-function: 2.0.1
       get-proto: 1.0.1
       has-tostringtag: 1.0.2
       safe-regex-test: 1.1.0
@@ -6548,7 +6506,7 @@ snapshots:
       is-async-function: 2.1.1
       is-date-object: 1.1.0
       is-finalizationregistry: 1.1.1
-      is-generator-function: 1.1.0
+      is-generator-function: 1.1.2
       is-regex: 1.2.1
       is-weakref: 1.1.1
       isarray: 2.0.5
