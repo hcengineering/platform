@@ -40,7 +40,8 @@ import {
   TriggersMiddleware,
   TxMiddleware,
   UserStatusMiddleware,
-  GuestPermissionsMiddleware
+  GuestPermissionsMiddleware,
+  NormalizeTxMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -118,6 +119,7 @@ export function createServerPipeline (
 
     const middlewares: MiddlewareCreator[] = [
       LookupMiddleware.create,
+      NormalizeTxMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
       FindSecurityMiddleware.create,
