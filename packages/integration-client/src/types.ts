@@ -74,11 +74,6 @@ export interface IntegrationClient {
   setSecret: (data: IntegrationSecret) => Promise<void>
 
   /**
-   * Remove all integration secrets
-   */
-  removeSecrets: (integration: Integration) => Promise<void>
-
-  /**
    * Disable or enable an integration
    */
   setIntegrationEnabled: (integrationKey: IntegrationKey, enabled: boolean) => Promise<void>

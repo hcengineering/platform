@@ -200,6 +200,8 @@
         // If reconnecting, start authentication flow from the beginning
         if (reconnect) {
           await disconnectSession(phoneNumber)
+          // Add small delay to ensure session is fully disconnected
+          await new Promise((resolve) => setTimeout(resolve, 100))
           integrationState = await commandWithLoading(phoneNumber, 'start')
         } else {
           integrationState = await getState(phoneNumber)
@@ -228,7 +230,7 @@
   async function disconnectSession (phoneNumber: string): Promise<void> {
     try {
       await disconnect(phoneNumber)
-    } catch (error) {
+    } catch (error: any) {
       Analytics.handleError(error)
     }
   }
@@ -240,7 +242,12 @@
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-    <div class="tool" on:click={close}>
+    <div
+      class="tool"
+      on:click={() => {
+        close()
+      }}
+    >
       <IconClose size={'small'} />
     </div>
   </div>

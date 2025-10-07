@@ -58,7 +58,7 @@
   }
 
   async function reconnect (res: any): Promise<void> {
-    if (res?.successful === true && integration !== undefined) {
+    if (res?.connected === true && integration !== undefined) {
       await integrationClient?.setIntegrationEnabled(integration, true)
     }
   }

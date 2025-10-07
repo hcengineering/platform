@@ -338,17 +338,6 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async removeSecrets (integration: Integration): Promise<void> {
-    const secrets = await this.client.listIntegrationsSecrets({
-      socialId: integration.socialId,
-      kind: integration.kind,
-      workspaceUuid: integration.workspaceUuid
-    })
-    for (const secret of secrets) {
-      await this.client.deleteIntegrationSecret(secret)
-    }
-  }
-
   async setIntegrationEnabled (integrationKey: IntegrationKey, enabled: boolean): Promise<void> {
     try {
       const integration = await this.client.getIntegration(integrationKey)
@@ -363,14 +352,14 @@ export class IntegrationClientImpl implements IntegrationClient {
 
       await this.client.updateIntegration({
         ...integration,
-        disabled: !enabled
+        data
       })
 
       const eventData: IntegrationEventData = {
         integration: { ...integration, data },
         timestamp: Date.now()
       }
-      this.emit(enabled ? 'integration:enabled' : 'integration:disabled', eventData)
+      this.emit('integration:updated', eventData)
     } catch (error) {
       const errorData: IntegrationErrorData = {
         operation: 'setIntegrationEnabled',
