@@ -107,6 +107,7 @@
       time={status.params.notBefore * 1000}
       showHours={true}
       on:timeout={() => {
+        console.log('reload due to token inactive')
         window.location.reload()
       }}
     />

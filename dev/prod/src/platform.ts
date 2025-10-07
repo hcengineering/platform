@@ -387,6 +387,7 @@ export async function configurePlatform() {
         if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
+        console.log('reload due to loading error')
         location.reload()
       }
     }
@@ -585,10 +586,10 @@ export async function configurePlatform() {
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
-  addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
-  addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
-  addLocation(hulyMailId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/huly-mail-resources'))
-  addLocation(aiAssistantId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/ai-assistant-resources'))
+  addLocation(emojiId, () => import(/* webpackChunkName: "emoji" */ '@hcengineering/emoji-resources'))
+  addLocation(billingId, () => import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources'))
+  addLocation(hulyMailId, () => import(/* webpackChunkName: "hulyMail" */ '@hcengineering/huly-mail-resources'))
+  addLocation(aiAssistantId, () => import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
