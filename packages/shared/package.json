@@ -7,13 +7,13 @@
   "files": [
     "lib/**/*",
     "types/**/*",
+    "src/**/*",
     "tsconfig.json"
   ],
   "scripts": {
     "build": "../scripts/compile.js",
     "_phase:build": "compile transpile src",
     "_phase:validate": "compile validate",
-
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
     "format": "prettier --write src/**/*.ts &&  eslint --fix \"src/**/*.ts\"",
