@@ -44,6 +44,10 @@
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   },
+  "repository": "https://github.com/hcengineering/huly.core",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "lib/**/*",
     "!lib/**/__test__/**",

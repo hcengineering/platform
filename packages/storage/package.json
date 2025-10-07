@@ -54,5 +54,9 @@
       "require": "./lib/index.js",
       "import": "./lib/index.js"
     }
+  },
+  "repository": "https://github.com/hcengineering/huly.core",
+  "publishConfig": {
+    "access": "public"
   }
 }
