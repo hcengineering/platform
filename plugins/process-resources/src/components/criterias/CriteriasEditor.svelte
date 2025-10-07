@@ -14,11 +14,12 @@
 -->
 
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { Process } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import AttributeCriteria from './AttributeCriteria.svelte'
 
+  export let _class: Ref<Class<Doc>>
   export let readonly: boolean
   export let process: Process
   export let keys: string[]
@@ -41,6 +42,7 @@
 <div class="editor-grid">
   {#each keys as key}
     <AttributeCriteria
+      {_class}
       {process}
       {key}
       {params}

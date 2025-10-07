@@ -47,6 +47,8 @@ import ArrayElementEditor from './components/transformEditors/ArrayElementEditor
 import MultiArrayElementEditor from './components/transformEditors/MultiArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
+import FilterEditor from './components/transformEditors/FilterEditor.svelte'
+import FunctionSubmenu from './components/settings/FunctionSubmenu.svelte'
 
 import ArraySizeCriteria from './components/criterias/ArraySizeCriteria.svelte'
 import BaseCriteria from './components/criterias/BaseCriteria.svelte'
@@ -135,7 +137,8 @@ export default async (): Promise<Resources> => ({
     AddTagEditor,
     AddTagPresenter,
     ExecutionMyToDos,
-    FieldChangesEditor
+    FieldChangesEditor,
+    FunctionSubmenu
   },
   criteriaEditor: {
     BaseCriteria,
@@ -154,7 +157,8 @@ export default async (): Promise<Resources> => ({
     AppendEditor,
     ReplaceEditor,
     SplitEditor,
-    CutEditor
+    CutEditor,
+    FilterEditor
   },
   triggerCheck: {
     MatchCheck: matchCardCheck,

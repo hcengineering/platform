@@ -90,7 +90,15 @@
 </script>
 
 {#if key !== undefined}
-  <CriteriasEditor keys={[key]} {readonly} {process} {params} on:remove={remove} on:change={change} />
+  <CriteriasEditor
+    keys={[key]}
+    _class={process.masterTag}
+    {readonly}
+    {process}
+    {params}
+    on:remove={remove}
+    on:change={change}
+  />
 {:else}
   <div class="flex-center mt-4">
     <Button label={view.string.Select} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onSelect} />

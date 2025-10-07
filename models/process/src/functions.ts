@@ -189,6 +189,19 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: undefined,
+      label: process.string.FirstMatchValue,
+      type: 'reduce',
+      editor: process.transformEditor.FilterEditor
+    },
+    process.function.FirstMatchValue
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeNumber,
       type: 'transform',
       category: 'attribute',
@@ -418,6 +431,20 @@ export function defineFunctions (builder: Builder): void {
       type: 'transform'
     },
     process.function.RemoveLast
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Filter,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.FilterEditor
+    },
+    process.function.Filter
   )
 
   builder.createDoc(
