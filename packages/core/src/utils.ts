@@ -999,4 +999,4 @@ export interface PermissionsGrant {
   grantedBy?: AccountUuid
 }
 
-export type KeysByType<O extends object, T> = { [k in keyof O]-?: O[k] extends T ? k : never; }[keyof O]
+export type KeysByType<O extends object, T> = { [k in keyof O]-?: O[k] extends T ? k : never }[keyof O]
