@@ -16,14 +16,17 @@
   import platform, { IntlString, PlatformError } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { type Integration } from '@hcengineering/account-client'
   import { isValidPhoneNumber } from 'libphonenumber-js'
+  import { Analytics } from '@hcengineering/analytics'
 
   import PhoneInput from './PhoneInput.svelte'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { command, getState, type IntegrationState, connect } from '../api'
+  import { command, getState, type IntegrationState, connect, disconnect } from '../api'
 
-  export let integration: any
+  export let integration: Integration | undefined = undefined
+  export let reconnect: boolean = false
 
   let phone: string = ''
   let code: string = ''
@@ -33,8 +36,9 @@
 
   const dispatch = createEventDispatcher()
 
-  function close (): void {
-    dispatch('close')
+  function close (value?: string): void {
+    const connected = state.mode === 'Authorized' || state.mode === 'Configured'
+    dispatch('close', { value, connected })
   }
 
   // Wrapper for command API with loading state management
@@ -117,11 +121,17 @@
     } else {
       switch (integrationState.status) {
         case 'authorized': {
+          const number = integrationState.number
           state = {
             mode: 'Authorized',
-            hint: integrationState.number,
+            hint: number,
             buttons: {
-              primary: { label: ui.string.Ok, handler: close }
+              primary: {
+                label: ui.string.Ok,
+                handler: () => {
+                  close(number)
+                }
+              }
               // secondary: { label: telegram.string.Disconnect }
             }
           }
@@ -182,9 +192,18 @@
 
   async function init (): Promise<void> {
     try {
-      const phone = integration?.data?.phone
-      if (phone !== undefined && phone !== '') {
-        integrationState = await getState(phone)
+      const phoneNumber = integration?.data?.phone
+
+      if (phoneNumber !== undefined && phoneNumber !== '') {
+        phone = phoneNumber
+
+        // If reconnecting, start authentication flow from the beginning
+        if (reconnect) {
+          await disconnectSession(phoneNumber)
+          integrationState = await commandWithLoading(phoneNumber, 'start')
+        } else {
+          integrationState = await getState(phoneNumber)
+        }
       } else {
         integrationState = 'Missing'
       }
@@ -193,11 +212,24 @@
       state = {
         mode: 'Error',
         hint: ex.message,
-
+        errorLabel: getErrorLabel(ex),
         buttons: {
-          primary: { label: ui.string.Ok, handler: close }
+          primary: {
+            label: ui.string.Ok,
+            handler: () => {
+              close()
+            }
+          }
         }
       }
+    }
+  }
+
+  async function disconnectSession (phoneNumber: string): Promise<void> {
+    try {
+      await disconnect(phoneNumber)
+    } catch (error) {
+      Analytics.handleError(error)
     }
   }
 
@@ -303,9 +335,6 @@
       flex-grow: 1;
       height: fit-content;
       margin: 0 1.75rem 0.5rem;
-      p {
-        margin: 0 0 1rem;
-      }
 
       .footer {
         display: flex;

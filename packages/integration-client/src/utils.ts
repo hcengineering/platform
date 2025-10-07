@@ -14,6 +14,7 @@
 //
 
 import { Integration } from '@hcengineering/account-client'
+import platform, { PlatformError } from '@hcengineering/platform'
 import { IntegrationEventData } from './types'
 
 export function isWorkspaceIntegration (integration: Integration): boolean {
@@ -33,4 +34,18 @@ export function isSameIntegrationEvent (event: IntegrationEventData, integration
 
 export function getIntegrationConfig (integration: Integration): Record<string, any> | undefined {
   return integration?.data?.config
+}
+
+export function isDisabled (integration: Integration): boolean {
+  return integration?.data?.disabled === true
+}
+
+export function isUnauthorizedError (error: any): boolean {
+  if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+    return true
+  }
+  if (error?.status === 401 || error?.status?.code === 401) {
+    return true
+  }
+  return false
 }

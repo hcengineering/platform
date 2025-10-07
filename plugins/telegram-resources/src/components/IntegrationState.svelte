@@ -15,7 +15,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
   import type { Integration } from '@hcengineering/account-client'
-  import { IntegrationClient, IntegrationUpdatedData, onIntegrationEvent } from '@hcengineering/integration-client'
+  import {
+    IntegrationClient,
+    IntegrationUpdatedData,
+    onIntegrationEvent,
+    isUnauthorizedError
+  } from '@hcengineering/integration-client'
   import { BaseIntegrationState, IntegrationStateRow } from '@hcengineering/setting-resources'
   import { OK, ERROR, Status } from '@hcengineering/platform'
 
@@ -31,6 +36,13 @@
 
   let integrationClient: IntegrationClient | undefined
   const unsubscribers: (() => void)[] = []
+
+  async function handleUnauthorized (): Promise<void> {
+    if (integrationClient === undefined) {
+      integrationClient = await getIntegrationClient()
+    }
+    await integrationClient.setIntegrationEnabled(integration, false)
+  }
 
   onMount(async () => {
     try {
@@ -49,10 +61,13 @@
       isLoading = false
       status = OK
       subscribe()
-    } catch (err) {
+    } catch (err: any) {
       status = ERROR
       isLoading = false
       console.error('Error loading channels:', err)
+      if (isUnauthorizedError(err)) {
+        await handleUnauthorized()
+      }
     }
   })
 
@@ -103,6 +118,9 @@
       }))
     } catch (err: any) {
       console.error('Error refresh channels:', err.message)
+      if (isUnauthorizedError(err as Error)) {
+        await handleUnauthorized()
+      }
     }
   }
 

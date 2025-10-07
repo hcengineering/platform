@@ -337,4 +337,49 @@ export class IntegrationClientImpl implements IntegrationClient {
       await this.client.addIntegrationSecret(data)
     }
   }
+
+  async removeSecrets (integration: Integration): Promise<void> {
+    const secrets = await this.client.listIntegrationsSecrets({
+      socialId: integration.socialId,
+      kind: integration.kind,
+      workspaceUuid: integration.workspaceUuid
+    })
+    for (const secret of secrets) {
+      await this.client.deleteIntegrationSecret(secret)
+    }
+  }
+
+  async setIntegrationEnabled (integrationKey: IntegrationKey, enabled: boolean): Promise<void> {
+    try {
+      const integration = await this.client.getIntegration(integrationKey)
+      if (integration == null) {
+        throw new Error(`Integration not found: ${JSON.stringify(integrationKey)}`)
+      }
+
+      const data = {
+        ...integration.data,
+        disabled: !enabled
+      }
+
+      await this.client.updateIntegration({
+        ...integration,
+        disabled: !enabled
+      })
+
+      const eventData: IntegrationEventData = {
+        integration: { ...integration, data },
+        timestamp: Date.now()
+      }
+      this.emit(enabled ? 'integration:enabled' : 'integration:disabled', eventData)
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'setIntegrationEnabled',
+        error: error instanceof Error ? error.message : String(error),
+        integrationKey,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
 }
