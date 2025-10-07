@@ -2,6 +2,7 @@
 /target
 /scripts/other
 /scripts/off
+/scripts/typing-test.sh
 Justfile
 commit.sh
 /src/GO.sh
@@ -12,3 +13,4 @@ TEST_WS.sh
 DROP_DB.sh
 TODO.txt
 DOCKER.sh
+/lleo

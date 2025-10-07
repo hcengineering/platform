@@ -95,7 +95,7 @@ Size of data is limited to some reasonable size
     - Status 200
     - Content-type: application/json
     - Body (array):
-	- [{"key","data","expires_at","etag"}, ...]
+	- [{"key","data","ttl","etag"}, ...]
 
 ## WebSocket API
 
@@ -127,7 +127,7 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar“ - one shared key
 	- “workspace/foo/bar/$/secret“ - one secret key
 
-- Answer: `{"action":"get","result":{"data":"hello","etag":"5d41402abc4b2a76b9719d911017c592","expires_at":3599,"key":"00000000-0000-0000-0000-000000000001/foo/bar"}}`
+- Answer: `{"action":"get","result":{"data":"hello","etag":"5d41402abc4b2a76b9719d911017c592","ttl":3599,"key":"00000000-0000-0000-0000-000000000001/foo/bar"}}`
 
 
 ```LIST```
@@ -137,7 +137,7 @@ Size of data is limited to some reasonable size
 	- “workspace/foo/bar/“ - keys from public space
 	- “workspace/foo/bar/$/secret/“ - keys from secret space
 
-- Answer: `{"action":"list","result":[{"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","expires_at":3570,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},{"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","expires_at":3555,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}]}`
+- Answer: `{"action":"list","result":[{"data":"hello 1","etag":"df0649bc4f1be901c85b6183091c1d83","ttl":3570,"key":"00000000-0000-0000-0000-000000000001/foo/bar1"},{"data":"hello 2","etag":"bb21ec8394b75795622f61613a777a8b","ttl":3555,"key":"00000000-0000-0000-0000-000000000001/foo/bar2"}]}`
 
 
 ```DELETE```

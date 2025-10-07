@@ -37,44 +37,46 @@ struct Entry {
 #[derive(Clone, Default)]
 pub struct MemoryBackend {
     inner: Arc<RwLock<HashMap<String, Entry>>>,
+    tick: Arc<RwLock<u8>>, // counter
 }
 
 impl MemoryBackend {
     pub fn new() -> Self {
         Self {
             inner: Arc::new(RwLock::new(HashMap::new())),
+            tick: Arc::new(RwLock::new(0)),
         }
     }
 
     pub fn spawn_ticker(&self, hub_state: Arc<RwLock<HubState>>) {
         let inner = self.inner.clone();
+        let tick = self.tick.clone();
+
         tokio::spawn(async move {
             let mut ticker = time::interval(Duration::from_secs(1));
             loop {
                 ticker.tick().await;
 
-                // lock
+                let current_tick = {
+                    let mut t = tick.write().await;
+                    *t = t.wrapping_add(1);
+                    *t
+                };
+
                 let expired_keys: Vec<String> = {
+                    let map = inner.read().await;
+                    map.iter()
+                        .filter(|(_, v)| v.ttl == current_tick)
+                        .map(|(k, _)| k.clone())
+                        .collect()
+                };
+
+                {
                     let mut map = inner.write().await;
-
-                    let mut expired: Vec<String> = Vec::new();
-                    for (k, v) in map.iter_mut() {
-                        if v.ttl > 0 {
-                            v.ttl = v.ttl.saturating_sub(1);
-                            if v.ttl == 0 {
-                                expired.push(k.clone());
-                            }
-                        } else {
-                            expired.push(k.clone());
-                        }
-                    }
-
-                    for k in &expired {
+                    for k in &expired_keys {
                         map.remove(k);
                     }
-
-                    expired
-                }; // write-lock free
+                }
 
                 for k in expired_keys {
                     broadcast_event(
@@ -103,6 +105,7 @@ pub async fn memory_list(
     }
 
     let map = backend.inner.read().await;
+    let current_tick = *backend.tick.read().await;
 
     let mut results = Vec::new();
     for (k, v) in map.iter() {
@@ -120,10 +123,12 @@ pub async fn memory_list(
             continue;
         }
 
+        let expires = v.ttl.wrapping_sub(current_tick);
+
         results.push(RedisArray {
             key: k.clone(),
             data: v.data.clone(),
-            expires_at: v.ttl as u64,
+            ttl: expires as u64,
             etag: hex::encode(md5::compute(&v.data).0),
         });
     }
@@ -155,12 +160,13 @@ pub async fn memory_read(
         None => Ok(None),
         Some(entry) => {
             let data = entry.data.clone();
-            let ttl = entry.ttl as u64;
+            let current_tick = *backend.tick.read().await;
+            let expires = entry.ttl.wrapping_sub(current_tick);
 
             Ok(Some(RedisArray {
                 key: key.to_string(),
                 data: data.clone(),
-                expires_at: ttl,
+                ttl: expires as u64,
                 etag: hex::encode(md5::compute(&data).0),
             }))
         }
@@ -188,8 +194,8 @@ fn compute_ttl_u8(ttl: Option<Ttl>) -> redis::RedisResult<u8> {
         return error(400, "TTL must be > 0");
     }
 
-    if sec_usize > CONFIG.max_ttl {
-        return error(412, "TTL exceeds MAX_TTL");
+    if sec_usize > CONFIG.max_ttl || sec_usize > 255 {
+        return error(412, "TTL exceeds MAX_TTL or 255 sec");
     }
 
     let capped = sec_usize.min(u8::MAX as usize);
@@ -224,7 +230,10 @@ pub async fn memory_save<V: AsRef<[u8]>>(
         return error(412, "Key must not end with a slash");
     }
 
-    let sec_u8 = compute_ttl_u8(ttl)?;
+    let ttl_u8 = compute_ttl_u8(ttl)?;
+    let current_tick = *backend.tick.read().await;
+    let expire_tick = current_tick.wrapping_add(ttl_u8);
+
     let val = value.to_string();
 
     let mut map = backend.inner.write().await;
@@ -237,7 +246,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
                 key.to_string(),
                 Entry {
                     data: val,
-                    ttl: sec_u8,
+                    ttl: expire_tick,
                 },
             );
         }
@@ -249,7 +258,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
                 key.to_string(),
                 Entry {
                     data: val,
-                    ttl: sec_u8,
+                    ttl: expire_tick,
                 },
             );
         }
@@ -259,7 +268,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
             };
             *existing = Entry {
                 data: val,
-                ttl: sec_u8,
+                ttl: expire_tick,
             };
         }
         SaveMode::Equal(ref expected_md5) => {
@@ -278,7 +287,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
             }
             *existing = Entry {
                 data: val,
-                ttl: sec_u8,
+                ttl: expire_tick,
             };
         }
     }

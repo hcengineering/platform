@@ -54,8 +54,8 @@ static MAX_LOOP_COUNT: usize = 1000; // to avoid infinite loops
 pub struct RedisArray {
     pub key: String,
     pub data: String,
-    pub expires_at: u64, // sec to expire TTL
-    pub etag: String,    // md5 hash (data)
+    pub ttl: u64,     // sec to expire TTL
+    pub etag: String, // md5 hash (data)
 }
 
 /// return Error
@@ -157,7 +157,7 @@ pub async fn redis_list(
                 results.push(RedisArray {
                     key: k,
                     data: value.clone(),
-                    expires_at: ttl as u64,
+                    ttl: ttl as u64,
                     etag: hex::encode(md5::compute(&value).0),
                 });
             }
@@ -200,7 +200,7 @@ pub async fn redis_read(
     Ok(Some(RedisArray {
         key: key.to_string(),
         data: data.clone(),
-        expires_at: ttl as u64,
+        ttl: ttl as u64,
         etag: hex::encode(md5::compute(&data).0),
     }))
 }
