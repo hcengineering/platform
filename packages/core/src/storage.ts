@@ -15,9 +15,9 @@
 
 import type { Asset, Resource } from '@hcengineering/platform'
 
-import type { KeysByType } from 'simplytyped'
 import type { Association, AttachedDoc, Class, Doc, Domain, Ref, Space } from './classes'
 import type { Tx } from './tx'
+import type { KeysByType } from './utils'
 
 export type ArraySizeSelector =
   | {

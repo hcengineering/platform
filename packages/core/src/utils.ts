@@ -998,3 +998,5 @@ export interface PermissionsGrant {
   spaces?: Ref<Space>[]
   grantedBy?: AccountUuid
 }
+
+export type KeysByType<O extends object, T> = { [k in keyof O]-?: O[k] extends T ? k : never; }[keyof O]

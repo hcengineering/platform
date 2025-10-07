@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import type { KeysByType } from 'simplytyped'
 import type {
   Arr,
   AttachedDoc,
@@ -35,7 +34,7 @@ import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
-import { generateId } from './utils'
+import { generateId, type KeysByType } from './utils'
 
 /**
  * @public
