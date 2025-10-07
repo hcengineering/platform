@@ -25,6 +25,11 @@
   "variants": [],
   "projects": [
     {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/communication-types",
       "projectFolder": "packages/types",
       "shouldPublish": false

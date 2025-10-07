@@ -20,7 +20,7 @@
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.25.9",
@@ -36,10 +36,10 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "^0.1.0",
-    "@hcengineering/communication-sdk-types": "^0.1.0",
-    "@hcengineering/communication-shared": "^0.1.0",
-    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/communication-types": "workspace:^0.1.0",
+    "@hcengineering/communication-sdk-types": "workspace:^0.1.0",
+    "@hcengineering/communication-shared": "workspace:^0.1.0",
+    "@hcengineering/core": "^0.7.1",
     "snappyjs": "^0.7.0"
   },
   "repository": {
@@ -47,7 +47,7 @@
     "url": "git+https://github.com/hcengineering/communication.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "exports": {
     ".": {
