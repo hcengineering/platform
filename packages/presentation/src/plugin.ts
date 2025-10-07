@@ -39,14 +39,13 @@ import {
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
-import { type UploadConfig } from './file'
 import { type PresentationMiddlewareFactory } from './pipeline'
-import type { PreviewConfig } from './preview'
 import {
   type ComponentPointExtension,
   type DocCreateExtension,
   type DocRules,
   type FilePreviewExtension,
+  type FileStorage,
   type InstantTransactions,
   type ObjectSearchCategory
 } from './types'
@@ -165,7 +164,7 @@ export default plugin(presentationId, {
     FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
-    FilesURL: '' as Metadata<string>,
+    DatalakeUrl: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
@@ -173,8 +172,7 @@ export default plugin(presentationId, {
     WorkspaceDataId: '' as Metadata<WorkspaceDataId>,
     FrontUrl: '' as Asset,
     LinkPreviewUrl: '' as Metadata<string>,
-    UploadConfig: '' as Metadata<UploadConfig>,
-    PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
+    FileStorage: '' as Metadata<FileStorage>,
     ClientHook: '' as Metadata<ClientHook>,
     SessionId: '' as Metadata<string>,
     StatsUrl: '' as Metadata<string>,

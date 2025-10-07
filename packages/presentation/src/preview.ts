@@ -1,9 +1,10 @@
-import type { Blob, Ref } from '@hcengineering/core'
-import { concatLink } from '@hcengineering/core'
+import { type Blob, type Ref, concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { withRetry } from '@hcengineering/retry'
 
-import { getFileUrl, getCurrentWorkspaceUuid } from './file'
+import { getFileUrl, getFileStorage, getCurrentWorkspaceUuid } from './file'
+import { type FileStorage } from './types'
+
 import presentation from './plugin'
 
 export interface PreviewMetadata {
@@ -18,7 +19,6 @@ export interface PreviewConfig {
   image: string
   video: string
 }
-
 export interface VideoMeta {
   hls?: HLSMeta
 }
@@ -26,50 +26,6 @@ export interface VideoMeta {
 export interface HLSMeta {
   thumbnail?: string
   source?: string
-}
-
-const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceUuid()}?file=:blobId&size=:size`
-
-/**
- *
- * PREVIEW_CONFIG env variable format.
- * - image - an Url with :workspace, :blobId, :downloadFile, :size placeholders.
- * - video - an Url with :workspace, :blobId placeholders.
- */
-export function parsePreviewConfig (config?: string): PreviewConfig | undefined {
-  if (config === undefined) {
-    return
-  }
-
-  const previewConfig = { image: defaultImagePreview(), video: '' }
-
-  const configs = config.split(';')
-  for (const c of configs) {
-    if (c.includes('|')) {
-      const [key, value] = c.split('|')
-      if (key === 'image') {
-        previewConfig.image = value
-      } else if (key === 'video') {
-        previewConfig.video = value
-      } else {
-        throw new Error(`Unknown preview config key: ${key}`)
-      }
-    } else {
-      // fallback to image-only config for compatibility
-      previewConfig.image = c
-    }
-  }
-
-  return Object.freeze(previewConfig)
-}
-
-export function getPreviewConfig (): PreviewConfig {
-  return (
-    (getMetadata(presentation.metadata.PreviewConfig) as PreviewConfig) ?? {
-      image: defaultImagePreview(),
-      video: ''
-    }
-  )
 }
 
 export async function getBlobRef (
@@ -92,11 +48,12 @@ export async function getBlobSrcSet (file: Ref<Blob>, width?: number, height?: n
 }
 
 export function getSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
+  const fileStorage = getFileStorage()
+  return blobToSrcSet(fileStorage, _blob, width, height)
 }
 
 function blobToSrcSet (
-  cfg: PreviewConfig,
+  fileStorage: FileStorage,
   blob: Ref<Blob>,
   width: number | undefined,
   height: number | undefined
@@ -104,48 +61,30 @@ function blobToSrcSet (
   if (blob.includes('://')) {
     return ''
   }
+  return getFileUrl(blob)
 
-  const workspace = encodeURIComponent(getCurrentWorkspaceUuid())
-  const name = encodeURIComponent(blob)
+  // let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
+  // const downloadUrl = getFileUrl(blob)
 
-  const previewUrl = getMetadata(presentation.metadata.PreviewUrl) ?? ''
-  if (previewUrl !== '') {
-    if (width !== undefined) {
-      return (
-        getImagePreviewUrl(workspace, name, width, height ?? width, 1) +
-        ' 1x , ' +
-        getImagePreviewUrl(workspace, name, width, height ?? width, 2) +
-        ' 2x, ' +
-        getImagePreviewUrl(workspace, name, width, height ?? width, 3) +
-        ' 3x'
-      )
-    } else {
-      return ''
-    }
-  }
+  // const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  // if (!url.includes('://')) {
+  //   url = concatLink(frontUrl ?? '', url)
+  // }
+  // url = url.replaceAll(':downloadFile', encodeURIComponent(downloadUrl))
+  // url = url.replaceAll(':blobId', encodeURIComponent(blob))
 
-  let url = cfg.image.replaceAll(':workspace', workspace)
-  const downloadUrl = getFileUrl(blob)
+  // let result = ''
+  // if (width !== undefined) {
+  //   result +=
+  //     fileStorage.getImageUrl(blob, { width, height: height ?? width, dpr: 1 }) +
+  //     ' 1x , ' +
+  //     fileStorage.getImageUrl(blob, { width, height: height ?? width, dpr: 2 }) +
+  //     ' 2x, ' +
+  //     fileStorage.getImageUrl(blob, { width, height: height ?? width, dpr: 3 }) +
+  //     ' 3x'
+  // }
 
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  if (!url.includes('://')) {
-    url = concatLink(frontUrl ?? '', url)
-  }
-  url = url.replaceAll(':downloadFile', encodeURIComponent(downloadUrl))
-  url = url.replaceAll(':blobId', name)
-
-  let result = ''
-  if (width !== undefined) {
-    result +=
-      formatImageSize(url, width, height ?? width, 1) +
-      ' 1x , ' +
-      formatImageSize(url, width, height ?? width, 2) +
-      ' 2x, ' +
-      formatImageSize(url, width, height ?? width, 3) +
-      ' 3x'
-  }
-
-  return result
+  // return result
 }
 
 export function getPreviewThumbnail (file: string, width: number, height: number, dpr?: number): string {
@@ -198,33 +137,39 @@ function formatImageSize (url: string, width: number, height: number, dpr: numbe
  * @deprecated, please use Blob direct operations.
  */
 export function getFileSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
+  return blobToSrcSet(getFileStorage(), _blob, width, height)
 }
 
 /**
  * @public
  */
 export async function getVideoMeta (file: string, filename?: string): Promise<VideoMeta | undefined> {
-  const cfg = getPreviewConfig()
+  // const cfg = getPreviewConfig()
 
-  let url = cfg.video
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
-    .replaceAll(':blobId', encodeURIComponent(file))
+  // let url = cfg.video
+  //   .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
+  //   .replaceAll(':blobId', encodeURIComponent(file))
 
-  if (url === '') {
-    return undefined
-  }
+  // if (url === '') {
+  //   return undefined
+  // }
 
-  const token = getMetadata(presentation.metadata.Token) ?? ''
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  if (!url.includes('://')) {
-    url = concatLink(frontUrl ?? '', url)
-  }
+  // const token = getMetadata(presentation.metadata.Token) ?? ''
+  // const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  // if (!url.includes('://')) {
+  //   url = concatLink(frontUrl ?? '', url)
+  // }
 
-  try {
-    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-    if (response.ok) {
-      return (await response.json()) as VideoMeta
-    }
-  } catch {}
+  // try {
+  //   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+  //   if (response.ok) {
+  //     const result = (await response.json()) as VideoMeta
+  //     if (result.hls !== undefined) {
+  //       result.hls.source = getBlobUrl(result.hls.source ?? '')
+  //       result.hls.thumbnail = getBlobUrl(result.hls.thumbnail ?? '')
+  //     }
+  //     return result
+  //   }
+  // } catch {}
+  return undefined
 }

@@ -139,8 +139,7 @@ import '@hcengineering/ai-assistant-assets'
 import { coreId } from '@hcengineering/core'
 import presentation, {
   loadServerConfig,
-  parsePreviewConfig,
-  parseUploadConfig,
+  createFileStorage,
   presentationId
 } from '@hcengineering/presentation'
 
@@ -154,7 +153,7 @@ import { configureAnalytics } from './analytics'
 export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
-  FILES_URL: string
+  DATALAKE_URL?: string
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
@@ -183,8 +182,6 @@ export interface Config {
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_URL?: string
-  PREVIEW_CONFIG?: string
-  UPLOAD_CONFIG?: string
   STATS_URL?: string
   PRESENCE_URL?: string
   USE_BINARY_PROTOCOL?: boolean
@@ -459,14 +456,13 @@ export async function configurePlatform () {
 
   setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
 
-  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
+  setMetadata(presentation.metadata.DatalakeUrl, config.DATALAKE_URL)
+  setMetadata(presentation.metadata.FileStorage, createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL))
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
-  setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
-  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG ?? '', config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)

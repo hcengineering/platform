@@ -132,6 +132,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const hulylakeUrl = process.env.HULYLAKE_URL
 
+  const datalakeUrl = process.env.DATALAKE_URL
+
   setMetadata(serverToken.metadata.Secret, serverSecret)
   setMetadata(serverToken.metadata.Service, 'front')
 
@@ -164,7 +166,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     mailUrl,
     billingUrl,
     pulseUrl,
-    hulylakeUrl
+    hulylakeUrl,
+    datalakeUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

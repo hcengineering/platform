@@ -205,3 +205,23 @@ export interface FilePreviewExtension extends ComponentPointExtension {
 export interface InstantTransactions extends Class<Doc> {
   txClasses: Array<Ref<Class<Tx>>>
 }
+
+export interface FileStorageUploadProgress {
+  loaded: number
+  total: number
+  percentage: number
+}
+
+/** @public */
+export interface FileStorageUploadOptions {
+  onProgress?: (progress: FileStorageUploadProgress) => void
+  signal?: AbortSignal
+}
+
+/** @public */
+export interface FileStorage {
+  getFileUrl: (file: string, filename?: string) => string
+  getFileMeta: (file: string) => Promise<Record<string, any>>
+  uploadFile: (uuid: string, file: File, options?: FileStorageUploadOptions) => Promise<void>
+  deleteFile: (file: string) => Promise<void>
+}

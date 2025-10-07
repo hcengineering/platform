@@ -280,6 +280,7 @@ export function start (
     billingUrl?: string
     pulseUrl?: string
     hulylakeUrl?: string
+    datalakeUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -359,6 +360,7 @@ export function start (
       BILLING_URL: config.billingUrl,
       PULSE_URL: config.pulseUrl,
       HULYLAKE_URL: config.hulylakeUrl,
+      DATALAKE_URL: config.datalakeUrl,
       ...(extraConfig ?? {})
     }
     res.status(200)
