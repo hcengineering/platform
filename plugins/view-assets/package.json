@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/view-assets",
-  "version": "0.6.11",
+  "version": "0.7.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -17,7 +17,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -33,8 +33,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/view": "^0.7.0"
   }
 }

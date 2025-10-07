@@ -54,7 +54,7 @@
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.48",
-        // "VERSION": "0.6.289",
+        // "version": "0.7.0",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
@@ -98,7 +98,7 @@
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.230",
-        // "VERSION": "0.6.289",
+        // "version": "0.7.0",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
