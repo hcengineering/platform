@@ -19,6 +19,7 @@
 
   export let icon: number | number[] | Ref<Blob>
   export let size: IconSize
+  export let inline: boolean = false
 
   let value: string | undefined = parseIcon(icon)
 
@@ -39,7 +40,7 @@
   $: value = parseIcon(icon)
 </script>
 
-<div class="emoji-{size} flex-row-center emoji">
+<span class="emoji-{size} flex-row-center emoji" class:inline class:fitSize={inline}>
   {#if value !== undefined}
     {value}
   {:else}
@@ -47,7 +48,7 @@
       <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon" />
     {/await}
   {/if}
-</div>
+</span>
 
 <style lang="scss">
   .emoji {
@@ -58,6 +59,15 @@
 
     img {
       margin: 0;
+    }
+
+    &.inline {
+      display: inline;
+
+      img {
+        margin-bottom: -0.125rem;
+        vertical-align: unset;
+      }
     }
   }
   .emoji-inline {
@@ -70,6 +80,13 @@
     height: 0.75rem;
     font-size: 0.75rem;
   }
+
+  .emoji-smaller {
+    width: 0.875rem;
+    height: 0.875rem;
+    font-size: 0.875rem;
+  }
+
   .emoji-small {
     width: 1rem;
     height: 1rem;
@@ -89,6 +106,7 @@
     width: inherit;
     height: inherit;
   }
+  .emoji-smaller,
   .emoji-x-small,
   .emoji-small,
   .emoji-medium,

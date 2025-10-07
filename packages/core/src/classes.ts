@@ -125,6 +125,7 @@ export type PropertyType = any
 export interface UXObject extends Obj {
   label: IntlString
   icon?: Asset
+  color?: number
   hidden?: boolean
   readonly?: boolean
 }
@@ -275,10 +276,13 @@ export interface PluginConfiguration extends Doc {
   pluginId: Plugin
   transactions: Ref<Doc>[]
 
-  label?: IntlString
+  label: IntlString
   icon?: Asset
   description?: IntlString
   enabled: boolean
+
+  // If set will not allow to disable this configuration
+  system?: true
 
   // If set will not be shown in configuration UI or enabled
   hidden?: boolean

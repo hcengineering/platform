@@ -254,14 +254,18 @@ export async function OnPersonCreate (_txes: Tx[], control: TriggerControl): Pro
   const result: Tx[] = []
   for (const tx of _txes) {
     const ctx = tx as TxCreateDoc<Person>
-    const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(contact.class.UserProfile, ctx.objectSpace, {
-      person: ctx.objectId,
-      title: formatName(ctx.attributes.name),
-      rank: makeRank(undefined, undefined),
-      content: '' as MarkupBlobRef,
-      parentInfo: [],
-      blobs: {}
-    })
+    const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(
+      contact.class.UserProfile,
+      card.space.Default,
+      {
+        person: ctx.objectId,
+        title: formatName(ctx.attributes.name),
+        rank: makeRank(undefined, undefined),
+        content: '' as MarkupBlobRef,
+        parentInfo: [],
+        blobs: {}
+      }
+    )
 
     result.push(userProfileTx)
     result.push(

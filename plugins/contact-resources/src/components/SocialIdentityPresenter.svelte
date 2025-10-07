@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Icon, Label, tooltip } from '@hcengineering/ui'
   import contact, { SocialIdentity, SocialIdentityProvider } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
 
   export let value: SocialIdentity
   export let socialIdProvider: SocialIdentityProvider | undefined = undefined
+  export let shouldShowAvatar = true
 
   const client = getClient()
 
@@ -33,12 +34,22 @@
 </script>
 
 {#if socialIdProvider != null}
-  <div class="flex-row-center flex-gap-2">
-    <div class="icon"><Icon size="full" {icon} /></div>
+  <div class="flex-row-center" class:flex-gap-2={shouldShowAvatar}>
+    <div
+      class="icon"
+      use:tooltip={{
+        component: Label,
+        props: { label: socialIdProvider.label }
+      }}
+    >
+      <Icon size="full" {icon} />
+    </div>
 
     <div class="flex-col flex-gap-0-5">
       <div>{value.displayValue ?? value.value}</div>
-      <div class="type"><Label label={socialIdProvider.label} /></div>
+      {#if shouldShowAvatar}
+        <div class="type"><Label label={socialIdProvider.label} /></div>
+      {/if}
     </div>
   </div>
 {/if}

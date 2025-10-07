@@ -15,7 +15,7 @@
 <script lang="ts">
   import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, createDSLContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
+  import { Context, createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import {
     AnySvelteComponent,
     Button,
@@ -72,11 +72,7 @@
     if (res === null) {
       value = undefined
     } else {
-      try {
-        value = createDSLContext(res)
-      } catch {
-        value = '$' + JSON.stringify(res)
-      }
+      value = createContext(res)
     }
     dispatch('change', value)
   }

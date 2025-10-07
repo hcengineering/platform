@@ -12,6 +12,14 @@ import {
   SelectedUserRequest
 } from './types'
 
+export function createContext (context: SelectedContext): string {
+  try {
+    return createDSLContext(context)
+  } catch {
+    return '$' + JSON.stringify(context)
+  }
+}
+
 export function createDSLContext (context: SelectedContext): string {
   let expression = ''
   switch (context.type) {

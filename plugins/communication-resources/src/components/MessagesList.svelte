@@ -31,6 +31,7 @@
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
   import { deviceOptionsStore as deviceInfo, isAppFocusedStore } from '@hcengineering/ui'
+  import { translationStore } from '@hcengineering/contact-resources'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
@@ -101,6 +102,8 @@
     readNotifications(new Date())
   }
 
+  $: translation = $translationStore
+
   $: reinit(position)
 
   $: query.query(
@@ -123,7 +126,8 @@
       autoExpand: true,
       threads: true,
       attachments: true,
-      reactions: true
+      reactions: true,
+      language: translation?.enabled === true ? translation?.translateTo : undefined
     }
   )
 

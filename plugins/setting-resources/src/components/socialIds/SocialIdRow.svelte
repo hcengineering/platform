@@ -99,7 +99,7 @@
             dangerous: true,
             action: async () => {
               await doRelease()
-
+              console.log('reload due to primary social id release')
               location.reload()
             }
           })
