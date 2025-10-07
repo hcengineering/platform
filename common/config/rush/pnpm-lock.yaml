@@ -13,10 +13,10 @@ importers:
   ../../packages/account-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -71,7 +71,7 @@ importers:
   ../../packages/analytics:
     dependencies:
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -117,16 +117,16 @@ importers:
   ../../packages/analytics-service:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/measurements-otlp':
         specifier: ^0.7.8
         version: 0.7.8
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       winston:
         specifier: ^3.11.0
@@ -178,28 +178,28 @@ importers:
   ../../packages/api-client:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../account-client
       '@hcengineering/client':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../client
       '@hcengineering/client-resources':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../client-resources
       '@hcengineering/collaborator-client':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../collaborator-client
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       '@hcengineering/text':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-markdown
       snappyjs:
         specifier: ^0.7.0
@@ -264,10 +264,10 @@ importers:
   ../../packages/client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -313,19 +313,19 @@ importers:
   ../../packages/client-resources:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../analytics
       '@hcengineering/client':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../client
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       '@hcengineering/rpc':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../rpc
       snappyjs:
         specifier: ^0.7.0
@@ -377,7 +377,7 @@ importers:
   ../../packages/collaborator-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
@@ -432,13 +432,13 @@ importers:
   ../../packages/core:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../analytics
       '@hcengineering/measurements':
         specifier: ^0.7.8
         version: 0.7.8
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -490,10 +490,10 @@ importers:
   ../../packages/hulylake-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/retry':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../retry
     devDependencies:
       '@hcengineering/platform-rig':
@@ -548,22 +548,22 @@ importers:
   ../../packages/model:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../account-client
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       '@hcengineering/rank':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../rank
       '@hcengineering/storage':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../storage
       fast-equals:
         specifier: ^5.2.2
@@ -667,13 +667,13 @@ importers:
   ../../packages/query:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -722,7 +722,7 @@ importers:
   ../../packages/rank:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       lexorank:
         specifier: ~1.0.4
@@ -816,10 +816,10 @@ importers:
   ../../packages/rpc:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       msgpackr:
         specifier: ^1.11.2
@@ -871,10 +871,10 @@ importers:
   ../../packages/storage:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -926,10 +926,10 @@ importers:
   ../../packages/text:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-core
       '@tiptap/core':
         specifier: ^2.11.7
@@ -1092,7 +1092,7 @@ importers:
   ../../packages/text-core:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
@@ -1150,7 +1150,7 @@ importers:
   ../../packages/text-html:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-core
       htmlparser2:
         specifier: ^9.0.0
@@ -1199,10 +1199,10 @@ importers:
   ../../packages/text-markdown:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-core
       '@hcengineering/text-html':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-html
       fast-equals:
         specifier: ^5.2.2
@@ -1257,13 +1257,13 @@ importers:
   ../../packages/text-ydoc:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/text':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../text-core
       y-protocols:
         specifier: ^1.0.6
@@ -1324,10 +1324,10 @@ importers:
   ../../packages/token:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../platform
       jwt-simple:
         specifier: ^0.5.6

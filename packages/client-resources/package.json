@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client-resources",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -40,11 +40,11 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.1",
-    "@hcengineering/client": "workspace:^0.7.1",
-    "@hcengineering/core": "workspace:^0.7.1",
-    "@hcengineering/platform": "workspace:^0.7.1",
-    "@hcengineering/rpc": "workspace:^0.7.1",
+    "@hcengineering/analytics": "workspace:^0.7.2",
+    "@hcengineering/client": "workspace:^0.7.2",
+    "@hcengineering/core": "workspace:^0.7.2",
+    "@hcengineering/platform": "workspace:^0.7.2",
+    "@hcengineering/rpc": "workspace:^0.7.2",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",
