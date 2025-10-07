@@ -6,7 +6,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
   "rushVersion": "5.153.2",
   "pnpmVersion": "9.15.3",
-  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <25.0.0",
   "projectFolderMaxDepth": 2,
   "gitPolicy": {},
   "repository": {
