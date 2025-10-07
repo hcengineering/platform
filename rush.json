@@ -331,6 +331,11 @@
    */
   "projects": [
     {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/platform-rig",
       "projectFolder": "packages/platform-rig",
       "reviewCategory": "tools",
