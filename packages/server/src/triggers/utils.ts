@@ -19,7 +19,7 @@ import { TriggerCtx } from '../types'
 
 export async function getNameBySocialID (ctx: TriggerCtx, id: SocialID): Promise<string> {
   const account = (await ctx.client.findPersonUuid(ctx, id, true)) as AccountUuid | undefined
-  return account != null ? (await ctx.client.db.getNameByAccount(account)) ?? 'System' : 'System'
+  return account != null ? ((await ctx.client.db.getNameByAccount(account)) ?? 'System') : 'System'
 }
 
 export async function getAddCollaboratorsMessageContent (

@@ -7,20 +7,20 @@
   "files": [
     "lib/**/*",
     "types/**/*",
+    "src/**/*",
     "tsconfig.json"
   ],
   "scripts": {
     "build": "compile",
     "_phase:build": "compile transpile src",
     "_phase:validate": "compile validate",
-
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
     "format": "prettier --write src/**/*.ts &&  eslint --fix \"src/**/*.ts\"",
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.9",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.25.9",
@@ -36,16 +36,16 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.6.0",
-    "@hcengineering/communication-cockroach": "^0.1.0",
-    "@hcengineering/communication-sdk-types": "^0.1.0",
-    "@hcengineering/communication-shared": "^0.1.0",
-    "@hcengineering/communication-types": "^0.1.0",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/text-core": "^0.6.0",
-    "@hcengineering/text-markdown": "^0.6.0",
-    "@hcengineering/hulylake-client": "^0.6.0",
+    "@hcengineering/account-client": "^0.7.1",
+    "@hcengineering/communication-cockroach": "workspace:^0.1.0",
+    "@hcengineering/communication-sdk-types": "workspace:^0.1.0",
+    "@hcengineering/communication-shared": "workspace:^0.1.0",
+    "@hcengineering/communication-types": "workspace:^0.1.0",
+    "@hcengineering/core": "^0.7.1",
+    "@hcengineering/server-token": "^0.7.1",
+    "@hcengineering/text-core": "^0.7.1",
+    "@hcengineering/text-markdown": "^0.7.1",
+    "@hcengineering/hulylake-client": "^0.7.1",
     "franc-min": "^6.2.0",
     "uuid": "^8.3.2",
     "zod": "^3.22.4"
@@ -55,7 +55,7 @@
     "url": "git+https://github.com/hcengineering/communication.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "exports": {
     ".": {

@@ -30,7 +30,7 @@
       },
       "ignoreMissingScript": true,
       "allowWarningsOnSuccess": false
-    },
+    }
   ],
   "commands": [
     {
@@ -85,6 +85,14 @@
       "ignoreMissingScript": true,
       "safeForSimultaneousRushProcesses": true,
       "disableBuildCache": true
+    },
+    {
+      "commandKind": "global",
+      "name": "bump-changes",
+      "summary": "Bump changes from tag",
+      "description": "Bump changes from previous tag",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/node_modules/.bin/bump-changes-from-tag"
     }
   ],
 
@@ -105,7 +113,7 @@
       "longName": "--clean",
       "description": "Enable Heft clean building option",
       "associatedCommands": ["build"]
-    },
+    }
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.

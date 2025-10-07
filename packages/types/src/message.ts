@@ -14,8 +14,6 @@
 //
 
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
-import type { Card, Tag } from '@hcengineering/card'
-import type { Process, State } from '@hcengineering/process'
 
 import type { AccountUuid, BlobID, CardID, CardType, ID, Markdown, SocialID, PersonUuid } from './core'
 
@@ -86,14 +84,14 @@ export enum ActivityUpdateType {
 
 export interface ActivityProcess {
   type: ActivityUpdateType.Process
-  process: Ref<Process>
+  process: Ref<any>
   action: 'started' | 'complete' | 'transition'
-  transitionTo?: Ref<State>
+  transitionTo?: Ref<any>
 }
 
 export interface ActivityTagUpdate {
   type: ActivityUpdateType.Tag
-  tag: Ref<Tag>
+  tag: Ref<any>
   action: 'add' | 'remove'
 }
 
@@ -113,8 +111,8 @@ type AttributeValue = string | number | null
 export interface ActivityAttributeUpdate {
   type: ActivityUpdateType.Attribute
   attrKey: string
-  attrClass: Ref<Class<Attribute<Card>>>
-  mixin?: Ref<Mixin<Card>>
+  attrClass: Ref<Class<Attribute<any>>>
+  mixin?: Ref<Mixin<any>>
   set?: AttributeValue | AttributeValue[]
   added?: AttributeValue[]
   removed?: AttributeValue[]
