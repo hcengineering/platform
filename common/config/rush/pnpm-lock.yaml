@@ -20,7 +20,7 @@ importers:
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -75,7 +75,7 @@ importers:
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -136,7 +136,7 @@ importers:
         version: 5.0.0(winston@3.18.3)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -206,7 +206,7 @@ importers:
         version: 0.7.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -271,7 +271,7 @@ importers:
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -332,7 +332,7 @@ importers:
         version: 0.7.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -381,7 +381,7 @@ importers:
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -445,7 +445,7 @@ importers:
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -497,7 +497,7 @@ importers:
         version: link:../retry
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -573,7 +573,7 @@ importers:
         version: 2.0.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -625,7 +625,7 @@ importers:
         version: 10.7.17
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -680,7 +680,7 @@ importers:
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -729,7 +729,7 @@ importers:
         version: 1.0.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -771,7 +771,7 @@ importers:
   ../../packages/retry:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -826,7 +826,7 @@ importers:
         version: 1.11.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -881,7 +881,7 @@ importers:
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1047,7 +1047,7 @@ importers:
         version: 0.4.2(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1102,7 +1102,7 @@ importers:
         version: 6.0.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1157,7 +1157,7 @@ importers:
         version: 9.1.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1212,7 +1212,7 @@ importers:
         version: 14.1.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1273,7 +1273,7 @@ importers:
         version: 13.6.27
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
@@ -1337,7 +1337,7 @@ importers:
         version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.9
+        specifier: ^0.7.10
         version: 0.7.10
       '@types/jest':
         specifier: ^29.5.5
