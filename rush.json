@@ -351,11 +351,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/collaboration",
-      "projectFolder": "server/collaboration",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/hls",
       "projectFolder": "packages/hls",
       "shouldPublish": true
@@ -456,23 +451,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-core",
-      "projectFolder": "server/core",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-indexer",
       "projectFolder": "server/indexer",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server",
-      "projectFolder": "server/server",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-storage",
-      "projectFolder": "server/server-storage",
       "shouldPublish": false
     },
     {
@@ -723,21 +703,6 @@
     {
       "packageName": "@hcengineering/server-contact-resources",
       "projectFolder": "server-plugins/contact-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/mongo",
-      "projectFolder": "server/mongo",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/postgres",
-      "projectFolder": "server/postgres",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/elastic",
-      "projectFolder": "server/elastic",
       "shouldPublish": false
     },
     {
@@ -1008,11 +973,6 @@
     {
       "packageName": "@hcengineering/server-tool",
       "projectFolder": "server/tool",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-client",
-      "projectFolder": "server/client",
       "shouldPublish": false
     },
     {
@@ -1342,11 +1302,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/middleware",
-      "projectFolder": "server/middleware",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-backup",
       "projectFolder": "server/backup",
       "shouldPublish": false
@@ -1409,21 +1364,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/minio",
-      "projectFolder": "server/minio",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/s3",
-      "projectFolder": "server/s3",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/datalake",
-      "projectFolder": "server/datalake",
       "shouldPublish": false
     },
     {
@@ -2279,11 +2219,6 @@
     {
       "packageName": "@hcengineering/server-process-resources",
       "projectFolder": "server-plugins/process-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/kafka",
-      "projectFolder": "server/kafka",
       "shouldPublish": false
     },
     {

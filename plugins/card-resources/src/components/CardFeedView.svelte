@@ -27,6 +27,8 @@
   export let _class: Ref<MasterTag> | undefined = undefined
   export let query: DocumentQuery<Card>
   export let space: Ref<CardSpace> | undefined = undefined
+  export let padding = '2rem 4rem'
+  export let parent: Ref<Card> | undefined = undefined
 
   let divScroll: HTMLDivElement
   let limit = limitStep
@@ -108,9 +110,9 @@
   }
 </script>
 
-<Scroller bind:divScroll {onScroll} padding="2rem 4rem">
+<Scroller bind:divScroll {onScroll} padding=${padding}>
   <div class="home">
-    <NewCardForm type={_class !== card.class.Card ? _class : undefined} {space} />
+    <NewCardForm type={_class !== card.class.Card ? _class : undefined} {space} {parent} />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}

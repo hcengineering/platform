@@ -14,10 +14,12 @@
 -->
 
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, type CardSpace } from '@hcengineering/card'
   import { onMount, createEventDispatcher } from 'svelte'
 
   import Childs from '../Childs.svelte'
+  import CardFeedView from '../CardFeedView.svelte'
+  import type { Ref } from '@hcengineering/core'
 
   export let readonly: boolean = false
   export let doc: Card
@@ -29,10 +31,14 @@
       dispatch('loaded')
     }
   })
+  $: space = doc.space as Ref<CardSpace> | undefined
 </script>
 
 <div class="section-children">
-  <Childs object={doc} {readonly} on:loaded emptyKind="placeholder" />
+  <!-- <Childs object={doc} {readonly} on:loaded emptyKind="placeholder" /> -->
+   {#if space}
+    <CardFeedView space={space} query={{ parent: doc._id }} parent={doc._id} />
+   {/if}
 </div>
 
 <style lang="scss">

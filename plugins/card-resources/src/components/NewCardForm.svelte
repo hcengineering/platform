@@ -49,6 +49,7 @@
 
   export let type: Ref<MasterTag> = threadMasterTag
   export let space: Ref<CardSpace> | undefined = undefined
+  export let parent: Ref<Card> | undefined = undefined
 
   const draftKey = getCardDraftKey()
   const draftController = new DraftController<CardDraft>(draftKey)
@@ -107,7 +108,8 @@
 
       const cardTitle = title.trim().length > 0 ? title.trim() : markupToText(description).slice(0, 50)
       const data: Partial<Data<Card>> = {
-        title: cardTitle
+        title: cardTitle,
+        parent
       }
 
       if (extension?.canCreate !== undefined) {
