@@ -26,7 +26,9 @@ import core, {
   Relation,
   splitMixinUpdate,
   Tx,
-  TxProcessor
+  TxProcessor,
+  Type,
+  TypeNumber
 } from '@hcengineering/core'
 import process, {
   Execution,
@@ -164,6 +166,24 @@ export async function AddRelation (
   }
 }
 
+function respectAttributeType (attrType: Type<any>, value: any): any {
+  switch (attrType._class) {
+    case core.class.TypeNumber: {
+      const type = attrType as TypeNumber
+      const { min, max, digits } = type
+      let res = value
+      if (min !== undefined && res < min) res = min
+      if (max !== undefined && res > max) res = max
+      if (digits !== undefined) {
+        return Number(Number(res).toFixed(digits))
+      }
+      return res
+    }
+    default:
+      return value
+  }
+}
+
 export async function UpdateCard (
   params: MethodParams<Card>,
   execution: Execution,
@@ -180,7 +200,12 @@ export async function UpdateCard (
   for (const key in params) {
     const prevKey = checkMixinKey(key, _process.masterTag, hierarchy)
     prevValue[key] = getObjectValue(prevKey, target)
-    update[key] = (params as any)[key]
+    const attr = hierarchy.findAttribute(_process.masterTag, key)
+    if (attr === undefined) {
+      update[key] = (params as any)[key]
+    } else {
+      update[key] = respectAttributeType(attr.type, (params as any)[key])
+    }
   }
 
   const res: Tx[] = []
