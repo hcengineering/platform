@@ -887,7 +887,6 @@ export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUu
       '=' +
       encodeURIComponent(token) +
       `; path=${path}`
-    console.log('setting cookie', res)
     document.cookie = res
   }
   setToken('/files/' + workspaceUuid)
