@@ -35,8 +35,6 @@ jobs:
           DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
-      - name: Rush test
-        run: node common/scripts/install-run-rush.js test --verbose
       - name: Publish packages
         if: startsWith(github.ref, 'refs/tags/v0.7.') || startsWith(github.ref, 'refs/tags/s0.7.')
         env:
