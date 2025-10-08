@@ -413,7 +413,11 @@ export class LiveQuery implements WithTx, Client {
 
   private remove (): void {
     const used = Array.from(this.queue.values()).sort((a, b) => a.lastUsed - b.lastUsed)
-    for (let i = 0; i < CACHE_SIZE / 10; i++) {
+    // Remove enough queries to bring the queue back down to 80% of CACHE_SIZE
+    // This prevents constant cleanup cycles
+    const targetSize = Math.floor(CACHE_SIZE * 0.8)
+    const toRemove = Math.max(0, this.queue.size - targetSize)
+    for (let i = 0; i < toRemove; i++) {
       const q = used.shift()
       if (q === undefined) return
       this.removeQueue(q)
@@ -457,6 +461,10 @@ export class LiveQuery implements WithTx, Client {
           q.result.clean()
         }
         this.queue.set(q.id, { ...q, lastUsed: platformNow() })
+        // Check if we need to clean up the queue after adding this query
+        if (this.queue.size > CACHE_SIZE) {
+          this.remove()
+        }
       }
     }
   }
