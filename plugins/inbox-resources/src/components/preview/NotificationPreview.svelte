@@ -27,17 +27,16 @@
 
   export let card: Card
   export let message: Message | undefined = undefined
-  export let creator: SocialID
+  export let socialId: SocialID
   export let date: Date
   export let color: 'primary' | 'secondary' = 'primary'
   export let kind: 'default' | 'column' = 'default'
   export let padding: string | undefined = undefined
+  export let hideHeader: boolean = false
 
   const tooltipLimit = 512
 
   let person: WithLookup<Person> | undefined = undefined
-
-  $: void updatePerson(message?.creator ?? creator)
 
   function getTooltipLabel (message: Message | undefined): IntlString {
     if (message == null) return getEmbeddedLabel('')
@@ -47,21 +46,18 @@
     }
     return getEmbeddedLabel(text)
   }
-
-  async function updatePerson (socialId: SocialID): Promise<void> {
-    person = $employeeByPersonIdStore.get(socialId) ?? (await getPersonByPersonId(socialId)) ?? undefined
-  }
 </script>
 
 <PreviewTemplate
   {kind}
   {color}
-  {person}
+  bind:person
   {padding}
-  socialId={creator}
+  {socialId}
   {date}
   fixHeight={message == null || message.type !== MessageType.Activity}
   tooltipLabel={getTooltipLabel(message)}
+  {hideHeader}
 >
   <svelte:fragment slot="content">
     {#if message}

@@ -23,4 +23,9 @@
   export let card: Card
 </script>
 
-<NotificationPreview {card} message={notification.message} creator={notification.creator} date={notification.created} />
+<NotificationPreview
+  {card}
+  message={notification.message}
+  socialId={notification.message?.creator ?? notification.creator}
+  date={notification.created}
+/>

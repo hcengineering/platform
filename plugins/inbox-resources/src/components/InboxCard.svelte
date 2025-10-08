@@ -12,77 +12,140 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { NotificationContext } from '@hcengineering/communication-types'
-  import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
-  import { createNotificationsQuery, getCommunicationClient } from '@hcengineering/presentation'
-  import { CheckBox, Spinner } from '@hcengineering/ui'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
+  import { CheckBox, Loading, Spinner } from '@hcengineering/ui'
+  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
+  import notification, { ActivityNotificationViewlet } from '@hcengineering/notification'
+  import { Card } from '@hcengineering/card'
 
-  import InboxNotification from './InboxNotification.svelte'
   import InboxCardIcon from './InboxCardIcon.svelte'
+  import InboxCardTitle from './InboxCardTitle.svelte'
+  import ModernNotifications from './ModernNotifications.svelte'
+  import LegacyNotifications from './legacy/LegacyNotifications.svelte'
+  import { NavigationItem } from '../type'
+  import { NavigationClient } from '../client'
 
-  export let context: NotificationContext
-  export let card: Card
+  export let navClient: NavigationClient
+  export let navItem: NavigationItem
   export let selected: boolean = false
+  export let viewlets: ActivityNotificationViewlet[] = []
 
   const account = getCurrentAccount()
   const dispatch = createEventDispatcher()
-  const communicationClient = getCommunicationClient()
-
-  const notificationsQuery = createNotificationsQuery()
 
   let total = 0
 
-  notificationsQuery.query({ limit: 1, total: true, read: false, strict: true, contextId: context.id }, (res) => {
-    total = res.getTotal()
-  })
+  const modernNotificationsQuery = createNotificationsQuery()
+  const legacyNotificationsQuery = createQuery()
+  const query = createQuery()
+
+  let doc: Doc | undefined = undefined
+  let isLoading = true
+
+  query.query(
+    navItem._class,
+    { _id: navItem._id },
+    (res) => {
+      doc = res[0]
+      dispatch('doc', doc)
+      isLoading = false
+    },
+    { limit: 1 }
+  )
+
+  $: if (doc !== undefined && doc?._id !== navItem._id) {
+    doc = undefined
+    isLoading = true
+  }
+
+  $: if (navItem.type === 'modern') {
+    legacyNotificationsQuery.unsubscribe()
+    modernNotificationsQuery.query(
+      { limit: 1, total: true, read: false, strict: true, contextId: navItem.context.id },
+      (res) => {
+        total = res.getTotal()
+      }
+    )
+  } else {
+    modernNotificationsQuery.unsubscribe()
+    legacyNotificationsQuery.query(
+      notification.class.InboxNotification,
+      { isViewed: false, docNotifyContext: navItem.context._id },
+      (res) => {
+        total = res.total
+        console.log(total, res)
+      },
+      {
+        total: true,
+        limit: 1
+      }
+    )
+  }
 
   let isRemoving = false
   async function handleToggle (): Promise<void> {
     isRemoving = true
     try {
-      await communicationClient.removeNotificationContext(context.id)
+      await navClient.remove(navItem)
     } finally {
       isRemoving = false
     }
+  }
+
+  function asCard (doc: Doc): Card {
+    return doc as Card
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="inbox-card" class:selected on:click={() => dispatch('select', { context, card })}>
-  <div class="inbox-card__header">
-    <InboxCardIcon {card} count={total ?? 0} />
-    <div class="inbox-card__labels">
-      <span class="inbox-card__title overflow-label clear-mins" title={card.title}>
-        {card.title}
-      </span>
+<div
+  class="inbox-card"
+  class:selected
+  on:click={() => {
+    if (doc == null) return
+    dispatch('select', doc)
+  }}
+>
+  {#if isLoading}
+    <div class="loading">
+      <Loading />
     </div>
-    {#if account.role !== AccountRole.ReadOnlyGuest}
-      <div class="inbox-card__remove">
-        {#if isRemoving}
-          <Spinner size="small" />
+  {:else if doc}
+    <div class="inbox-card__header">
+      <InboxCardIcon {doc} count={total ?? 0} />
+      <InboxCardTitle {doc} {navItem} />
+      {#if account.role !== AccountRole.ReadOnlyGuest}
+        <div class="inbox-card__remove">
+          {#if isRemoving}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox kind="todo" size="medium" on:value={handleToggle} />
+          {/if}
+        </div>
+      {/if}
+    </div>
+
+    <div class="inbox-card__content">
+      <div class="inbox-card__notifications">
+        {#if navItem.type === 'modern'}
+          <ModernNotifications doc={asCard(doc)} context={navItem.context} />
         {:else}
-          <CheckBox kind="todo" size="medium" on:value={handleToggle} />
+          <LegacyNotifications {doc} notifications={navItem.notifications} {viewlets} />
         {/if}
       </div>
-    {/if}
-  </div>
-
-  <div class="inbox-card__content">
-    <div class="inbox-card__notifications">
-      {#each context.notifications ?? [] as notification}
-        <div class="inbox-card__notification">
-          <div class="inbox-card__marker" />
-          <InboxNotification {notification} {card} />
-        </div>
-      {/each}
     </div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">
+  .loading {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
   .inbox-card {
     display: flex;
     flex-direction: column;
@@ -105,24 +168,9 @@
       align-items: center;
       gap: 0.5rem;
       margin-left: var(--spacing-0_5);
-    }
-
-    &__labels {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-width: 0;
-      color: var(--global-primary-TextColor);
-      font-size: 0.875rem;
-      overflow: hidden;
-    }
-
-    &__title {
-      font-weight: 400;
-      color: var(--global-primary-TextColor);
-      overflow: hidden;
-      text-overflow: ellipsis;
+      height: 2.5rem;
+      min-height: 2.5rem;
+      max-height: 2.5rem;
     }
 
     &__remove {
@@ -144,37 +192,6 @@
       width: 100%;
       min-width: 0;
       margin-top: var(--spacing-1);
-    }
-
-    &__notification {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      user-select: none;
-
-      &:first-child .inbox-card__marker {
-        border-top-left-radius: 0.5rem;
-        border-top-right-radius: 0.5rem;
-      }
-
-      &:last-child .inbox-card__marker {
-        border-bottom-left-radius: 0.5rem;
-        border-bottom-right-radius: 0.5rem;
-      }
-
-      &:hover .inbox-card__marker {
-        border-radius: 0.5rem;
-        background: var(--global-primary-LinkColor);
-      }
-    }
-
-    &__marker {
-      position: absolute;
-      width: 0.25rem;
-      height: 100%;
-      background: var(--global-ui-highlight-BackgroundColor);
-      border-radius: 0;
     }
   }
 </style>

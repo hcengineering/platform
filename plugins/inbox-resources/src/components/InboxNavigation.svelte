@@ -12,70 +12,57 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
   import { Label, ListView, Loading, Scroller } from '@hcengineering/ui'
-  import { SortingOrder } from '@hcengineering/core'
-  import { createNotificationContextsQuery, createQuery, getCommunicationClient } from '@hcengineering/presentation'
-  import { NotificationContext, Window } from '@hcengineering/communication-types'
-  import { createEventDispatcher } from 'svelte'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import notification, { ActivityNotificationViewlet } from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
-  import InboxCard from './InboxCard.svelte'
   import inbox from '../plugin'
+  import { NavigationItem } from '../type'
+  import { NavigationClient } from '../client'
+  import InboxCard from './InboxCard.svelte'
 
-  export let card: Card | undefined = undefined
+  export let doc: Doc | undefined = undefined
 
   const dispatch = createEventDispatcher()
-  const limit = 20
+  const client = getClient()
 
-  let cards: Card[] = []
-  let contexts: NotificationContext[] = []
+  const navClient: NavigationClient = new NavigationClient(InboxNotificationsClientImpl.getClient())
+  const navigationItemsStore = navClient.navigationItemsStore
+  const isLoadingStore = navClient.isLoadingStore
 
-  const communicationClient = getCommunicationClient()
-  const cardsQuery = createQuery()
-  const query = createNotificationContextsQuery()
+  onDestroy(() => {
+    navClient.destroy()
+  })
+
+  let navItems: NavigationItem[] = []
+
+  $: navItems = $navigationItemsStore
 
   let divScroll: HTMLElement | undefined | null = undefined
   let contentDiv: HTMLElement | undefined | null = undefined
-  let window: Window<NotificationContext> | undefined = undefined
 
   let list: ListView
   let listSelection = 0
 
-  let isLoading = true
+  let viewlets: ActivityNotificationViewlet[] = []
 
-  query.query(
-    {
-      notifications: {
-        order: SortingOrder.Descending,
-        limit: 3
-      },
-      order: SortingOrder.Descending,
-      limit
-    },
-    (res) => {
-      window = res
-      contexts = res.getResult().filter((it) => (it.notifications?.length ?? 0) > 0)
-      isLoading = false
-
-      if (contexts.length < limit && window.hasPrevPage()) {
-        void window.loadPrevPage()
-      }
-    },
-    { message: true }
-  )
-
-  $: cardsQuery.query(cardPlugin.class.Card, { _id: { $in: contexts.map((c) => c.cardId) } }, (res) => {
-    cards = res
+  void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
+    viewlets = res
   })
 
   function handleScroll (): void {
-    if (divScroll != null && window != null && window.hasPrevPage()) {
+    if (divScroll != null && navClient.hasPrevPage()) {
       const isAtBottom = divScroll.scrollTop + divScroll.clientHeight >= divScroll.scrollHeight - 10
       if (isAtBottom) {
-        void window.loadPrevPage()
+        navClient.prev()
       }
     }
   }
+
+  const docById = new Map<Ref<Doc>, Doc>()
 
   async function onKeydown (key: KeyboardEvent): Promise<void> {
     if (key.code === 'ArrowUp') {
@@ -91,18 +78,21 @@
     if (key.code === 'Backspace') {
       key.preventDefault()
       key.stopPropagation()
-      const context = contexts[listSelection]
-      if (context != null) {
-        await communicationClient.removeNotificationContext(context.id)
+      const navItem = navItems[listSelection]
+      if (navItem != null) {
+        await navClient.remove(navItem)
       }
     }
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      const context = contexts[listSelection]
-      const card = cards.find((c) => c._id === context.cardId)
-      if (card && context) {
-        dispatch('select', { context, card })
+      const navItem = navItems[listSelection]
+      const doc = docById.get(navItem?._id)
+      if (navItem != null && doc != null) {
+        dispatch('select', {
+          ...navItem,
+          doc
+        })
       }
     }
   }
@@ -112,12 +102,14 @@
   }
 
   function getContextKey (index: number): string {
-    const contextId = contexts[index].id
-    return contextId ?? index.toString()
+    const item = navItems[index]
+    if (item == null) return index.toString()
+
+    return `${item._id}-${item.type}`
   }
 </script>
 
-{#if contexts.length > 0}
+{#if navItems.length > 0}
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <Scroller bind:divScroll padding="0" shrink onScroll={handleScroll}>
@@ -125,9 +117,9 @@
       <ListView
         bind:this={list}
         bind:selection={listSelection}
-        count={contexts.length}
-        items={contexts}
-        highlightIndex={contexts.findIndex((it) => it.cardId === card?._id)}
+        count={navItems.length}
+        items={navItems}
+        highlightIndex={navItems.findIndex((it) => it._id === doc?._id)}
         noScroll
         kind="full-size"
         colorsSchema="lumia"
@@ -135,14 +127,20 @@
         getKey={getContextKey}
       >
         <svelte:fragment slot="item" let:item={itemIndex}>
-          {@const context = contexts[itemIndex]}
-          {@const contextCard = cards.find((c) => c._id === context.cardId)}
-          {#if context && contextCard}
+          {@const navItem = navItems[itemIndex]}
+          {#if navItem}
             <InboxCard
-              {context}
-              card={contextCard}
+              {navClient}
+              {navItem}
+              {viewlets}
+              selected={navItem._id === doc?._id}
+              on:doc={(e) => {
+                const d = e.detail
+                if (d == null) return
+                docById.set(d._id, e.detail)
+              }}
               on:select={(e) => {
-                dispatch('select', e.detail)
+                dispatch('select', { ...navItem, doc: e.detail })
                 listSelection = itemIndex
               }}
             />
@@ -151,7 +149,7 @@
       </ListView>
     </div>
   </Scroller>
-{:else if isLoading}
+{:else if $isLoadingStore}
   <div class="placeholder">
     <Loading />
   </div>

@@ -215,17 +215,15 @@
 
   $: allMessages = sortActivityMessages(messages.concat(refs))
 
-  async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
+  function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): void {
     isMessagesLoading = true
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
       { attachedTo: objectId, space: getSpace(object) },
       (result: ActivityMessage[]) => {
-        void combineActivityMessages(result, order).then((res) => {
-          messages = res
-          isMessagesLoading = false
-        })
+        messages = combineActivityMessages(result, order)
+        isMessagesLoading = false
       },
       {
         sort: {
@@ -252,7 +250,7 @@
     void scrollToMessage(selectedMessageId)
   }
 
-  $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
+  $: updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
 
   export function editLastMessage (): void {
     if (isMessagesLoading) return

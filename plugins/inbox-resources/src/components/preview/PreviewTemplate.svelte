@@ -34,19 +34,14 @@
   export let padding: string | undefined = undefined
   export let fixHeight: boolean = false
   export let showSeparator: boolean = true
+  export let hideHeader: boolean = false
 
   let clientWidth: number
 
   $: showPersonName = clientWidth > 300 && !isViewSettingEnabled($viewSettingsStore, hideUserNamesSettingId)
-
-  let _person: Person | undefined
-  $: void updatePerson(socialId, person)
-
-  async function updatePerson (socialId: SocialID, person: Person | undefined): Promise<void> {
-    _person = person ?? $employeeByPersonIdStore.get(socialId)
-    if (!_person) {
-      _person = (await getPersonByPersonId(socialId)) ?? undefined
-    }
+  $: updatePerson(socialId)
+  async function updatePerson (socialId: SocialID): Promise<void> {
+    person = $employeeByPersonIdStore.get(socialId) ?? (await getPersonByPersonId(socialId)) ?? undefined
   }
 </script>
 
@@ -58,15 +53,17 @@
     style:padding
     use:resizeObserver={(element) => (clientWidth = element.clientWidth)}
   >
-    <span class="message-preview-template__column-header">
-      {#if _person}
-        <span class="overflow-label clear-mins">
-          <PersonPreviewProvider value={_person} inline>
-            {formatName(_person?.name ?? '')}
-          </PersonPreviewProvider>
-        </span>
-      {/if}
-    </span>
+    {#if !hideHeader}
+      <span class="message-preview-template__column-header">
+        {#if person}
+          <span class="overflow-label clear-mins">
+            <PersonPreviewProvider value={person} inline>
+              {formatName(person?.name ?? '')}
+            </PersonPreviewProvider>
+          </span>
+        {/if}
+      </span>
+    {/if}
 
     <span class="message-preview-template__left">
       {#if $$slots.content}
@@ -88,23 +85,21 @@
     use:resizeObserver={(element) => (clientWidth = element.clientWidth)}
   >
     <span class="message-preview-template__left">
-      <PersonPreviewProvider value={_person} inline>
-        <span class="message-preview-template__person">
+      <PersonPreviewProvider value={person} inline>
+        <span class="message-preview-template__person" class:noGap={!showPersonName}>
           <span class="message-preview-template__avatar">
-            {#if _person}
-              <Avatar size="card" person={_person} name={_person.name} />
+            {#if person}
+              <Avatar size="card" {person} name={person.name} />
             {:else}
               <SystemAvatar size="card" />
             {/if}
           </span>
-          {#if showPersonName && _person}
-            <span class="message-preview-template__name overflow-label {color}">{formatName(_person?.name ?? '')}</span>
+          {#if showPersonName && person}
+            <span class="message-preview-template__name overflow-label {color}">{formatName(person?.name ?? '')}</span>
           {/if}
           {#if showSeparator}
             {#if showPersonName}
               <span class="message-preview-template__separator"> • </span>
-            {:else}
-              <span class="mr-0-5" />
             {/if}
           {/if}
         </span>
@@ -162,6 +157,10 @@
       gap: 0.25rem;
       color: var(--global-primary-TextColor);
       font-size: 0.875rem;
+
+      &.noGap {
+        gap: 0;
+      }
     }
 
     &__avatar {

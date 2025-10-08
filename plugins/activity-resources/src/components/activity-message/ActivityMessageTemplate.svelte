@@ -30,7 +30,6 @@
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
   import { savedMessagesStore } from '../../activity'
-  import { isReactionMessage } from '../../activityMessagesUtils'
   import { MessageInlineAction } from '../../types'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import MessageTimestamp from '../MessageTimestamp.svelte'
@@ -276,7 +275,7 @@
           class:isShort
         >
           <ActivityMessageActions
-            message={isReactionMessage(message) ? parentMessage : message}
+            {message}
             {actions}
             {withActionMenu}
             {excludedActions}

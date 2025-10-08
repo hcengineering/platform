@@ -13,41 +13,66 @@
 // limitations under the License.
 //
 
-import { type Card } from '@hcengineering/card'
-import type { Ref } from '@hcengineering/core'
+import type { Class, Doc, Ref } from '@hcengineering/core'
 import { navigate, type Location, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { inboxId } from '@hcengineering/inbox'
 import { type MessageID } from '@hcengineering/communication-types'
+import { decodeObjectURI, encodeObjectURI } from '@hcengineering/view'
+import { type ActivityMessage } from '@hcengineering/activity'
 
-// Url: /inbox/{cardId}?message={messageId}
+// Url: /inbox/{_class}&{_id}?message={messageId}
 
-export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
+export function getDocInfoFromLocation (loc: Location): Pick<Doc, '_id' | '_class'> | undefined {
   if (loc.path[2] !== inboxId) {
     return undefined
   }
-  return loc.path[3] as Ref<Card>
+
+  const [_id, _class] = decodeObjectURI(loc.path[3])
+
+  if (_id == null || _class == null) return undefined
+  if (_id === '' || _class === '') return undefined
+
+  return {
+    _id,
+    _class
+  }
 }
 
-export function navigateToCard (_id?: Ref<Card>, message?: MessageID, messageCreated?: Date): void {
+export function navigateToDoc (
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  message?: {
+    id: MessageID | Ref<ActivityMessage>
+    date: Date
+  }
+): void {
   const loc = getCurrentResolvedLocation()
 
   loc.path[2] = inboxId
-  if (_id == null) {
-    loc.path[3] = ''
-    loc.path.length = 3
-  } else {
-    loc.path[3] = _id
-  }
+  loc.path[3] = encodeObjectURI(_id, _class)
+
   delete loc.fragment
 
-  if (message != null && messageCreated != null) {
+  if (message != null) {
     loc.query = {
       ...loc.query,
-      message: encodeURIComponent(`${message}:${messageCreated.toISOString()}`)
+      message: encodeURIComponent(`${message.id}:${message.date.toISOString()}`)
     }
   } else {
     delete loc.query?.message
   }
+
+  navigate(loc)
+}
+
+export function closeDoc (): void {
+  const loc = getCurrentResolvedLocation()
+
+  loc.path[2] = inboxId
+  loc.path[3] = ''
+  loc.path.length = 3
+  loc.query = undefined
+  delete loc.fragment
 
   navigate(loc)
 }

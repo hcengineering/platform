@@ -61,7 +61,7 @@
   }
 </script>
 
-<span class="flex-presenter flex-gap-1 font-semi-bold">
+<span class="flex-presenter flex-gap-1 header">
   {#if isThread || (object.replies ?? 0) > 0}
     <Label label={chunter.string.Thread} />
   {:else}
@@ -84,10 +84,17 @@
     {/await}
   {/if}
 </span>
-<span class="font-normal">
+<span class="font-normal mt-1">
   {#if isThread}
     <ThreadMessagePreview value={toThread(object)} readonly type="content-only" />
   {:else}
     <ChatMessagePreview value={object} readonly type="content-only" />
   {/if}
 </span>
+
+<style lang="scss">
+  .header {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>

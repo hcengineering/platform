@@ -44,35 +44,30 @@
   $: message = notification.message
 </script>
 
-{#if notification.message}
-  <div class="reaction-notification">
-    <PreviewTemplate
-      socialId={notification.creator}
-      date={notification.created}
-      color="secondary"
-      showSeparator={false}
-    >
-      <svelte:fragment slot="content">
-        <span class="ml-1-5" />
-        <Label label={inbox.string.ReactedToYourMessage} />
-      </svelte:fragment>
-    </PreviewTemplate>
+<div class="reaction-notification">
+  <PreviewTemplate socialId={notification.creator} date={notification.created} color="secondary" showSeparator={false}>
+    <svelte:fragment slot="content">
+      <Label label={inbox.string.ReactedToYourMessage} />
+    </svelte:fragment>
+  </PreviewTemplate>
 
-    <div class="reaction-notification__body">
-      <div class="reaction-notification__emoji">
-        <EmojiPresenter emoji={content.emoji} fitSize center />
-      </div>
+  <div class="reaction-notification__body">
+    <div class="reaction-notification__emoji">
+      <EmojiPresenter emoji={content.emoji} fitSize center />
+    </div>
+    {#if message}
       <NotificationPreview
         {card}
         {message}
-        creator={notification.creator}
+        socialId={message?.creator ?? notification.creator}
         date={notification.created}
         kind="column"
         padding="0"
+        hideHeader
       />
-    </div>
+    {/if}
   </div>
-{/if}
+</div>
 
 <style lang="scss">
   .reaction-notification {
@@ -92,12 +87,13 @@
     &__emoji {
       display: flex;
       align-items: center;
-      font-size: 1.5rem;
-      width: 2rem;
-      min-width: 2rem;
-      min-height: 2rem;
-      height: 2rem;
+      font-size: 1.25rem;
+      width: 1.325rem;
+      min-width: 1.325rem;
+      min-height: 1.325rem;
+      height: 1.325rem;
       overflow: hidden;
+      margin-right: 0.25rem;
     }
   }
 </style>

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,32 +14,28 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Ref, Space, matchQuery, Doc } from '@hcengineering/core'
-  import notification, {
-    ActivityInboxNotification,
-    ActivityNotificationViewlet,
-    DisplayActivityInboxNotification
-  } from '@hcengineering/notification'
+  import { matchQuery, Doc } from '@hcengineering/core'
+  import { ActivityNotificationViewlet, DisplayActivityInboxNotification } from '@hcengineering/notification'
   import {
     ActivityMessagePreview,
     combineActivityMessages,
     sortActivityMessages
   } from '@hcengineering/activity-resources'
   import activity, { ActivityMessage, DisplayActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
-  import { Action, Component } from '@hcengineering/ui'
-  import { getActions } from '@hcengineering/view-resources'
-  import { getResource } from '@hcengineering/platform'
+  import { Component } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Person } from '@hcengineering/contact'
 
-  export let object: Doc | undefined
+  import PreviewTemplate from '../preview/PreviewTemplate.svelte'
+
+  export let object: Doc
   export let value: DisplayActivityInboxNotification
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
 
   let viewlet: ActivityNotificationViewlet | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
-  let actions: Action[] = []
 
   $: void updateDisplayMessage(value.combinedMessages)
 
@@ -48,10 +44,6 @@
 
     displayMessage = combinedMessages[0]
   }
-
-  $: void getAllActions(value).then((res) => {
-    actions = res
-  })
 
   $: updateViewlet(viewlets, displayMessage)
 
@@ -90,35 +82,34 @@
     viewlet = undefined
   }
 
-  async function getAllActions (value: ActivityInboxNotification): Promise<Action[]> {
-    const notificationActions = await getActions(client, value, notification.class.InboxNotification)
-
-    const result: Action[] = []
-
-    for (const action of notificationActions) {
-      const actionImpl = await getResource(action.action)
-      result.push({
-        ...action,
-        action: (event?: any) => actionImpl(value, event, action.actionProps)
-      })
-    }
-
-    return result
-  }
+  let person: Person | undefined = undefined
 </script>
 
 {#if displayMessage !== undefined}
-  {#if viewlet}
-    <Component
-      is={viewlet.presenter}
-      props={{
-        message: displayMessage,
-        notification: value,
-        actions
-      }}
-      on:click
-    />
-  {:else}
-    <ActivityMessagePreview value={displayMessage} {actions} {space} doc={object} on:click />
-  {/if}
+  <PreviewTemplate
+    kind="default"
+    color="primary"
+    bind:person
+    socialId={displayMessage.createdBy ?? displayMessage.modifiedBy}
+    date={new Date(displayMessage.createdOn ?? displayMessage.modifiedOn)}
+    fixHeight={true}
+    tooltipLabel={getEmbeddedLabel('')}
+  >
+    <svelte:fragment slot="content">
+      {#if viewlet}
+        <Component
+          is={viewlet.presenter}
+          showLoading={false}
+          props={{
+            message: displayMessage,
+            notification: value,
+            type: 'content-only'
+          }}
+          on:click
+        />
+      {:else}
+        <ActivityMessagePreview value={displayMessage} doc={object} type="content-only" />
+      {/if}
+    </svelte:fragment>
+  </PreviewTemplate>
 {/if}

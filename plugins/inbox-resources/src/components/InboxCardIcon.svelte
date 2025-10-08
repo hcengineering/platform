@@ -1,36 +1,43 @@
-<!--
-// Copyright © 2025 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
+<!-- Copyright © 2025 Hardcore Engineering Inc. -->
+<!-- -->
+<!-- Licensed under the Eclipse Public License, Version 2.0 (the "License"); -->
+<!-- you may not use this file except in compliance with the License. You may -->
+<!-- obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0 -->
+<!-- -->
+<!-- Unless required by applicable law or agreed to in writing, software -->
+<!-- distributed under the License is distributed on an "AS IS" BASIS, -->
+<!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->
+<!-- -->
+<!-- See the License for the specific language governing permissions and -->
+<!-- limitations under the License. -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
-  import { Component } from '@hcengineering/ui'
+  import cardPlugin from '@hcengineering/card'
+  import { Component, IconSize, Icon } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import communication from '@hcengineering/communication'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { ObjectIcon } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
 
   import NotifyMarker from './NotifyMarker.svelte'
 
-  export let card: Card
+  export let doc: Doc
   export let count: number = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: size = hierarchy.isDerived(card._class, communication.type.Direct) ? 'large' : 'medium'
+  let size: IconSize = 'medium'
+  $: size = hierarchy.isDerived(doc._class, communication.type.Direct) ? 'large' : 'medium'
 </script>
 
 <div class="card-icon">
-  <Component is={cardPlugin.component.CardIcon} props={{ value: card, size }} />
+  {#if hierarchy.isDerived(doc._class, cardPlugin.class.Card)}
+    <Component is={cardPlugin.component.CardIcon} props={{ value: doc, size }} />
+  {:else}
+    <ObjectIcon value={doc} {size} showLoading={false} />
+  {/if}
 
   {#if count > 0}
     <div class="card-icon__marker">

@@ -25,7 +25,6 @@ import ActivityInboxNotificationPresenter from './components/inbox/ActivityInbox
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
 import MentionInboxNotificationPresenter from './components/inbox/MentionInboxNotificationPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
-import ReactionNotificationPresenter from './components/ReactionNotificationPresenter.svelte'
 import CollaboratorEditor from './components/CollaboratorEditor.svelte'
 import GeneralPreferencesGroup from './components/settings/GeneralPreferencesGroup.svelte'
 import {
@@ -69,7 +68,6 @@ export default async (): Promise<Resources> => ({
     CommonInboxNotificationPresenter,
     MentionInboxNotificationPresenter,
     NotificationCollaboratorsChanged,
-    ReactionNotificationPresenter,
     GeneralPreferencesGroup,
     CollaboratorEditor
   },

@@ -341,7 +341,8 @@ export default plugin(activityId, {
   },
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
-    MentionNotification: '' as Ref<Doc>
+    MentionNotification: '' as Ref<Doc>,
+    AddReactionNotification: '' as Ref<any>
   },
   extension: {
     ActivityEmployeePresenter: '' as ComponentExtensionId

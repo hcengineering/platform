@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
   import {
     defineSeparators,
     Separator,
@@ -30,27 +29,40 @@
   import { getClient } from '@hcengineering/presentation'
   import { inboxId } from '@hcengineering/inbox'
   import view from '@hcengineering/view'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import chunter from '@hcengineering/chunter'
 
   import InboxNavigation from './InboxNavigation.svelte'
-  import { getCardIdFromLocation, navigateToCard } from '../location'
+  import { closeDoc, getDocInfoFromLocation, navigateToDoc } from '../location'
   import InboxHeader from './InboxHeader.svelte'
+  import { NavigationItem } from '../type'
+  import activity from '@hcengineering/activity'
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let replacedPanelElement: HTMLElement
-  let card: Card | undefined = undefined
+  let doc: Doc | undefined = undefined
+  let context: DocNotifyContext | NotificationContext | undefined = undefined
   let needRestoreLoc = true
+
+  let urlObjectId: Ref<Doc> | undefined = undefined
+  let urlObjectClass: Ref<Class<Doc>> | undefined = undefined
 
   async function syncLocation (loc: Location): Promise<void> {
     if (loc.path[2] !== inboxId) {
       return
     }
 
-    const cardId = getCardIdFromLocation(loc)
+    const docInfo = getDocInfoFromLocation(loc)
 
-    if (cardId == null || cardId === '') {
-      card = undefined
+    if (docInfo == null) {
+      doc = undefined
+      urlObjectId = undefined
+      urlObjectClass = undefined
+      context = undefined
       if (needRestoreLoc) {
         needRestoreLoc = false
         restoreLocation(loc, inboxId)
@@ -58,23 +70,44 @@
       return
     }
 
+    urlObjectId = docInfo._id
+    urlObjectClass = docInfo._class
+
     needRestoreLoc = false
 
-    if (cardId !== card?._id) {
-      card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
+    if (docInfo._id !== doc?._id) {
+      doc = await client.findOne(docInfo._class, { _id: docInfo._id })
+
+      if (doc != null) {
+        context = await client.findOne(notification.class.DocNotifyContext, {
+          objectId: doc._id,
+          user: getCurrentAccount().uuid
+        })
+      }
     }
   }
 
-  function selectCard (event: CustomEvent<{ context: NotificationContext, card: Card }>): void {
-    closePanel()
+  function select (event: CustomEvent<NavigationItem>): void {
+    console.log('select', event.detail)
+    if (event.detail.doc == null) return
     const loc = getCurrentLocation()
-    if (card?._id === event.detail.card._id && loc.path[2] === inboxId) return
-    card = event.detail.card
-    navigateToCard(card._id)
+    if (doc?._id === event.detail._id && loc.path[2] === inboxId) return
+    closePanel()
+    doc = event.detail.doc
+    context = event.detail.context
+    navigateToDoc(doc._id, doc._class)
   }
 
   function handleClose (): void {
-    navigateToCard(undefined)
+    doc = undefined
+    context = undefined
+    closeDoc()
+  }
+
+  function isChunterChannel (_class: Ref<Class<Doc>>, urlObjectClass?: Ref<Class<Doc>>): boolean {
+    const isActivityMessageContext = hierarchy.isDerived(_class, activity.class.ActivityMessage)
+    const chunterClass = isActivityMessageContext ? urlObjectClass ?? _class : _class
+    return hierarchy.isDerived(chunterClass, chunter.class.ChunterSpace)
   }
 
   onDestroy(
@@ -103,7 +136,7 @@
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <InboxHeader />
         <div class="antiPanel-wrap__content hulyNavPanel-container">
-          <InboxNavigation {card} on:select={selectCard} />
+          <InboxNavigation {doc} on:select={select} />
         </div>
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
@@ -119,14 +152,20 @@
       short
     />
   {/if}
+
+  <!--          activityMessage: selectedMessage,-->
   <div bind:this={replacedPanelElement} class="hulyComponent inbox__panel">
-    {#if card}
-      {@const panel = client.getHierarchy().classHierarchyMixin(card._class, view.mixin.ObjectPanel)}
+    {#if doc}
+      {@const panel = client.getHierarchy().classHierarchyMixin(doc._class, view.mixin.ObjectPanel)}
       <Component
         is={panel?.component ?? view.component.EditDoc}
         props={{
-          _id: card._id,
-          embedded: true
+          _id: isChunterChannel(doc._class, urlObjectClass) ? urlObjectId ?? doc._id : doc._id,
+          _class: isChunterChannel(doc._class, urlObjectClass) ? urlObjectClass ?? doc._class : doc._class,
+          context,
+          autofocus: false,
+          embedded: true,
+          props: { autofocus: false, context }
         }}
         on:close={handleClose}
       />

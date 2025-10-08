@@ -40,10 +40,6 @@
   function click (e: MouseEvent): void {
     showPopup(InboxViewSettings, {}, eventToHTMLElement(e))
   }
-
-  function goToChat (): void {
-    mode = 'chat'
-  }
 </script>
 
 <div class="hulyNavPanel-header withButton small inbox-header">
