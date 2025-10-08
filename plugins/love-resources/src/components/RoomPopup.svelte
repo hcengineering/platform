@@ -19,13 +19,12 @@
 
   import { IconArrowLeft, Location, ModernButton, Scroller, location, navigate, panelstore } from '@hcengineering/ui'
 
-  import { MeetingMinutes, ParticipantInfo, Room, loveId } from '@hcengineering/love'
+  import { MeetingMinutes, Room, loveId } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { infos, myInfo } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
   import MicrophoneButton from './meeting/controls/MicrophoneButton.svelte'
   import CameraButton from './meeting/controls/CameraButton.svelte'
@@ -33,24 +32,13 @@
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
   import { joinMeeting, currentMeetingMinutes } from '../meetings'
+  import { activeRooms } from '../meetingPresence'
 
   export let room: Room
+  $: activeRoom = $activeRooms.find((r) => r.room._id === room._id)
+  $: myRoom = activeRoom?.myRoom === true
 
   const client = getClient()
-  async function getPerson (info: ParticipantInfo | undefined): Promise<Person | null> {
-    if (info === undefined) {
-      return null
-    }
-
-    return await getPersonByPersonRef(info.person)
-  }
-
-  let joined: boolean = false
-  $: joined = $myInfo?.room === room._id
-
-  let info: ParticipantInfo[] = []
-  $: info = $infos.filter((p) => p.room === room._id)
-
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
@@ -91,8 +79,8 @@
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
-        {#each info as inf}
-          {#await getPerson(inf) then person}
+        {#each activeRoom?.persons ?? [] as personRef}
+          {#await getPersonByPersonRef(personRef) then person}
             {#if person}
               <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>
             {/if}
@@ -102,7 +90,7 @@
     </Scroller>
   </div>
   <div class="flex-between gap-2">
-    {#if joined && $lkSessionConnected}
+    {#if myRoom && $lkSessionConnected}
       <div class="flex-between gap-2">
         <MicrophoneButton size="medium" />
         <CameraButton size="medium" />
@@ -110,7 +98,7 @@
       </div>
     {/if}
     <div style="width: auto" />
-    {#if canGoBack(joined, $location, $currentMeetingMinutes)}
+    {#if canGoBack(myRoom, $location, $currentMeetingMinutes)}
       <ModernButton
         icon={IconArrowLeft}
         label={love.string.MeetingMinutes}
@@ -119,7 +107,7 @@
         on:click={back}
       />
     {/if}
-    {#if joined}
+    {#if myRoom}
       <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
     {:else}
       <ModernButton
