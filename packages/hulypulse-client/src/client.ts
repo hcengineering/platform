@@ -302,8 +302,7 @@ export class HulypulseClient implements Disposable {
         try {
           const value = item.data !== undefined ? JSON.parse(item.data) : undefined
           if (
-            (item.ttl ?? 0) <= 1 ||
-            (item.expires_at ?? 0) <= 1 || // TODO: remove after upgrade server
+            (item.ttl ?? item.expires_at ?? 0) <= 1 || // TODO: remove expires_at after upgrade server
             value === undefined
           ) {
             continue
