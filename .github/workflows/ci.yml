@@ -25,6 +25,16 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Rush validate
         run: node common/scripts/install-run-rush.js validate --verbose
+      - name: Prepare server
+        run: |
+          cd ./tests
+          ./prepare-tests.sh
+      - name: Testing...
+        run: node common/scripts/install-run-rush.js test --verbose
+        env:
+          DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
+          ELASTIC_URL: 'http://localhost:9201'
+          MONGO_URL: 'mongodb://localhost:27018'
       - name: Rush test
         run: node common/scripts/install-run-rush.js test --verbose
       - name: Publish packages
