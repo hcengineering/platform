@@ -73,8 +73,21 @@ class FrontStorage implements FileStorage {
 
   async uploadFile (uuid: string, file: File, options?: FileStorageUploadOptions): Promise<void> {
     const token = getToken()
-    const headers = { Authorization: `Bearer ${token}` }
-    await uploadXhr(this.baseUrl, headers, uuid, file, options)
+    const workspace = getWorkspace()
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('uuid', uuid)
+
+    await uploadXhr(
+      {
+        url: concatLink(this.baseUrl, `/${workspace}`),
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      },
+      options
+    )
   }
 }
 
@@ -126,9 +139,19 @@ class DatalakeStorage implements FileStorage {
     const token = getToken()
 
     if (file.size <= 10 * 1024 * 1024) {
-      const url = concatLink(this.baseUrl, `/upload/form-data/${encodeURIComponent(workspace)}`)
-      const headers = { Authorization: `Bearer ${token}` }
-      await uploadXhr(url, headers, uuid, file, options)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('uuid', uuid)
+
+      await uploadXhr(
+        {
+          url: concatLink(this.baseUrl, `/upload/form-data/${encodeURIComponent(workspace)}`),
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        },
+        options
+      )
     } else {
       const url = concatLink(
         this.baseUrl,
@@ -173,32 +196,36 @@ class HulylakeStorage implements FileStorage {
     const token = getToken()
     const url = this.getFileUrl(uuid)
 
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`
+    await uploadXhr(
+      {
+        url,
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body: file
       },
-      signal: options?.signal
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to upload file')
-    }
+      options
+    )
   }
 }
 
-async function uploadXhr (
-  url: string,
-  headers: Record<string, string>,
-  uuid: string,
-  file: File | Blob,
-  options?: FileStorageUploadOptions
-): Promise<void> {
-  const xhr = new XMLHttpRequest()
+interface XHRUpload {
+  url: string
+  method: 'POST' | 'PUT'
+  headers: Record<string, string>
+  body: XMLHttpRequestBodyInit
+}
+
+interface XHRUploadResult {
+  status: number
+}
+
+async function uploadXhr (upload: XHRUpload, options?: FileStorageUploadOptions): Promise<XHRUploadResult> {
   const signal = options?.signal
   const onProgress = options?.onProgress
 
-  await new Promise<void>((resolve, reject) => {
+  return await new Promise<XHRUploadResult>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+
     if (signal !== undefined) {
       signal.onabort = () => {
         xhr.abort()
@@ -207,18 +234,20 @@ async function uploadXhr (
     }
 
     xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable && onProgress !== undefined) {
-        onProgress({
+      if (event.lengthComputable) {
+        onProgress?.({
           loaded: event.loaded,
           total: event.total,
-          percentage: Math.round((event.loaded * 100) / event.total)
+          percentage: Math.round((100 * event.loaded) / event.total)
         })
       }
     }
 
     xhr.onload = async () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve()
+        resolve({
+          status: xhr.status
+        })
       } else {
         const error = new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`)
         reject(error)
@@ -226,23 +255,24 @@ async function uploadXhr (
     }
 
     xhr.onerror = () => {
-      const error = new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`)
-      reject(error)
+      reject(new Error('Network error'))
+    }
+
+    xhr.onabort = () => {
+      reject(new Error('Upload aborted'))
     }
 
     xhr.ontimeout = () => {
-      const error = new Error('Upload timeout')
-      reject(error)
+      reject(new Error('Upload timeout'))
     }
 
-    xhr.open('POST', url, true)
-    for (const key in headers) {
-      xhr.setRequestHeader(key, headers[key])
+    xhr.open(upload.method, upload.url, true)
+
+    for (const key in upload.headers) {
+      xhr.setRequestHeader(key, upload.headers[key])
     }
 
-    const formData = new FormData()
-    formData.append('file', file, uuid)
-    xhr.send(formData)
+    xhr.send(upload.body)
   })
 }
 

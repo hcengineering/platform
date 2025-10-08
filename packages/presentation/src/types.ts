@@ -12,7 +12,8 @@ import {
   type Space,
   type TxOperations,
   type BlobMetadata,
-  type AccountRole
+  type AccountRole,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'

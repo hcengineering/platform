@@ -65,7 +65,7 @@ import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
-import { type KeyedAttribute } from '..'
+import { getFileStorage, type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin, { type ClientHook } from './plugin'
 
@@ -891,7 +891,7 @@ export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUu
       `; path=${path}`
     document.cookie = res
   }
-  setToken('/files/' + workspaceUuid)
+  setToken('/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)
