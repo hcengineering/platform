@@ -46,6 +46,7 @@
   "files": [
     "lib/**/*",
     "types/**/*",
+    "src/**/*",
     "!lib/**/*.test.*",
     "!lib/**/*.spec.*",
     "!lib/__tests__/**/*",
@@ -55,6 +56,11 @@
     "!types/**/*.spec.*",
     "!types/__tests__/**/*",
     "!types/__test__/**/*",
-    "!types/tests/**/*"
+    "!types/tests/**/*",
+    "!src/**/*.test.*",
+    "!src/**/*.spec.*",
+    "!src/__tests__/**/*",
+    "!src/__test__/**/*",
+    "!src/tests/**/*"
   ]
 }
