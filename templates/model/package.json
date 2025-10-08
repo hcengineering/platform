@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model-package",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",

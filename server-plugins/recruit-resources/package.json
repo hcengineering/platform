@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-recruit-resources",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,14 +37,14 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/recruit": "^0.6.29",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/login": "^0.6.12",
-    "@hcengineering/workbench": "^0.6.16",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/server-task-resources": "^0.6.0"
+    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/server-core": "^0.7.0",
+    "@hcengineering/recruit": "^0.7.0",
+    "@hcengineering/view": "^0.7.0",
+    "@hcengineering/login": "^0.7.0",
+    "@hcengineering/workbench": "^0.7.0",
+    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/server-task-resources": "^0.7.0"
   }
 }

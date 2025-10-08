@@ -32,7 +32,8 @@ import {
   systemAccountUuid,
   readOnlyGuestAccountUuid,
   type WorkspaceMemberInfo,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
@@ -2305,6 +2306,46 @@ async function addHulyAssistantSocialId (
   return await addSocialIdBase(db, account, SocialIdType.HULY_ASSISTANT, account, true)
 }
 
+export async function refreshHulyAssistantToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  const assistantSocialId = await db.socialId.findOne({ type: SocialIdType.HULY_ASSISTANT, personUuid: account })
+  if (assistantSocialId == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
+        value: account,
+        type: SocialIdType.HULY_ASSISTANT
+      })
+    )
+  }
+
+  const key = 'access_token'
+  const integrationSecretKey = {
+    socialId: assistantSocialId._id,
+    kind: 'ai-assistant' as IntegrationKind,
+    workspaceUuid: null,
+    key
+  }
+
+  const secret = generateToken(account, undefined, { userAiAssistant: 'true' })
+
+  const existingToken = await db.integrationSecret.findOne(integrationSecretKey)
+
+  if (existingToken == null) {
+    await db.integrationSecret.insertOne({
+      ...integrationSecretKey,
+      secret
+    })
+  } else {
+    await db.integrationSecret.update(integrationSecretKey, { secret })
+  }
+}
+
 export async function releaseSocialId (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2495,6 +2536,7 @@ export type AccountMethods =
   | 'isReadOnlyGuest'
   | 'addEmailSocialId'
   | 'addHulyAssistantSocialId'
+  | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
   | 'deleteAccount'
   | 'canMergeSpecifiedPersons'
@@ -2541,6 +2583,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     exchangeGuestToken: wrap(exchangeGuestToken),
     addEmailSocialId: wrap(addEmailSocialId),
     addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
+    refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),

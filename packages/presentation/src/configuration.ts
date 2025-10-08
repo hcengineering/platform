@@ -62,6 +62,7 @@ addTxListener((txes: Tx[]) => {
       if (cud.objectClass === core.class.PluginConfiguration) {
         if (cud.operations.enabled !== undefined) {
           // Plugin enabled/disabled we need to refresh
+          console.log('reload due to changed plugin configuration')
           location.reload()
         }
       }

@@ -70,7 +70,8 @@ export default mergeIds(processId, process, {
     TimeEditor: '' as AnyComponent,
     TimePresenter: '' as AnyComponent,
     AddTagEditor: '' as AnyComponent,
-    AddTagPresenter: '' as AnyComponent
+    AddTagPresenter: '' as AnyComponent,
+    FunctionSubmenu: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -85,7 +86,8 @@ export default mergeIds(processId, process, {
     AppendEditor: '' as AnyComponent,
     ReplaceEditor: '' as AnyComponent,
     SplitEditor: '' as AnyComponent,
-    CutEditor: '' as AnyComponent
+    CutEditor: '' as AnyComponent,
+    FilterEditor: '' as AnyComponent
   },
   transformPresenter: {
     NumberPresenter: '' as AnyComponent,
@@ -127,6 +129,8 @@ export default mergeIds(processId, process, {
     ReplaceAll: '' as IntlString,
     Split: '' as IntlString,
     Cut: '' as IntlString,
+    Filter: '' as IntlString,
+    FirstMatchValue: '' as IntlString,
     FirstValue: '' as IntlString,
     LastValue: '' as IntlString,
     Random: '' as IntlString,

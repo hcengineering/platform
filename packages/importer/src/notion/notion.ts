@@ -404,7 +404,7 @@ async function importAttachment (
     throw new Error('Cannot import attachment without parent doc: ' + docMeta.id)
   }
 
-  const file = new File([data], docMeta.name)
+  const file = new File([new Uint8Array(data)], docMeta.name)
   await fileUploader.uploadFile(docMeta.id, file)
 
   const attachedData: AttachedData<Attachment> = {

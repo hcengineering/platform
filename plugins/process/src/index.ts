@@ -277,6 +277,8 @@ export default plugin(processId, {
     Time: '' as Asset
   },
   function: {
+    FirstMatchValue: '' as Ref<ProcessFunction>,
+    Filter: '' as Ref<ProcessFunction>,
     FirstValue: '' as Ref<ProcessFunction>,
     LastValue: '' as Ref<ProcessFunction>,
     Random: '' as Ref<ProcessFunction>,

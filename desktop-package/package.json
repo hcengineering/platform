@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "version": "0.6.435",
+  "version": "0.7.0",
   "main": "dist/main/electron.js",
   "author": "Hardcore Engineering <hey@huly.io>",
   "template": "@hcengineering/default-package",
@@ -15,8 +15,8 @@
     "bump": "bump-package-version"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
-    "@hcengineering/desktop": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
+    "@hcengineering/desktop": "^0.7.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "node-loader": "~2.0.0",
     "cross-env": "~7.0.3",

@@ -14,20 +14,21 @@
 //
 
 import contact, { Employee, Person } from '@hcengineering/contact'
-import { Doc, Ref, Timestamp } from '@hcengineering/core'
+import core, { Doc, matchQuery, Ref, Timestamp } from '@hcengineering/core'
 import { Execution, parseContext } from '@hcengineering/process'
 import { ProcessControl } from '@hcengineering/server-process'
 import { getContextValue } from './utils'
 
 // #region ArrayReduce
 
-export function FirstValue (value: Doc[]): Doc {
+export function FirstValue (value: Doc[]): Doc | undefined {
   if (!Array.isArray(value)) return value
   return value[0]
 }
 
-export function LastValue (value: Doc[]): Doc {
+export function LastValue (value: Doc[]): Doc | undefined {
   if (!Array.isArray(value)) return value
+  if (value.length === 0) return
   return value[value.length - 1]
 }
 
@@ -40,16 +41,36 @@ export function All (value: Doc[]): Doc[] {
   return value
 }
 
+export async function FirstMatchValue (
+  value: any[],
+  props: Record<string, any>,
+  control: ProcessControl
+): Promise<any | undefined> {
+  if (value == null) {
+    return
+  }
+  if (!Array.isArray(value)) return value
+  const { _class, ...otherProps } = props
+  if (_class == null) return
+  if (value.length === 0) return
+  if (typeof value[0] === 'string') {
+    const docs = await control.client.findAll(_class, { _id: { $in: value } })
+    return matchQuery(docs, otherProps, core.class.Doc, control.client.getHierarchy(), true)[0]?._id
+  } else if (typeof value[0] === 'object') {
+    return matchQuery(value, otherProps, core.class.Doc, control.client.getHierarchy(), true)[0]
+  }
+}
+
 // #endregion
 
 // #region Array
 
 export async function Insert (
-  value: Doc[],
+  value: any[],
   props: Record<string, any>,
   control: ProcessControl,
   execution: Execution
-): Promise<Doc[]> {
+): Promise<any[]> {
   if (value == null) {
     value = []
   }
@@ -66,11 +87,11 @@ export async function Insert (
 }
 
 export async function Remove (
-  value: Doc[],
+  value: any[],
   props: Record<string, any>,
   control: ProcessControl,
   execution: Execution
-): Promise<Doc[]> {
+): Promise<any[]> {
   if (value == null) {
     value = []
   }
@@ -85,7 +106,7 @@ export async function Remove (
   }
 }
 
-export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
+export function RemoveFirst (value: any[]): any[] {
   if (value == null) {
     value = []
   }
@@ -93,12 +114,29 @@ export function RemoveFirst (value: Doc[], props: Record<string, any>): Doc[] {
   return value.slice(1)
 }
 
-export function RemoveLast (value: Doc[], props: Record<string, any>): Doc[] {
+export function RemoveLast (value: any[]): any[] {
   if (value == null) {
     value = []
   }
   if (!Array.isArray(value)) return value
   return value.slice(0, -1)
+}
+
+export async function Filter (value: any[], props: Record<string, any>, control: ProcessControl): Promise<any[]> {
+  if (value == null) {
+    return []
+  }
+  if (!Array.isArray(value)) return value
+  const { _class, ...otherProps } = props
+  if (_class == null) return value
+  if (value.length === 0) return value
+  if (typeof value[0] === 'string') {
+    const docs = await control.client.findAll(_class, { _id: { $in: value } })
+    return matchQuery(docs, otherProps, core.class.Doc, control.client.getHierarchy(), true).map((p) => p._id)
+  } else if (typeof value[0] === 'object') {
+    return matchQuery(value, otherProps, core.class.Doc, control.client.getHierarchy(), true)
+  }
+  return value
 }
 
 // #endregion

@@ -117,7 +117,9 @@
     "NewProcessToDo": "新过程待办事项",
     "EmptyArray": "空数组",
     "ExecutionInitiator": "执行发起者",
-    "ExecutionStarted": "执行已启动"
+    "ExecutionStarted": "执行已启动",
+    "Filter": "过滤",
+    "FirstMatchValue": "第一个匹配值"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

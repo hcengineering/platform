@@ -243,6 +243,7 @@ export async function connect (title: string): Promise<Client | undefined> {
               localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
               // It might have been refreshed manually and download has started - do not reload
               if (!isUpgrading) {
+                console.log('reload due to version upgrade')
                 location.reload()
               }
 
@@ -255,6 +256,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   // It might be possible that this callback will fire after the user has spent some time
                   // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
                   if (get(upgradeDownloadProgress) < 0) {
+                    console.log('reload due to upgrade download')
                     location.reload()
                   }
                 }, 10000)
@@ -268,6 +270,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           return true
         },
         onUpgrade: () => {
+          console.log('reload due to upgrade')
           location.reload()
         },
         onUnauthorized: () => {
@@ -292,6 +295,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {
+              console.log('reload due to migration')
               location.reload()
             }, 5000)
           })
@@ -326,6 +330,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             }
 
             if (event === ClientConnectEvent.Upgraded) {
+              console.log('reload due to upgrade')
               window.location.reload()
             }
 
@@ -344,6 +349,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
+                  console.log('reload due to version mismatch')
                   location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
@@ -357,6 +363,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 if (reconnectVersionStr !== '' && currentVersionStr !== reconnectVersionStr) {
                   if (typeof sessionStorage !== 'undefined') {
                     if (sessionStorage.getItem(versionStorageKey) !== reconnectVersionStr) {
+                      console.log('reload due to version mismatch')
                       sessionStorage.setItem(versionStorageKey, reconnectVersionStr)
                       location.reload()
                     }
@@ -370,10 +377,12 @@ export async function connect (title: string): Promise<Client | undefined> {
                   try {
                     const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
                     if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                      console.log('reload due to config version mismatch')
                       location.reload()
                     }
                   } catch (err: any) {
                     // Failed to load server config, reload location
+                    console.log('reload due to config loading error')
                     location.reload()
                   }
                 }

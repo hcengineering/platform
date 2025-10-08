@@ -16,7 +16,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 console.log('mode', mode)
 const { EsbuildPlugin } = require('esbuild-loader')
 
-const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
+const doValidate = !prod || process.env.DO_VALIDATE === 'true'
 
 /**
  * @type {Configuration}
@@ -156,10 +156,7 @@ module.exports = [
     },
     optimization: prod
       ? {
-          minimize: true,
-          minimizer: [
-            new EsbuildPlugin({ target: 'es2021' })
-          ]
+          minimize: true
         }
       : {
           minimize: false,
@@ -338,11 +335,7 @@ module.exports = [
       new DefinePlugin({
         'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
       }),
-      ...(doValidate
-        ? [
-            new ForkTsCheckerWebpackPlugin()
-          ]
-        : [])
+      ...(doValidate ? [new ForkTsCheckerWebpackPlugin()] : [])
     ],
     watchOptions: {
       // for some systems, watching many files can result in a lot of CPU or memory usage

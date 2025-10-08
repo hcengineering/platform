@@ -402,7 +402,8 @@ export default async (): Promise<Resources> => ({
     ContactNamePresenter,
     PersonIdFilter,
     AssigneePopup,
-    TranslationSettings
+    TranslationSettings,
+    SocialIdentityPresenter
   },
   completion: {
     EmployeeQuery: async (

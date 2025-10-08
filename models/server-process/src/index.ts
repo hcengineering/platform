@@ -241,6 +241,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.EmptyArray
   })
 
+  builder.mixin(process.function.FirstMatchValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.FirstMatchValue
+  })
+
+  builder.mixin(process.function.Filter, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Filter
+  })
+
   builder.mixin(
     process.function.ExecutionEmployeeInitiator,
     process.class.ProcessFunction,

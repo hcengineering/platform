@@ -117,7 +117,9 @@
     "NewProcessToDo": "Новый Action Item процесса",
     "EmptyArray": "Пустой массив",
     "ExecutionInitiator": "Инициатор выполнения",
-    "ExecutionStarted": "Выполнение начато"
+    "ExecutionStarted": "Выполнение начато",
+    "Filter": "Фильтр",
+    "FirstMatchValue": "Первое подходящее значение"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

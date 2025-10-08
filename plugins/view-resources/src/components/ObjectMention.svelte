@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getResource, translateCB } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, IconWithEmoji } from '@hcengineering/presentation'
   import { AnyComponent, Icon, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
@@ -60,6 +60,8 @@
     doc = object
   }
 
+  $: cl = doc?._class ?? _class
+  $: clazz = cl ? hierarchy.findClass(cl) : undefined
   $: icon =
     doc !== undefined && !hierarchy.isDerived(doc._class, contact.class.Contact) ? classIcon(client, doc._class) : null
 
@@ -126,7 +128,11 @@
     use:tooltip={docTooltip}
   >
     <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick} {transparent}>
-      {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{displayTitle}
+      {#if icon}{#if icon === view.ids.IconWithEmoji}<IconWithEmoji
+            icon={clazz?.color ?? 0}
+            size={'smaller'}
+            inline
+          />{:else}<Icon {icon} size="small" />{/if}{' '}{:else}@{/if}{displayTitle}
     </DocNavLink>
   </span>
 {/if}
