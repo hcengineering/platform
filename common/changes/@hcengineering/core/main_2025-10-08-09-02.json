@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/core",
+      "comment": "Hierarchy improvements",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/core"
+}

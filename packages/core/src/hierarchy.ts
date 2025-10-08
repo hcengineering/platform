@@ -30,10 +30,10 @@ export class Hierarchy {
   private readonly attributes = new Map<Ref<Classifier>, Map<string, AnyAttribute>>()
   private readonly attributesById = new Map<Ref<AnyAttribute>, AnyAttribute>()
   private readonly descendants = new Map<Ref<Classifier>, Ref<Classifier>[]>()
-  private readonly ancestors = new Map<Ref<Classifier>, Set<Ref<Classifier>>>()
+  private readonly ancestors = new Map<Ref<Classifier>, Ref<Classifier>[]>()
   private readonly proxies = new Map<Ref<Mixin<Doc>>, ProxyHandler<Doc>>()
 
-  private readonly classifierProperties = new Map<Ref<Classifier>, Record<string, any>>()
+  private readonly classifierProperties = new Map<Ref<Classifier>, Map<string, any>>()
 
   private createMixinProxyHandler (mixin: Ref<Mixin<Doc>>): ProxyHandler<Doc> {
     const value = this.getClass(mixin)
@@ -172,7 +172,7 @@ export class Hierarchy {
     if (result === undefined) {
       throw new Error('ancestors not found: ' + _class)
     }
-    return Array.from(result)
+    return result
   }
 
   getClass<T extends Obj = Obj>(_class: Ref<Class<T>>): Class<T> {
@@ -318,7 +318,7 @@ export class Hierarchy {
    * It will iterate over parents.
    */
   isDerived<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Class<T>>): boolean {
-    return this.ancestors.get(_class)?.has(from) ?? false
+    return this.ancestors.get(_class)?.includes(from) ?? false
   }
 
   /**
@@ -408,28 +408,20 @@ export class Hierarchy {
   private updateAncestors (_class: Ref<Classifier>, add = true): void {
     const cl: Ref<Classifier>[] = [_class]
     const visited = new Set<Ref<Classifier>>()
+    const ancestorList: Ref<Classifier>[] = []
+
     while (cl.length > 0) {
       const classifier = cl.shift() as Ref<Classifier>
       if (addNew(visited, classifier)) {
-        const list = this.ancestors.get(_class)
-        if (list === undefined) {
-          if (add) {
-            this.ancestors.set(_class, new Set([classifier]))
-          }
-        } else {
-          if (add) {
-            if (!list.has(classifier)) {
-              list.add(classifier)
-            }
-          } else {
-            const pos = list.has(classifier)
-            if (pos) {
-              list.delete(classifier)
-            }
-          }
-        }
+        ancestorList.push(classifier)
         cl.push(...this.ancestorsOf(classifier))
       }
+    }
+
+    if (add) {
+      this.ancestors.set(_class, ancestorList)
+    } else {
+      this.ancestors.delete(_class)
     }
   }
 
@@ -623,12 +615,16 @@ export class Hierarchy {
   }
 
   getClassifierProp (cl: Ref<Class<Doc>>, prop: string): any | undefined {
-    return this.classifierProperties.get(cl)?.[prop]
+    return this.classifierProperties.get(cl)?.get(prop)
   }
 
   setClassifierProp (cl: Ref<Class<Doc>>, prop: string, value: any): void {
-    const cur = this.classifierProperties.get(cl)
-    this.classifierProperties.set(cl, { ...cur, [prop]: value })
+    let cur = this.classifierProperties.get(cl)
+    if (cur === undefined) {
+      cur = new Map<string, any>()
+      this.classifierProperties.set(cl, cur)
+    }
+    cur.set(prop, value)
   }
 }
 
