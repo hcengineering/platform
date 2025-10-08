@@ -54,7 +54,8 @@
     "ts-node": "^10.8.0",
     "typescript": "^5.8.3",
     "@types/morgan": "~1.9.9",
-    "@types/on-headers": "^1.0.2"
+    "@types/on-headers": "^1.0.2",
+    "@types/uuid": "^8.3.1"
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.3",

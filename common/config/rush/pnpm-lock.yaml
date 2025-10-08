@@ -5359,7 +5359,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-A/FQRSV1zyhmETH5Rsbpwe2XDUms+KjWyr6BZ9uFaLKi9/xBB+gNb+zlTTxekScIRiif52Z2y1qG27L0LEwNBg==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-q70g3uYr33Y3tQmZo0FCs2KUbJ2sFkcRbDB6QxUy4Q094epwW5i1u8W9OaivZXNXUWQEB/l+nuCIohNlQkeO7g==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -25765,6 +25765,7 @@ snapshots:
       '@types/morgan': 1.9.9
       '@types/node': 22.15.29
       '@types/on-headers': 1.0.3
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
