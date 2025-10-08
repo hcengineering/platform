@@ -89,7 +89,7 @@ function encodeValue (val: any): string {
     case 'boolean':
       return val ? 'true' : 'false'
     case 'string':
-      return `"${val.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+      return `"${val}"`
     case 'object': {
       const entries = Object.entries(val).map(([k, v]) => `${k}=${encodeValue(v)}`)
       return `{${entries.join(',')}}`
@@ -375,7 +375,7 @@ function decodeValue (s: string): any {
     return Number.isNaN(n) ? str : n
   }
   if (str.startsWith('"') && str.endsWith('"')) {
-    return str.slice(1, -1).replace(/\\"/g, '"')
+    return str.slice(1, -1)
   }
   if (str.startsWith('[') && str.endsWith(']')) {
     const inner = str.slice(1, -1).trim()
