@@ -90,12 +90,10 @@ function encodeValue (val: any): string {
       return val ? 'true' : 'false'
     case 'string':
       return `"${val.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
-    case 'object':
-      try {
-        return JSON.stringify(val)
-      } catch {
-        return String(val)
-      }
+    case 'object': {
+      const entries = Object.entries(val).map(([k, v]) => `${k}=${encodeValue(v)}`)
+      return `{${entries.join(',')}}`
+    }
   }
 
   return String(val)
@@ -383,6 +381,20 @@ function decodeValue (s: string): any {
     const inner = str.slice(1, -1).trim()
     if (inner === '') return []
     return inner.split(',').map(decodeValue)
+  }
+  if (str.startsWith('{') && str.endsWith('}')) {
+    const inner = str.slice(1, -1).trim()
+    if (inner === '') return {}
+    const obj: Record<string, any> = {}
+    const entries = splitTopLevel(inner, ',')
+    for (const entry of entries) {
+      const eq = entry.indexOf('=')
+      if (eq === -1) continue
+      const key = entry.slice(0, eq).trim()
+      const val = entry.slice(eq + 1).trim()
+      obj[key] = decodeValue(val)
+    }
+    return obj
   }
   return str
 }

@@ -93,7 +93,15 @@
   }
 </script>
 
-<CriteriasEditor {keys} {readonly} {process} {params} on:remove={remove} on:change={change} />
+<CriteriasEditor
+  _class={process.masterTag}
+  {keys}
+  {readonly}
+  {process}
+  {params}
+  on:remove={remove}
+  on:change={change}
+/>
 {#if possibleAttrs.length > 0}
   <div class="flex-center mt-4">
     <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />

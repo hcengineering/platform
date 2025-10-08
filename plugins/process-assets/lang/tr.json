@@ -114,7 +114,9 @@
     "ProcessRunned": "\"{process}\" süreci başlatıldı",
     "ProcessStateChanged": "\"{process}\" süreci \"{state}\" durumuna geçti",
     "ProcessFinished": "\"{process}\" süreci \"{state}\" durumunda tamamlandı",
-    "NewProcessToDo": "Yeni süreç Eylem öğesi"
+    "NewProcessToDo": "Yeni süreç Eylem öğesi",
+    "Filter": "Filtre",
+    "FirstMatchValue": "İlk eşleşen değer"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

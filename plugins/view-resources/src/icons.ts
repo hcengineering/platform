@@ -1,4 +1,5 @@
 import view from '@hcengineering/view'
 import core from '@hcengineering/core'
+import type { Asset } from '@hcengineering/platform'
 
-export const iconsLibrary = Object.values(core.icon).concat(Object.values(view.icon))
+export const iconsLibrary: Asset[] = Object.values(core.icon).concat(Object.values(view.icon))

@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { SplitLogger } from '@hcengineering/analytics-service'
-import { createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service/src'
+import { SplitLogger, createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { newMetrics } from '@hcengineering/core'
 import { getIntegrationClient } from '@hcengineering/integration-client'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient, { extractToken, readToken, getAccountClient } from '@hcengineering/server-client'
+import serverClient, { extractToken, getAccountClient, readToken } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { join } from 'path'

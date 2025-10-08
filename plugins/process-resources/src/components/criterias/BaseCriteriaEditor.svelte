@@ -60,8 +60,7 @@
   const hierarchy = client.getHierarchy()
 
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
-
-  $: baseEditor = findAttributeEditor(client, process.masterTag, attribute.name)
+  $: baseEditor = findAttributeEditor(client, attribute.attributeOf, attribute.name)
 </script>
 
 <div class="text-input" class:context={contextValue}>

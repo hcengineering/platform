@@ -112,7 +112,9 @@
     "NewProcessToDo": "Nový Action Item procesu",
     "EmptyArray": "Prázdné pole",
     "ExecutionInitiator": "Iniciátor provedení",
-    "ExecutionStarted": "Provedení spuštěno"
+    "ExecutionStarted": "Provedení spuštěno",
+    "Filter": "Filtr",
+    "FirstMatchValue": "První odpovídající hodnota"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

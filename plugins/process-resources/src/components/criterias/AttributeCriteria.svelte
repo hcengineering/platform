@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { Component, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getCirteriaEditor, getContext } from '../../utils'
 
+  export let _class: Ref<Class<Doc>>
   export let readonly: boolean
   export let process: Process
   export let key: string
@@ -30,7 +31,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: attribute = hierarchy.getAttribute(process.masterTag, key)
+  $: attribute = hierarchy.getAttribute(_class, key)
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
   $: updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)

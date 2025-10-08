@@ -13,21 +13,20 @@
 // limitations under the License.
 //
 
-import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
-import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
-import { newMetrics } from '@hcengineering/measurements'
-import { join } from 'path'
-import { getPlatformQueue } from '@hcengineering/kafka'
 import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics, Tx } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
-import { Tx } from '@hcengineering/core'
-import OpenAI from 'openai'
 import serverClient from '@hcengineering/server-client'
+import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
+import OpenAI from 'openai'
+import { join } from 'path'
 
 import config from './config'
-import { extractCreateMessageData, extractRemoveMessageData, extractUpdateMessageData } from './utils'
 import { Controller } from './conroller'
+import { extractCreateMessageData, extractRemoveMessageData, extractUpdateMessageData } from './utils'
 
 async function main (): Promise<void> {
   configureAnalytics(config.ServiceId, process.env.VERSION ?? '0.7.0')

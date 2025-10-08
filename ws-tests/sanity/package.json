@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/tests-ws-sanity",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -30,7 +30,7 @@
     "allure:generate": "allure generate allure-results -o allure-report --clean"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -46,12 +46,12 @@
     "allure-playwright": "^3.0.6",
     "allure-js-commons": "^3.0.6",
     "@faker-js/faker": "^8.4.1",
-    "@hcengineering/tests-sanity": "^0.6.1"
+    "@hcengineering/tests-sanity": "^0.7.0"
   },
   "dependencies": {
     "dotenv": "~16.0.0",
     "cross-env": "~7.0.3",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/client-resources": "^0.6.27"
+    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/client-resources": "^0.7.3"
   }
 }
