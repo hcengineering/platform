@@ -26,6 +26,7 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
+import { runSharedIntegrationTests } from '@hcengineering/server-core/src/__tests__/shared-integration'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
 import { getMongoClient, type MongoClientReference, shutdownMongo } from '../utils'
 import { genMinModel } from './minmodel'
@@ -36,7 +37,7 @@ const txes = genMinModel()
 createTaskModel(txes)
 
 describe('mongo operations', () => {
-  const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
+  const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27018'
   let mongoClient!: MongoClientReference
   let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let hierarchy: Hierarchy
@@ -324,4 +325,11 @@ describe('mongo operations', () => {
     expect(r.length).toEqual(1)
     expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
   })
+
+  // Run shared integration tests
+  runSharedIntegrationTests('MongoDB', () => ({
+    client,
+    operations,
+    taskPlugin
+  }))
 })

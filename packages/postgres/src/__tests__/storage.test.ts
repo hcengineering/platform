@@ -42,7 +42,7 @@ createTaskModel(txes)
 const contextVars: Record<string, any> = {}
 
 describe('postgres operations', () => {
-  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
+  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
   let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
   const clientRef: PostgresClientReference = getDBClient(baseDbUri)

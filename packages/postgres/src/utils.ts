@@ -392,22 +392,47 @@ export function filterProjection<T extends Doc> (data: any, projection: Projecti
   if (projection === undefined) {
     return data
   }
-  for (const key in data) {
-    if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
-      // check nested projections in case of object
-      let value = data[key]
-      if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-        // We need to filter projection for nested objects
-        const innerP = Object.entries(projection as any)
-          .filter((it) => it[0].startsWith(key))
-          .map((it) => [it[0].substring(key.length + 1), it[1]])
-        if (innerP.length > 0) {
-          value = filterProjection(value, Object.fromEntries(innerP))
-          data[key] = value
-          continue
-        }
-      }
 
+  // Determine if this is an inclusion or exclusion projection
+  // Exclusion: has any field with value 0
+  // Inclusion: has any field with value 1
+  const projectionValues = Object.values(projection as any)
+  const hasExclusion = projectionValues.some((v) => v === 0)
+  const hasInclusion = projectionValues.some((v) => v === 1 || typeof v === 'object')
+
+  // Can't mix inclusion and exclusion (MongoDB behavior)
+  // If mixed, treat as inclusion
+  const isExclusionMode = hasExclusion && !hasInclusion
+
+  for (const key in data) {
+    const projValue = (projection as any)[key]
+    const hasKey = Object.prototype.hasOwnProperty.call(projection, key)
+
+    // Check if there are nested projections for this key
+    let value = data[key]
+    if (typeof value === 'object' && !Array.isArray(value) && value != null) {
+      // We need to filter projection for nested objects
+      const innerP = Object.entries(projection as any)
+        .filter((it) => it[0].startsWith(key + '.'))
+        .map((it) => [it[0].substring(key.length + 1), it[1]])
+      if (innerP.length > 0) {
+        value = filterProjection(value, Object.fromEntries(innerP))
+        data[key] = value
+        continue // Don't delete the parent object
+      }
+    }
+
+    let shouldDelete = false
+
+    if (isExclusionMode) {
+      // Exclusion mode: delete only fields explicitly set to 0
+      shouldDelete = hasKey && projValue === 0
+    } else {
+      // Inclusion mode: delete fields not in projection (unless nested projection)
+      shouldDelete = !hasKey || projValue === 0
+    }
+
+    if (shouldDelete) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete data[key]
     }
