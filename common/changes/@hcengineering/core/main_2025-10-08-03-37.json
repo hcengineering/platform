@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/core",
+      "comment": "Fix issue with time rate limiter",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/core"
+}

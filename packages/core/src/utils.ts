@@ -904,10 +904,10 @@ export class TimeRateLimiter {
     }
 
     const v = { time: Date.now(), running: true }
+    this.active++
     try {
       this.executions.push(v)
       const p = op(args)
-      this.active++
       return await p
     } finally {
       v.running = false
@@ -922,7 +922,6 @@ export class TimeRateLimiter {
 
   async waitProcessing (): Promise<void> {
     while (this.active > 0) {
-      console.log('wait', this.active)
       await new Promise<void>((resolve) => {
         this.notify.push(resolve)
       })
