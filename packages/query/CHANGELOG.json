@@ -2,6 +2,18 @@
   "name": "@hcengineering/query",
   "entries": [
     {
+      "version": "0.7.3",
+      "tag": "@hcengineering/query_v0.7.3",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.0",
       "tag": "@hcengineering/query_v0.6.1",
       "date": "Sun, 08 Aug 2021 21:05:26 GMT",

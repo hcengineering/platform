@@ -2,6 +2,18 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.4",
+      "tag": "@hcengineering/core_v0.7.4",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix issue with time rate limiter"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.0",
       "tag": "@hcengineering/core_v0.6.11",
       "date": "Fri, 20 Aug 2021 16:21:03 GMT",
