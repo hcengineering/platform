@@ -13,25 +13,25 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { createMessagesQuery } from '@hcengineering/presentation'
+  import { CardID, Label as CardLabel, Message, MessageType } from '@hcengineering/communication-types'
   import { SortingOrder, WithLookup } from '@hcengineering/core'
-  import { CardID, Message, MessageType, Label as CardLabel } from '@hcengineering/communication-types'
+  import { createMessagesQuery } from '@hcengineering/presentation'
 
-  import { MessagePresenter, labelsStore } from '@hcengineering/communication-resources'
-  import { Button, IconMoreH, tooltip } from '@hcengineering/ui'
-  import { showMenu } from '@hcengineering/view-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import chat from '@hcengineering/chat'
+  import { MessagePresenter, labelsStore } from '@hcengineering/communication-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Button, IconDetailsFilled, IconMoreH, tooltip } from '@hcengineering/ui'
+  import { DocNavLink, showMenu } from '@hcengineering/view-resources'
 
-  import CardTagsColored from './CardTagsColored.svelte'
   import CardPathPresenter from './CardPathPresenter.svelte'
+  import CardTagsColored from './CardTagsColored.svelte'
   import CardTimestamp from './CardTimestamp.svelte'
 
   import { openCardInSidebar } from '../utils'
 
   import ColoredCardIcon from './ColoredCardIcon.svelte'
-  import TagDivider from './TagDivider.svelte'
   import ContentPreview from './ContentPreview.svelte'
+  import TagDivider from './TagDivider.svelte'
 
   export let card: WithLookup<Card>
   export let isCompact = false
@@ -75,7 +75,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="card" on:click|stopPropagation|preventDefault={() => openCardInSidebar(card._id, card)}>
+<div class="card">
   <div class="card__avatar">
     <ColoredCardIcon {card} count={0} />
   </div>
@@ -92,7 +92,9 @@
           class="card__title overflow-label"
           use:tooltip={{ label: getEmbeddedLabel(truncatedTitle), textAlign: 'left' }}
         >
-          {truncatedTitle}
+          <DocNavLink object={card}>
+            {truncatedTitle}
+          </DocNavLink>
         </span>
       </div>
       <CardTimestamp date={card.modifiedOn} />
@@ -103,6 +105,30 @@
           </div>
         </div>
       {/if}
+      <div class="flex-row flex-row-center" class:opened={isActionsOpened}>
+        <Button
+          icon={IconDetailsFilled}
+          iconProps={{ size: 'medium' }}
+          kind="icon"
+          on:click={(e) => {
+            void openCardInSidebar(card._id, card)
+          }}
+        />
+        {#if !isCompact}
+          <Button
+            icon={IconMoreH}
+            iconProps={{ size: 'medium' }}
+            kind="icon"
+            dataId="btnMoreActions"
+            on:click={(e) => {
+              isActionsOpened = true
+              showMenu(e, { object: card }, () => {
+                isActionsOpened = false
+              })
+            }}
+          />
+        {/if}
+      </div>
     </div>
     <div class="card__message">
       {#if isThreadCard && message}
@@ -133,23 +159,6 @@
       {/if}
     </div>
   </div>
-
-  {#if !isCompact}
-    <div class="card__actions" class:opened={isActionsOpened}>
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind="icon"
-        dataId="btnMoreActions"
-        on:click={(e) => {
-          isActionsOpened = true
-          showMenu(e, { object: card }, () => {
-            isActionsOpened = false
-          })
-        }}
-      />
-    </div>
-  {/if}
 </div>
 
 <style lang="scss">
