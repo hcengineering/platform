@@ -5359,7 +5359,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-F5b7+LrFJ4DehshyZvW2eRRSaoCMxThoHlDbUHBivLROUhLWv3IzmET68+8hsaDRuJwpM09YJm6uWZ3+eEUAVA==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-A/FQRSV1zyhmETH5Rsbpwe2XDUms+KjWyr6BZ9uFaLKi9/xBB+gNb+zlTTxekScIRiif52Z2y1qG27L0LEwNBg==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -25789,6 +25789,7 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.8.3)
       typescript: 5.8.3
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
