@@ -41,7 +41,7 @@
   }
 
   function openSelectUsersPopup (): void {
-    const skipAccounts = $infos.filter((p) => p.room === currentMeetingRoom).map((p) => p.person)
+    const skipAccounts = $infos.filter((p) => p.room === $currentMeetingRoom?._id).map((p) => p.person)
     showPopup(
       SelectUsersPopup,
       {

@@ -3,15 +3,29 @@
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
-  import { liveKitClient, lk } from '../utils'
+  import { createMeetingWidget, liveKitClient, lk, navigateToMeetingMinutes } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
   import { subscribeInviteRequests, unsubscribeInviteRequests } from '../invites'
   import { Room } from '@hcengineering/love'
   import { subscribeJoinRequests, unsubscribeJoinRequests } from '../joinRequests'
   import { Ref } from '@hcengineering/core'
   import { myInfo } from '../stores'
+  import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
+  import { currentMeetingMinutes, currentMeetingRoom } from '../meetings'
+  import { getClient } from '@hcengineering/presentation'
+  import workbench from '@hcengineering/workbench'
+  import {
+    deleteMyMeetingPresence,
+    meetingPresenceTtlSeconds,
+    subscribeMeetingPresence,
+    unsubscribeMeetingPresence,
+    updateMyMeetingPresence
+  } from '../meetingPresence'
 
   let parentElement: HTMLDivElement
+  let presenceInterval: number | NodeJS.Timeout | undefined = undefined
+  let presenceRoom: Ref<Room> | undefined = undefined
+  const client = getClient()
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -54,16 +68,64 @@
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
 
     await subscribeInviteRequests()
+    await subscribeMeetingPresence()
   })
 
   onDestroy(async () => {
     await unsubscribeInviteRequests()
+    await unsubscribeMeetingPresence()
     lk.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     if ($lkSessionConnected) {
       await liveKitClient.disconnect()
     }
   })
+
+  function checkActiveMeeting (meetingSessionConnected: boolean, room: Room | undefined): void {
+    const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
+    const isMeetingWidgetCreated = meetingWidgetState !== undefined
+
+    if (room === undefined) {
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
+        void deletePresence()
+      }
+      return
+    }
+
+    if (meetingSessionConnected) {
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
+      if (widget === undefined) return
+
+      if (!isMeetingWidgetCreated) {
+        createMeetingWidget(widget, room._id, meetingSessionConnected)
+        presenceRoom = room._id
+        presenceInterval = setInterval(updatePresence, (meetingPresenceTtlSeconds - 2) * 1000)
+        void updatePresence()
+        void navigateToMeetingMinutes($currentMeetingMinutes)
+      }
+    } else {
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
+        void deletePresence()
+      }
+    }
+  }
+
+  async function deletePresence (): Promise<void> {
+    if (presenceInterval === undefined || presenceRoom === undefined) return
+    clearInterval(presenceInterval)
+    presenceInterval = undefined
+    await deleteMyMeetingPresence(presenceRoom)
+    presenceRoom = undefined
+  }
+
+  async function updatePresence (): Promise<void> {
+    if (presenceRoom === undefined) return
+    await updateMyMeetingPresence(presenceRoom)
+  }
+
+  $: checkActiveMeeting($lkSessionConnected, $currentMeetingRoom)
 </script>
 
 <div bind:this={parentElement} class="hidden"></div>

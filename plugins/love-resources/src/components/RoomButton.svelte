@@ -16,12 +16,12 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
-  import { ParticipantInfo } from '@hcengineering/love'
-  import { formatName } from '@hcengineering/contact'
+  import { formatName, Person } from '@hcengineering/contact'
   import ParticipantsList from './ParticipantsList.svelte'
+  import { Ref } from '@hcengineering/core'
 
   export let label: string
-  export let participants: (ParticipantInfo & { onclick?: (e: MouseEvent) => void })[]
+  export let participants: { person: Ref<Person>, onclick?: (e: MouseEvent) => void }[]
   export let active: boolean = false
   export let limit: number = 4
 
@@ -41,16 +41,13 @@
   >
     <span class="hulyStatusBarButton-label">{label}</span>
     <div class="hulyCombineAvatars-container">
-      {#each participants.slice(0, limit) as participant, i (participant._id)}
+      {#each participants.slice(0, limit) as participant, i (participant)}
+        {@const person = $personByRefStore.get(participant.person)}
         <div
           class="hulyCombineAvatar tiny"
           data-over={i === limit - 1 && overLimit ? `+${participants.length - limit + 1}` : undefined}
         >
-          <Avatar
-            name={$personByRefStore.get(participant.person)?.name ?? participant.name}
-            size={'card'}
-            person={$personByRefStore.get(participant.person)}
-          />
+          <Avatar name={person?.name ?? ''} size={'card'} {person} />
         </div>
       {/each}
     </div>
@@ -61,16 +58,13 @@
   <div class="hulyStatusBarButton" class:active on:click>
     <span class="hulyStatusBarButton-label">{label}</span>
     <div class="hulyStatusBarButton-icons">
-      {#each participants as participant (participant._id)}
+      {#each participants as participant (participant)}
+        {@const person = $personByRefStore.get(participant.person)}
         <div
-          use:tooltip={{ label: getEmbeddedLabel(formatName(participant.name)), direction: 'bottom' }}
+          use:tooltip={{ label: getEmbeddedLabel(formatName(person?.name ?? '')), direction: 'bottom' }}
           on:click={participant.onclick}
         >
-          <Avatar
-            name={$personByRefStore.get(participant.person)?.name ?? participant.name}
-            size={'card'}
-            person={$personByRefStore.get(participant.person)}
-          />
+          <Avatar name={person?.name ?? ''} size={'card'} {person} />
         </div>
       {/each}
     </div>

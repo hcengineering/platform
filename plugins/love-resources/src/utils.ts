@@ -28,8 +28,7 @@ import {
   type MeetingSchedule,
   type Room,
   type RoomMetadata,
-  TranscriptionStatus,
-  MeetingStatus
+  TranscriptionStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -60,10 +59,11 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import { $myPreferences, currentMeetingMinutes, currentRoom } from './stores'
+import { $myPreferences, rooms } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import { currentMeetingMinutes, currentMeetingRoom } from './meetings'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
@@ -198,7 +198,7 @@ lk.on(RoomEvent.Connected, () => {
 })
 
 async function initRoomMetadata (metadata: string | undefined): Promise<void> {
-  const room = get(currentRoom)
+  const room = get(currentMeetingRoom)
   const data: RoomMetadata = parseMetadata(metadata)
 
   isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
@@ -267,16 +267,9 @@ export async function navigateToOfficeDoc (object: Doc): Promise<void> {
   navigate(loc)
 }
 
-export async function navigateToMeetingMinutes (room: Room): Promise<void> {
-  const meeting = await getClient().findOne(love.class.MeetingMinutes, {
-    attachedTo: room._id,
-    status: MeetingStatus.Active
-  })
-  if (meeting !== undefined) {
-    await navigateToOfficeDoc(meeting)
-    return
-  }
-  await navigateToOfficeDoc(room)
+export async function navigateToMeetingMinutes (meetingMinutes: MeetingMinutes | undefined): Promise<void> {
+  if (meetingMinutes === undefined) return
+  await navigateToOfficeDoc(meetingMinutes)
 }
 
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
@@ -379,14 +372,14 @@ export function getPlatformToken (): string {
 }
 
 export async function startTranscription (room: Room): Promise<void> {
-  const current = get(currentRoom)
+  const current = get(currentMeetingRoom)
   if (current === undefined || room._id !== current._id) return
 
   await connectMeeting(room._id, room.language, { transcription: true })
 }
 
 export async function stopTranscription (room: Room): Promise<void> {
-  const current = get(currentRoom)
+  const current = get(currentMeetingRoom)
   if (current === undefined || room._id !== current._id) return
 
   await disconnectMeeting(room._id)
@@ -431,6 +424,7 @@ export function isTranscriptionAllowed (): boolean {
 }
 
 export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boolean): void {
+  console.log('show widget')
   const tabs: WidgetTab[] = [
     ...(video
       ? [

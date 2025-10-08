@@ -25,9 +25,6 @@ export const myInfo = derived(infos, (val) => {
   const personId = getCurrentEmployee()
   return val.find((p) => p.person === personId)
 })
-export const currentRoom = derived([rooms, myInfo], ([rooms, myInfo]) => {
-  return myInfo !== undefined ? rooms.find((p) => p._id === myInfo.room) : undefined
-})
 export const floors = writable<Floor[]>([])
 export const selectedFloor = writable<Ref<Floor> | undefined>(undefined)
 export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, myOffice]) => {
@@ -44,7 +41,6 @@ export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, m
 export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
 
-export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
 
 async function filterParticipantInfo (value: ParticipantInfo[]): Promise<ParticipantInfo[]> {

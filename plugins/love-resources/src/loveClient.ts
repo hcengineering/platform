@@ -6,7 +6,7 @@ import { getPlatformToken, lk } from './utils'
 import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { Analytics } from '@hcengineering/analytics'
-import { currentMeetingMinutes } from './stores'
+import { currentMeetingMinutes } from './meetings'
 import { get } from 'svelte/store'
 
 export function getLoveClient (): LoveClient {

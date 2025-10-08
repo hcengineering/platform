@@ -13,17 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { closeWidget, minimizeSidebar, WidgetState } from '@hcengineering/workbench-resources'
-  import { createQuery } from '@hcengineering/presentation'
-  import { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
+  import { minimizeSidebar, WidgetState } from '@hcengineering/workbench-resources'
   import { Loading } from '@hcengineering/ui'
 
-  import love from '../../../plugin'
   import VideoTab from './VideoTab.svelte'
-  import { currentMeetingMinutes, currentRoom } from '../../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
-  import { lkSessionConnected } from '../../../liveKitClient'
   import LeaveRoomButton from '../controls/LeaveRoomButton.svelte'
   import ControlBarContainer from '../ControlBarContainer.svelte'
   import SendReactionButton from '../controls/SendReactionButton.svelte'
@@ -32,74 +27,45 @@
   import MicrophoneButton from '../controls/MicrophoneButton.svelte'
   import CameraButton from '../controls/CameraButton.svelte'
   import ShareScreenButton from '../controls/ShareScreenButton.svelte'
+  import { currentMeetingRoom, currentMeetingMinutes } from '../../../meetings'
 
   export let widgetState: WidgetState | undefined
   export let height: string
   export let width: string
 
-  const meetingQuery = createQuery()
-
-  let meetingMinutes: MeetingMinutes | undefined = undefined
-  let isMeetingMinutesLoaded = false
-
-  let room: Room | undefined = undefined
-
   let contentHeight: number = 0
-
-  $: room = $currentRoom
-
-  $: if (
-    !$lkSessionConnected ||
-    widgetState?.data?.room === undefined ||
-    $currentRoom === undefined ||
-    $currentRoom._id !== widgetState?.data?.room
-  ) {
-    closeWidget(love.ids.MeetingWidget)
-  }
-
-  $: if (room !== undefined) {
-    meetingQuery.query(
-      love.class.MeetingMinutes,
-      { attachedTo: room._id, status: MeetingStatus.Active },
-      async (res) => {
-        meetingMinutes = res[0]
-        if (meetingMinutes) {
-          currentMeetingMinutes.set(meetingMinutes)
-        }
-        isMeetingMinutesLoaded = true
-      }
-    )
-  } else {
-    meetingQuery.unsubscribe()
-    meetingMinutes = undefined
-    isMeetingMinutesLoaded = false
-  }
 
   function handleClose (): void {
     minimizeSidebar()
   }
 </script>
 
-{#if widgetState !== undefined && room}
+{#if widgetState !== undefined && $currentMeetingRoom !== undefined}
   <div>
-    <MeetingWidgetHeader doc={meetingMinutes} {room} on:close={handleClose} />
+    <MeetingWidgetHeader doc={$currentMeetingMinutes} room={$currentMeetingRoom} on:close={handleClose} />
   </div>
   <div style="height: 100%; overflow: scroll" bind:clientHeight={contentHeight}>
     {#if widgetState.tab === 'video'}
-      <VideoTab {room} doc={meetingMinutes} on:close={handleClose} />
+      <VideoTab room={$currentMeetingRoom} doc={$currentMeetingMinutes} on:close={handleClose} />
     {:else if widgetState.tab === 'chat'}
-      {#if !isMeetingMinutesLoaded}
+      {#if $currentMeetingMinutes === undefined}
         <Loading />
-      {:else if meetingMinutes}
-        <ChatTab {meetingMinutes} {widgetState} height={contentHeight + 'px'} {width} on:close={handleClose} />
+      {:else}
+        <ChatTab
+          meetingMinutes={$currentMeetingMinutes}
+          {widgetState}
+          height={contentHeight + 'px'}
+          {width}
+          on:close={handleClose}
+        />
       {/if}
     {:else if widgetState.tab === 'transcription'}
-      {#if !isMeetingMinutesLoaded}
+      {#if $currentMeetingMinutes === undefined}
         <Loading />
-      {:else if meetingMinutes}
+      {:else}
         <TranscriptionTab
-          {meetingMinutes}
-          {room}
+          meetingMinutes={$currentMeetingMinutes}
+          room={$currentMeetingRoom}
           {widgetState}
           height={contentHeight + 'px'}
           {width}
@@ -125,7 +91,7 @@
       <ShareScreenButton />
     </svelte:fragment>
     <svelte:fragment slot="right">
-      <LeaveRoomButton {room} noLabel={true} />
+      <LeaveRoomButton room={$currentMeetingRoom} noLabel={true} />
     </svelte:fragment>
   </ControlBarContainer>
 {/if}

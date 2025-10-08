@@ -1,23 +1,33 @@
 import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
-import love, { getFreeRoomPlace, MeetingStatus, type Room, RoomType, isOffice, RoomAccess } from '@hcengineering/love'
-import presentation, { getClient } from '@hcengineering/presentation'
+import love, {
+  getFreeRoomPlace,
+  MeetingStatus,
+  type Room,
+  RoomType,
+  isOffice,
+  RoomAccess,
+  type MeetingMinutes
+} from '@hcengineering/love'
+import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import {
   closeMeetingMinutes,
   getLiveKitEndpoint,
   getRoomName,
   liveKitClient,
   loveClient,
-  navigateToMeetingMinutes,
   navigateToOfficeDoc
 } from './utils'
-import { get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { infos, myInfo, myOffice, rooms } from './stores'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
 
-export let currentMeetingRoom: Ref<Room> | undefined
+export const currentMeetingRoom = writable<Room | undefined>(undefined)
+export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
+
+const meetingQuery = createQuery(true)
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
@@ -46,6 +56,7 @@ export async function createMeeting (room: Room): Promise<void> {
 }
 
 export async function leaveMeeting (): Promise<void> {
+  meetingQuery.unsubscribe()
   const client = getClient()
   const currentParticipationInfo = get(myInfo)
   const office = get(myOffice)
@@ -70,7 +81,7 @@ export async function leaveMeeting (): Promise<void> {
   await liveKitClient.disconnect()
   await unsubscribeJoinRequests()
   closeMeetingMinutes()
-  currentMeetingRoom = undefined
+  currentMeetingRoom.set(undefined)
 }
 
 export async function joinMeeting (room: Room): Promise<void> {
@@ -86,7 +97,7 @@ export async function joinMeeting (room: Room): Promise<void> {
 }
 
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
-  if (currentMeetingRoom === roomId) return
+  if (get(currentMeetingRoom)?._id === roomId) return
 
   const client = getClient()
   const room = getRoomById(roomId)
@@ -116,22 +127,30 @@ export async function kick (person: Ref<Person>): Promise<void> {
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-  if (currentMeetingRoom === room._id) return
+  if (get(currentMeetingRoom)?._id === room._id) return
 
   if (currentMeetingRoom !== undefined) {
     await leaveMeeting()
   }
 
-  currentMeetingRoom = room._id
+  currentMeetingRoom.set(room)
 
   await navigateToOfficeDoc(room)
   await moveToMeetingRoom(room)
 
   try {
+    meetingQuery.query(
+      love.class.MeetingMinutes,
+      { attachedTo: room._id, status: MeetingStatus.Active },
+      async (res) => {
+        const meetingMinutes = res[0]
+        currentMeetingMinutes.set(meetingMinutes)
+        meetingQuery.unsubscribe()
+      }
+    )
     const token = await loveClient.getRoomToken(room)
     const wsURL = getLiveKitEndpoint()
     await liveKitClient.connect(wsURL, token, room.type === RoomType.Video)
-    await navigateToMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveMeeting()
