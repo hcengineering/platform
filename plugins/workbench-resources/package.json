@@ -57,6 +57,7 @@
     "@hcengineering/support": "^0.7.0",
     "@hcengineering/support-resources": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0",
+    "@hcengineering/inbox": "^0.7.0",
     "fast-copy": "^3.0.2",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/account-client": "^0.7.6",

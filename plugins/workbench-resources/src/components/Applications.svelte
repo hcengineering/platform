@@ -21,7 +21,10 @@
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
   import { chatId } from '@hcengineering/chat'
-  import { getMetadata } from '@hcengineering/platform'
+  import { inboxId } from '@hcengineering/inbox'
+  import { getMetadata, getResource } from '@hcengineering/platform'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 
   import AppItem from './AppItem.svelte'
 
@@ -92,6 +95,31 @@
   $: bottomApps = apps.filter(
     (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
   )
+
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
+
+  let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
+          undefined
+  let hasInboxNotifications = false
+
+  void getResource(notification.function.HasInboxNotifications).then((f) => {
+    hasNotificationsFn = f
+  })
+
+  $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
+    hasInboxNotifications = res
+  })
+
+  function showNotify (alias: string, hasOldNotifications: boolean, hasNewNotifications: boolean): boolean {
+    if (alias === inboxId) {
+      return hasOldNotifications || hasNewNotifications
+    }
+    if (alias === chatId) {
+      return hasNewNotifications
+    }
+    return false
+  }
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -113,7 +141,7 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            notify={app.alias === chatId && hasNewInboxNotifications}
+            notify={showNotify(app.alias, hasInboxNotifications, hasNewInboxNotifications)}
             {...customProps}
             on:click={getClickHandler(app, customProps)}
           />

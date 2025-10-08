@@ -160,15 +160,6 @@
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .filter((it) => isAllowedToRole(it.accessLevel, account))
 
-  if (isCommunicationEnabled) {
-    const notificationApp = client
-      .getModel()
-      .findAllSync<Application>(workbench.class.Application, { alias: notificationId })[0]
-    if (notificationApp && !apps.some((a) => a._id === notificationApp._id)) {
-      apps.push(notificationApp)
-    }
-  }
-
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
