@@ -700,7 +700,10 @@ function eqSets<T> (xs: Set<T>, ys: Set<T>): boolean {
 }
 
 function forceUpdateDecorations (view: EditorView): void {
-  view.dispatch(setMeta(view.state.tr, {}))
+  const state = getCommentDecoratorState(view.state)
+  if (state !== undefined) {
+    view.updateState(view.state)
+  }
 }
 
 function fetchCommentThreads (options: InlineCommentExtensionOptions): Map<string, Thread> {
@@ -723,15 +726,19 @@ function resolveThread (options: InlineCommentExtensionOptions, editorView: Edit
   if (view === undefined) return
 
   const commentMap = getYDocCommentMap(options)
-
-  const keys = Array.from(commentMap.keys())
-  for (const key of keys) {
-    const comment = commentMap.get(key)
-    if (comment?.thread === thread) commentMap.delete(key)
-  }
-
   const { from, to } = view.props.range
   const mark = view.props.mark ?? editorView.state.schema.marks['inline-comment']
+
+  options.ydoc.transact(() => {
+    const keys = Array.from(commentMap.keys())
+    for (const key of keys) {
+      const comment = commentMap.get(key)
+      if (comment?.thread === thread) {
+        commentMap.delete(key)
+      }
+    }
+  })
+
   editorView.dispatch(setMeta(editorView.state.tr.removeMark(from, to, mark), {}))
 }
 
@@ -776,14 +783,19 @@ function updateThreadComment (
   if (view !== undefined) {
     const { from, to } = view.props.range
 
-    let tr = setMeta(editorView.state.tr, {})
+    let tr = editorView.state.tr
+
     if (thread.messages.length === 0) {
       tr = tr.setSelection(TextSelection.create(editorView.state.doc, 0))
     }
+
     if (thread.messages.length === 1 && existingComment === undefined) {
       const mark = editorView.state.schema.mark('inline-comment', { thread: thread._id })
       tr = tr.addMark(from, to, mark)
     }
+
+    tr = setMeta(tr, {})
+
     editorView.dispatch(tr)
   }
 }
