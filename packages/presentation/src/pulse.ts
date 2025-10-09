@@ -23,10 +23,11 @@ export async function createPulseClient (): Promise<HulypulseClient | undefined>
   if (token !== currentToken) {
     closePulseClient()
   }
-  if (pulseClient == null) {
+  if (pulseClient === undefined) {
     const wsPulseUrl = getMetadata(presentation.metadata.PulseUrl)
     if (wsPulseUrl == null || wsPulseUrl.trim().length === 0) return undefined
     pulseClient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
+    currentToken = token
   }
   return pulseClient
 }
