@@ -23,8 +23,7 @@
     restoreLocation,
     Component,
     closePanel,
-    getCurrentLocation,
-    AnyComponent
+    getCurrentLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
@@ -32,18 +31,18 @@
   import view from '@hcengineering/view'
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
-  import { NotificationContext, Notification, Message } from '@hcengineering/communication-types'
+  import { Notification } from '@hcengineering/communication-types'
   import chunter from '@hcengineering/chunter'
-
-  import InboxNavigation from './InboxNavigation.svelte'
-  import { closeDoc, getDocInfoFromLocation, getMessageInfoFromLocation, navigateToDoc } from '../location'
-  import InboxHeader from './InboxHeader.svelte'
-  import { NavigationItem } from '../type'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { get } from 'svelte/store'
   import cardPlugin from '@hcengineering/card'
+
+  import InboxNavigation from './InboxNavigation.svelte'
+  import { closeDoc, getDocInfoFromLocation, getMessageInfoFromLocation, navigateToDoc } from '../location'
+  import InboxHeader from './InboxHeader.svelte'
+  import { NavigationItem } from '../type'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -173,30 +172,14 @@
     return hierarchy.isDerived(chunterClass, chunter.class.ChunterSpace)
   }
 
-  let component: AnyComponent | undefined = undefined
-  $: void updateSelectedPanel(doc, legacyContext, urlObjectClass)
-  async function updateSelectedPanel (
+  $: void readLegacyDoc(doc, legacyContext, urlObjectClass)
+  async function readLegacyDoc (
     doc: Doc | undefined,
     selectedContext?: DocNotifyContext,
     urlObjectClass?: Ref<Class<Doc>>
   ): Promise<void> {
-    if (doc == null) {
-      component = undefined
-      return
-    }
-    // if (selectedContext === undefined) {
-    component =
-      client.getHierarchy().classHierarchyMixin(doc._class, view.mixin.ObjectPanel)?.component ?? view.component.EditDoc
-    //   return
-    // }
-    //
+    if (doc == null) return
     const isChunter = isChunterChannel(doc._class, urlObjectClass)
-    // const panelComponent = hierarchy.classHierarchyMixin(
-    //   isChunter ? urlObjectClass ?? selectedContext.objectClass : selectedContext.objectClass,
-    //   view.mixin.ObjectPanel
-    // )
-    //
-    // component = panelComponent?.component ?? view.component.EditDoc
 
     const contextNotifications = $notificationsByContextStore.get(selectedContext?._id ?? ('' as any)) ?? []
 
@@ -259,9 +242,10 @@
   {/if}
 
   <div bind:this={replacedPanelElement} class="hulyComponent inbox__panel">
-    {#if doc && component}
+    {#if doc}
+      {@const panel = client.getHierarchy().classHierarchyMixin(doc._class, view.mixin.ObjectPanel)}
       <Component
-        is={component}
+        is={panel?.component ?? view.component.EditDoc}
         props={{
           _id: doc._id,
           _class: doc._class,
