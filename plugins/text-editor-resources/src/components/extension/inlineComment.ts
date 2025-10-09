@@ -46,6 +46,8 @@ export interface InlineCommentExtensionOptions {
   minEditorWidth?: number
 
   requestSideSpace?: (width: number) => void
+
+  whenSync?: Promise<void>
 }
 
 type InlineCommentDisplayMode = 'compact' | 'full'
@@ -243,11 +245,21 @@ function initCommentDecoratorView (options: InlineCommentExtensionOptions, view:
     view.dispatch(setMeta(view.state.tr, { threads }))
   }
 
-  commentMap.observe(commentMapObserver)
+  // Defer YMap observation until remote sync is complete to prevent race condition
+  // where stale cached comment positions overwrite the latest server state
+  const initObserver = async (): Promise<void> => {
+    if (options.whenSync !== undefined) {
+      await options.whenSync
+    }
+    commentMap.observe(commentMapObserver)
+    commentMapObserver()
+  }
+
+  void initObserver()
+
   destructors.push(() => {
     commentMap.unobserve(commentMapObserver)
   })
-  commentMapObserver()
 
   return {
     destroy () {
