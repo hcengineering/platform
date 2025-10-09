@@ -20,47 +20,47 @@ export function createContext (context: SelectedContext): string {
   }
 }
 
-export function createDSLContext (context: SelectedContext): string {
-  let expression = ''
+function createDSLExpression (context: SelectedContext): string {
   switch (context.type) {
     case 'attribute': {
-      expression = `@${context.key}`
-      break
+      return `@${context.key}`
     }
     case 'nested': {
       const nested = context
-      expression = `@${nested.path}.${nested.key}`
-      break
+      return `@${nested.path}.${nested.key}`
     }
     case 'relation': {
       const rel = context
-      expression = `$relation(${rel.association},${rel.direction},${rel.key},${rel.name})`
-      break
+      return `$relation(${rel.association},${rel.direction},${rel.key},${rel.name})`
     }
     case 'context': {
       const ctx = context
-      expression = `$context(${ctx.id},${ctx.key})`
-      break
+      if (ctx.key !== '') {
+        return `$context(${ctx.id},${ctx.key})`
+      } else {
+        return `$context(${ctx.id})`
+      }
     }
     case 'const': {
       const val = context
-      expression = `#${encodeValue(val.value)},${val.key}`
-      break
+      return `#${encodeValue(val.value)},${val.key}`
     }
     case 'function': {
       const func = context
-      expression = encodeFunc(func)
-      break
+      return encodeFunc(func)
     }
     case 'userRequest': {
       const req = context
-      expression = `$userRequest(${req.id},${req.key},${req._class})`
-      break
+      return `$userRequest(${req.id},${req.key},${req._class})`
     }
     default: {
       throw new Error(`Unsupported SelectedContext type: ${(context as any)?.type}`)
     }
   }
+}
+
+export function createDSLContext (context: SelectedContext): string {
+  const expression = createDSLExpression(context)
   const modifiers: string[] = []
   if (context.sourceFunction !== undefined) {
     modifiers.push(encodeSourceFunc(context.sourceFunction))
@@ -208,7 +208,7 @@ function parseExpression (expr: string): Base<SelectedContext> {
     const inside = expr.slice('$context('.length, -1)
     const parts = splitTopLevel(inside, ',')
     const id = decodeValue(parts[0])
-    const key = parts[1]
+    const key = parts[1] ?? ''
     const res: Base<SelectedExecutionContext> = { type: 'context', id, key }
     return res
   }
