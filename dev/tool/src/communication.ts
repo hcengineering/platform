@@ -319,6 +319,7 @@ async function oldMessageToNewMessageDoc (
     creator: oldMessage.creator,
     created: oldMessage.created.toISOString(),
     modified: oldMessage.edited?.toISOString() ?? null,
+    language: null,
     reactions,
     attachments,
     threads

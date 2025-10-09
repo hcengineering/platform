@@ -15,10 +15,10 @@
 
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { employeeByPersonIdStore, getPersonByPersonId, translationStore } from '@hcengineering/contact-resources'
+  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Card } from '@hcengineering/card'
   import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
-  import type { CardID, MessageID, SocialID } from '@hcengineering/communication-types'
+  import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
   import { MessageAction } from '@hcengineering/communication'
@@ -29,10 +29,12 @@
   import OneRowMessageBody from './OneRowMessageBody.svelte'
   import {
     messageEditingStore,
-    TranslateMessagesStatus,
     translateMessagesStore,
     threadCreateMessageStore,
-    showOriginalMessagesStore
+    showOriginalMessagesStore,
+    isMessageTranslated,
+    translateToStore,
+    dontTranslateStore
   } from '../../stores'
   import { getMessageActions } from '../../actions'
   import communication from '../../plugin'
@@ -95,20 +97,18 @@
     return false
   }
 
-  $: language = $translationStore?.enabled === true ? $translationStore?.translateTo : undefined
-  $: dontTranslate = $translationStore?.enabled === true ? $translationStore?.dontTranslate : undefined
-
   let allActions: MessageAction[] = []
   let excludedActions: Ref<MessageAction>[] = []
   let actions: MessageAction[] = []
 
-  $: excludedActions = getExcludedActions(
-    $translateMessagesStore,
-    $showOriginalMessagesStore,
+  $: isTranslated = isMessageTranslated(
     message,
-    language,
-    dontTranslate
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
   )
+  $: excludedActions = getExcludedActions(isTranslated)
 
   $: void getMessageActions(message).then((res) => {
     allActions = res
@@ -116,27 +116,12 @@
 
   $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
 
-  function getExcludedActions (
-    translatedMessages: TranslateMessagesStatus[],
-    showOriginalMessage: Array<[CardID, MessageID]>,
-    message: Message,
-    lang?: string,
-    dontTranslate: string[] = []
-  ): Ref<MessageAction>[] {
-    const result: TranslateMessagesStatus | undefined = translatedMessages.find(
-      (it) => it.cardId === message.cardId && it.messageId === message.id
-    )
-    const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
-    const isTranslated =
-      lang != null && message?.translates?.[lang] != null && !dontTranslate.includes(message.language ?? '')
-
-    if ((result === undefined && !isTranslated) || result?.inProgress || showOriginal) {
+  function getExcludedActions (isTranslated: boolean): Ref<MessageAction>[] {
+    if (!isTranslated) {
       return [communication.messageAction.ShowOriginalMessage]
-    } else if ((result?.result != null || isTranslated) && !showOriginal) {
+    } else {
       return [communication.messageAction.TranslateMessage]
     }
-
-    return []
   }
 
   function handleContextMenu (event: MouseEvent): void {
@@ -163,6 +148,7 @@
   $: showActions = !isEditing && !readonly
 </script>
 
+{message.language}
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div

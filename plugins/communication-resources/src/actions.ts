@@ -43,7 +43,7 @@ import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.
 
 import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
 import {
-  isMessageTranslating,
+  isMessageManualTranslating,
   messageEditingStore,
   showOriginalMessagesStore,
   threadCreateMessageStore,
@@ -155,7 +155,7 @@ export const canReplyInThread: MessageActionVisibilityTester = (message: Message
 }
 
 export const translateMessage: MessageActionFunction = async (message: Message): Promise<void> => {
-  if (isMessageTranslating(message.cardId, message.id)) return
+  if (isMessageManualTranslating(message.cardId, message.id)) return
   const result = get(translateMessagesStore).find((it) => it.cardId === message.cardId && it.messageId === message.id)
 
   if (result != null) {
@@ -172,7 +172,8 @@ export const translateMessage: MessageActionFunction = async (message: Message):
 
   const markup = toMarkup(message.content)
   const lang = get(languageStore)
-  const response = message?.translates?.[lang] ?? (await aiTranslate(markup, lang))?.text
+  const currentTranslate = message?.translates?.[lang] ?? ''
+  const response = currentTranslate !== '' ? toMarkup(currentTranslate) : (await aiTranslate(markup, lang))?.text
 
   if (response !== undefined) {
     translateMessagesStore.update((store) => {

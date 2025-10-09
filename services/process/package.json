@@ -65,8 +65,8 @@
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/server-token": "^0.7.0",
     "@hcengineering/account-client": "^0.7.3",
-    "@hcengineering/communication-types": "^0.7.0",
-    "@hcengineering/communication-sdk-types": "^0.7.0",
+    "@hcengineering/communication-types": "^0.7.2",
+    "@hcengineering/communication-sdk-types": "^0.7.2",
     "@temporalio/client": "1.12.3",
     "dotenv": "~16.0.0"
   }

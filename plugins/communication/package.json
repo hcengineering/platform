@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/communication-types": "^0.7.0",
+    "@hcengineering/communication-types": "^0.7.2",
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
