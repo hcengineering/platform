@@ -339,6 +339,7 @@
     { "packageName": "@hcengineering/collaboration", "projectFolder": "packages/collaboration", "shouldPublish": true },
     { "packageName": "@hcengineering/server-core", "projectFolder": "packages/core", "shouldPublish": true },
     { "packageName": "@hcengineering/datalake", "projectFolder": "packages/datalake", "shouldPublish": true },
+    { "packageName": "@hcengineering/hulylake", "projectFolder": "packages/hulylake", "shouldPublish": true },
     { "packageName": "@hcengineering/elastic", "projectFolder": "packages/elastic", "shouldPublish": true },
     { "packageName": "@hcengineering/kafka", "projectFolder": "packages/kafka", "shouldPublish": true },
     { "packageName": "@hcengineering/middleware", "projectFolder": "packages/middleware", "shouldPublish": true },

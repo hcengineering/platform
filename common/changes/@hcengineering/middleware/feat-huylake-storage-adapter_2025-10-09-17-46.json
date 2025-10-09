@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/middleware",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/middleware"
+}

@@ -36,8 +36,8 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/communication-sdk-types": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.0",
+    "@hcengineering/communication-sdk-types": "^0.7.3",
+    "@hcengineering/communication-types": "^0.7.3",
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/platform": "^0.7.3",
     "@hcengineering/query": "^0.7.3",

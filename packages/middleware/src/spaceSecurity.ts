@@ -667,7 +667,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (clientFilterSpaces !== undefined) {
       const cfs = clientFilterSpaces
       findResult = toFindResult(
-        findResult.filter((it) => cfs.has((it as any)[field])),
+        findResult.filter((it) => cfs.has(it[field])),
         findResult.total,
         findResult.lookupMap
       )

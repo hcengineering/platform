@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/server-storage",
+      "comment": "add hulylake storage adapter",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/server-storage"
+}

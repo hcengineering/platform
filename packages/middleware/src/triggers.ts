@@ -159,7 +159,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
           return addOperation(
             ctx,
             'query-find',
-            { domain, _class, query: query as any, options: pureOptions as any },
+            { domain, _class, query, options: pureOptions as any },
             () =>
               // We sure ctx is required to be passed
               this.context.liveQuery?.queryFind(_class, query) ??

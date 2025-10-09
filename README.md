@@ -33,6 +33,7 @@ This repository includes the following server packages:
 - [@hcengineering/minio](packages/minio) - MinIO storage provider for object storage
 - [@hcengineering/s3](packages/s3) - AWS S3 compatible storage provider
 - [@hcengineering/datalake](packages/datalake) - Data lake storage and management
+- [@hcengineering/hulylake](packages/hulylake) - Huly lake storage and management
 
 ### Infrastructure
 
