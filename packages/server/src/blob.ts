@@ -331,11 +331,13 @@ export class Blob {
 
     if (patches.length === 0) return
 
-    patches.push({
-      op: 'replace',
-      path: `/messages/${messageId}/modified`,
-      value: date
-    })
+    if (update.content != null || update.extra != null) {
+      patches.push({
+        op: 'replace',
+        path: `/messages/${messageId}/modified`,
+        value: date
+      })
+    }
 
     await this.patchJson(cardId, blobId, patches)
   }

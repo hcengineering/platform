@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-server",
+      "comment": "Do not update message.modified date if content is not changed ",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-server"
+}
