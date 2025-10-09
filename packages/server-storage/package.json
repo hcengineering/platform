@@ -65,8 +65,8 @@
     "@hcengineering/analytics": "^0.7.3",
     "@hcengineering/server-token": "^0.7.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hcengineering/huly.server"
+  "repository": "https://github.com/hcengineering/huly.server",
+  "publishConfig": {
+    "access": "public"
   }
 }

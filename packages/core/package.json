@@ -47,9 +47,9 @@
     "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hcengineering/huly.server"
+  "repository": "https://github.com/hcengineering/huly.server",
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "lib/**/*",

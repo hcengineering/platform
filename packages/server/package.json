@@ -44,9 +44,9 @@
     "@hcengineering/server-token": "^0.7.0",
     "utf-8-validate": "^6.0.4"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hcengineering/huly.server"
+  "repository": "https://github.com/hcengineering/huly.server",
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "lib/**/*",

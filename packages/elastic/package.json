@@ -60,7 +60,7 @@
     "@elastic/elasticsearch": "^7.17.14",
     "@hcengineering/analytics": "^0.7.3"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": "https://github.com/hcengineering/huly.server",
   "publishConfig": {
     "access": "public"
   }

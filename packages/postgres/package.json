@@ -40,9 +40,9 @@
     "@hcengineering/server-core": "workspace:0.7.0",
     "@hcengineering/postgres-base": "^0.7.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hcengineering/huly.server"
+  "repository": "https://github.com/hcengineering/huly.server",
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "lib/**/*",
