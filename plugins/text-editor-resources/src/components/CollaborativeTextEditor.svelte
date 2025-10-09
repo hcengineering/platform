@@ -128,9 +128,10 @@
   let contentError = false
   let localSynced = false
   let remoteSynced = false
+  let editorReady = false
 
-  $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && !contentError && remoteSynced && hasAccountRole(account, AccountRole.User)
+  $: loading = !localSynced
+  $: editable = !readonly && !contentError && remoteSynced && editorReady && hasAccountRole(account, AccountRole.User)
 
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
@@ -229,7 +230,7 @@
     needFocus = false
   }
 
-  $: if (editor !== undefined) {
+  $: if (editor !== undefined && editorReady && editable !== editor.isEditable) {
     // When the content is invalid, we don't want to emit an update
     // Preventing synchronization of the invalid content
     const emitUpdate = !contentError
@@ -429,22 +430,30 @@
             ydoc,
             boundary,
             popupContainer: editorPopupContainer,
-            requestSideSpace
+            requestSideSpace,
+            whenSync: remoteProvider.loaded
           }
         }
       },
       kitOptions
     )
 
+    // Create editor immediately with cached content
+    // BUT keep it read-only until remote sync completes
+    // This prevents stale cached content from overwriting newer server content
     editor = new Editor({
       extensions: [kit],
       element,
+      editable: false,
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' })
       },
       enableContentCheck: true,
       parseOptions: {
         preserveWhitespace: 'full'
+      },
+      onCreate: () => {
+        editorReady = true
       },
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
