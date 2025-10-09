@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import card from '@hcengineering/card'
 import {
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
@@ -9,7 +10,10 @@ import {
   ModelDb,
   systemAccountUuid,
   type Branding,
+  type Class,
+  type Doc,
   type MeasureContext,
+  type Ref,
   type Tx,
   type WorkspaceIds
 } from '@hcengineering/core'
@@ -24,6 +28,7 @@ import {
   DomainTxMiddleware,
   FindSecurityMiddleware,
   FullTextMiddleware,
+  GuestPermissionsMiddleware,
   IdentityMiddleware,
   LiveQueryMiddleware,
   LookupMiddleware,
@@ -31,6 +36,7 @@ import {
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
+  NormalizeTxMiddleware,
   PluginConfigurationMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
@@ -39,9 +45,7 @@ import {
   SpaceSecurityMiddleware,
   TriggersMiddleware,
   TxMiddleware,
-  UserStatusMiddleware,
-  GuestPermissionsMiddleware,
-  NormalizeTxMiddleware
+  UserStatusMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -86,6 +90,19 @@ export function getTxAdapterFactory (
   const adapterName = conf.domains[DOMAIN_TX] ?? conf.defaultAdapter
   const adapter = conf.adapters[adapterName]
   return adapter.factory
+}
+
+function addMessagesToFullText (fulltext: MiddlewareCreator): MiddlewareCreator {
+  return async (ctx: MeasureContext, context: PipelineContext, next?: Middleware) => {
+    const result: FullTextMiddleware = (await fulltext(ctx, context, next)) as FullTextMiddleware
+    result.addExtraFind = (baseClass, childClasses) => {
+      if (context.hierarchy.isDerived(baseClass, card.class.Card)) {
+        // Using Card as base class because messages are the same for any card subclass
+        childClasses.add(`${card.class.Card}%message` as Ref<Class<Doc>>)
+      }
+    }
+    return result
+  }
 }
 
 /**
@@ -141,9 +158,11 @@ export function createServerPipeline (
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined
         ? [
-            FullTextMiddleware.create(
-              opt.fulltextUrl,
-              generateToken(systemAccountUuid, workspace.uuid, { service: 'transactor' })
+            addMessagesToFullText(
+              FullTextMiddleware.create(
+                opt.fulltextUrl,
+                generateToken(systemAccountUuid, workspace.uuid, { service: 'transactor' })
+              )
             )
           ]
         : []),

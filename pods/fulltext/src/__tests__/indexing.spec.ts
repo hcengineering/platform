@@ -33,7 +33,7 @@ import { dbConfig, dbUrl, elasticIndexName, model, prepare, preparePipeline } fr
 prepare()
 jest.mock('franc-min', () => ({ franc: () => 'en' }), { virtual: true })
 
-jest.setTimeout(500000)
+jest.setTimeout(30000)
 
 class TestWorkspaceManager extends WorkspaceManager {
   public async getWorkspaceInfo (ctx: MeasureContext, token?: string): Promise<WorkspaceInfoWithStatus | undefined> {

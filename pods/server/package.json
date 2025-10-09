@@ -65,7 +65,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/kafka": "^0.7.0",
-    "@hcengineering/middleware": "^0.7.0",
+    "@hcengineering/middleware": "^0.7.1",
     "@hcengineering/minio": "^0.7.0",
     "@hcengineering/mongo": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
