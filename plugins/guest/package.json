@@ -40,5 +40,9 @@
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/platform": "^0.7.3",
     "@hcengineering/ui": "^0.7.0"
+  },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "access": "public"
   }
 }
