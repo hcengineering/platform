@@ -28,7 +28,7 @@
     makeDocCollabId,
     type Ref
   } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import {
     DrawingCmd,
     getAttribute,
@@ -88,7 +88,9 @@
   export let buttonSize: IconSize = 'small'
   export let actionsButtonSize: IconSize = 'medium'
   export let full: boolean = false
+
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
+  export let placeholderParams: Record<string, any> = {}
 
   export let refActions: RefAction[] = []
 
@@ -143,21 +145,6 @@
   let editor: Editor
   let element: HTMLElement
   let editorPopupContainer: HTMLElement
-
-  let placeHolderStr: string = ''
-
-  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
-    if (editor !== undefined && placeHolderStr !== r) {
-      const placeholderIndex = editor.extensionManager.extensions.findIndex(
-        (extension) => extension.name === 'placeholder'
-      )
-      if (placeholderIndex !== -1) {
-        editor.extensionManager.extensions[placeholderIndex].options.placeholder = r
-        editor.view.dispatch(editor.state.tr)
-      }
-    }
-    placeHolderStr = r
-  })
 
   $: dispatch('editor', editor)
 
@@ -366,8 +353,6 @@
   }
 
   onMount(async () => {
-    await ph
-
     // it is recommended to wait for the local provider to be loaded
     // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
     await localProvider.loaded
@@ -417,7 +402,11 @@
         },
         inlineCommands:
           withInlineCommands && inlineCommandsConfig(handleLeftMenuClick, canAttachFiles ? [] : ['image']),
-        placeholder: { placeholder: placeHolderStr },
+        placeholder: {
+          placeholderIntl: placeholder,
+          placeholderIntlParams: placeholderParams,
+          themeStore
+        },
         collaboration: {
           collaboration: { document: ydoc, field },
           collaborationCursor: {
@@ -524,11 +513,6 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    <!-- <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
-      {#if remoteProvider && editor && userComponent}
-        <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
-      {/if}
-    </div> -->
   </div>
 
   {#if refActions.length > 0}

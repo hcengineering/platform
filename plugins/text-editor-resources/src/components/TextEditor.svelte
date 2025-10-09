@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { type Blob, Markup, type Ref } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import textEditor from '@hcengineering/text-editor'
   import { themeStore } from '@hcengineering/ui'
@@ -42,21 +42,6 @@
 
   let element: HTMLElement
   let editor: Editor
-
-  let placeHolderStr: string = ''
-
-  $: ph = translate(placeholder, placeholderParams, $themeStore.language).then((r) => {
-    if (editor !== undefined && placeHolderStr !== r) {
-      const placeholderIndex = editor.extensionManager.extensions.findIndex(
-        (extension) => extension.name === 'placeholder'
-      )
-      if (placeholderIndex !== -1) {
-        editor.extensionManager.extensions[placeholderIndex].options.placeholder = r
-        editor.view.dispatch(editor.state.tr)
-      }
-    }
-    placeHolderStr = r
-  })
 
   const dispatch = createEventDispatcher()
 
@@ -152,8 +137,6 @@
   }
 
   onMount(async () => {
-    await ph
-
     const kit = await getEditorKit(
       {
         mode: 'compact',
@@ -162,7 +145,11 @@
         textAlign: false,
         reference: false,
         emoji: false,
-        placeholder: { placeholder: placeHolderStr },
+        placeholder: {
+          placeholderIntl: placeholder,
+          placeholderIntlParams: placeholderParams,
+          themeStore
+        },
         submit: supportSubmit ? { submit } : false
       },
       kitOptions
