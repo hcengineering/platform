@@ -2,6 +2,23 @@
   "name": "@hcengineering/client",
   "entries": [
     {
+      "version": "0.7.4",
+      "tag": "@hcengineering/client_v0.7.4",
+      "date": "Thu, 09 Oct 2025 16:57:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix formatting"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.4` to `0.7.5`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.3",
       "tag": "@hcengineering/client_v0.7.3",
       "date": "Wed, 08 Oct 2025 03:40:53 GMT",

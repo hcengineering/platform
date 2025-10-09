@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "workspace:^0.7.3",
-    "@hcengineering/core": "workspace:^0.7.4"
+    "@hcengineering/core": "workspace:^0.7.5"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {
