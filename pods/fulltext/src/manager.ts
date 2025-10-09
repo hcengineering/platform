@@ -18,6 +18,7 @@ import {
   QueueTopic,
   QueueWorkspaceEvent,
   workspaceEvents,
+  getDeadletterTopic,
   type ConsumerControl,
   type ConsumerHandle,
   type ConsumerMessage,
@@ -49,6 +50,7 @@ export class WorkspaceManager {
 
   fulltextConsumer?: ConsumerHandle
   txConsumer?: ConsumerHandle
+  txDeadLetterProducer?: PlatformQueueProducer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>
 
   constructor (
     readonly ctx: MeasureContext,
@@ -150,25 +152,39 @@ export class WorkspaceManager {
         await this.processTransactions(msg, control)
       }
     )
+
+    this.txDeadLetterProducer = this.opt.queue.getProducer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>(
+      this.ctx,
+      getDeadletterTopic(QueueTopic.Tx)
+    )
   }
 
   private async processTransactions (
     m: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<QueueSourced<Event>>>,
     control: ConsumerControl
   ): Promise<void> {
-    const ws = m.workspace
-
-    let token: string
     try {
-      token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
-    } catch (err: any) {
-      this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
-      throw err
-    }
+      const ws = m.workspace
 
-    await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-      await indexer.fulltext.processTransactions(this.ctx, [m.value], control)
-    })
+      let token: string
+      try {
+        token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+      } catch (err: any) {
+        this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+        throw err
+      }
+
+      await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+        await indexer.fulltext.processTransactions(this.ctx, [m.value], control)
+      })
+    } catch (err: any) {
+      if (this.txDeadLetterProducer !== undefined) {
+        await this.txDeadLetterProducer.send(this.ctx, m?.workspace ?? 'N/A', [m.value])
+      } else {
+        this.ctx.error('Could not send failed transaction to dead letter queue - no producer available', { m })
+      }
+      this.ctx.error('Could not process transactions', { err, m })
+    }
   }
 
   private async processWorkspaceEvent (

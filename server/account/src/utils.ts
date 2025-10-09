@@ -1810,7 +1810,8 @@ export const integrationServices = [
   'caldav',
   'gmail',
   'google-calendar',
-  'huly-mail'
+  'huly-mail',
+  'ai-assistant'
 ]
 
 export async function findExistingIntegration (
