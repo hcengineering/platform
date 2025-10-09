@@ -16,10 +16,44 @@
 import { RetryOptions } from '@hcengineering/retry'
 
 export interface HulylakeClient {
+  head: (workspace: string, key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
+  get: (
+    workspace: string,
+    key: string,
+    retryOptions?: RetryOptions
+  ) => Promise<HulyResponse<ReadableStream<Uint8Array>>>
+  partial: (
+    workspace: string,
+    key: string,
+    offset: number,
+    length?: number,
+    retryOptions?: RetryOptions
+  ) => Promise<HulyResponse<ReadableStream<Uint8Array>>>
+  put: (
+    workspace: string,
+    key: string,
+    body: Body,
+    opts: PutOptions,
+    retryOptions?: RetryOptions
+  ) => Promise<HulyResponse<void>>
+  patch: (
+    workspace: string,
+    key: string,
+    body: Body,
+    opts: PatchOptions,
+    retryOptions?: RetryOptions
+  ) => Promise<HulyResponse<void>>
+  delete: (workspace: string, key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
+
+  objectUrl: (workspace: string, key: string) => string
+}
+
+export interface HulylakeWorkspaceClient {
   head: (key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
   get: (key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<ReadableStream<Uint8Array>>>
   put: (key: string, body: Body, opts: PutOptions, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
   patch: (key: string, body: Body, opts: PatchOptions, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
+  delete: (key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<void>>
 
   getJson: <T>(key: string, retryOptions?: RetryOptions) => Promise<HulyResponse<T>>
   putJson: <T extends object>(
@@ -36,7 +70,7 @@ export interface HulylakeClient {
   ) => Promise<HulyResponse<void>>
 }
 
-export type Body = ArrayBuffer | Blob | string
+export type Body = ReadableStream | ArrayBuffer | Blob | string
 export type MergeStrategy = 'concatenate' | 'jsonpatch'
 export type HulyHeaders = Record<string, string>
 export type HulyMeta = Record<string, string>
@@ -44,17 +78,20 @@ export type HulyMeta = Record<string, string>
 export type PutOptions =
   | {
     mergeStrategy?: 'concatenate'
+    contentLength?: number
     contentType?: string
     headers?: HulyHeaders
     meta?: HulyMeta
   }
   | {
     mergeStrategy: 'jsonpatch'
+    contentLength?: number
     headers?: HulyHeaders
     meta?: HulyMeta
   }
 
 export interface PatchOptions {
+  contentLength?: number
   contentType?: string
   headers?: HulyHeaders
   meta?: HulyMeta
@@ -75,6 +112,7 @@ export interface HulyResponse<Body = ArrayBuffer | string | any> {
   ok: boolean
   status: number
   etag?: string
+  contentType?: string
   contentLength?: number
   lastModified?: number
   headers: Headers

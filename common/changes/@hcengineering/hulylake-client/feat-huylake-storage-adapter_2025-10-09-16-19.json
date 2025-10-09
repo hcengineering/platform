@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/hulylake-client",
+      "comment": "refactoring hulylake client to extract multi-workspace client",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/hulylake-client"
+}
