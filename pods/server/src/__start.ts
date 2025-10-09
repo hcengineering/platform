@@ -13,7 +13,7 @@ import { setDBExtraOptions } from '@hcengineering/postgres'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverCalendar from '@hcengineering/server-calendar'
-import serverCard from '@hcengineering/Server-card'
+import serverCard from '@hcengineering/server-card'
 import serverCore, {
   initStatisticsContext,
   loadBrandingMap,
