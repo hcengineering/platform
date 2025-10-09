@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/client",
+      "comment": "fix formatting",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/client"
+}

@@ -185,7 +185,7 @@ class TestConnection implements ClientConnection {
     await this.transactions.tx(tx)
 
     // Notify handlers
-    this.handlers.forEach(h => {
+    this.handlers.forEach((h) => {
       h(tx)
     })
 
@@ -247,7 +247,7 @@ class TestConnection implements ClientConnection {
 
   // Simulate receiving transactions from server
   simulateTransaction (tx: Tx): void {
-    this.handlers.forEach(h => {
+    this.handlers.forEach((h) => {
       h(tx)
     })
   }
@@ -336,7 +336,7 @@ describe('Client Core Implementation', () => {
     testConnection.simulateTransaction(tx)
 
     // Wait for async operations
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(notifySpy).toHaveBeenCalled()
   })
@@ -387,7 +387,11 @@ describe('Client Core Implementation', () => {
   it('should handle reconnection events', async () => {
     let eventReceived: ClientConnectEvent | undefined
 
-    const onConnectHandler = async (event: ClientConnectEvent, lastTx: string | undefined, data: any): Promise<void> => {
+    const onConnectHandler = async (
+      event: ClientConnectEvent,
+      lastTx: string | undefined,
+      data: any
+    ): Promise<void> => {
       eventReceived = event
     }
 
@@ -418,7 +422,7 @@ describe('Client Core Implementation', () => {
 
     testConnection.simulateTransaction(workspaceTx)
 
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(notifySpy).toHaveBeenCalled()
   })
@@ -466,7 +470,7 @@ describe('Client Core Implementation', () => {
     // Simulate receiving the same transaction from remote
     testConnection.simulateTransaction(tx)
 
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Should still notify but skip model update
     expect(notifySpy).toHaveBeenCalled()

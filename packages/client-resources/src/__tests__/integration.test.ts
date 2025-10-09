@@ -186,7 +186,7 @@ export class MockClientConnection implements ClientConnection {
     }
     await this.transactions.tx(tx)
 
-    this.handlers.forEach(h => {
+    this.handlers.forEach((h) => {
       h(tx)
     })
 
@@ -246,7 +246,7 @@ export class MockClientConnection implements ClientConnection {
   }
 
   simulateTransaction (tx: Tx): void {
-    this.handlers.forEach(h => {
+    this.handlers.forEach((h) => {
       h(tx)
     })
   }
@@ -285,10 +285,7 @@ export async function createTestClient (initialTxes: Tx[] = []): Promise<{
 /**
  * Helper to create a test transaction
  */
-export function createTestTx (
-  objectClass: Ref<Class<Doc>> = core.class.Space,
-  attributes: any = {}
-): TxCreateDoc<Doc> {
+export function createTestTx (objectClass: Ref<Class<Doc>> = core.class.Space, attributes: any = {}): TxCreateDoc<Doc> {
   return {
     _id: generateId(),
     _class: core.class.TxCreateDoc,
@@ -339,7 +336,7 @@ describe('Client-Resources Integration Tests', () => {
 
     // The mock connection immediately notifies handlers when we call tx
     // So notifySpy should have been called
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(notifySpy).toHaveBeenCalled()
 
@@ -525,17 +522,13 @@ describe('Client-Resources Integration Tests', () => {
     const tx2 = createTestTx(core.class.Space, { name: 'Space2' })
     const tx3 = createTestTx(core.class.Space, { name: 'Space3' })
 
-    await Promise.all([
-      client.tx(tx1),
-      client.tx(tx2),
-      client.tx(tx3)
-    ])
+    await Promise.all([client.tx(tx1), client.tx(tx2), client.tx(tx3)])
 
     connection.simulateTransaction(tx1)
     connection.simulateTransaction(tx2)
     connection.simulateTransaction(tx3)
 
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(notifySpy.mock.calls.length).toBeGreaterThanOrEqual(3)
 

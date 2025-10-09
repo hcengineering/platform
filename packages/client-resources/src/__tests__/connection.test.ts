@@ -261,7 +261,7 @@ describe('MockWebSocket', () => {
 
     ws.send(pingConst)
 
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     expect(receivedMessage).toBe(pongConst)
 
@@ -290,7 +290,7 @@ describe('connect function', () => {
     mockWebSockets = []
 
     // Give time for all timers to clear
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
   })
 
   it('should establish connection', async () => {
@@ -311,13 +311,13 @@ describe('connect function', () => {
     expect(client).toBeDefined()
 
     // Wait for connection to establish
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Close connection immediately to prevent timers from continuing
     await client.close()
 
     // Wait for close to complete
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
   })
 
   it('should handle transactions', async () => {
@@ -339,7 +339,7 @@ describe('connect function', () => {
     connections.push(client)
 
     // Wait for connection to establish
-    await new Promise(resolve => setTimeout(resolve, 150))
+    await new Promise((resolve) => setTimeout(resolve, 150))
 
     // Simulate a transaction from server
     const testTx: TxCreateDoc<Doc> = {
@@ -363,12 +363,12 @@ describe('connect function', () => {
 
     mockWs.simulateTransaction(testTx)
 
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(txReceived).toBeDefined()
 
     // Close immediately after test
     await client.close()
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
   })
 })

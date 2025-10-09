@@ -29,12 +29,12 @@ async function innerFetchSafe (url: string | URL, init?: RequestInit): Promise<R
     return response
   }
 
-  const text = await response.text()
   if (response.status === 404) {
     return response
-  } else {
-    throw new HulylakeError(text)
   }
+
+  const text = await response.text()
+  throw new HulylakeError(text)
 }
 
 export async function fetchSafe (url: string | URL, init?: RequestInit, retryOptions?: RetryOptions): Promise<Response> {
