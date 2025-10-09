@@ -13,13 +13,13 @@ importers:
   ../../packages/client-query:
     dependencies:
       '@hcengineering/communication-query':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../query
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/hulylake-client':
         specifier: ^0.7.1
@@ -71,13 +71,13 @@ importers:
   ../../packages/cockroach:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       postgres:
         specifier: ^3.4.7
@@ -132,13 +132,13 @@ importers:
   ../../packages/query:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/hulylake-client':
         specifier: ^0.7.1
@@ -196,13 +196,13 @@ importers:
   ../../packages/rest-client:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
@@ -257,7 +257,7 @@ importers:
   ../../packages/sdk-types:
     dependencies:
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
@@ -309,16 +309,16 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       '@hcengineering/communication-cockroach':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../cockroach
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
@@ -391,10 +391,10 @@ importers:
   ../../packages/shared:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.1
+        specifier: workspace:^0.7.2
         version: link:../types
       '@hcengineering/hulylake-client':
         specifier: ^0.7.1

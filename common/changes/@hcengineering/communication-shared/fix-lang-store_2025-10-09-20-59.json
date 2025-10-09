@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "comment": "Fix update patch event apply",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-shared"
+}

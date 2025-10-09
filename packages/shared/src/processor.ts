@@ -141,9 +141,10 @@ function applyPatchEvent (message: Message, event: PatchEvent): Message | undefi
       if (date.getTime() < (message.modified?.getTime() ?? 0)) {
         return message
       }
+      const shouldUpdateDate = event.content != null || event.extra != null
       return {
         ...message,
-        modified: date,
+        modified: shouldUpdateDate ? date : message.modified,
         content: event.content ?? message.content,
         extra: event.extra ?? message.extra,
         language: event.language ?? message.language

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-server",
+      "comment": "fix language store",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-server"
+}

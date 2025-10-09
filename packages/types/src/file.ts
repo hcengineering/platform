@@ -32,8 +32,8 @@ export interface MessageDoc {
   type: MessageType
   content: Markdown
   extra: MessageExtra
-  language?: string | null
-  modified?: string | null // ISO date
+  language: string | null
+  modified: string | null // ISO date
 
   reactions: Record<Emoji, Record<PersonUuid, { count: number, date: string }>>
   attachments: Record<AttachmentID, AttachmentDoc>

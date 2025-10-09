@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-types",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",

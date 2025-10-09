@@ -543,9 +543,10 @@ export class Blob {
   private serializeMessage (message: Message): MessageDoc {
     return {
       ...message,
+      language: message.language ?? null,
       extra: message.extra ?? {},
       created: message.created.toISOString(),
-      modified: message.modified?.toISOString(),
+      modified: message.modified?.toISOString() ?? null,
       reactions: {},
       attachments: {},
       threads: {}
