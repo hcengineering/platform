@@ -64,39 +64,39 @@
   //   // "includeEmailInChangeFile": true
   // },
   //
-  // {
-  //   /**
-  //    * (Required) Indicates the kind of version policy being defined ("lockStepVersion" or "individualVersion").
-  //    *
-  //    * The "individualVersion" mode specifies that the projects will use "individual versioning".
-  //    * This is the typical NPM model where each package has an independent version number
-  //    * and CHANGELOG.md file.  Although a single CI definition is responsible for publishing the
-  //    * packages, they otherwise don't have any special relationship.  The version bumping will
-  //    * depend on how developers answer the "rush change" questions for each package that
-  //    * is changed.
-  //    */
-  //   "definitionName": "individualVersion",
-  //
-  //   "policyName": "MyRandomLibraries",
-  //
-  //   /**
-  //    * (Optional) This can be used to enforce that all packages in the set must share a common
-  //    * major version number, e.g. because they are from the same major release branch.
-  //    * It can also be used to discourage people from accidentally making "MAJOR" SemVer changes
-  //    * inappropriately.  The minor/patch version parts will be bumped independently according
-  //    * to the types of changes made to each project, according to the "rush change" command.
-  //    */
-  //   "lockedMajor": 3,
-  //
-  //   /**
-  //    * (Optional) When publishing is managed by Rush, by default the "rush change" command will
-  //    * request changes for any projects that are modified by a pull request. These change entries
-  //    * will produce a CHANGELOG.md file. If you author your CHANGELOG.md manually or announce updates
-  //    * in some other way, set "exemptFromRushChange" to true to tell "rush change" to ignore the projects
-  //    * belonging to this version policy.
-  //    */
-  //   "exemptFromRushChange": false,
-  //
-  //   // "includeEmailInChangeFile": true
-  // }
+  {
+    /**
+     * (Required) Indicates the kind of version policy being defined ("lockStepVersion" or "individualVersion").
+     *
+     * The "individualVersion" mode specifies that the projects will use "individual versioning".
+     * This is the typical NPM model where each package has an independent version number
+     * and CHANGELOG.md file.  Although a single CI definition is responsible for publishing the
+     * packages, they otherwise don't have any special relationship.  The version bumping will
+     * depend on how developers answer the "rush change" questions for each package that
+     * is changed.
+     */
+    "definitionName": "individualVersion",
+
+    "policyName": "MyRandomLibraries",
+
+    /**
+     * (Optional) This can be used to enforce that all packages in the set must share a common
+     * major version number, e.g. because they are from the same major release branch.
+     * It can also be used to discourage people from accidentally making "MAJOR" SemVer changes
+     * inappropriately.  The minor/patch version parts will be bumped independently according
+     * to the types of changes made to each project, according to the "rush change" command.
+     */
+    "lockedMajor": 3,
+
+    /**
+     * (Optional) When publishing is managed by Rush, by default the "rush change" command will
+     * request changes for any projects that are modified by a pull request. These change entries
+     * will produce a CHANGELOG.md file. If you author your CHANGELOG.md manually or announce updates
+     * in some other way, set "exemptFromRushChange" to true to tell "rush change" to ignore the projects
+     * belonging to this version policy.
+     */
+    "exemptFromRushChange": false
+
+    // "includeEmailInChangeFile": true
+  }
 ]
