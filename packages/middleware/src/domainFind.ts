@@ -27,8 +27,7 @@ import {
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import type { DBAdapterManager, Middleware, PipelineContext, ServerFindOptions } from '@hcengineering/server-core'
-import { BaseMiddleware } from '@hcengineering/server-core'
-import { emptyFindResult } from '@hcengineering/server-core/src/base'
+import { BaseMiddleware, emptyFindResult } from '@hcengineering/server-core'
 
 /**
  * Will perform a find inside adapters
