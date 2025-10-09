@@ -44,6 +44,7 @@ export async function unsubscribeMeetingPresence (): Promise<void> {
   }
   personsByRoom = undefined
   presenceByKey = undefined
+  activeRooms.set([])
 }
 
 function handleMeetingPresenceInfo (key: string, value: MeetingPresence | undefined): void {
