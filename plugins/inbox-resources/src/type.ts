@@ -22,7 +22,6 @@ export type NavigationItem =
     _id: Ref<Card>
     _class: Ref<Class<Card>>
     context: NotificationContext
-    doc?: Card
     date: Date
   }
   | {
@@ -31,6 +30,5 @@ export type NavigationItem =
     _class: Ref<Class<Doc>>
     context: DocNotifyContext
     date: Date
-    doc?: Doc
     notifications: DisplayInboxNotification[]
   }

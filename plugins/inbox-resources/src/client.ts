@@ -13,7 +13,11 @@
 
 import { type InboxNotificationsClient } from '@hcengineering/notification'
 import { writable, derived, get } from 'svelte/store'
-import { createNotificationContextsQuery, getCommunicationClient } from '@hcengineering/presentation'
+import {
+  createNotificationContextsQuery,
+  getCommunicationClient,
+  onCommunicationClient
+} from '@hcengineering/presentation'
 import { notEmpty, SortingOrder } from '@hcengineering/core'
 import cardPlugin from '@hcengineering/card'
 import { type NotificationContext, type Window } from '@hcengineering/communication-types'
@@ -21,15 +25,26 @@ import { getDisplayInboxData, removeContextNotifications } from '@hcengineering/
 
 import { type NavigationItem } from './type'
 
+const limit = 20
+
+const isLoadingStore = writable<boolean>(true)
+
+const contextsWindowStore = writable<Window<NotificationContext> | undefined>(undefined)
+const contextStore = writable<NotificationContext[]>([])
+
+const contextsQuery = createNotificationContextsQuery(true)
+
 export class NavigationClient {
-  private readonly contextStore = writable<NotificationContext[]>([])
+  private readonly contextStore = contextStore
+  private readonly contextsWindowStore = contextsWindowStore
+  public readonly isLoadingStore = isLoadingStore
 
-  public readonly isLoadingStore = writable<boolean>(true)
+  private readonly limitStore = writable<number>(limit)
 
-  private readonly contextsWindowStore = writable<Window<NotificationContext> | undefined>(undefined)
+  private isPrevLoading = false
 
   private readonly modernNavigationItemsStore = derived(
-    [this.contextStore],
+    [contextStore],
     ([contexts]): NavigationItem[] => {
       return contexts
         .map((context): NavigationItem => {
@@ -49,12 +64,9 @@ export class NavigationClient {
   private readonly legacyNavigationItemsStore
 
   public readonly navigationItemsStore
-
-  private readonly limit = 20
-  private readonly contextsQuery = createNotificationContextsQuery()
+  public readonly allNavigationItemsStore
 
   constructor (private readonly oldClient: InboxNotificationsClient) {
-    this.init()
     this.legacyNavigationItemsStore = derived(
       [this.oldClient.inboxNotificationsByContext, this.oldClient.contextById],
       ([notificationsByContext, contextById]) => {
@@ -78,48 +90,36 @@ export class NavigationClient {
       }
     )
 
-    this.navigationItemsStore = derived(
+    this.allNavigationItemsStore = derived(
       [this.modernNavigationItemsStore, this.legacyNavigationItemsStore],
       ([modern, legacy]): NavigationItem[] =>
         [...modern, ...legacy].sort((a, b) => b.date.getTime() - a.date.getTime()),
       [] as NavigationItem[]
     )
-  }
 
-  private init (): void {
-    this.updateContextsQuery()
-  }
-
-  private updateContextsQuery (): void {
-    this.contextsQuery.query(
-      {
-        notifications: {
-          order: SortingOrder.Descending,
-          limit: 3
-        },
-        order: SortingOrder.Descending,
-        limit: this.limit
-      },
-      (res) => {
-        this.contextsWindowStore.set(res)
-        const contexts = res.getResult().filter((it) => (it.notifications?.length ?? 0) > 0)
-        this.contextStore.set(contexts)
-        this.isLoadingStore.set(false)
-
-        if (contexts.length < this.limit && res.hasPrevPage()) {
-          void res.loadPrevPage()
-        }
-      },
-      { message: true }
+    this.navigationItemsStore = derived(
+      [this.allNavigationItemsStore, this.isLoadingStore, this.limitStore],
+      ([items, isLoading, limit]): NavigationItem[] => (isLoading ? [] : items.slice(0, limit)),
+      [] as NavigationItem[]
     )
   }
 
   public hasPrevPage (): boolean {
-    return get(this.contextsWindowStore)?.hasPrevPage() ?? false
+    const allItems = get(this.allNavigationItemsStore)
+    const navItems = get(this.navigationItemsStore)
+
+    const hasNextPage = get(contextsWindowStore)?.hasPrevPage() ?? false
+    return hasNextPage || allItems.length > navItems.length
   }
 
-  public prev (): void {
-    /// TODO request and update navigation items
+  public async prev (): Promise<void> {
+    if (this.isPrevLoading || !this.hasPrevPage()) return
+    const w = get(contextsWindowStore)
+    if (w == null) return
+    this.isPrevLoading = true
+    await w.loadPrevPage()
+    this.limitStore.update((it) => it + limit)
+    this.isPrevLoading = false
   }
 
   public async remove (item: NavigationItem): Promise<void> {
@@ -130,8 +130,32 @@ export class NavigationClient {
       await removeContextNotifications(item.context)
     }
   }
-
-  public destroy (): void {
-    this.contextsQuery.unsubscribe()
-  }
 }
+
+function updateContextsQuery (): void {
+  contextsQuery.query(
+    {
+      notifications: {
+        order: SortingOrder.Descending,
+        limit: 3
+      },
+      order: SortingOrder.Descending,
+      limit
+    },
+    (res) => {
+      contextsWindowStore.set(res)
+      const contexts = res.getResult().filter((it) => (it.notifications?.length ?? 0) > 0)
+      contextStore.set(contexts)
+      isLoadingStore.set(false)
+
+      if (contexts.length < limit && res.hasPrevPage()) {
+        void res.loadPrevPage()
+      }
+    },
+    { message: true }
+  )
+}
+
+onCommunicationClient(() => {
+  updateContextsQuery()
+})

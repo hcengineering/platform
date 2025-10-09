@@ -22,21 +22,21 @@
 
   import NotifyMarker from './NotifyMarker.svelte'
 
-  export let doc: Doc
+  export let doc: Doc | undefined
   export let count: number = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-
-  let size: IconSize = 'medium'
-  $: size = hierarchy.isDerived(doc._class, communication.type.Direct) ? 'large' : 'medium'
 </script>
 
 <div class="card-icon">
-  {#if hierarchy.isDerived(doc._class, cardPlugin.class.Card)}
-    <Component is={cardPlugin.component.CardIcon} props={{ value: doc, size }} />
-  {:else}
-    <ObjectIcon value={doc} {size} showLoading={false} />
+  {#if doc}
+    {@const size = hierarchy.isDerived(doc._class, communication.type.Direct) ? 'large' : 'medium'}
+    {#if hierarchy.isDerived(doc._class, cardPlugin.class.Card)}
+      <Component is={cardPlugin.component.CardIcon} props={{ value: doc, size }} />
+    {:else}
+      <ObjectIcon value={doc} {size} showLoading={false} />
+    {/if}
   {/if}
 
   {#if count > 0}

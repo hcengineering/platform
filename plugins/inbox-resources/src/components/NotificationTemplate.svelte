@@ -14,7 +14,7 @@
 <script lang="ts">
 </script>
 
-<div class="notification">
+<div class="notification" on:click|stopPropagation|preventDefault>
   <div class="marker" />
   <slot />
 </div>

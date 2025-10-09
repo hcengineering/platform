@@ -22,24 +22,26 @@
   import { NavigationItem } from '../type'
   import cardPlugin, { Card } from '@hcengineering/card'
 
-  export let doc: Doc
+  export let doc: Doc | undefined
   export let navItem: NavigationItem
 
   const client = getClient()
 
   $: presenterMixin = client
     .getHierarchy()
-    .classHierarchyMixin(doc._class, notification.mixin.NotificationContextPresenter)
+    .classHierarchyMixin(navItem._class, notification.mixin.NotificationContextPresenter)
 
   let idTitle: string | undefined
   let title: string | undefined
 
   $: navItem.type === 'legacy' &&
+    doc &&
     getDocIdentifier(client, doc._id, doc._class, doc).then((res) => {
       idTitle = res
     })
 
   $: navItem.type === 'legacy' &&
+    doc &&
     getDocTitle(client, doc._id, doc._class, doc).then((res) => {
       title = res
     })
@@ -50,28 +52,36 @@
 </script>
 
 <div class="labels">
-  {#if client.getHierarchy().isDerived(doc._class, cardPlugin.class.Card)}
-    {@const label = client.getHierarchy().getClass(doc._class).label}
+  {#if client.getHierarchy().isDerived(navItem._class, cardPlugin.class.Card)}
+    {@const label = client.getHierarchy().getClass(navItem._class).label}
     <span class="title--bold overflow-label clear-mins" use:tooltip={{ label }}>
       <Label {label} />
     </span>
-    <span class="title overflow-label clear-mins" use:tooltip={{ label: getEmbeddedLabel(asCard(doc).title) }}>
-      {asCard(doc).title}
-    </span>
+    {#if doc}
+      <span class="title overflow-label clear-mins" use:tooltip={{ label: getEmbeddedLabel(asCard(doc).title) }}>
+        {asCard(doc).title}
+      </span>
+    {/if}
   {:else}
     {#if presenterMixin?.labelPresenter && navItem.type === 'legacy'}
-      <Component is={presenterMixin.labelPresenter} props={{ context: navItem.context, object: doc }} showLoading={false} />
+      {#if doc}
+        <Component
+          is={presenterMixin.labelPresenter}
+          props={{ context: navItem.context, object: doc }}
+          showLoading={false}
+        />
+      {/if}
     {:else if idTitle}
       <span class="title--bold overflow-label clear-mins" use:tooltip={{ label: getEmbeddedLabel(idTitle) }}>
         {idTitle}
       </span>
     {:else}
-      {@const label = client.getHierarchy().getClass(doc._class).label}
+      {@const label = client.getHierarchy().getClass(navItem._class).label}
       <span class="title--bold overflow-label clear-mins" use:tooltip={{ label }}>
         <Label {label} />
       </span>
     {/if}
-    {@const label = title != null ? getEmbeddedLabel(title) : client.getHierarchy().getClass(doc._class).label}
+    {@const label = title != null ? getEmbeddedLabel(title) : client.getHierarchy().getClass(navItem._class).label}
     <span class="title overflow-label clear-mins" use:tooltip={{ label }}>
       <Label {label} />
     </span>

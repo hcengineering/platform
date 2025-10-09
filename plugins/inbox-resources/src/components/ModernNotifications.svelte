@@ -14,16 +14,19 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { createEventDispatcher } from 'svelte'
 
   import InboxNotification from './InboxNotification.svelte'
   import NotificationTemplate from './NotificationTemplate.svelte'
 
   export let doc: Card
   export let context: NotificationContext
+
+  const dispatch = createEventDispatcher()
 </script>
 
 {#each context.notifications ?? [] as notification (notification.id)}
-  <NotificationTemplate>
+  <NotificationTemplate on:click={() => dispatch('click', notification)}>
     <InboxNotification {notification} card={doc} />
   </NotificationTemplate>
 {/each}

@@ -321,6 +321,7 @@ export interface InboxNotificationsClient {
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveAllNotifications: () => Promise<void>
+  removeAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
   unreadAllNotifications: () => Promise<void>
 }

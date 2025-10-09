@@ -119,6 +119,6 @@
       on:click
     />
   {:else}
-    <ActivityMessagePreview value={displayMessage} {actions} {space} doc={object} on:click />
+    <ActivityMessagePreview value={displayMessage} {actions} {space} doc={object} />
   {/if}
 {/if}

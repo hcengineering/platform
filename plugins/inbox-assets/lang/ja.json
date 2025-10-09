@@ -4,6 +4,10 @@
     "ReactedToYourMessage": "あなたのメッセージに反応しました",
     "ClearAll": "すべてクリア",
     "InboxIsClear": "受信箱が空です",
-    "YouDontHaveAnyNewMessages": "新しいメッセージはありません"
+    "YouDontHaveAnyNewMessages": "新しいメッセージはありません",
+    "ReadAll": "すべて読む",
+    "Clearing": "クリア中...",
+    "Reading": "読み込み中...",
+    "HideUserNames": "ユーザー名を非表示"
   }
 }

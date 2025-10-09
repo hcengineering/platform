@@ -4,6 +4,10 @@
     "ReactedToYourMessage": "отреагировал(а) на ваше сообщение",
     "ClearAll": "Очистить всё",
     "InboxIsClear": "Входящие пусты",
-    "YouDontHaveAnyNewMessages": "У вас нет новых сообщений"
+    "YouDontHaveAnyNewMessages": "У вас нет новых сообщений",
+    "ReadAll": "Прочитать всё",
+    "Clearing": "Очистка...",
+    "Reading": "Чтение...",
+    "HideUserNames": "Скрыть имена пользователей"
   }
 }

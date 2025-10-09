@@ -16,8 +16,9 @@
   import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { CheckBox, Loading, Spinner } from '@hcengineering/ui'
   import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
-  import notification, { ActivityNotificationViewlet } from '@hcengineering/notification'
+  import notification, { ActivityNotificationViewlet, InboxNotification } from '@hcengineering/notification'
   import { Card } from '@hcengineering/card'
+  import { Notification, NotificationType } from '@hcengineering/communication-types'
 
   import InboxCardIcon from './InboxCardIcon.svelte'
   import InboxCardTitle from './InboxCardTitle.svelte'
@@ -25,6 +26,7 @@
   import LegacyNotifications from './legacy/LegacyNotifications.svelte'
   import { NavigationItem } from '../type'
   import { NavigationClient } from '../client'
+  import { isReactionNotification } from '@hcengineering/notification-resources'
 
   export let navClient: NavigationClient
   export let navItem: NavigationItem
@@ -74,7 +76,6 @@
       { isViewed: false, docNotifyContext: navItem.context._id },
       (res) => {
         total = res.total
-        console.log(total, res)
       },
       {
         total: true,
@@ -96,6 +97,37 @@
   function asCard (doc: Doc): Card {
     return doc as Card
   }
+
+  function onNotification (event: CustomEvent<InboxNotification | Notification>): void {
+    if (doc == null) return
+    dispatch('select', { doc, notification: event.detail })
+  }
+
+  function calcHeight (navItem: NavigationItem): number {
+    const base = 4.125
+    const messageHeightPx = 2
+    const reactionsHeightPx = 4
+    let res = base
+    if (navItem.type === 'modern') {
+      for (const n of navItem.context.notifications ?? []) {
+        if (n.type === NotificationType.Message) {
+          res += messageHeightPx
+        } else if (n.type === NotificationType.Reaction) {
+          res += reactionsHeightPx
+        }
+      }
+    } else {
+      for (const n of navItem.notifications) {
+        if (isReactionNotification(n)) {
+          res += reactionsHeightPx
+        } else {
+          res += messageHeightPx
+        }
+      }
+    }
+
+    return res
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -103,9 +135,10 @@
 <div
   class="inbox-card"
   class:selected
+  style:height={`${calcHeight(navItem)}rem`}
   on:click={() => {
     if (doc == null) return
-    dispatch('select', doc)
+    dispatch('select', { doc })
   }}
 >
   {#if isLoading}
@@ -130,9 +163,9 @@
     <div class="inbox-card__content">
       <div class="inbox-card__notifications">
         {#if navItem.type === 'modern'}
-          <ModernNotifications doc={asCard(doc)} context={navItem.context} />
+          <ModernNotifications doc={asCard(doc)} context={navItem.context} on:click={onNotification} />
         {:else}
-          <LegacyNotifications {doc} notifications={navItem.notifications} {viewlets} />
+          <LegacyNotifications {doc} notifications={navItem.notifications} {viewlets} on:click={onNotification} />
         {/if}
       </div>
     </div>

@@ -14,10 +14,11 @@
 <script lang="ts">
   import { Label, ListView, Loading, Scroller } from '@hcengineering/ui'
   import { Doc, Ref } from '@hcengineering/core'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import notification, { ActivityNotificationViewlet } from '@hcengineering/notification'
+  import { createEventDispatcher } from 'svelte'
+  import notification, { ActivityNotificationViewlet, DocNotifyContext } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import view from '@hcengineering/view'
 
   import inbox from '../plugin'
   import { NavigationItem } from '../type'
@@ -25,6 +26,7 @@
   import InboxCard from './InboxCard.svelte'
 
   export let doc: Doc | undefined = undefined
+  export let legacyContext: DocNotifyContext | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -32,10 +34,6 @@
   const navClient: NavigationClient = new NavigationClient(InboxNotificationsClientImpl.getClient())
   const navigationItemsStore = navClient.navigationItemsStore
   const isLoadingStore = navClient.isLoadingStore
-
-  onDestroy(() => {
-    navClient.destroy()
-  })
 
   let navItems: NavigationItem[] = []
 
@@ -53,11 +51,16 @@
     viewlets = res
   })
 
+  let isPrevPageLoading = false
+
   function handleScroll (): void {
-    if (divScroll != null && navClient.hasPrevPage()) {
+    if (divScroll != null && navClient.hasPrevPage() && !isPrevPageLoading) {
       const isAtBottom = divScroll.scrollTop + divScroll.clientHeight >= divScroll.scrollHeight - 10
       if (isAtBottom) {
-        navClient.prev()
+        isPrevPageLoading = true
+        void navClient.prev().then(() => {
+          isPrevPageLoading = false
+        })
       }
     }
   }
@@ -88,9 +91,10 @@
       key.stopPropagation()
       const navItem = navItems[listSelection]
       const doc = docById.get(navItem?._id)
+
       if (navItem != null && doc != null) {
         dispatch('select', {
-          ...navItem,
+          navItem,
           doc
         })
       }
@@ -119,11 +123,14 @@
         bind:selection={listSelection}
         count={navItems.length}
         items={navItems}
-        highlightIndex={navItems.findIndex((it) => it._id === doc?._id)}
+        highlightIndex={legacyContext
+          ? navItems.findIndex((it) => it._id === legacyContext.objectId)
+          : navItems.findIndex((it) => it._id === doc?._id)}
         noScroll
         kind="full-size"
         colorsSchema="lumia"
         lazy={true}
+        minHeight="6.125rem"
         getKey={getContextKey}
       >
         <svelte:fragment slot="item" let:item={itemIndex}>
@@ -133,14 +140,14 @@
               {navClient}
               {navItem}
               {viewlets}
-              selected={navItem._id === doc?._id}
+              selected={navItem._id === legacyContext?.objectId || navItem._id === doc?._id}
               on:doc={(e) => {
                 const d = e.detail
                 if (d == null) return
                 docById.set(d._id, e.detail)
               }}
               on:select={(e) => {
-                dispatch('select', { ...navItem, doc: e.detail })
+                dispatch('select', { navItem, doc: e.detail.doc, notification: e.detail.notification })
                 listSelection = itemIndex
               }}
             />
@@ -148,6 +155,11 @@
         </svelte:fragment>
       </ListView>
     </div>
+    {#if isPrevPageLoading}
+      <div class="loader">
+        <Label label={view.string.Loading} />
+      </div>
+    {/if}
   </Scroller>
 {:else if $isLoadingStore}
   <div class="placeholder">
@@ -193,5 +205,16 @@
     &__header {
       font-weight: 600;
     }
+  }
+
+  .loader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--global-secondary-TextColor);
+    font-weight: 500;
+    height: 5rem;
+    min-height: 5rem;
   }
 </style>

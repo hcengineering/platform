@@ -4,6 +4,10 @@
     "ReactedToYourMessage": "reaccionó a tu mensaje",
     "ClearAll": "Borrar todo",
     "InboxIsClear": "Bande está vacía",
-    "YouDontHaveAnyNewMessages": "No tienes ninguna nueva mensaje"
+    "YouDontHaveAnyNewMessages": "No tienes ninguna nueva mensaje",
+    "ReadAll": "Leer todo",
+    "Clearing": "Borrando...",
+    "Reading": "Leyendo...",
+    "HideUserNames": "Ocultar nombres de usuario"
   }
 }

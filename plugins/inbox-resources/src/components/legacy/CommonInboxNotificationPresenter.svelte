@@ -68,7 +68,6 @@
   socialId={value.createdBy ?? value.modifiedBy}
   date={new Date(value.createdOn ?? value.modifiedOn)}
   fixHeight={true}
-  tooltipLabel={getEmbeddedLabel('')}
 >
   <svelte:fragment slot="content">
     <span class="row overflow-label">

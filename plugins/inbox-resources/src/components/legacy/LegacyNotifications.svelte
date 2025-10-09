@@ -14,6 +14,7 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
+  import { createEventDispatcher } from 'svelte'
 
   import NotificationTemplate from '../NotificationTemplate.svelte'
   import LegacyNotification from './LegacyNotification.svelte'
@@ -21,10 +22,12 @@
   export let doc: Doc
   export let notifications: DisplayInboxNotification[] = []
   export let viewlets: ActivityNotificationViewlet[] = []
+
+  const dispatch = createEventDispatcher()
 </script>
 
 {#each notifications as notification (notification._id)}
-  <NotificationTemplate>
+  <NotificationTemplate on:click={() => dispatch('click', notification)}>
     <LegacyNotification {notification} {doc} {viewlets} />
   </NotificationTemplate>
 {/each}

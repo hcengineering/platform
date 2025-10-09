@@ -56,7 +56,7 @@
   {:else if attachments.length > 0 && isEmptyMarkup(value.message)}
     <span class="font-normal secondaryColor">
       <Label label={attachment.string.Attachments} />:
-        {attachments.map(({ name }) => name).join(', ')}
+      {attachments.map(({ name }) => name).join(', ')}
     </span>
   {/if}
 </BaseMessagePreview>

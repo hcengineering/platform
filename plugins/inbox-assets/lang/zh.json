@@ -4,6 +4,10 @@
     "ReactedToYourMessage": "对您的消息做出了反应",
     "ClearAll": "清除全部",
     "InboxIsClear": "收件箱是空的",
-    "YouDontHaveAnyNewMessages": "您没有任何新消息"
+    "YouDontHaveAnyNewMessages": "您没有任何新消息",
+    "ReadAll": "全部已读",
+    "Clearing": "正在清除...",
+    "Reading": "正在读取...",
+    "HideUserNames": "隐藏用户名"
   }
 }

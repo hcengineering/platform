@@ -25,6 +25,10 @@ export default mergeIds(inboxId, inbox, {
     ReactedToYourMessage: '' as IntlString,
     ClearAll: '' as IntlString,
     InboxIsClear: '' as IntlString,
-    YouDontHaveAnyNewMessages: '' as IntlString
+    YouDontHaveAnyNewMessages: '' as IntlString,
+    ReadAll: '' as IntlString,
+    Clearing: '' as IntlString,
+    Reading: '' as IntlString,
+    HideUserNames: '' as IntlString
   }
 })

@@ -13,7 +13,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { createFocusManager, FocusHandler, Label, ListView, ModernToggle, resizeObserver } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+
+  import inbox from '../plugin'
 
   import { updateViewSetting, isViewSettingEnabled, viewSettingsStore, hideUserNamesSettingId } from '../settings'
 
@@ -24,7 +25,7 @@
   const items = [
     {
       id: hideUserNamesSettingId,
-      label: getEmbeddedLabel('Hide user names')
+      label: inbox.string.HideUserNames
     }
   ]
 

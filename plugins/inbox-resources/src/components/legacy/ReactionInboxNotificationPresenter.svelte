@@ -62,7 +62,6 @@
         socialId={message.createdBy ?? message.modifiedBy}
         date={new Date(message.createdOn ?? message.modifiedOn)}
         fixHeight={true}
-        tooltipLabel={getEmbeddedLabel('')}
       >
         <svelte:fragment slot="content">
           <ActivityMessagePreview value={message} doc={object} type="content-only" />

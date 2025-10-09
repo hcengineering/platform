@@ -93,7 +93,6 @@
     socialId={displayMessage.createdBy ?? displayMessage.modifiedBy}
     date={new Date(displayMessage.createdOn ?? displayMessage.modifiedOn)}
     fixHeight={true}
-    tooltipLabel={getEmbeddedLabel('')}
   >
     <svelte:fragment slot="content">
       {#if viewlet}

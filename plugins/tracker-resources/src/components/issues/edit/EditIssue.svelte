@@ -58,6 +58,7 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
+  $: console.log(_id, _class)
   let lastId: Ref<Issue> | undefined
 
   const queryClient = createQuery()

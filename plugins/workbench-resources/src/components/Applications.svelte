@@ -100,7 +100,7 @@
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
-          undefined
+    undefined
   let hasInboxNotifications = false
 
   void getResource(notification.function.HasInboxNotifications).then((f) => {
