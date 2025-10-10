@@ -1,0 +1,17 @@
+{
+  "name": "@hcengineering/hulylake",
+  "entries": [
+    {
+      "version": "0.7.1",
+      "tag": "@hcengineering/hulylake_v0.7.1",
+      "date": "Fri, 10 Oct 2025 05:24:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add hulylake storage adapter"
+          }
+        ]
+      }
+    }
+  ]
+}

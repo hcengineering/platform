@@ -878,7 +878,7 @@ importers:
         specifier: workspace:0.7.0
         version: link:../datalake
       '@hcengineering/hulylake':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../hulylake
       '@hcengineering/minio':
         specifier: workspace:0.7.0

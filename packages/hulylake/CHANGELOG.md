@@ -1,4 +1,4 @@
-# Change Log - @hcengineering/server-storage
+# Change Log - @hcengineering/hulylake
 
 This log was last generated on Fri, 10 Oct 2025 05:24:50 GMT and should not be manually modified.
 
@@ -8,9 +8,4 @@ Fri, 10 Oct 2025 05:24:50 GMT
 ### Patches
 
 - add hulylake storage adapter
-
-## 0.7.0
-Thu, 09 Oct 2025 16:41:02 GMT
-
-_Initial release_
 
