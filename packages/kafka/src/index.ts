@@ -101,6 +101,8 @@ class PlatformQueueImpl implements PlatformQueue {
     onMessage: (ctx: MeasureContext, msg: ConsumerMessage<T>, queue: ConsumerControl) => Promise<void>,
     options?: {
       fromBegining?: boolean
+      retryDelay?: number // Initial retry delay in milliseconds (default 1000)
+      maxRetryDelay?: number // Maximum retry delay in seconds (default 10)
     }
   ): ConsumerHandle {
     const result = new PlatformQueueConsumerImpl(ctx, this.kafka, this.config, topic, groupId, onMessage, options)
@@ -111,36 +113,52 @@ class PlatformQueueImpl implements PlatformQueue {
   async checkCreateTopic (topic: QueueTopic | string, topics: Set<string>, numPartitions?: number): Promise<void> {
     const kTopic = getKafkaTopicId(topic, this.config)
     if (!topics.has(kTopic)) {
+      const admin = this.kafka.admin()
       try {
-        await this.kafka.admin().createTopics({ topics: [{ topic: kTopic, numPartitions: numPartitions ?? 1 }] })
+        await admin.connect()
+        await admin.createTopics({ topics: [{ topic: kTopic, numPartitions: numPartitions ?? 1 }] })
       } catch (err: any) {
         console.error('Failed to create topic', kTopic, err)
+      } finally {
+        await admin.disconnect()
       }
     }
   }
 
   async createTopic (topics: string | string[], partitions: number): Promise<void> {
-    const existing = new Set(await this.kafka.admin({}).listTopics())
-    topics = Array.isArray(topics) ? topics : [topics]
-    for (const topic of topics) {
-      await this.checkCreateTopic(topic, existing, partitions)
+    const admin = this.kafka.admin()
+    try {
+      await admin.connect()
+      const existing = new Set(await admin.listTopics())
+      topics = Array.isArray(topics) ? topics : [topics]
+      for (const topic of topics) {
+        await this.checkCreateTopic(topic, existing, partitions)
+      }
+    } finally {
+      await admin.disconnect()
     }
   }
 
   async createTopics (tx: number): Promise<void> {
-    const topics = new Set(await this.kafka.admin({}).listTopics())
-    await this.checkCreateTopic(QueueTopic.Tx, topics, tx)
-    await this.checkCreateTopic(QueueTopic.Fulltext, topics, 1)
-    await this.checkCreateTopic(QueueTopic.Workspace, topics, 1)
-    await this.checkCreateTopic(QueueTopic.Users, topics, 1)
-    await this.checkCreateTopic(QueueTopic.Process, topics, 1)
+    const admin = this.kafka.admin()
+    try {
+      await admin.connect()
+      const topics = new Set(await admin.listTopics())
+      await this.checkCreateTopic(QueueTopic.Tx, topics, tx)
+      await this.checkCreateTopic(QueueTopic.Fulltext, topics, 1)
+      await this.checkCreateTopic(QueueTopic.Workspace, topics, 1)
+      await this.checkCreateTopic(QueueTopic.Users, topics, 1)
+      await this.checkCreateTopic(QueueTopic.Process, topics, 1)
+    } finally {
+      await admin.disconnect()
+    }
   }
 
-  async checkDeleteTopic (topic: QueueTopic | string, topics: Set<string>): Promise<void> {
+  async checkDeleteTopic (admin: any, topic: QueueTopic | string, topics: Set<string>): Promise<void> {
     const kTopic = getKafkaTopicId(topic, this.config)
     if (topics.has(kTopic)) {
       try {
-        await this.kafka.admin().deleteTopics({ topics: [kTopic] })
+        await admin.deleteTopics({ topics: [kTopic] })
       } catch (err: any) {
         console.error('Failed to delete topic', kTopic, err)
       }
@@ -148,16 +166,22 @@ class PlatformQueueImpl implements PlatformQueue {
   }
 
   async deleteTopics (topics?: (QueueTopic | string)[]): Promise<void> {
-    const existing = new Set(await this.kafka.admin({}).listTopics())
-    if (topics !== undefined) {
-      for (const t of topics) {
-        await this.checkDeleteTopic(t, existing)
+    const admin = this.kafka.admin()
+    try {
+      await admin.connect()
+      const existing = new Set(await admin.listTopics())
+      if (topics !== undefined) {
+        for (const t of topics) {
+          await this.checkDeleteTopic(admin, t, existing)
+        }
+      } else {
+        await this.checkDeleteTopic(admin, QueueTopic.Tx, existing)
+        await this.checkDeleteTopic(admin, QueueTopic.Fulltext, existing)
+        await this.checkDeleteTopic(admin, QueueTopic.Workspace, existing)
+        await this.checkDeleteTopic(admin, QueueTopic.Users, existing)
       }
-    } else {
-      await this.checkDeleteTopic(QueueTopic.Tx, existing)
-      await this.checkDeleteTopic(QueueTopic.Fulltext, existing)
-      await this.checkDeleteTopic(QueueTopic.Workspace, existing)
-      await this.checkDeleteTopic(QueueTopic.Users, existing)
+    } finally {
+      await admin.disconnect()
     }
   }
 }
@@ -230,6 +254,8 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
     ) => Promise<void>,
     private readonly options?: {
       fromBegining?: boolean
+      retryDelay?: number // Initial retry delay in milliseconds (default 1000)
+      maxRetryDelay?: number // Maximum retry delay in seconds (default 10)
     }
   ) {
     this.cc = this.kafka.consumer({
@@ -253,6 +279,8 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
         const meta = JSON.parse(message.headers?.meta?.toString() ?? '{}')
         const workspace = (message.headers?.workspace?.toString() ?? msgKey) as WorkspaceUuid
 
+        const retryDelay = this.options?.retryDelay ?? 1000
+        const maxRetryDelay = this.options?.maxRetryDelay ?? 10
         let to = 1
         while (true) {
           try {
@@ -269,8 +297,8 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
           } catch (err: any) {
             this.ctx.error('failed to process message', { err, msgKey, msgData, workspace })
             await heartbeat()
-            await new Promise((resolve) => setTimeout(resolve, to * 1000))
-            if (to < 10) {
+            await new Promise((resolve) => setTimeout(resolve, to * retryDelay))
+            if (to < maxRetryDelay) {
               to++
             }
           }

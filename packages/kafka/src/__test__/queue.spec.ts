@@ -21,12 +21,18 @@ describe('queue', () => {
             clearTimeout(to)
             resolve()
           }
-        })
+        }, { retryDelay: 100, maxRetryDelay: 5 })
       })
 
       const producer = queue.getProducer<string>(testCtx, 'qtest')
-      for (let i = 0; i < docsCount; i++) {
-        await producer.send(testCtx, genId as any as WorkspaceUuid, ['msg' + i])
+      // Send messages in batches for better performance
+      const batchSize = 10
+      for (let i = 0; i < docsCount; i += batchSize) {
+        const batch: string[] = []
+        for (let j = i; j < Math.min(i + batchSize, docsCount); j++) {
+          batch.push('msg' + j)
+        }
+        await producer.send(testCtx, genId as any as WorkspaceUuid, batch)
       }
 
       await p1
@@ -35,6 +41,8 @@ describe('queue', () => {
     } finally {
       await queue.shutdown()
       await queue.deleteTopics(['test'])
+      // Give Kafka time to cleanup connections
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
   })
 
@@ -51,7 +59,7 @@ describe('queue', () => {
             throw new Error('Processing Error')
           }
           resolve()
-        })
+        }, { retryDelay: 50, maxRetryDelay: 3 }) // Fast retry for tests
       })
 
       const producer = queue.getProducer<string>(testCtx, 'test')
@@ -61,6 +69,8 @@ describe('queue', () => {
     } finally {
       await queue.shutdown()
       await queue.deleteTopics(['test'])
+      // Give Kafka time to cleanup connections
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
   })
 })

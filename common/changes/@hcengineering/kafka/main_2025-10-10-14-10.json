@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/kafka",
+      "comment": "Fix kafka close of admin() on create topics",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/kafka"
+}

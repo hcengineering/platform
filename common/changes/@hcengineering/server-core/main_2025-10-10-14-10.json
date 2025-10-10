@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/server-core",
+      "comment": "Fix TxOrderingMiddleware",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/server-core"
+}

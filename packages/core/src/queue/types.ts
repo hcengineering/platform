@@ -51,6 +51,8 @@ export interface PlatformQueue {
     onMessage: (ctx: MeasureContext, msg: ConsumerMessage<T>, queue: ConsumerControl) => Promise<void>,
     options?: {
       fromBegining?: boolean
+      retryDelay?: number // Initial retry delay in milliseconds (default 1000)
+      maxRetryDelay?: number // Maximum retry delay in seconds (default 10)
     }
   ) => ConsumerHandle
 
