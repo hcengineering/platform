@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model-telegram",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -34,23 +34,23 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.20",
-    "@hcengineering/love": "^0.6.0",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/model-attachment": "^0.6.0",
-    "@hcengineering/model-notification": "^0.6.0",
-    "@hcengineering/notification": "^0.6.23",
-    "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/telegram": "^0.6.21",
-    "@hcengineering/telegram-resources": "^0.6.0",
-    "@hcengineering/templates": "^0.6.11",
-    "@hcengineering/setting": "^0.6.17",
-    "@hcengineering/ui": "^0.6.15"
+    "@hcengineering/activity": "^0.7.0",
+    "@hcengineering/chunter": "^0.7.0",
+    "@hcengineering/love": "^0.7.0",
+    "@hcengineering/model": "^0.7.3",
+    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/model-core": "^0.7.0",
+    "@hcengineering/model-attachment": "^0.7.0",
+    "@hcengineering/model-notification": "^0.7.0",
+    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/model-contact": "^0.7.0",
+    "@hcengineering/view": "^0.7.0",
+    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/telegram": "^0.7.0",
+    "@hcengineering/telegram-resources": "^0.7.0",
+    "@hcengineering/templates": "^0.7.0",
+    "@hcengineering/setting": "^0.7.0",
+    "@hcengineering/ui": "^0.7.0"
   }
 }

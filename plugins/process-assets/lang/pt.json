@@ -117,7 +117,9 @@
     "NewProcessToDo": "Nova ação de processo",
     "EmptyArray": "Array vazio",
     "ExecutionInitiator": "Iniciador de Execução",
-    "ExecutionStarted": "Execução Iniciada"
+    "ExecutionStarted": "Execução Iniciada",
+    "Filter": "Filtrar",
+    "FirstMatchValue": "Primeiro Valor Correspondente"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

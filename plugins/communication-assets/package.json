@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-assets",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "src/index.ts",
   "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/assets-package",
@@ -17,7 +17,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -33,7 +33,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/communication": "^0.6.0"
+    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/communication": "^0.7.0"
   }
 }

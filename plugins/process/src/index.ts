@@ -194,6 +194,7 @@ export interface UpdateCriteriaComponent extends Doc {
 export * from './errors'
 export * from './types'
 export * from './utils'
+export * from './dslContext'
 
 export default plugin(processId, {
   class: {
@@ -276,6 +277,8 @@ export default plugin(processId, {
     Time: '' as Asset
   },
   function: {
+    FirstMatchValue: '' as Ref<ProcessFunction>,
+    Filter: '' as Ref<ProcessFunction>,
     FirstValue: '' as Ref<ProcessFunction>,
     LastValue: '' as Ref<ProcessFunction>,
     Random: '' as Ref<ProcessFunction>,

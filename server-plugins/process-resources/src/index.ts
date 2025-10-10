@@ -78,7 +78,9 @@ import {
   UpperCase,
   EmptyArray,
   ExecutionInitiator,
-  ExecutionStarted
+  ExecutionStarted,
+  FirstMatchValue,
+  Filter
 } from './transform'
 import {
   RunSubProcess,
@@ -434,7 +436,9 @@ export default async () => ({
     RemoveLast,
     EmptyArray,
     ExecutionInitiator,
-    ExecutionStarted
+    ExecutionStarted,
+    FirstMatchValue,
+    Filter
   },
   rollbacks: {
     ToDoCloseRollback,

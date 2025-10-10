@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/ui-package",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "src/index.ts",
   "#overrideKeys": [
     "main"
@@ -14,7 +14,7 @@
     "format": "format src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.7.10",
     "svelte-loader": "^3.2.0",
     "sass": "^1.53.0",
     "svelte-preprocess": "^5.1.3",

@@ -1,8 +1,9 @@
 {
   "name": "@hcengineering/scripts",
-  "version": "0.1.0",
+  "version": "0.7.0",
   "scripts": {
-    "format": "echo \"No format specified\""
+    "format": "echo \"No format specified\"",
+    "safe-publish": "node safe-publish.js"
   },
   "devDependencies": {
     "esbuild": "^0.25.9",

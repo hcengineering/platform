@@ -34,9 +34,7 @@ export async function changeConfiguration (
     const config = await connection.findAll(core.class.PluginConfiguration, {})
     if (cmd.list === true) {
       for (const c of config) {
-        if (c.label !== undefined) {
-          console.log(toLen(c.pluginId, '-', 20), c.enabled)
-        }
+        console.log(toLen(c.pluginId, '-', 20), c.enabled, c.hidden === true ? '(hidden)' : '')
       }
     }
     const enable = (cmd.enable ?? '').trim().split(',')

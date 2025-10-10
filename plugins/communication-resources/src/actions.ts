@@ -42,7 +42,13 @@ import aiBot from '@hcengineering/ai-bot'
 import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.svelte'
 
 import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
-import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
+import {
+  isMessageTranslating,
+  messageEditingStore,
+  showOriginalMessagesStore,
+  threadCreateMessageStore,
+  translateMessagesStore
+} from './stores'
 
 export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
   if (!isCardAllowedForCommunications(card)) {
@@ -149,34 +155,41 @@ export const canReplyInThread: MessageActionVisibilityTester = (message: Message
 }
 
 export const translateMessage: MessageActionFunction = async (message: Message): Promise<void> => {
-  if (isMessageTranslating(message.id)) return
-  const result = get(translateMessagesStore).get(message.id)
+  if (isMessageTranslating(message.cardId, message.id)) return
+  const result = get(translateMessagesStore).find((it) => it.cardId === message.cardId && it.messageId === message.id)
 
-  if (result?.result != null) {
-    translateMessagesStore.update((store) => {
-      store.set(message.id, { ...result, shown: true })
-      return store
-    })
+  if (result != null) {
+    showOriginalMessagesStore.update((store) =>
+      store.filter(([cId, mId]) => cId !== message.cardId || mId !== message.id)
+    )
     return
   }
 
   translateMessagesStore.update((store) => {
-    store.set(message.id, { inProgress: true, shown: false })
+    store.push({ inProgress: true, messageId: message.id, cardId: message.cardId })
     return store
   })
 
   const markup = toMarkup(message.content)
-  const response = await aiTranslate(markup, get(languageStore))
+  const lang = get(languageStore)
+  const response = message?.translates?.[lang] ?? (await aiTranslate(markup, lang))?.text
 
   if (response !== undefined) {
     translateMessagesStore.update((store) => {
-      store.set(message.id, { inProgress: false, result: response.text, shown: true })
-      return store
+      return store.map((it) => {
+        if (it.cardId === message.cardId && it.messageId === message.id) {
+          return {
+            ...it,
+            inProgress: false,
+            result: response
+          }
+        }
+        return it
+      })
     })
   } else {
     translateMessagesStore.update((store) => {
-      store.delete(message.id)
-      return store
+      return store.filter((it) => it.cardId !== message.cardId || it.messageId !== message.id)
     })
   }
 }
@@ -189,10 +202,9 @@ export const canTranslateMessage: MessageActionVisibilityTester = (message: Mess
 
 export const showOriginalMessage: MessageActionFunction = async (message: Message): Promise<void> => {
   const messageId = message.id
-  translateMessagesStore.update((store) => {
-    const status = store.get(messageId)
-    if (status == null) return store
-    store.set(messageId, { ...status, shown: false })
+
+  showOriginalMessagesStore.update((store) => {
+    store.push([message.cardId, messageId])
     return store
   })
 }

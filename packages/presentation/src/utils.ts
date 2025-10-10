@@ -743,7 +743,8 @@ export function findAttributeEditor (
   key: KeyedAttribute | string
 ): AnyComponent | undefined {
   const hierarchy = client.getHierarchy()
-  const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  const attribute = typeof key === 'string' ? hierarchy.findAttribute(_class, key) : key.attr
+  if (attribute === undefined) return
 
   if (attribute.type._class === core.class.TypeAny) {
     const _type: TypeAny = attribute.type as TypeAny<AnyComponent>
@@ -886,7 +887,6 @@ export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUu
       '=' +
       encodeURIComponent(token) +
       `; path=${path}`
-    console.log('setting cookie', res)
     document.cookie = res
   }
   setToken('/files/' + workspaceUuid)

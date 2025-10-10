@@ -17,7 +17,6 @@ import core, { ArrOf, checkMixinKey, Doc, getObjectValue, RefTo } from '@hcengin
 import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
 import process, {
   Execution,
-  ExecutionError,
   parseContext,
   ProcessError,
   processError,
@@ -117,11 +116,7 @@ async function fillValue (
   return value
 }
 
-async function getNestedValue (
-  control: ProcessControl,
-  execution: Execution,
-  context: SelectedNested
-): Promise<any | ExecutionError> {
+async function getNestedValue (control: ProcessControl, execution: Execution, context: SelectedNested): Promise<any> {
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
   const attr = control.client.getHierarchy().findAttribute(card._class, context.path)
@@ -130,8 +125,9 @@ async function getNestedValue (
   if (nestedValue === undefined) throw processError(process.error.EmptyAttributeContextValue, {}, { attr: attr.label })
   const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
   const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
+  const refs = Array.isArray(nestedValue) ? nestedValue : [nestedValue]
   const target = await control.client.findAll(targetClass, {
-    _id: { $in: Array.isArray(nestedValue) ? nestedValue : [nestedValue] }
+    _id: { $in: refs }
   })
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, {}, { attr: attr.label })
   const nested = control.client.getHierarchy().findAttribute(targetClass, context.key)
@@ -158,10 +154,9 @@ async function getNestedValue (
     }
     return val
   }
-  const val =
-    Array.isArray(target) && target.length > 1
-      ? target.map((v) => getValue(control, execution, context.key, v))
-      : getValue(control, execution, context.key, target[0])
+  const val = Array.isArray(nestedValue)
+    ? target.map((v) => getValue(control, execution, context.key, v))
+    : getValue(control, execution, context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
@@ -187,6 +182,7 @@ async function getRelationValue (
   const ids = relations.map((it) => {
     return context.direction === 'A' ? it.docA : it.docB
   })
+  const shouldBeArray = assoc.type === 'N:N' || (assoc.type === '1:N' && context.direction === 'A')
   const target = await control.client.findAll(targetClass, { _id: { $in: ids } })
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
   const attr = context.key !== '' ? control.client.getHierarchy().findAttribute(targetClass, context.key) : undefined
@@ -213,10 +209,9 @@ async function getRelationValue (
     }
     return val
   }
-  const val =
-    Array.isArray(target) && target.length > 1
-      ? target.map((v) => getValue(control, execution, context.key, v))
-      : getValue(control, execution, context.key, target[0])
+  const val = shouldBeArray
+    ? target.map((v) => getValue(control, execution, context.key, v))
+    : getValue(control, execution, context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
@@ -280,7 +275,7 @@ async function getExecutionContextValue (
   const _process = control.client.getModel().findObject(execution.process)
   const processContext = _process?.context?.[context.id]
   if (userContext !== undefined) {
-    if (context.key === '' || context.key === '_id') return userContext
+    if (context.key == null || context.key === '' || context.key === '_id') return userContext
     if (processContext !== undefined) {
       const contextVal =
         control.cache.get(userContext) ?? (await control.client.findOne(processContext?._class, { _id: userContext }))
