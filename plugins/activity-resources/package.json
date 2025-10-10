@@ -51,7 +51,7 @@
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.0",
+    "@hcengineering/communication-types": "^0.7.2",
     "@hcengineering/emoji": "^0.7.0",
     "@hcengineering/emoji-resources": "^0.7.0",
     "svelte": "^4.2.20"
