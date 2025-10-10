@@ -338,7 +338,7 @@
     {
       "packageName": "@hcengineering/highlight",
       "projectFolder": "packages/highlight",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/api-tests",
@@ -348,11 +348,6 @@
     {
       "packageName": "@hcengineering/importer",
       "projectFolder": "packages/importer",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/collaboration",
-      "projectFolder": "server/collaboration",
       "shouldPublish": false
     },
     {
@@ -456,23 +451,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-core",
-      "projectFolder": "server/core",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-indexer",
       "projectFolder": "server/indexer",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server",
-      "projectFolder": "server/server",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-storage",
-      "projectFolder": "server/server-storage",
       "shouldPublish": false
     },
     {
@@ -498,7 +478,7 @@
     {
       "packageName": "@hcengineering/onboard",
       "projectFolder": "plugins/onboard",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/onboard-assets",
@@ -518,7 +498,7 @@
     {
       "packageName": "@hcengineering/workbench-assets",
       "projectFolder": "plugins/workbench-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/workbench-resources",
@@ -543,7 +523,7 @@
     {
       "packageName": "@hcengineering/view-assets",
       "projectFolder": "plugins/view-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/view-resources",
@@ -573,7 +553,7 @@
     {
       "packageName": "@hcengineering/contact-assets",
       "projectFolder": "plugins/contact-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/contact-resources",
@@ -588,7 +568,7 @@
     {
       "packageName": "@hcengineering/task-assets",
       "projectFolder": "plugins/task-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/task-resources",
@@ -633,7 +613,7 @@
     {
       "packageName": "@hcengineering/chunter-assets",
       "projectFolder": "plugins/chunter-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/chunter-resources",
@@ -653,7 +633,7 @@
     {
       "packageName": "@hcengineering/recruit-assets",
       "projectFolder": "plugins/recruit-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/recruit-resources",
@@ -723,21 +703,6 @@
     {
       "packageName": "@hcengineering/server-contact-resources",
       "projectFolder": "server-plugins/contact-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/mongo",
-      "projectFolder": "server/mongo",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/postgres",
-      "projectFolder": "server/postgres",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/elastic",
-      "projectFolder": "server/elastic",
       "shouldPublish": false
     },
     {
@@ -823,7 +788,7 @@
     {
       "packageName": "@hcengineering/activity-assets",
       "projectFolder": "plugins/activity-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/activity-resources",
@@ -843,7 +808,7 @@
     {
       "packageName": "@hcengineering/setting-assets",
       "projectFolder": "plugins/setting-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/setting-resources",
@@ -893,7 +858,7 @@
     {
       "packageName": "@hcengineering/attachment-assets",
       "projectFolder": "plugins/attachment-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/attachment-resources",
@@ -963,7 +928,7 @@
     {
       "packageName": "@hcengineering/inventory-assets",
       "projectFolder": "plugins/inventory-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/inventory-resources",
@@ -978,7 +943,7 @@
     {
       "packageName": "@hcengineering/templates-assets",
       "projectFolder": "plugins/templates-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/templates-resources",
@@ -1008,11 +973,6 @@
     {
       "packageName": "@hcengineering/server-tool",
       "projectFolder": "server/tool",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-client",
-      "projectFolder": "server/client",
       "shouldPublish": false
     },
     {
@@ -1048,7 +1008,7 @@
     {
       "packageName": "@hcengineering/notification-assets",
       "projectFolder": "plugins/notification-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/notification-resources",
@@ -1203,7 +1163,7 @@
     {
       "packageName": "@hcengineering/calendar-assets",
       "projectFolder": "plugins/calendar-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/calendar-resources",
@@ -1304,7 +1264,7 @@
     {
       "packageName": "@hcengineering/board-assets",
       "projectFolder": "plugins/board-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/board-resources",
@@ -1339,11 +1299,6 @@
     {
       "packageName": "@hcengineering/server-preference",
       "projectFolder": "server-plugins/preference",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/middleware",
-      "projectFolder": "server/middleware",
       "shouldPublish": false
     },
     {
@@ -1384,7 +1339,7 @@
     {
       "packageName": "@hcengineering/hr-assets",
       "projectFolder": "plugins/hr-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/hr-resources",
@@ -1409,21 +1364,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/minio",
-      "projectFolder": "server/minio",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/s3",
-      "projectFolder": "server/s3",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/datalake",
-      "projectFolder": "server/datalake",
       "shouldPublish": false
     },
     {
@@ -1524,7 +1464,7 @@
     {
       "packageName": "@hcengineering/support-assets",
       "projectFolder": "plugins/support-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/support-resources",
@@ -2279,11 +2219,6 @@
     {
       "packageName": "@hcengineering/server-process-resources",
       "projectFolder": "server-plugins/process-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/kafka",
-      "projectFolder": "server/kafka",
       "shouldPublish": false
     },
     {

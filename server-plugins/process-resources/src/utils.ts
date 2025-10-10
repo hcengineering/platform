@@ -275,7 +275,7 @@ async function getExecutionContextValue (
   const _process = control.client.getModel().findObject(execution.process)
   const processContext = _process?.context?.[context.id]
   if (userContext !== undefined) {
-    if (context.key === '' || context.key === '_id') return userContext
+    if (context.key == null || context.key === '' || context.key === '_id') return userContext
     if (processContext !== undefined) {
       const contextVal =
         control.cache.get(userContext) ?? (await control.client.findOne(processContext?._class, { _id: userContext }))
