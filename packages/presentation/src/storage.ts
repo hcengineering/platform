@@ -47,7 +47,7 @@ class FrontStorage implements FileStorage {
 
   getFileUrl (file: string, filename?: string): string {
     const workspace = getWorkspace()
-    const path = `/${workspace}/${filename}?file=${file}&workspace=${workspace}`
+    const path = `/${workspace}/${filename ?? file}?file=${file}&workspace=${workspace}`
     return concatLink(this.baseUrl, path)
   }
 
@@ -158,7 +158,7 @@ class DatalakeStorage implements FileStorage {
         `/upload/multipart/${encodeURIComponent(workspace)}/${encodeURIComponent(uuid)}`
       )
       const headers = { Authorization: `Bearer ${token}` }
-      await uploadMultipart(url, headers, uuid, file, options)
+      await uploadMultipart({ url, headers, body: file }, options)
     }
   }
 }
@@ -223,67 +223,79 @@ async function uploadXhr (upload: XHRUpload, options?: FileStorageUploadOptions)
   const signal = options?.signal
   const onProgress = options?.onProgress
 
-  return await new Promise<XHRUploadResult>((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
+  // Check if already aborted before starting
+  if (signal?.aborted === true) {
+    throw new Error('Upload aborted')
+  }
 
-    if (signal !== undefined) {
-      signal.onabort = () => {
-        xhr.abort()
+  const xhr = new XMLHttpRequest()
+
+  const abortHandler = (): void => {
+    xhr.abort()
+  }
+
+  if (signal !== undefined) {
+    signal.addEventListener('abort', abortHandler)
+  }
+
+  try {
+    return await new Promise<XHRUploadResult>((resolve, reject) => {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          onProgress?.({
+            loaded: event.loaded,
+            total: event.total,
+            percentage: Math.round((100 * event.loaded) / event.total)
+          })
+        }
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({
+            status: xhr.status
+          })
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`))
+        }
+      }
+
+      xhr.onerror = () => {
+        reject(new Error('Network error'))
+      }
+
+      xhr.onabort = () => {
         reject(new Error('Upload aborted'))
       }
-    }
 
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        onProgress?.({
-          loaded: event.loaded,
-          total: event.total,
-          percentage: Math.round((100 * event.loaded) / event.total)
-        })
+      xhr.ontimeout = () => {
+        reject(new Error('Upload timeout'))
       }
-    }
 
-    xhr.onload = async () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({
-          status: xhr.status
-        })
-      } else {
-        const error = new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`)
-        reject(error)
+      xhr.open(upload.method, upload.url, true)
+
+      for (const key in upload.headers) {
+        xhr.setRequestHeader(key, upload.headers[key])
       }
+
+      xhr.send(upload.body)
+    })
+  } finally {
+    if (signal !== undefined) {
+      signal.removeEventListener('abort', abortHandler)
     }
-
-    xhr.onerror = () => {
-      reject(new Error('Network error'))
-    }
-
-    xhr.onabort = () => {
-      reject(new Error('Upload aborted'))
-    }
-
-    xhr.ontimeout = () => {
-      reject(new Error('Upload timeout'))
-    }
-
-    xhr.open(upload.method, upload.url, true)
-
-    for (const key in upload.headers) {
-      xhr.setRequestHeader(key, upload.headers[key])
-    }
-
-    xhr.send(upload.body)
-  })
+  }
 }
 
-async function uploadMultipart (
-  url: string,
-  headers: Record<string, string>,
-  uuid: string,
-  file: File | Blob,
-  options?: FileStorageUploadOptions
-): Promise<void> {
+interface MultipartUpload {
+  url: string
+  headers: Record<string, string>
+  body: File | Blob
+}
+
+async function uploadMultipart (upload: MultipartUpload, options?: FileStorageUploadOptions): Promise<void> {
   const CHUNK_SIZE = 5 * 1024 * 1024 // 5MB chunks
+  const { url, headers, body } = upload
   const signal = options?.signal
   const onProgress = options?.onProgress
 
@@ -292,15 +304,14 @@ async function uploadMultipart (
   try {
     const { uploadId } = await multipartUploadCreate(url, headers, signal)
 
-    // 2. Upload parts
     const parts: Array<{ partNumber: number, etag: string }> = []
-    const totalParts = Math.ceil(file.size / CHUNK_SIZE)
+    const totalParts = Math.ceil(body.size / CHUNK_SIZE)
     let uploadedSize = 0
 
     for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
       const start = (partNumber - 1) * CHUNK_SIZE
-      const end = Math.min(start + CHUNK_SIZE, file.size)
-      const chunk = file.slice(start, end)
+      const end = Math.min(start + CHUNK_SIZE, body.size)
+      const chunk = body.slice(start, end)
 
       throwIfAborted(signal)
 
@@ -310,8 +321,8 @@ async function uploadMultipart (
       uploadedSize += chunk.size
       onProgress?.({
         loaded: uploadedSize,
-        total: file.size,
-        percentage: Math.round((uploadedSize * 100) / file.size)
+        total: body.size,
+        percentage: Math.round((uploadedSize * 100) / body.size)
       })
     }
 
@@ -323,8 +334,7 @@ async function uploadMultipart (
       await multipartUploadAbort(url, headers, uploadId)
     }
 
-    const error = err instanceof Error ? err : new Error(String(err))
-    throw error
+    throw err instanceof Error ? err : new Error(String(err))
   }
 }
 
