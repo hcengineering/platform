@@ -2,6 +2,26 @@
   "name": "@hcengineering/middleware",
   "entries": [
     {
+      "version": "0.7.2",
+      "tag": "@hcengineering/middleware_v0.7.2",
+      "date": "Fri, 10 Oct 2025 14:32:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add TxOrderingMiddleware"
+          },
+          {
+            "comment": "New deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.0` to `0.7.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.1",
       "tag": "@hcengineering/middleware_v0.7.1",
       "date": "Thu, 09 Oct 2025 16:43:17 GMT",

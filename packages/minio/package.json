@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/minio",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.5",
     "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "workspace:0.7.0",
+    "@hcengineering/server-core": "workspace:0.7.1",
     "minio": "^8.0.5"
   },
   "repository": "https://github.com/hcengineering/huly.server",

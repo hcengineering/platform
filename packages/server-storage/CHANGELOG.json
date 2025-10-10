@@ -2,6 +2,38 @@
   "name": "@hcengineering/server-storage",
   "entries": [
     {
+      "version": "0.7.2",
+      "tag": "@hcengineering/server-storage_v0.7.2",
+      "date": "Fri, 10 Oct 2025 14:32:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix mem test"
+          },
+          {
+            "comment": "New deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.0` to `0.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/minio\" from `0.7.0` to `0.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/s3\" from `0.7.0` to `0.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/datalake\" from `0.7.0` to `0.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/hulylake\" from `0.7.1` to `0.7.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.1",
       "tag": "@hcengineering/server-storage_v0.7.1",
       "date": "Fri, 10 Oct 2025 05:24:50 GMT",

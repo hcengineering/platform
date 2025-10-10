@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-storage",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -57,11 +57,11 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.5",
     "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "workspace:0.7.0",
-    "@hcengineering/minio": "workspace:0.7.0",
-    "@hcengineering/s3": "workspace:0.7.0",
-    "@hcengineering/datalake": "workspace:0.7.0",
-    "@hcengineering/hulylake": "workspace:0.7.1",
+    "@hcengineering/server-core": "workspace:0.7.1",
+    "@hcengineering/minio": "workspace:0.7.1",
+    "@hcengineering/s3": "workspace:0.7.1",
+    "@hcengineering/datalake": "workspace:0.7.1",
+    "@hcengineering/hulylake": "workspace:0.7.2",
     "@hcengineering/storage": "^0.7.3",
     "@hcengineering/analytics": "^0.7.3",
     "@hcengineering/server-token": "^0.7.3"
