@@ -13,17 +13,17 @@ importers:
   ../../packages/client-query:
     dependencies:
       '@hcengineering/communication-query':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../query
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/hulylake-client':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.7.4
+        version: 0.7.4
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
@@ -71,13 +71,13 @@ importers:
   ../../packages/cockroach:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       postgres:
         specifier: ^3.4.7
@@ -132,17 +132,17 @@ importers:
   ../../packages/query:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/hulylake-client':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.7.4
+        version: 0.7.4
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
@@ -196,13 +196,13 @@ importers:
   ../../packages/rest-client:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
@@ -257,7 +257,7 @@ importers:
   ../../packages/sdk-types:
     dependencies:
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
@@ -309,23 +309,23 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       '@hcengineering/communication-cockroach':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../cockroach
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../shared
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.1
         version: 0.7.1
       '@hcengineering/hulylake-client':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.7.4
+        version: 0.7.4
       '@hcengineering/server-token':
         specifier: ^0.7.1
         version: 0.7.1
@@ -391,14 +391,14 @@ importers:
   ../../packages/shared:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: workspace:^0.7.2
+        specifier: workspace:^0.7.3
         version: link:../types
       '@hcengineering/hulylake-client':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.7.4
+        version: 0.7.4
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.7.9
@@ -1007,11 +1007,20 @@ packages:
   '@hcengineering/analytics@0.7.1':
     resolution: {integrity: sha512-WNrx0d0WCRIsKXM8n7MMEHV0a+ta3QLeFYje7FLFswSNbDq7UUgFJY+pZpuwtYDHjM9yv0/zXT26i6lr8r4AZA==}
 
+  '@hcengineering/analytics@0.7.3':
+    resolution: {integrity: sha512-6/P3MDwZpVuYAwZxppSF7Q3wyoNBg2P0rEUKf4FNZvOVQwlUpNwr21igujKnk6jfWW7mNhuTRe0i8OE0ipU8Ww==}
+
   '@hcengineering/core@0.7.1':
     resolution: {integrity: sha512-6QveMhxl8LopqDbChNFJIdLnDqBKM73xwEtyl/gkvkPcoh5VVaXXQB7NTqdGVw/vkDMqWGJe/N0T9bu+SJDz9g==}
 
-  '@hcengineering/hulylake-client@0.7.1':
-    resolution: {integrity: sha512-icsuR50Gy7ofSOg6AgmhHpkB7ETdp2EpGNzQjrVgQGio/NidsBTRi8Zent3t7TnuHQTkq8/3/pCxYm/QpFHIBQ==}
+  '@hcengineering/core@0.7.5':
+    resolution: {integrity: sha512-GzbYSoBVzqfqgxWDaqvnlVPASzhIYswRFBOdn+iNXpn4T8iZvXSpkFMxWWX/zI6BgXqOjKS0jR54N3FaZzHvTw==}
+
+  '@hcengineering/hulylake-client@0.7.4':
+    resolution: {integrity: sha512-MRcyslhQlse72jYgYZsm8amEmxcIxVnWpd2xgcBzgLcTIcegerwwH8oI6gGYK7JTZJ9ERe8QPlsv/M9vWNgf7A==}
+
+  '@hcengineering/measurements@0.7.10':
+    resolution: {integrity: sha512-6xsrHorpJkQth4GVtdPoCM5s6USyYtoV9j8tCPhbLUk5yQn+CIvrDZxN60JGBOqvL6hYb6cis2FrAG5NC3HYPw==}
 
   '@hcengineering/measurements@0.7.9':
     resolution: {integrity: sha512-UXOJOgk1m8tN/fFY8oKuKBdbWS4rOV2K6jUF7U/9nhDSu+ctiYYvAaaovz4vlZayU9X+dMEQyK+XIkgryqAq0A==}
@@ -1032,8 +1041,11 @@ packages:
   '@hcengineering/platform@0.7.1':
     resolution: {integrity: sha512-57nflFUE6ryRFnUZwcQN9gOffwCGFwe+qq2VO4GTfLFH2D9cZHqBHQJGQSaREOOJdbWSulzrFmG4/UZorQhdvg==}
 
-  '@hcengineering/retry@0.7.1':
-    resolution: {integrity: sha512-FRfjMtoCIvVGC1dcM8Mi52V9vuXHF+1gU2AFyHCHp6uFUWKpq7GFafO7hZVvZr4KRF1xxQAALxdYQ9M8v62j0A==}
+  '@hcengineering/platform@0.7.3':
+    resolution: {integrity: sha512-wIvPfC5emEbnfewln7ECQuPKWpfN35OOrE33zD2g5Scaxku6TgJZK4OaizmUeqyVFhYZn9Uh/+m1e8hkVU/FQg==}
+
+  '@hcengineering/retry@0.7.3':
+    resolution: {integrity: sha512-uL+drKVnLO9cHCttDyiJnBHlIZh8+iv/qMClCv/BbIM+FRJtMB3TMkUfpKCtxjR5o8D9CG3kCzwnfQNvZBW/Ug==}
 
   '@hcengineering/server-token@0.7.1':
     resolution: {integrity: sha512-SgZB7/+y3E0h+RMhURZxQNUVNTrYZ6zFGjIBDUhWNM8qCQDNf205+h8I2CbpfHwhoD8jGaBQFz4CP4tq+t9org==}
@@ -3322,6 +3334,10 @@ snapshots:
     dependencies:
       '@hcengineering/platform': 0.7.1
 
+  '@hcengineering/analytics@0.7.3':
+    dependencies:
+      '@hcengineering/platform': 0.7.3
+
   '@hcengineering/core@0.7.1':
     dependencies:
       '@hcengineering/analytics': 0.7.1
@@ -3329,10 +3345,19 @@ snapshots:
       '@hcengineering/platform': 0.7.1
       fast-equals: 5.3.2
 
-  '@hcengineering/hulylake-client@0.7.1':
+  '@hcengineering/core@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.1
-      '@hcengineering/retry': 0.7.1
+      '@hcengineering/analytics': 0.7.3
+      '@hcengineering/measurements': 0.7.10
+      '@hcengineering/platform': 0.7.3
+      fast-equals: 5.3.2
+
+  '@hcengineering/hulylake-client@0.7.4':
+    dependencies:
+      '@hcengineering/core': 0.7.5
+      '@hcengineering/retry': 0.7.3
+
+  '@hcengineering/measurements@0.7.10': {}
 
   '@hcengineering/measurements@0.7.9': {}
 
@@ -3353,7 +3378,11 @@ snapshots:
     dependencies:
       intl-messageformat: 10.7.17
 
-  '@hcengineering/retry@0.7.1': {}
+  '@hcengineering/platform@0.7.3':
+    dependencies:
+      intl-messageformat: 10.7.17
+
+  '@hcengineering/retry@0.7.3': {}
 
   '@hcengineering/server-token@0.7.1':
     dependencies:

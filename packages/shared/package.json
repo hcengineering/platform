@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-shared",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,8 +35,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:^0.7.2",
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.2",
+    "@hcengineering/communication-types": "workspace:^0.7.3",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.3",
     "@hcengineering/hulylake-client": "^0.7.4"
   },
   "repository": {
