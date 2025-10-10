@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/middleware",
+      "comment": "Add TxOrderingMiddleware",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/middleware"
+}
