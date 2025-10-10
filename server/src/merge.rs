@@ -75,7 +75,8 @@ pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> Handle
     match merge_strategy {
         MergeStrategy::JsonPatch => match blob.inline.as_ref() {
             Some(inline) => {
-                from_slice::<Value>(inline).map_err(|e| ErrorBadRequest(e.to_string()))?;
+                from_slice::<Vec<patch::PatchOperation>>(inline)
+                    .map_err(|e| ErrorBadRequest(e.to_string()))?;
                 Ok(())
             }
             _ => Err(ErrorBadRequest("missing inline body").into()),

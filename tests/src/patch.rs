@@ -52,7 +52,7 @@ use super::put::Body;
     4,
     Some("application/json-patch+json"),
     Body::Text("{}"),
-    StatusCode::CREATED
+    StatusCode::BAD_REQUEST
 )]
 pub async fn put_and_patch_json_patch(
     _: usize,
