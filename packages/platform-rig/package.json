@@ -30,7 +30,7 @@
     "do-svelte-check": "./bin/do-svelte-check.js",
     "bump-package-version": "./bin/bump-package-version.js",
     "bump-changes-from-tag": "./bin/bump-changes-from-tag.js",
-    "update-deps": "./bin/update-hcengineering-deps.js"
+    "update-deps": "./bin/update-deps.js"
   },
   "publishConfig": {
     "access": "public"
