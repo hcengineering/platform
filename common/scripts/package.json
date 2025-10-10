@@ -9,7 +9,7 @@
     "test:coverage": "node run-tests-with-coverage.js"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.10",
+    "@hcengineering/platform-rig": "^0.7.12",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.2.0",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/elastic",
+      "comment": "New deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/elastic"
+}

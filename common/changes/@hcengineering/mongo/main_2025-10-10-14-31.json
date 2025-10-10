@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/mongo",
+      "comment": "New deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/mongo"
+}

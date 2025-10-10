@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/datalake",
+      "comment": "New deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/datalake"
+}

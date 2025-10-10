@@ -89,11 +89,7 @@ class TestLiveQueryMiddleware extends BaseMiddleware implements Middleware {
   private readonly txQueue: Array<{ tx: TxUpdateDoc<Doc>, delay: number }> = []
   private readonly findAllCounter: FindAllCounter
 
-  constructor (
-    context: PipelineContext,
-    findAllCounter: FindAllCounter,
-    next?: Middleware
-  ) {
+  constructor (context: PipelineContext, findAllCounter: FindAllCounter, next?: Middleware) {
     super(context, next)
     this.findAllCounter = findAllCounter
   }
@@ -212,26 +208,16 @@ describe('LiveQuery Race Condition Tests', () => {
 
   it('should detect race condition with out-of-order transactions', async () => {
     // Create two transactions that will arrive in wrong order
-    const tx1: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(
-      testDocClass,
-      testDoc.space,
-      testDoc._id,
-      {
-        messages: testDoc.messages + 1
-      }
-    )
+    const tx1: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+      messages: testDoc.messages + 1
+    })
     tx1.modifiedOn = 101
     // Add $inc to simulate real operations
     ;(tx1.operations as any) = { $inc: { messages: 1 } }
 
-    const tx2: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(
-      testDocClass,
-      testDoc.space,
-      testDoc._id,
-      {
-        transcription: testDoc.transcription + 1
-      }
-    )
+    const tx2: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+      transcription: testDoc.transcription + 1
+    })
     tx2.modifiedOn = 102
     ;(tx2.operations as any) = { $inc: { transcription: 1 } }
 
@@ -279,14 +265,9 @@ describe('LiveQuery Race Condition Tests', () => {
 
     // Create 5 transactions with increasing times
     for (let i = 0; i < 5; i++) {
-      const tx = txFactory.createTxUpdateDoc(
-        testDocClass,
-        testDoc.space,
-        testDoc._id,
-        {
-          messages: testDoc.messages + i + 1
-        }
-      )
+      const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+        messages: testDoc.messages + i + 1
+      })
       tx.modifiedOn = 101 + i
       ;(tx.operations as any) = { $inc: { messages: 1 } }
       transactions.push(tx)
@@ -324,14 +305,9 @@ describe('LiveQuery Race Condition Tests', () => {
 
     // 10 transactions in correct order
     for (let i = 0; i < 10; i++) {
-      const tx = txFactory.createTxUpdateDoc(
-        testDocClass,
-        testDoc.space,
-        testDoc._id,
-        {
-          messages: testDoc.messages + i + 1
-        }
-      )
+      const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+        messages: testDoc.messages + i + 1
+      })
       tx.modifiedOn = 101 + i
       ;(tx.operations as any) = { $inc: { messages: 1 } }
       await middleware.applyTxToLocalDoc(tx)
@@ -409,25 +385,15 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
   it('should prevent race condition using TxOrderingMiddleware', async () => {
     // Create two transactions
-    const tx1: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(
-      testDocClass,
-      testDoc.space,
-      testDoc._id,
-      {
-        messages: testDoc.messages + 1
-      }
-    )
+    const tx1: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+      messages: testDoc.messages + 1
+    })
     tx1.modifiedOn = 101
     ;(tx1.operations as any) = { $inc: { messages: 1 } }
 
-    const tx2: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(
-      testDocClass,
-      testDoc.space,
-      testDoc._id,
-      {
-        transcription: testDoc.transcription + 1
-      }
-    )
+    const tx2: TxUpdateDoc<TestDoc> = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+      transcription: testDoc.transcription + 1
+    })
     tx2.modifiedOn = 102
     ;(tx2.operations as any) = { $inc: { transcription: 1 } }
 
@@ -468,7 +434,7 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
     // Start broadcast2 first, but it should wait for broadcast1
     const promise2 = orderingMiddleware.handleBroadcast(ctx2 as any)
     // Give it time to start and block
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const promise1 = orderingMiddleware.handleBroadcast(ctx1 as any)
 
     await Promise.all([promise1, promise2])
@@ -489,14 +455,9 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     // Create 3 transactions (fewer for a simpler test)
     for (let i = 0; i < 3; i++) {
-      const tx = txFactory.createTxUpdateDoc(
-        testDocClass,
-        testDoc.space,
-        testDoc._id,
-        {
-          messages: testDoc.messages + i + 1
-        }
-      )
+      const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+        messages: testDoc.messages + i + 1
+      })
       tx.modifiedOn = 101 + i
       ;(tx.operations as any) = { $inc: { messages: 1 } }
       transactions.push(tx)
@@ -545,11 +506,11 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     // Start tx[2] broadcast first (it will wait)
     const promise2 = orderingMiddleware.handleBroadcast(ctx2 as any)
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
     // Then start tx[0] and tx[1]
     const promise0 = orderingMiddleware.handleBroadcast(ctx0 as any)
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const promise1 = orderingMiddleware.handleBroadcast(ctx1 as any)
 
     await Promise.all([promise0, promise1, promise2])
@@ -571,14 +532,9 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     // Batch 1: txes with modifiedOn 101, 102
     for (let i = 0; i < 2; i++) {
-      const tx = txFactory.createTxUpdateDoc(
-        testDocClass,
-        testDoc.space,
-        testDoc._id,
-        {
-          messages: testDoc.messages + i + 1
-        }
-      )
+      const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+        messages: testDoc.messages + i + 1
+      })
       tx.modifiedOn = 101 + i
       ;(tx.operations as any) = { $inc: { messages: 1 } }
       batch1.push(tx)
@@ -586,14 +542,9 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     // Batch 2: txes with modifiedOn 103, 104
     for (let i = 0; i < 2; i++) {
-      const tx = txFactory.createTxUpdateDoc(
-        testDocClass,
-        testDoc.space,
-        testDoc._id,
-        {
-          messages: testDoc.messages + i + 3
-        }
-      )
+      const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, {
+        messages: testDoc.messages + i + 3
+      })
       tx.modifiedOn = 103 + i
       ;(tx.operations as any) = { $inc: { messages: 1 } }
       batch2.push(tx)
@@ -636,7 +587,7 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     // Start broadcasts - batch2 tries to go first, but should wait for batch1
     const broadcast2 = orderingMiddleware.handleBroadcast(ctx2 as any)
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const broadcast1 = orderingMiddleware.handleBroadcast(ctx1 as any)
 
     await Promise.all([broadcast1, broadcast2])

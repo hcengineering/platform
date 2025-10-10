@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/minio",
+      "comment": "New deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/minio"
+}

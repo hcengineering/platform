@@ -85,10 +85,10 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
       })
 
       // Use the earliest modifiedOn from this batch
-      const minModifiedOn = Math.min(...docTxes.map(tx => tx.modifiedOn))
+      const minModifiedOn = Math.min(...docTxes.map((tx) => tx.modifiedOn))
 
       const entry: TxOrderEntry = {
-        txIds: docTxes.map(tx => tx._id),
+        txIds: docTxes.map((tx) => tx._id),
         modifiedOn: minModifiedOn,
         broadcastPromise,
         broadcastResolve
@@ -112,7 +112,7 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
     txes.sort((a, b) => a.modifiedOn - b.modifiedOn)
 
     // Collect all transaction IDs in this broadcast
-    const txIdSet = new Set<string>(txes.map(tx => tx._id))
+    const txIdSet = new Set<string>(txes.map((tx) => tx._id))
 
     // For each document, find if any of its transactions are in this broadcast
     // and wait for all previous batches to complete
@@ -127,7 +127,7 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
       if (queue === undefined) continue
 
       // Find the batch that contains this transaction
-      const batchIndex = queue.findIndex(entry => entry.txIds.some(id => txIdSet.has(id)))
+      const batchIndex = queue.findIndex((entry) => entry.txIds.some((id) => txIdSet.has(id)))
       if (batchIndex === -1) continue
 
       affectedDocs.set(docId, batchIndex)

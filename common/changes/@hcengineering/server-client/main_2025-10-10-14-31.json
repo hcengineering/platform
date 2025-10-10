@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/server-client",
+      "comment": "New deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/server-client"
+}

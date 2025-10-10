@@ -116,7 +116,11 @@ describe('TxOrderingMiddleware', () => {
       }
     }
 
-    middleware = (await TxOrderingMiddleware.create()(ctx, pipelineContext, nextMiddleware as any)) as TxOrderingMiddleware
+    middleware = (await TxOrderingMiddleware.create()(
+      ctx,
+      pipelineContext,
+      nextMiddleware as any
+    )) as TxOrderingMiddleware
     txFactory = new TxFactory(core.account.System)
 
     testDoc = {
