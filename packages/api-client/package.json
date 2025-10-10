@@ -47,7 +47,7 @@
     "ts-node": "^10.8.0",
     "@types/node": "^22.15.29",
     "@types/jest": "^29.5.5",
-    "@types/ws": "^8.5.11",
+    "@types/ws": "^8.5.12",
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {

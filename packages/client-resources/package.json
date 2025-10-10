@@ -38,8 +38,8 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@types/snappyjs": "^0.7.1",
-    "@types/node": "^20.0.0",
-    "ws": "^8.18.0",
+    "@types/node": "^22.15.29",
+    "ws": "^8.18.2",
     "@types/ws": "^8.5.12"
   },
   "dependencies": {
