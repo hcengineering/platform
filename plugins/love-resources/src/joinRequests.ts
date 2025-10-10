@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PopupResult, showPopup } from '@hcengineering/ui'
 import { type UnsubscribeCallback } from '@hcengineering/hulypulse-client'
@@ -65,6 +65,7 @@ export async function unsubscribeJoinResponses (): Promise<void> {
 }
 
 export function sendJoinRequest (meetingId: string): void {
+  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
   closeJoinRequestPopup()
   requestMeetingId = meetingId
   requestPopup = showPopup(JoinRequestPopup, { meetingId }, undefined, undefined, undefined, {
@@ -80,6 +81,7 @@ export function closeJoinRequestPopup (): void {
 }
 
 export async function updateJoinRequest (): Promise<void> {
+  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
   const client = await createPulseClient()
   const currentPerson = getCurrentEmployee()
 
@@ -135,6 +137,7 @@ let activeRequestKey: string | undefined
 let activeRequestsMap: Map<string, JoinRequest | undefined> | undefined
 
 export async function subscribeJoinRequests (meetingId: string | undefined): Promise<void> {
+  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
   if (meetingId === undefined) return
 
   const client = await createPulseClient()
