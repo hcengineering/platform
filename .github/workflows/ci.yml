@@ -23,6 +23,8 @@ jobs:
         run: node common/scripts/install-run-rush.js change --verify
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
+      - name: Rush check
+        run: node common/scripts/install-run-rush.js check --verbose
       - name: Rush validate
         run: node common/scripts/install-run-rush.js validate --verbose
       - name: Rush test
