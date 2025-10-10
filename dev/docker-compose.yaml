@@ -261,11 +261,10 @@ services:
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
-      # - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
-      - UPLOAD_URL=/files
-      # - UPLOAD_URL=http://huly.local:4030/upload/form-data/:workspace
+      - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://huly.local:4030/upload/form-data/:workspace
       - PREVIEW_URL=http://huly.local:4040
-      # - PREVIEW_CONFIG=image|http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|http://huly.local:4030/meta/:workspace/:blobId
+      - PREVIEW_CONFIG=image|http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|http://huly.local:4030/meta/:workspace/:blobId
       - GMAIL_URL=http://huly.local:8093
       - CALENDAR_URL=http://huly.local:8095
       - TELEGRAM_URL=http://huly.local:8086
