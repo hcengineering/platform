@@ -28,7 +28,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.3
@@ -92,7 +92,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/text':
         specifier: ^0.7.3
@@ -241,7 +241,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.3
@@ -308,7 +308,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
@@ -366,7 +366,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.3
@@ -427,7 +427,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.3
@@ -494,7 +494,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
@@ -552,7 +552,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       minio:
         specifier: ^8.0.5
@@ -610,7 +610,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       bson:
         specifier: ^6.10.3
@@ -674,7 +674,7 @@ importers:
         specifier: ^0.7.10
         version: 0.7.10
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       postgres:
         specifier: ^3.4.7
@@ -741,7 +741,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.3
@@ -811,7 +811,7 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.3
@@ -875,22 +875,22 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/datalake':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../datalake
       '@hcengineering/hulylake':
-        specifier: workspace:0.7.1
+        specifier: workspace:0.7.2
         version: link:../hulylake
       '@hcengineering/minio':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../minio
       '@hcengineering/platform':
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/s3':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../s3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.0
+        specifier: workspace:0.7.1
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.3
