@@ -28,7 +28,7 @@ import core, {
   type TxOperations,
   type Type
 } from '@hcengineering/core'
-import { getResource, PlatformError, Severity, Status } from '@hcengineering/platform'
+import { getResource, type IntlString, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
   type Context,
@@ -656,7 +656,7 @@ export async function subProcessesDoneCheck (
   return res === undefined
 }
 
-export function getCirteriaEditor (
+export function getCriteriaEditor (
   of: Ref<Class<Doc>>,
   category: AttributeCategory
 ): UpdateCriteriaComponent | undefined {
@@ -672,4 +672,18 @@ export function getCirteriaEditor (
     of
   })[0]
   return res
+}
+
+export function getMockAttribute (_class: Ref<Class<Doc>>, label: IntlString, type: Type<any>): AnyAttribute {
+  return {
+    attributeOf: _class,
+    name: '',
+    _id: generateId(),
+    space: core.space.Model,
+    modifiedOn: 0,
+    modifiedBy: core.account.System,
+    _class: core.class.Attribute,
+    type,
+    label
+  }
 }
