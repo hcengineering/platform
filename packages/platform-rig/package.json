@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
@@ -20,14 +20,17 @@
     "eslint": "^8.54.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
-    "prettier": "^3.1.0"
+    "prettier": "^3.6.2",
+    "prettier-plugin-svelte": "^3.4.0",
+    "svelte": "^4.2.20"
   },
   "bin": {
     "format": "./bin/format.js",
     "compile": "./bin/compile.js",
     "do-svelte-check": "./bin/do-svelte-check.js",
     "bump-package-version": "./bin/bump-package-version.js",
-    "bump-changes-from-tag": "./bin/bump-changes-from-tag.js"
+    "bump-changes-from-tag": "./bin/bump-changes-from-tag.js",
+    "update-deps": "./bin/update-hcengineering-deps.js"
   },
   "publishConfig": {
     "access": "public"
