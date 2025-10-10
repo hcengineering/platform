@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/postgres-base",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/postgres-base"
+}

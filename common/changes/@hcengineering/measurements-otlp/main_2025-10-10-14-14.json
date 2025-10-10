@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/measurements-otlp",
+      "comment": "Add tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/measurements-otlp"
+}

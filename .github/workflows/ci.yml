@@ -24,6 +24,8 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Rush validate
         run: node common/scripts/install-run-rush.js validate --verbose
+      - name: Rush test
+        run: node common/scripts/install-run-rush.js test --verbose
       - name: Publish packages
         if: startsWith(github.ref, 'refs/tags/v0.7.')
         env:

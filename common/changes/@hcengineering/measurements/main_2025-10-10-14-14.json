@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/measurements",
+      "comment": "Add tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/measurements"
+}
