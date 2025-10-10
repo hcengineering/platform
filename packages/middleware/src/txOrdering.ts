@@ -108,6 +108,9 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
       return
     }
 
+    // Sort transactions by modifiedOn to ensure correct order
+    txes.sort((a, b) => a.modifiedOn - b.modifiedOn)
+
     // Collect all transaction IDs in this broadcast
     const txIdSet = new Set<string>(txes.map(tx => tx._id))
 

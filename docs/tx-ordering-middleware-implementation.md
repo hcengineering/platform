@@ -234,16 +234,6 @@ const pipeline = [
 ]
 ```
 
-### Monitoring
-
-Use `getStats()` to monitor:
-
-```typescript
-const stats = middleware.getStats()
-console.log('Tracked documents:', stats.trackedDocuments)
-console.log('Queued transactions:', stats.totalTrackedTransactions)
-```
-
 ## Future Enhancements
 
 1. **Configurable queue size limit**: Currently hardcoded to 1000
