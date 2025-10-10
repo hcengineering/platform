@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import core, {
   type Class,
   type Doc,
@@ -15,6 +16,7 @@ import core, {
   WorkspaceEvent,
   type WorkspaceIds
 } from '@hcengineering/core'
+import { type HulylakeClient } from '@hcengineering/hulylake-client'
 import {
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
@@ -38,8 +40,6 @@ import {
 import { FullTextIndexPipeline } from '@hcengineering/server-indexer'
 import { getConfig } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
-import { Api as CommunicationApi } from '@hcengineering/communication-server'
-import { type HulylakeClient } from '@hcengineering/hulylake-client'
 
 import { fulltextModelFilter } from './utils'
 

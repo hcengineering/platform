@@ -95,7 +95,7 @@
     "@hcengineering/server-controlled-documents-resources": "^0.7.0",
     "@hcengineering/server-training": "^0.7.0",
     "@hcengineering/server-training-resources": "^0.7.0",
-    "@hcengineering/middleware": "^0.7.0",
+    "@hcengineering/middleware": "^0.7.1",
     "@hcengineering/login-assets": "^0.7.0",
     "@hcengineering/onboard-assets": "^0.7.0",
     "@hcengineering/view-assets": "^0.7.0",

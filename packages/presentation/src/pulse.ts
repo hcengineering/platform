@@ -15,19 +15,24 @@ import { HulypulseClient } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from './plugin'
 
-let pulseclient: HulypulseClient | undefined
+let pulseClient: HulypulseClient | undefined
+let currentToken: string | undefined
 
 export async function createPulseClient (): Promise<HulypulseClient | undefined> {
-  if (pulseclient == null) {
+  const token = getMetadata(presentation.metadata.Token)
+  if (token !== currentToken) {
+    closePulseClient()
+  }
+  if (pulseClient === undefined) {
     const wsPulseUrl = getMetadata(presentation.metadata.PulseUrl)
     if (wsPulseUrl == null || wsPulseUrl.trim().length === 0) return undefined
-    const token = getMetadata(presentation.metadata.Token)
-    pulseclient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
+    pulseClient = await HulypulseClient.connect(`${wsPulseUrl}?token=${token}`)
+    currentToken = token
   }
-  return pulseclient
+  return pulseClient
 }
 
 export function closePulseClient (): void {
-  pulseclient?.close()
-  pulseclient = undefined
+  pulseClient?.close()
+  pulseClient = undefined
 }

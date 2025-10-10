@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Process, SelectedConst } from '@hcengineering/process'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -23,8 +24,10 @@
   export let process: Process
 
   const client = getClient()
+  $: attr = client.getModel().findAllSync(core.class.Attribute, { name: contextValue.key })[0]
+
   let presenter: AnyComponent | undefined = undefined
-  $: presenter = findAttributePresenter(client, process.masterTag, contextValue.key)
+  $: presenter = findAttributePresenter(client, attr?.attributeOf ?? process.masterTag, contextValue.key)
 </script>
 
 {#if presenter !== undefined}
