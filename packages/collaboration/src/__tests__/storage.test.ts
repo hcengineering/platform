@@ -97,7 +97,6 @@ class MockStorageAdapter implements StorageAdapter {
         })
         stream.on('data', (data) => {
           buffer.push(data)
-          resolve()
         })
       })
     }

@@ -96,7 +96,6 @@ export class MemStorageAdapter implements StorageAdapter {
         })
         stream.on('data', (data) => {
           buffer.push(data)
-          resolve()
         })
       })
     }
