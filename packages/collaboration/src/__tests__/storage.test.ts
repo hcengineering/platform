@@ -272,11 +272,9 @@ describe('storage', () => {
       const ydoc = new YDoc()
       ydoc.getMap('data').set('saved', true)
 
-      const blobId = await saveCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc, ydoc)
-
-      expect(blobId).toBe(makeCollabYdocId(doc))
-
+      await saveCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc, ydoc)
       const loadedDoc = await loadCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc)
+
       expect(loadedDoc?.getMap('data').get('saved')).toBe(true)
     })
 
@@ -312,10 +310,7 @@ describe('storage', () => {
       const doc = createMockCollaborativeDoc('empty-doc')
       const ydoc = new YDoc()
 
-      const blobId = await saveCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc, ydoc)
-
-      expect(blobId).toBe(makeCollabYdocId(doc))
-
+      await saveCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc, ydoc)
       const loadedDoc = await loadCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc)
       expect(loadedDoc).toBeDefined()
     })
@@ -416,10 +411,8 @@ describe('storage', () => {
       const markup = '{"type":"doc","content":[]}'
 
       const blobId = await saveCollabJson(ctx, storageAdapter, mockWorkspaceIds, doc, markup)
-
-      expect(blobId).toBe(makeCollabJsonId(doc))
-
       const loadedMarkup = await loadCollabJson(ctx, storageAdapter, mockWorkspaceIds, blobId)
+
       expect(loadedMarkup).toBe(markup)
     })
 
@@ -513,10 +506,10 @@ describe('storage', () => {
       await saveCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc, ydoc)
 
       const markup = '{"type":"json"}'
-      await saveCollabJson(ctx, storageAdapter, mockWorkspaceIds, doc, markup)
+      const jsonBlobId = await saveCollabJson(ctx, storageAdapter, mockWorkspaceIds, doc, markup)
 
       const loadedYdoc = await loadCollabYdoc(ctx, storageAdapter, mockWorkspaceIds, doc)
-      const loadedMarkup = await loadCollabJson(ctx, storageAdapter, mockWorkspaceIds, makeCollabJsonId(doc))
+      const loadedMarkup = await loadCollabJson(ctx, storageAdapter, mockWorkspaceIds, jsonBlobId)
 
       expect(loadedYdoc?.getMap('data').get('type')).toBe('ydoc')
       expect(loadedMarkup).toBe(markup)
