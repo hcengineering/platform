@@ -173,10 +173,16 @@ pub async fn stream(
                 let part_data = part_data(&s3, part).await?;
 
                 if let Some(acc) = &mut acc {
-                    let ops = serde_json::from_slice::<Vec<patch::PatchOperation>>(&part_data)?;
-
-                    if let Err(error) = patch::apply(acc, &ops) {
-                        error!("json patch error: {error}");
+                    let ops = serde_json::from_slice::<Vec<patch::PatchOperation>>(&part_data);
+                    match ops {
+                        Ok(ops) => {
+                            if let Err(error) = patch::apply(acc, &ops) {
+                                error!("json patch error: {error}");
+                            }
+                        }
+                        Err(error) => {
+                            error!("json patch deserialization error: {error}");
+                        }
                     }
                 } else {
                     acc = Some(serde_json::from_slice::<Value>(&part_data)?);

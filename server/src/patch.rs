@@ -3,7 +3,7 @@ use jsonptr::{Pointer, PointerBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::{Number, Value, json};
 use thiserror::Error;
-
+use tracing::*;
 /// 'add' operation - increments a numeric value
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AddOperationExt {
@@ -70,8 +70,14 @@ impl<'de> serde::Deserialize<'de> for PatchOperation {
         if let Ok(op) = op {
             Ok(Self::Standard(op))
         } else {
+            let standard_error = op.err().unwrap();
             serde_json::from_value::<HulyPatchOperation>(value)
-                .map_err(serde::de::Error::custom)
+                .map_err(|huly_error| {
+                    serde::de::Error::custom(format!(
+                        "Failed to deserialize as StandardPatchOperation: {}. Also failed to deserialize as HulyPatchOperation: {}",
+                        standard_error, huly_error
+                    ))
+                })
                 .map(Self::Huly)
         }
     }
@@ -101,7 +107,10 @@ pub fn apply(doc: &mut Value, patches: &[PatchOperation]) -> Result<(), HulyPatc
             },
             PatchOperation::Standard(standard_op) => Ok(Some(standard_op.clone())),
         }? {
-            json_patch::patch(doc, &[op])?;
+            if let Err(e) = json_patch::patch(doc, &[op.clone()]) {
+                error!("Failed to apply patch {:?}: {}", patch, e);
+                return Err(e.into());
+            }
         }
     }
     Ok(())
