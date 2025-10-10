@@ -45,7 +45,7 @@
     "@hcengineering/server-token": "^0.7.1",
     "@hcengineering/text-core": "^0.7.1",
     "@hcengineering/text-markdown": "^0.7.1",
-    "@hcengineering/hulylake-client": "^0.7.1",
+    "@hcengineering/hulylake-client": "^0.7.4",
     "franc-min": "^6.2.0",
     "uuid": "^8.3.2",
     "zod": "^3.22.4"

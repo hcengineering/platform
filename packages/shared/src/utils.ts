@@ -37,7 +37,7 @@ import {
   TranslatedMessagesDoc,
   WithTotal
 } from '@hcengineering/communication-types'
-import { type HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 const COUNTER_BITS = 10n
 const RANDOM_BITS = 10n
@@ -96,7 +96,7 @@ export function withTotal<T> (objects: T[], total?: number): WithTotal<T> {
   return Object.assign(objects, { total: length })
 }
 
-export async function loadMessagesGroups (client: HulylakeClient, cardId: CardID): Promise<MessagesGroup[]> {
+export async function loadMessagesGroups (client: HulylakeWorkspaceClient, cardId: CardID): Promise<MessagesGroup[]> {
   const res = await client.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, {
     maxRetries: 3,
     isRetryable: () => true,
@@ -124,7 +124,7 @@ function deserializeMessageGroup (group: MessagesGroupDoc): MessagesGroup {
 }
 
 export async function loadMessages (
-  client: HulylakeClient,
+  client: HulylakeWorkspaceClient,
   blobId: BlobID,
   params: FindMessagesParams,
   options?: FindMessagesOptions

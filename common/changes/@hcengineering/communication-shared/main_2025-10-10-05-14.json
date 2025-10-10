@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "comment": "update hulylake client",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-shared"
+}

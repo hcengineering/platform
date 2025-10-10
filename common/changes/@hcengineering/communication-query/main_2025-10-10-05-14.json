@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-query",
+      "comment": "update hulylake client",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-query"
+}

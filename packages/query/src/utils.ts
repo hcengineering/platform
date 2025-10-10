@@ -24,9 +24,9 @@ import {
   MessagesDoc,
   type Notification, TranslatedMessage, TranslatedMessagesDoc
 } from '@hcengineering/communication-types'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
-export async function loadTranslatedMessages (client: HulylakeClient, cardId: CardID, blobId: BlobID, lang: string): Promise<TranslatedMessage[]> {
+export async function loadTranslatedMessages (client: HulylakeWorkspaceClient, cardId: CardID, blobId: BlobID, lang: string): Promise<TranslatedMessage[]> {
   try {
     const res = await client.getJson<TranslatedMessagesDoc>(`${cardId}/messages/${lang}/${blobId}`)
     if (res?.body == null) return []
@@ -37,7 +37,7 @@ export async function loadTranslatedMessages (client: HulylakeClient, cardId: Ca
   }
 }
 
-export async function loadMessages (client: HulylakeClient, cardId: CardID, blobId: BlobID, params: FindMessagesParams, options?: FindMessagesOptions, cache?: Map<BlobID, Promise<MessagesDoc | undefined>>): Promise<Message[]> {
+export async function loadMessages (client: HulylakeWorkspaceClient, cardId: CardID, blobId: BlobID, params: FindMessagesParams, options?: FindMessagesOptions, cache?: Map<BlobID, Promise<MessagesDoc | undefined>>): Promise<Message[]> {
   const doc = await loadMessagesDoc(client, cardId, blobId, cache)
 
   if (doc === undefined) {
@@ -47,7 +47,7 @@ export async function loadMessages (client: HulylakeClient, cardId: CardID, blob
   return parseMessagesDoc(doc, params, options)
 }
 
-async function requestMessagesDoc (client: HulylakeClient, cardId: CardID, blobId: BlobID): Promise<MessagesDoc | undefined> {
+async function requestMessagesDoc (client: HulylakeWorkspaceClient, cardId: CardID, blobId: BlobID): Promise<MessagesDoc | undefined> {
   const res = await client.getJson<MessagesDoc>(`${cardId}/messages/${blobId}`, {
     maxRetries: 3,
     isRetryable: () => true,
@@ -62,7 +62,7 @@ async function requestMessagesDoc (client: HulylakeClient, cardId: CardID, blobI
 }
 
 async function loadMessagesDoc (
-  client: HulylakeClient,
+  client: HulylakeWorkspaceClient,
   cardId: CardID,
   blobId: BlobID,
   cache?: Map<BlobID, Promise<MessagesDoc | undefined>>

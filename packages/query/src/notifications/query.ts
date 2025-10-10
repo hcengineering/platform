@@ -30,7 +30,7 @@ import {
   UpdateNotificationEvent
 } from '@hcengineering/communication-sdk-types'
 import { NotificationProcessor } from '@hcengineering/communication-shared'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 import { defaultQueryParams, NotificationQueryParams, type PagedQuery, type QueryId, QueryOptions } from '../types'
 import { QueryResult } from '../result'
@@ -45,7 +45,7 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
 
   constructor (
     private readonly client: FindClient,
-    private readonly hulylake: HulylakeClient,
+    private readonly hulylake: HulylakeWorkspaceClient,
     public readonly id: QueryId,
     public readonly params: NotificationQueryParams,
     public readonly options: QueryOptions | undefined,

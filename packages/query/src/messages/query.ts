@@ -37,7 +37,7 @@ import {
 } from '@hcengineering/communication-sdk-types'
 import { MessageProcessor } from '@hcengineering/communication-shared'
 import { v4 as uuid } from 'uuid'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 import { QueryResult } from '../result'
 import {
@@ -84,7 +84,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   constructor (
     private readonly client: FindClient,
-    private readonly hulylake: HulylakeClient,
+    private readonly hulylake: HulylakeWorkspaceClient,
     public readonly id: QueryId,
     public readonly params: MessageQueryParams,
     public readonly options: MessageQueryOptions | undefined,

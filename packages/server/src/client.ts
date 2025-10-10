@@ -28,12 +28,12 @@ import { loadMessages } from '@hcengineering/communication-shared'
 
 import { Blob } from './blob'
 import type { Metadata } from './types'
-import { getClient, HulylakeClient } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient, HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 export class LowLevelClient {
   private readonly messageMetaCache = new Map<string, MessageMeta>()
   private readonly personUuidBySocialIdCache = new Map<SocialID, PersonUuid>()
-  private readonly lake: HulylakeClient
+  private readonly lake: HulylakeWorkspaceClient
 
   constructor (
     readonly db: DbAdapter,
@@ -41,7 +41,7 @@ export class LowLevelClient {
     private readonly metadata: Metadata,
     private readonly workspace: WorkspaceUuid
   ) {
-    this.lake = getClient(metadata.hulylakeUrl, workspace, generateToken(systemAccountUuid, workspace, undefined, metadata.secret))
+    this.lake = getWorkspaceClient(metadata.hulylakeUrl, workspace, generateToken(systemAccountUuid, workspace, undefined, metadata.secret))
   }
 
   async findMessage (cardId: CardID, messageId: MessageID, options?: FindMessagesOptions): Promise<Message | undefined> {

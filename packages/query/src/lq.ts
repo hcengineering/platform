@@ -32,7 +32,7 @@ import type {
   PagedQueryCallback,
   FindClient
 } from '@hcengineering/communication-sdk-types'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 import type { FindParams, QueryId, AnyQuery, MessageQueryParams, QueryOptions, MessageQueryOptions, NotificationContextQueryOptions } from './types'
 import { MessagesQuery } from './messages/query'
@@ -55,7 +55,7 @@ export class LiveQueries {
 
   constructor (
     private readonly client: FindClient,
-    private readonly hulylake: HulylakeClient
+    private readonly hulylake: HulylakeWorkspaceClient
   ) {
     this.client.onEvent = (event) => {
       this.eventQueue = this.eventQueue

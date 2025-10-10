@@ -26,7 +26,7 @@ import {
   RemoveLabelEvent,
   UpdateCardTypeEvent
 } from '@hcengineering/communication-sdk-types'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 import { QueryResult } from '../result'
 import { type Query, type QueryId, QueryOptions } from '../types'
@@ -41,7 +41,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
 
   constructor (
     private readonly client: FindClient,
-    private readonly hulylake: HulylakeClient,
+    private readonly hulylake: HulylakeWorkspaceClient,
     public readonly id: QueryId,
     public readonly params: FindLabelsParams,
     public readonly options: QueryOptions | undefined,

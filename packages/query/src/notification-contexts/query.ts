@@ -46,7 +46,7 @@ import {
   NotificationContextProcessor,
   NotificationProcessor
 } from '@hcengineering/communication-shared'
-import { HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 import { defaultQueryParams, NotificationContextQueryOptions, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
@@ -65,7 +65,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   constructor (
     private readonly client: FindClient,
-    private readonly hulylake: HulylakeClient,
+    private readonly hulylake: HulylakeWorkspaceClient,
     public readonly id: QueryId,
     public readonly params: FindNotificationContextParams,
     public readonly options: NotificationContextQueryOptions | undefined,

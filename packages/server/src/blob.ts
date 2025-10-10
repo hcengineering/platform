@@ -18,7 +18,7 @@ import {
   systemAccountUuid,
   WorkspaceUuid
 } from '@hcengineering/core'
-import { getClient, type HulylakeClient, type JsonPatch } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient, type HulylakeWorkspaceClient, type JsonPatch } from '@hcengineering/hulylake-client'
 import { generateToken } from '@hcengineering/server-token'
 import {
   Attachment,
@@ -45,7 +45,7 @@ import { v4 as uuid } from 'uuid'
 import { Metadata } from './types'
 
 export class Blob {
-  private readonly client: HulylakeClient
+  private readonly client: HulylakeWorkspaceClient
   // Groups sored by fromDate
   private readonly messageGroupsByCardId = new Map<CardID, MessagesGroup[]>()
   private readonly messageGroupsPromises = new Map<CardID, Promise<MessagesGroup[]>>()
@@ -61,7 +61,7 @@ export class Blob {
   } as const
 
   constructor (private readonly ctx: MeasureContext, private readonly workspace: WorkspaceUuid, private readonly metadata: Metadata) {
-    this.client = getClient(metadata.hulylakeUrl, workspace, generateToken(systemAccountUuid, workspace, undefined, metadata.secret))
+    this.client = getWorkspaceClient(metadata.hulylakeUrl, workspace, generateToken(systemAccountUuid, workspace, undefined, metadata.secret))
   }
 
   public async findMessagesGroups (params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
