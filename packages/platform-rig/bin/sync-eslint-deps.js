@@ -46,6 +46,24 @@ function isEslintDependency(depName) {
 }
 
 /**
+ * Find platform-rig in node_modules
+ */
+function findPlatformRigPath() {
+  // Try to find platform-rig in node_modules
+  const cwd = process.cwd()
+  const possiblePaths = [path.join(cwd, 'common', 'scripts', 'node_modules', '@hcengineering', 'platform-rig')]
+
+  for (const platformRigPath of possiblePaths) {
+    const packageJsonPath = path.join(platformRigPath, 'package.json')
+    if (fs.existsSync(packageJsonPath)) {
+      return platformRigPath
+    }
+  }
+
+  return null
+}
+
+/**
  * Get ESLint dev dependencies from platform-rig package.json
  */
 function getEslintDepsFromPlatformRig(platformRigPath) {
@@ -128,18 +146,18 @@ function main() {
   console.log('🔍 Syncing ESLint dependencies from platform-rig to all packages...\n')
 
   try {
-    // Get all Rush projects
-    const projects = getRushProjects()
-    console.log(`Found ${projects.length} projects in Rush workspace\n`)
-
-    // Find platform-rig project
-    const platformRigProject = projects.find((p) => p.name === '@hcengineering/platform-rig')
-    if (!platformRigProject) {
-      throw new Error('platform-rig package not found in Rush workspace')
+    // Find platform-rig in node_modules
+    const platformRigPath = findPlatformRigPath()
+    if (!platformRigPath) {
+      console.log('⚠️  platform-rig package not found in node_modules. Skipping sync.')
+      console.log('   Make sure @hcengineering/platform-rig is installed as a dependency.')
+      return
     }
 
+    console.log(`📍 Found platform-rig at: ${platformRigPath}\n`)
+
     // Get ESLint dependencies from platform-rig
-    const eslintDeps = getEslintDepsFromPlatformRig(platformRigProject.fullPath)
+    const eslintDeps = getEslintDepsFromPlatformRig(platformRigPath)
 
     if (Object.keys(eslintDeps).length === 0) {
       console.log('⚠️  No ESLint dependencies found in platform-rig')
@@ -151,6 +169,10 @@ function main() {
       console.log(`  ${name}: ${version}`)
     }
     console.log()
+
+    // Get all Rush projects
+    const projects = getRushProjects()
+    console.log(`Found ${projects.length} projects in Rush workspace\n`)
 
     // Update all packages
     let updatedCount = 0
