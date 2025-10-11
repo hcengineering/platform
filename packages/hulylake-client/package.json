@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/hulylake-client",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -24,11 +24,11 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.12",
+    "@hcengineering/platform-rig": "^0.7.14",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "cross-env": "~7.0.3",
     "esbuild": "^0.25.9",
     "eslint": "^8.54.0",
@@ -42,8 +42,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.5",
-    "@hcengineering/retry": "workspace:^0.7.3"
+    "@hcengineering/core": "workspace:^0.7.6",
+    "@hcengineering/retry": "workspace:^0.7.4"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {

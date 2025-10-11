@@ -2,6 +2,26 @@
   "name": "@hcengineering/client",
   "entries": [
     {
+      "version": "0.7.5",
+      "tag": "@hcengineering/client_v0.7.5",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.5` to `0.7.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.4",
       "tag": "@hcengineering/client_v0.7.4",
       "date": "Thu, 09 Oct 2025 16:57:55 GMT",

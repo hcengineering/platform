@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/analytics-service",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -24,13 +24,13 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.12",
+    "@hcengineering/platform-rig": "^0.7.14",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.8.3",
@@ -39,9 +39,9 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.3",
-    "@hcengineering/core": "workspace:^0.7.5",
-    "@hcengineering/analytics": "workspace:^0.7.3",
+    "@hcengineering/platform": "workspace:^0.7.4",
+    "@hcengineering/core": "workspace:^0.7.6",
+    "@hcengineering/analytics": "workspace:^0.7.4",
     "@hcengineering/measurements-otlp": "^0.7.10",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0"

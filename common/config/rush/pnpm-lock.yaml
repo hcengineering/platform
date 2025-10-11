@@ -13,15 +13,15 @@ importers:
   ../../packages/account-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -30,10 +30,10 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       cross-env:
         specifier: ~7.0.3
         version: 7.0.3
@@ -45,7 +45,7 @@ importers:
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -71,27 +71,27 @@ importers:
   ../../packages/analytics:
     dependencies:
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -117,16 +117,16 @@ importers:
   ../../packages/analytics-service:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/measurements-otlp':
         specifier: ^0.7.10
         version: 0.7.10
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       winston:
         specifier: ^3.11.0
@@ -136,23 +136,23 @@ importers:
         version: 5.0.0(winston@3.18.3)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -178,36 +178,36 @@ importers:
   ../../packages/api-client:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../account-client
       '@hcengineering/client':
-        specifier: workspace:^0.7.4
+        specifier: workspace:^0.7.5
         version: link:../client
       '@hcengineering/client-resources':
-        specifier: workspace:^0.7.4
+        specifier: workspace:^0.7.5
         version: link:../client-resources
       '@hcengineering/collaborator-client':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../collaborator-client
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       '@hcengineering/text':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-markdown
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -222,16 +222,16 @@ importers:
         version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -264,15 +264,15 @@ importers:
   ../../packages/client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -281,16 +281,16 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -316,27 +316,27 @@ importers:
   ../../packages/client-resources:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../analytics
       '@hcengineering/client':
-        specifier: workspace:^0.7.4
+        specifier: workspace:^0.7.5
         version: link:../client
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       '@hcengineering/rpc':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../rpc
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -351,16 +351,16 @@ importers:
         version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -389,12 +389,12 @@ importers:
   ../../packages/collaborator-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -403,10 +403,10 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       cross-env:
         specifier: ~7.0.3
         version: 7.0.3
@@ -418,7 +418,7 @@ importers:
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -444,21 +444,21 @@ importers:
   ../../packages/core:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../analytics
       '@hcengineering/measurements':
         specifier: ^0.7.10
         version: 0.7.10
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -467,16 +467,16 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -502,15 +502,15 @@ importers:
   ../../packages/hulylake-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/retry':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../retry
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -519,10 +519,10 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       cross-env:
         specifier: ~7.0.3
         version: 7.0.3
@@ -534,7 +534,7 @@ importers:
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -560,22 +560,22 @@ importers:
   ../../packages/model:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../account-client
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       '@hcengineering/rank':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../rank
       '@hcengineering/storage':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../storage
       fast-equals:
         specifier: ^5.2.2
@@ -585,8 +585,8 @@ importers:
         version: 2.0.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -598,16 +598,16 @@ importers:
         version: 2.0.7
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -637,23 +637,23 @@ importers:
         version: 10.7.17
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -679,36 +679,36 @@ importers:
   ../../packages/query:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -734,30 +734,30 @@ importers:
   ../../packages/rank:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       lexorank:
         specifier: ~1.0.4
         version: 1.0.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -783,8 +783,8 @@ importers:
   ../../packages/retry:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -793,16 +793,16 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -828,18 +828,18 @@ importers:
   ../../packages/rpc:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       msgpackr:
         specifier: ^1.11.2
         version: 1.11.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -848,16 +848,16 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -883,18 +883,18 @@ importers:
   ../../packages/storage:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -903,16 +903,16 @@ importers:
         version: 22.18.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -938,10 +938,10 @@ importers:
   ../../packages/text:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-core
       '@tiptap/core':
         specifier: ^2.11.7
@@ -1059,8 +1059,8 @@ importers:
         version: 0.4.2(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -1069,16 +1069,16 @@ importers:
         version: 13.0.9
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1104,7 +1104,7 @@ importers:
   ../../packages/text-core:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
@@ -1114,8 +1114,8 @@ importers:
         version: 6.0.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -1124,16 +1124,16 @@ importers:
         version: 13.0.9
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1162,30 +1162,30 @@ importers:
   ../../packages/text-html:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-core
       htmlparser2:
         specifier: ^9.0.0
         version: 9.1.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1211,10 +1211,10 @@ importers:
   ../../packages/text-markdown:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-core
       '@hcengineering/text-html':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-html
       fast-equals:
         specifier: ^5.2.2
@@ -1224,8 +1224,8 @@ importers:
         version: 14.1.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -1234,16 +1234,16 @@ importers:
         version: 13.0.9
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1269,13 +1269,13 @@ importers:
   ../../packages/text-ydoc:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/text':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../text-core
       y-protocols:
         specifier: ^1.0.6
@@ -1285,23 +1285,23 @@ importers:
         version: 13.6.27
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1336,10 +1336,10 @@ importers:
   ../../packages/token:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.5
+        specifier: workspace:^0.7.6
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.3
+        specifier: workspace:^0.7.4
         version: link:../platform
       jwt-simple:
         specifier: ^0.5.6
@@ -1349,8 +1349,8 @@ importers:
         version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -1362,16 +1362,16 @@ importers:
         version: 8.3.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: ^8.54.0
         version: 8.57.1
       eslint-config-standard-with-typescript:
         specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import:
         specifier: ^2.26.0
         version: 2.32.0(eslint@8.57.1)
@@ -1397,8 +1397,29 @@ importers:
   ../scripts:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.12
-        version: 0.7.12
+        specifier: ^0.7.14
+        version: 0.7.14
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.11.0
+        version: 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.46.0
+        version: 8.46.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-config-standard-with-typescript:
+        specifier: ^40.0.0
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.32.0(eslint@8.57.1)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.7.0(eslint@8.57.1)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.6.0(eslint@8.57.1)
 
 packages:
 
@@ -1786,8 +1807,8 @@ packages:
   '@hcengineering/measurements@0.7.10':
     resolution: {integrity: sha512-6xsrHorpJkQth4GVtdPoCM5s6USyYtoV9j8tCPhbLUk5yQn+CIvrDZxN60JGBOqvL6hYb6cis2FrAG5NC3HYPw==}
 
-  '@hcengineering/platform-rig@0.7.12':
-    resolution: {integrity: sha512-FoTwlXA9dx47kscdGwsInWQRAkosfCInVbNS0zaVaC5qTzgjAzpSq5htJ6/WxZO7nbIjFNyH47k6y1jNMmx1Hg==}
+  '@hcengineering/platform-rig@0.7.14':
+    resolution: {integrity: sha512-evAaq4jIO+S0R/DhMQXXHNwRHK/J5MdwOHlPwdYOr7NQKj9h/1idM/OKboWo69BNJpNznjW5OURe+JqlEA53yA==}
     hasBin: true
 
   '@humanwhocodes/config-array@0.13.0':
@@ -2827,9 +2848,32 @@ packages:
       typescript:
         optional: true
 
+  '@typescript-eslint/parser@8.46.0':
+    resolution: {integrity: sha512-n1H6IcDhmmUEG7TNVSspGmiHHutt7iVKtZwRppD7e04wha5MrkV1h3pti9xQLcCMt6YWsncpoT0HMjkH1FNwWQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '>=4.8.4 <6.0.0'
+
+  '@typescript-eslint/project-service@8.46.0':
+    resolution: {integrity: sha512-OEhec0mH+U5Je2NZOeK1AbVCdm0ChyapAyTeXVIYTPXDJ3F07+cu87PPXcGoYqZ7M9YJVvFnfpGg1UmCIqM+QQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.0.0'
+
   '@typescript-eslint/scope-manager@6.21.0':
     resolution: {integrity: sha512-OwLUIWZJry80O99zvqXVEioyniJMa+d2GrqpUTqi5/v5D5rOrppJVBPa0yKCblcigC0/aYAzxxqQ1B+DS2RYsg==}
     engines: {node: ^16.0.0 || >=18.0.0}
+
+  '@typescript-eslint/scope-manager@8.46.0':
+    resolution: {integrity: sha512-lWETPa9XGcBes4jqAMYD9fW0j4n6hrPtTJwWDmtqgFO/4HF4jmdH/Q6wggTw5qIT5TXjKzbt7GsZUBnWoO3dqw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/tsconfig-utils@8.46.0':
+    resolution: {integrity: sha512-WrYXKGAHY836/N7zoK/kzi6p8tXFhasHh8ocFL9VZSAkvH956gfeRfcnhs3xzRy8qQ/dq3q44v1jvQieMFg2cw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.0.0'
 
   '@typescript-eslint/type-utils@6.21.0':
     resolution: {integrity: sha512-rZQI7wHfao8qMX3Rd3xqeYSMCL3SoiSQLBATSiVKARdFGCYSRvmViieZjqc58jKgs8Y8i9YvVVhRbHSTA4VBag==}
@@ -2845,6 +2889,10 @@ packages:
     resolution: {integrity: sha512-1kFmZ1rOm5epu9NZEZm1kckCDGj5UJEf7P1kliH4LKu/RkwpsfqqGmY2OOcUs18lSlQBKLDYBOGxRVtrMN5lpg==}
     engines: {node: ^16.0.0 || >=18.0.0}
 
+  '@typescript-eslint/types@8.46.0':
+    resolution: {integrity: sha512-bHGGJyVjSE4dJJIO5yyEWt/cHyNwga/zXGJbJJ8TiO01aVREK6gCTu3L+5wrkb1FbDkQ+TKjMNe9R/QQQP9+rA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@typescript-eslint/typescript-estree@6.21.0':
     resolution: {integrity: sha512-6npJTkZcO+y2/kr+z0hc4HwNfrrP4kNYh57ek7yCNlrBjWQ1Y0OS7jiZTkgumrvkX5HkEKXFZkkdFNkaW2wmUQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
@@ -2853,6 +2901,12 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  '@typescript-eslint/typescript-estree@8.46.0':
+    resolution: {integrity: sha512-ekDCUfVpAKWJbRfm8T1YRrCot1KFxZn21oV76v5Fj4tr7ELyk84OS+ouvYdcDAwZL89WpEkEj2DKQ+qg//+ucg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.0.0'
 
   '@typescript-eslint/utils@6.21.0':
     resolution: {integrity: sha512-NfWVaC8HP9T8cbKQxHcsJBY5YE1O33+jpMwN45qzWWaPDZgLIbo12toGMWnmhvCpd3sIxkpDw3Wv1B3dYrbDQQ==}
@@ -2863,6 +2917,10 @@ packages:
   '@typescript-eslint/visitor-keys@6.21.0':
     resolution: {integrity: sha512-JJtkDduxLi9bivAB+cYOVMtbkqdPOhZ+ZI5LC47MIRrDV4Yn2o+ZnW10Nkmr28xRpSpdJ6Sm42Hjf2+REYXm0A==}
     engines: {node: ^16.0.0 || >=18.0.0}
+
+  '@typescript-eslint/visitor-keys@8.46.0':
+    resolution: {integrity: sha512-FrvMpAK+hTbFy7vH5j1+tMYHMSKLE6RzluFJlkFNKD0p9YsUT75JlBSmr5so3QRzvMwU5/bIEdeNrxm8du8l3Q==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -3453,6 +3511,10 @@ packages:
   eslint-visitor-keys@3.4.3:
     resolution: {integrity: sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  eslint-visitor-keys@4.2.1:
+    resolution: {integrity: sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   eslint@8.57.1:
     resolution: {integrity: sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==}
@@ -4246,6 +4308,10 @@ packages:
     resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
     engines: {node: '>=16 || 14 >=14.17'}
 
+  minimatch@9.0.5:
+    resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
+    engines: {node: '>=16 || 14 >=14.17'}
+
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
@@ -4843,6 +4909,12 @@ packages:
     engines: {node: '>=16'}
     peerDependencies:
       typescript: '>=4.2.0'
+
+  ts-api-utils@2.1.0:
+    resolution: {integrity: sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==}
+    engines: {node: '>=18.12'}
+    peerDependencies:
+      typescript: '>=4.8.4'
 
   ts-jest@29.4.4:
     resolution: {integrity: sha512-ccVcRABct5ZELCT5U0+DZwkXMCcOCLi2doHRrKy1nK/s7J7bch6TzJMsrY09WxgUUIP/ITfmcDS8D2yl63rnXw==}
@@ -5510,14 +5582,14 @@ snapshots:
 
   '@hcengineering/measurements@0.7.10': {}
 
-  '@hcengineering/platform-rig@0.7.12':
+  '@hcengineering/platform-rig@0.7.14':
     dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       esbuild: 0.25.10
       esbuild-plugin-copy: 2.1.1(esbuild@0.25.10)
       eslint: 8.57.1
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import: 2.32.0(eslint@8.57.1)
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
       eslint-plugin-promise: 6.6.0(eslint@8.57.1)
@@ -6860,10 +6932,10 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.46.0(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/type-utils': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
@@ -6893,10 +6965,40 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/scope-manager': 8.46.0
+      '@typescript-eslint/types': 8.46.0
+      '@typescript-eslint/typescript-estree': 8.46.0(typescript@5.9.3)
+      '@typescript-eslint/visitor-keys': 8.46.0
+      debug: 4.4.3
+      eslint: 8.57.1
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/project-service@8.46.0(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/tsconfig-utils': 8.46.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.46.0
+      debug: 4.4.3
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/scope-manager@6.21.0':
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
+
+  '@typescript-eslint/scope-manager@8.46.0':
+    dependencies:
+      '@typescript-eslint/types': 8.46.0
+      '@typescript-eslint/visitor-keys': 8.46.0
+
+  '@typescript-eslint/tsconfig-utils@8.46.0(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
 
   '@typescript-eslint/type-utils@6.21.0(eslint@8.57.1)(typescript@5.9.3)':
     dependencies:
@@ -6912,6 +7014,8 @@ snapshots:
 
   '@typescript-eslint/types@6.21.0': {}
 
+  '@typescript-eslint/types@8.46.0': {}
+
   '@typescript-eslint/typescript-estree@6.21.0(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 6.21.0
@@ -6923,6 +7027,22 @@ snapshots:
       semver: 7.7.2
       ts-api-utils: 1.4.3(typescript@5.9.3)
     optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/typescript-estree@8.46.0(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/project-service': 8.46.0(typescript@5.9.3)
+      '@typescript-eslint/tsconfig-utils': 8.46.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.46.0
+      '@typescript-eslint/visitor-keys': 8.46.0
+      debug: 4.4.3
+      fast-glob: 3.3.3
+      is-glob: 4.0.3
+      minimatch: 9.0.5
+      semver: 7.7.2
+      ts-api-utils: 2.1.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -6945,6 +7065,11 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.21.0
       eslint-visitor-keys: 3.4.3
+
+  '@typescript-eslint/visitor-keys@8.46.0':
+    dependencies:
+      '@typescript-eslint/types': 8.46.0
+      eslint-visitor-keys: 4.2.1
 
   '@ungap/structured-clone@1.3.0': {}
 
@@ -7566,9 +7691,9 @@ snapshots:
     optionalDependencies:
       source-map: 0.6.1
 
-  eslint-config-standard-with-typescript@40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3):
+  eslint-config-standard-with-typescript@40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@8.46.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       eslint: 8.57.1
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
@@ -7662,6 +7787,8 @@ snapshots:
   eslint-visitor-keys@2.1.0: {}
 
   eslint-visitor-keys@3.4.3: {}
+
+  eslint-visitor-keys@4.2.1: {}
 
   eslint@8.57.1:
     dependencies:
@@ -8747,6 +8874,10 @@ snapshots:
     dependencies:
       brace-expansion: 2.0.2
 
+  minimatch@9.0.5:
+    dependencies:
+      brace-expansion: 2.0.2
+
   minimist@1.2.8: {}
 
   module-details-from-path@1.0.4: {}
@@ -9408,6 +9539,10 @@ snapshots:
   triple-beam@1.4.1: {}
 
   ts-api-utils@1.4.3(typescript@5.9.3):
+    dependencies:
+      typescript: 5.9.3
+
+  ts-api-utils@2.1.0(typescript@5.9.3):
     dependencies:
       typescript: 5.9.3
 

@@ -2,6 +2,26 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.6",
+      "tag": "@hcengineering/core_v0.7.6",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/analytics\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.5",
       "tag": "@hcengineering/core_v0.7.5",
       "date": "Thu, 09 Oct 2025 16:57:55 GMT",

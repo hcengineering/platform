@@ -2,6 +2,26 @@
   "name": "@hcengineering/storage",
   "entries": [
     {
+      "version": "0.7.4",
+      "tag": "@hcengineering/storage_v0.7.4",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.5` to `0.7.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.3",
       "tag": "@hcengineering/storage_v0.7.3",
       "date": "Wed, 08 Oct 2025 03:40:53 GMT",
