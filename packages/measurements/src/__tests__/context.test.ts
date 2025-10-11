@@ -214,19 +214,19 @@ describe('context', () => {
     it('should handle named parameters', () => {
       const metrics = newMetrics()
       const r = new MeasureMetricsContext('test', { method: 'GET' }, {}, metrics, logger)
-      expect(r).toBeNull()
+      expect(r).toBeDefined()
       expect(metrics.namedParams.method).toBe('GET')
     })
 
     it('should update named parameters on multiple contexts', () => {
       const metrics = newMetrics()
       const ctx1 = new MeasureMetricsContext('test1', { method: 'GET' }, {}, metrics, logger)
-      expect(ctx1).toBeNull()
+      expect(ctx1).toBeDefined()
       expect(metrics.namedParams.method).toBe('GET')
 
       // Create another context with different value for same param
       const ctx2 = new MeasureMetricsContext('test2', { method: 'POST' }, {}, metrics, logger)
-      expect(ctx2).toBeNull()
+      expect(ctx2).toBeDefined()
 
       // The second context will see existing value is different, so it will update to '*'
       // But this happens within the constructor logic
