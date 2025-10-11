@@ -19,6 +19,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { Configuration } = require('webpack')
+const sass = require('../../common/scripts/sass-quiet.js')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -284,6 +285,12 @@ module.exports = [
     module: {
       rules: [
         {
+          test: /\.m?js$/,
+          resolve: {
+            fullySpecified: false
+          }
+        },
+        {
           test: /\.ts?$/,
           loader: 'esbuild-loader',
           options: {
@@ -307,7 +314,13 @@ module.exports = [
                 hotReload: !prod,
                 preprocess: require('svelte-preprocess')({
                   postcss: true,
-                  sourceMap: true
+                  sourceMap: true,
+                  scss: {
+                    implementation: sass,
+                    sassOptions: {
+                      // Use modern sass compiler
+                    }
+                  }
                 }),
                 hotOptions: {
                   // Prevent preserving local component state
@@ -356,7 +369,13 @@ module.exports = [
             'style-loader',
             'css-loader',
             'postcss-loader',
-            'sass-loader'
+            {
+              loader: "sass-loader",
+              options: {
+                api: "modern",
+                implementation: sass
+              }
+            }
           ]
         },
 

@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "sass": "^1.53.0",
+    "sass": "^1.80.0",
     "@hcengineering/platform-rig": "^0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",

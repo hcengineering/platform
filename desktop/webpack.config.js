@@ -8,6 +8,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const sass = require('../common/scripts/sass-quiet.js')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -144,6 +145,7 @@ module.exports = [
         fs: false
       },
       extensions: ['.mjs', '.js', '.svelte', '.ts'],
+      mainFields: ['svelte', 'browser', 'module', 'main'],
       conditionNames: ['svelte', 'browser', 'import']
     },
     output: {
@@ -188,7 +190,13 @@ module.exports = [
               hotReload: !prod,
               preprocess: require('svelte-preprocess')({
                 postcss: true,
-                sourceMap: true
+                sourceMap: true,
+                scss: {
+                  implementation: sass,
+                  sassOptions: {
+                    // Use modern sass compiler
+                  }
+                }
               }),
               hotOptions: {
                 // Prevent preserving local component state
@@ -221,8 +229,8 @@ module.exports = [
         },
 
         {
-          // required to prevent errors from Svelte on Webpack 5+, omit on Webpack 4
-          test: /node_modules\/svelte\/.*\.mjs$/,
+          // Fix for packages with "type": "module" that use extensionless imports
+          test: /\.m?js$/,
           resolve: {
             fullySpecified: false
           }
@@ -245,7 +253,13 @@ module.exports = [
             'style-loader',
             'css-loader',
             'postcss-loader',
-            'sass-loader'
+            {
+              loader: "sass-loader",
+              options: {
+                api: "modern",
+                implementation: sass
+              }
+            }
           ]
         },
 
