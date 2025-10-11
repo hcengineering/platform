@@ -289,7 +289,7 @@ mod tests {
             };
             let res = validate_put_request(merge_strategy, &headers);
             match expected {
-                Ok(_) => assert!(res.is_ok()),
+                Ok(_) => assert!(res.is_ok(), "Expected Ok, got Err: {:?}", res.err()),
                 Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
             }
         }
@@ -324,7 +324,7 @@ mod tests {
             };
             let res = validate_put_body(merge_strategy, &blob);
             match expected {
-                Ok(_) => assert!(res.is_ok()),
+                Ok(_) => assert!(res.is_ok(), "Expected Ok, got Err: {:?}", res.err()),
                 Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
             }
         }
@@ -374,7 +374,7 @@ mod tests {
             };
             let res = validate_patch_request(merge_strategy, &headers);
             match expected {
-                Ok(_) => assert!(res.is_ok()),
+                Ok(_) => assert!(res.is_ok(), "Expected Ok, got Err: {:?}", res.err()),
                 Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
             }
         }
@@ -386,7 +386,7 @@ mod tests {
             (
                 MergeStrategy::JsonPatch,
                 Some(Bytes::from(
-                    r#"{ "op": "add", "path": "/foo", "value": "bar" }"#,
+                    r#"[{ "op": "add", "path": "/foo", "value": "bar" }]"#,
                 )),
                 Ok(()),
             ),
@@ -409,7 +409,7 @@ mod tests {
             };
             let res = validate_patch_body(merge_strategy, &blob);
             match expected {
-                Ok(_) => assert!(res.is_ok()),
+                Ok(_) => assert!(res.is_ok(), "Expected Ok, got Err: {:?}", res.err()),
                 Err(e) => assert_eq!(res.unwrap_err().to_string(), e.to_string()),
             }
         }
