@@ -28,10 +28,10 @@ importers:
         specifier: ^22.15.29
         version: 22.15.29
       '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
+        specifier: ^6.21.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.7.2))(eslint@8.57.1)(typescript@5.7.2)
       '@typescript-eslint/parser':
-        specifier: ^6.11.0
+        specifier: ^6.21.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.7.2)
       esbuild:
         specifier: ^0.20.2
