@@ -5,13 +5,13 @@
     "format": "echo \"No format specified\""
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.14",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@hcengineering/platform-rig": "workspace:^0.7.15",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@typescript-eslint/parser": "^8.46.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0"
   },
   "private": true

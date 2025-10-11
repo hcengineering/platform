@@ -2,6 +2,18 @@
   "name": "@hcengineering/platform-rig",
   "entries": [
     {
+      "version": "0.7.15",
+      "tag": "@hcengineering/platform-rig_v0.7.15",
+      "date": "Sat, 11 Oct 2025 19:18:56 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "rollback eslint"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.14",
       "tag": "@hcengineering/platform-rig_v0.7.14",
       "date": "Sat, 11 Oct 2025 18:10:18 GMT",
