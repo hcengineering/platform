@@ -328,7 +328,7 @@ export class PostgresDB implements BlobDB {
       [workspace, name]
     )
 
-    return rows.length > 0 ? rows[0].meta ?? {} : null
+    return rows.length > 0 ? (rows[0].meta ?? {}) : null
   }
 
   async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {

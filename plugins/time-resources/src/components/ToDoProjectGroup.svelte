@@ -41,7 +41,7 @@
   $: icon = project
     ? project.icon === view.ids.IconWithEmoji
       ? IconWithEmoji
-      : project.icon ?? tracker.icon.Home
+      : (project.icon ?? tracker.icon.Home)
     : undefined
   $: iconProps = project
     ? project.icon === view.ids.IconWithEmoji

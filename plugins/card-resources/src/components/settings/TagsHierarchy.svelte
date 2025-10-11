@@ -80,7 +80,7 @@
       style:margin-left={`${level * 1.25}rem`}
     >
       <Icon
-        icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon ?? cardPlugin.icon.Tag}
+        icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : (clazz.icon ?? cardPlugin.icon.Tag)}
         iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color, size: 'small' } : {}}
         size="small"
       />

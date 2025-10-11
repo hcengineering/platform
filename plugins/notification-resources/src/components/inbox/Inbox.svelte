@@ -205,7 +205,7 @@
     }
   }
 
-  $: selectedContext = selectedContextId ? selectedContext ?? $contextByIdStore.get(selectedContextId) : undefined
+  $: selectedContext = selectedContextId ? (selectedContext ?? $contextByIdStore.get(selectedContextId)) : undefined
 
   $: void updateSelectedPanel(selectedContext, urlObjectClass)
   $: void updateTabItems(inboxData, $contextsStore)
@@ -269,7 +269,7 @@
   function isChunterChannel (selectedContext: DocNotifyContext, urlObjectClass?: Ref<Class<Doc>>): boolean {
     const isActivityMessageContext = hierarchy.isDerived(selectedContext.objectClass, activity.class.ActivityMessage)
     const chunterClass = isActivityMessageContext
-      ? urlObjectClass ?? selectedContext.objectClass
+      ? (urlObjectClass ?? selectedContext.objectClass)
       : selectedContext.objectClass
     return hierarchy.isDerived(chunterClass, chunter.class.ChunterSpace)
   }
@@ -285,7 +285,7 @@
 
     const isChunter = isChunterChannel(selectedContext, urlObjectClass)
     const panelComponent = hierarchy.classHierarchyMixin(
-      isChunter ? urlObjectClass ?? selectedContext.objectClass : selectedContext.objectClass,
+      isChunter ? (urlObjectClass ?? selectedContext.objectClass) : selectedContext.objectClass,
       view.mixin.ObjectPanel
     )
 
@@ -448,10 +448,10 @@
         is={selectedComponent}
         props={{
           _id: isChunterChannel(selectedContext, urlObjectClass)
-            ? urlObjectId ?? selectedContext.objectId
+            ? (urlObjectId ?? selectedContext.objectId)
             : selectedContext.objectId,
           _class: isChunterChannel(selectedContext, urlObjectClass)
-            ? urlObjectClass ?? selectedContext.objectClass
+            ? (urlObjectClass ?? selectedContext.objectClass)
             : selectedContext.objectClass,
           autofocus: false,
           embedded: true,

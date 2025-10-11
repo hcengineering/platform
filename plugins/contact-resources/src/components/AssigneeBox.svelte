@@ -84,7 +84,7 @@
     value: Ref<Person> | null | undefined,
     personByRefStore: Map<Ref<Person>, Readonly<Person>>
   ) {
-    selected = value ? personByRefStore.get(value) ?? undefined : undefined
+    selected = value ? (personByRefStore.get(value) ?? undefined) : undefined
   })
 
   $: void updateSelected(value, $personByRefStore)

@@ -34,7 +34,7 @@
   const hierarchy = client.getHierarchy()
   const model = client.getModel()
   const attribute =
-    hierarchy.findAttribute(_class, key) ?? key === ''
+    (hierarchy.findAttribute(_class, key) ?? key === '')
       ? {
           attributeOf: _class,
           name: '',

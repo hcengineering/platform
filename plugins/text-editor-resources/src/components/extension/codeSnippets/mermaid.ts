@@ -205,7 +205,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         const isEmpty = nodeState.textContent.trim().length === 0
         const diagram = nodeState.diagramBuilder?.(editor.view) ?? null
         const error = diagram?.error ?? null
-        const diagramNode = error === null ? diagram?.domFragments[0] ?? null : null
+        const diagramNode = error === null ? (diagram?.domFragments[0] ?? null) : null
 
         const allowFold = !isEmpty && error === null
 

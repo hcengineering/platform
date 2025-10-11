@@ -59,7 +59,7 @@
                 {/if}
                 <div class="flex-row-center flex-reverse flex-grow max-h-9">
                   <Button
-                    label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
+                    label={(config.enabled ?? true) ? setting.string.ConfigDisable : setting.string.ConfigEnable}
                     size={'large'}
                     on:click={() => change(config, !(config.enabled ?? true))}
                   />

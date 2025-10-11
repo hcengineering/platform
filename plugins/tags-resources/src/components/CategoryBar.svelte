@@ -96,7 +96,7 @@
     } else {
       category = item._id
     }
-    selected = (category !== undefined ? categoryCounts.get(category) ?? [] : []).map((it) => it._id)
+    selected = (category !== undefined ? (categoryCounts.get(category) ?? []) : []).map((it) => it._id)
     dispatch('change', { category, elements: selected })
   }
 

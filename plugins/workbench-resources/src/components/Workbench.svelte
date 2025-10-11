@@ -410,7 +410,7 @@
     loc.fragment =
       (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
         ? loc.fragment
-        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
+        : (resolved.loc.fragment ?? resolved.defaultLocation.fragment)
     return loc
   }
 

@@ -71,7 +71,7 @@
 
   function getIconProps (tag: MasterTag): Pick<DropdownIntlItem, 'icon' | 'iconProps'> {
     return {
-      icon: tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : tag.icon ?? card.icon.MasterTag,
+      icon: tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : (tag.icon ?? card.icon.MasterTag),
       iconProps: tag.icon === view.ids.IconWithEmoji ? { icon: tag.color } : {}
     }
   }

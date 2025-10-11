@@ -28,7 +28,7 @@
 
 <Icon
   {size}
-  icon={value.icon === iconWithEmoji && iconWithEmoji !== undefined ? IconWithEmoji : value.icon ?? defaultIcon}
+  icon={value.icon === iconWithEmoji && iconWithEmoji !== undefined ? IconWithEmoji : (value.icon ?? defaultIcon)}
   iconProps={value.icon === iconWithEmoji && iconWithEmoji !== undefined
     ? { icon: value.color }
     : {

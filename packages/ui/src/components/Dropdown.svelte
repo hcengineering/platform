@@ -54,9 +54,9 @@
 >
   <Button
     {focusIndex}
-    icon={icon !== undefined ? selected?.icon ?? icon : undefined}
+    icon={icon !== undefined ? (selected?.icon ?? icon) : undefined}
     iconProps={selected?.iconProps}
-    width={stretchWidth ? 'unset' : width ?? 'min-content'}
+    width={stretchWidth ? 'unset' : (width ?? 'min-content')}
     flex={stretchWidth ? '1' : undefined}
     {size}
     {kind}

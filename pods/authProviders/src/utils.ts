@@ -48,7 +48,7 @@ export function safeParseAuthState (rawState: string | undefined): AuthState {
 
 export function encodeState (ctx: any, brandings: BrandingMap): string {
   const host = getHost(ctx.request.headers)
-  const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
+  const branding = host !== undefined ? (brandings[host]?.key ?? undefined) : undefined
   const state: AuthState = {
     inviteId: ctx.query?.inviteId,
     branding,

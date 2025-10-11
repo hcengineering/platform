@@ -262,7 +262,7 @@
   const onSelected = (e: CustomEvent<string>): void => {
     selected = e.detail
     localStorage.setItem('firstDayOfWeek', `${e.detail}`)
-    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : parseInt(e.detail, 10) ?? 1
+    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : (parseInt(e.detail, 10) ?? 1)
   }
 </script>
 

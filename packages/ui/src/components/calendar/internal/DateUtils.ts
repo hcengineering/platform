@@ -110,7 +110,7 @@ export function getLocalWeekStart (): number {
   const locale = new Intl.Locale(navigator.language)
   return typeof (locale as any)?.getWeekInfo === 'function'
     ? (locale as any)?.getWeekInfo()?.firstDay
-    : (locale as any).weekInfo?.firstDay ?? 1
+    : ((locale as any).weekInfo?.firstDay ?? 1)
 }
 
 export function hasLocalWeekStart (): boolean {

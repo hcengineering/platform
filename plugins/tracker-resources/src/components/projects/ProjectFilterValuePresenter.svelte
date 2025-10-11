@@ -35,7 +35,7 @@
 <div class="flex-presenter flex-gap-1-5">
   {#each projects as project, i}
     {#if value && i < MAX_VISIBLE_PROJECTS}
-      {@const icon = project.icon === view.ids.IconWithEmoji ? IconWithEmoji : project.icon ?? tracker.icon.Home}
+      {@const icon = project.icon === view.ids.IconWithEmoji ? IconWithEmoji : (project.icon ?? tracker.icon.Home)}
       {@const iconProps =
         project.icon === view.ids.IconWithEmoji
           ? { icon: project.color }

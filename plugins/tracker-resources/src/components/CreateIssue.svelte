@@ -111,7 +111,7 @@
   const mDraftController = new MultipleDraftController(tracker.ids.IssueDraft)
   const id: Ref<Issue> = generateId()
   const draftController = new DraftController<IssueDraft>(
-    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    shouldSaveDraft ? (mDraftController.getNext() ?? id) : undefined,
     tracker.ids.IssueDraft
   )
 

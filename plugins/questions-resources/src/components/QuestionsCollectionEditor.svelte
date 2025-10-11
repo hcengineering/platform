@@ -74,7 +74,7 @@
         if (readonly || classRef === undefined) {
           return
         }
-        const prevQuestion = index === null ? null : questionsCollection[index] ?? null
+        const prevQuestion = index === null ? null : (questionsCollection[index] ?? null)
         const nextQuestion = (index === null ? questionsCollection[0] : questionsCollection[index + 1]) ?? null
         const question = await initQuestion(
           $themeStore.language,

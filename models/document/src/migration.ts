@@ -307,7 +307,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       for (const doc of docs) {
         const document = doc as Document
         const newLockedBy: any =
-          document.lockedBy != null ? socialKeyByAccount[document.lockedBy] ?? document.lockedBy : document.lockedBy
+          document.lockedBy != null ? (socialKeyByAccount[document.lockedBy] ?? document.lockedBy) : document.lockedBy
 
         if (newLockedBy === document.lockedBy) continue
 
@@ -352,7 +352,8 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
         const document = doc as Document
         const newLockedBy =
           document.lockedBy != null
-            ? (await getAccountUuidBySocialKey(client, document.lockedBy, accountUuidBySocialKey)) ?? document.lockedBy
+            ? ((await getAccountUuidBySocialKey(client, document.lockedBy, accountUuidBySocialKey)) ??
+              document.lockedBy)
             : document.lockedBy
 
         if (newLockedBy === document.lockedBy) continue

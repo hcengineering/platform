@@ -56,7 +56,7 @@
     workflow = res
   })
 
-  $: state = (doc ? workflow?.get(doc._id) ?? [] : [])[0]
+  $: state = (doc ? (workflow?.get(doc._id) ?? []) : [])[0]
   $: signers = (state?.approvals ?? [])
     .filter((a) => a.state === 'approved')
     .map((a) => {

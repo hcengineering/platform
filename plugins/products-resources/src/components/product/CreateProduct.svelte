@@ -257,7 +257,7 @@
       size={'medium'}
       kind={'link-bordered'}
       noFocus
-      icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : object.icon ?? products.icon.Product}
+      icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : (object.icon ?? products.icon.Product)}
       iconProps={object.icon === view.ids.IconWithEmoji
         ? { icon: object.color }
         : {
