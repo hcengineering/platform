@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-client",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,13 +18,13 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.12",
+    "@hcengineering/platform-rig": "^0.7.14",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.8.3",
@@ -36,13 +36,13 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/core": "^0.7.5",
-    "@hcengineering/client-resources": "^0.7.4",
-    "@hcengineering/client": "^0.7.4",
-    "@hcengineering/account-client": "^0.7.3",
-    "@hcengineering/server-core": "workspace:0.7.1",
-    "@hcengineering/server-token": "^0.7.3",
+    "@hcengineering/platform": "^0.7.4",
+    "@hcengineering/core": "^0.7.6",
+    "@hcengineering/client-resources": "^0.7.5",
+    "@hcengineering/client": "^0.7.5",
+    "@hcengineering/account-client": "^0.7.4",
+    "@hcengineering/server-core": "workspace:0.7.2",
+    "@hcengineering/server-token": "^0.7.4",
     "ws": "^8.18.2"
   },
   "repository": "https://github.com/hcengineering/huly.server",

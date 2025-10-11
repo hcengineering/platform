@@ -9,11 +9,18 @@
     "test:coverage": "node run-tests-with-coverage.js"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.12",
+    "@hcengineering/platform-rig": "^0.7.14",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.2.0",
-    "lcov-parse": "^1.0.0"
+    "lcov-parse": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint-config-standard-with-typescript": "^40.0.0"
   },
   "private": true
 }
