@@ -63,7 +63,7 @@
   }
 
   let attribute: AnyAttribute
-  $: attribute = getMockAttribute(process.masterTag, core.string.Object, type)
+  $: attribute = getMockAttribute(targetClass ?? process.masterTag, core.string.Object, type)
 
   $: context = targetClass && getContext(client, process, targetClass, 'object')
 </script>

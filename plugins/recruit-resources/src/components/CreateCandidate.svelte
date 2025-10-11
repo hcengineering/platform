@@ -576,6 +576,9 @@
       )
     }
   }
+
+  const onsite = hierarchy.findAttribute(recruit.mixin.Candidate, 'onsite')
+  const remote = hierarchy.findAttribute(recruit.mixin.Candidate, 'remote')
 </script>
 
 <FocusHandler {manager} />
@@ -664,24 +667,28 @@
       kind={'regular'}
       size={'large'}
     />
-    <YesNo
-      disabled={loading}
-      focusIndex={100}
-      label={recruit.string.Onsite}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.onsite}
-      kind={'regular'}
-      size={'large'}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={101}
-      label={recruit.string.Remote}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.remote}
-      kind={'regular'}
-      size={'large'}
-    />
+    {#if onsite?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={100}
+        label={recruit.string.Onsite}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.onsite}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
+    {#if remote?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={101}
+        label={recruit.string.Remote}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.remote}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
