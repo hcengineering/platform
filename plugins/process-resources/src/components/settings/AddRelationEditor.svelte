@@ -58,7 +58,7 @@
 
   let attribute: AnyAttribute
   $: attribute = {
-    attributeOf: process.masterTag,
+    attributeOf: targetClass ?? process.masterTag,
     name: '',
     type: {
       label: core.string.Ref,
