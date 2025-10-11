@@ -190,13 +190,7 @@ module.exports = [
               hotReload: !prod,
               preprocess: require('svelte-preprocess')({
                 postcss: true,
-                sourceMap: true,
-                scss: {
-                  implementation: sass,
-                  sassOptions: {
-                    // Use modern sass compiler
-                  }
-                }
+                sourceMap: true
               }),
               hotOptions: {
                 // Prevent preserving local component state

@@ -290,7 +290,7 @@ services:
       - 6379:6379
     restart: unless-stopped
   hulypulse:
-    image: hardcoreeng/hulypulse:s0.7.278
+    image: hardcoreeng/hulypulse
     depends_on:
       redis:
         condition: service_started
