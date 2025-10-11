@@ -2,6 +2,18 @@
   "name": "@hcengineering/platform-rig",
   "entries": [
     {
+      "version": "0.7.13",
+      "tag": "@hcengineering/platform-rig_v0.7.13",
+      "date": "Sat, 11 Oct 2025 17:58:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Script to sync eslint deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.12",
       "tag": "@hcengineering/platform-rig_v0.7.12",
       "date": "Fri, 10 Oct 2025 14:20:06 GMT",

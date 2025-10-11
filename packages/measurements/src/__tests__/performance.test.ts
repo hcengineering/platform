@@ -1,6 +1,5 @@
-import { MeasureMetricsContext, NoMetricsContext } from '../context'
+import { MeasureMetricsContext, NoMetricsContext, noParamsLogger } from '../context'
 import { newMetrics, metricsAggregate } from '../metrics'
-import { noParamsLogger } from '../context'
 import type { MeasureContext } from '../types'
 
 describe('performance', () => {
@@ -20,7 +19,7 @@ describe('performance', () => {
       // With measurement context
       const metrics = newMetrics()
       const ctx = new MeasureMetricsContext('root', {}, {}, metrics, noParamsLogger)
-      
+
       const measuredStart = performance.now()
       for (let i = 0; i < iterations; i++) {
         await ctx.with('operation', { iteration: i }, async () => {
@@ -40,7 +39,7 @@ describe('performance', () => {
 
       expect(metrics.measurements.operation).toBeDefined()
       expect(metrics.measurements.operation.operations).toBe(iterations)
-      
+
       // Overhead should be reasonable (typically < 50% for simple operations)
       // This is informational rather than a strict assertion
       expect(overheadPercentage).toBeLessThan(200)
@@ -95,12 +94,13 @@ describe('performance', () => {
       // Complex params with multiple tracked values
       const complexStart = performance.now()
       for (let i = 0; i < iterations; i++) {
-        await ctx.with('complex', 
-          { 
+        await ctx.with(
+          'complex',
+          {
             method: i % 3 === 0 ? 'GET' : i % 3 === 1 ? 'POST' : 'PUT',
             status: i % 2 === 0 ? 200 : 404,
             cached: i % 4 === 0
-          }, 
+          },
           async () => {
             await simulateWork(1)
           },
@@ -165,7 +165,7 @@ describe('performance', () => {
 
       const requests = 50
       const baselineStart = performance.now()
-      
+
       // Simulate without metrics
       for (let i = 0; i < requests; i++) {
         await simulateAPIRequest(null, i)
@@ -174,7 +174,7 @@ describe('performance', () => {
 
       // Reset for measured run
       const measuredStart = performance.now()
-      
+
       // Simulate with metrics
       for (let i = 0; i < requests; i++) {
         await simulateAPIRequest(ctx, i)
@@ -189,10 +189,10 @@ describe('performance', () => {
       console.log(`  With metrics: ${measuredTime.toFixed(2)}ms`)
       console.log(`  Overhead: ${overhead.toFixed(2)}ms (${overheadPercentage.toFixed(2)}%)`)
       console.log(`  Per request: ${(overhead / requests).toFixed(4)}ms`)
-      
+
       // Check metrics structure
       const aggregated = metricsAggregate(metrics, 10)
-      console.log(`  Collected operations: ${aggregated.measurements.request?.operations || 0}`)
+      console.log(`  Collected operations: ${aggregated.measurements.request?.operations ?? 0}`)
 
       expect(aggregated.measurements.request).toBeDefined()
       expect(overheadPercentage).toBeLessThan(100) // Should be less than 100% overhead
@@ -202,15 +202,16 @@ describe('performance', () => {
 
 // Helper functions
 
-async function simulateWork(durationMs: number): Promise<void> {
+async function simulateWork (durationMs: number): Promise<void> {
   const end = performance.now() + durationMs
   while (performance.now() < end) {
     // Busy wait to simulate work
-    Math.random() * Math.random()
+    const r = Math.random() * Math.random()
+    expect(r).toBeGreaterThanOrEqual(0)
   }
 }
 
-async function deepNestedExecution(
+async function deepNestedExecution (
   ctx: MeasureContext,
   depth: number,
   workMs: number,
@@ -226,10 +227,10 @@ async function deepNestedExecution(
   })
 }
 
-async function simulateAPIRequest(ctx: MeasureContext | null, requestId: number): Promise<void> {
+async function simulateAPIRequest (ctx: MeasureContext | null, requestId: number): Promise<void> {
   const method = ['GET', 'POST', 'PUT'][requestId % 3]
   const endpoint = `/api/resource/${requestId % 10}`
-  
+
   if (ctx === null) {
     // No metrics version
     await simulateWork(1)

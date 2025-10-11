@@ -1,6 +1,6 @@
 export * from './context'
 export * from './metrics'
-export * from './types'
+export type * from './types'
 
 /**
  * Return a current performance timestamp

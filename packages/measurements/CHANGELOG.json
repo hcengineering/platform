@@ -2,6 +2,28 @@
   "name": "@hcengineering/measurements",
   "entries": [
     {
+      "version": "0.7.11",
+      "tag": "@hcengineering/measurements_v0.7.11",
+      "date": "Sat, 11 Oct 2025 17:58:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add tests"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix eslint deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform-rig\" from `^0.7.12` to `0.7.13`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.10",
       "tag": "@hcengineering/measurements_v0.7.10",
       "date": "Fri, 10 Oct 2025 12:32:59 GMT",

@@ -1,7 +1,7 @@
-import { OpenTelemetryMetricsContext } from '../telemetry'
 import { newMetrics, type MeasureLogger } from '@hcengineering/measurements'
-import { trace, context, SpanStatusCode } from '@opentelemetry/api'
+import { context, trace } from '@opentelemetry/api'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
+import { OpenTelemetryMetricsContext } from '../telemetry'
 
 describe('telemetry', () => {
   let tracer: any
@@ -14,7 +14,7 @@ describe('telemetry', () => {
   })
 
   afterAll(() => {
-    provider.shutdown()
+    void provider.shutdown()
   })
 
   describe('OpenTelemetryMetricsContext', () => {
@@ -101,7 +101,7 @@ describe('telemetry', () => {
       let executed = false
       await ctx.with('operation', { op: 'test' }, async () => {
         executed = true
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       })
 
       expect(executed).toBe(true)
@@ -132,16 +132,7 @@ describe('telemetry', () => {
     it('should handle errors in async operations', async () => {
       const metrics = newMetrics()
       const span = tracer.startSpan('test-span')
-      const ctx = new OpenTelemetryMetricsContext(
-        'test',
-        tracer,
-        context.active(),
-        span,
-        {},
-        {},
-        metrics,
-        mockLogger
-      )
+      const ctx = new OpenTelemetryMetricsContext('test', tracer, context.active(), span, {}, {}, metrics, mockLogger)
 
       await expect(
         ctx.with('operation', { op: 'test' }, async () => {
@@ -357,16 +348,7 @@ describe('telemetry', () => {
       const span = tracer.startSpan('test-span')
       const spanEndSpy = jest.spyOn(span, 'end')
 
-      const ctx = new OpenTelemetryMetricsContext(
-        'test',
-        tracer,
-        context.active(),
-        span,
-        {},
-        {},
-        metrics,
-        mockLogger
-      )
+      const ctx = new OpenTelemetryMetricsContext('test', tracer, context.active(), span, {}, {}, metrics, mockLogger)
 
       ctx.end()
       ctx.end() // Second call should be no-op
@@ -409,7 +391,7 @@ describe('telemetry', () => {
         'operation',
         { op: 'test' },
         async () => {
-          await new Promise(resolve => setTimeout(resolve, 10))
+          await new Promise((resolve) => setTimeout(resolve, 10))
         },
         {},
         { log: true }
@@ -442,7 +424,7 @@ describe('telemetry', () => {
 
     it('should set span attributes from params', () => {
       const metrics = newMetrics()
-      
+
       const ctx = new OpenTelemetryMetricsContext(
         'parent',
         tracer,
@@ -455,7 +437,11 @@ describe('telemetry', () => {
       )
 
       // When creating a child with span: true, attributes are set on the child's span
-      const child = ctx.newChild('child', { key1: 'value1', key2: 'value2' }, { span: true }) as OpenTelemetryMetricsContext
+      const child = ctx.newChild(
+        'child',
+        { key1: 'value1', key2: 'value2' },
+        { span: true }
+      ) as OpenTelemetryMetricsContext
 
       // The child should have been created successfully
       expect(child).toBeDefined()
