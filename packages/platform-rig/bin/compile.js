@@ -15,6 +15,9 @@ const esbuild = require('esbuild')
 const { copy } = require('esbuild-plugin-copy')
 const fs = require('fs')
 const ts = require('typescript')
+const sveltePlugin = require('esbuild-svelte')
+const { svelte2tsx } = require('svelte2tsx')
+const sveltePreprocess = require('svelte-preprocess')
 
 async function execProcess(cmd, logFile, args, buildDir = '.build') {
   let compileRoot = dirname(dirname(process.argv[1]))
@@ -131,7 +134,20 @@ function cleanNonModified(before, after) {
 
 switch (args[0]) {
   case 'ui': {
-    console.log('Nothing to compile to UI')
+    console.log('Building UI package with Svelte support...')
+    let st = performance.now()
+    const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
+    const before = {}
+    const after = {}
+    collectFileStats('lib', before)
+    collectFileStats('types', before)
+
+    Promise.all([performESBuildWithSvelte(filesToTranspile), validateTSC(), generateSvelteTypes()]).then(() => {
+      console.log('UI build time: ', Math.round((performance.now() - st) * 100) / 100)
+      collectFileStats('lib', after)
+      collectFileStats('types', after)
+      cleanNonModified(before, after)
+    })
     break
   }
   case 'transpile': {
@@ -188,6 +204,102 @@ async function performESBuild(filesToTranspile) {
       })
     ]
   })
+}
+
+async function performESBuildWithSvelte(filesToTranspile) {
+  // Separate Svelte and non-Svelte files
+  const svelteFiles = filesToTranspile.filter((f) => f.endsWith('.svelte'))
+  const nonSvelteFiles = filesToTranspile.filter((f) => !f.endsWith('.svelte'))
+
+  // Build non-Svelte files
+  if (nonSvelteFiles.length > 0) {
+    await esbuild.build({
+      entryPoints: nonSvelteFiles,
+      bundle: false,
+      minify: false,
+      outdir: 'lib',
+      keepNames: true,
+      sourcemap: 'linked',
+      allowOverwrite: true,
+      format: 'cjs',
+      color: true,
+      plugins: [
+        copy({
+          resolveFrom: 'cwd',
+          assets: {
+            from: ['src/**/*.json'],
+            to: ['./lib']
+          },
+          watch: false
+        })
+      ]
+    })
+  }
+
+  // Build Svelte files
+  if (svelteFiles.length > 0) {
+    await esbuild.build({
+      entryPoints: svelteFiles,
+      bundle: false,
+      minify: false,
+      outdir: 'lib',
+      outExtension: { '.js': '.svelte.js' },
+      keepNames: true,
+      sourcemap: 'linked',
+      allowOverwrite: true,
+      format: 'cjs',
+      color: true,
+      plugins: [
+        sveltePlugin({
+          preprocess: sveltePreprocess(),
+          compilerOptions: {
+            css: 'injected',
+            generate: 'ssr'
+          }
+        })
+      ]
+    })
+  }
+}
+
+async function generateSvelteTypes() {
+  const srcDir = join(process.cwd(), 'src')
+  const typesDir = join(process.cwd(), 'types')
+
+  if (!existsSync(srcDir)) {
+    return
+  }
+
+  if (!existsSync(typesDir)) {
+    mkdirSync(typesDir, { recursive: true })
+  }
+
+  const svelteFiles = collectFiles(srcDir).filter((f) => f.endsWith('.svelte'))
+
+  for (const svelteFile of svelteFiles) {
+    try {
+      const content = readFileSync(svelteFile, 'utf-8')
+      const result = svelte2tsx(content, {
+        filename: svelteFile,
+        isTsFile: true,
+        mode: 'dts'
+      })
+
+      const relativePath = svelteFile.replace(srcDir, '')
+      const outputPath = join(typesDir, relativePath.replace('.svelte', '.svelte.d.ts'))
+      const outputDir = dirname(outputPath)
+
+      if (!existsSync(outputDir)) {
+        mkdirSync(outputDir, { recursive: true })
+      }
+
+      // Generate simple .d.ts file for Svelte components
+      const dtsContent = `import { SvelteComponentTyped } from 'svelte';\nexport default class extends SvelteComponentTyped<any, any, any> {}\n`
+      writeFileSync(outputPath, dtsContent)
+    } catch (err) {
+      console.error(`Error generating types for ${svelteFile}:`, err.message)
+    }
+  }
 }
 
 async function validateTSC(st) {

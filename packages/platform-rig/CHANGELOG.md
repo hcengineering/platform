@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/platform-rig
 
-This log was last generated on Sat, 11 Oct 2025 19:18:56 GMT and should not be manually modified.
+This log was last generated on Sun, 12 Oct 2025 02:49:17 GMT and should not be manually modified.
+
+## 0.7.16
+Sun, 12 Oct 2025 02:49:17 GMT
+
+### Patches
+
+- Allow to compile svelte files
 
 ## 0.7.15
 Sat, 11 Oct 2025 19:18:56 GMT

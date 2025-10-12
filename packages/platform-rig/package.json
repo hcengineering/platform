@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.15",
+  "version": "0.7.16",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
@@ -13,6 +13,10 @@
     "typescript": "^5.9.3",
     "esbuild": "^0.25.10",
     "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-svelte": "^0.8.2",
+    "svelte": "^4.2.20",
+    "svelte-preprocess": "^5.1.3",
+    "svelte2tsx": "^0.7.25",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -21,8 +25,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.6.2",
-    "prettier-plugin-svelte": "^3.4.0",
-    "svelte": "^4.2.20"
+    "prettier-plugin-svelte": "^3.4.0"
   },
   "bin": {
     "format": "./bin/format.js",
