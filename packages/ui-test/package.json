@@ -22,11 +22,11 @@
     "./styles/*": "./styles/*"
   },
   "scripts": {
-    "build": "compile ui",
-    "build:watch": "compile ui",
+    "build": "compile ui-esbuild",
+    "build:watch": "compile ui-esbuild",
     "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
-    "_phase:build": "compile ui",
+    "_phase:build": "compile ui-esbuild",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
