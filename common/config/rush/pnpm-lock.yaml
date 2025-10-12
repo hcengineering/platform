@@ -360,7 +360,7 @@ importers:
         version: file:projects/controlled-documents-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@tiptap/pm@2.11.7)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@rush-temp/desktop':
         specifier: file:./projects/desktop.tgz
-        version: file:projects/desktop.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4)
+        version: file:projects/desktop.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@rush-temp/desktop-1':
         specifier: file:./projects/desktop-1.tgz
         version: file:projects/desktop-1.tgz(webpack@5.97.1)
@@ -993,7 +993,7 @@ importers:
         version: file:projects/process-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@rush-temp/prod':
         specifier: file:./projects/prod.tgz
-        version: file:projects/prod.tgz(@babel/core@7.23.9)(@swc/core@1.13.5)(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(utf-8-validate@6.0.4)
+        version: file:projects/prod.tgz(@babel/core@7.23.9)(@swc/core@1.13.5)(bufferutil@4.0.8)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(utf-8-validate@6.0.4)
       '@rush-temp/products':
         specifier: file:./projects/products.tgz
         version: file:projects/products.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -2126,11 +2126,11 @@ importers:
         specifier: ^2.15.0
         version: 2.15.0
       sass:
-        specifier: ^1.53.0
-        version: 1.71.1
+        specifier: ^1.80.0
+        version: 1.93.2
       sass-loader:
-        specifier: ^13.2.0
-        version: 13.3.3(sass@1.71.1)(webpack@5.97.1)
+        specifier: ^14.0.0
+        version: 14.2.1(sass@1.93.2)(webpack@5.97.1)
       sharp:
         specifier: ~0.34.3
         version: 0.34.3
@@ -2160,7 +2160,7 @@ importers:
         version: 4.2.20
       svelte-check:
         specifier: ^3.6.9
-        version: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+        version: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser:
         specifier: ^0.33.1
         version: 0.33.1(svelte@4.2.20)
@@ -2168,8 +2168,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(svelte@4.2.20)
       svelte-preprocess:
-        specifier: ^5.1.3
-        version: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+        specifier: ^5.1.4
+        version: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       svgo-loader:
         specifier: ^3.0.0
         version: 3.0.3
@@ -4525,6 +4525,88 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
 
+  '@parcel/watcher-android-arm64@2.5.1':
+    resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm64]
+    os: [android]
+
+  '@parcel/watcher-darwin-arm64@2.5.1':
+    resolution: {integrity: sha512-eAzPv5osDmZyBhou8PoF4i6RQXAfeKL9tjb3QzYuccXFMQU0ruIc/POh30ePnaOyD1UXdlKguHBmsTs53tVoPw==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@parcel/watcher-darwin-x64@2.5.1':
+    resolution: {integrity: sha512-1ZXDthrnNmwv10A0/3AJNZ9JGlzrF82i3gNQcWOzd7nJ8aj+ILyW1MTxVk35Db0u91oD5Nlk9MBiujMlwmeXZg==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@parcel/watcher-freebsd-x64@2.5.1':
+    resolution: {integrity: sha512-SI4eljM7Flp9yPuKi8W0ird8TI/JK6CSxju3NojVI6BjHsTyK7zxA9urjVjEKJ5MBYC+bLmMcbAWlZ+rFkLpJQ==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@parcel/watcher-linux-arm-glibc@2.5.1':
+    resolution: {integrity: sha512-RCdZlEyTs8geyBkkcnPWvtXLY44BCeZKmGYRtSgtwwnHR4dxfHRG3gR99XdMEdQ7KeiDdasJwwvNSF5jKtDwdA==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm]
+    os: [linux]
+
+  '@parcel/watcher-linux-arm-musl@2.5.1':
+    resolution: {integrity: sha512-6E+m/Mm1t1yhB8X412stiKFG3XykmgdIOqhjWj+VL8oHkKABfu/gjFj8DvLrYVHSBNC+/u5PeNrujiSQ1zwd1Q==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm]
+    os: [linux]
+
+  '@parcel/watcher-linux-arm64-glibc@2.5.1':
+    resolution: {integrity: sha512-LrGp+f02yU3BN9A+DGuY3v3bmnFUggAITBGriZHUREfNEzZh/GO06FF5u2kx8x+GBEUYfyTGamol4j3m9ANe8w==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@parcel/watcher-linux-arm64-musl@2.5.1':
+    resolution: {integrity: sha512-cFOjABi92pMYRXS7AcQv9/M1YuKRw8SZniCDw0ssQb/noPkRzA+HBDkwmyOJYp5wXcsTrhxO0zq1U11cK9jsFg==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@parcel/watcher-linux-x64-glibc@2.5.1':
+    resolution: {integrity: sha512-GcESn8NZySmfwlTsIur+49yDqSny2IhPeZfXunQi48DMugKeZ7uy1FX83pO0X22sHntJ4Ub+9k34XQCX+oHt2A==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [x64]
+    os: [linux]
+
+  '@parcel/watcher-linux-x64-musl@2.5.1':
+    resolution: {integrity: sha512-n0E2EQbatQ3bXhcH2D1XIAANAcTZkQICBPVaxMeaCVBtOpBZpWJuf7LwyWPSBDITb7In8mqQgJ7gH8CILCURXg==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [x64]
+    os: [linux]
+
+  '@parcel/watcher-win32-arm64@2.5.1':
+    resolution: {integrity: sha512-RFzklRvmc3PkjKjry3hLF9wD7ppR4AKcWNzH7kXR7GUe0Igb3Nz8fyPwtZCSquGrhU5HhUNDr/mKBqj7tqA2Vw==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@parcel/watcher-win32-ia32@2.5.1':
+    resolution: {integrity: sha512-c2KkcVN+NJmuA7CGlaGD1qJh1cLfDnQsHjE89E60vUEMlqduHGCdCLJCID5geFVM0dOtA3ZiIO8BoEQmzQVfpQ==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@parcel/watcher-win32-x64@2.5.1':
+    resolution: {integrity: sha512-9lHBdJITeNR++EvSQVUcaZoWupyHfXe1jZvGZ06O/5MflPcuPLtEphScIBL+AiCWBO46tDSHzWyD0uDmmZqsgA==}
+    engines: {node: '>= 10.0.0'}
+    cpu: [x64]
+    os: [win32]
+
+  '@parcel/watcher@2.5.1':
+    resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
+    engines: {node: '>= 10.0.0'}
+
   '@pdf-lib/standard-fonts@1.0.0':
     resolution: {integrity: sha512-hU30BK9IUN/su0Mn9VdlVKsWBS6GyhVfqjwl1FjZN4TxP6cCw0jP2w7V3Hf5uX7M0AZJ16vey9yE0ny7Sa59ZA==}
 
@@ -4597,7 +4679,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/achievement-resources@file:projects/achievement-resources.tgz':
-    resolution: {integrity: sha512-T9/DQAL82fGxM1ztZHkG3SRSVZwKSm886YZxLMe6ukhlPMtNXc7PVLWRh3iu/mm2GDkEYztXeNNmpRR4AlAXPw==, tarball: file:projects/achievement-resources.tgz}
+    resolution: {integrity: sha512-dsPxOOL0n27i8d85LWmBHodgADgxu2c3v9TJIBIh3O7qljZpdr8tz+NTvhL14xyEhBVbTnUCSFqsI9/1De5D6Q==, tarball: file:projects/achievement-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/achievement@file:projects/achievement.tgz':
@@ -4609,7 +4691,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/activity-resources@file:projects/activity-resources.tgz':
-    resolution: {integrity: sha512-0Vca8LMO2zh/KoQ58c4CAGI5tzKKj89LDc491EhpYqpC/k4DnyMil2mWXUS8c44d5v/CAS+LbYo/PbgYI2wChA==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-RPSg9L0mrpme4NVcbv+FppSW6t/KrxzGeBnNzT6jDN7zSZ5+hVdPXMdODniTG+c6K7NCU/UabzEav3L5RUmq4g==, tarball: file:projects/activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/activity@file:projects/activity.tgz':
@@ -4621,7 +4703,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ai-assistant-resources@file:projects/ai-assistant-resources.tgz':
-    resolution: {integrity: sha512-0s3U5fPbGVxa8FGTXfqEFf2h/Kah7lp35sMYMi+/zDFDUYOIeAv827WYrDg+Ljw0yAab63/kneAVwUPyJ29WqQ==, tarball: file:projects/ai-assistant-resources.tgz}
+    resolution: {integrity: sha512-iJlF6IwNT1uFMEdvGGhavvRLCU1eZdO7gbtl1BwYdR0PIWhyg4DRzMkC0dvLYQeotwRKRbfo1+FfN9Ap4doQOw==, tarball: file:projects/ai-assistant-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/ai-assistant@file:projects/ai-assistant.tgz':
@@ -4629,7 +4711,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ai-bot-resources@file:projects/ai-bot-resources.tgz':
-    resolution: {integrity: sha512-PgvQ7nw8pymtZD0CKqyRv3hG27cYLrI5wMPNPiI/NDzt1+H7b3C5jhAjNOM+teGRdRD0VLaWBihtSvis3kfxBw==, tarball: file:projects/ai-bot-resources.tgz}
+    resolution: {integrity: sha512-qNWY/cHnz2LpA33zbJkF8rCJsfy42XUMHmzmPg6jnjERcYRz85tD6xm3kIA9IgV9jBv2fiswDw2m8Bqy+vQ1Wg==, tarball: file:projects/ai-bot-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/ai-bot@file:projects/ai-bot.tgz':
@@ -4641,7 +4723,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/analytics-collector-resources@file:projects/analytics-collector-resources.tgz':
-    resolution: {integrity: sha512-9t8HXvYO/mDNkMZ5iqm5eHFeuRPuXVD3LpsAoZf9PvYfzdO3ySPmuaFVDFh0Zk/WtYe42EOcb8gfhvM4Ex/LrQ==, tarball: file:projects/analytics-collector-resources.tgz}
+    resolution: {integrity: sha512-0hJSnHY452XIsrWNf0RLaWsPQ4PK5wQzS8iJdYiZ3kxaTkXkOrHG/LN1lS687Ji6z98JuyTo0CKK4pw8Zp9A1w==, tarball: file:projects/analytics-collector-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics-collector@file:projects/analytics-collector.tgz':
@@ -4661,7 +4743,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/attachment-resources@file:projects/attachment-resources.tgz':
-    resolution: {integrity: sha512-tdXyo0X84hhK1xO+jOojwRP+lgMFBs8lQ2gwvmWsBw3uCbUyf2z7FCyZIOJOjVZjGPcdZTGqQq7UGrgRbrotUw==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-2OHb4QdNXByFSsJwd0EOejIsER+vxKvr52MjcizDmxXEXVInM/pKxrbIrWsWmG1LyuZfV5epiddp0XgAM+Wing==, tarball: file:projects/attachment-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/attachment@file:projects/attachment.tgz':
@@ -4689,7 +4771,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/billing-resources@file:projects/billing-resources.tgz':
-    resolution: {integrity: sha512-l5eZCCIBPxsLJhfsfG13R8dlCwtrSqrXVynVEaiPXUbcHJVETu0VTGtbCw+F34FNqR2ZOozFdr4vVUO01OUNCQ==, tarball: file:projects/billing-resources.tgz}
+    resolution: {integrity: sha512-bEIo8UG+d8+Q2HUvnipZxTHupPatcltpdZGHW7XZ9tLil4bia8U1Z7p50hrUw+QHPwrTIKDPSh8bKkUi7sKPaQ==, tarball: file:projects/billing-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/billing@file:projects/billing.tgz':
@@ -4701,7 +4783,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/bitrix-resources@file:projects/bitrix-resources.tgz':
-    resolution: {integrity: sha512-JSnvxFYv5uPL/DepoMnJ/CfumGUXAk+5tq3u0VdMHDosop+IC8RyJBCgS+aXNDc1qvxvDFgoPLwcSafAoFdWPw==, tarball: file:projects/bitrix-resources.tgz}
+    resolution: {integrity: sha512-e+GWk+XJrQtuw9kpdOkDGHnxIva/fd4awnWNaG/jcaLr6BDhdHh46PAwvmvhLz4L/HuAlP9t6eQy1NPWyNuqkQ==, tarball: file:projects/bitrix-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/bitrix@file:projects/bitrix.tgz':
@@ -4713,7 +4795,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/board-resources@file:projects/board-resources.tgz':
-    resolution: {integrity: sha512-i6nHIl8QucQ06Jl302RlIEazaV0co6PRznUCfX5MTRebmIE/6XftyOgk0WVp6ekB0L3x+8j2CVeUWfSLD33bXQ==, tarball: file:projects/board-resources.tgz}
+    resolution: {integrity: sha512-9cbVn2s317YB09f5AMYLRaW0Rrx5Fymi/n1cjVOoIgWNqDcAxsPo/bRY9HvtOgqxlIbMIt3ucT410iJLdgqUsA==, tarball: file:projects/board-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/board@file:projects/board.tgz':
@@ -4725,7 +4807,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz':
-    resolution: {integrity: sha512-O054Ttwg9jmOHVNdkeZjIZzzBZs4d2zXMSVSLoR6XbgdQXzbpFsj6RWqXmHLhv7fudm6zol/tT2uufBpedA83Q==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-9lNwOuQCftoBxIbw5T7eWmiX0lAbXDubTgKGH2/CuXbvs150ZMvA7fkcWG33kAdCudp6PuOIK0EllY+J4dvWYQ==, tarball: file:projects/calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
@@ -4737,7 +4819,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-ldssuDNXV5pab9LXTSFHPKLXaMKZSWD098k6a3ZSdFExnqjt6EvxzZwmd+aAeoWTO9P6aRoZl7L+58QXFUFaUQ==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-DAADU0kqtQpzN2yg0Sii04j5xpW3tNKO4B7/ZcpxPwZ59xvcWaSe3LC43VbSikM6kBtIBuHwZl27fG4XeBKsGA==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4749,7 +4831,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/chat-resources@file:projects/chat-resources.tgz':
-    resolution: {integrity: sha512-9NV/RpmJSJgUZPJOC+wX77gp71AvDeZpOkzM9XdVVn+JuhaA8MSoPFkWSHvq1YzSWPLZImK8iir0C91iXq2a6Q==, tarball: file:projects/chat-resources.tgz}
+    resolution: {integrity: sha512-2w3HaFrepfnOLvajnag+tgfazjn03SX/CsuNFlauGVUovIL+2nVOHEPYpShJSqfxK4BCXAaV2WPjUJUAgVdKYg==, tarball: file:projects/chat-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/chat@file:projects/chat.tgz':
@@ -4761,7 +4843,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/chunter-resources@file:projects/chunter-resources.tgz':
-    resolution: {integrity: sha512-411Mg3hAlkII5erh0fIldXRDFvIBXl7twOzEnT3iVLXuUSewWtiuxIJFFzqxS6akzgNVauwT0UObK8DnEjvE6Q==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-Fo7UmZlRyx7Mq8QaBzeK0VJOKy6yDogL/Cf8/p9rdBF8KI4sHO/onCBv4d+85HSyqRbX9tMp0za52NHxUjftXA==, tarball: file:projects/chunter-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/chunter@file:projects/chunter.tgz':
@@ -4777,7 +4859,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-avRUQlYUsWk4hZSlDxxIaAux6WvlaiMJafVWVN+b31U20tSuxZc4au5rPkLfl+UTh5Fhoh3wGkNEy6cnmI2t/g==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-cDyjEMcbf36fZU3Dn10brp+wH2MAPbX2zueYYQU5AqIGb1o23WA4/k3J9bIUrNVQehgjDS3KSC/SgZgXuYiS1w==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication@file:projects/communication.tgz':
@@ -4789,7 +4871,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact-resources@file:projects/contact-resources.tgz':
-    resolution: {integrity: sha512-LaO/ASN0zXgiKTMO5InHgogR/6tOSMNfZodoMDOhf1Ic4DPxc1Hi46gxwmtHkWex4NYR/6O1VICVoe+fpAJITw==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-K/Yym5hxN1yFbiKAO1jCkY4EJ9xf+fxdyFdk+2+GcS0gCSWA75B0nEhPYdAfSMmjQcSSiRP/9nutR+YEWgZNSQ==, tarball: file:projects/contact-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
@@ -4801,7 +4883,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/controlled-documents-resources@file:projects/controlled-documents-resources.tgz':
-    resolution: {integrity: sha512-XRCKz2tBFrCnq+RpG+19CSRFnLH0EJsePxFMGVSyJpNHlGfSSurwrzn+RJkA0FMVWzf6dKtiy7dnFuUwyl/3Yw==, tarball: file:projects/controlled-documents-resources.tgz}
+    resolution: {integrity: sha512-HBDFtD6+kEyC91KdTiIRwo+Xb8J9ApzegvxB2bwJTfJQbAyJpQ2G/BvvGFo0zJ3G5OAMH3cMCnxiWN8f5Bb8qA==, tarball: file:projects/controlled-documents-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents@file:projects/controlled-documents.tgz':
@@ -4817,7 +4899,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-downloads-resources@file:projects/desktop-downloads-resources.tgz':
-    resolution: {integrity: sha512-D8epeQS0tmjI27BmgJBSyeMCsnVMA7Ug+B6ct2WUi/SWuLmx0CA/W5ejrpLXny9/WVUemzy8GXeOrZtmhGpBFQ==, tarball: file:projects/desktop-downloads-resources.tgz}
+    resolution: {integrity: sha512-oBuk8/t0irQxFjQXtACmoURCOr7uVe4VGxTuVt6egrIWZwwH57dJlQcz4+9YV177UMU3Il8MAVtl0mh6Lx5zVQ==, tarball: file:projects/desktop-downloads-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-downloads@file:projects/desktop-downloads.tgz':
@@ -4829,7 +4911,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-preferences-resources@file:projects/desktop-preferences-resources.tgz':
-    resolution: {integrity: sha512-+IxK7VGa01cwgD9+BtPqVNBF+sp7qdqXtHuBl/RopI/++2tYGWp/jlGvv/37KiOR9k7qlRlTWziVJAmTOHWPtA==, tarball: file:projects/desktop-preferences-resources.tgz}
+    resolution: {integrity: sha512-uVg3QDkPHEQwYzoeNZtCdeOtYXzkMmAursiyWEfxsvx2sLWd291KzBH6sfvuC/M9QQBzfn/XLs5UljDKTz/ALg==, tarball: file:projects/desktop-preferences-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-preferences@file:projects/desktop-preferences.tgz':
@@ -4837,11 +4919,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-3WsZ+4xP+g1cQN5CSkNL4eckYi5Vl48M2bPcZGU82lWKPGpzorkrn37OQ/9bEt89CnIV/OsWQbAh+Z4I3diegQ==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-cYI5S8nKdke4wFugW44U302kmEJp48hyINzKyUWglZJMLh0p6h03+FK0vkd3rOWUtwl3r33jjGM9Y0JpeVPzUQ==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
-    resolution: {integrity: sha512-VagyR65qWmoKexJOBe3PEXp1/SQ9qnQRpJJxaJNSKkTCCKXFlU7H1ll86WKIHwA+G4glLxRT3UP0PDrk1soOEQ==, tarball: file:projects/devmodel-resources.tgz}
+    resolution: {integrity: sha512-CSGlS7RYjRSk86uu6tCdg9UN5gYDqELWQgHrk+QUi0OMzF/qczdmVzVG2TEiCmq2xES9gYfJFDvL5lv4ffLQ3g==, tarball: file:projects/devmodel-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel@file:projects/devmodel.tgz':
@@ -4853,7 +4935,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/diffview-resources@file:projects/diffview-resources.tgz':
-    resolution: {integrity: sha512-zpVa5tzByXuHTVF474X0HuRFajNc1Rwwr7IQG7rwS6vVHJwu3QBHeyxSTZxjVc+RnBdxUbpCnzwiRi2ioHs5bA==, tarball: file:projects/diffview-resources.tgz}
+    resolution: {integrity: sha512-CSTN9riXe7O1/3ZLpXM+KFgLuejOEKO6a14E1l11tUdAsybpJq5MK6Pq+Wc60SlqN1bVWgUs7/ZEHblEZj0kaQ==, tarball: file:projects/diffview-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/diffview@file:projects/diffview.tgz':
@@ -4865,7 +4947,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/document-resources@file:projects/document-resources.tgz':
-    resolution: {integrity: sha512-F+0lEgmsuGaBIq+Vqkd0aO+EAwyrLWbb4gCehrMB9Q2eadkhgqynk14QGUx11MPSsupmvSJ9t0PBzGYOzbxpOw==, tarball: file:projects/document-resources.tgz}
+    resolution: {integrity: sha512-ilkm9ieaaZVUhHNWTAEa9AfEjeTOuR39LGE00tpncwdQDOE6zk6r1SndjNhFpwA/+SGnAABrBYeh6idnplwzEQ==, tarball: file:projects/document-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/document@file:projects/document.tgz':
@@ -4877,7 +4959,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/drive-resources@file:projects/drive-resources.tgz':
-    resolution: {integrity: sha512-80MpgbbgVhCGiPhkUIidkpyk6pZJU76t3BuP8oiHWhJTi+vwFtXOCHtAyr955YhInDQOOyEvzgh81tTa2WzyRA==, tarball: file:projects/drive-resources.tgz}
+    resolution: {integrity: sha512-JmGkOAeqa8g7XAPMmpw/rntvz1F1BBbOjVWOiBbWkVxju2XbyncpCEpdP+i0cpBg0mrLdummBvq2/cxgOnT3dA==, tarball: file:projects/drive-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/drive@file:projects/drive.tgz':
@@ -4889,7 +4971,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/emoji-resources@file:projects/emoji-resources.tgz':
-    resolution: {integrity: sha512-FiR621f5Erxqf9Dg2oJgNOV1YBBpk8cFMdFdiXNu6mPhYIR2etbvnvoZCSihxTN3Fx4JciBUR7wA6OAcGQcssQ==, tarball: file:projects/emoji-resources.tgz}
+    resolution: {integrity: sha512-Oaebe/IMwV8qE1w+WdZ/WB+nbjsAHRvswdYMsN7ab61fK/rlD7zljpNonWRjbTUihh1251lBV6f+8ECa/d/yEg==, tarball: file:projects/emoji-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/emoji@file:projects/emoji.tgz':
@@ -4901,7 +4983,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/export-resources@file:projects/export-resources.tgz':
-    resolution: {integrity: sha512-aJtoqbERwZYQN/6fM9K4EaLnFUkrqL528XcaYX+DGd6leKmLPapd/6cPyAs/VwsJSb93MN99xP6ZZA3qCfXLSQ==, tarball: file:projects/export-resources.tgz}
+    resolution: {integrity: sha512-Mj1bCdz8dL8yJnZ6EfVCkPOuj/QaZYPqJMIogBBaQ3g3/X8eYI2UJx7BAmIu7G/lUWe09i41GV78qzYt7+mo9w==, tarball: file:projects/export-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/export@file:projects/export.tgz':
@@ -4917,7 +4999,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/github-resources@file:projects/github-resources.tgz':
-    resolution: {integrity: sha512-Ypro6eiZHcMc133bcOhTH+Fo6NzmPuojBddmoaj9BmZ0WDB55EZ72Csr/XiY152uSJsj/hHqQk/OXRGxfTBDMw==, tarball: file:projects/github-resources.tgz}
+    resolution: {integrity: sha512-IQhb86eYisG7lRGmZ+0n49NgQVweoLsgE2DQTioTqVzFF/GJ+miYmnhyuFIQNFOXRe6Xut3VjdVWmwuzBc9m6A==, tarball: file:projects/github-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/github@file:projects/github.tgz':
@@ -4929,7 +5011,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-LdDF7ERSocE7md35SB9rje/tXFavMh1ljYsd5ZBLZVepKjaTmFUwCK2R3VE+K3XCBu5hCG0w3k5whfB+lou79Q==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-TZev9QwsvvVlrany156AdsUCJyC3DVUN0eRv9gmVIlVsEoKWdhopheM36zCXiIZerzLaWGiHjl3kmpwRthbEpw==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -4941,7 +5023,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/guest-resources@file:projects/guest-resources.tgz':
-    resolution: {integrity: sha512-VFcCAovVvn8sWj0TnG/Lw8kd8Gi5QI3GNZfcZiHhBHgXdZQjaLSofWyTlUBoK2+U1APMXIUfArLH6S67h1UJhg==, tarball: file:projects/guest-resources.tgz}
+    resolution: {integrity: sha512-o+yjcOzU8D11wMhxzPxIiSQGsHEi9ZPr2LTO/oLAPdKO/L42pW9/wFTQFSFUl39jChWaSnO2h3gKrZK1qDEYzg==, tarball: file:projects/guest-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/guest@file:projects/guest.tgz':
@@ -4949,11 +5031,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/highlight@file:projects/highlight.tgz':
-    resolution: {integrity: sha512-tNcVVqL5JnwjG09NDn5vM8r6ZLRHqkld2baNQX49TfhFNNdnEjDgcbylsBesuhPQvxh+BjO0qVbUmWq3zOWrbw==, tarball: file:projects/highlight.tgz}
+    resolution: {integrity: sha512-nsolN/kBsIYs1LY5wojG0mZF++bP632i+Ko/nPEPi98FGXZhwzuw2CVbQuWZm5k5ZjrwI1JkY6BGNq6KDhy1rg==, tarball: file:projects/highlight.tgz}
     version: 0.0.0
 
   '@rush-temp/hls@file:projects/hls.tgz':
-    resolution: {integrity: sha512-kSrLQg7uPynaRQs2bNswzPqzxfid3UF+g4mao5DhWHts9w6FYjWkWIF462XBV06C/FaRwixme8yg+L96aGr9JQ==, tarball: file:projects/hls.tgz}
+    resolution: {integrity: sha512-ar1bBH4KWPK9eFmEfsbwvaIpZF297UWaREVT3t0eM88V3LYBx4cbvziWfJGU+3EgK+zDpJQs3wGA1w9VsMPVAg==, tarball: file:projects/hls.tgz}
     version: 0.0.0
 
   '@rush-temp/hr-assets@file:projects/hr-assets.tgz':
@@ -4961,7 +5043,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/hr-resources@file:projects/hr-resources.tgz':
-    resolution: {integrity: sha512-3hW1A8kJa26CCrobBOxcNKOj2pRgQf0FJaZ0Njt66me01k348PDrMhTe0QrPLOj6O5B3DmnEnVqTwIzw7NkcvA==, tarball: file:projects/hr-resources.tgz}
+    resolution: {integrity: sha512-ccIP2rUE3Tg1XdH27GMoawqH0Cgnw9xtAP5pcvz7bPqDb4Atq4poF2wM2boH0xHmU5zdm9ZOxmj+a29tumrJzQ==, tarball: file:projects/hr-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/hr@file:projects/hr.tgz':
@@ -4973,7 +5055,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/huly-mail-resources@file:projects/huly-mail-resources.tgz':
-    resolution: {integrity: sha512-oxEVIXw4N49HDGPkCKKqqTTMzx2DdisDGO34lgWO6lK9j/PVB2oE9TIja8yegrIQ9M3tVURsRBgGd0mfeLN6uA==, tarball: file:projects/huly-mail-resources.tgz}
+    resolution: {integrity: sha512-Hq+egVCLMnL6R/mieHOMgfbWVy3nB98OCKWsAUZ+O3hY7Nyw7Gc9QyErIP5LG2/rd5Hi0X08D0aCZRwdce9/WA==, tarball: file:projects/huly-mail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/huly-mail@file:projects/huly-mail.tgz':
@@ -4985,7 +5067,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/image-cropper-resources@file:projects/image-cropper-resources.tgz':
-    resolution: {integrity: sha512-kBfs2lMf2jGYgEV+pFljnMZfBJTGsAso3p8d+Ifdn1CM51p4KTvTRzPQyWB2/ET4gzZKsez8A0tWDhtYvjSxpg==, tarball: file:projects/image-cropper-resources.tgz}
+    resolution: {integrity: sha512-xTZmb/MTi47NcR9OuMBlXa1OG8OKTrDVuZ0gZ43dcrJ98AxRKlNGw6YWneeUw9kb57ugawtPlqRwhOSkpXELhw==, tarball: file:projects/image-cropper-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/image-cropper@file:projects/image-cropper.tgz':
@@ -5009,7 +5091,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/inventory-resources@file:projects/inventory-resources.tgz':
-    resolution: {integrity: sha512-yS3wq03ww9i12xuT2E8fFHBXSd9DCxUeYjCHoOBjYZXND6aFQlPM64gGkh5zFkovkdpEY5LnSWy2yME7lYfdOg==, tarball: file:projects/inventory-resources.tgz}
+    resolution: {integrity: sha512-IK3eMRvtB6beofBsqJPmw6k25p6QhGx3jM4HS1x2+jhsV5+Iohs7NyJpwsSiIZsMY7MRw6hnGbkLENXCI1eQgg==, tarball: file:projects/inventory-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory@file:projects/inventory.tgz':
@@ -5017,7 +5099,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/kanban@file:projects/kanban.tgz':
-    resolution: {integrity: sha512-rkQcmcqL1N9Hd2kCgnIhckZdIvkbBU8vrCppFwQDnKmoAqkkReMbaiV89lA7cLptP7dEIElZkLypcZ72Z40+1w==, tarball: file:projects/kanban.tgz}
+    resolution: {integrity: sha512-D9R6OS3b5joh0k7xCn+/CEF2LR2v1fqGGclfXiuH2/joB5/08rvxnRSLlH5RAHXoK0Jn8G26gco3lcpJbUVXgg==, tarball: file:projects/kanban.tgz}
     version: 0.0.0
 
   '@rush-temp/kvs-client@file:projects/kvs-client.tgz':
@@ -5029,7 +5111,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/lead-resources@file:projects/lead-resources.tgz':
-    resolution: {integrity: sha512-cCVjf1FjBf5vWmRijtb9mdDgmMYYBEwj/Elf9sTKo/9faJdhD+Wf7D8pNMFnse55vbQ/vCADW12ahiF2a/3EvA==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-Dx8DLB2ONTGwAL0yJC69F0ofag7NYhSqUjxjZeua4JuMPIxb561ngIxo63XYHYGaykAPugM8FFGTG2cWR60NoQ==, tarball: file:projects/lead-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/lead@file:projects/lead.tgz':
@@ -5041,7 +5123,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/login-resources@file:projects/login-resources.tgz':
-    resolution: {integrity: sha512-Bwzg7eFqRoBHXJswoj3TiDSHw3P9TJxAMAq9z8TKEIkgtzNO4bmbAUJet6TVzENDHgSOBpEw+w7OmJZOHXz6cA==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-DwyprvD5Owd3tMtjDXl36pX5ZxcrtIi7mTSOgphettUjjlD5cFQvnANkfcoEK4TMd8riwNsY1dGGhL7lO5Vcyw==, tarball: file:projects/login-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/login@file:projects/login.tgz':
@@ -5053,7 +5135,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-H8ip5ERZ+NGh8asGuUV8Cw0Vz2UMYULZ9OXS6LUSjCgp6ns+e7a3xZ1/dqIIJezvmpvG84/KguLIm3UB83vl5Q==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-xzaqFVf6SbBgjZzPlqZUmHEmzDZFUxSGBEbw6toQrwfEyr4m82adoFHUuIIvjbxsuAL4oFWW3tCy8QHmyIZVOA==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -5077,7 +5159,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/media-resources@file:projects/media-resources.tgz':
-    resolution: {integrity: sha512-Xy0kPgs0xkUYIlQcgmdt1jUxN499lX/H47BYW0thrXVcLPTjrDLTg6+N9MdeQc66gDj2vq+r2KPKu4N2wW/Gvg==, tarball: file:projects/media-resources.tgz}
+    resolution: {integrity: sha512-7XnQoDLY79AeTVjTaMDeM0qrf34BKhnRDTcpZ1jyHSeBV9c1Iz81QQBAD2ooVHuEbSQGkHKuhtLd83wta+HfDw==, tarball: file:projects/media-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/media@file:projects/media.tgz':
@@ -5457,11 +5539,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/notification-resources@file:projects/notification-resources.tgz':
-    resolution: {integrity: sha512-9HTCGoahs8l2zmOQs8qrSCK5J78liLUdU12fPAotR6POAiaTl/p9TgoIzpAYuipWHOzTq2iuioAXDcZC74LESA==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-x4CnSYyOeqMWTXLIwM6U30anQQWbEXFfKmQK/PvVJwKMMyQNWhkP8sY6TW+U4xlb3TrUMUIsmZ7rRPvEUCOTaw==, tarball: file:projects/notification-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/notification@file:projects/notification.tgz':
-    resolution: {integrity: sha512-CtJdTPGiJxphZGMFjVXw1Oj3Pwx3mUZ654rmMot2hWiT0CJjq+qebciRKFViOBRLXElZFPvdFUkJwl++N7euNQ==, tarball: file:projects/notification.tgz}
+    resolution: {integrity: sha512-DLaTH5/wkMrqeV2fVpZLI0z4AApakLQRyBvVPM+ZDN2vq69Iz9kLuiKmybP7qM6kzzyVd7dyHIhRvQalr9Tvlg==, tarball: file:projects/notification.tgz}
     version: 0.0.0
 
   '@rush-temp/onboard-assets@file:projects/onboard-assets.tgz':
@@ -5469,7 +5551,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/onboard-resources@file:projects/onboard-resources.tgz':
-    resolution: {integrity: sha512-bA5UkabFQQkkngNcrREijYhrtluylMXWTa6QUyssJkkV4aFVLEh99FvbIXHj17Eq2fec6GIe6hQIRXz5nnWO0A==, tarball: file:projects/onboard-resources.tgz}
+    resolution: {integrity: sha512-zwtrA5XbiK+NuzlIrvipEc4iaWuItcpyzAlJ4m7Ej6EFWkBkU75AcPbRfpnVwf0W+qe8W7RJ87rEnIYVM0bd+Q==, tarball: file:projects/onboard-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/onboard@file:projects/onboard.tgz':
@@ -5481,7 +5563,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/panel@file:projects/panel.tgz':
-    resolution: {integrity: sha512-1WrEjr5w5HY8WCYZ2le78vnPxeIjU2NbxP8QLZMbUc7uFsJkgng4v31AltDQntt3+q+6hKQtjjOQU2eTL5fY7Q==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-2u78eV3t4g9RD6sCRJS3PVyT4r+KojPvwD63jtt8kCJ6p5aitiTnEC84GSLx0+cAkgwjlMNrD4wbj70vtizudQ==, tarball: file:projects/panel.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
@@ -5617,7 +5699,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presence-resources@file:projects/presence-resources.tgz':
-    resolution: {integrity: sha512-eikr0K71k7x/iPidYFgd3km2J8j08yvQDBlHwfaEp15nsA2dcR647PWIU3UZ8N0Rau1L5hU0RxTpuJDAKVX6dw==, tarball: file:projects/presence-resources.tgz}
+    resolution: {integrity: sha512-I92Eud60elfeUsdldPtKJtTOrT47zgNTq+00LbQGfrau97dj5P/kK9rTaPDNhKsIqgQ85lu+XDuzZ97/qFzGVg==, tarball: file:projects/presence-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/presence@file:projects/presence.tgz':
@@ -5625,7 +5707,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-NEiH5A31/LqUF2sqyIvLX75xQO77qq0yVWCvacH8sbTS4xKbRdgSUjWCA+11cELlz2guiHChZDJ9YW+jUKI7MA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-kWqlstoSS2Os9ZGvG8LDoK11iWRUBpA0bfJncAP01/bzbXlLAUPpWKAR/+CCVXVrQUfbMuKO68WFdBo5KDeq+g==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5633,7 +5715,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/print-resources@file:projects/print-resources.tgz':
-    resolution: {integrity: sha512-LzGPjfVWMoSR3S81LatqMRWKWqO5XstpKUL5sTbuUE7ZAFfrvYoSbW1UsxmfeLnCm5iOTaqB4hAl8Le34EawEA==, tarball: file:projects/print-resources.tgz}
+    resolution: {integrity: sha512-2U+baRQly6oZiTVwVkdISjyhiuDbITJI8UtJwrfhBJh+mYdDR5fq+1OKIkbsKdrAFfnxwyhlaOVzLM+ELeMyUg==, tarball: file:projects/print-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/print@file:projects/print.tgz':
@@ -5645,7 +5727,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-g/xMdkgX+fLYIePZABZ1ZkBnzhF37ECpq9Pl4AxHezfmvzIJHs4oX9Zzs7yuVVtKzSWvqQXT+xt9l8091lp1tw==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-Rj9egWgzRz95Dt2Ll+oovVwIpKQXk6j0ZLrTjoERzprE+Q+GSvd1yLK2iPzhaZWVkJ5cQuAGGv+RrO3B7xTExw==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
@@ -5653,7 +5735,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-mMMNsfV9qdM0Z+DzL4ROGS/5DQaikFc8jaGT4iOqZivSPWZX5zU8iOSE05PYL83o5zdvodW/W43yvD5gM6Qr5g==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-3VWUq5rRSpkMhxJ8/EDUi5koN+HWjTpvw6pRFZsNW74NqEAouqXu+nXvt/gEnB5CLgMPNBZMMA/5yeyheWGaPQ==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5661,7 +5743,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/products-resources@file:projects/products-resources.tgz':
-    resolution: {integrity: sha512-KPTKgiL1rF0wwXl5eRi/wqnHbHgFWVhvFJYI4F+uW2az8j5eut8JOrA8O8MiWlV23kUTz/6NXbEJWEWb/cHWtw==, tarball: file:projects/products-resources.tgz}
+    resolution: {integrity: sha512-Gp0aur3ex+tMhNUE4UAsOEpFWQ4OF84tvTzkILtQICp7f+OJJQJJ8AvR4ssonyvwAHrv+AqCehYFMn199NBgdQ==, tarball: file:projects/products-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/products@file:projects/products.tgz':
@@ -5685,7 +5767,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/questions-resources@file:projects/questions-resources.tgz':
-    resolution: {integrity: sha512-Wn98x7YD1socyJq42+pGwfKIgznBLCRn+xpmuCaY+lBNAOrJL1RI7p23XcZGxYER/aR/4fxltGAomui/0V0TxA==, tarball: file:projects/questions-resources.tgz}
+    resolution: {integrity: sha512-iFcUrIohyN+WMPk79rcbsZN8CXuFZ1YOxUgd/lWvzBQj8CHRROCoguMHogDW7qrC2hrpwUw+3PFAIyBQ10itHw==, tarball: file:projects/questions-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/questions@file:projects/questions.tgz':
@@ -5697,7 +5779,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz':
-    resolution: {integrity: sha512-LWHpII76RYKJyY5q4Yjukdl07q9hNDtSSn1XPvYgAOk+v599qtOwitaIOn5PrrUt045j045Y6w/JlkNNOqUvEQ==, tarball: file:projects/recorder-resources.tgz}
+    resolution: {integrity: sha512-lZI7usmLAwxF09LEoNUxRhYmGLR5j8JiWUDJ3BcOzfdG8JFZzKCnbMMQVphRwYdMnh2+tNJnM1pQdP8pGa445w==, tarball: file:projects/recorder-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/recorder@file:projects/recorder.tgz':
@@ -5709,7 +5791,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recruit-resources@file:projects/recruit-resources.tgz':
-    resolution: {integrity: sha512-C08AKgvN2BYiNQppTdxmJsBjdGc12J+9Xxd2Tfdmcl4opMsyPbypsvv2WPUOLNcPpG+QgKX+fWXqVvCWU+Yl7g==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-vYRvUUQxYhqcjh+oLfIlYgs04iC02y/56ieTXrD4iJ2zS6EaPamhLgPhYDLivghQ2WEyD3E4/YMF8bio9nd3vw==, tarball: file:projects/recruit-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/recruit@file:projects/recruit.tgz':
@@ -5729,7 +5811,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/request-resources@file:projects/request-resources.tgz':
-    resolution: {integrity: sha512-ieqkEE5gcStUsuMkmi3rTNfhh+SgJ+4Q4au6hqPEcC+b8gnelVWVDqBy5DwEXOJ4+fKavAhFLLeBB44FSViKkg==, tarball: file:projects/request-resources.tgz}
+    resolution: {integrity: sha512-8jmk/laYj5FPK9EPjDkmAjrrxqNAuCpxBlwkunavHuZUJ/tWeM+mROzuN/W9ve22/TBnQxnmpojIYk1HLH1VZw==, tarball: file:projects/request-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/request@file:projects/request.tgz':
@@ -6021,7 +6103,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-9/0vlgnvdp96BwUy+F1LpZrNYcoNG3Ul4olMBZ5/3cuKaAlr0p3WO5/2faALjvkxkWucXLlrvOVTWWVl2ButSA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-gO/Kf3PpGLKKKJY47F4Jnx6EO0Fsj2pkJHlf8L8vf5KJyZXLLv0DMlbM9Y0EgCDilkIZbFUy0c70+L+VzGOwtw==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
@@ -6037,7 +6119,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/support-resources@file:projects/support-resources.tgz':
-    resolution: {integrity: sha512-yT3yhy2zhkA8/7+zVJC5o71cvC5inVmC2LfN9xhDn5YcYmd8m3aVw9/qpyvfVYE4VV+ZqWgI4H1JpqN4gAExjQ==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-zglm/5Zl3OaXn0z4+NPF52YY4tW5SQESGDv8z/0v83/bgpRJC7IHd0VX4QjJobdgvozL5kEmbh/Kp6aCQnYTRw==, tarball: file:projects/support-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/support@file:projects/support.tgz':
@@ -6049,7 +6131,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/survey-resources@file:projects/survey-resources.tgz':
-    resolution: {integrity: sha512-272u2lkpD5QfVc+Zkr/0oo9r2GfB9EwYTkamOZVZ8V11tWXe1TL03EkDUvZYOzqzRvcSmXuB/sI0CSzix8RzuA==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-k0LPuYeiV3I2TpziV+m9owxLDNoxX2FtBmpqADHRsDWtcnD2Ze90rKCse0hpkfk6vzjEVRVUWFZGQud2J1enBQ==, tarball: file:projects/survey-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/survey@file:projects/survey.tgz':
@@ -6061,7 +6143,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tags-resources@file:projects/tags-resources.tgz':
-    resolution: {integrity: sha512-bqnVxiPHBTbqSc57y4yCbnH423+/oyW/AbxX3iig3pW5ts/unNDzr/1taa2uK6dGseD1KZJe5tVutGjUzd5aLg==, tarball: file:projects/tags-resources.tgz}
+    resolution: {integrity: sha512-+S8TbdQSBVknkqgn+ymkIHEtlWfpjUrrVo8j8gFeYtlFCbZ2FUbS0igPNz+AXUgvqO58FJ1+aNezVB0hz8wTpQ==, tarball: file:projects/tags-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/tags@file:projects/tags.tgz':
@@ -6073,7 +6155,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/task-resources@file:projects/task-resources.tgz':
-    resolution: {integrity: sha512-QbGaMUGHNrXOOjgjHYJYgsshLCJX9Q+0M9f9x0QhYU0SRYk8nZr0GS4N9xHYfxQzI/jDxE8FW78D6cSGO5Ihpw==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-h9hVPSIQRurCGMoNiVw5bK7bXmE6Fqe00nO1m/b/ixx+b2Mzo82dHz97kOOGWShi62rH5pkyt0aIJ0AjwS222A==, tarball: file:projects/task-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/task@file:projects/task.tgz':
@@ -6085,7 +6167,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-feIJF90lzyYZ3cystkJLzTx0wUe+V7yQmQgqWr0F2WHMdpUFSaOT7iOt/9D/o1gRWeqX9ow5xLKiGq0I//jfkg==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-DurrAOyfdNHmdi+jPNpPuwGMDD+eArFDtIYBOtPvT4m41ZZWgFhsb/5nZ1f3rT0WggHbb9dH4PlMQj0QRG6Hsg==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -6097,7 +6179,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/templates-resources@file:projects/templates-resources.tgz':
-    resolution: {integrity: sha512-KHR4U3Duu+WsrEjn18W7O1FkS6s/h6BRl/GvJh/O/39t4z+E5Rx1/neRu1MNe/NiF2SYtGdy1Ho54d93/jsZjw==, tarball: file:projects/templates-resources.tgz}
+    resolution: {integrity: sha512-+O6dni6X/cXwUCUi9lp2wQJquwbuMTPWmeZw4PGNoIQjWgR+ThhA4ZtIyxxd2jwZJuj763ev7K2tIc4VZbIHMA==, tarball: file:projects/templates-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/templates@file:projects/templates.tgz':
@@ -6109,7 +6191,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/test-management-resources@file:projects/test-management-resources.tgz':
-    resolution: {integrity: sha512-aRvU2Ht1MSQ624jmpgryNyTBnpZuvZcBAKaxkVVfZo3/NcpsZNpSR7xygWBD6uralXcJr5SoGHHrOoyv/JWH4g==, tarball: file:projects/test-management-resources.tgz}
+    resolution: {integrity: sha512-NAi+e0/jT2Bys8HPIOrWsMpGFjQ9D/rdogAUmbYgPmxhTrMXv8voIAe1cXK8/2pW4StF1AgroY18sEKaSHXAMw==, tarball: file:projects/test-management-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/test-management@file:projects/test-management.tgz':
@@ -6129,15 +6211,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-YIkRrzVCoTP7uHZKb2TQdvVB1G9+nFZeHKyTVd+TkDujCvB3O7RVeUcpwdmy8cauFctd00buxReYGh6swgbnLQ==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-OvQgcDXnbAYzJnciXQzA6i7Nn3XJKIAeNJ2oYdzLXRsjnzyO1aPp7FLtdiWDZQmpmnoKeU+1LNk1YhYE7nU39Q==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
-    resolution: {integrity: sha512-mcmWzBcBxxIrqoU8AlIG46kk6KpOLxas7s/47HI5HgFvvydEuI7ZgjvLue30v0dBj6FiVJYEn/01AAc1o/peUw==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-x0U4J5AIQ+q5NFilY6d3zIvfJsYbBMuNEsbfnZ+DfCaVivoKUV2trTprdGsNL7QpUZLFSjm7V9JBBFWUQMUHSw==, tarball: file:projects/text-editor.tgz}
     version: 0.0.0
 
   '@rush-temp/theme@file:projects/theme.tgz':
-    resolution: {integrity: sha512-9PzlVC10sT6Zl6af2d/MisTgb7KhUZQFNXZlUwocOjN8xe6106roeENXouKQWJ/kJMd/ALfirEtRXT+ndNiSFw==, tarball: file:projects/theme.tgz}
+    resolution: {integrity: sha512-FjMT7Gb2/FS69y+v2j/tCBj/8Z0EdcVUP0K/3Yax4pW6Wn/sqQfQDLjOnhdk0TaMRXtl+Ce6QSD1xNwJNaer3Q==, tarball: file:projects/theme.tgz}
     version: 0.0.0
 
   '@rush-temp/time-assets@file:projects/time-assets.tgz':
@@ -6145,7 +6227,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/time-resources@file:projects/time-resources.tgz':
-    resolution: {integrity: sha512-yPCzxZNDkczblQXv7E6n1jmvhu7RP8qZYU32jLfoXp6qmFtzq1YOTQJ4t87GV+7Qa4C6eTiGV0FQtxFmLFuHxw==, tarball: file:projects/time-resources.tgz}
+    resolution: {integrity: sha512-pKJmwU/XuqSBSUZF5b05s9T50QnyCYehS3nw9S20NHWqXR8ZNQpUc5we6IL6XfwdIDrxDb9NLRdJg3xBH/3T5w==, tarball: file:projects/time-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/time@file:projects/time.tgz':
@@ -6161,7 +6243,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tracker-resources@file:projects/tracker-resources.tgz':
-    resolution: {integrity: sha512-P2evYL8G8GuauibV3A1/TYH8bwaWaB0IlN6LHHcBNuIsIAxVB1qlDmx79TsFqJHUbp6c7yJh3NMCudfhO2+xtQ==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-OfSIxLPygJqXEBrZl+HDecLWH3LSPkYnADk6q+aPtH8eh+GYcTyML8s7hG9vtcDQ9up6Q61JkgP7TrGce3T1ow==, tarball: file:projects/tracker-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker@file:projects/tracker.tgz':
@@ -6173,7 +6255,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/training-resources@file:projects/training-resources.tgz':
-    resolution: {integrity: sha512-Svzg6mul2zSOjqEWbS6rCiY044ojW/CfIQ0ug3OFkTCyC5pY1xu6Wajztv0ZdWb0ERW1gIKAUZxkXACmmFKeRQ==, tarball: file:projects/training-resources.tgz}
+    resolution: {integrity: sha512-0swfjMC36MD5ve8O4Jn0SO6RVeybNarE9YHf/tgkobOCxQrwIaCsZsB2lDNVjSFv+8WXawLgxvACVyu3Mtnfnw==, tarball: file:projects/training-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/training@file:projects/training.tgz':
@@ -6181,7 +6263,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-myHOYBxkD9f2kGY+Lk/AdZNqacK0JtLFt29hi8wAN1+znaqYDAhXaX2jN/d6CLN0jvf5jZOQF+LD0K9SfGpeQg==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-PhxZocj5aI/rUOOvvFdS2R8/TO1W3jL5SbBtZ66Za0fWZXYhfZH4XnIM6dcvuZmo5iWQZN/k9+8ediTY7+xYsA==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -6189,7 +6271,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz':
-    resolution: {integrity: sha512-SYKGCeDGmOEKoSrNWpuACiPoARQFWMNbNxr4pBR2LBSEHkH9ZrIiSYZtsLrA5xMaaoi0NVzcKhIBNIdVuDCkag==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-mdc26YMWqxD6Ebag6URPmfU3dP84InwGxewZuYOdP3hBaL05VWnL+0Xt9t0VHTkmbW4MlLYRIjn50DHer4Fjow==, tarball: file:projects/uploader-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader@file:projects/uploader.tgz':
@@ -6201,7 +6283,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/view-resources@file:projects/view-resources.tgz':
-    resolution: {integrity: sha512-B21vLbMujDjQQOWekVq8Q7ExEW+aL2sQWkyXvp7CLBD+IcYveCRx/sA93VfHmr7pyk+LMGNQI4dL6iQWhba62Q==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-FXjQw74NKUWiXzdy9tJUKS9YWD/hh/7UPqzjI3KWeTBVAWClu7acEZtPaYr/wgz7YSVMIWqxflxjWh4FL0jWKA==, tarball: file:projects/view-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/view@file:projects/view.tgz':
@@ -6213,7 +6295,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workbench-resources@file:projects/workbench-resources.tgz':
-    resolution: {integrity: sha512-a6n3BHAlwP5CgwMq/cEdD69RsrmMBS2P760nlof+scF7g2S3/NYHqRRnpidi3gOVTRlJk/4jGdi/ZfHK0g/YYA==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-3vZsCN6U5qPebWF575X5KYxmt31yDo8P0Fzg1rSMXaBgkNfnqAen7OswgdeuQogw0unDPxALxx2m8+jBmm2xDw==, tarball: file:projects/workbench-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/workbench@file:projects/workbench.tgz':
@@ -8234,6 +8316,10 @@ packages:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
 
+  chokidar@4.0.3:
+    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
+    engines: {node: '>= 14.16.0'}
+
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
@@ -8983,6 +9069,11 @@ packages:
   detect-indent@6.1.0:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
     engines: {node: '>=8'}
+
+  detect-libc@1.0.3:
+    resolution: {integrity: sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==}
+    engines: {node: '>=0.10'}
+    hasBin: true
 
   detect-libc@2.0.2:
     resolution: {integrity: sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw==}
@@ -10435,8 +10526,8 @@ packages:
   immediate@3.3.0:
     resolution: {integrity: sha512-HR7EVodfFUdQCTIeySw+WDRFJlPcLOJbXfwwZ7Oom6tjsvZ3bOkCDJHehQC3nxJrv7+f9XecwazynjU8e4Vw3Q==}
 
-  immutable@4.3.5:
-    resolution: {integrity: sha512-8eabxkth9gZatlwl5TBuJnCsoTADlL6ftEr7A4qgdaTsPyreilDSnUk57SO+jfKcNtxPa22U5KK6DSeAYhpBJw==}
+  immutable@5.1.3:
+    resolution: {integrity: sha512-+chQdDfvscSF1SJqv2gn4SRO2ZyS3xL3r7IW/wWEEzrzLisnOlKiQu5ytC/BVNcS15C39WT2Hg/bjKjDMcu+zg==}
 
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -11863,6 +11954,9 @@ packages:
   node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
 
+  node-addon-api@7.1.1:
+    resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
+
   node-api-version@0.2.0:
     resolution: {integrity: sha512-fthTTsi8CxaBXMaBAD7ST2uylwvsnYxh2PfaScwpMhos6KlSFajXQPcM4ogNE1q2s3Lbz9GCGqeIHC+C6OZnKg==}
 
@@ -12869,6 +12963,10 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
+  readdirp@4.1.2:
+    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
+    engines: {node: '>= 14.18.0'}
+
   real-cancellable-promise@1.2.0:
     resolution: {integrity: sha512-FYhmx1FVSgoPRjneoTjh+EKZcNb8ijl/dyatTzase5eujYhVrLNDOiIY6AgQq7GU1kOoLgEd9jLVbhFg8k8dOQ==}
 
@@ -13075,17 +13173,17 @@ packages:
   sanitize-html@2.16.0:
     resolution: {integrity: sha512-0s4caLuHHaZFVxFTG74oW91+j6vW7gKbGD6CD2+miP73CE6z6YtOBN0ArtLd2UGyi4IC7K47v3ENUbQX4jV3Mg==}
 
-  sass-loader@13.3.3:
-    resolution: {integrity: sha512-mt5YN2F1MOZr3d/wBRcZxeFgwgkH44wVc2zohO2YF6JiOMkiXe4BYRZpSu2sO1g71mo/j16txzUhsKZlqjVGzA==}
-    engines: {node: '>= 14.15.0'}
+  sass-loader@14.2.1:
+    resolution: {integrity: sha512-G0VcnMYU18a4N7VoNDegg2OuMjYtxnqzQWARVWCIVSZwJeiL9kg8QMsuIZOplsJgTzZLF6jGxI3AClj8I9nRdQ==}
+    engines: {node: '>= 18.12.0'}
     peerDependencies:
-      fibers: '>= 3.1.0'
+      '@rspack/core': 0.x || 1.x
       node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
       sass: ^1.3.0
       sass-embedded: '*'
       webpack: ^5.0.0
     peerDependenciesMeta:
-      fibers:
+      '@rspack/core':
         optional: true
       node-sass:
         optional: true
@@ -13093,9 +13191,11 @@ packages:
         optional: true
       sass-embedded:
         optional: true
+      webpack:
+        optional: true
 
-  sass@1.71.1:
-    resolution: {integrity: sha512-wovtnV2PxzteLlfNzbgm1tFXPLoZILYAMJtvoXXkD7/+1uP41eKkIt1ypWq5/q2uT94qHjXehEYfmjKOvjL9sg==}
+  sass@1.93.2:
+    resolution: {integrity: sha512-t+YPtOQHpGW1QWsh1CHQ5cPIr9lbbGZLZnbihP/D/qZj/yuV68m8qarcV17nvkOX81BCrvzAlq2klCQFZghyTg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -13328,10 +13428,6 @@ packages:
 
   source-list-map@2.0.1:
     resolution: {integrity: sha512-qnQ7gVMxGNxsiL4lEuJwe/To8UnK7fAnmbGEEH8RpLouuKbeEm0lhbQVFIrNSuB+G7tVrAlVsZgETT5nljf+Iw==}
-
-  source-map-js@1.0.2:
-    resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
-    engines: {node: '>=0.10.0'}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -13618,9 +13714,9 @@ packages:
     peerDependencies:
       svelte: ^3.0.0 || ^4.0.0-next.0 || ^5.0.0-next.1
 
-  svelte-preprocess@5.1.3:
-    resolution: {integrity: sha512-xxAkmxGHT+J/GourS5mVJeOXZzne1FR5ljeOUAMXUkfEhkLEllRreXpbl3dIYJlcJRfL1LO1uIAPpBpBfiqGPw==}
-    engines: {node: '>= 16.0.0', pnpm: ^8.0.0}
+  svelte-preprocess@5.1.4:
+    resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
+    engines: {node: '>= 16.0.0'}
     peerDependencies:
       '@babel/core': ^7.10.2
       coffeescript: ^2.5.1
@@ -17918,6 +18014,67 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
 
+  '@parcel/watcher-android-arm64@2.5.1':
+    optional: true
+
+  '@parcel/watcher-darwin-arm64@2.5.1':
+    optional: true
+
+  '@parcel/watcher-darwin-x64@2.5.1':
+    optional: true
+
+  '@parcel/watcher-freebsd-x64@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-arm-glibc@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-arm-musl@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-arm64-glibc@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-arm64-musl@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-x64-glibc@2.5.1':
+    optional: true
+
+  '@parcel/watcher-linux-x64-musl@2.5.1':
+    optional: true
+
+  '@parcel/watcher-win32-arm64@2.5.1':
+    optional: true
+
+  '@parcel/watcher-win32-ia32@2.5.1':
+    optional: true
+
+  '@parcel/watcher-win32-x64@2.5.1':
+    optional: true
+
+  '@parcel/watcher@2.5.1':
+    dependencies:
+      detect-libc: 1.0.3
+      is-glob: 4.0.3
+      micromatch: 4.0.8
+      node-addon-api: 7.1.1
+    optionalDependencies:
+      '@parcel/watcher-android-arm64': 2.5.1
+      '@parcel/watcher-darwin-arm64': 2.5.1
+      '@parcel/watcher-darwin-x64': 2.5.1
+      '@parcel/watcher-freebsd-x64': 2.5.1
+      '@parcel/watcher-linux-arm-glibc': 2.5.1
+      '@parcel/watcher-linux-arm-musl': 2.5.1
+      '@parcel/watcher-linux-arm64-glibc': 2.5.1
+      '@parcel/watcher-linux-arm64-musl': 2.5.1
+      '@parcel/watcher-linux-x64-glibc': 2.5.1
+      '@parcel/watcher-linux-x64-musl': 2.5.1
+      '@parcel/watcher-win32-arm64': 2.5.1
+      '@parcel/watcher-win32-ia32': 2.5.1
+      '@parcel/watcher-win32-x64': 2.5.1
+    optional: true
+
   '@pdf-lib/standard-fonts@1.0.0':
     dependencies:
       pako: 1.0.11
@@ -18122,12 +18279,12 @@ snapshots:
       postcss: 8.5.3
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
@@ -18222,12 +18379,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -18326,12 +18483,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -18397,12 +18554,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -18499,12 +18656,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -18681,12 +18838,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -18958,12 +19115,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19059,12 +19216,12 @@ snapshots:
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       qs: 6.11.2
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19160,12 +19317,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19264,12 +19421,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19375,12 +19532,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19485,12 +19642,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19591,12 +19748,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19782,12 +19939,12 @@ snapshots:
       postcss: 8.5.3
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
@@ -19889,12 +20046,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -19999,13 +20156,13 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       slugify: 1.6.6
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20133,12 +20290,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20230,12 +20387,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20284,7 +20441,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/desktop@file:projects/desktop.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4)':
+  '@rush-temp/desktop@file:projects/desktop.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@hcengineering/client': 0.7.3
       '@hcengineering/client-resources': 0.7.3
@@ -20334,11 +20491,12 @@ snapshots:
       postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.9.3)(webpack@5.97.1)
       prettier: 3.6.2
-      sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
+      sass: 1.93.2
+      sass-loader: 14.2.1(sass@1.93.2)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
       svelte: 4.2.20
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       svgo-loader: 3.0.3
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       ts-loader: 9.5.1(typescript@5.9.3)(webpack@5.97.1)
@@ -20365,12 +20523,10 @@ snapshots:
       - canvas
       - coffeescript
       - debug
-      - fibers
       - less
       - node-notifier
       - node-sass
       - pug
-      - sass
       - sass-embedded
       - stylus
       - sugarss
@@ -20397,12 +20553,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20498,12 +20654,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20600,13 +20756,13 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       slugify: 1.6.6
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20702,12 +20858,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20801,12 +20957,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -20903,12 +21059,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21070,12 +21226,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21176,12 +21332,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21282,12 +21438,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21353,12 +21509,12 @@ snapshots:
       lowlight: 3.3.0
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21399,12 +21555,12 @@ snapshots:
       plyr: 3.7.8
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21471,12 +21627,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21575,12 +21731,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21677,13 +21833,13 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       smartcrop: 2.0.5
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21893,12 +22049,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21966,12 +22122,12 @@ snapshots:
       lexorank: 1.0.5
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -22070,12 +22226,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -22174,12 +22330,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
       url-loader: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.97.1)
@@ -22283,12 +22439,12 @@ snapshots:
       livekit-client: 2.15.6
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -22501,12 +22657,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typed-emitter: 2.1.0
       typescript: 5.9.3
@@ -25352,12 +25508,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -25397,7 +25553,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
-      sass: 1.71.1
+      sass: 1.93.2
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -25456,12 +25612,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
       url-loader: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.97.1)
@@ -25564,12 +25720,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -27400,12 +27556,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -27488,12 +27644,12 @@ snapshots:
       png-chunks-extract: 1.0.0
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
       uuid: 8.3.2
@@ -27570,12 +27726,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -27676,12 +27832,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -27730,7 +27886,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/prod@file:projects/prod.tgz(@babel/core@7.23.9)(@swc/core@1.13.5)(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(utf-8-validate@6.0.4)':
+  '@rush-temp/prod@file:projects/prod.tgz(@babel/core@7.23.9)(@swc/core@1.13.5)(bufferutil@4.0.8)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(utf-8-validate@6.0.4)':
     dependencies:
       '@hcengineering/analytics': 0.7.3
       '@hcengineering/client': 0.7.3
@@ -27739,8 +27895,6 @@ snapshots:
       '@hcengineering/platform': 0.7.3
       '@hcengineering/platform-rig': 0.7.15
       '@types/node': 22.15.29
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.9.3)
       autoprefixer: 10.4.17(postcss@8.5.3)
       browserslist: 4.25.0
       compression-webpack-plugin: 10.0.0(webpack@5.97.1)
@@ -27749,11 +27903,6 @@ snapshots:
       dotenv-webpack: 8.0.1(webpack@5.97.1)
       esbuild: 0.25.9
       esbuild-loader: 4.3.0(webpack@5.97.1)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.9.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       file-loader: 6.2.0(webpack@5.97.1)
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.9.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
@@ -27762,11 +27911,12 @@ snapshots:
       postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.9.3)(webpack@5.97.1)
       readable-stream: 4.7.0
-      sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
+      sass: 1.93.2
+      sass-loader: 14.2.1(sass@1.93.2)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
       svelte: 4.2.20
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       svgo-loader: 3.0.3
       ts-loader: 9.5.1(typescript@5.9.3)(webpack@5.97.1)
       typescript: 5.9.3
@@ -27783,11 +27933,9 @@ snapshots:
       - bufferutil
       - coffeescript
       - debug
-      - fibers
       - less
       - node-sass
       - pug
-      - sass
       - sass-embedded
       - stylus
       - sugarss
@@ -27843,12 +27991,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -28043,12 +28191,12 @@ snapshots:
       lexorank: 1.0.5
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -28144,12 +28292,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       tus-js-client: 4.3.1
       typescript: 5.9.3
@@ -28245,12 +28393,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -28439,12 +28587,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -30673,12 +30821,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -30801,12 +30949,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -30901,12 +31049,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31000,12 +31148,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31099,12 +31247,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31202,12 +31350,12 @@ snapshots:
       libphonenumber-js: 1.10.56
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31304,12 +31452,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31407,12 +31555,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31603,13 +31751,13 @@ snapshots:
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       prosemirror-codemark: 0.4.2(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
       rfc6902: 5.1.1
-      sass: 1.71.1
+      sass: 1.93.2
       slugify: 1.6.6
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       tippy.js: 6.3.7
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
@@ -31661,7 +31809,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
-      sass: 1.71.1
+      sass: 1.93.2
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31692,12 +31840,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31765,12 +31913,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -31955,12 +32103,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -32060,12 +32208,12 @@ snapshots:
       lexorank: 1.0.5
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -32142,12 +32290,12 @@ snapshots:
       plyr: 3.7.8
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -32214,12 +32362,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -32317,12 +32465,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -32424,12 +32572,12 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
-      sass: 1.71.1
+      sass: 1.93.2
       svelte: 4.2.20
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)
       svelte-eslint-parser: 0.33.1(svelte@4.2.20)
       svelte-loader: 3.2.0(svelte@4.2.20)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -35023,6 +35171,10 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  chokidar@4.0.3:
+    dependencies:
+      readdirp: 4.1.2
+
   chownr@2.0.0: {}
 
   chownr@3.0.0: {}
@@ -35782,6 +35934,9 @@ snapshots:
   detect-europe-js@0.1.2: {}
 
   detect-indent@6.1.0: {}
+
+  detect-libc@1.0.3:
+    optional: true
 
   detect-libc@2.0.2: {}
 
@@ -37678,7 +37833,7 @@ snapshots:
   immediate@3.3.0:
     optional: true
 
-  immutable@4.3.5: {}
+  immutable@5.1.3: {}
 
   import-fresh@3.3.0:
     dependencies:
@@ -39357,6 +39512,9 @@ snapshots:
   node-addon-api@1.7.2:
     optional: true
 
+  node-addon-api@7.1.1:
+    optional: true
+
   node-api-version@0.2.0:
     dependencies:
       semver: 7.7.2
@@ -40432,6 +40590,8 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
+  readdirp@4.1.2: {}
+
   real-cancellable-promise@1.2.0: {}
 
   rechoir@0.8.0:
@@ -40659,18 +40819,20 @@ snapshots:
       parse-srcset: 1.0.2
       postcss: 8.5.3
 
-  sass-loader@13.3.3(sass@1.71.1)(webpack@5.97.1):
+  sass-loader@14.2.1(sass@1.93.2)(webpack@5.97.1):
     dependencies:
       neo-async: 2.6.2
-      webpack: 5.97.1(@swc/core@1.13.5)(esbuild@0.25.9)(webpack-cli@5.1.4)
     optionalDependencies:
-      sass: 1.71.1
+      sass: 1.93.2
+      webpack: 5.97.1(@swc/core@1.13.5)(esbuild@0.25.9)(webpack-cli@5.1.4)
 
-  sass@1.71.1:
+  sass@1.93.2:
     dependencies:
-      chokidar: 3.6.0
-      immutable: 4.3.5
-      source-map-js: 1.0.2
+      chokidar: 4.0.3
+      immutable: 5.1.3
+      source-map-js: 1.2.1
+    optionalDependencies:
+      '@parcel/watcher': 2.5.1
 
   sax@1.3.0: {}
 
@@ -40967,8 +41129,6 @@ snapshots:
       is-plain-obj: 1.1.0
 
   source-list-map@2.0.1: {}
-
-  source-map-js@1.0.2: {}
 
   source-map-js@1.2.1: {}
 
@@ -41274,7 +41434,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20):
+  svelte-check@3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.22
       chokidar: 3.6.0
@@ -41283,7 +41443,7 @@ snapshots:
       picocolors: 1.1.1
       sade: 1.8.1
       svelte: 4.2.20
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-preprocess: 5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@babel/core'
@@ -41319,7 +41479,7 @@ snapshots:
       svelte-dev-helper: 1.1.9
       svelte-hmr: 0.14.12(svelte@4.2.20)
 
-  svelte-preprocess@5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.20)(typescript@5.9.3):
+  svelte-preprocess@5.1.4(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(typescript@5.9.3):
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
@@ -41331,7 +41491,7 @@ snapshots:
       '@babel/core': 7.23.9
       postcss: 8.5.3
       postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
-      sass: 1.71.1
+      sass: 1.93.2
       typescript: 5.9.3
 
   svelte@4.2.20:
