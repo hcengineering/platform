@@ -15,7 +15,7 @@
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { hulyMailId } from '@hcengineering/huly-mail'
-import hulyMail from '@hcengineering/huly-mail-resources/src/plugin'
+import { hulyMailPlugin as hulyMail } from '@hcengineering/huly-mail-resources'
 
 export default mergeIds(hulyMailId, hulyMail, {
   string: {

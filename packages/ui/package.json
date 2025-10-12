@@ -1,24 +1,32 @@
 {
   "name": "@hcengineering/ui",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "fonts",
+    "styles"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "compile ui",
-    "build:watch": "compile ui",
+    "build": "compile ui-esbuild",
+    "build:watch": "compile ui-esbuild",
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
     "test": "jest --passWithNoTests --silent",
     "_phase:svelte-check": "do-svelte-check",
-    "_phase:build": "compile ui",
+    "_phase:build": "compile ui-esbuild",
     "_phase:format": "format src",
     "_phase:validate": "compile validate",
     "_phase:test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/dompurify": "^3.0.5",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -59,5 +67,20 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    },
+    "./styles/*": "./styles/*"
   }
 }

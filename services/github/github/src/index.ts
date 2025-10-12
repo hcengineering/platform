@@ -22,8 +22,7 @@ import { Preference } from '@hcengineering/preference'
 import task, { ProjectTypeDescriptor, TaskStatusFactory, TaskTypeDescriptor } from '@hcengineering/task'
 import { ToDo } from '@hcengineering/time'
 import { Component, Issue, Project } from '@hcengineering/tracker'
-import { AnyComponent } from '@hcengineering/ui'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { AnyComponent, PaletteColorIndexes } from '@hcengineering/ui'
 
 /**
  * @public

@@ -19,7 +19,7 @@
   import { AnyComponent, Icon, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  import { getReferenceLabel } from '@hcengineering/text-editor-resources/src/components/extension/reference'
+  import { getReferenceLabel } from '@hcengineering/text-editor-resources'
   import { classIcon } from '../utils'
   import DocNavLink from './DocNavLink.svelte'
   import contact from '@hcengineering/contact'

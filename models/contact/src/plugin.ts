@@ -15,7 +15,7 @@
 //
 
 import { contactId } from '@hcengineering/contact'
-import contact from '@hcengineering/contact-resources/src/plugin'
+import { contactPlugin as contact } from '@hcengineering/contact-resources'
 import type { Client, Doc, DocManager, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type NotificationGroup } from '@hcengineering/notification'

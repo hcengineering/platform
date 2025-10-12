@@ -48,6 +48,8 @@ import RunTestPlanButton from './components/test-plan/RunTestPlanButton.svelte'
 import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction, EditProjectAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
 
+export { default as testManganementPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     TestManagementSpaceHeader,

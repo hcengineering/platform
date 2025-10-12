@@ -17,7 +17,7 @@
   import { TypeRef } from '@hcengineering/model'
   import { getClient } from '@hcengineering/presentation'
   import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import card from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import type { ButtonKind, ButtonSize, DropdownIntlItem } from '@hcengineering/ui'

@@ -2,7 +2,6 @@
   "name": "@hcengineering/model-templates",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/model-package",
@@ -18,7 +17,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",

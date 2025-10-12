@@ -15,9 +15,8 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
-  import { VisibilityEditor } from '@hcengineering/calendar-resources'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { VisibilityEditor, calendarPlugin as calendar } from '@hcengineering/calendar-resources'
+    import { getCurrentEmployee } from '@hcengineering/contact'
   import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import tagsPlugin, { TagReference } from '@hcengineering/tags'

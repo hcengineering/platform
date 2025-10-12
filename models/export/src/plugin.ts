@@ -17,7 +17,7 @@ import { mergeIds } from '@hcengineering/platform'
 import { exportId } from '@hcengineering/export'
 import { type ComponentPointExtension } from '@hcengineering/presentation'
 import { type Ref } from '@hcengineering/core'
-import exportPlugin from '@hcengineering/export-resources/src/plugin'
+import { exportPlugin } from '@hcengineering/export-resources'
 
 export default mergeIds(exportId, exportPlugin, {
   extensions: {

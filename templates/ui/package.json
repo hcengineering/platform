@@ -1,20 +1,37 @@
 {
   "name": "@hcengineering/ui-package",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*": "./lang/*",
+    "./styles/*": "./styles/*"
+  },
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "fonts",
+    "styles"
+  ],
+  
   "#overrideKeys": [
-    "main"
+    "main", "types", "exports", "files"
   ],
   "scripts": {
-    "_phase:build": "compile ui",
+    "_phase:build": "compile ui-esbuild",
     "_phase:validate": "compile validate",
     "_phase:format": "format src",
-    "build": "compile ui",
-    "build:watch": "compile ui",
+    "build": "compile ui-esbuild",
+    "build:watch": "compile ui-esbuild",
     "format": "format src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",

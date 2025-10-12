@@ -2,6 +2,7 @@ import { type Resources } from '@hcengineering/platform'
 import { type DefSeparators } from '@hcengineering/ui'
 import CreatePublicLink from './components/CreatePublicLink.svelte'
 import GuestApp from './components/GuestApp.svelte'
+export { default as guestPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

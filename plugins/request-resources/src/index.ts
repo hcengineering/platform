@@ -22,6 +22,7 @@ import RequestedChangedNotification from './components/RequestedChangedNotificat
 
 export { default as RequestStatusPresenter } from './components/RequestStatusPresenter.svelte'
 export { default as RequestDetailPopup } from './components/RequestDetailPopup.svelte'
+export { default as requestPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

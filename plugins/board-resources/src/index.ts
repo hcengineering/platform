@@ -37,6 +37,8 @@ import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
 import CardCoverPresenter from './components/presenters/CardCoverPresenter.svelte'
 
+export { default as boardPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateBoard,

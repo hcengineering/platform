@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
+import { type Card, cardId, DOMAIN_CARD, type MasterTag } from '@hcengineering/card'
 import core, { DOMAIN_MODEL, type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -87,8 +87,8 @@ async function fillParentInfo (client: Client): Promise<void> {
   const cards = await client.findAll(card.class.Card, { parentInfo: { $exists: false }, parent: { $ne: null } })
   const cache = new Map<Ref<Card>, Card>()
   for (const val of cards) {
-    if (val.parent == null) continue
-    const parent = await getCardParentWithParentInfo(txOp, val.parent, cache)
+    if ((val as any).parent == null) continue
+    const parent = await getCardParentWithParentInfo(txOp, (val as any).parent, cache)
     if (parent !== undefined) {
       const parentInfo = [
         ...(parent.parentInfo ?? []),
@@ -98,9 +98,9 @@ async function fillParentInfo (client: Client): Promise<void> {
           title: parent.title
         }
       ]
-      await txOp.update(val, { parentInfo })
-      val.parentInfo = parentInfo
-      cache.set(val._id, val)
+      await txOp.update<any>(val, { parentInfo })
+      ;(val as any).parentInfo = parentInfo
+      cache.set((val as any)._id, val as any)
     }
   }
 }
@@ -114,7 +114,7 @@ async function getCardParentWithParentInfo (
   if (visited.has(_id)) {
     return undefined
   }
-  const doc = cache.get(_id) ?? (await txOp.findOne(card.class.Card, { _id }))
+  const doc = cache.get(_id) ?? (await txOp.findOne<Card>(card.class.Card, { _id }))
   if (doc === undefined) return
   if (doc.parentInfo === undefined) {
     if (doc.parent == null) {
@@ -181,7 +181,7 @@ function extractObjectData<T extends Doc> (doc: T): Data<T> {
 async function migrateViewlets (client: Client): Promise<void> {
   const txOp = new TxOperations(client, core.account.System)
   const viewlets = await client.findAll(view.class.Viewlet, { attachTo: card.class.Card, variant: { $exists: false } })
-  const masterTags = await client.findAll(card.class.MasterTag, {})
+  const masterTags = await client.findAll<MasterTag>(card.class.MasterTag, {})
   const currentViewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: masterTags.map((p) => p._id) } })
   for (const masterTag of masterTags) {
     for (const viewlet of viewlets) {

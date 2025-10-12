@@ -14,7 +14,7 @@
 //
 
 import { chatId } from '@hcengineering/chat'
-import chat from '@hcengineering/chat-resources/src/plugin'
+import { chatPlugin as chat } from '@hcengineering/chat-resources'
 import { type Ref } from '@hcengineering/core'
 import { type Application } from '@hcengineering/model-workbench'
 import { mergeIds, type Resource } from '@hcengineering/platform'

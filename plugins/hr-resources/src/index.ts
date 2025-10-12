@@ -29,6 +29,7 @@ import { showPopup } from '@hcengineering/ui'
 import { type Request } from '@hcengineering/hr'
 import EditRequestType from './components/EditRequestType.svelte'
 import DepartmentRefPresenter from './components/DepartmentRefPresenter.svelte'
+export { default as hrPlugin } from './plugin'
 
 async function editRequestType (object: Request): Promise<void> {
   showPopup(EditRequestType, { object })

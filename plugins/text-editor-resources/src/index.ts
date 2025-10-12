@@ -40,7 +40,6 @@ export { SmartPasteExtension as TransformPastedContentExtension } from './compon
 export { getReferenceFromUrl, getReferenceLabel, getTargetObjectFromUrl } from './components/extension/reference'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo/todo'
 
-export * from '@hcengineering/presentation/src/types'
 export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
 export { default as CollaborativeAttributeBox } from './components/CollaborativeAttributeBox.svelte'

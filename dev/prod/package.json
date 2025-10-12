@@ -5,7 +5,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "_phase:package": "rushx package",
-    "_phase:validate": "compile validate",
+    "_phase:validate": "rm -rf ./types && compile validate",
     "package": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
     "analyze": "rm -rf ./dist && cross-env NODE_ENV=production webpack --profile --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
@@ -23,7 +23,7 @@
     "format": "echo 'no format yet'"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/node": "^22.15.29",
     "autoprefixer": "^10.4.14",
     "browserslist": "^4.25.0",

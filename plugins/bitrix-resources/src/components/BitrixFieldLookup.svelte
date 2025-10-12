@@ -3,7 +3,7 @@
   import core, { DateRangeMode, Enum, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting-resources/src/plugin'
+  import { settingPlugin as setting } from '@hcengineering/setting-resources'
   import {
     Button,
     DatePresenter,

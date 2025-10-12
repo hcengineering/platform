@@ -16,7 +16,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { Card } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
 

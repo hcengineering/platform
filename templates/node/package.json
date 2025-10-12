@@ -2,7 +2,7 @@
   "name": "@hcengineering/node-package",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
+  
   "types": "types/index.d.ts",
   "#overrideKeys": [
     "main",

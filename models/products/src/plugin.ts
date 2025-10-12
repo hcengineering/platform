@@ -14,11 +14,11 @@
 //
 
 import '@hcengineering/controlled-documents'
-import { productsId } from '@hcengineering/products'
-import products from '@hcengineering/products-resources/src/plugin'
 import type { Client, Doc, Ref, Role } from '@hcengineering/core'
 import { type Resource, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { productsId } from '@hcengineering/products'
+import { productsPlugin as products } from '@hcengineering/products-resources'
+import { type AnyComponent } from '@hcengineering/ui'
 import type { Action } from '@hcengineering/view'
 
 export default mergeIds(productsId, products, {

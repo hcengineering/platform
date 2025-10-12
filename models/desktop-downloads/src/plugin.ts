@@ -16,7 +16,7 @@
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { desktopDownloadsId } from '@hcengineering/desktop-downloads'
-import desktopDownloads from '@hcengineering/desktop-downloads-resources/src/plugin'
+import { desktopDownloadsPlugin as desktopDownloads } from '@hcengineering/desktop-downloads-resources'
 
 export default mergeIds(desktopDownloadsId, desktopDownloads, {
   component: {

@@ -20,7 +20,7 @@ import { type NotificationGroup, type NotificationType } from '@hcengineering/no
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
-import tracker from '@hcengineering/tracker-resources/src/plugin'
+import { trackerPlugin as tracker } from '@hcengineering/tracker-resources'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'

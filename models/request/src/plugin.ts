@@ -17,7 +17,7 @@ import { type Ref } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { requestId } from '@hcengineering/request'
-import request from '@hcengineering/request-resources/src/plugin'
+import { requestPlugin as request } from '@hcengineering/request-resources'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { NotificationGroup, NotificationType } from '@hcengineering/notification'
 

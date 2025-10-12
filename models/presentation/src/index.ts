@@ -48,7 +48,7 @@ import {
 import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import presentation from './plugin'
 
-export { presentationId } from '@hcengineering/presentation/src/plugin'
+export { presentationId } from '@hcengineering/presentation'
 export { default } from './plugin'
 export type {
   CreateExtensionKind,

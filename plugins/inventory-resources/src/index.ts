@@ -30,6 +30,7 @@ import Variants from './components/Variants.svelte'
 import CreateProduct from './components/CreateProduct.svelte'
 
 import product from './plugin'
+export { default as inventoryPlugin } from './plugin'
 
 async function createSubcategory (object: Doc): Promise<void> {
   showPopup(CreateCategory, { attachedTo: object._id })

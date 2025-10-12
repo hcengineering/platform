@@ -15,7 +15,7 @@
 import { type StatusCategory, type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import type { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation/src/types'
+import type { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation'
 import { type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker, { trackerId, type IssueDraft, type Issue } from '@hcengineering/tracker'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'

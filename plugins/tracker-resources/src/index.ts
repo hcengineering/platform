@@ -176,6 +176,8 @@ import EstimationValueEditor from './components/issues/timereport/EstimationValu
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
 import { getTargetObjectFromUrl } from '@hcengineering/text-editor-resources'
 
+export { default as trackerPlugin } from './plugin'
+
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 export { default as IssueStatusIcon } from './components/issues/IssueStatusIcon.svelte'

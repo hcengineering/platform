@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ButtonIcon, handler } from '@hcengineering/ui'
   import type { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
-  import { getEditorHandler } from '@hcengineering/text-editor-resources/src/components/editor-context'
+  import { getEditorHandler } from '@hcengineering/text-editor-resources'
 
   export let actions: RefAction[] = []
 

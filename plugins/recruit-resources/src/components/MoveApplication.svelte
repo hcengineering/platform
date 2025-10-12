@@ -36,9 +36,8 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/view-resources'
-  import { moveToSpace } from '@hcengineering/view-resources/src/utils'
-  import { createEventDispatcher } from 'svelte'
+  import { statusStore, moveToSpace } from '@hcengineering/view-resources'
+    import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
   import VacancyCard from './VacancyCard.svelte'

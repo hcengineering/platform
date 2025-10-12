@@ -16,7 +16,7 @@
   import { Button, eventToHTMLElement, IconFilter, showPopup } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import activity, { ActivityMessagesFilter } from '@hcengineering/activity'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { ActivityMessagesFilterPopup } from '@hcengineering/activity-resources'
 

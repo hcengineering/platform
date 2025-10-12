@@ -19,6 +19,7 @@ import FileUploadExt from './components/FileUploadExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
 import { uploadFiles, uploadXHRFiles, showFilesUploadPopup, uploadXHRFolders } from './utils'
+export { default as uploaderPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

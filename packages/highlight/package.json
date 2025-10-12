@@ -1,23 +1,31 @@
 {
   "name": "@hcengineering/highlight",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "fonts",
+    "styles"
+  ],
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "compile ui",
+    "build": "compile ui-esbuild",
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
     "_phase:svelte-check": "do-svelte-check",
-    "build:watch": "compile ui",
-    "_phase:build": "compile ui",
+    "build:watch": "compile ui-esbuild",
+    "_phase:build": "compile ui-esbuild",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "svelte-loader": "^3.2.0",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "sass": "^1.80.0",
@@ -42,5 +50,13 @@
     "@hcengineering/ui": "^0.7.0",
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*": "./lang/*",
+    "./styles/*": "./styles/*"
   }
 }

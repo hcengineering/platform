@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { CalendarMode } from '@hcengineering/calendar-resources'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { CalendarMode, calendarPlugin as calendar } from '@hcengineering/calendar-resources'
+    import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'

@@ -4,7 +4,7 @@
 
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { githubId } from '@hcengineering/github'
-import github from '@hcengineering/github-resources/src/plugin'
+import { githubPlugin as github } from '@hcengineering/github-resources'
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import { type Doc, type Ref, type Space } from '@hcengineering/core'

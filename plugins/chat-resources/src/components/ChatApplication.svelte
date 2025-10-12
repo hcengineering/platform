@@ -30,9 +30,8 @@
   import chat, { chatId } from '@hcengineering/chat'
   import { Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
-  import { Favorites } from '@hcengineering/card-resources'
+  import { Favorites, cardPlugin } from '@hcengineering/card-resources'
   import workbench from '@hcengineering/workbench'
-  import cardPlugin from '@hcengineering/card-resources/src/plugin'
 
   import ChatNavigation from './ChatNavigation.svelte'
   import {

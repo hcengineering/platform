@@ -18,6 +18,8 @@ import { type Resources } from '@hcengineering/platform'
 import ChatApplication from './components/ChatApplication.svelte'
 import { resolveLocation, resolveLocationData } from './location'
 
+export { default as chatPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     ChatApplication

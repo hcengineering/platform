@@ -14,19 +14,18 @@
 -->
 <script lang="ts">
   import { AvatarType, Channel, combineName, Contact, findContacts, type Organization } from '@hcengineering/contact'
-  import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
-  import contact from '@hcengineering/contact-resources/src/plugin'
-  import {
-    AttachedData,
-    Class,
-    Data,
-    Doc,
-    MixinData,
-    Ref,
-    WithLookup,
-    generateId,
-    makeCollabId
-  } from '@hcengineering/core'
+  import { ChannelsDropdown, EditableAvatar, PersonPresenter, contactPlugin as contact } from '@hcengineering/contact-resources'
+    import {
+      AttachedData,
+      Class,
+      Data,
+      Doc,
+      MixinData,
+      Ref,
+      WithLookup,
+      generateId,
+      makeCollabId
+    } from '@hcengineering/core'
   import { Customer, LeadEvents } from '@hcengineering/lead'
   import { Card, createMarkup, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'

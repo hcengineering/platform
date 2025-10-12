@@ -58,7 +58,7 @@ import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { PaletteColorIndexes } from '@hcengineering/ui'
 import hr from './plugin'
 
 export { hrId } from '@hcengineering/hr'

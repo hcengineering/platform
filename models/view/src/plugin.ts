@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/view'
 import { type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
-import view from '@hcengineering/view-resources/src/plugin'
+import { viewPlugin as view } from '@hcengineering/view-resources'
 
 export default mergeIds(viewId, view, {
   actionImpl: {

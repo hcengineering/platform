@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { getName, Person } from '@hcengineering/contact'
-  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
+  import { PersonPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'

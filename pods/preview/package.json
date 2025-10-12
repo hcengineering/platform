@@ -2,7 +2,6 @@
   "name": "@hcengineering/pod-preview",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
@@ -31,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

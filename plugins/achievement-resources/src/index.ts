@@ -15,6 +15,8 @@
 
 import { type Resources } from '@hcengineering/platform'
 import PersonAchievementsPresenter from './components/PersonAchievementsPresenter.svelte'
+import plugin from './plugin'
+export const achievementPlugin = plugin
 
 export const achievementResourceId = 'achievement-resources' as const
 

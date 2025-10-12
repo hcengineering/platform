@@ -15,12 +15,11 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import { taskTypeStore } from '@hcengineering/task-resources'
-  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
+  import { TaskTypeIcon, taskTypeStore } from '@hcengineering/task-resources'
   import type { Issue } from '@hcengineering/tracker'
   import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
-  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   import tracker from '../../plugin'
 

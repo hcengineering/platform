@@ -55,6 +55,8 @@ import {
   resolveLocation
 } from './utils'
 
+export { default as documentPlugin } from './plugin'
+
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
   title: e.title,

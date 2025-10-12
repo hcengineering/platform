@@ -25,6 +25,7 @@ import Move from './components/Move.svelte'
 import Copy from './components/Copy.svelte'
 import EditGroup from './components/EditGroup.svelte'
 import { getTemplateDataProvider } from './utils'
+export { default as templatesPlugin } from './plugin'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
   showPopup(EditorTemplatePopup, { editor }, element)

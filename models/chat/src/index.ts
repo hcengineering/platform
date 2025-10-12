@@ -19,7 +19,7 @@ import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
 import { createSystemType } from '@hcengineering/model-card'
 import communication, { MessagesNavigationAnchors } from '@hcengineering/communication'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { PaletteColorIndexes } from '@hcengineering/ui'
 
 import chat from './plugin'
 import { AccountRole } from '@hcengineering/core'

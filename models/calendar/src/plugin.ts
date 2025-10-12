@@ -15,7 +15,7 @@
 
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { calendarId } from '@hcengineering/calendar'
-import calendar from '@hcengineering/calendar-resources/src/plugin'
+import { calendarPlugin as calendar } from '@hcengineering/calendar-resources'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'

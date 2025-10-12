@@ -2,7 +2,6 @@
   "name": "@hcengineering/pod-backup",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/node-package",
@@ -31,7 +30,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",

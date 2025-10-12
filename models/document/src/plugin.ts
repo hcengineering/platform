@@ -16,7 +16,7 @@
 import type { Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { documentId } from '@hcengineering/document'
-import document from '@hcengineering/document-resources/src/plugin'
+import { documentPlugin as document } from '@hcengineering/document-resources'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'

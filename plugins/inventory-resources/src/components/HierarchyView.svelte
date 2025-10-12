@@ -17,10 +17,9 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Loading } from '@hcengineering/ui'
-  import { buildModel } from '@hcengineering/view-resources'
+  import { buildModel, buildConfigLookup } from '@hcengineering/view-resources'
   import { Category } from '@hcengineering/inventory'
   import HierarchyElement from './HierarchyElement.svelte'
-  import { buildConfigLookup } from '@hcengineering/view-resources/src/utils'
 
   export let _class: Ref<Class<Category>>
   export let query: DocumentQuery<Category> = {}

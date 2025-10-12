@@ -17,7 +17,7 @@ import { type Class, type Doc, type Mixin } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
-import { deleteObject } from '@hcengineering/view-resources/src/utils'
+import { deleteObject } from '@hcengineering/view-resources'
 import ClassSetting from './components/ClassSetting.svelte'
 import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
@@ -71,6 +71,8 @@ import BaseIntegrationState from './components/integrations/BaseIntegrationState
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+
+export const settingPlugin = setting
 
 export * from './store'
 export {

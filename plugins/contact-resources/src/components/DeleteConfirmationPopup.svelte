@@ -17,9 +17,8 @@
   import { AccountRole, Doc, getCurrentAccount, PersonId, Ref, uniqueNotEmpty } from '@hcengineering/core'
   import { Card, isAdminUser } from '@hcengineering/presentation'
   import ui, { Button, Label } from '@hcengineering/ui'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
-  import { createEventDispatcher } from 'svelte'
+  import { ObjectPresenter, viewPlugin as view } from '@hcengineering/view-resources'
+    import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
 
   import { getPersonRefsByPersonIdsCb, PersonRefPresenter } from '..'

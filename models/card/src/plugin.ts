@@ -14,14 +14,13 @@
 //
 
 import { type Card, cardId } from '@hcengineering/card'
-import card from '@hcengineering/card-resources/src/plugin'
+import { cardPlugin as card } from '@hcengineering/card-resources'
 import type { Client, Doc, Ref } from '@hcengineering/core'
-import {} from '@hcengineering/core'
 import { mergeIds, type Resource } from '@hcengineering/platform'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
-import { type LocationData } from '@hcengineering/workbench'
-import { type ActionCategory, type Action, type ViewAction } from '@hcengineering/view'
 import { type TagCategory } from '@hcengineering/tags'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
+import { type LocationData } from '@hcengineering/workbench'
 
 export default mergeIds(cardId, card, {
   app: {

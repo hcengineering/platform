@@ -15,7 +15,7 @@
 //
 
 import { bitrixId } from '@hcengineering/bitrix'
-import bitrix from '@hcengineering/bitrix-resources/src/plugin'
+import { bitrixPlugin as bitrix } from '@hcengineering/bitrix-resources'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type Action } from '@hcengineering/view'
 

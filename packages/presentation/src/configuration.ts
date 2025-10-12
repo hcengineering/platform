@@ -24,7 +24,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
-import { addTxListener, createQuery } from '.'
+import { addTxListener, createQuery } from './utils'
 
 /**
  * @public

@@ -42,6 +42,8 @@ import ResourcePresenter from './components/ResourcePresenter.svelte'
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
 import { restoreFileVersion, showCreateFolderPopup, showRenameResourcePopup } from './utils'
 
+export { default as drivePlugin } from './plugin'
+
 const toFileObjectSearchResult = (e: WithLookup<File>): ObjectSearchResult => ({
   doc: e,
   title: e.title,

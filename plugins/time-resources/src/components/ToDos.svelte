@@ -36,7 +36,7 @@
     deviceOptionsStore as deviceInfo,
     todosSP
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import type { ToDosMode } from '..'
   import time from '../plugin'
   import { getNearest } from '../utils'

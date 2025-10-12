@@ -29,9 +29,8 @@
     themeStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
-  import { createEventDispatcher } from 'svelte'
+  import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues, viewPlugin as view } from '@hcengineering/view-resources'
+    import { createEventDispatcher } from 'svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let filter: Filter

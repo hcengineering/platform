@@ -18,7 +18,7 @@ import { type Application } from '@hcengineering/model-workbench'
 import { type NotificationType } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { timeId } from '@hcengineering/time'
-import time from '@hcengineering/time-resources/src/plugin'
+import { timePlugin as time } from '@hcengineering/time-resources'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory } from '@hcengineering/view'
 

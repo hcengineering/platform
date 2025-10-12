@@ -16,7 +16,7 @@
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { mediaId } from '@hcengineering/media'
-import media from '@hcengineering/media-resources/src/plugin'
+import { mediaPlugin as media } from '@hcengineering/media-resources'
 
 export default mergeIds(mediaId, media, {
   component: {

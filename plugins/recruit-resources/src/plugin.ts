@@ -16,7 +16,7 @@
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation/src/types'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import recruit, { recruitId } from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui/src/types'

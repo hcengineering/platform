@@ -28,11 +28,11 @@ import setting from '@hcengineering/setting'
 import pluginState, { type Issue, trackerId } from '@hcengineering/tracker'
 
 import type { TaskStatusFactory } from '@hcengineering/task'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { PaletteColorIndexes } from '@hcengineering/ui'
 import { createActions as defineActions } from './actions'
+import { definePermissions } from './permissions'
 import tracker from './plugin'
 import { definePresenters } from './presenters'
-import { definePermissions } from './permissions'
 import {
   DOMAIN_TRACKER,
   TClassicProjectTypeData,

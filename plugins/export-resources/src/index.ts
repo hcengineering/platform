@@ -19,6 +19,7 @@ import ExportSettings from './components/ExportSettings.svelte'
 
 export { default as ExportButton } from './components/ExportButton.svelte'
 export { default as ExportSettings } from './components/ExportSettings.svelte'
+export { default as exportPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

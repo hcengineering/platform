@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import card, { Card } from '@hcengineering/card'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, FilePreview } from '@hcengineering/presentation'
   import Description from './Description.svelte'
-  import FilePreview from '@hcengineering/presentation/src/components/FilePreview.svelte'
-  import FilePlaceholder from './FilePlaceholder.svelte'
+    import FilePlaceholder from './FilePlaceholder.svelte'
 
   export let doc: Card
   export let readonly: boolean = false

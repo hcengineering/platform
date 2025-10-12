@@ -14,7 +14,7 @@
 //
 
 import { communicationId, type Poll } from '@hcengineering/communication'
-import communication from '@hcengineering/communication-resources/src/plugin'
+import { communicationPlugin as communication } from '@hcengineering/communication-resources'
 import { type Attribute, type Ref } from '@hcengineering/core'
 import {} from '@hcengineering/ui'
 import { mergeIds, type Resource } from '@hcengineering/platform'

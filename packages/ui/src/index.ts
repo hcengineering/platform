@@ -17,8 +17,11 @@ import { addLocation } from '@hcengineering/platform'
 import { type SvelteComponent } from 'svelte'
 import { readable, writable } from 'svelte/store'
 import Root from './components/internal/Root.svelte'
-import { uiId, uis } from './plugin'
+import plugin, { uiId, uis } from './plugin'
 import type { DeviceOptions } from './types'
+
+export const uiPlugin = plugin
+export { uiId } from './plugin'
 
 export type {
   AnyComponent,
