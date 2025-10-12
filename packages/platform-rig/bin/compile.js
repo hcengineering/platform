@@ -142,12 +142,15 @@ switch (args[0]) {
     collectFileStats('lib', before)
     collectFileStats('types', before)
 
-    Promise.all([performESBuildWithSvelte(filesToTranspile), validateTSC(), generateSvelteTypes()]).then(() => {
-      console.log('UI build time: ', Math.round((performance.now() - st) * 100) / 100)
-      collectFileStats('lib', after)
-      collectFileStats('types', after)
-      cleanNonModified(before, after)
-    })
+    performESBuildWithSvelte(filesToTranspile)
+      .then(() => generateSvelteTypes())
+      .then(() => validateTSC())
+      .then(() => {
+        console.log('UI build time: ', Math.round((performance.now() - st) * 100) / 100)
+        collectFileStats('lib', after)
+        collectFileStats('types', after)
+        cleanNonModified(before, after)
+      })
     break
   }
   case 'transpile': {
@@ -218,6 +221,7 @@ async function performESBuildWithSvelte(filesToTranspile) {
       bundle: false,
       minify: false,
       outdir: 'lib',
+      outbase: 'src',
       keepNames: true,
       sourcemap: 'linked',
       allowOverwrite: true,
@@ -243,6 +247,7 @@ async function performESBuildWithSvelte(filesToTranspile) {
       bundle: false,
       minify: false,
       outdir: 'lib',
+      outbase: 'src',
       outExtension: { '.js': '.svelte.js' },
       keepNames: true,
       sourcemap: 'linked',
@@ -304,6 +309,7 @@ async function generateSvelteTypes() {
 
 async function validateTSC(st) {
   const buildDir = '.validate'
+  const typesDir = join(process.cwd(), 'types')
 
   if (!existsSync(buildDir)) {
     mkdirSync(buildDir, { recursive: true })
@@ -321,11 +327,29 @@ async function validateTSC(st) {
   }
 
   const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
-  const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd(), {
+
+  // Prepare compiler options that include the types directory
+  const compilerOptionsOverride = {
     emitDeclarationOnly: true,
     incremental: true,
     tsBuildInfoFile: join(buildDir, 'tsBuildInfoFile.info')
-  })
+  }
+
+  // Add types directory to typeRoots if it exists
+  if (existsSync(typesDir)) {
+    compilerOptionsOverride.typeRoots = [
+      ...(configFile.config.compilerOptions?.typeRoots || ['./node_modules/@types']),
+      typesDir
+    ]
+  }
+
+  const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd(), compilerOptionsOverride)
+
+  // Add generated Svelte type files to the file list
+  if (existsSync(typesDir)) {
+    const svelteTypeFiles = collectFiles(typesDir).filter((f) => f.endsWith('.svelte.d.ts'))
+    parsedConfig.fileNames.push(...svelteTypeFiles)
+  }
 
   // Create the TypeScript program
   const program = ts.createProgram({

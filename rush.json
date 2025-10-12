@@ -355,6 +355,11 @@
       "packageName": "@hcengineering/postgres-base",
       "projectFolder": "packages/postgres-base",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/ui-test",
+      "projectFolder": "packages/ui-test",
+      "shouldPublish": false
     }
   ]
 }
