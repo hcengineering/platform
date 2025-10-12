@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/platform-rig
 
-This log was last generated on Sun, 12 Oct 2025 03:31:47 GMT and should not be manually modified.
+This log was last generated on Sun, 12 Oct 2025 15:50:41 GMT and should not be manually modified.
+
+## 0.7.18
+Sun, 12 Oct 2025 15:50:41 GMT
+
+### Patches
+
+- Revert compile ui do nothing
 
 ## 0.7.17
 Sun, 12 Oct 2025 03:31:47 GMT

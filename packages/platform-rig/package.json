@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/platform-rig",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "scripts": {
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"

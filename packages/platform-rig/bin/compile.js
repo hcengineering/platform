@@ -122,18 +122,12 @@ function collectFileStats(source, result) {
   }
 }
 
-function cleanNonModified(before, after) {
-  for (const [k, v] of Object.entries(before)) {
-    if (after[k] === v) {
-      // Same modify date, looks like not modified
-      console.log('clean file', k)
-      rmSync(k)
-    }
-  }
-}
-
 switch (args[0]) {
   case 'ui': {
+    console.log('Nothing to compile to UI')
+    break
+  }
+  case 'ui-esbuild': {
     console.log('Building UI package with Svelte support...')
     let st = performance.now()
     const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
@@ -144,12 +138,10 @@ switch (args[0]) {
 
     performESBuildWithSvelte(filesToTranspile)
       .then(() => generateSvelteTypes())
-      .then(() => validateTSC())
       .then(() => {
         console.log('UI build time: ', Math.round((performance.now() - st) * 100) / 100)
         collectFileStats('lib', after)
         collectFileStats('types', after)
-        cleanNonModified(before, after)
       })
     break
   }
@@ -163,7 +155,6 @@ switch (args[0]) {
     performESBuild(filesToTranspile).then(() => {
       console.log('Transpile time: ', Math.round((performance.now() - st) * 100) / 100)
       collectFileStats('lib', after)
-      cleanNonModified(before, after)
     })
     break
   }
@@ -223,6 +214,7 @@ async function performESBuildWithSvelte(filesToTranspile) {
       outdir: 'lib',
       outbase: 'src',
       keepNames: true,
+      logLevel: 'error',
       sourcemap: 'linked',
       allowOverwrite: true,
       format: 'cjs',
@@ -251,6 +243,7 @@ async function performESBuildWithSvelte(filesToTranspile) {
       outExtension: { '.js': '.svelte.js' },
       keepNames: true,
       sourcemap: 'linked',
+      logLevel: 'error',
       allowOverwrite: true,
       format: 'cjs',
       color: true,
