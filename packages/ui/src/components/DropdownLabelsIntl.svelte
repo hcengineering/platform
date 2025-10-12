@@ -100,7 +100,7 @@
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
       <Label
         label={selectedItem ? selectedItem.label : label}
-        params={selectedItem ? selectedItem.params ?? params : params}
+        params={selectedItem ? (selectedItem.params ?? params) : params}
       />
     </span>
     <svelte:fragment slot="iconRight">

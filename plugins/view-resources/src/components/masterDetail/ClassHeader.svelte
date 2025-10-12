@@ -30,7 +30,7 @@
 {#if clazz !== undefined}
   <div class="header flex flex-gap-2">
     <Icon
-      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon ?? card.icon.MasterTag}
+      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : (clazz.icon ?? card.icon.MasterTag)}
       iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
       size="medium"
     />

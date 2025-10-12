@@ -35,10 +35,10 @@
 
   $: excluded =
     object !== undefined
-      ? descendants
-        .get(object._id)
-        ?.map((p) => p._id)
-        .concat(object._id) ?? [object._id]
+      ? (descendants
+          .get(object._id)
+          ?.map((p) => p._id)
+          .concat(object._id) ?? [object._id])
       : []
 
   const q = createQuery()

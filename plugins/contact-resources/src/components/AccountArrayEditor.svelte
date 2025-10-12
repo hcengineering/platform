@@ -37,7 +37,7 @@
   export let allowGuests: boolean = false
   export let attributeKey: string | undefined = undefined
 
-  $: accounts = typeof value === 'string' ? [value] : value ?? []
+  $: accounts = typeof value === 'string' ? [value] : (value ?? [])
 
   let timer: any = null
   const client = getClient()

@@ -34,7 +34,7 @@ export function registerToken (
     async (ctx, next) => {
       measureCtx.info('try auth via', { provider: 'token' })
       const host = getHost(ctx.request.headers)
-      const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
+      const branding = host !== undefined ? (brandings[host]?.key ?? undefined) : undefined
       const state = encodeURIComponent(
         JSON.stringify({
           inviteId: ctx.query?.inviteId,

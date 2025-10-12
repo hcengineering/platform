@@ -82,7 +82,7 @@
   const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
   const id: Ref<Candidate> = generateId()
   const draftController = new DraftController<CandidateDraft>(
-    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    shouldSaveDraft ? (mDraftController.getNext() ?? id) : undefined,
     recruit.mixin.Candidate
   )
 

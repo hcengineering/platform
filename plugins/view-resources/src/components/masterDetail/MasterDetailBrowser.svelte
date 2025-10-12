@@ -60,7 +60,7 @@
   let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
-  $: resultQuery = isNested ? parentQuery : mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
+  $: resultQuery = isNested ? parentQuery : (mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {})
 
   if (syncWithLocationQuery) {
     parentQuery = getLocation()?.query as any

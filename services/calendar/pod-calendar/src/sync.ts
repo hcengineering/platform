@@ -417,7 +417,7 @@ export class IncomingSyncManager {
       res.visibility =
         event.visibility === 'public'
           ? 'public'
-          : (event.extendedProperties?.private?.visibility as Visibility) ?? 'private'
+          : ((event.extendedProperties?.private?.visibility as Visibility) ?? 'private')
     }
     return res
   }
@@ -505,7 +505,7 @@ export class IncomingSyncManager {
       res.visibility =
         event.visibility === 'public'
           ? 'public'
-          : (event.extendedProperties?.private?.visibility as Visibility) ?? 'private'
+          : ((event.extendedProperties?.private?.visibility as Visibility) ?? 'private')
     }
     if (event.transparency != null) {
       res.blockTime = event.transparency !== 'transparent'

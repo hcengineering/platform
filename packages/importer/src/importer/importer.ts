@@ -499,7 +499,7 @@ export class WorkspaceImporter {
       defaultTimeReportDay: oldProject.defaultTimeReportDay,
       type:
         project.projectType !== undefined
-          ? this.projectTypeByName.get(project.projectType.name) ?? tracker.ids.ClassingProjectType
+          ? (this.projectTypeByName.get(project.projectType.name) ?? tracker.ids.ClassingProjectType)
           : oldProject.type
     }
 

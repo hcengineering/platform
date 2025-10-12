@@ -357,7 +357,7 @@
         <Label label={documentRes.string.ChooseIcon} />
       </div>
       <Button
-        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? document.icon.Teamspace}
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : (icon ?? document.icon.Teamspace)}
         iconProps={icon === view.ids.IconWithEmoji
           ? { icon: color }
           : {

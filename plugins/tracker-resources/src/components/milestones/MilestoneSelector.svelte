@@ -61,7 +61,7 @@
 
   $: translateCB(tracker.string.Milestone, {}, $themeStore.language, (result) => (defaultMilestoneLabel = result))
   const milestoneIcon = tracker.icon.Milestone
-  $: milestoneText = shouldShowLabel ? selectedMilestone?.label ?? defaultMilestoneLabel : undefined
+  $: milestoneText = shouldShowLabel ? (selectedMilestone?.label ?? defaultMilestoneLabel) : undefined
 
   const handleSelectedMilestoneIdUpdated = async (
     newMilestoneId: Ref<Milestone> | null | undefined,

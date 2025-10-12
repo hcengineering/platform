@@ -135,8 +135,8 @@
   $: sel =
     (!Array.isArray(_object)
       ? _object.assignee
-      : _object.reduce((v, it) => (v != null && v === it.assignee ? it.assignee : null), _object[0]?.assignee) ??
-        undefined) ?? undefined
+      : (_object.reduce((v, it) => (v != null && v === it.assignee ? it.assignee : null), _object[0]?.assignee) ??
+        undefined)) ?? undefined
 
   let rulesQuery: RuleApplyResult<Employee> | undefined
   let query: DocumentQuery<Employee>
