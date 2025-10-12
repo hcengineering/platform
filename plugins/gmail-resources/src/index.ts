@@ -28,6 +28,7 @@ import gmail from '@hcengineering/gmail'
 import { checkHasEmail, MessageTitleProvider } from './utils'
 import { getIntegrationClient, signout } from './api'
 import type { Integration } from '@hcengineering/account-client'
+export { default as gmailPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

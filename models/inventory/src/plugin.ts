@@ -17,7 +17,7 @@
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import { inventoryId } from '@hcengineering/inventory'
-import inventory from '@hcengineering/inventory-resources/src/plugin'
+import { inventoryPlugin as inventory } from '@hcengineering/inventory-resources'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'

@@ -14,9 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SpaceMembers } from '@hcengineering/contact-resources'
-  import contact from '@hcengineering/contact-resources/src/plugin'
-  import core from '@hcengineering/core'
+  import { SpaceMembers, contactPlugin as contact } from '@hcengineering/contact-resources'
+    import core from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { TemplateCategory } from '@hcengineering/templates'
   import { EditBox, Grid, Label } from '@hcengineering/ui'

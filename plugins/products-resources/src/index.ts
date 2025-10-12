@@ -62,6 +62,8 @@ async function queryProduct (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
+export { default as productsPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateProduct,

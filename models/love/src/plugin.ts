@@ -19,7 +19,7 @@ import { type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { loveId } from '@hcengineering/love'
-import love from '@hcengineering/love-resources/src/plugin'
+import { lovePlugin as love } from '@hcengineering/love-resources'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 
 export default mergeIds(loveId, love, {

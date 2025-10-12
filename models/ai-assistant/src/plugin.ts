@@ -15,7 +15,7 @@
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { aiAssistantId } from '@hcengineering/ai-assistant'
-import aiAssistant from '@hcengineering/ai-assistant-resources/src/plugin'
+import { aiAssistantPlugin as aiAssistant } from '@hcengineering/ai-assistant-resources'
 
 export default mergeIds(aiAssistantId, aiAssistant, {
   string: {

@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
-  import contact from '@hcengineering/contact-resources/src/plugin'
+  import { EmployeePresenter, contactPlugin as contact } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'

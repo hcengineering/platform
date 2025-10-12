@@ -17,7 +17,7 @@
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { gmailId } from '@hcengineering/gmail'
-import gmail from '@hcengineering/gmail-resources/src/plugin'
+import { gmailPlugin as gmail } from '@hcengineering/gmail-resources'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type Action } from '@hcengineering/view'

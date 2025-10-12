@@ -23,6 +23,7 @@ import MediaPopupSpkSelector from './components/MediaPopupSpkSelector.svelte'
 
 export * from './stores'
 export * from './utils'
+export { default as mediaPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

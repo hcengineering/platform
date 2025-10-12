@@ -29,6 +29,7 @@ export { default as AnswersCollectionEditor } from './components/AnswersCollecti
 
 export * from './actions/ActionWithAvailability'
 export * from './utils'
+export { default as questionsPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   action: {

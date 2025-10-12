@@ -2,7 +2,6 @@
   "name": "@hcengineering/pod-sign",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
@@ -31,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",

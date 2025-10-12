@@ -19,6 +19,7 @@ import BitrixConnect from './components/BitrixConnect.svelte'
 import BitrixConfigure from './components/BitrixConfigure.svelte'
 import BitrixIcon from './components/icons/Bitrix.svelte'
 import BitrixImport from './components/BitrixImport.svelte'
+export { default as bitrixPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

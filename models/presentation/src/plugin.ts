@@ -16,6 +16,6 @@
 
 import { mergeIds } from '@hcengineering/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
-import presentation, { presentationId } from '@hcengineering/presentation/src/plugin'
+import { presentationId, presentationPlugin as presentation } from '@hcengineering/presentation'
 
 export default mergeIds(presentationId, presentation, {})

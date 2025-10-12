@@ -14,7 +14,7 @@
 //
 import { mergeIds } from '@hcengineering/platform'
 import { achievementId } from '@hcengineering/achievement'
-import achievement from '@hcengineering/achievement-resources/src/plugin'
+import { achievementPlugin as achievement } from '@hcengineering/achievement-resources'
 import { type Ref } from '@hcengineering/core'
 import { type ComponentPointExtension } from '@hcengineering/presentation'
 

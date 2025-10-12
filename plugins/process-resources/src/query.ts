@@ -14,7 +14,7 @@
 import { type QuerySelector } from '@hcengineering/core'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
-import view from '@hcengineering/view-resources/src/plugin'
+import { viewPlugin as view } from '@hcengineering/view-resources'
 import plugin from './plugin'
 
 export interface Mode {

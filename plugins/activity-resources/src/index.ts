@@ -47,6 +47,8 @@ export * from './utils'
 export * from './activityMessagesUtils'
 export * from './references'
 
+export { default as activityPlugin } from './plugin'
+
 export { default as Reactions } from './components/reactions/Reactions.svelte'
 export { default as ActivityMessageTemplate } from './components/activity-message/ActivityMessageTemplate.svelte'
 export { default as ActivityMessagePresenter } from './components/activity-message/ActivityMessagePresenter.svelte'

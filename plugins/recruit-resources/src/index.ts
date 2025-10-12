@@ -84,6 +84,7 @@ import {
 
 import { get } from 'svelte/store'
 import { MoveApplicant } from './actionImpl'
+export { default as recruitPlugin } from './plugin'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })

@@ -46,6 +46,7 @@ import PreviewPopupActions from './components/PreviewPopupActions.svelte'
 import DrawingPresenter from './components/DrawingPresenter.svelte'
 import LinkPreview from './components/LinkPreview.svelte'
 import LinkPreviewCard from './components/LinkPreviewCard.svelte'
+export { default as attachmentPlugin } from './plugin'
 
 export * from './types'
 export * from './stores'

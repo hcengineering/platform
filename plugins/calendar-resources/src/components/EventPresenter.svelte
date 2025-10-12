@@ -16,10 +16,9 @@
   import { Event } from '@hcengineering/calendar'
   import { DateRangeMode, Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { DatePresenter, DateTimeRangePresenter, Label, showPopup } from '@hcengineering/ui'
+  import { DatePresenter, DateTimeRangePresenter, Label, showPopup, DateRangePresenter } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import calendar from '../plugin'
-  import DateRangePresenter from '@hcengineering/ui/src/components/calendar/DateRangePresenter.svelte'
 
   export let value: Event
   export let hideDetails: boolean = false

@@ -29,6 +29,7 @@ import NotificationToDoPresenter from './components/NotificationToDoPresenter.sv
 import PriorityEditor from './components/PriorityEditor.svelte'
 import ToDoPresenter from './components/ToDoPresenter.svelte'
 import { ToDoTitleProvider } from './utils'
+export { default as timePlugin } from './plugin'
 
 export type ToDosMode = 'unplanned' | 'planned' | 'all' | 'tag' | 'date'
 

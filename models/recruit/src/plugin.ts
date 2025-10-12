@@ -20,7 +20,7 @@ import { type NotificationGroup, type NotificationType } from '@hcengineering/no
 import type { IntlString, Status as OperationStatus, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
-import recruit from '@hcengineering/recruit-resources/src/plugin'
+import { recruitPlugin as recruit } from '@hcengineering/recruit-resources'
 import { type ProjectType, type TaskTypeDescriptor } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type {

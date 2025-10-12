@@ -20,6 +20,8 @@ import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
 import { handleDownloadItem } from './utils'
 
+export { default as desktopDownloadsPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     FileDownloadExt,

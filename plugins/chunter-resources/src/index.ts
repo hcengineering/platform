@@ -89,6 +89,8 @@ import {
   canSummarizeMessages
 } from './utils'
 
+export { default as chunterPlugin } from './plugin'
+
 export { default as ChannelEmbeddedContent } from './components/ChannelEmbeddedContent.svelte'
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'

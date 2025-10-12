@@ -1,6 +1,6 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { guestId } from '@hcengineering/guest'
-import guest from '@hcengineering/guest-resources/src/plugin'
+import { guestPlugin as guest } from '@hcengineering/guest-resources'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory } from '@hcengineering/view'

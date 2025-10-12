@@ -31,7 +31,7 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view, SortableList } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { initState } from '../../utils'
@@ -41,7 +41,6 @@
   import Navigator from './Navigator.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
-  import { SortableList } from '@hcengineering/view-resources'
 
   export let _id: Ref<Transition>
   export let visibleSecondNav: boolean = true

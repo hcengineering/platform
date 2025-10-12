@@ -35,10 +35,10 @@
     FilterRemovedNotification,
     sortFilterValues,
     statusStore
+    , viewPlugin as view
+    , buildConfigLookup, getPresenter
   } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
-  import { buildConfigLookup, getPresenter } from '@hcengineering/view-resources/src/utils'
-  import { createEventDispatcher } from 'svelte'
+      import { createEventDispatcher } from 'svelte'
   import { typesOfJoinedProjectsStore, selectedTaskTypeStore, selectedTypeStore, taskTypeStore, typeStore } from '..'
 
   export let filter: Filter

@@ -12,7 +12,7 @@
     showPopup,
     twoPanelsSeparators
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import settings from '../plugin'
   import card from '@hcengineering/card'
   import AssociationEditor from './AssociationEditor.svelte'

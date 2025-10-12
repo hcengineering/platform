@@ -11,14 +11,14 @@
     PaletteColorIndexes,
     getEventPopupPositionElement,
     showPopup
+    , DropdownLabelsPopup
   } from '@hcengineering/ui'
-  import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
-  import {
-    GithubIntegration,
-    GithubIntegrationRepository,
-    githubPullRequestStates,
-    type GithubProject
-  } from '@hcengineering/github'
+    import {
+      GithubIntegration,
+      GithubIntegrationRepository,
+      githubPullRequestStates,
+      type GithubProject
+    } from '@hcengineering/github'
   import github from '../plugin'
 
   export let integration: WithLookup<GithubIntegration>

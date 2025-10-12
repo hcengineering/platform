@@ -28,6 +28,7 @@ import {
   resolveLocation,
   surveyTitleProvider
 } from './utils'
+export { default as surveyPlugin } from './plugin'
 
 export * from './utils'
 

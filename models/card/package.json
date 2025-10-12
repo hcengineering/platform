@@ -2,7 +2,6 @@
   "name": "@hcengineering/model-card",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/model-package",
@@ -18,7 +17,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -48,6 +47,7 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/model-attachment": "^0.7.0",
     "@hcengineering/model-guest": "^0.7.0",
+    "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/model-presentation": "^0.7.0",
     "@hcengineering/model-preference": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",

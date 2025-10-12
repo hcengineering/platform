@@ -16,7 +16,7 @@
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { driveId } from '@hcengineering/drive'
-import drive from '@hcengineering/drive-resources/src/plugin'
+import { drivePlugin as drive } from '@hcengineering/drive-resources'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'

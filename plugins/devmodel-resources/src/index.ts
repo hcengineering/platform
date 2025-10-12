@@ -38,7 +38,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata, type IntlString, type Resources } from '@hcengineering/platform'
 import { addTxListener } from '@hcengineering/presentation'
-import type { ClientHook } from '@hcengineering/presentation/src/plugin'
+import { type ClientHook } from '@hcengineering/presentation'
 import { testing } from '@hcengineering/ui'
 import devmodel from './plugin'
 

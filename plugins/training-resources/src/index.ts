@@ -58,6 +58,7 @@ import { resolveLocation } from './routing/resolveLocation'
 export { default as NullablePositiveNumberEditor } from './components/NullablePositiveNumberEditor.svelte'
 export { default as TrainingRefEditor } from './components/TrainingRefEditor.svelte'
 export { default as TrainingRequestRolesEditor } from './components/TrainingRequestRolesEditor.svelte'
+export { default as trainingPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

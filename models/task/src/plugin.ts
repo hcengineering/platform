@@ -19,7 +19,7 @@ import type { Doc, Ref, Space } from '@hcengineering/core'
 import { mergeIds, type IntlString } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
-import task from '@hcengineering/task-resources/src/plugin'
+import { taskPlugin as task } from '@hcengineering/task-resources'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 

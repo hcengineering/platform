@@ -14,7 +14,7 @@
 //
 
 import { documentsId } from '@hcengineering/controlled-documents'
-import documents from '@hcengineering/controlled-documents-resources/src/plugin'
+import { documentsPlugin as documents } from '@hcengineering/controlled-documents-resources'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { mergeIds, type Resource } from '@hcengineering/platform'

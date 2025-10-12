@@ -9,6 +9,8 @@ import { getPrintBaseURL } from '@hcengineering/print'
 import PrintToPDF from './components/PrintToPDF.svelte'
 import DOCXViewer from './components/DOCXViewer.svelte'
 
+export { default as printPlugin } from './plugin'
+
 export async function print (
   object: Doc,
   evt: Event,

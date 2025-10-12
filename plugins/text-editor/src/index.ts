@@ -17,6 +17,5 @@
 import { textEditorId } from './plugin'
 
 export { default } from './plugin'
-export * from '@hcengineering/presentation/src/types'
 export * from './types'
 export { textEditorId }

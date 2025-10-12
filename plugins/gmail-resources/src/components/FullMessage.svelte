@@ -15,10 +15,9 @@
 -->
 <script lang="ts">
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
-  import Button from '@hcengineering/ui/src/components/Button.svelte'
+  import { Button, IconArrowLeft, Label, Scroller, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { IconArrowLeft, Label, Scroller, tooltip } from '@hcengineering/ui'
-  import gmail from '../plugin'
+    import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import attachment, { Attachment } from '@hcengineering/attachment'

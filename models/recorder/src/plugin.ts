@@ -17,7 +17,7 @@
 import core from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { recorderId } from '@hcengineering/recorder'
-import recorder from '@hcengineering/recorder-resources/src/plugin'
+import { recorderPlugin as recorder } from '@hcengineering/recorder-resources'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(recorderId, recorder, {

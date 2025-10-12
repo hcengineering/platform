@@ -1,7 +1,16 @@
 {
   "name": "@hcengineering/onboard-assets",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "fonts",
+    "styles",
+    "lang"
+  ],
   "author": "Hardcore Engineering Inc.",
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
@@ -11,13 +20,13 @@
     "build:docs": "",
     "format": "format src",
     "build:watch": "compile",
-    "_phase:build": "compile transpile src",
+    "_phase:build": "compile",
     "_phase:test": "jest --passWithNoTests --silent",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -35,5 +44,20 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.3",
     "@hcengineering/onboard": "^0.7.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    },
+    "./styles/*": "./styles/*"
   }
 }

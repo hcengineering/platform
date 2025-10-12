@@ -15,7 +15,7 @@
 
 import type { ActivityMessage } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
-import chunter from '@hcengineering/chunter-resources/src/plugin'
+import { chunterPlugin as chunter } from '@hcengineering/chunter-resources'
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'

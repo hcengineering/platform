@@ -16,7 +16,7 @@
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { uploaderId } from '@hcengineering/uploader'
-import uploader from '@hcengineering/uploader-resources/src/plugin'
+import { uploaderPlugin as uploader } from '@hcengineering/uploader-resources'
 
 export default mergeIds(uploaderId, uploader, {
   component: {

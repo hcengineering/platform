@@ -4,7 +4,8 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib", "dist", "types", "bundle"]

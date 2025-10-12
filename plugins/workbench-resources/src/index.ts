@@ -27,6 +27,7 @@ import WorkbenchTabs from './components/WorkbenchTabs.svelte'
 import { isAdminUser } from '@hcengineering/presentation'
 import { canCloseTab, closeCurrentTab, closeTab, pinTab, unpinTab } from './workbench'
 import { closeWidget, closeWidgetTab, createWidgetTab, getSidebarObject } from './sidebar'
+export { default as workbenchPlugin } from './plugin'
 
 async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined

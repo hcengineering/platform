@@ -258,6 +258,7 @@ export {
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
 }
+export { default as viewPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   actionImpl,

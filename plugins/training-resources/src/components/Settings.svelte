@@ -16,17 +16,16 @@
 -->
 
 <script lang="ts">
-  import contact from '@hcengineering/contact-resources/src/plugin'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, {
-    type AccountUuid,
-    type Ref,
-    type Role,
-    type RolesAssignment,
-    type SpaceType,
-    type TypedSpace,
-    type WithLookup
-  } from '@hcengineering/core'
+  import { contactPlugin as contact, AccountArrayEditor } from '@hcengineering/contact-resources'
+    import core, {
+      type AccountUuid,
+      type Ref,
+      type Role,
+      type RolesAssignment,
+      type SpaceType,
+      type TypedSpace,
+      type WithLookup
+    } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, Header, Loading } from '@hcengineering/ui'
 

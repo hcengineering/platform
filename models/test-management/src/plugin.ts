@@ -14,7 +14,7 @@
 //
 
 import { testManagementId } from '@hcengineering/test-management'
-import testManganement from '@hcengineering/test-management-resources/src/plugin'
+import { testManganementPlugin as testManganement } from '@hcengineering/test-management-resources'
 import type { Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'

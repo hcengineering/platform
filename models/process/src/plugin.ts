@@ -15,7 +15,7 @@ import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { processId } from '@hcengineering/process'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
-import process from '@hcengineering/process-resources/src/plugin'
+import { processPlugin as process } from '@hcengineering/process-resources'
 import { type ViewAction, type Action } from '@hcengineering/view'
 import { type CardSection } from '@hcengineering/card'
 

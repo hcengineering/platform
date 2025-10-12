@@ -15,7 +15,7 @@
 //
 
 import { type Board, boardId } from '@hcengineering/board'
-import board from '@hcengineering/board-resources/src/plugin'
+import { boardPlugin as board } from '@hcengineering/board-resources'
 import type { Ref, Sequence } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'

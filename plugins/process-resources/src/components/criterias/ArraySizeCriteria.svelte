@@ -18,7 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import { Button, Component, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { viewPlugin as view } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { getContext } from '../../utils'
   import ContextSelectorPopup from '../attributeEditors/ContextSelectorPopup.svelte'

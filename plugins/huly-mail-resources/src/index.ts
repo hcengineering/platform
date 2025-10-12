@@ -20,6 +20,7 @@ import Configure from './components/Configure.svelte'
 import IntegrationState from './components/IntegrationState.svelte'
 import IconHulyMail from './components/icons/HulyMail.svelte'
 import { getIntegrationClient } from './utils'
+export { default as hulyMailPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

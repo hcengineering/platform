@@ -40,6 +40,7 @@ import {
   queryMeetingMinutes
 } from './utils'
 import { toggleMicState, toggleCamState } from '@hcengineering/media-resources'
+export { default as lovePlugin } from './plugin'
 
 export { setCustomCreateScreenTracks } from './utils'
 

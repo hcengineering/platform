@@ -17,7 +17,7 @@
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import type { Doc, Ref, Status } from '@hcengineering/core'
 import { leadId } from '@hcengineering/lead'
-import lead from '@hcengineering/lead-resources/src/plugin'
+import { leadPlugin as lead } from '@hcengineering/lead-resources'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'

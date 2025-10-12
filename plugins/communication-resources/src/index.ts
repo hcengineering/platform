@@ -42,6 +42,8 @@ import {
 } from './actions'
 import { createPoll, getPollTitle } from './poll'
 
+export { defualt as communicationPlugin } from './plugin'
+
 export { isActivityMessage } from './activity'
 export * from './stores'
 export { defaultMessageInputActions } from './utils'

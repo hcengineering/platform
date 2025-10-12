@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { EventTimeEditor } from '@hcengineering/calendar-resources'
+  import { WorkSlot } from '@hcengineering/time'
   import {
     ButtonBase,
     ButtonIcon,
-    IconDelete,
-    themeStore,
+    formatDuration,
     Hotkey,
     HotkeyGroup,
+    IconDelete,
+    Label,
     Scroller,
-    formatDuration
+    themeStore
   } from '@hcengineering/ui'
-  import { EventTimeEditor } from '@hcengineering/calendar-resources'
-  import { WorkSlot } from '@hcengineering/time'
   import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
   import { calculateEventsDuration } from '../utils'
-  import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let slots: WorkSlot[] = []
   export let shortcuts: boolean = true

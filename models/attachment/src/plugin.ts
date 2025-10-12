@@ -15,7 +15,7 @@
 
 import type { ActivityMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
-import attachment from '@hcengineering/attachment-resources/src/plugin'
+import { attachmentPlugin as attachment } from '@hcengineering/attachment-resources'
 import type { Ref, Doc } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'

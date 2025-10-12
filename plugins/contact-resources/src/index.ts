@@ -480,3 +480,5 @@ export default async (): Promise<Resources> => ({
     Permissions: permissionsStore
   }
 })
+
+export const contactPlugin = contact

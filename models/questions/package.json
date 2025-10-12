@@ -2,7 +2,6 @@
   "name": "@hcengineering/model-questions",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
@@ -35,7 +34,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@hcengineering/questions": "^0.7.0",
     "@hcengineering/questions-resources": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",

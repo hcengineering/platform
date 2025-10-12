@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import task from '@hcengineering/task'
+import { type Ref, type Status } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { type Ref, type Status } from '@hcengineering/core'
+import task from '@hcengineering/task'
+import { PaletteColorIndexes } from '@hcengineering/ui'
 
-import { TDefaultVacancyTypeData, TApplicantTypeData } from './types'
 import plugin from './plugin'
+import { TApplicantTypeData, TDefaultVacancyTypeData } from './types'
 
 export const defaultApplicantStatuses = [
   {

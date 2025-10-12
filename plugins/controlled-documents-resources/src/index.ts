@@ -87,7 +87,7 @@ import CreateFolder from './components/create-doc/CreateFolder.svelte'
 import TransferDocumentPopup from './components/document/popups/TransferDocumentPopup.svelte'
 import { resolveLocation } from './navigation'
 import documents from './plugin'
-import './styles/_colors.scss'
+// import './styles/_colors.scss'
 import { comment, isCommentVisible } from './text'
 import {
   canChangeDocumentOwner,
@@ -117,6 +117,8 @@ import {
   sortDocumentStates,
   getDocumentMetaTitle
 } from './utils'
+
+export { default as documentsPlugin } from './plugin'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 

@@ -17,7 +17,7 @@
 import { type Ref } from '@hcengineering/core'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { telegramId } from '@hcengineering/telegram'
-import telegram from '@hcengineering/telegram-resources/src/plugin'
+import { telegramPlugin as telegram } from '@hcengineering/telegram-resources'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type TemplateFieldFunc } from '@hcengineering/templates'

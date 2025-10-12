@@ -84,6 +84,7 @@ export { default as CardTimestamp } from './components/CardTimestamp.svelte'
 
 export * from './types'
 export { getCardIconInfo, openCardInSidebar } from './utils'
+export { default as cardPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

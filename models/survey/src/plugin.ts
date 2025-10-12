@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-import survey from '@hcengineering/survey-resources/src/plugin'
+import { surveyPlugin } from '@hcengineering/survey-resources'
 
-export default survey
+export default surveyPlugin

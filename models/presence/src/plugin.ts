@@ -16,7 +16,7 @@
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { presenceId } from '@hcengineering/presence'
-import presence from '@hcengineering/presence-resources/src/plugin'
+import { presencePlugin as presence } from '@hcengineering/presence-resources'
 
 export default mergeIds(presenceId, presence, {
   component: {

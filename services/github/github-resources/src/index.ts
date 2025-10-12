@@ -37,6 +37,7 @@ import TitlePresenter from './components/presenters/TitlePresenter.svelte'
 import GithubIssuePresenter from './components/presenters/GithubIssuePresenter.svelte'
 import IntegrationState from './components/IntegrationState.svelte'
 import github from './plugin'
+export { default as githubPlugin } from './plugin'
 
 async function updateIssue (
   client: TxOperations,

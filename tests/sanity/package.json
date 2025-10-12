@@ -2,7 +2,6 @@
   "name": "@hcengineering/tests-sanity",
   "version": "0.7.0",
   "main": "lib/index.js",
-  "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/default-package",
@@ -29,7 +28,7 @@
     "allure:generate": "allure generate allure-results -o allure-report --clean"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

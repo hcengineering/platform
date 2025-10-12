@@ -19,6 +19,7 @@ import type { Integration } from '@hcengineering/account-client'
 import Configure from './components/Configure.svelte'
 import IconHulyAssistant from './components/icons/HulyAssistant.svelte'
 import { getIntegrationClient } from './utils'
+export { default as aiAssistantPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

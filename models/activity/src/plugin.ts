@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '@hcengineering/activity'
-import activity from '@hcengineering/activity-resources/src/plugin'
+import { activityPlugin as activity } from '@hcengineering/activity-resources'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
 import type { Location } from '@hcengineering/ui/src/types'

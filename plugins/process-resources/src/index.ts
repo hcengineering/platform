@@ -87,6 +87,8 @@ import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
 export * from './query'
 
+export { default as processPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     ContinueExecution: continueExecution

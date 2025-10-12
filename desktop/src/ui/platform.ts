@@ -56,7 +56,7 @@ import { testManagementId } from '@hcengineering/test-management'
 import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
-import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
+import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey, uiId } from '@hcengineering/ui'
 import { mediaId } from '@hcengineering/media'
 import { uploaderId } from '@hcengineering/uploader'
 import recorder, { recorderId } from '@hcengineering/recorder'
@@ -145,7 +145,6 @@ import { ipcMainExposed } from './typesUtils'
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
 import { preferenceId } from '@hcengineering/preference'
-import { uiId } from '@hcengineering/ui/src/plugin'
 
 function configureI18n (): void {
   // Add localization

@@ -73,10 +73,13 @@ import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.s
 import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
 import TaskTypeEditor from './components/taskTypes/TaskTypeEditor.svelte'
 
+export { default as taskPlugin } from './plugin'
+
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
 export * from './utils'
 export { StatePresenter, StateRefPresenter, TaskKindSelector, TypeStatesPopup }
+export { default as TaskTypeIcon } from './components/taskTypes/TaskTypeIcon.svelte'
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const loc = getCurrentLocation()

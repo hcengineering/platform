@@ -24,6 +24,8 @@ import { record } from './recording'
 import RecorderExt from './components/RecorderExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
+export { default as recorderPlugin } from './plugin'
+
 export { ScreenRecorder } from './screen-recorder'
 
 async function uploadHandler ({ onFileUploaded, target }: FileUploadOptions): Promise<void> {

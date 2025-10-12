@@ -30,9 +30,8 @@
     themeStore,
     Toggle
   } from '@hcengineering/ui'
-  import { IconPicker } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
-  import setting from '../plugin'
+  import { IconPicker, viewPlugin as view } from '@hcengineering/view-resources'
+    import setting from '../plugin'
   import { clearSettingsStore } from '../store'
 
   export let attribute: AnyAttribute

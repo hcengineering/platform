@@ -20,14 +20,13 @@
     EventTimeEditor,
     VisibilityEditor,
     isReadOnly
+    , calendarPlugin as calendar
   } from '@hcengineering/calendar-resources'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { DocumentUpdate } from '@hcengineering/core'
+    import { DocumentUpdate } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
-  import { Button, EditBox, Icon, IconClose, createFocusManager } from '@hcengineering/ui'
-  import FocusHandler from '@hcengineering/ui/src/components/FocusHandler.svelte'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
+  import { Button, EditBox, Icon, IconClose, createFocusManager, FocusHandler } from '@hcengineering/ui'
+    import { ToDo, WorkSlot } from '@hcengineering/time'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import TaskSelector from './TaskSelector.svelte'

@@ -25,6 +25,7 @@ export { Presence, PresenceAvatars }
 export * from './presence'
 export * from './typing'
 export * from './types'
+export { default as presencePlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {

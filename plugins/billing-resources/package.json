@@ -1,22 +1,30 @@
 {
   "name": "@hcengineering/billing-resources",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "fonts",
+    "styles"
+  ],
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "compile ui",
+    "build": "compile ui-esbuild",
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
     "_phase:svelte-check": "do-svelte-check",
-    "build:watch": "compile ui",
-    "_phase:build": "compile ui",
+    "build:watch": "compile ui-esbuild",
+    "_phase:build": "compile ui-esbuild",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -51,5 +59,13 @@
     "@hcengineering/love": "^0.7.0",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*": "./lang/*",
+    "./styles/*": "./styles/*"
   }
 }

@@ -52,6 +52,8 @@ import { eventTitleProvider, configureCalDavAccess } from './utils'
 import { type Integration } from '@hcengineering/account-client'
 import { disconnect, disconnectAll } from './api'
 
+export const calendarPlugin = calendar
+
 export {
   EventElement,
   CalendarView,

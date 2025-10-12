@@ -148,7 +148,7 @@ import { setMetadata } from '@hcengineering/platform'
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 
 import { preferenceId } from '@hcengineering/preference'
-import { uiId } from '@hcengineering/ui/src/plugin'
+import { uiId } from '@hcengineering/ui'
 import { configureAnalytics } from './analytics'
 
 export interface Config {

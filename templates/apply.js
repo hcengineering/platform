@@ -191,7 +191,7 @@ function updatePackage(packageRoot, templates) {
   }
 }
 
-const ignoreRoots = ['communication']
+const ignoreRoots = []
 
 function listPackages() {
   const out = spawnSync('rush', ['list', '--json'], { encoding: 'utf8' }).stdout

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Visibility } from '@hcengineering/calendar'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import { calendarPlugin as calendar, VisibilityEditor } from '@hcengineering/calendar-resources'
   import core, { Class, Ref, Space, getCurrentAccount, Markup } from '@hcengineering/core'
   import { SpaceSelector, getClient, createQuery } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
@@ -27,7 +27,6 @@
   import DueDateEditor from './DueDateEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import TodoWorkslots from './TodoWorkslots.svelte'
-  import { VisibilityEditor } from '@hcengineering/calendar-resources'
 
   // export let object: ToDo
   export let _id: Ref<ToDo>

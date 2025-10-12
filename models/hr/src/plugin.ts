@@ -15,7 +15,7 @@
 
 import { type Doc, type Ref } from '@hcengineering/core'
 import { hrId } from '@hcengineering/hr'
-import hr from '@hcengineering/hr-resources/src/plugin'
+import { hrPlugin as hr } from '@hcengineering/hr-resources'
 import { type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'

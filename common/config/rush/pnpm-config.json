@@ -201,8 +201,8 @@
   "globalOverrides": {
     // DEV: Uncomment the lines below to use local huly.core packages
     // Then "rush update --full" to update the dependencies.
+    // "@hcengineering/platform-rig": "file:/../../../huly.utils/packages/platform-rig"
     // NOTE:  It's configured to work if huly.core is placed adjacent to the platform. If you have it in a different location, you need to change the paths below.
-
     // "@hcengineering/account-client": "file:../../../huly.core/packages/account-client",
     // "@hcengineering/analytics": "file:../../../huly.core/packages/analytics",
     // "@hcengineering/analytics-service": "file:../../../huly.core/packages/analytics-service",

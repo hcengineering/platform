@@ -32,6 +32,8 @@ import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAva
 import SharedMessages from './components/SharedMessages.svelte'
 import { getIntegrationClient, disconnect, restart } from './api'
 
+export { default as telegramPlugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
     Chat,

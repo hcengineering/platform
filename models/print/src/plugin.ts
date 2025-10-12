@@ -22,7 +22,7 @@ import { printId } from '@hcengineering/print'
 // Otherwise, TS complains about missing types for resulting merge
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import print from '@hcengineering/print-resources/src/plugin'
+import { printPlugin as print } from '@hcengineering/print-resources'
 
 export default mergeIds(printId, print, {
   action: {

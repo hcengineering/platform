@@ -15,7 +15,7 @@
 
 import type { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import { trainingId } from '@hcengineering/training'
-import training from '@hcengineering/training-resources/src/plugin'
+import { trainingPlugin as training } from '@hcengineering/training-resources'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'

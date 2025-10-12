@@ -35,9 +35,8 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ColorsPopup, statusStore } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
-  import emojiPlugin from '@hcengineering/emoji'
+  import { ColorsPopup, statusStore, viewPlugin as view } from '@hcengineering/view-resources'
+    import emojiPlugin from '@hcengineering/emoji'
   import { taskTypeStore, typeStore } from '../..'
   import task from '../../plugin'
   import ApproveStatusRenamePopup from './ApproveStatusRenamePopup.svelte'

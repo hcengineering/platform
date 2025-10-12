@@ -31,6 +31,7 @@ import MyLeads from './components/MyLeads.svelte'
 import TitlePresenter from './components/TitlePresenter.svelte'
 
 import { getLeadId, getLeadTitle } from './utils'
+export { default as leadPlugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {
