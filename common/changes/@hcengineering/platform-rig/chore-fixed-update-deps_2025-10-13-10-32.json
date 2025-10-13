@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/platform-rig",
+      "comment": "use fixed versions when upgrading hcengineering deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/platform-rig"
+}
