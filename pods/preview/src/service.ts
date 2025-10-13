@@ -54,7 +54,7 @@ export function createPreviewService (
     new DocProvider(storage, tempDir),
     new PdfProvider(storage, tempDir),
     new VideoProvider(storage, tempDir),
-    new OctetStreamProvider(),
+    new OctetStreamProvider(storage, tempDir),
     new FallbackProvider(imageProvider)
   ]
   return new PreviewServiceImpl(storage, cache, tempDir, providers, concurrency)
