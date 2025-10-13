@@ -45,6 +45,7 @@ import {
   SpaceSecurityMiddleware,
   TriggersMiddleware,
   TxMiddleware,
+  TxOrderingMiddleware,
   UserStatusMiddleware
 } from '@hcengineering/middleware'
 import {
@@ -167,6 +168,7 @@ export function createServerPipeline (
           ]
         : []),
       LowLevelMiddleware.create,
+      TxOrderingMiddleware.create(),
       QueryJoinMiddleware.create,
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,
