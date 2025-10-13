@@ -2,6 +2,23 @@
   "name": "@hcengineering/server",
   "entries": [
     {
+      "version": "0.7.3",
+      "tag": "@hcengineering/server_v0.7.3",
+      "date": "Mon, 13 Oct 2025 12:15:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.2` to `0.7.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.2",
       "tag": "@hcengineering/server_v0.7.2",
       "date": "Sat, 11 Oct 2025 18:26:50 GMT",

@@ -28,7 +28,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.4
@@ -38,8 +38,8 @@ importers:
         version: 8.18.3(utf-8-validate@6.0.5)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -92,7 +92,7 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/text':
         specifier: ^0.7.4
@@ -108,8 +108,8 @@ importers:
         version: 13.6.27
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -187,8 +187,8 @@ importers:
         version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -241,15 +241,15 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.4
         version: 0.7.4
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -308,12 +308,12 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -366,15 +366,15 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.4
         version: 0.7.4
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -427,7 +427,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.4
@@ -437,8 +437,8 @@ importers:
         version: 2.2.4
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -494,15 +494,15 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -552,15 +552,15 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       minio:
         specifier: ^8.0.5
         version: 8.0.6
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -610,7 +610,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       bson:
         specifier: ^6.10.3
@@ -620,8 +620,8 @@ importers:
         version: 6.20.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -671,18 +671,18 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/postgres-base':
-        specifier: ^0.7.11
-        version: 0.7.11
+        specifier: ^0.7.12
+        version: 0.7.12
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -741,7 +741,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.4
@@ -751,8 +751,8 @@ importers:
         version: 4.3.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -811,7 +811,7 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.4
@@ -821,8 +821,8 @@ importers:
         version: 6.0.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -875,22 +875,22 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       '@hcengineering/datalake':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../datalake
       '@hcengineering/hulylake':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../hulylake
       '@hcengineering/minio':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../minio
       '@hcengineering/platform':
         specifier: ^0.7.4
         version: 0.7.4
       '@hcengineering/s3':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../s3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.2
+        specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.4
@@ -900,8 +900,8 @@ importers:
         version: 0.7.4
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -951,8 +951,8 @@ importers:
   ../scripts:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.18
+        version: 0.7.18(@babel/core@7.28.4)
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
@@ -1551,15 +1551,15 @@ packages:
   '@hcengineering/measurements@0.7.10':
     resolution: {integrity: sha512-6xsrHorpJkQth4GVtdPoCM5s6USyYtoV9j8tCPhbLUk5yQn+CIvrDZxN60JGBOqvL6hYb6cis2FrAG5NC3HYPw==}
 
-  '@hcengineering/platform-rig@0.7.15':
-    resolution: {integrity: sha512-95h4AwghWSA8+KDJ7Es7/Fquxak/wCoo0Nh9Sg+s9bdpk6j4BLkanv/1cw3WhymtgbBNvSQ5LdzZeWZ/PMIjww==}
+  '@hcengineering/platform-rig@0.7.18':
+    resolution: {integrity: sha512-XCeXtmbvMiHuCN31oV4ofVC3q/aqZ37zLOY+YVS0W+5SPM9rs7I4v7GrI4IYAhD8TM9EMbUwuOdq1mhaez6qeg==}
     hasBin: true
 
   '@hcengineering/platform@0.7.4':
     resolution: {integrity: sha512-IP+L+UHf6L2D7aoBOZoDyibwURmOOfdNJtWAVTWkHeba/RnAiqohq4LgxUJinUlXITaHM+k/YPdbVabFaIqXrA==}
 
-  '@hcengineering/postgres-base@0.7.11':
-    resolution: {integrity: sha512-M+R+5UUtpP7WcOqVw0wPID9noHVcZ6WaybC2a/WmDlNgRKCiLHAVuF/E8uYTYlwl1x2rbsDxLEXSNNAqznZasA==}
+  '@hcengineering/postgres-base@0.7.12':
+    resolution: {integrity: sha512-46RH23C0YLjrvZANX/+SLK0wb7cyqtrxdtXlOVAzRg9UHjy0hHfG+rbgOQ03x7LzBdDQaIKdgRCfydfYkQperA==}
 
   '@hcengineering/query@0.7.5':
     resolution: {integrity: sha512-Ka+7gH63tjxC225Z5Waj8UOG0033sQDpnpfPAxKtp9AkdS/B7KSrkaDr5B8DUBG1EQrda3VeheAVI8t7xpJiCg==}
@@ -2220,6 +2220,9 @@ packages:
   '@types/node@22.18.8':
     resolution: {integrity: sha512-pAZSHMiagDR7cARo/cch1f3rXy0AEXwsVsVH09FcyeJVAzCnGgmYis7P3JidtTUjyadhTeSo8TgRPswstghDaw==}
 
+  '@types/pug@2.0.10':
+    resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
+
   '@types/semver@7.7.1':
     resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
@@ -2620,6 +2623,9 @@ packages:
     resolution: {integrity: sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==}
     engines: {node: '>=0.10'}
 
+  dedent-js@1.0.1:
+    resolution: {integrity: sha512-OUepMozQULMLUmhxS95Vudo0jb0UchLimi3+pQ2plj61Fcy8axbP9hbiD4Sz6DPqn6XG3kfmziVfQ1rSys5AJQ==}
+
   dedent@1.7.0:
     resolution: {integrity: sha512-HGFtf8yhuhGhqO07SV79tRp+br4MnbdjeVxotpn1QBl30pcLLCQjX5b2295ll0fv8RKDKsmWYrl05usHM9CewQ==}
     peerDependencies:
@@ -2642,6 +2648,10 @@ packages:
   define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
     engines: {node: '>= 0.4'}
+
+  detect-indent@6.1.0:
+    resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
+    engines: {node: '>=8'}
 
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
@@ -2724,10 +2734,20 @@ packages:
     resolution: {integrity: sha512-w+5mJ3GuFL+NjVtJlvydShqE1eN3h3PbI7/5LAsYJP/2qtuMXjfL2LpHSRqo4b4eSF5K/DH1JXKUAHSB2UW50g==}
     engines: {node: '>= 0.4'}
 
+  es6-promise@3.3.1:
+    resolution: {integrity: sha512-SOp9Phqvqn7jtEUxPWdWfWoLmyt2VaJ6MpvP9Comy1MceMXqE6bxvaTu4iaxpYYPzhny28Lc+M87/c2cPK6lDg==}
+
   esbuild-plugin-copy@2.1.1:
     resolution: {integrity: sha512-Bk66jpevTcV8KMFzZI1P7MZKZ+uDcrZm2G2egZ2jNIvVnivDpodZI+/KnpL3Jnap0PBdIHU7HwFGB8r+vV5CVw==}
     peerDependencies:
       esbuild: '>= 0.14.0'
+
+  esbuild-svelte@0.8.2:
+    resolution: {integrity: sha512-tG97WrhH/OH8wFCmRBk6sRggMVMPNZDktGx1jJcvh9Obvjwm8M1UYoXmliuLL+4fs/wfyVVwM2fvyNYz2e6UPQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      esbuild: '>=0.9.6'
+      svelte: '>=3.43.0 <6 || ^5.0.0-next.0'
 
   esbuild@0.25.10:
     resolution: {integrity: sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==}
@@ -3563,6 +3583,10 @@ packages:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
 
+  min-indent@1.0.1:
+    resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
+    engines: {node: '>=4'}
+
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
 
@@ -3576,6 +3600,10 @@ packages:
   minio@8.0.6:
     resolution: {integrity: sha512-sOeh2/b/XprRmEtYsnNRFtOqNRTPDvYtMWh+spWlfsuCV/+IdxNeKVUMKLqI7b5Dr07ZqCPuaRGU/rB9pZYVdQ==}
     engines: {node: ^16 || ^18 || >=20}
+
+  mkdirp@0.5.6:
+    resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
+    hasBin: true
 
   mongodb-connection-string-url@3.0.2:
     resolution: {integrity: sha512-rMO7CGo/9BFwyZABcKAWL8UJwH/Kc2x0g72uhDWzG48URRax5TCIcJ7Rc3RZqffZzO/Gwff/jyKwCU9TN8gehA==}
@@ -3919,6 +3947,11 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
+  rimraf@2.7.1:
+    resolution: {integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==}
+    deprecated: Rimraf versions prior to v4 are no longer supported
+    hasBin: true
+
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
@@ -3945,8 +3978,14 @@ packages:
     resolution: {integrity: sha512-x/+Cz4YrimQxQccJf5mKEbIa1NzeCRNI5Ecl/ekmlYaampdNLPalVyIcCZNNH3MvmqBugV5TMYZXv0ljslUlaw==}
     engines: {node: '>= 0.4'}
 
+  sander@0.5.1:
+    resolution: {integrity: sha512-3lVqBir7WuKDHGrKRDn/1Ye3kwpXaDOMsiRP1wd6wpZW56gJhsbp5RqQpA6JG/P+pkXizygnr1dKR8vzWaVsfA==}
+
   sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
+
+  scule@1.3.0:
+    resolution: {integrity: sha512-6FtHJEvt+pVMIB9IBY+IcCJ6Z5f1iQnytgyfKMhDKgmzYG+TeH/wx1y3l27rshSbLiSanrR9ffZDrEsmjlQF2g==}
 
   secure-json-parse@2.7.0:
     resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
@@ -4008,6 +4047,10 @@ packages:
 
   snappyjs@0.7.0:
     resolution: {integrity: sha512-u5iEEXkMe2EInQio6Wv9LWHOQYRDbD2O9hzS27GpT/lwfIQhTCnHCTqedqHIHe9ZcvQo+9au6vngQayipz1NYw==}
+
+  sorcery@0.11.1:
+    resolution: {integrity: sha512-o7npfeJE6wi6J9l0/5LKshFzZ2rMatRiCDwYeDQaOzqdzRJwALhX7mk/A/ecg6wjMu7wdZbmXfD2S/vpOg0bdQ==}
+    hasBin: true
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -4090,6 +4133,10 @@ packages:
     resolution: {integrity: sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==}
     engines: {node: '>=6'}
 
+  strip-indent@3.0.0:
+    resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
+    engines: {node: '>=8'}
+
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
@@ -4111,6 +4158,49 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  svelte-preprocess@5.1.4:
+    resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      '@babel/core': ^7.10.2
+      coffeescript: ^2.5.1
+      less: ^3.11.3 || ^4.0.0
+      postcss: ^7 || ^8
+      postcss-load-config: ^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
+      pug: ^3.0.0
+      sass: ^1.26.8
+      stylus: ^0.55.0
+      sugarss: ^2.0.0 || ^3.0.0 || ^4.0.0
+      svelte: ^3.23.0 || ^4.0.0-next.0 || ^4.0.0 || ^5.0.0-next.0
+      typescript: '>=3.9.5 || ^4.0.0 || ^5.0.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      coffeescript:
+        optional: true
+      less:
+        optional: true
+      postcss:
+        optional: true
+      postcss-load-config:
+        optional: true
+      pug:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      typescript:
+        optional: true
+
+  svelte2tsx@0.7.45:
+    resolution: {integrity: sha512-cSci+mYGygYBHIZLHlm/jYlEc1acjAHqaQaDFHdEBpUueM9kSTnPpvPtSl5VkJOU1qSJ7h1K+6F/LIUYiqC8VA==}
+    peerDependencies:
+      svelte: ^3.55 || ^4.0.0-next.0 || ^4.0 || ^5.0.0-next.0
+      typescript: ^4.9.4 || ^5.0.0
 
   svelte@4.2.20:
     resolution: {integrity: sha512-eeEgGc2DtiUil5ANdtd8vPwt9AgaMdnuUFnPft9F5oMvU/FHu5IHFic+p1dR/UOB7XU2mX2yHW+NcTch4DCh5Q==}
@@ -5272,12 +5362,13 @@ snapshots:
 
   '@hcengineering/measurements@0.7.10': {}
 
-  '@hcengineering/platform-rig@0.7.15':
+  '@hcengineering/platform-rig@0.7.18(@babel/core@7.28.4)':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       esbuild: 0.25.10
       esbuild-plugin-copy: 2.1.1(esbuild@0.25.10)
+      esbuild-svelte: 0.8.2(esbuild@0.25.10)(svelte@4.2.20)
       eslint: 8.57.1
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import: 2.32.0(eslint@8.57.1)
@@ -5286,15 +5377,26 @@ snapshots:
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       svelte: 4.2.20
+      svelte-preprocess: 5.1.4(@babel/core@7.28.4)(svelte@4.2.20)(typescript@5.9.3)
+      svelte2tsx: 0.7.45(svelte@4.2.20)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
       - supports-color
 
   '@hcengineering/platform@0.7.4':
     dependencies:
       intl-messageformat: 10.7.17
 
-  '@hcengineering/postgres-base@0.7.11':
+  '@hcengineering/postgres-base@0.7.12':
     dependencies:
       postgres: 3.4.7
 
@@ -6253,6 +6355,8 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/pug@2.0.10': {}
+
   '@types/semver@7.7.1': {}
 
   '@types/stack-utils@2.0.3': {}
@@ -6729,6 +6833,8 @@ snapshots:
 
   decode-uri-component@0.2.2: {}
 
+  dedent-js@1.0.1: {}
+
   dedent@1.7.0: {}
 
   deep-is@0.1.4: {}
@@ -6746,6 +6852,8 @@ snapshots:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
+
+  detect-indent@6.1.0: {}
 
   detect-libc@2.1.2:
     optional: true
@@ -6870,6 +6978,8 @@ snapshots:
       is-date-object: 1.1.0
       is-symbol: 1.1.1
 
+  es6-promise@3.3.1: {}
+
   esbuild-plugin-copy@2.1.1(esbuild@0.25.10):
     dependencies:
       chalk: 4.1.2
@@ -6877,6 +6987,12 @@ snapshots:
       esbuild: 0.25.10
       fs-extra: 10.1.0
       globby: 11.1.0
+
+  esbuild-svelte@0.8.2(esbuild@0.25.10)(svelte@4.2.20):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      esbuild: 0.25.10
+      svelte: 4.2.20
 
   esbuild@0.25.10:
     optionalDependencies:
@@ -7962,6 +8078,8 @@ snapshots:
 
   mimic-fn@2.1.0: {}
 
+  min-indent@1.0.1: {}
+
   minimatch@3.1.2:
     dependencies:
       brace-expansion: 1.1.12
@@ -7988,6 +8106,10 @@ snapshots:
       through2: 4.0.2
       web-encoding: 1.1.5
       xml2js: 0.6.2
+
+  mkdirp@0.5.6:
+    dependencies:
+      minimist: 1.2.8
 
   mongodb-connection-string-url@3.0.2:
     dependencies:
@@ -8355,6 +8477,10 @@ snapshots:
 
   reusify@1.1.0: {}
 
+  rimraf@2.7.1:
+    dependencies:
+      glob: 7.2.3
+
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
@@ -8386,7 +8512,16 @@ snapshots:
       es-errors: 1.3.0
       is-regex: 1.2.1
 
+  sander@0.5.1:
+    dependencies:
+      es6-promise: 3.3.1
+      graceful-fs: 4.2.11
+      mkdirp: 0.5.6
+      rimraf: 2.7.1
+
   sax@1.4.1: {}
+
+  scule@1.3.0: {}
 
   secure-json-parse@2.7.0: {}
 
@@ -8457,6 +8592,13 @@ snapshots:
   slash@3.0.0: {}
 
   snappyjs@0.7.0: {}
+
+  sorcery@0.11.1:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
+      buffer-crc32: 1.0.0
+      minimist: 1.2.8
+      sander: 0.5.1
 
   source-map-js@1.2.1: {}
 
@@ -8545,6 +8687,10 @@ snapshots:
 
   strip-final-newline@2.0.0: {}
 
+  strip-indent@3.0.0:
+    dependencies:
+      min-indent: 1.0.1
+
   strip-json-comments@3.1.1: {}
 
   strnum@1.1.2: {}
@@ -8560,6 +8706,25 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  svelte-preprocess@5.1.4(@babel/core@7.28.4)(svelte@4.2.20)(typescript@5.9.3):
+    dependencies:
+      '@types/pug': 2.0.10
+      detect-indent: 6.1.0
+      magic-string: 0.30.19
+      sorcery: 0.11.1
+      strip-indent: 3.0.0
+      svelte: 4.2.20
+    optionalDependencies:
+      '@babel/core': 7.28.4
+      typescript: 5.9.3
+
+  svelte2tsx@0.7.45(svelte@4.2.20)(typescript@5.9.3):
+    dependencies:
+      dedent-js: 1.0.1
+      scule: 1.3.0
+      svelte: 4.2.20
+      typescript: 5.9.3
 
   svelte@4.2.20:
     dependencies:

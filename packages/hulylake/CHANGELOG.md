@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/hulylake
 
-This log was last generated on Sat, 11 Oct 2025 18:26:50 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Oct 2025 12:15:35 GMT and should not be manually modified.
+
+## 0.7.4
+Mon, 13 Oct 2025 12:15:35 GMT
+
+### Patches
+
+- update deps
 
 ## 0.7.3
 Sat, 11 Oct 2025 18:26:50 GMT

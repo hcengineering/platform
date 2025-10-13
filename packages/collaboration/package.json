@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/collaboration",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.18",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.6",
-    "@hcengineering/server-core": "workspace:0.7.2",
+    "@hcengineering/server-core": "workspace:0.7.3",
     "@hcengineering/text": "^0.7.4",
     "@hcengineering/text-ydoc": "^0.7.4",
     "base64-js": "^1.5.1",

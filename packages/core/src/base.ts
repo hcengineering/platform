@@ -14,6 +14,8 @@
 //
 
 import {
+  type DomainResult,
+  toFindResult,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -30,10 +32,8 @@ import {
   type SearchResult,
   type SessionData,
   type Timestamp,
-  toFindResult,
   type Tx
 } from '@hcengineering/core'
-import type { DomainResult } from '@hcengineering/core/src/storage'
 import type { Middleware, PipelineContext, TxMiddlewareResult } from './types'
 
 export const emptyFindResult = Promise.resolve(toFindResult([]))
