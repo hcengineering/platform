@@ -46,8 +46,8 @@
 
 {#if currentMeetingMinutes !== undefined}
   <div class="flex-between flex-gap-2">
-    <DocNavLink object={room}>
-      <span class="font-medium-12 secondary-textColor overflow-label">{room?.name}</span>
+    <DocNavLink object={currentMeetingMinutes}>
+      <span class="font-medium secondary-textColor overflow-label">{currentMeetingMinutes?.title}</span>
     </DocNavLink>
 
     <!-- elapsed time from start -->
@@ -57,16 +57,3 @@
     {/if}
   </div>
 {/if}
-
-<div class="flex-between flex-gap-2">
-  <!-- title -->
-  {#if currentMeetingMinutes !== undefined}
-    <DocNavLink object={currentMeetingMinutes}>
-      <span class="font-medium overflow-label">{currentMeetingMinutes.title}</span>
-    </DocNavLink>
-  {:else}
-    <DocNavLink object={room}>
-      <span class="font-medium overflow-label">{room?.name}</span>
-    </DocNavLink>
-  {/if}
-</div>

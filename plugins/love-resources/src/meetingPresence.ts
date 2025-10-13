@@ -5,16 +5,19 @@ import { type Room } from '@hcengineering/love'
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { createPulseClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
+import { type MeetingType } from './types'
 
 const pulsePrefix = 'love/meeting'
 
 export interface MeetingPresence {
   person: Ref<Person>
   meetingId: string
+  meetingType: MeetingType
 }
 
 export interface OngoingMeeting {
   meetingId: string
+  meetingType: MeetingType
   persons: Array<Ref<Person>>
 }
 
@@ -22,7 +25,7 @@ export const ongoingMeetings = writable<OngoingMeeting[]>([])
 
 export const meetingPresenceTtlSeconds: number = 5
 let unsubscribePresenceCallback: UnsubscribeCallback | undefined
-let personsByMeeting: Map<string, Set<Ref<Person>>> | undefined
+let meetingsById: Map<string, { type: MeetingType, personsSet: Set<Ref<Person>> }> | undefined
 let presenceByKey: Map<string, MeetingPresence> | undefined
 
 export async function subscribeMeetingPresence (): Promise<void> {
@@ -31,7 +34,7 @@ export async function subscribeMeetingPresence (): Promise<void> {
 
   const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   unsubscribePresenceCallback = await client.subscribe(`${workspace}/${pulsePrefix}/`, handleMeetingPresenceInfo)
-  personsByMeeting = new Map<Ref<Room>, Set<Ref<Person>>>()
+  meetingsById = new Map<string, { type: MeetingType, personsSet: Set<Ref<Person>> }>()
   presenceByKey = new Map<string, MeetingPresence>()
 }
 
@@ -40,21 +43,21 @@ export async function unsubscribeMeetingPresence (): Promise<void> {
     await unsubscribePresenceCallback()
     unsubscribePresenceCallback = undefined
   }
-  personsByMeeting = undefined
+  meetingsById = undefined
   presenceByKey = undefined
   ongoingMeetings.set([])
 }
 
 function handleMeetingPresenceInfo (key: string, value: MeetingPresence | undefined): void {
-  if (personsByMeeting === undefined || presenceByKey === undefined) return
+  if (meetingsById === undefined || presenceByKey === undefined) return
   let updateStore = false
   if (value !== undefined) {
-    const roomSet = personsByMeeting.get(value.meetingId)
-    if (roomSet === undefined) {
-      personsByMeeting.set(value.meetingId, new Set<Ref<Person>>([value.person]))
+    const meetingInfo = meetingsById.get(value.meetingId)
+    if (meetingInfo === undefined) {
+      meetingsById.set(value.meetingId, { type: value.meetingType, personsSet: new Set<Ref<Person>>([value.person]) })
       updateStore = true
-    } else if (!roomSet.has(value.person)) {
-      roomSet.add(value.person)
+    } else if (!meetingInfo.personsSet.has(value.person)) {
+      meetingInfo.personsSet.add(value.person)
       updateStore = true
     }
     presenceByKey.set(key, value)
@@ -62,28 +65,29 @@ function handleMeetingPresenceInfo (key: string, value: MeetingPresence | undefi
     const presence = presenceByKey.get(key)
     if (presence === undefined) return
     presenceByKey.delete(key)
-    const roomSet = personsByMeeting.get(presence.meetingId)
-    if (roomSet === undefined) return
-    roomSet.delete(presence.person)
+    const meetingInfo = meetingsById.get(presence.meetingId)
+    if (meetingInfo === undefined) return
+    meetingInfo.personsSet.delete(presence.person)
     updateStore = true
-    if (roomSet.size === 0) {
-      personsByMeeting.delete(presence.meetingId)
+    if (meetingInfo.personsSet.size === 0) {
+      meetingsById.delete(presence.meetingId)
       updateStore = true
     }
   }
   if (!updateStore) return
   const newMeetings: OngoingMeeting[] = []
-  personsByMeeting.forEach((participants: Set<Ref<Person>>, meetingId: string) => {
-    const persons = Array.from(participants)
+  meetingsById.forEach((info: { type: MeetingType, personsSet: Set<Ref<Person>> }, meetingId: string) => {
+    const persons = Array.from(info.personsSet)
     newMeetings.push({
       meetingId,
+      meetingType: info.type,
       persons
     })
   })
   ongoingMeetings.set(newMeetings)
 }
 
-export async function updateMyMeetingPresence (room: Ref<Room>): Promise<void> {
+export async function updateMyMeetingPresence (meetingId: string, meetingType: MeetingType): Promise<void> {
   const client = await createPulseClient()
   const person = getCurrentEmployee()
 
@@ -91,8 +95,8 @@ export async function updateMyMeetingPresence (room: Ref<Room>): Promise<void> {
     const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
     try {
       await client.put(
-        `${workspace}/${pulsePrefix}/${room}/${person}`,
-        { person, meetingId: room },
+        `${workspace}/${pulsePrefix}/${meetingId}/${person}`,
+        { person, meetingId, meetingType },
         meetingPresenceTtlSeconds
       )
     } catch (error) {

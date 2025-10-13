@@ -122,7 +122,7 @@
 
   async function updatePresence (): Promise<void> {
     if (presenceRoom === undefined) return
-    await updateMyMeetingPresence(presenceRoom)
+    await updateMyMeetingPresence(presenceRoom, 'room')
   }
 
   $: checkActiveMeeting($lkSessionConnected, $currentMeetingRoom)

@@ -31,12 +31,12 @@
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
   import { joinMeeting, currentMeetingMinutes, currentMeetingRoom } from '../meetings'
-  import { OngoingMeeting, ongoingMeetings } from '../meetingPresence'
+  import { OngoingMeeting } from '../meetingPresence'
   import { rooms } from '../stores'
 
   export let meeting: OngoingMeeting
   $: room = $rooms.find((r) => r._id === meeting.meetingId)
-  $: myRoom = $currentMeetingRoom?._id === meeting.meetingId
+  $: myMeeting = $currentMeetingRoom?._id === meeting.meetingId
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -91,7 +91,7 @@
     </Scroller>
   </div>
   <div class="flex-between gap-2">
-    {#if myRoom && $lkSessionConnected}
+    {#if myMeeting && $lkSessionConnected}
       <div class="flex-between gap-2">
         <MicrophoneButton size="medium" />
         <CameraButton size="medium" />
@@ -99,7 +99,7 @@
       </div>
     {/if}
     <div style="width: auto" />
-    {#if canGoBack(myRoom, $location, $currentMeetingMinutes)}
+    {#if canGoBack(myMeeting, $location, $currentMeetingMinutes)}
       <ModernButton
         icon={IconArrowLeft}
         label={love.string.MeetingMinutes}
@@ -108,8 +108,8 @@
         on:click={back}
       />
     {/if}
-    {#if myRoom}
-      <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
+    {#if myMeeting}
+      <LeaveRoomButton noLabel={false} size="medium" on:leave={() => dispatch('close')} />
     {:else}
       <ModernButton
         icon={love.icon.EnterRoom}
