@@ -347,6 +347,14 @@
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
+    },
+    {
+      "commandKind": "global",
+      "name": "update-deps",
+      "summary": "Update published dependencies",
+      "description": "use to update published dependencies to latest versions",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/node_modules/.bin/update-deps"
     }
   ],
 

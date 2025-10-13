@@ -193,6 +193,7 @@
     "ServiceIsUnavailable": "サービスは利用できません",
     "Integrated": "統合済み",
     "Connected": "接続済み",
+    "Disconnected": "切断済み",
     "Available": "利用可能",
     "NotConnectedIntegration": "アカウント {account} はワークスペースに統合されていません",
     "IntegrationIsUnstable": "統合サービスに問題が発生しています。一部の機能が正しく動作しない可能性があります。",

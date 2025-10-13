@@ -53,7 +53,7 @@
     "@hcengineering/account-client": "^0.7.3",
     "@hcengineering/platform": "^0.7.3",
     "@hcengineering/server-client": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-token": "^0.7.0",
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/client": "^0.7.3",

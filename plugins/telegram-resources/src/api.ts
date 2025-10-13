@@ -55,7 +55,7 @@ const baseUrl = concatLink(url, 'api/integrations')
 
 async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
   const token = getMetadata(presentation.metadata.Token)
-  return await withRetry(async () => await httpRequest({ baseUrl, method, path, token, body }))
+  return await withRetry(async () => await httpRequest({ baseUrl, method, path, token, body }), { maxRetries: 3 })
 }
 
 export async function getState (phone: string): Promise<IntegrationState> {

@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { type Workspace } from '@hcengineering/account'
-import { type HulylakeClient, type JsonPatch } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient, type JsonPatch } from '@hcengineering/hulylake-client'
 import type postgres from 'postgres'
 import {
   generateUuid,
@@ -60,7 +60,7 @@ export async function migrateWorkspaceMessages (
   ws: Workspace,
   card: CardID | undefined,
   db: postgres.Sql,
-  hulylake: HulylakeClient,
+  hulylake: HulylakeWorkspaceClient,
   accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>
 ): Promise<void> {
@@ -72,7 +72,7 @@ async function migrateMessages (
   ws: Workspace,
   card: CardID | undefined,
   db: postgres.Sql,
-  hulylake: HulylakeClient,
+  hulylake: HulylakeWorkspaceClient,
   accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>
 ): Promise<void> {
@@ -105,7 +105,7 @@ async function migrateMessages (
 async function migrateMessagesBatch (
   ctx: MeasureContext,
   cardId: CardID,
-  hulylake: HulylakeClient,
+  hulylake: HulylakeWorkspaceClient,
   accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>,
   messages: OldMessage[]
@@ -161,7 +161,11 @@ async function migrateMessagesBatch (
   }
 }
 
-async function getGroups (ctx: MeasureContext, hulylake: HulylakeClient, cardId: CardID): Promise<MessagesGroup[]> {
+async function getGroups (
+  ctx: MeasureContext,
+  hulylake: HulylakeWorkspaceClient,
+  cardId: CardID
+): Promise<MessagesGroup[]> {
   const res = await hulylake.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, {
     maxRetries: 3,
     isRetryable: () => true,

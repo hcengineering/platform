@@ -34,7 +34,7 @@ import {
 import { type QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { type Event } from '@hcengineering/communication-sdk-types'
-import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
 
 import { WorkspaceIndexer } from './workspace'
 

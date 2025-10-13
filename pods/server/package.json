@@ -61,7 +61,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.7.3",
     "@hcengineering/analytics-service": "^0.7.3",
-    "@hcengineering/communication-server": "^0.7.2",
+    "@hcengineering/communication-server": "^0.7.3",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/core": "^0.7.3",
     "@hcengineering/kafka": "^0.7.0",
@@ -80,7 +80,7 @@
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-pipeline": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-telegram": "^0.7.0",
     "@hcengineering/server-token": "^0.7.0",
     "utf-8-validate": "^6.0.4",

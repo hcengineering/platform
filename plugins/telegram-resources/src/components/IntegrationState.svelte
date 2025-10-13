@@ -15,7 +15,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
   import type { Integration } from '@hcengineering/account-client'
-  import { IntegrationClient, IntegrationUpdatedData, onIntegrationEvent } from '@hcengineering/integration-client'
+  import {
+    IntegrationClient,
+    IntegrationUpdatedData,
+    onIntegrationEvent,
+    isDisabled,
+    isUnauthorizedError
+  } from '@hcengineering/integration-client'
   import { BaseIntegrationState, IntegrationStateRow } from '@hcengineering/setting-resources'
   import { OK, ERROR, Status } from '@hcengineering/platform'
 
@@ -31,6 +37,16 @@
 
   let integrationClient: IntegrationClient | undefined
   const unsubscribers: (() => void)[] = []
+
+  async function handleUnauthorized (): Promise<void> {
+    if (isDisabled(integration)) {
+      return
+    }
+    if (integrationClient === undefined) {
+      integrationClient = await getIntegrationClient()
+    }
+    await integrationClient.setIntegrationEnabled(integration, false)
+  }
 
   onMount(async () => {
     try {
@@ -49,10 +65,13 @@
       isLoading = false
       status = OK
       subscribe()
-    } catch (err) {
+    } catch (err: any) {
       status = ERROR
       isLoading = false
       console.error('Error loading channels:', err)
+      if (isUnauthorizedError(err)) {
+        await handleUnauthorized()
+      }
     }
   })
 
@@ -71,6 +90,7 @@
       data.integration?.socialId === integration.socialId &&
       data.integration?.workspaceUuid === integration.workspaceUuid
     ) {
+      integration = { ...integration, ...data.integration }
       const channelConfig: TelegramChannelData[] = data.newConfig?.channels
       if (channelConfig != null) {
         channels = channels.map((channel) => {
@@ -83,7 +103,8 @@
           }
           return channel
         })
-      } else {
+      }
+      if (channelConfig == null || status?.code === ERROR.code) {
         void refresh()
       }
     }
@@ -91,6 +112,9 @@
 
   async function refresh (): Promise<void> {
     try {
+      if (isDisabled(integration)) {
+        return
+      }
       if (integrationClient === undefined) {
         integrationClient = await getIntegrationClient()
       }
@@ -101,8 +125,13 @@
         ...channel,
         syncEnabled: channel.mode === 'sync'
       }))
+      status = OK
     } catch (err: any) {
       console.error('Error refresh channels:', err.message)
+      status = ERROR
+      if (isUnauthorizedError(err as Error)) {
+        await handleUnauthorized()
+      }
     }
   }
 

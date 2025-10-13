@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@hcengineering/account-client": "^0.7.3",
+    "@hcengineering/analytics": "^0.7.3",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/card": "^0.7.0",

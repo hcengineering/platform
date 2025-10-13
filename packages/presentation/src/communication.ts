@@ -81,7 +81,7 @@ import { addNotification, NotificationSeverity, languageStore } from '@hcenginee
 import { getMetadata, translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import { get } from 'svelte/store'
-import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
 import { v4 as uuid } from 'uuid'
 
 import { getCurrentWorkspaceUuid } from './file'
