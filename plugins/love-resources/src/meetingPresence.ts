@@ -1,7 +1,6 @@
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type Ref } from '@hcengineering/core'
 import { type UnsubscribeCallback } from '@hcengineering/hulypulse-client'
-import { type Room } from '@hcengineering/love'
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { createPulseClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
@@ -105,14 +104,14 @@ export async function updateMyMeetingPresence (meetingId: string, meetingType: M
   }
 }
 
-export async function deleteMyMeetingPresence (room: Ref<Room>): Promise<void> {
+export async function deleteMyMeetingPresence (meetingId: string): Promise<void> {
   const client = await createPulseClient()
   const person = getCurrentEmployee()
 
   if (client !== undefined) {
     const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
     try {
-      await client.delete(`${workspace}/${pulsePrefix}/${room}/${person}`)
+      await client.delete(`${workspace}/${pulsePrefix}/${meetingId}/${person}`)
     } catch (error) {
       console.warn('failed to delete presence info:', error)
     }

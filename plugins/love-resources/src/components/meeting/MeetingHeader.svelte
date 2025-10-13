@@ -1,24 +1,9 @@
 <script lang="ts">
   import { DocNavLink } from '@hcengineering/view-resources'
-  import love, { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
   import { onMount } from 'svelte'
-  import { getClient } from '@hcengineering/presentation'
-  import { SortingOrder } from '@hcengineering/core'
+  import { MeetingMinutes } from '@hcengineering/love'
 
-  export let room: Room | undefined
-
-  const client = getClient()
-  let currentMeetingMinutes: MeetingMinutes | undefined
-
-  $: void client
-    .findOne(
-      love.class.MeetingMinutes,
-      { attachedTo: room?._id, status: MeetingStatus.Active },
-      { sort: { createdOn: SortingOrder.Descending } }
-    )
-    .then((res) => {
-      currentMeetingMinutes = res
-    })
+  export let meetingMinutes: MeetingMinutes | undefined
 
   function formatElapsedTime (elapsed: number): string {
     const seconds = Math.floor(elapsed / 1000)
@@ -44,15 +29,15 @@
   })
 </script>
 
-{#if currentMeetingMinutes !== undefined}
+{#if meetingMinutes !== undefined}
   <div class="flex-between flex-gap-2">
-    <DocNavLink object={currentMeetingMinutes}>
-      <span class="font-medium secondary-textColor overflow-label">{currentMeetingMinutes?.title}</span>
+    <DocNavLink object={meetingMinutes}>
+      <span class="font-medium secondary-textColor overflow-label">{meetingMinutes?.title}</span>
     </DocNavLink>
 
     <!-- elapsed time from start -->
-    {#if currentMeetingMinutes?.createdOn !== undefined}
-      {@const elapsed = now - currentMeetingMinutes.createdOn}
+    {#if meetingMinutes?.createdOn !== undefined}
+      {@const elapsed = now - meetingMinutes.createdOn}
       <div class="font-medium-12 secondary-textColor">{formatElapsedTime(elapsed)}</div>
     {/if}
   </div>

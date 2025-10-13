@@ -10,7 +10,7 @@
 
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
 
-  $: allowCam = $currentMeetingRoom?.type === RoomType.Video
+  $: allowCam = $currentMeetingRoom?.type !== RoomType.Audio
   $: isCamEnabled = $state.camera?.enabled === true
 
   const client = getClient()

@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { Room as TypeRoom } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -22,7 +20,6 @@
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
   export let isDock: boolean = false
-  export let room: Ref<TypeRoom>
 
   const dispatch = createEventDispatcher()
 
@@ -55,7 +52,6 @@
   >
     <div class="videoGrid">
       <ParticipantsListView
-        {room}
         on:participantsCount={(evt) => {
           dispatchFit(evt.detail > 0)
         }}

@@ -1,16 +1,13 @@
 <script lang="ts">
-  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { infos, myInfo, myOffice } from '../stores'
+  import { myInfo, myOffice } from '../stores'
   import { liveKitClient } from '../utils'
   import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { currentMeetingRoom, leaveMeeting } from '../meetings'
-
-  export let limit: number = 4
+  import { currentMeetingMinutes, leaveMeeting } from '../meetings'
 
   const dispatch = createEventDispatcher()
 
@@ -34,46 +31,14 @@
   async function stopShare (): Promise<void> {
     await liveKitClient.setScreenShareEnabled(false)
   }
-
-  $: participants = $infos.filter((p) => p.room === $currentMeetingRoom?._id)
-  $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
 </script>
 
-{#if $lkSessionConnected && $currentMeetingRoom != null}
-  {@const overLimit = participants.length > limit}
-
+{#if $lkSessionConnected && $currentMeetingMinutes != null}
   <div class="m-1 p-2">
     <div class="flex-col flex-grow flex-gap-0-5">
-      <MeetingHeader room={$currentMeetingRoom} />
+      <MeetingHeader meetingMinutes={$currentMeetingMinutes} />
       <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
-        {#if overLimit}
-          <div class="hulyCombineAvatars-container">
-            {#each participants.slice(0, limit) as participant, i (participant._id)}
-              <div
-                class="hulyCombineAvatar x-small"
-                data-over={i === limit - 1 && overLimit ? `+${participants.length - limit + 1}` : undefined}
-              >
-                <Avatar
-                  name={$personByRefStore.get(participant.person)?.name ?? participant.name}
-                  size={'x-small'}
-                  person={$personByRefStore.get(participant.person)}
-                />
-              </div>
-            {/each}
-          </div>
-        {:else}
-          <div class="flex-row-center flex-gap-0-5">
-            {#each participants as participant (participant._id)}
-              <Avatar
-                name={$personByRefStore.get(participant.person)?.name ?? participant.name}
-                size={'x-small'}
-                person={$personByRefStore.get(participant.person)}
-              />
-            {/each}
-          </div>
-        {/if}
-
         <div class="flex-row-center flex-gap-3">
           <!-- Leave Button -->
           {#if allowLeave || leaving}

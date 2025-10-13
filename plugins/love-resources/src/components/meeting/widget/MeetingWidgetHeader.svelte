@@ -30,7 +30,7 @@
   import RecordingButton from '../controls/RecordingButton.svelte'
   import TranscriptionButton from '../controls/TranscriptionButton.svelte'
   import RoomAccessButton from '../controls/RoomAccessButton.svelte'
-  import { currentMeetingRoom } from '../../../meetings'
+  import { currentMeetingMinutes, currentMeetingRoom } from '../../../meetings'
 
   export let doc: MeetingMinutes | undefined = undefined
 
@@ -40,12 +40,12 @@
   $: breadcrumbs = [
     {
       id: 'meeting',
-      title: doc?.title ?? $currentMeetingRoom?.name
+      title: doc?.title
     }
   ]
 
   function maximize (): void {
-    popup = showPopup(RoomModal, { room: $currentMeetingRoom }, 'full-centered')
+    popup = showPopup(RoomModal, {}, 'full-centered')
   }
 
   onDestroy(() => {
@@ -56,10 +56,10 @@
 <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
-    {#if $currentMeetingRoom !== undefined}
+    {#if $currentMeetingMinutes !== undefined}
       <RoomAccessButton room={$currentMeetingRoom} kind="tertiary" size="small" />
-      <RecordingButton room={$currentMeetingRoom} kind="tertiary" size="small" />
-      <TranscriptionButton room={$currentMeetingRoom} kind="tertiary" size="small" />
+      <RecordingButton kind="tertiary" size="small" />
+      <TranscriptionButton kind="tertiary" size="small" />
       <MeetingOptionsButton room={$currentMeetingRoom} kind="tertiary" size="small" />
       <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
     {/if}

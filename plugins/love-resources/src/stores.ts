@@ -2,14 +2,7 @@ import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import { type Ref } from '@hcengineering/core'
-import {
-  type DevicesPreference,
-  type Floor,
-  type MeetingMinutes,
-  type Office,
-  type ParticipantInfo,
-  type Room
-} from '@hcengineering/love'
+import { type DevicesPreference, type Floor, type Office, type ParticipantInfo, type Room } from '@hcengineering/love'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 

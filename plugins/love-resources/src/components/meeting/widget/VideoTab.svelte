@@ -13,16 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MeetingMinutes, Room } from '@hcengineering/love'
-
   import VideoPopup from '../../VideoPopup.svelte'
-
-  export let room: Room
-  export let doc: MeetingMinutes | undefined = undefined
 </script>
 
 <div class="root">
-  <VideoPopup room={room._id} isDock />
+  <VideoPopup isDock />
 </div>
 
 <style lang="scss">

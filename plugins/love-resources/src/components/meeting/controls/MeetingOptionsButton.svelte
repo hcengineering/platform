@@ -8,7 +8,7 @@
   import { Room } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
 
-  export let room: Room
+  export let room: Room | undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
 
@@ -17,9 +17,11 @@
 
   const client = getClient()
 
-  $: void getActions(client, room, love.class.Room).then((res) => {
-    actions = res
-  })
+  $: if (room !== undefined) {
+    void getActions(client, room, love.class.Room).then((res) => {
+      actions = res
+    })
+  }
 
   $: moreItems = actions.map((action) => ({
     id: action._id,
@@ -40,7 +42,7 @@
   }
 </script>
 
-{#if $lkSessionConnected && moreItems.length > 0}
+{#if room !== undefined && $lkSessionConnected && moreItems.length > 0}
   <ButtonMenu
     items={moreItems}
     icon={IconMoreV}

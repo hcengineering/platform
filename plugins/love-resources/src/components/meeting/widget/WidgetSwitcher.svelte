@@ -27,7 +27,7 @@
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'small'
 
-  $: allowCam = $currentMeetingRoom?.type === RoomType.Video
+  $: allowCam = $currentMeetingRoom?.type !== RoomType.Audio
   $: isMicEnabled = $state.microphone?.enabled === true
   $: isCamEnabled = $state.camera?.enabled === true
 </script>

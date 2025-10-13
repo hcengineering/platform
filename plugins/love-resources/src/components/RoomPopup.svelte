@@ -30,18 +30,18 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting, currentMeetingMinutes, currentMeetingRoom } from '../meetings'
+  import { joinMeeting, currentMeetingMinutes } from '../meetings'
   import { OngoingMeeting } from '../meetingPresence'
-  import { rooms } from '../stores'
+  import { getMeetingMinutesRoom } from '../utils'
 
   export let meeting: OngoingMeeting
-  $: room = $rooms.find((r) => r._id === meeting.meetingId)
-  $: myMeeting = $currentMeetingRoom?._id === meeting.meetingId
+  $: myMeeting = $currentMeetingMinutes?._id === meeting.meetingId
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
+    const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
     if (room === undefined) return
     await joinMeeting(room)
     dispatch('close')
@@ -76,7 +76,7 @@
 </script>
 
 <div class="antiPopup room-popup flex-gap-4">
-  <MeetingHeader {room} />
+  <MeetingHeader meetingMinutes={$currentMeetingMinutes} />
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">

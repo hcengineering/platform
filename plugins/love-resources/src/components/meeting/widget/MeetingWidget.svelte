@@ -27,7 +27,7 @@
   import MicrophoneButton from '../controls/MicrophoneButton.svelte'
   import CameraButton from '../controls/CameraButton.svelte'
   import ShareScreenButton from '../controls/ShareScreenButton.svelte'
-  import { currentMeetingRoom, currentMeetingMinutes } from '../../../meetings'
+  import { currentMeetingMinutes } from '../../../meetings'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -40,13 +40,13 @@
   }
 </script>
 
-{#if widgetState !== undefined && $currentMeetingRoom !== undefined}
+{#if widgetState !== undefined && $currentMeetingMinutes !== undefined}
   <div>
     <MeetingWidgetHeader doc={$currentMeetingMinutes} on:close={handleClose} />
   </div>
   <div style="height: 100%; overflow: scroll" bind:clientHeight={contentHeight}>
     {#if widgetState.tab === 'video'}
-      <VideoTab room={$currentMeetingRoom} doc={$currentMeetingMinutes} on:close={handleClose} />
+      <VideoTab on:close={handleClose} />
     {:else if widgetState.tab === 'chat'}
       {#if $currentMeetingMinutes === undefined}
         <Loading />
@@ -65,7 +65,6 @@
       {:else}
         <TranscriptionTab
           meetingMinutes={$currentMeetingMinutes}
-          room={$currentMeetingRoom}
           {widgetState}
           height={contentHeight + 'px'}
           {width}
@@ -91,7 +90,7 @@
       <ShareScreenButton />
     </svelte:fragment>
     <svelte:fragment slot="right">
-      <LeaveRoomButton room={$currentMeetingRoom} noLabel={true} />
+      <LeaveRoomButton noLabel={true} />
     </svelte:fragment>
   </ControlBarContainer>
 {/if}

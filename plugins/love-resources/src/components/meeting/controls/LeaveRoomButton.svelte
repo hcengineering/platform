@@ -1,16 +1,15 @@
 <script lang="ts">
   import love from '../../../plugin'
   import { ModernButton } from '@hcengineering/ui'
-  import { myInfo, myOffice } from '../../../stores'
-  import { isOffice } from '@hcengineering/love'
+  import { myOffice } from '../../../stores'
   import { createEventDispatcher } from 'svelte'
-  import { currentMeetingRoom, leaveMeeting } from '../../../meetings'
+  import { currentMeetingMinutes, leaveMeeting } from '../../../meetings'
 
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
   export let noLabel: boolean = false
 
   const dispatch = createEventDispatcher()
-  $: isMyOffice = $currentMeetingRoom !== undefined && isOffice($currentMeetingRoom) && $myInfo?.room === $myOffice?._id
+  $: isMyOffice = $currentMeetingMinutes?.attachedTo === $myOffice?._id
 
   async function leave (): Promise<void> {
     await leaveMeeting()

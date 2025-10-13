@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { EditBox, ModernButton } from '@hcengineering/ui'
-  import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
+  import { MeetingMinutes, Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
 
@@ -22,7 +22,7 @@
   import { getRoomName } from '../utils'
   import { infos, myOffice } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
-  import { createMeeting, currentMeetingRoom, joinMeeting } from '../meetings'
+  import { createMeeting, currentMeetingMinutes, joinMeeting } from '../meetings'
 
   export let object: Room
 
@@ -49,7 +49,7 @@
     }
   }
 
-  $: connecting = tryConnecting || ($currentMeetingRoom?._id === object._id && !$lkSessionConnected)
+  $: connecting = tryConnecting || ($currentMeetingMinutes?.attachedTo === object._id && !$lkSessionConnected)
 
   let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
     ? love.string.JoinMeeting
@@ -67,7 +67,7 @@
     isConnected: boolean,
     info: ParticipantInfo[],
     myOffice?: Room,
-    currentRoom?: Room
+    currentMeetingMinutes?: MeetingMinutes
   ): boolean {
     if (isOffice(object)) {
       // Do not show connect button in own office
@@ -84,7 +84,7 @@
     // Show during connecting with spinner
     if (connecting) return true
     // Do not show connect button if we are already connected to the room
-    if (isConnected && currentRoom?._id === object._id) return false
+    if (isConnected && currentMeetingMinutes?.attachedTo === object._id) return false
 
     return true
   }
@@ -95,7 +95,7 @@
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
-    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $currentMeetingRoom)}
+    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $currentMeetingMinutes)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>

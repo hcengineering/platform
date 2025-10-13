@@ -18,16 +18,16 @@
   import { Modal } from '@hcengineering/ui'
 
   import RoomComponent from './Room.svelte'
-  import { currentMeetingRoom } from '../meetings'
+  import { currentMeetingMinutes } from '../meetings'
 
   const dispatch = createEventDispatcher()
 
-  $: if ($currentMeetingRoom === undefined) {
+  $: if ($currentMeetingMinutes === undefined) {
     dispatch('close')
   }
 </script>
 
-{#if $currentMeetingRoom !== undefined}
+{#if $currentMeetingMinutes !== undefined}
   <Modal
     type="type-popup"
     okLabel={presentation.string.Create}
@@ -36,8 +36,8 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="title">
-      {$currentMeetingRoom.name}
+      {$currentMeetingMinutes.title}
     </svelte:fragment>
-    <RoomComponent room={$currentMeetingRoom} canMaximize={false} />
+    <RoomComponent canMaximize={false} />
   </Modal>
 {/if}

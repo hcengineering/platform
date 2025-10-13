@@ -208,7 +208,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
     room?.startWithTranscription === true
   ) {
-    await startTranscription(room)
+    await startTranscription()
   }
 
   if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true && !get(isRecording)) {
@@ -240,8 +240,16 @@ export function closeMeetingMinutes (): void {
   currentMeetingMinutes.set(undefined)
 }
 
+export async function getMeetingMinutesRoom (meetingId: Ref<MeetingMinutes>): Promise<Room | undefined> {
+  const minutes = await getClient().findOne(love.class.MeetingMinutes, {
+    _id: meetingId
+  })
+  if (minutes === undefined) return undefined
+  return get(rooms).find((r) => r._id === minutes.attachedTo)
+}
+
 export async function getMeetingName (meeting: OngoingMeeting): Promise<string> {
-  const room = get(rooms).find((r) => r._id === meeting.meetingId)
+  const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
   if (room === undefined) return ''
   return await getRoomName(room)
 }
@@ -378,18 +386,22 @@ export function getPlatformToken (): string {
   return token
 }
 
-export async function startTranscription (room: Room): Promise<void> {
-  const current = get(currentMeetingRoom)
-  if (current === undefined || room._id !== current._id) return
-
+export async function startTranscription (): Promise<void> {
+  const room = get(currentMeetingRoom)
+  if (room === undefined) return
   await connectMeeting(room._id, room.language, { transcription: true })
 }
 
-export async function stopTranscription (room: Room): Promise<void> {
-  const current = get(currentMeetingRoom)
-  if (current === undefined || room._id !== current._id) return
+export async function stopTranscription (): Promise<void> {
+  const current = get(currentMeetingMinutes)
+  if (current === undefined) return
+  await disconnectMeeting(current.attachedTo as Ref<Room>)
+}
 
-  await disconnectMeeting(room._id)
+export async function toggleRecording (): Promise<void> {
+  const room = get(currentMeetingRoom)
+  if (room === undefined) return
+  await loveClient.record(room)
 }
 
 export async function showRoomSettings (room?: Room): Promise<void> {
@@ -416,7 +428,6 @@ async function getRoomGuestLink (room: Room): Promise<string> {
     const accountsUrl = getMetadata(login.metadata.AccountsUrl)
     const token = getMetadata(presentation.metadata.Token)
 
-    console.log('Create link')
     const accountClient = getAccountClientRaw(accountsUrl, token)
     return await accountClient.createAccessLink(AccountRole.Guest, {
       navigateUrl: encodeURIComponent(JSON.stringify(navigateUrl))
@@ -430,8 +441,7 @@ export function isTranscriptionAllowed (): boolean {
   return url !== ''
 }
 
-export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boolean): void {
-  console.log('show widget')
+export function createMeetingWidget (widget: Widget, video: boolean): void {
   const tabs: WidgetTab[] = [
     ...(video
       ? [
@@ -456,14 +466,7 @@ export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boo
       readonly: true
     }
   ]
-  openWidget(
-    widget,
-    {
-      room
-    },
-    { active: true, openedByUser: false },
-    tabs
-  )
+  openWidget(widget, {}, { active: true, openedByUser: false }, tabs)
 }
 
 export function createMeetingVideoWidgetTab (widget: Widget): void {

@@ -17,15 +17,18 @@ import {
   loveClient,
   navigateToOfficeDoc
 } from './utils'
-import { get, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 import { infos, myInfo, myOffice, rooms } from './stores'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
 
-export const currentMeetingRoom = writable<Room | undefined>(undefined)
 export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
+
+export const currentMeetingRoom = derived([rooms, currentMeetingMinutes], ([rooms, currentMeetingMinutes]) => {
+  return rooms.find((r) => r._id === currentMeetingMinutes?.attachedTo)
+})
 
 const meetingQuery = createQuery(true)
 
@@ -81,7 +84,7 @@ export async function leaveMeeting (): Promise<void> {
   await liveKitClient.disconnect()
   await unsubscribeJoinRequests()
   closeMeetingMinutes()
-  currentMeetingRoom.set(undefined)
+  currentMeetingMinutes.set(undefined)
 }
 
 export async function joinMeeting (room: Room): Promise<void> {
@@ -97,7 +100,7 @@ export async function joinMeeting (room: Room): Promise<void> {
 }
 
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
-  if (get(currentMeetingRoom)?._id === roomId) return
+  if (get(currentMeetingMinutes)?.attachedTo === roomId) return
 
   const client = getClient()
   const room = getRoomById(roomId)
@@ -127,13 +130,11 @@ export async function kick (person: Ref<Person>): Promise<void> {
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-  if (get(currentMeetingRoom)?._id === room._id) return
+  if (get(currentMeetingMinutes)?.attachedTo === room._id) return
 
-  if (currentMeetingRoom !== undefined) {
+  if (currentMeetingMinutes !== undefined) {
     await leaveMeeting()
   }
-
-  currentMeetingRoom.set(room)
 
   await navigateToOfficeDoc(room)
   await moveToMeetingRoom(room)
