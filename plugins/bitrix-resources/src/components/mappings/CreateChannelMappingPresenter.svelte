@@ -20,7 +20,7 @@
       />
       ->
       {#if mapping.bitrixFields}
-        {p.field ? mapping.bitrixFields[p.field]?.formLabel ?? mapping.bitrixFields[p.field]?.title : p.field ?? ''}
+        {p.field ? (mapping.bitrixFields[p.field]?.formLabel ?? mapping.bitrixFields[p.field]?.title) : (p.field ?? '')}
         {#if p.include !== undefined && p.include !== ''}
           /{p.include}/gi
         {/if}

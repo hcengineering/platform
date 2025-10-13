@@ -105,7 +105,7 @@ async function sendJson (
   const contentEncodings: string[] =
     typeof req.headers['accept-encoding'] === 'string'
       ? req.headers['accept-encoding'].split(',').map((it) => it.trim())
-      : req.headers['accept-encoding'] ?? []
+      : (req.headers['accept-encoding'] ?? [])
   for (const contentEncoding of contentEncodings) {
     let done = false
     switch (contentEncoding) {
@@ -175,7 +175,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         if (!('session' in s)) {
           sendError(res, 403, {
             message: 'Failed to create session',
-            mode: 'specialError' in s ? s.specialError ?? '' : 'upgrading'
+            mode: 'specialError' in s ? (s.specialError ?? '') : 'upgrading'
           })
           return
         }

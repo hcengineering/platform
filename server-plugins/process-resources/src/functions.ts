@@ -19,6 +19,7 @@ import core, {
   checkMixinKey,
   Data,
   Doc,
+  findProperty,
   generateId,
   getObjectValue,
   matchQuery,
@@ -43,6 +44,15 @@ import process, {
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 
+function checkResult (execution: Execution, results: Record<string, any> | undefined): boolean {
+  if (results === undefined) return true
+  for (const [key, value] of Object.entries(results)) {
+    const res = findProperty([execution.context as any], key, value)
+    if (res.length === 0) return false
+  }
+  return true
+}
+
 export async function CheckToDoDone (
   control: ProcessControl,
   execution: Execution,
@@ -51,11 +61,12 @@ export async function CheckToDoDone (
 ): Promise<boolean> {
   if (params._id === undefined) return false
   if (context.todo !== undefined) {
-    return context.todo._id === params._id
+    const matched = context.todo._id === params._id
+    return matched && checkResult(execution, params.result)
   } else {
     const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id })
     if (todo === undefined) return false
-    return todo.doneOn !== null
+    return todo.doneOn !== null && checkResult(execution, params.result)
   }
 }
 

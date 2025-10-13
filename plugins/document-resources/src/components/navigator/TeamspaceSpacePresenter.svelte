@@ -264,7 +264,7 @@
 
   <TreeNode
     _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model.icon)}
     iconProps={space?.icon === view.ids.IconWithEmoji
       ? { icon: space.color }
       : {
@@ -308,7 +308,7 @@
         {@const item = visibleItem}
         <DocTreeElement
           doc={item}
-          icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : item.icon ?? document.icon.Document}
+          icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : (item.icon ?? document.icon.Document)}
           iconProps={item.icon === view.ids.IconWithEmoji
             ? { icon: visibleItem.color }
             : {

@@ -350,7 +350,7 @@
             size={'x-large'}
             kind={'ghost'}
             noFocus
-            icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : doc.icon ?? document.icon.Document}
+            icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : (doc.icon ?? document.icon.Document)}
             iconProps={doc.icon === view.ids.IconWithEmoji
               ? { icon: doc.color, size: 'large' }
               : {

@@ -87,7 +87,7 @@
       const ids = ctx.map(({ objectId }) => objectId)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
-        limit: isSpace ? -1 : model.maxSectionItems ?? 5
+        limit: isSpace ? -1 : (model.maxSectionItems ?? 5)
       }
 
       objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })

@@ -56,7 +56,7 @@
   {@const prjdoc = bundle?.ProjectDocument[0]}
   {@const doc = bundle?.ControlledDocument[0]}
   {@const meta = bundle?.DocumentMeta[0]}
-  {@const title = doc ? getDocumentName(doc) : meta?.title ?? ''}
+  {@const title = doc ? getDocumentName(doc) : (meta?.title ?? '')}
   {@const docid = doc?._id ?? prjdoc?._id}
   {@const isFolder = prjdoc?.document === documents.ids.Folder}
   {@const children = tree.childrenOf(metaid)}

@@ -87,7 +87,7 @@
   $: color = getPlatformColorDef(
     projectState?.color !== undefined && typeof projectState?.color !== 'string'
       ? projectState?.color
-      : category?.color ?? getColorNumberByText(value?.name ?? ''),
+      : (category?.color ?? getColorNumberByText(value?.name ?? '')),
     $themeStore.dark
   )
   $: void updateCategory(value)

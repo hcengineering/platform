@@ -66,7 +66,7 @@ export class PushHandler {
     const tokens = getUserByEmail(email)
     this.ctx.info('push', { email, mode, calendarId, tokens: tokens.length })
     for (const token of tokens) {
-      await this.sync(token, mode === 'events' ? calendarId ?? null : null)
+      await this.sync(token, mode === 'events' ? (calendarId ?? null) : null)
     }
   }
 }

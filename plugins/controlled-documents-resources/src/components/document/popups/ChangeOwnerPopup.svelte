@@ -62,7 +62,7 @@
   $: members = space?.members ?? []
   $: employees = members.map((m) => $employeeRefByAccountUuidStore.get(m) as Ref<Employee>).filter(notEmpty)
 
-  $: docQuery = space?.private ?? false ? { active: true, _id: { $in: employees } } : { active: true }
+  $: docQuery = (space?.private ?? false) ? { active: true, _id: { $in: employees } } : { active: true }
 </script>
 
 {#if object}

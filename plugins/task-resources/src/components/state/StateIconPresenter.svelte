@@ -58,7 +58,7 @@
     if (type === undefined) return state
     const statusColor = type?.statuses?.find((p) => p._id === state._id)?.color
     const targetColor =
-      statusColor === undefined || typeof statusColor !== 'string' ? statusColor : state.color ?? category?.color
+      statusColor === undefined || typeof statusColor !== 'string' ? statusColor : (state.color ?? category?.color)
     if (targetColor === undefined) return state
     return {
       ...state,

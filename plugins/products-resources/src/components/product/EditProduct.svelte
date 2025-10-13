@@ -102,18 +102,18 @@
   $: descriptionKey = client.getHierarchy().getAttribute(products.class.Product, 'fullDescription')
   $: otherSpaceTypesMixins = new Set(
     object !== undefined
-      ? client
-        .getModel()
-        .findAllSync(
-          core.class.SpaceType,
-          {
-            _id: { $ne: object.type }
-          },
-          {
-            projection: { targetClass: 1 }
-          }
-        )
-        ?.map((st) => st.targetClass) ?? []
+      ? (client
+          .getModel()
+          .findAllSync(
+            core.class.SpaceType,
+            {
+              _id: { $ne: object.type }
+            },
+            {
+              projection: { targetClass: 1 }
+            }
+          )
+          ?.map((st) => st.targetClass) ?? [])
       : []
   )
   $: mixins =
@@ -139,7 +139,7 @@
           size={'medium'}
           kind={'link-bordered'}
           noFocus
-          icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : object.icon ?? products.icon.Product}
+          icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : (object.icon ?? products.icon.Product)}
           iconProps={object.icon === view.ids.IconWithEmoji
             ? { icon: object.color }
             : {

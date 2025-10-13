@@ -205,7 +205,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         trigger: 'manual',
         placement: viewOptions?.placement,
         hideOnClick: 'toggle',
-        appendTo: viewOptions?.floating !== true ? options.popupContainer ?? document.body : document.body,
+        appendTo: viewOptions?.floating !== true ? (options.popupContainer ?? document.body) : document.body,
         zIndex: 10001,
         offset: viewOptions?.offset,
         popperOptions: {
@@ -250,7 +250,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         const newRect =
           currCursor.anchor !== undefined
             ? currCursor.anchor.getBoundingClientRect()
-            : getReferenceRectFromNodes(view, nodes) ?? getReferenceRectFromRange(view, from, to)
+            : (getReferenceRectFromNodes(view, nodes) ?? getReferenceRectFromRange(view, from, to))
 
         rect = newRect
         return newRect

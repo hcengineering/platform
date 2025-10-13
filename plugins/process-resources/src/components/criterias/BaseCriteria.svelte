@@ -54,9 +54,9 @@
     width={'100%'}
     on:selected={(e) => {
       mode = e.detail
-      const prevEditor = selectedMode.editor ?? selectedMode.withoutEditor ? null : undefined
+      const prevEditor = (selectedMode.editor ?? selectedMode.withoutEditor) ? null : undefined
       selectedMode = modesValues.find((m) => m.id === mode) ?? modesValues[0]
-      const newEditor = selectedMode.editor ?? selectedMode.withoutEditor ? null : undefined
+      const newEditor = (selectedMode.editor ?? selectedMode.withoutEditor) ? null : undefined
       if (prevEditor !== newEditor) {
         val = undefined
       }

@@ -73,7 +73,7 @@
   highlighted={selected}
   orientation="vertical"
   kind={tab.isPinned ? 'secondary' : 'primary'}
-  icon={clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? cardPlugin.icon.Card}
+  icon={clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (clazz?.icon ?? cardPlugin.icon.Card)}
   iconProps={clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color, size: 'small' } : {}}
   canClose={!tab.isPinned}
   maxSize="13.5rem"

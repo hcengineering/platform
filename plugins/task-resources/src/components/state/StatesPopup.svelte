@@ -25,10 +25,10 @@
   export let space: Ref<Project>
 
   $: states = type
-    ? ($typeStore
+    ? (($typeStore
         .get(type._id)
         ?.statuses?.map((p) => $statusStore.byId.get(p._id))
-        .filter((p) => p !== undefined) as Status[]) ?? []
+        .filter((p) => p !== undefined) as Status[]) ?? [])
     : []
   const dispatch = createEventDispatcher()
 

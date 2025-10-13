@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.10",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@hcengineering/platform-rig": "^0.7.15",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
@@ -46,10 +46,10 @@
     "esbuild": "^0.25.9",
     "@types/minio": "~7.0.11",
     "@types/node": "^22.15.29",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.8.3",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
     "@types/ws": "^8.5.11",
     "@types/mime-types": "~2.1.1",
     "@types/request": "~2.48.8",
@@ -183,6 +183,6 @@
     "@hcengineering/api-client": "^0.7.3",
     "@faker-js/faker": "^8.4.1",
     "@hcengineering/hulylake-client": "^0.7.3",
-    "@hcengineering/communication-types": "^0.7.0"
+    "@hcengineering/communication-types": "^0.7.2"
   }
 }
