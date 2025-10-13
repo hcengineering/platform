@@ -45,7 +45,7 @@
     "otp-generator": "^4.0.1",
     "@hcengineering/server-token": "^0.7.0",
     "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-core": "^0.7.0",
     "@hcengineering/server-pipeline": "^0.7.0"
   }

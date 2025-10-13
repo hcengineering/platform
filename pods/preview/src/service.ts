@@ -23,6 +23,7 @@ import { TemporaryDir } from './tempdir'
 import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from './types'
 import { transformImage } from './utils/sharp'
 import { SingleFlight } from './singleflight'
+import { OctetStreamProvider } from './providers/octet'
 
 export interface ThumbnailParams {
   fit: 'cover' | 'contain'
@@ -53,6 +54,7 @@ export function createPreviewService (
     new DocProvider(storage, tempDir),
     new PdfProvider(storage, tempDir),
     new VideoProvider(storage, tempDir),
+    new OctetStreamProvider(),
     new FallbackProvider(imageProvider)
   ]
   return new PreviewServiceImpl(storage, cache, tempDir, providers, concurrency)
@@ -112,7 +114,10 @@ class PreviewServiceImpl implements PreviewService {
         })
 
         const thumbPath = this.tempDir.tmpFile()
-        const { contentType } = await transformImage(image.filePath, thumbPath, params)
+        const { contentType } = await ctx.with('transformImage', { format: params.format }, () =>
+          transformImage(image.filePath, thumbPath, params)
+        )
+
         return {
           filePath: thumbPath,
           mimeType: contentType

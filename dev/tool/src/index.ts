@@ -56,7 +56,7 @@ import {
   type Account as OldAccount,
   type Workspace as OldWorkspace
 } from '@hcengineering/account-service'
-import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
 import {
   getDBClient,
   createPostgreeDestroyAdapter,

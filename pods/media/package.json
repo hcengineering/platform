@@ -60,12 +60,12 @@
     "@hcengineering/api-client": "^0.7.3",
     "@hcengineering/server-client": "^0.7.0",
     "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.0",
+    "@hcengineering/server-storage": "^0.7.1",
     "@hcengineering/server-token": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.2",
-    "@hcengineering/communication-sdk-types": "^0.7.2",
+    "@hcengineering/communication-types": "^0.7.3",
+    "@hcengineering/communication-sdk-types": "^0.7.3",
     "dotenv": "~16.0.0",
     "kafkajs": "^2.2.4"
   }
