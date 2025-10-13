@@ -168,7 +168,7 @@
 
   function isChunterChannel (_class: Ref<Class<Doc>>, urlObjectClass?: Ref<Class<Doc>>): boolean {
     const isActivityMessageContext = hierarchy.isDerived(_class, activity.class.ActivityMessage)
-    const chunterClass = isActivityMessageContext ? urlObjectClass ?? _class : _class
+    const chunterClass = isActivityMessageContext ? (urlObjectClass ?? _class) : _class
     return hierarchy.isDerived(chunterClass, chunter.class.ChunterSpace)
   }
 

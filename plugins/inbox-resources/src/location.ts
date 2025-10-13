@@ -184,10 +184,10 @@ export async function selectInboxContext (
       : undefined
     const reactedTo = await client.findOne(activity.class.ActivityMessage, { _id: notification.attachedTo })
     const isThread = reactedTo != null && hierarchy.isDerived(reactedTo._class, chunter.class.ThreadMessage)
-    const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : reactedTo?.attachedTo ?? objectId
+    const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : (reactedTo?.attachedTo ?? objectId)
     const channelClass = isThread
       ? (reactedTo as ThreadMessage)?.objectClass
-      : reactedTo?.attachedToClass ?? objectClass
+      : (reactedTo?.attachedToClass ?? objectClass)
 
     void navigateToInboxDoc(
       context._id,
