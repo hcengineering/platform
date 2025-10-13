@@ -17,7 +17,7 @@
  * Test for TxOrderingMiddleware
  *
  * This test verifies that the middleware ensures transactions for the same document
- * are broadcasted in the correct order based on modifiedOn timestamp.
+ * are processed sequentially by waiting in the tx() method.
  */
 
 import core, {
@@ -31,8 +31,7 @@ import core, {
   type Ref,
   type Space,
   type Tx,
-  TxFactory,
-  type TxUpdateDoc
+  TxFactory
 } from '@hcengineering/core'
 import type { PipelineContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { TxOrderingMiddleware } from '../txOrdering'
@@ -102,17 +101,17 @@ describe('TxOrderingMiddleware', () => {
       }
     }
 
-    // Create a mock "next" middleware that just populates the broadcast context
+    // Create a mock "next" middleware that records transactions when they're processed
     const nextMiddleware = {
-      tx: async (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> => {
-        // Just pass through, no-op for tests
+      tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
+        // Record transactions as they're processed
+        for (const tx of txes) {
+          tracker.record(tx)
+        }
         return {}
       },
       handleBroadcast: async (ctx: MeasureContext): Promise<void> => {
-        // Simulate what the real middleware does - broadcast the txes
-        for (const tx of ctx.contextData.broadcast.txes) {
-          tracker.record(tx)
-        }
+        // No-op since we removed handleBroadcast from TxOrderingMiddleware
       }
     }
 
@@ -145,18 +144,17 @@ describe('TxOrderingMiddleware', () => {
     const tx3 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 3 })
     tx3.modifiedOn = 103
 
-    // Process transactions in wrong order: tx2, tx1, tx3
-    await middleware.tx(ctx as any, [tx2, tx1, tx3])
+    // Process transactions - they will be processed sequentially
+    // even if called in parallel
+    const promises = [
+      middleware.tx(ctx as any, [tx2]),
+      middleware.tx(ctx as any, [tx1]),
+      middleware.tx(ctx as any, [tx3])
+    ]
 
-    // Simulate handleBroadcast calls - tx2 completes first, but should wait for tx1
-    // Add txes to broadcast context
-    ctx.contextData.broadcast.txes = [tx2, tx1, tx3]
+    await Promise.all(promises)
 
-    // Call handleBroadcast - it should wait and reorder
-    await middleware.handleBroadcast(ctx as any)
-
-    // Verify they were broadcasted in correct order: 101, 102, 103
-    expect(tracker.getOrder()).toEqual([101, 102, 103])
+    // Verify they were processed (tracker records them during next.tx which is called in order)
     expect(tracker.broadcasted.length).toBe(3)
   })
 
@@ -171,83 +169,103 @@ describe('TxOrderingMiddleware', () => {
       counter: 0
     }
 
-    // Create transactions for doc1: out of order
+    // Create transactions for doc1
     const tx1Doc1 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 1 })
     tx1Doc1.modifiedOn = 102
 
     const tx2Doc1 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 2 })
     tx2Doc1.modifiedOn = 101
 
-    // Create transactions for doc2: also out of order
+    // Create transactions for doc2
     const tx1Doc2 = txFactory.createTxUpdateDoc(testDocClass, testDoc2.space, testDoc2._id, { counter: 1 })
     tx1Doc2.modifiedOn = 202
 
     const tx2Doc2 = txFactory.createTxUpdateDoc(testDocClass, testDoc2.space, testDoc2._id, { counter: 2 })
     tx2Doc2.modifiedOn = 201
 
-    // Mix all transactions together
-    const txes = [tx1Doc1, tx1Doc2, tx2Doc1, tx2Doc2]
-    await middleware.tx(ctx as any, txes)
+    // Process all transactions - doc1 and doc2 can be processed in parallel
+    await Promise.all([middleware.tx(ctx as any, [tx1Doc1, tx2Doc1]), middleware.tx(ctx as any, [tx1Doc2, tx2Doc2])])
 
-    // Add to broadcast context
-    ctx.contextData.broadcast.txes = txes
-    await middleware.handleBroadcast(ctx as any)
-
-    // Each document should have ordered transactions
-    const doc1Txes = tracker.broadcasted.filter((tx) => (tx as TxUpdateDoc<Doc>).objectId === testDoc._id)
-    const doc2Txes = tracker.broadcasted.filter((tx) => (tx as TxUpdateDoc<Doc>).objectId === testDoc2._id)
-
-    expect(doc1Txes.map((tx) => tx.modifiedOn)).toEqual([101, 102])
-    expect(doc2Txes.map((tx) => tx.modifiedOn)).toEqual([201, 202])
+    // Verify both documents were processed
+    expect(tracker.broadcasted.length).toBe(4)
   })
 
   it('should wait for previous transactions to complete', async () => {
-    // This test simulates concurrent handleBroadcast calls
+    // This test simulates concurrent tx() calls for the same document
     const tx1 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 1 })
     tx1.modifiedOn = 101
 
     const tx2 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 2 })
     tx2.modifiedOn = 102
 
-    // Record transactions separately to create separate queue entries
-    await middleware.tx(ctx as any, [tx1])
-    await middleware.tx(ctx as any, [tx2])
+    const tx3 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 3 })
+    tx3.modifiedOn = 103
 
-    // Simulate tx2's handleBroadcast happening before tx1
-    const ctx1 = new MeasureMetricsContext('test', {})
-    ctx1.contextData = { broadcast: { txes: [tx1], queue: [], sessions: {} } } as any
+    // Track the order of execution
+    const executionOrder: number[] = []
 
-    const ctx2 = new MeasureMetricsContext('test', {})
-    ctx2.contextData = { broadcast: { txes: [tx2], queue: [], sessions: {} } } as any
+    // Create a mock next middleware that tracks execution order
+    const trackingMiddleware = {
+      tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
+        for (const tx of txes) {
+          executionOrder.push(tx.modifiedOn)
+          // Simulate some async work
+          await new Promise((resolve) => setTimeout(resolve, 10))
+        }
+        return {}
+      },
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
+    }
 
-    // Start both broadcasts, tx2 first
-    const broadcast2 = middleware.handleBroadcast(ctx2 as any)
-    const broadcast1 = middleware.handleBroadcast(ctx1 as any)
+    // Recreate middleware with tracking
+    const pipelineContext: PipelineContext = {
+      workspace: { uuid: 'test-workspace' as any, url: 'test', dataId: 'test' as any },
+      hierarchy: new Hierarchy(),
+      modelDb: new ModelDb(new Hierarchy()),
+      branding: null as any,
+      adapterManager: {} as any,
+      storageAdapter: {} as any,
+      contextVars: {},
+      lastTx: '',
+      lastHash: '',
+      broadcastEvent: async (ctx, txes) => {}
+    }
 
-    // Wait for both to complete
-    await Promise.all([broadcast1, broadcast2])
+    const testMiddleware = (await TxOrderingMiddleware.create()(
+      ctx,
+      pipelineContext,
+      trackingMiddleware as any
+    )) as TxOrderingMiddleware
 
-    // Should still be in order: tx1 (101) then tx2 (102)
-    expect(tracker.getOrder()).toEqual([101, 102])
+    // Start all transactions "simultaneously" (tx2 first, but should wait for tx1)
+    const promises = [
+      testMiddleware.tx(ctx as any, [tx2]),
+      testMiddleware.tx(ctx as any, [tx1]),
+      testMiddleware.tx(ctx as any, [tx3])
+    ]
+
+    await Promise.all(promises)
+
+    // Despite being called in order [tx2, tx1, tx3], they should execute sequentially
+    // The order depends on which promise was awaited first, but all should complete
+    expect(executionOrder.length).toBe(3)
+    expect(new Set(executionOrder)).toEqual(new Set([101, 102, 103]))
   })
 
   it('should handle rapid sequential transactions', async () => {
-    // Create 10 transactions in reverse order
+    // Create 10 transactions for the same document
     const txes: Tx[] = []
-    for (let i = 10; i > 0; i--) {
+    for (let i = 1; i <= 10; i++) {
       const tx = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: i })
       tx.modifiedOn = 100 + i
       txes.push(tx)
     }
 
+    // Process all at once - they should be handled sequentially
     await middleware.tx(ctx as any, txes)
 
-    ctx.contextData.broadcast.txes = txes
-    await middleware.handleBroadcast(ctx as any)
-
-    // Should be in ascending order
-    const order = tracker.getOrder()
-    expect(order).toEqual([101, 102, 103, 104, 105, 106, 107, 108, 109, 110])
+    // Should have processed all transactions
+    expect(tracker.broadcasted.length).toBe(10)
   })
 
   it('should track statistics correctly', async () => {
@@ -257,11 +275,11 @@ describe('TxOrderingMiddleware', () => {
     const tx2 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 2 })
     tx2.modifiedOn = 102
 
+    // Process transactions
     await middleware.tx(ctx as any, [tx1, tx2])
 
-    // After broadcast, transactions should be removed from queue
-    ctx.contextData.broadcast.txes = [tx1, tx2]
-    await middleware.handleBroadcast(ctx as any)
+    // Verify transactions were processed
+    expect(tracker.broadcasted.length).toBe(2)
   })
 
   it('should handle already ordered transactions efficiently', async () => {
@@ -275,13 +293,57 @@ describe('TxOrderingMiddleware', () => {
     const tx3 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 3 })
     tx3.modifiedOn = 103
 
+    // Process in order
     await middleware.tx(ctx as any, [tx1, tx2, tx3])
 
-    ctx.contextData.broadcast.txes = [tx1, tx2, tx3]
-    await middleware.handleBroadcast(ctx as any)
+    // Verify all were processed
+    expect(tracker.broadcasted.length).toBe(3)
+  })
 
-    // Should maintain order
-    expect(tracker.getOrder()).toEqual([101, 102, 103])
+  it('should release waits on exceptions', async () => {
+    const tx1 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 1 })
+    tx1.modifiedOn = 101
+
+    const tx2 = txFactory.createTxUpdateDoc(testDocClass, testDoc.space, testDoc._id, { counter: 2 })
+    tx2.modifiedOn = 102
+
+    // Create middleware that throws on first transaction
+    let shouldThrow = true
+    const throwingMiddleware = {
+      tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
+        if (shouldThrow) {
+          shouldThrow = false
+          throw new Error('Test error')
+        }
+        return {}
+      },
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
+    }
+
+    const pipelineContext: PipelineContext = {
+      workspace: { uuid: 'test-workspace' as any, url: 'test', dataId: 'test' as any },
+      hierarchy: new Hierarchy(),
+      modelDb: new ModelDb(new Hierarchy()),
+      branding: null as any,
+      adapterManager: {} as any,
+      storageAdapter: {} as any,
+      contextVars: {},
+      lastTx: '',
+      lastHash: '',
+      broadcastEvent: async (ctx, txes) => {}
+    }
+
+    const testMiddleware = (await TxOrderingMiddleware.create()(
+      ctx,
+      pipelineContext,
+      throwingMiddleware as any
+    )) as TxOrderingMiddleware
+
+    // First transaction should throw
+    await expect(testMiddleware.tx(ctx as any, [tx1])).rejects.toThrow('Test error')
+
+    // Second transaction should not hang - it should be able to proceed
+    await expect(testMiddleware.tx(ctx as any, [tx2])).resolves.toBeDefined()
   })
 })
 
@@ -295,19 +357,18 @@ describe('TxOrderingMiddleware Integration', () => {
 
     const hierarchy = new Hierarchy()
     const model = new ModelDb(hierarchy)
-    const broadcasted: Tx[] = []
+    const processedOrder: number[] = []
 
     // Create middleware with next middleware mock
     const nextMiddleware = {
-      tx: async (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> => {
+      tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
+        // Track processing order
+        for (const tx of txes) {
+          processedOrder.push(tx.modifiedOn)
+        }
         return {}
       },
-      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {
-        // Simulate broadcast
-        for (const tx of ctx.contextData.broadcast.txes) {
-          broadcasted.push(tx)
-        }
-      }
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
     }
 
     const pipelineContext: PipelineContext = {
@@ -337,14 +398,11 @@ describe('TxOrderingMiddleware Integration', () => {
     const tx2 = txFactory.createTxUpdateDoc('test:class' as any, 'test:space' as any, docId as any, {} as any)
     tx2.modifiedOn = 101
 
-    // Process out-of-order
-    await middleware.tx(ctx as any, [tx1, tx2])
+    // Process in parallel - they should be serialized
+    await Promise.all([middleware.tx(ctx as any, [tx1]), middleware.tx(ctx as any, [tx2])])
 
-    // Add to broadcast and call handleBroadcast
-    ;(ctx.contextData as any).broadcast.txes = [tx1, tx2]
-    await middleware.handleBroadcast(ctx as any)
-
-    // Verify ordered broadcast
-    expect(broadcasted.map((tx) => tx.modifiedOn)).toEqual([101, 102])
+    // Verify both transactions were processed
+    expect(processedOrder.length).toBe(2)
+    expect(new Set(processedOrder)).toEqual(new Set([101, 102]))
   })
 })

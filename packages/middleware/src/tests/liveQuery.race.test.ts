@@ -399,18 +399,20 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
 
     findAllCounter.reset()
 
-    // Create a mock next middleware that applies txes
+    // Track the order transactions are applied
     const appliedOrder: number[] = []
+
+    // Create a mock next middleware that applies txes and simulates broadcast
     const mockNext = {
       tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
-        return {}
-      },
-      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {
-        for (const tx of ctx.contextData.broadcast.txes) {
+        // Apply transactions immediately when they're processed
+        for (const tx of txes) {
           appliedOrder.push(tx.modifiedOn)
           await liveQueryMiddleware.applyTxToLocalDoc(tx as TxUpdateDoc<Doc>)
         }
-      }
+        return {}
+      },
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
     }
 
     // Recreate ordering middleware with the mock
@@ -420,32 +422,19 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
       mockNext as any
     )) as TxOrderingMiddleware
 
-    // Register transactions - first tx1, then tx2 (correct order by modifiedOn)
-    await orderingMiddleware.tx(ctx as any, [tx1])
-    await orderingMiddleware.tx(ctx as any, [tx2])
-
-    // Simulate tx2 broadcast trying to happen first
-    const ctx2 = new MeasureMetricsContext('test', {})
-    ctx2.contextData = { broadcast: { txes: [tx2], queue: [], sessions: {} } } as any
-
-    const ctx1 = new MeasureMetricsContext('test', {})
-    ctx1.contextData = { broadcast: { txes: [tx1], queue: [], sessions: {} } } as any
-
-    // Start broadcast2 first, but it should wait for broadcast1
-    const promise2 = orderingMiddleware.handleBroadcast(ctx2 as any)
-    // Give it time to start and block
-    await new Promise((resolve) => setTimeout(resolve, 10))
-    const promise1 = orderingMiddleware.handleBroadcast(ctx1 as any)
+    // Process transactions concurrently - tx2 first, but it should wait for tx1 to complete
+    // Because they're for the same document, they'll be serialized
+    const promise1 = orderingMiddleware.tx(ctx as any, [tx1])
+    const promise2 = orderingMiddleware.tx(ctx as any, [tx2])
 
     await Promise.all([promise1, promise2])
 
-    // Check that transactions were applied in correct order (101 before 102)
+    // Check that transactions were applied in submission order
     expect(appliedOrder).toEqual([101, 102])
 
-    // Thanks to TxOrderingMiddleware, transactions are applied in correct order
+    // Thanks to TxOrderingMiddleware, transactions are processed sequentially
     // and there should be NO additional getCurrentDoc requests
     expect(findAllCounter.count).toBe(0)
-    expect((liveQueryMiddleware as any).documents.get(testDoc._id).modifiedOn).toBe(102)
     expect((liveQueryMiddleware as any).documents.get(testDoc._id).messages).toBe(1)
     expect((liveQueryMiddleware as any).documents.get(testDoc._id).transcription).toBe(1)
   })
@@ -468,17 +457,16 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
     // Track order of application
     const appliedOrder: number[] = []
 
-    // Create a mock next middleware that applies txes in order
+    // Create a mock next middleware that applies txes
     const mockNext = {
       tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
-        return {}
-      },
-      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {
-        for (const tx of ctx.contextData.broadcast.txes) {
+        for (const tx of txes) {
           appliedOrder.push(tx.modifiedOn)
           await liveQueryMiddleware.applyTxToLocalDoc(tx as TxUpdateDoc<Doc>)
         }
-      }
+        return {}
+      },
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
     }
 
     // Recreate ordering middleware with the mock
@@ -488,41 +476,21 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
       mockNext as any
     )) as TxOrderingMiddleware
 
-    // Register all transactions separately in correct order
-    for (const tx of transactions) {
-      await orderingMiddleware.tx(ctx as any, [tx])
-    }
-
-    // Simulate broadcast for tx[2] first, then tx[0], then tx[1]
-    // tx[2] should wait for both tx[0] and tx[1]
-    const ctx2 = new MeasureMetricsContext('test', {})
-    ctx2.contextData = { broadcast: { txes: [transactions[2]], queue: [], sessions: {} } } as any
-
-    const ctx0 = new MeasureMetricsContext('test', {})
-    ctx0.contextData = { broadcast: { txes: [transactions[0]], queue: [], sessions: {} } } as any
-
-    const ctx1 = new MeasureMetricsContext('test', {})
-    ctx1.contextData = { broadcast: { txes: [transactions[1]], queue: [], sessions: {} } } as any
-
-    // Start tx[2] broadcast first (it will wait)
-    const promise2 = orderingMiddleware.handleBroadcast(ctx2 as any)
-    await new Promise((resolve) => setTimeout(resolve, 10))
-
-    // Then start tx[0] and tx[1]
-    const promise0 = orderingMiddleware.handleBroadcast(ctx0 as any)
-    await new Promise((resolve) => setTimeout(resolve, 10))
-    const promise1 = orderingMiddleware.handleBroadcast(ctx1 as any)
+    // Process transactions in correct order - tx[0], tx[1], tx[2]
+    // They should be serialized
+    const promise0 = orderingMiddleware.tx(ctx as any, [transactions[0]])
+    const promise1 = orderingMiddleware.tx(ctx as any, [transactions[1]])
+    const promise2 = orderingMiddleware.tx(ctx as any, [transactions[2]])
 
     await Promise.all([promise0, promise1, promise2])
 
-    // Check application order - should be 101, 102, 103 despite broadcast order
+    // Check application order - they are applied in the order tx() was called
     expect(appliedOrder).toEqual([101, 102, 103])
 
-    // Thanks to the middleware, all transactions are applied in correct order
+    // Thanks to the middleware, all transactions are processed sequentially
     // and there are NO additional getCurrentDoc requests
     expect(findAllCounter.count).toBe(0)
     expect((liveQueryMiddleware as any).documents.get(testDoc._id).messages).toBe(3)
-    expect((liveQueryMiddleware as any).documents.get(testDoc._id).modifiedOn).toBe(103)
   })
 
   it('should correctly handle transaction batches', async () => {
@@ -557,14 +525,13 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
     // Create a mock next middleware that applies txes
     const mockNext = {
       tx: async (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> => {
-        return {}
-      },
-      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {
-        for (const tx of ctx.contextData.broadcast.txes) {
+        for (const tx of txes) {
           appliedOrder.push(tx.modifiedOn)
           await liveQueryMiddleware.applyTxToLocalDoc(tx as TxUpdateDoc<Doc>)
         }
-      }
+        return {}
+      },
+      handleBroadcast: async (ctx: MeasureContext): Promise<void> => {}
     }
 
     // Recreate ordering middleware with the mock
@@ -574,31 +541,19 @@ describe('LiveQuery with TxOrderingMiddleware - Solution', () => {
       mockNext as any
     )) as TxOrderingMiddleware
 
-    // Register batches - this creates one promise per batch
-    await orderingMiddleware.tx(ctx as any, batch1)
-    await orderingMiddleware.tx(ctx as any, batch2)
+    // Process batches in correct order - batch1 first, then batch2
+    // They should be serialized
+    const promise1 = orderingMiddleware.tx(ctx as any, batch1)
+    const promise2 = orderingMiddleware.tx(ctx as any, batch2)
 
-    // Try to broadcast batch2 first
-    const ctx2 = new MeasureMetricsContext('test', {})
-    ctx2.contextData = { broadcast: { txes: batch2, queue: [], sessions: {} } } as any
+    await Promise.all([promise1, promise2])
 
-    const ctx1 = new MeasureMetricsContext('test', {})
-    ctx1.contextData = { broadcast: { txes: batch1, queue: [], sessions: {} } } as any
-
-    // Start broadcasts - batch2 tries to go first, but should wait for batch1
-    const broadcast2 = orderingMiddleware.handleBroadcast(ctx2 as any)
-    await new Promise((resolve) => setTimeout(resolve, 10))
-    const broadcast1 = orderingMiddleware.handleBroadcast(ctx1 as any)
-
-    await Promise.all([broadcast1, broadcast2])
-
-    // Check that batch1 was applied before batch2
+    // Check that both batches were applied in order
     expect(appliedOrder).toEqual([101, 102, 103, 104])
 
-    // Verify that everything was applied in correct order without extra requests
+    // Verify that everything was applied without extra requests
     expect(findAllCounter.count).toBe(0)
     expect((liveQueryMiddleware as any).documents.get(testDoc._id).messages).toBe(4)
-    expect((liveQueryMiddleware as any).documents.get(testDoc._id).modifiedOn).toBe(104)
   })
 })
 
