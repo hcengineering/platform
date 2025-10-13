@@ -23,7 +23,7 @@
 
   type IntegrationStatus = 'available' | 'disconnected' | 'connected' | 'integrated'
 
-  function getIntegrationStatus (): IntegrationStatus {
+  function getIntegrationStatus (integration: Integration | undefined): IntegrationStatus {
     if (integration === undefined) {
       return 'available'
     }
@@ -49,7 +49,7 @@
     }
   }
 
-  $: status = getIntegrationStatus()
+  $: status = getIntegrationStatus(integration)
   $: label = getIntegrationLabel(status)
 </script>
 

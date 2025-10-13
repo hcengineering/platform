@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import { getResource, translate } from '@hcengineering/platform'
   import type { IntegrationType } from '@hcengineering/setting'
@@ -31,7 +31,12 @@
   } from '@hcengineering/ui'
   import { Analytics } from '@hcengineering/analytics'
   import { type Integration } from '@hcengineering/account-client'
-  import { IntegrationClient, isDisabled } from '@hcengineering/integration-client'
+  import {
+    IntegrationClient,
+    isDisabled,
+    onIntegrationEvent,
+    IntegrationUpdatedData
+  } from '@hcengineering/integration-client'
   import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
   import { getIntegrationClient } from '../../utils'
 
@@ -43,10 +48,32 @@
   let integrationClient: IntegrationClient | undefined
 
   let isDisconnecting = false
+  const unsubscribers: (() => void)[] = []
 
   onMount(async () => {
     integrationClient = await getIntegrationClient(integrationType.kind)
+    subscribe()
   })
+
+  onDestroy(() => {
+    unsubscribers.forEach((unsubscribe) => {
+      unsubscribe()
+    })
+  })
+
+  function subscribe (): void {
+    unsubscribers.push(onIntegrationEvent<IntegrationUpdatedData>('integration:updated', onUpdateIntegration))
+  }
+
+  function onUpdateIntegration (data: IntegrationUpdatedData): void {
+    if (
+      integration !== undefined &&
+      data.integration?.socialId === integration.socialId &&
+      data.integration?.workspaceUuid === integration.workspaceUuid
+    ) {
+      integration = { ...integration, ...data.integration }
+    }
+  }
 
   async function close (res: any): Promise<void> {
     /* TODO: if (res?.value && integration !== undefined) {

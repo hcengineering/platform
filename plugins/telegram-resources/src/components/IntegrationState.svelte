@@ -19,6 +19,7 @@
     IntegrationClient,
     IntegrationUpdatedData,
     onIntegrationEvent,
+    isDisabled,
     isUnauthorizedError
   } from '@hcengineering/integration-client'
   import { BaseIntegrationState, IntegrationStateRow } from '@hcengineering/setting-resources'
@@ -38,6 +39,9 @@
   const unsubscribers: (() => void)[] = []
 
   async function handleUnauthorized (): Promise<void> {
+    if (isDisabled(integration)) {
+      return
+    }
     if (integrationClient === undefined) {
       integrationClient = await getIntegrationClient()
     }
@@ -86,6 +90,7 @@
       data.integration?.socialId === integration.socialId &&
       data.integration?.workspaceUuid === integration.workspaceUuid
     ) {
+      integration = { ...integration, ...data.integration }
       const channelConfig: TelegramChannelData[] = data.newConfig?.channels
       if (channelConfig != null) {
         channels = channels.map((channel) => {
@@ -98,7 +103,8 @@
           }
           return channel
         })
-      } else {
+      }
+      if (channelConfig == null || status?.code === ERROR.code) {
         void refresh()
       }
     }
@@ -106,6 +112,9 @@
 
   async function refresh (): Promise<void> {
     try {
+      if (isDisabled(integration)) {
+        return
+      }
       if (integrationClient === undefined) {
         integrationClient = await getIntegrationClient()
       }
@@ -116,8 +125,10 @@
         ...channel,
         syncEnabled: channel.mode === 'sync'
       }))
+      status = OK
     } catch (err: any) {
       console.error('Error refresh channels:', err.message)
+      status = ERROR
       if (isUnauthorizedError(err as Error)) {
         await handleUnauthorized()
       }
