@@ -49,7 +49,6 @@
       dispatch('close')
     } catch (e: any) {
       Analytics.handleError(e)
-      console.error(e)
       error = true
     } finally {
       connecting = false

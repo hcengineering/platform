@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "Bildirimleri göster",
+    "PlaySound": "Ses çal",
+    "BounceAppIcon": "Uygulama simgesini zıplat (sadece mac)",
+    "ShowBadge": "Uygulama simgesinde rozet göster",
+    "SoundAndAppearance": "Ses ve görünüm",
+    "HaveGotANotification": "Bir bildiriminiz var",
+    "TotalNotificationsCount": "Toplam {count, plural, =1 {# bildiriminiz} other {# bildiriminiz}} var"
+  }
+}

@@ -1,3 +1,5 @@
+@use 'sass:meta';
+
 .ProseMirror {
   outline: none;
 
@@ -12,6 +14,10 @@
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
   margin: 0.25rem 0;
+
+  &.colorInherit {
+    color: inherit;
+  }
 
   .suggestion {
     padding-left: 0.25rem;
@@ -299,6 +305,7 @@
 .text-editor-image-container {
   img {
     max-width: 100%;
+    height: auto;
   }
 }
 
@@ -431,11 +438,11 @@
 }
 
 .theme-dark {
-  @import './github-dark.scss';
+  @include meta.load-css('./github-dark.scss');
 }
 
 .theme-light {
-  @import './github-light.scss';
+  @include meta.load-css('./github-light.scss');
 }
 
 .theme-dark .text-editor-note-marker {
@@ -544,7 +551,7 @@
     }
   }
 
-  &.embed-youtube {    
+  &.embed-youtube {
     iframe {
       margin: 0;
       padding: 0;

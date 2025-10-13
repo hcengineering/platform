@@ -86,8 +86,13 @@ export class ReviewSyncManager implements DocSyncManager {
     await this.eventSync.get(event.review.html_url)
     const promise = this.processEvent(ctx, event, derivedClient, repository, integration)
     this.eventSync.set(event.review.html_url, promise)
-    await promise
-    this.eventSync.delete(event.review.html_url)
+    try {
+      await promise
+    } catch (err: any) {
+      ctx.error('Error processing event', { error: err })
+    } finally {
+      this.eventSync.delete(event.review.html_url)
+    }
   }
 
   async handleDelete (
@@ -318,9 +323,9 @@ export class ReviewSyncManager implements DocSyncManager {
     }
     if (existing === undefined) {
       try {
-        await this.createReview(info, messageData, parent, review, account)
+        await this.createReview(ctx, info, messageData, parent, review, account)
 
-        await syncChilds(info, this.client, derivedClient)
+        await syncChilds(ctx, info, this.client, derivedClient)
         return { needSync: githubSyncVersion, current: messageData }
       } catch (err: any) {
         ctx.error('Error', { err })
@@ -328,12 +333,14 @@ export class ReviewSyncManager implements DocSyncManager {
         return { needSync: githubSyncVersion, error: errorToObj(err) }
       }
     } else {
-      await this.handleDiffUpdate(existing, info, messageData, container, parent, review, account)
+      await this.handleDiffUpdate(ctx, existing, info, messageData, container, parent, review, account)
     }
     return { current: messageData, needSync: githubSyncVersion }
   }
 
+  @withContext('reviews-handleDiffUpdate')
   private async handleDiffUpdate (
+    ctx: MeasureContext,
     existing: Doc,
     info: DocSyncInfo,
     reviewData: ReviewData,
@@ -379,7 +386,9 @@ export class ReviewSyncManager implements DocSyncManager {
     }
   }
 
+  @withContext('reviews-createReview')
   private async createReview (
+    ctx: MeasureContext,
     info: DocSyncInfo,
     messageData: ReviewData,
     parent: DocSyncInfo,
@@ -403,6 +412,7 @@ export class ReviewSyncManager implements DocSyncManager {
     )
   }
 
+  @withContext('reviews-createGithubReview')
   async createGithubReview (
     ctx: MeasureContext,
     container: ContainerFocus,

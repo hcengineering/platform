@@ -16,6 +16,7 @@ import {
   Blobs,
   Class,
   CollectionSize,
+  Data,
   Doc,
   Domain,
   MarkupBlobRef,
@@ -98,6 +99,16 @@ export interface FavoriteCard extends Preference {
   application: string
 }
 
+export interface CreateCardExtension extends MasterTag {
+  component?: AnyComponent
+  canCreate?: CanCreateCardResource
+  disableTitle?: boolean
+  hideSpace?: boolean
+}
+
+export type CanCreateCardFn = (space: Ref<Space>, data: Partial<Data<Card>>) => Promise<boolean | Ref<Card>>
+export type CanCreateCardResource = Resource<CanCreateCardFn>
+
 /**
  * @public
  */
@@ -120,7 +131,8 @@ const cardPlugin = plugin(cardId, {
     FavoriteCard: '' as Ref<Class<FavoriteCard>>
   },
   mixin: {
-    CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>
+    CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,
+    CreateCardExtension: '' as Ref<Mixin<CreateCardExtension>>
   },
   space: {
     Default: '' as Ref<CardSpace>
@@ -137,7 +149,12 @@ const cardPlugin = plugin(cardId, {
     Card: '' as Asset,
     File: '' as Asset,
     View: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    Home: '' as Asset,
+    Space: '' as Asset,
+    Expand: '' as Asset,
+    Feed: '' as Asset,
+    All: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -151,7 +168,11 @@ const cardPlugin = plugin(cardId, {
     Cards: '' as IntlString,
     CardApplication: '' as IntlString,
     Views: '' as IntlString,
-    Labels: '' as IntlString
+    Labels: '' as IntlString,
+    GetIndividualPublicLink: '' as IntlString,
+    AddTag: '' as IntlString,
+    Feed: '' as IntlString,
+    AllCards: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -168,10 +189,17 @@ const cardPlugin = plugin(cardId, {
     CardTagColored: '' as AnyComponent,
     CardTagsColored: '' as AnyComponent,
     CardIcon: '' as AnyComponent,
-    CardArrayEditor: '' as AnyComponent
+    CardArrayEditor: '' as AnyComponent,
+    CardFeedView: '' as AnyComponent
   },
   function: {
-    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
+    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>,
+    GetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<string>>,
+    CanGetSpaceAccessPublicLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+  },
+  label: {
+    Subscribed: '' as Ref<Doc>,
+    NewMessages: '' as Ref<Doc>
   }
 })
 

@@ -23,9 +23,11 @@
 
   export let type: 'type-aside' | 'type-popup' | 'type-component'
   export let width: 'large' | 'medium' | 'small' | 'x-small' | 'menu' | undefined = undefined
+  export let maxWidth: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void = () => {}
+  export let okLoading: boolean = false
   export let okTooltip: LabelAndProps | undefined = undefined
   export let onCancel: (() => void) | undefined = undefined
   export let canSave: boolean = false
@@ -68,7 +70,12 @@
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type} {width ?? ''}" class:hidden class:noTopIndent>
+<div
+  class="hulyModal-container {type} {width ?? ''}"
+  class:hidden
+  class:noTopIndent
+  style={maxWidth ? `max-width: ${maxWidth};` : ''}
+>
   <Header
     {type}
     {adaptive}
@@ -91,7 +98,7 @@
     {#if scrollableContent}
       <Scroller
         padding={padding ?? typePadding}
-        bottomPadding={bottomPadding ?? type === 'type-popup'
+        bottomPadding={(bottomPadding ?? type === 'type-popup')
           ? undefined
           : type === 'type-aside'
             ? 'var(--spacing-2)'
@@ -112,6 +119,7 @@
         size={type === 'type-aside' ? 'large' : 'medium'}
         tooltip={okTooltip}
         label={okLabel}
+        loading={okLoading}
         on:click={okAction}
         disabled={!canSave}
       />

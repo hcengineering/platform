@@ -16,7 +16,7 @@ import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
 import type { Resource } from '@hcengineering/platform'
-import process, { ExecutionStatus, type CheckFunc } from '@hcengineering/process'
+import process, { ExecutionStatus } from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
   type RollbackFunc,
@@ -24,7 +24,8 @@ import serverProcess, {
   type FuncImpl,
   type MethodImpl,
   type TransformFunc,
-  type TriggerImpl
+  type TriggerImpl,
+  type CheckFunc
 } from '@hcengineering/server-process'
 
 export { serverProcessId } from '@hcengineering/server-process'
@@ -50,21 +51,30 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMethodImpl, TFuncImpl, TTriggerImpl)
 
   builder.mixin(process.trigger.OnToDoClose, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoDone,
     rollbackFunc: serverProcess.rollbacks.ToDoCloseRollback
   })
 
   builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.CheckToDo,
+    serverCheckFunc: serverProcess.func.CheckToDoCancelled,
     rollbackFunc: serverProcess.rollbacks.ToDoCancellRollback
   })
 
   builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    serverCheckFunc: serverProcess.func.OnCardUpdateCheck
+    serverCheckFunc: serverProcess.func.MatchCardCheck
+  })
+
+  builder.mixin(process.trigger.WhenFieldChanges, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.FieldChangedCheck
+  })
+
+  builder.mixin(process.trigger.OnTime, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.CheckTime
   })
 
   builder.mixin(process.trigger.OnSubProcessesDone, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    preventRollback: true
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.CheckSubProcessesDone
   })
 
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
@@ -85,6 +95,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.method.AddRelation, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.AddRelation
+  })
+
+  builder.mixin(process.method.AddTag, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.AddTag
   })
 
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
@@ -163,6 +177,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Power
   })
 
+  builder.mixin(process.function.Sqrt, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Sqrt
+  })
+
   builder.mixin(process.function.Round, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Round
   })
@@ -191,6 +209,18 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.RoleContext
   })
 
+  builder.mixin(process.function.CurrentDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentDate
+  })
+
+  builder.mixin(process.function.CurrentEmployee, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
+  })
+
+  builder.mixin(process.function.CurrentUser, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.CurrentUser
+  })
+
   builder.mixin(process.function.Insert, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Insert
   })
@@ -205,6 +235,35 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.RemoveLast, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.RemoveLast
+  })
+
+  builder.mixin(process.function.EmptyArray, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.EmptyArray
+  })
+
+  builder.mixin(process.function.FirstMatchValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.FirstMatchValue
+  })
+
+  builder.mixin(process.function.Filter, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Filter
+  })
+
+  builder.mixin(
+    process.function.ExecutionEmployeeInitiator,
+    process.class.ProcessFunction,
+    serverProcess.mixin.FuncImpl,
+    {
+      func: serverProcess.transform.ExecutionInitiator
+    }
+  )
+
+  builder.mixin(process.function.ExecutionInitiator, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ExecutionInitiator
+  })
+
+  builder.mixin(process.function.ExecutionStarted, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ExecutionStarted
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -247,7 +306,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnCardUpdate,
     txMatch: {
-      _class: core.class.TxUpdateDoc,
+      _class: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] },
       objectClass: cardPlugin.class.Card
     }
   })

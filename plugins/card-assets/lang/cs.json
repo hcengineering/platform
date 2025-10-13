@@ -12,6 +12,7 @@
     "Parent": "Nadřazený",
     "Tags": "Štítky",
     "Tag": "Štítek",
+    "AddTag": "Přidat štítek",
     "CardLibrary": "Knihovna karet",
     "MinimizeAll": "Minimalizovat vše",
     "ExpandAll": "Rozbalit vše",
@@ -39,6 +40,14 @@
     "Labels": "Štítky",
     "Properties": "Vlastnosti",
     "NoChildren": "Žádné děti",
-    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze."
+    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze.",
+    "AddCollaborators": "Přidat spolupracovníky",
+    "CardTitle": "Název",
+    "Post": "Přidat",
+    "GetIndividualPublicLink": "Získat personalizovaný veřejný odkaz",
+    "ShowLess": "Skrýt detaily",
+    "CardContent": "Co chcete sdílet?",
+    "Feed": "Kanál",
+    "AllCards": "Všechny karty"
   }
 }

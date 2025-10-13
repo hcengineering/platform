@@ -82,7 +82,8 @@ function getSidebarStateFromLocalStorage (workspace: string): SidebarState {
     return {
       ...defaultSidebarState,
       ...parsed,
-      variant: device.isMobile && device.minWidth ? SidebarVariant.MINI : parsed.variant ?? defaultSidebarState.variant,
+      variant:
+        device.isMobile && device.minWidth ? SidebarVariant.MINI : (parsed.variant ?? defaultSidebarState.variant),
       widgetsState: new Map(Object.entries(parsed.widgetsState ?? {}))
     }
   } catch (e) {
@@ -198,7 +199,7 @@ export async function closeWidgetTab (widget: Widget, tab: string): Promise<void
     widgetsState.set(widget._id, { ...widgetState, tabs: newTabs })
   } else {
     const index = tabs.findIndex((it) => it.id === widgetState.tab)
-    const newTab = index === -1 ? newTabs[0] : tabs[index + 1] ?? tabs[index - 1] ?? newTabs[0]
+    const newTab = index === -1 ? newTabs[0] : (tabs[index + 1] ?? tabs[index - 1] ?? newTabs[0])
 
     widgetsState.set(widget._id, { ...widgetState, tabs: newTabs, tab: newTab.id })
   }

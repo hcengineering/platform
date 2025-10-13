@@ -215,7 +215,7 @@ async function processAdapter (
     }
     printStats()
   } finally {
-    await iterator.close()
+    await Promise.all([iterator.close(), targetIterator.close()])
   }
 }
 

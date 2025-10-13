@@ -42,6 +42,7 @@
     "SearchDocument": "Найти документ...",
     "CreateEnVersion": "Создать версию для оценки",
     "Approvers": "Утверждающие",
+    "ExternalApprovers": "Внешние утверждающие",
     "CoAuthors": "Соавторы",
     "Status": "Статус",
     "TemplateName": "Имя шаблона",

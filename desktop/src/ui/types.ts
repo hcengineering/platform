@@ -8,9 +8,6 @@ export interface Config {
   ACCOUNTS_URL: string
   AI_URL?: string
   ANALYTICS_COLLECTOR_URL?: string
-  POSTHOG_API_KEY?: string
-  POSTHOG_HOST?: string
-  SENTRY_DSN?: string
   BRANDING_URL?: string
   CALENDAR_URL: string
   COLLABORATOR?: string
@@ -33,6 +30,7 @@ export interface Config {
   LOVE_ENDPOINT?: string
   MODEL_VERSION: string
   PRESENCE_URL?: string
+  PREVIEW_URL?: string
   PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
@@ -52,8 +50,10 @@ export interface Config {
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string
+  PULSE_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
+  HULYLAKE_URL?: string
 }
 
 export interface Branding {
@@ -82,15 +82,17 @@ export const CommandOpenPlanner = 'open-planner' as const
 export const CommandSelectWorkspace = 'select-workspace' as const
 export const CommandLogout = 'logout' as const
 export const CommandOpenApplication = 'open-application' as const
+export const CommandCloseTab = 'close-tab' as const
 
-export type Command = 
-  typeof CommandOpenSettings | 
-  typeof CommandOpenInbox | 
-  typeof CommandOpenOffice | 
-  typeof CommandOpenPlanner | 
-  typeof CommandSelectWorkspace | 
+export type Command =
+  typeof CommandOpenSettings |
+  typeof CommandOpenInbox |
+  typeof CommandOpenOffice |
+  typeof CommandOpenPlanner |
+  typeof CommandSelectWorkspace |
   typeof CommandLogout |
-  typeof CommandOpenApplication
+  typeof CommandOpenApplication |
+  typeof CommandCloseTab
 
 export interface NotificationParams {
   title: string
@@ -102,15 +104,33 @@ export interface NotificationParams {
   objectClass?: Ref<Class<Doc>>
 }
 
-export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
-  , 'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const;
+export const MenuBarActions = [
+  'settings',
+  'select-workspace',
+  'logout',
+  'exit',
+  'undo',
+  'redo',
+  'cut',
+  'copy',
+  'paste',
+  'delete',
+  'select-all',
+  'reload',
+  'force-reload',
+  'toggle-devtools',
+  'zoom-in',
+  'zoom-out',
+  'restore-size',
+  'toggle-fullscreen',
+  'toggle-minimize-to-tray'] as const
 
-export type MenuBarAction = typeof MenuBarActions[number];
+export type MenuBarAction = typeof MenuBarActions[number]
 
 export interface JumpListSpares {
-  applications: LaunchApplication[],
-  settingsLabel: string,
-  inboxLabel: string,
+  applications: LaunchApplication[]
+  settingsLabel: string
+  inboxLabel: string
 }
 
 export interface LaunchApplication {
@@ -144,9 +164,15 @@ export interface IPCMainExposed {
   closeWindow: () => void
   onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
   onWindowFocusLoss: (callback: () => void) => void
-  
+
   isOsUsingDarkTheme: () => Promise<boolean>
   executeMenuBarAction: (action: MenuBarAction) => void
 
   rebuildJumpList: (spares: JumpListSpares) => void
+
+  isMinimizeToTrayEnabled: () => Promise<boolean>
+  onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => void
 }
+
+export type SendCommandDelegate = (cmd: Command, ...args: any[]) => void
+export type WindowAction = () => void

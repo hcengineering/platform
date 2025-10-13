@@ -10,7 +10,9 @@
 <div class="flex flex-wrap">
   <div class="pattern flex-row-center gap-2">
     {#if mapping.bitrixFields}
-      {op.field ? mapping.bitrixFields[op.field]?.formLabel ?? mapping.bitrixFields[op.field]?.title : op.field ?? ''}
+      {op.field
+        ? (mapping.bitrixFields[op.field]?.formLabel ?? mapping.bitrixFields[op.field]?.title)
+        : (op.field ?? '')}
       => {op.referenceType} === {op.referenceClass}
     {/if}
   </div>

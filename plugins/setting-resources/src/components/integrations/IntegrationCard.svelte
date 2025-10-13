@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
   import type { IntegrationType } from '@hcengineering/setting'
   import {
     AnyComponent,
@@ -32,16 +31,49 @@
   } from '@hcengineering/ui'
   import { Analytics } from '@hcengineering/analytics'
   import { type Integration } from '@hcengineering/account-client'
+  import {
+    IntegrationClient,
+    isDisabled,
+    onIntegrationEvent,
+    IntegrationUpdatedData
+  } from '@hcengineering/integration-client'
   import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
+  import { getIntegrationClient } from '../../utils'
 
   import IntegrationLabel from './IntegrationLabel.svelte'
   import setting from '../../plugin'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
-  const client = getClient()
+  let integrationClient: IntegrationClient | undefined
 
   let isDisconnecting = false
+  const unsubscribers: (() => void)[] = []
+
+  onMount(async () => {
+    integrationClient = await getIntegrationClient(integrationType.kind)
+    subscribe()
+  })
+
+  onDestroy(() => {
+    unsubscribers.forEach((unsubscribe) => {
+      unsubscribe()
+    })
+  })
+
+  function subscribe (): void {
+    unsubscribers.push(onIntegrationEvent<IntegrationUpdatedData>('integration:updated', onUpdateIntegration))
+  }
+
+  function onUpdateIntegration (data: IntegrationUpdatedData): void {
+    if (
+      integration !== undefined &&
+      data.integration?.socialId === integration.socialId &&
+      data.integration?.workspaceUuid === integration.workspaceUuid
+    ) {
+      integration = { ...integration, ...data.integration }
+    }
+  }
 
   async function close (res: any): Promise<void> {
     /* TODO: if (res?.value && integration !== undefined) {
@@ -53,17 +85,8 @@
   }
 
   async function reconnect (res: any): Promise<void> {
-    if (res?.value) {
-      const current = await client.findOne(setting.class.Integration, {
-        createdBy: { $in: getCurrentAccount().socialIds },
-        type: integrationType._id
-      })
-      if (current === undefined) return
-      Analytics.handleEvent(`Reconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
-      await client.update(current, {
-        disabled: false,
-        value: res.value
-      })
+    if (res?.connected === true && integration !== undefined) {
+      await integrationClient?.setIntegrationEnabled(integration, true)
     }
   }
 
@@ -76,7 +99,7 @@
         await disconnect(integration)
       }
     } catch (err: any) {
-      console.error('Error disconnecting integration:', err)
+      Analytics.handleError(err)
       const errorMessage: string = err.message ?? 'Unknown error'
       const integrationError = errorMessage.includes('Failed to fetch')
         ? setting.string.ServiceIsUnavailable
@@ -102,7 +125,7 @@
         await disconnectAll(integration)
       }
     } catch (err: any) {
-      console.error('Error disconnecting integration:', err)
+      Analytics.handleError(err)
       const errorMessage: string = err.message ?? 'Unknown error'
       const integrationError = errorMessage.includes('Failed to fetch')
         ? setting.string.ServiceIsUnavailable
@@ -126,8 +149,8 @@
     Analytics.handleEvent(`Configure/create integration: ${await translate(integrationType.label, {}, 'en')}`)
     showPopup(component, { integration }, 'top', close)
   }
-  const handleReconnect = (e: any) => {
-    if (integrationType.reconnectComponent) {
+  const handleReconnect = (e: any): void => {
+    if (integrationType.reconnectComponent !== undefined) {
       showPopup(integrationType.reconnectComponent, { integration }, eventToHTMLElement(e), reconnect)
     }
   }
@@ -177,7 +200,15 @@
         on:click={(ev) => handleConfigure(integrationType.createComponent)}
       />
     {:else if integration !== undefined}
-      {#if integrationType.configureComponent !== undefined && integration.workspaceUuid != null}
+      {#if isDisabled(integration) && integrationType.reconnectComponent !== undefined}
+        <Button
+          label={setting.string.Reconnect}
+          minWidth={'5rem'}
+          kind={'primary'}
+          disabled={isDisconnecting}
+          on:click={handleReconnect}
+        />
+      {:else if integrationType.configureComponent !== undefined && integration.workspaceUuid != null}
         <Button
           label={setting.string.Configure}
           minWidth={'5rem'}

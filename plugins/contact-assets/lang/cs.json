@@ -119,6 +119,12 @@
     "EveryoneDescription": "Upozornit všechny v tomto {title}",
     "HereDescription": "Upozornit všechny v tomto {title}",
     "Guest": "Host",
-    "Deleted": "Smazáno"
+    "Deleted": "Smazáno",
+    "CannotMerge": "Chyba: Nelze sloučit globální osoby",
+    "AutoTranslation": "Automatický překlad",
+    "TranslateTo": "Přeložit do",
+    "DontTranslate": "Nepřekládat",
+    "SelectLanguage": "Vyberte jazyk",
+    "SelectLanguages": "Vyberte jazyky"
   }
 }

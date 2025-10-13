@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { type Card } from '@hcengineering/card'
+  import cardPlugin, { type Card } from '@hcengineering/card'
   import { type ActivityMessage } from '@hcengineering/communication-types'
   import view from '@hcengineering/view'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectIcon } from '@hcengineering/view-resources'
   import { Icon, Label } from '@hcengineering/ui'
 
   import communication from './../../../plugin'
@@ -34,11 +34,13 @@
 </script>
 
 <span class="container flex-gap-1 overflow-label">
-  {#if clazz.icon}
-    <span class="icon mr-1">
-      <Icon icon={clazz.icon} size="small" />
-    </span>
-  {/if}
+  <span class="icon mr-1">
+    {#if hierarchy.isDerived(card._class, communication.type.Direct)}
+      <Icon icon={clazz.icon ?? cardPlugin.icon.Card} size="small" />
+    {:else}
+      <ObjectIcon value={card} size={'small'} />
+    {/if}
+  </span>
 
   {#if action === 'create'}
     <Label label={communication.string.New} />

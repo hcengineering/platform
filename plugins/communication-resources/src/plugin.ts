@@ -22,10 +22,13 @@ import communication, {
 } from '@hcengineering/communication'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type Ref } from '@hcengineering/core'
+import { type CanCreateCardResource } from '@hcengineering/card'
 
 export default mergeIds(communicationId, communication, {
   component: {
-    CardMessagesSection: '' as AnyComponent
+    CardMessagesSection: '' as AnyComponent,
+    DirectIcon: '' as AnyComponent,
+    CreateDirect: '' as AnyComponent
   },
   poll: {
     PollPresenter: '' as AnyComponent,
@@ -81,7 +84,10 @@ export default mergeIds(communicationId, communication, {
     EditMessage: '' as IntlString,
     RemoveMessage: '' as IntlString,
     CreateCard: '' as IntlString,
-    MessageAlreadyHasCardAttached: '' as IntlString
+    MessageAlreadyHasCardAttached: '' as IntlString,
+    Direct: '' as IntlString,
+    Directs: '' as IntlString,
+    Members: '' as IntlString
   },
   messageActionImpl: {
     AddReaction: '' as MessageActionFunctionResource,
@@ -107,6 +113,7 @@ export default mergeIds(communicationId, communication, {
     CanShowOriginalMessage: '' as MessageActionVisibilityTesterResource,
     CanEditMessage: '' as MessageActionVisibilityTesterResource,
     CanRemoveMessage: '' as MessageActionVisibilityTesterResource,
-    CanCreateCard: '' as MessageActionVisibilityTesterResource
+    CanCreateCard: '' as MessageActionVisibilityTesterResource,
+    CanCreateDirect: '' as CanCreateCardResource
   }
 })

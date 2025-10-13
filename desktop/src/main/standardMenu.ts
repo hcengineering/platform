@@ -14,7 +14,7 @@
 //
 
 import { Menu, MenuItemConstructorOptions } from 'electron'
-import { Command, CommandOpenSettings, CommandSelectWorkspace, CommandLogout, } from '../ui/types'
+import { Command, CommandOpenSettings, CommandSelectWorkspace, CommandLogout } from '../ui/types'
 
 const isMac = process.platform === 'darwin'
 const isLinux = process.platform === 'linux'

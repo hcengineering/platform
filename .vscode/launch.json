@@ -54,7 +54,7 @@
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.48",
-        // "VERSION": "0.6.289",
+        // "version": "0.7.0",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
@@ -97,16 +97,19 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.173",
-        // "VERSION": "0.6.289",
+        "MODEL_VERSION": "0.7.230",
+        // "version": "0.7.0",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "QUEUE_CONFIG": "localhost:19092",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "REGION": "cockroach",
+        "QUEUE_REGION": "cockroach",
         "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
-        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
+        "BRANDING_PATH": "${workspaceRoot}/dev/branding.json"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -617,6 +620,7 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "nodeVersionHint": 22,
       "cwd": "${workspaceRoot}/services/github/pod-github",
       "protocol": "inspector",
       "outputCapture": "std"
@@ -666,7 +670,8 @@
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
-        "QUEUE_REGION": "cockroach"
+        "QUEUE_REGION": "cockroach",
+        "TEMPORAL_ADDRESS": "localhost:7233"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -854,6 +859,22 @@
       "cwd": "${workspaceRoot}/pods/media"
     },
     {
+      "name": "Debug preview",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://huly.local:3000",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030",
+        "SECRET": "secret",
+        "CACHE_PATH": "/tmp/preview"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/preview"
+    },
+    {
       "type": "chrome",
       "name": "Attach to Browser",
       "request": "attach",
@@ -954,25 +975,6 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/export/pod-export"
-    },
-    {
-      "name": "Msg2File",
-      "type": "node",
-      "request": "launch",
-      "args": ["src/index.ts"],
-      "env": {
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
-        "PORT": "9087",
-        "SECRET": "secret",
-        "SERVICE_ID": "msg2file-service",
-        "STORAGE_CONFIG": "datalake|http://huly.local:4030"
-      },
-      "runtimeVersion": "20",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}/services/msg2file"
     }
   ]
 }

@@ -22,7 +22,8 @@
 
   import gmail from '../plugin'
   import { getState } from '../api'
-  import { IntlString, OK, ERROR, Status } from '@hcengineering/platform'
+  import platform, { IntlString, OK, ERROR, Status, Severity } from '@hcengineering/platform'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration
 
@@ -39,8 +40,8 @@
       state = await getState(integration.socialId)
       isLoading = false
       subscribe()
-      status = OK
-    } catch (err) {
+      status = state?.status === 'inactive' ? new Status(Severity.WARNING, platform.status.OK, {}) : OK
+    } catch (err: any) {
       status = ERROR
       error = err instanceof Error ? err.message : 'Failed to load gmail state'
       if (error.includes('Failed to fetch')) {
@@ -48,6 +49,7 @@
       }
       isLoading = false
       console.error('Error loading gmail state:', err)
+      Analytics.handleError(err)
     }
   })
 
@@ -75,6 +77,7 @@
       state = await getState(integration.socialId)
     } catch (err: any) {
       console.error('Error refresh gmail state:', err.message)
+      Analytics.handleError(err)
     }
   }
 
@@ -83,8 +86,11 @@
 
 <BaseIntegrationState {integration} {isLoading} {status} {errorLabel} value={email}>
   <svelte:fragment slot="content">
-    {#if state?.totalMessages != null}
+    {#if state?.isConfigured === true && state?.totalMessages != null}
       <IntegrationStateRow label={gmail.string.TotalMessages} value={state.totalMessages} />
+    {/if}
+    {#if state?.isConfigured !== true}
+      <IntegrationStateRow label={gmail.string.ConfigurationRequired} />
     {/if}
   </svelte:fragment>
 </BaseIntegrationState>

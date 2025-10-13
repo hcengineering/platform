@@ -166,6 +166,13 @@
     }
   }
 
+  export function editLastMessage (): void {
+    if (scrollDiv == null) return
+    const lastTocItem = toc[toc.length - 1]
+    if (lastTocItem?.group === undefined) return
+    ;(sectionRef as any)[lastTocItem.group]?.editLastMessage?.()
+  }
+
   export function hideScrollBar (): void {
     hideBar = true
     if (timer) {

@@ -74,6 +74,9 @@
     "SetPasswordLater": "Nastavím heslo později",
     "SetPasswordNow": "Nastavím heslo nyní",
     "LoginAsGuest": "Pokračovat jako host",
-    "SignUpToCreateWorkspace": "Neexistují žádné pracovní prostory s přístupem pro hosty. Prosím, zaregistrujte se a vytvořte si vlastní."
+    "SignUpToCreateWorkspace": "Neexistují žádné pracovní prostory s přístupem pro hosty. Prosím, zaregistrujte se a vytvořte si vlastní.",
+    "WhatIsYourName": "Jak se jmenujete?",
+    "AccessExpired": "Doba přístupu vypršela. Požádejte prosím o nový odkaz pro přístup.",
+    "AccessNotActive": "Doba přístupu ještě nezačala. Začíná za: "
   }
 }

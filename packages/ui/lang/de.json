@@ -57,6 +57,7 @@
     "Czech": "Tschechisch",
     "German": "Deutsch",
     "Japanese": "Japanisch",
+    "Turkish": "Türkçe",
     "MinutesBefore": "{minutes, plural, =1 {eine Minute vorher} other {# Minuten vorher}}",
     "HoursBefore": "{hours, plural, =1 {eine Stunde vorher} other {# Stunden vorher}}",
     "DaysBefore": "{days, plural, =1 {einen Tag vorher} other {# Tage vorher}}",
@@ -100,6 +101,13 @@
     "WeeksWOValue": "{weeks, plural, =1 {Woche} other {Wochen}}",
     "MonthsWOValue": "{months, plural, =1 {Monat} other {Monate}}",
     "Filter": "Filter",
-    "Clear": "Löschen"
+    "Clear": "Löschen",
+    "Yesterday": "Gestern",
+    "ThisWeek": "Diese Woche",
+    "ThisMonth": "Diesen Monat",
+    "ThisYear": "Dieses Jahr",
+    "EmojiStyle": "Emoji-Stil",
+    "EmojiSystem": "Systemstandard",
+    "EmojiNoto": "Noto Color"
   }
 }

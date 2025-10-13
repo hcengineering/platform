@@ -21,7 +21,8 @@ import {
   type WorkspaceUuid,
   type AccountUuid,
   buildSocialIdString,
-  type SocialKey
+  type SocialKey,
+  type PersonUuid
 } from '@hcengineering/core'
 import type {
   Collection,
@@ -823,5 +824,9 @@ export class MongoAccountDB implements AccountDB {
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
     throw new Error('Not implemented')
+  }
+
+  async generatePersonUuid (): Promise<PersonUuid> {
+    return new UUID().toJSON() as PersonUuid
   }
 }

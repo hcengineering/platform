@@ -17,6 +17,7 @@ import { systemAccountUuid } from '@hcengineering/core'
 import { extractToken } from '@hcengineering/server-client'
 import { Token } from '@hcengineering/server-token'
 import { type Response, type Request, type NextFunction, RequestHandler } from 'express'
+import { validate } from 'uuid'
 import { ApiError } from './error'
 
 export interface KeepAliveOptions {
@@ -66,7 +67,7 @@ export const withAuthorization = (req: RequestWithAuth, res: Response, next: Nex
 }
 
 export const withWorkspace = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
-  if (req.params.workspace === undefined || req.params.workspace === '') {
+  if (req.params.workspace === undefined || req.params.workspace === '' || !validate(req.params.workspace)) {
     next(new ApiError(400, 'Missing workspace'))
     return
   }
@@ -85,7 +86,7 @@ export const withWorkspace = (req: RequestWithAuth, res: Response, next: NextFun
 }
 
 export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
-  if (req.params.workspace === undefined || req.params.workspace === '') {
+  if (req.params.workspace === undefined || req.params.workspace === '' || !validate(req.params.workspace)) {
     next(new ApiError(400, 'Missing workspace'))
     return
   }

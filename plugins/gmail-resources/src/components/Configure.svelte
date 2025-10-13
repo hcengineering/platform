@@ -24,8 +24,11 @@
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
   import { Integration as AccountIntegration } from '@hcengineering/account-client'
 
+  import ConfigureV2 from './ConfigureV2.svelte'
   import { getIntegrationClient } from '../api'
   import gmail from '../plugin'
+  import { isNewGmailIntegration } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: AccountIntegration
   let integrationSettings: Integration | undefined
@@ -49,7 +52,9 @@
 
   async function change (shared: AccountUuid[]) {
     if (integrationSettings == null) {
-      console.error('Integrations settings are not found', integration.socialId, integration.kind)
+      Analytics.handleError(
+        new Error(`Integrations settings are not found for ${integration.socialId} ${integration.kind}`)
+      )
       return
     }
     integrationSettings.shared = shared
@@ -74,36 +79,40 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<Card
-  label={gmail.string.Shared}
-  okAction={async () => {
-    await apply()
-    dispatch('close')
-  }}
-  canSave={true}
-  fullSize
-  okLabel={presentation.string.Ok}
-  on:close={() => dispatch('close')}
-  on:changeContent
->
-  <div style="width: 25rem;">
-    <Grid rowGap={1}>
-      <div>
-        <Label label={gmail.string.Shared} />
-      </div>
-      <Toggle bind:on={shared} on:change={disable} />
-      {#if shared}
+{#if isNewGmailIntegration(integration)}
+  <ConfigureV2 {integration} on:close />
+{:else}
+  <Card
+    label={gmail.string.Shared}
+    okAction={async () => {
+      await apply()
+      dispatch('close')
+    }}
+    canSave={true}
+    fullSize
+    okLabel={presentation.string.Ok}
+    on:close={() => dispatch('close')}
+    on:changeContent
+  >
+    <div style="width: 25rem;">
+      <Grid rowGap={1}>
         <div>
-          <Label label={gmail.string.AvailableTo} />
+          <Label label={gmail.string.Shared} />
         </div>
-        <AccountArrayEditor
-          kind={'regular'}
-          label={gmail.string.AvailableTo}
-          excludeItems={[currentEmployee]}
-          value={integrationSettings?.shared ?? []}
-          onChange={(res) => change(res)}
-        />
-      {/if}
-    </Grid>
-  </div>
-</Card>
+        <Toggle bind:on={shared} on:change={disable} />
+        {#if shared}
+          <div>
+            <Label label={gmail.string.AvailableTo} />
+          </div>
+          <AccountArrayEditor
+            kind={'regular'}
+            label={gmail.string.AvailableTo}
+            excludeItems={[currentEmployee]}
+            value={integrationSettings?.shared ?? []}
+            onChange={(res) => change(res)}
+          />
+        {/if}
+      </Grid>
+    </div>
+  </Card>
+{/if}

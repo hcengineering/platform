@@ -96,7 +96,7 @@ export const getYoutubeEmbedUrl = (nocookie?: boolean, isPlaylist?: boolean): st
   if (isPlaylist ?? false) {
     return 'https://www.youtube-nocookie.com/embed/videoseries?list='
   }
-  return nocookie ?? false ? 'https://www.youtube-nocookie.com/embed/' : 'https://www.youtube.com/embed/'
+  return (nocookie ?? false) ? 'https://www.youtube-nocookie.com/embed/' : 'https://www.youtube.com/embed/'
 }
 
 export const getEmbedUrlFromYoutubeUrl = (url: string, options: YoutubeEmbedUrlOptions): string | undefined => {

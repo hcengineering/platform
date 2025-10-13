@@ -23,10 +23,12 @@ import {
   EmailMessage,
   HulyMailHeader,
   HulyMessageIdHeader,
-  HulyMessageTypeHeader
+  HulyMessageTypeHeader,
+  MailHeader
 } from './types'
-import { MessageExtra } from '@hcengineering/communication-types'
+import { MessageExtra, MessageID } from '@hcengineering/communication-types'
 import { CreateMessageEvent } from '@hcengineering/communication-sdk-types'
+import { generateMessageId } from '@hcengineering/communication-shared'
 
 const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
 const NAME_SEGMENT_REGEX = /[\s,;]+/
@@ -210,10 +212,15 @@ export function getMailHeaders (messageType: string, messageId?: string | undefi
   return headers
 }
 
-export function getMailHeadersRecord (messageType: string, messageId?: string | undefined): Record<string, string> {
+export function getMailHeadersRecord (
+  messageType: string,
+  messageId: string | undefined,
+  email: string
+): Record<string, string> {
   const headers: Record<string, string> = {
     [HulyMailHeader]: 'true',
-    [HulyMessageTypeHeader]: messageType
+    [HulyMessageTypeHeader]: messageType,
+    [MailHeader.Id]: getEmailMessageIdFromHulyId(messageId, email)
   }
   if (messageId !== undefined) {
     headers[HulyMessageIdHeader] = messageId
@@ -228,4 +235,39 @@ export function isHulyMessage (headers: string[]): boolean {
       header.startsWith(HulyMessageIdHeader) ||
       header.startsWith(HulyMessageTypeHeader)
   )
+}
+
+export function getDomainFromEmail (email: string): string {
+  const atIndex = email.lastIndexOf('@')
+  if (atIndex === -1) {
+    throw new Error('Invalid email address')
+  }
+  return email.substring(atIndex + 1)
+}
+
+export function getEmailMessageIdFromHulyId (hulyId: string | undefined, email: string): string {
+  const domain = getDomainFromEmail(email)
+  const id = hulyId ?? generateMessageId()
+  return `<${id}@${domain}>`
+}
+
+export function getHulyIdFromEmailMessageId (messageId: string, email: string): MessageID | undefined {
+  const domain = getDomainFromEmail(email)
+
+  const cleanMessageId = messageId.replace(/^<|>$/g, '')
+
+  const domainSuffix = `@${domain}`
+  if (!cleanMessageId.endsWith(domainSuffix)) {
+    return undefined
+  }
+
+  return cleanMessageId.substring(0, cleanMessageId.length - domainSuffix.length) as MessageID
+}
+
+export function generateNewEmailId (email: string): string {
+  return getEmailMessageIdFromHulyId(generateMessageId(), email)
+}
+
+export function isHulyEmailMessageId (messageId: string, email: string): boolean {
+  return getHulyIdFromEmailMessageId(messageId, email) !== undefined
 }

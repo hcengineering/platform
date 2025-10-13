@@ -23,6 +23,7 @@
 
   import { getChannelName, getObjectIcon } from '../utils'
   import chunter from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: Doc
   export let readonly = false
@@ -30,6 +31,7 @@
   export let collection: string | undefined
   export let isThread = false
   export let autofocus = true
+  export let onKeyDown: ((e: KeyboardEvent) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -47,8 +49,8 @@
         }
         clazz = hierarchy.getClass(clazz).extends
       }
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
       return []
     }
     return []
@@ -86,7 +88,7 @@
     <ActivityExtensionComponent
       kind="input"
       {extensions}
-      props={{ object, boundary, collection, autofocus, withTypingInfo: true }}
+      props={{ object, boundary, collection, autofocus, withTypingInfo: true, onKeyDown }}
     />
   </div>
 {:else}

@@ -98,6 +98,7 @@
     ViewConfiguration,
     WorkbenchTab
   } from '@hcengineering/workbench'
+  import communication from '@hcengineering/communication'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
@@ -150,6 +151,7 @@
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
 
   const client = getClient()
 
@@ -157,6 +159,15 @@
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .filter((it) => isAllowedToRole(it.accessLevel, account))
+
+  if (isCommunicationEnabled) {
+    const notificationApp = client
+      .getModel()
+      .findAllSync<Application>(workbench.class.Application, { alias: notificationId })[0]
+    if (notificationApp && !apps.some((a) => a._id === notificationApp._id)) {
+      apps.push(notificationApp)
+    }
+  }
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -333,7 +344,6 @@
       return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 
@@ -400,7 +410,7 @@
     loc.fragment =
       (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
         ? loc.fragment
-        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
+        : (resolved.loc.fragment ?? resolved.defaultLocation.fragment)
     return loc
   }
 
@@ -752,6 +762,27 @@
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
 
+  $: inboxProps = {
+    selected: currentAppAlias === notificationId || inboxPopup !== undefined,
+    navigator: (currentAppAlias === notificationId || inboxPopup !== undefined) && $deviceInfo.navigator.visible,
+    notify: hasInboxNotifications,
+    onClick: (e: MouseEvent) => {
+      if (e.metaKey || e.ctrlKey) return
+      if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+        toggleNav()
+      } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate(lastLoc)
+        lastLoc = undefined
+      } else {
+        lastLoc = $location
+      }
+    }
+  }
+
+  $: customAppProps = new Map([[notificationId, inboxProps]])
+
   defineSeparators('workbench', workbenchSeparators)
   defineSeparators('main', mainSeparators)
 
@@ -832,7 +863,7 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        {#if !isExcludedApp(notificationId)}
+        {#if !isExcludedApp(notificationId) && !isCommunicationEnabled}
           <NavLink
             app={notificationId}
             shrink={0}
@@ -843,27 +874,8 @@
             <AppItem
               icon={notification.icon.Notifications}
               label={notification.string.Inbox}
-              selected={currentAppAlias === notificationId || inboxPopup !== undefined}
-              navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
-                $deviceInfo.navigator.visible}
-              on:click={(e) => {
-                if (e.metaKey || e.ctrlKey) return
-                if (
-                  !$deviceInfo.navigator.visible &&
-                  $deviceInfo.navigator.float &&
-                  currentAppAlias === notificationId
-                ) {
-                  toggleNav()
-                } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  navigate(lastLoc)
-                  lastLoc = undefined
-                } else {
-                  lastLoc = $location
-                }
-              }}
-              notify={hasInboxNotifications}
+              {...inboxProps}
+              on:click={inboxProps.onClick}
             />
           </NavLink>
         {/if}
@@ -871,6 +883,7 @@
           {apps}
           active={currentApplication?._id}
           direction={$deviceInfo.navigator.direction}
+          {customAppProps}
           on:toggleNav={toggleNav}
         />
       </div>

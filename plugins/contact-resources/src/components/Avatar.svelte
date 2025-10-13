@@ -59,6 +59,7 @@
   export let disabled: boolean = false
   export let style: 'modern' | undefined = undefined
   export let clickable: boolean = false
+  export let clipPath: string | undefined = undefined
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -141,6 +142,7 @@
         {disabled}
         {style}
         withStatus
+        {clipPath}
       />
       <div
         class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
@@ -163,6 +165,7 @@
       {adaptiveName}
       {disabled}
       {style}
+      {clipPath}
     />
   {/if}
 </div>

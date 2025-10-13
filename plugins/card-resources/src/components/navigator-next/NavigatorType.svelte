@@ -15,15 +15,16 @@
 
 <script lang="ts">
   import view from '@hcengineering/view'
-  import { IconAdd, NavGroup, Action, NavItem } from '@hcengineering/ui'
+  import { IconAdd, NavGroup, Action, NavItem, ButtonIcon, showPopup, languageStore } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { CardSpace, MasterTag } from '@hcengineering/card'
-  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import presentation, { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import { translate, getEmbeddedLabel } from '@hcengineering/platform'
 
   import type { NavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'
-  import { createCard } from '../../utils'
+  import CreateCardPopup from '../CreateCardPopup.svelte'
 
   export let type: MasterTag
   export let level: number = -1
@@ -35,24 +36,30 @@
   export let showIcon: boolean = false
 
   const dispatch = createEventDispatcher()
+  let activeAction: string | undefined = undefined
 
   async function handleCreateCard (): Promise<void> {
-    if (space === undefined) return
-    const _id = await createCard(type._id, space._id)
-    const card = await getClient().findOne(cardPlugin.class.Card, { _id })
-    if (card === undefined) return
-    dispatch('selectCard', card)
+    showPopup(CreateCardPopup, { type: type._id, space }, 'center', async (result) => {
+      if (result !== undefined) {
+        const card = await getClient().findOne(cardPlugin.class.Card, { _id: result })
+        if (card === undefined) return
+        dispatch('selectCard', card)
+      }
+    })
   }
 
-  function getActions (): Action[] {
+  async function getActions (lang: string): Promise<Action[]> {
     const result: Action[] = []
+    const typeString = await translate(type.label, {}, lang)
+    const createString = await translate(presentation.string.Create, {}, lang)
 
-    if (config.allowCreate === true && space !== undefined) {
+    if (config.allowCreate === true) {
       result.push({
         id: 'create-card',
-        label: cardPlugin.string.CreateCard,
+        label: getEmbeddedLabel(`${createString} ${typeString}`),
         icon: IconAdd,
         action: async (): Promise<void> => {
+          activeAction = 'create-card'
           await handleCreateCard()
         }
       })
@@ -60,6 +67,11 @@
 
     return result
   }
+  let actions: Action[] = []
+
+  $: void getActions($languageStore).then((res) => {
+    actions = res
+  })
 </script>
 
 {#if level > -1}
@@ -95,7 +107,7 @@
     isFold
     visible={active}
     type="selectable-header"
-    actions={getActions()}
+    {actions}
     on:click={(e) => {
       e.stopPropagation()
       e.preventDefault()
@@ -104,6 +116,22 @@
   >
     <div class="mt-0-5" />
     <slot />
+    <svelte:fragment slot="actions">
+      {#each actions as action}
+        <ButtonIcon
+          icon={action.icon ?? view.icon.Edit}
+          size="extra-small"
+          kind="tertiary"
+          pressed={activeAction === action.id}
+          tooltip={{ label: action.label }}
+          on:click={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            void action.action(action.props, e)
+          }}
+        />
+      {/each}
+    </svelte:fragment>
     <svelte:fragment slot="visible" let:isOpen>
       <div class="mt-0-5" />
       <slot name="visible" {isOpen} />

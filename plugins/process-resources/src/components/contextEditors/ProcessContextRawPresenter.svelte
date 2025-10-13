@@ -14,11 +14,10 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { ProcessContext } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
-  import process from '../../plugin'
+  import { ProcessContextView } from '../../types'
 
-  export let context: ProcessContext
+  export let context: ProcessContextView
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

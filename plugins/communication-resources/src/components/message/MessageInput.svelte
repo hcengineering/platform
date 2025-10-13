@@ -14,50 +14,52 @@
 -->
 
 <script lang="ts">
-  import { Markup, RateLimiter, Ref, generateId } from '@hcengineering/core'
-  import { tick, createEventDispatcher } from 'svelte'
-  import {
-    uploadFile,
-    deleteFile,
-    getCommunicationClient,
-    getClient,
-    getFileMetadata,
-    isLinkPreviewEnabled
-  } from '@hcengineering/presentation'
-  import {
-    Message,
-    MessageID,
-    LinkPreviewParams,
-    BlobParams,
-    AttachmentID,
-    linkPreviewType,
-    BlobAttachment,
-    AppletParams
-  } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
-  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
-  import { updateMyPresence } from '@hcengineering/presence-resources'
-  import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
-  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
-  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
-  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+  import {
+    AppletParams,
+    AttachmentID,
+    BlobAttachment,
+    BlobParams,
+    LinkPreviewParams,
+    linkPreviewType,
+    Message,
+    MessageID
+  } from '@hcengineering/communication-types'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { clearTyping, setTyping } from '@hcengineering/presence-resources'
+  import {
+    deleteFile,
+    getClient,
+    getCommunicationClient,
+    getFileMetadata,
+    isLinkPreviewEnabled,
+    uploadFile
+  } from '@hcengineering/presentation'
+  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
+  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
+  import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
+  import { createEventDispatcher, tick } from 'svelte'
 
-  import TextInput from '../TextInput.svelte'
-  import IconAttach from '../icons/Attach.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getDraft, getEmptyDraft, messageToDraft, removeDraft, saveDraft } from '../../draft'
+  import communication from '../../plugin'
+  import { messageEditingStore } from '../../stores'
+  import { type TextInputAction, AppletDraft, MessageDraft } from '../../types'
   import {
     defaultMessageInputActions,
-    toMarkdown,
-    toMarkup,
-    loadLinkPreviewParams,
     isCardAllowedForCommunications,
-    showForbidden
+    loadLinkPreviewParams,
+    showForbidden,
+    toMarkdown,
+    toMarkup
   } from '../../utils'
-  import communication from '../../plugin'
-  import { type TextInputAction, type PresenceTyping, MessageDraft, AppletDraft } from '../../types'
+  import TextInput from '../TextInput.svelte'
   import TypingPresenter from '../TypingPresenter.svelte'
-  import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
+  import IconAttach from '../icons/Attach.svelte'
 
   export let card: Card
   export let message: Message | undefined = undefined
@@ -138,6 +140,8 @@
     } else {
       await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
     }
+
+    void clearTyping(me, card._id)
   }
 
   async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
@@ -153,15 +157,15 @@
         const r = await getResource(ap.createFn)
         await r(card, messageId, appletDraft.params)
         toAttach.push(appletDraft)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     }
 
     if (toAttach.length > 0) {
       void communicationClient.attachmentPatch<AppletParams>(card._id, messageId, {
         add: toAttach.map((it) => ({
-          type: it.type,
+          mimeType: it.mimeType,
           params: it.params
         }))
       })
@@ -170,7 +174,7 @@
 
   async function createMessage (
     markdown: string,
-    blobs: BlobParams[],
+    blobs: (BlobParams & { mimeType: string })[],
     links: LinkPreviewParams[],
     urlsToLoad: string[],
     appletDrafts: AppletDraft[]
@@ -184,7 +188,7 @@
       void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
         add: blobs.map((it) => ({
           id: it.blobId as any as AttachmentID,
-          type: it.mimeType,
+          mimeType: it.mimeType,
           params: it
         }))
       })
@@ -193,7 +197,7 @@
     if (links.length > 0) {
       void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
         add: links.map((it) => ({
-          type: linkPreviewType,
+          mimeType: linkPreviewType,
           params: it
         }))
       })
@@ -208,7 +212,7 @@
       void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
         add: [
           {
-            type: linkPreviewType,
+            mimeType: linkPreviewType,
             params
           }
         ]
@@ -219,7 +223,7 @@
   async function editMessage (
     message: Message,
     markdown: string,
-    blobs: BlobParams[],
+    blobs: (BlobParams & { mimeType: string })[],
     links: LinkPreviewParams[],
     appletDrafts: AppletDraft[]
   ): Promise<void> {
@@ -238,7 +242,7 @@
       void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
         add: attachBlobs.map((it) => ({
           id: it.blobId as any as AttachmentID,
-          type: it.mimeType,
+          mimeType: it.mimeType,
           params: it
         }))
       })
@@ -272,7 +276,7 @@
 
     void communicationClient.attachmentPatch(card._id, message.id, {
       add: attachLinks.map((it) => ({
-        type: linkPreviewType,
+        mimeType: linkPreviewType,
         params: it
       }))
     })
@@ -460,9 +464,7 @@
     if (message !== undefined) return
     if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
-        const room = { objectId: card._id, objectClass: card._class }
-        const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
-        updateMyPresence(room, { typing })
+        void setTyping(me, card._id)
       })
     }
   }
@@ -495,7 +497,10 @@
           if (result != null) {
             draft = {
               ...draft,
-              applets: [...draft.applets, { id: generateId(), type: applet.type, appletId: applet._id, params: result }]
+              applets: [
+                ...draft.applets,
+                { id: generateId(), mimeType: applet.type, appletId: applet._id, params: result }
+              ]
             }
           }
         })
@@ -548,6 +553,20 @@
       void uploadWith(handler)
     }
   }))
+
+  function handleKeyDown (_: any, event: KeyboardEvent): boolean {
+    if (event.key === 'ArrowUp') {
+      if (isEmptyDraft() && $messageEditingStore === undefined) {
+        dispatch('arrowUp')
+      }
+    }
+    if (event.key === 'Escape') {
+      if ($messageEditingStore !== undefined) {
+        messageEditingStore.set(undefined)
+      }
+    }
+    return false
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -578,8 +597,10 @@
     actions={[...defaultMessageInputActions, attachAction, ...uploadActions, ...appletActions]}
     on:submit={handleSubmit}
     on:update={onUpdate}
+    autofocus="end"
     onCancel={onCancel ? handleCancel : undefined}
     onPaste={pasteAction}
+    onKeyDown={handleKeyDown}
   >
     <div slot="header" class="header">
       {#if draft.blobs.length > 0 || draft.links.length > 0 || draft.applets.length > 0}

@@ -47,7 +47,7 @@ async function pdfToMarkdown (
 
       const url = 'https://www.datalab.to/api/v1/marker'
       const formData = new FormData()
-      formData.append('file', new Blob([buffer], { type: 'application/pdf' }), name ?? 'test.pdf')
+      formData.append('file', new Blob([new Uint8Array(buffer)], { type: 'application/pdf' }), name ?? 'test.pdf')
       formData.append('force_ocr', 'false')
       formData.append('paginate', 'false')
       formData.append('output_format', 'markdown')

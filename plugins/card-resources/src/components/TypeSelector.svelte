@@ -15,13 +15,17 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, NestedDropdown } from '@hcengineering/ui'
+  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
+  import { type ButtonKind, type ButtonSize, DropdownIntlItem, NestedDropdown } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import view from '@hcengineering/view'
 
   export let value: Ref<MasterTag>
   export let width: string | undefined = undefined
+  export let kind: ButtonKind | undefined = undefined
+  export let size: ButtonSize | undefined = undefined
+  export let disabled: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -55,12 +59,21 @@
       try {
         const clazz = hierarchy.getClass(key)
         result.push([
-          { id: key, label: clazz.label },
-          value.map((it) => ({ id: it._id, label: it.label })).sort((a, b) => a.label.localeCompare(b.label))
+          { id: key, label: clazz.label, ...getIconProps(clazz) },
+          value
+            .map((it) => ({ id: it._id, label: it.label, ...getIconProps(it) }))
+            .sort((a, b) => a.label.localeCompare(b.label))
         ])
       } catch {}
     }
     return result
+  }
+
+  function getIconProps (tag: MasterTag): Pick<DropdownIntlItem, 'icon' | 'iconProps'> {
+    return {
+      icon: tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : (tag.icon ?? card.icon.MasterTag),
+      iconProps: tag.icon === view.ids.IconWithEmoji ? { icon: tag.color } : {}
+    }
   }
 
   const classes = filterClasses()
@@ -69,7 +82,8 @@
   $: selectedClass = hierarchy.getClass(value)
   $: selected = {
     id: selectedClass._id,
-    label: selectedClass.label
+    label: selectedClass.label,
+    ...getIconProps(selectedClass)
   }
 </script>
 
@@ -77,6 +91,13 @@
   items={classes}
   {width}
   {selected}
+  {kind}
+  {size}
+  {disabled}
+  withIcon={true}
+  withSelectIcon={false}
+  withSearch={true}
+  disableFocusOnMouseover={true}
   on:selected={(e) => {
     value = e.detail
     dispatch('change', value)

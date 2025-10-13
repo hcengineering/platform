@@ -13,80 +13,88 @@
 // limitations under the License.
 //
 
-import { app, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
+import { TrayController } from './tray'
 
-export function dipatchMenuBarAction(mainWindow: BrowserWindow | undefined, action: MenuBarAction) {
+export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction, tray: TrayController | undefined): void {
+  if (mainWindow == null) {
+    return
+  }
+
+  function performZoom (increment: number): void {
     if (mainWindow == null) {
-        return
+      return
     }
-    
-    function performZoom(increment: number): void {
-        if  (mainWindow == null) {
-        return
-        }
-        const currentZoom = mainWindow.webContents.getZoomFactor();
-        mainWindow.webContents.setZoomFactor(currentZoom + increment);
-    }
+    const currentZoom = mainWindow.webContents.getZoomFactor()
+    mainWindow.webContents.setZoomFactor(currentZoom + increment)
+  }
 
-    const zoomStep = 0.1;
-    
-    switch (action) {
-        case 'settings':
-            mainWindow.webContents.send(CommandOpenSettings)
-            break;
-        case 'select-workspace':
-            mainWindow.webContents.send(CommandSelectWorkspace)
-            break;
-        case 'logout':
-            mainWindow.webContents.send(CommandLogout)
-            break;
-        case 'exit':
-            app.quit();
-            break;
-        case 'undo':
-            mainWindow.webContents.undo();
-            break;
-        case 'redo':
-            mainWindow.webContents.redo();
-            break;
-        case 'cut':
-            mainWindow.webContents.cut();
-            break;
-        case 'copy':
-            mainWindow.webContents.copy();
-            break;
-        case 'paste':
-            mainWindow.webContents.paste();
-            break;
-        case 'delete':
-            mainWindow.webContents.delete();
-            break;
-        case 'select-all':
-            mainWindow.webContents.selectAll();
-            break;
-        case 'reload':
-            mainWindow?.reload();
-            break;
-        case 'force-reload':
-            mainWindow.webContents.reloadIgnoringCache();
-            break;
-        case 'toggle-devtools':
-            mainWindow.webContents.toggleDevTools();
-            break;
-        case 'zoom-in':
-            performZoom(+zoomStep);
-            break;
-        case 'zoom-out':
-            performZoom(-zoomStep);
-            break;
-        case 'restore-size':
-            mainWindow.webContents.setZoomFactor(1.0);
-            break;
-        case 'toggle-fullscreen':
-            mainWindow.setFullScreen(!mainWindow.isFullScreen()); 
-            break;
-        default:
-            console.log('unknown menu action:', action);
+  const zoomStep = 0.1
+
+  switch (action) {
+    case 'settings':
+      mainWindow.webContents.send(CommandOpenSettings)
+      break
+    case 'select-workspace':
+      mainWindow.webContents.send(CommandSelectWorkspace)
+      break
+    case 'logout':
+      mainWindow.webContents.send(CommandLogout)
+      break
+    case 'exit':
+      mainWindow.close()
+      break
+    case 'undo':
+      mainWindow.webContents.undo()
+      break
+    case 'redo':
+      mainWindow.webContents.redo()
+      break
+    case 'cut':
+      mainWindow.webContents.cut()
+      break
+    case 'copy':
+      mainWindow.webContents.copy()
+      break
+    case 'paste':
+      mainWindow.webContents.paste()
+      break
+    case 'delete':
+      mainWindow.webContents.delete()
+      break
+    case 'select-all':
+      mainWindow.webContents.selectAll()
+      break
+    case 'reload':
+      mainWindow?.reload()
+      break
+    case 'force-reload':
+      mainWindow.webContents.reloadIgnoringCache()
+      break
+    case 'toggle-devtools':
+      mainWindow.webContents.toggleDevTools()
+      break
+    case 'zoom-in':
+      performZoom(+zoomStep)
+      break
+    case 'zoom-out':
+      performZoom(-zoomStep)
+      break
+    case 'restore-size':
+      mainWindow.webContents.setZoomFactor(1.0)
+      break
+    case 'toggle-fullscreen':
+      mainWindow.setFullScreen(!mainWindow.isFullScreen())
+      break
+    case 'toggle-minimize-to-tray': {
+      if (tray != null) {
+        const newSetting = tray.toggleMinimizeToTray()
+        mainWindow.webContents.send('minimize-to-tray-setting-changed', newSetting)
+      }
+      break
     }
+    default:
+      console.log('unknown menu action:', action)
+  }
 }

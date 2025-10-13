@@ -34,6 +34,7 @@
   export let adaptiveName: boolean = false
   export let disabled: boolean = false
   export let style: 'modern' | undefined = undefined
+  export let clipPath: string | undefined = undefined
 
   function handleClick (): void {
     dispatch('click')
@@ -79,6 +80,7 @@
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={background}
+    style:clip-path={clipPath}
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
     }}
@@ -103,6 +105,7 @@
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={background}
+    style:clip-path={clipPath}
     on:click={handleClick}
   >
     {#if url && !imgError}

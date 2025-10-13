@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, State, Trigger } from '@hcengineering/process'
+  import { Process, State, Transition, Trigger } from '@hcengineering/process'
   import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
+  import { makeRank } from '@hcengineering/rank'
 
   export let process: Process
 
@@ -27,9 +28,16 @@
   let states: State[] = []
 
   const query = createQuery()
-  query.query(plugin.class.State, { process: process._id }, (res) => {
-    states = res
-  })
+  query.query(
+    plugin.class.State,
+    { process: process._id },
+    (res) => {
+      states = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   let statesItems: ListItem[] = []
 
@@ -54,36 +62,59 @@
 
   let params: Record<string, any> = {}
 
+  const transitionsQ = createQuery()
+
+  let transitions: Transition[] = []
+
+  transitionsQ.query(
+    plugin.class.Transition,
+    { process: process._id },
+    (res) => {
+      transitions = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
+
   const triggersItems: DropdownIntlItem[] = triggers.map((p) => ({ label: p.label, id: p._id, icon: p.icon }))
 
   async function save (): Promise<void> {
     if (to === undefined || trigger === undefined) {
       return
     }
+    const prevTransitions =
+      (transitions.findLast((p) => p.from === from) ?? transitions.length > 0)
+        ? transitions[transitions.length - 1]
+        : undefined
+    const rank = makeRank(prevTransitions?.rank, undefined)
     await client.createDoc(plugin.class.Transition, core.space.Model, {
       from,
       to,
       trigger,
       triggerParams: params,
       process: process._id,
+      rank,
       actions: []
     })
     dispatch('close')
   }
 
   function change (e: CustomEvent<Record<string, any>>): void {
-    params = e.detail
+    if (e.detail?.params !== undefined) {
+      params = e.detail.params
+    }
   }
 </script>
 
 <Card
   okAction={save}
-  canSave={to !== undefined && trigger !== undefined && to !== from}
+  canSave={to !== undefined && trigger !== undefined}
   label={plugin.string.AddTransition}
   width={'medium'}
   on:close
 >
-  <div class="grid">
+  <div class="editor-grid">
     <Label label={plugin.string.From} />
     {#if !withoutFrom}
       <Dropdown
@@ -111,6 +142,9 @@
       items={triggersItems}
       bind:selected={trigger}
       label={plugin.string.Trigger}
+      on:selected={() => {
+        params = {}
+      }}
       justify={'left'}
       width={'100%'}
       kind={'no-border'}
@@ -120,16 +154,3 @@
     <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
   {/if}
 </Card>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    height: min-content;
-  }
-</style>

@@ -14,20 +14,21 @@
 // limitations under the License.
 //
 
-import { generateId, MeasureMetricsContext, newMetrics, type WorkspaceIds } from '@hcengineering/core'
+import { generateId, newMetrics, type WorkspaceIds } from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
+import { join } from 'path'
 
+import config from './config'
 import { convertToHtml } from './convert'
 import { ApiError } from './error'
 import { PrintOptions, print, validKinds } from './print'
-import config from './config'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
+import { withMeasureContext } from './middleware'
 
 function getAccountClient (token: string): AccountClient {
   return getAccountClientRaw(config.AccountsUrl, token)
@@ -133,7 +134,7 @@ export function createServer (
   const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = initStatisticsContext('print', {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'print',
         {},
         {},
@@ -149,10 +150,12 @@ export function createServer (
   const app = express()
   app.use(cors())
   app.use(express.json())
+  app.use(withMeasureContext({ ctx: measureCtx }))
 
   app.get(
     '/print',
     wrapRequest(async (req, res, wsIds, token) => {
+      const ctx = req.ctx
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
 
@@ -162,7 +165,7 @@ export function createServer (
         !['http:', 'https:'].includes(url.protocol) ||
         (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
       ) {
-        console.error(`Rejected processing unexpected link: ${link}. Token: ${JSON.stringify(token)}`)
+        ctx.error('Rejected processing unexpected link', { link, token })
         throw new ApiError(403, 'Cannot process provided link')
       }
 
@@ -189,7 +192,10 @@ export function createServer (
         throw new ApiError(400, 'Both width and height must be provided')
       }
 
-      const printRes = await print(link, { kind, viewport })
+      const printRes = await ctx.with('print', { kind }, (ctx) => print(ctx, link, { kind, viewport }), {
+        url,
+        viewport
+      })
 
       if (printRes === undefined) {
         throw new ApiError(400, 'Failed to print')
@@ -197,7 +203,7 @@ export function createServer (
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(measureCtx, wsIds, printId, printRes, `application/${kind}`, printRes.length)
+      await storageAdapter.put(ctx, wsIds, printId, printRes, `application/${kind}`, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })
@@ -208,8 +214,9 @@ export function createServer (
     '/convert/:file',
     wrapRequest(async (req, res, wsUuid) => {
       const convertableFormats = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const ctx = req.ctx
       const file = req.params.file
-      const stat = await storageAdapter.stat(measureCtx, wsUuid, file)
+      const stat = await storageAdapter.stat(ctx, wsUuid, file)
 
       if (stat === undefined) {
         throw new ApiError(404, `File ${file} not found`)
@@ -220,16 +227,16 @@ export function createServer (
       }
 
       const convertId = getConvertId(file, stat.etag)
-      const convertStats = await storageAdapter.stat(measureCtx, wsUuid, convertId)
+      const convertStats = await storageAdapter.stat(ctx, wsUuid, convertId)
 
       if (convertStats === undefined) {
-        const originalFile = await storageAdapter.read(measureCtx, wsUuid, file)
+        const originalFile = await storageAdapter.read(ctx, wsUuid, file)
 
         if (originalFile === undefined) {
           throw new ApiError(404, `File ${file} not found`)
         }
 
-        const htmlRes = await convertToHtml(Buffer.concat(originalFile as any))
+        const htmlRes = await ctx.with('convertToHtml', {}, () => convertToHtml(Buffer.concat(originalFile as any)))
 
         if (htmlRes === undefined) {
           throw new ApiError(400, 'Failed to convert')
@@ -237,7 +244,7 @@ export function createServer (
 
         const htmlBuf = Buffer.from(htmlRes)
 
-        await storageAdapter.put(measureCtx, wsUuid, convertId, htmlBuf, 'text/html', htmlBuf.length)
+        await storageAdapter.put(ctx, wsUuid, convertId, htmlBuf, 'text/html', htmlBuf.length)
       }
 
       res.contentType('application/json')
@@ -246,7 +253,8 @@ export function createServer (
   )
 
   app.use((err: any, _req: any, res: any, _next: any) => {
-    console.log(err)
+    measureCtx.error('error', { err })
+
     if (err instanceof ApiError) {
       res.status(err.code).send({ code: err.code, message: err.message })
       return

@@ -73,6 +73,9 @@
     "SetPasswordLater": "I'll set a password later",
     "SetPasswordNow": "I'll set a password now",
     "LoginAsGuest": "Continue as a guest",
-    "SignUpToCreateWorkspace": "There are no workspaces with guest access. Please sign up to create your own."
+    "SignUpToCreateWorkspace": "There are no workspaces with guest access. Please sign up to create your own.",
+    "WhatIsYourName": "What is your name?",
+    "AccessExpired": "Access time expired. Please ask for a new access link.",
+    "AccessNotActive": "Access time hasn't started yet. It is starting in: "
   }
 }

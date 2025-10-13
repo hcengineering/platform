@@ -73,7 +73,7 @@ export class AIControl {
   // giving us a reasonable token count estimate for summaries.
   private readonly openaiEncoding = (() => {
     try {
-      return encodingForModel(config.OpenAIModel)
+      return encodingForModel(config.OpenAIModel as any)
     } catch (err) {
       return getEncoding('cl100k_base')
     }

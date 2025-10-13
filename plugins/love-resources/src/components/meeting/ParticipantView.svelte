@@ -244,6 +244,7 @@
     display: none;
   }
   .cover {
+    overflow: hidden;
     object-fit: cover;
     border-radius: 0.75rem;
     height: 100%;

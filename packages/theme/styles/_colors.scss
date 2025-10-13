@@ -99,12 +99,12 @@
 
   --theme-clockface-sec-arrow: conic-gradient(at 50% -10px, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0) 49%, #F47758 50%, rgba(255, 0, 0, 0) 51%, rgba(255, 0, 0, 0) 100%);
   --theme-clockface-sec-holder: #F47758;
-
-  --drawing-bg-color: #EEEEEE;
 }
 
 /* Dark Theme */
 .theme-dark {
+  --theme-drawing-bg-color: #282834;
+
   --theme-text-primary-color: rgba(255, 255, 255, .8);
   --theme-text-placeholder-color: rgba(255, 255, 255, .4);
 
@@ -225,6 +225,7 @@
   --theme-calendar-event-available-bgcolor: #f6f9fe;
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
+  --theme-calendar-zone: rgba(64, 109, 223, 0.1);
 
   --theme-diffview-block-header-color: rgba(56,139,253,0.1);
   --theme-diffview-line-color: var(--theme-content-color);
@@ -402,6 +403,10 @@
   --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
   --theme-label-blue-border-color: rgba(59, 130, 246, .2);
 
+  --theme-label-orange-color: rgba(249, 115, 22, .8);
+  --theme-label-orange-bg-color: rgba(249, 115, 22, .08);
+  --theme-label-orange-border-color: rgba(249, 115, 22, .2);
+
   --theme-label-gray-color: rgba(255, 255, 255, .6);
   --theme-label-gray-bg-color: rgba(255, 255, 255, .02);
   --theme-label-gray-border-color: rgba(255, 255, 255, .09);
@@ -409,6 +414,8 @@
 
 /* Light Theme */
 .theme-light {
+  --theme-drawing-bg-color: #EEEEEE;
+  
   --theme-text-primary-color: rgba(0, 0, 0, .8);
   --theme-text-placeholder-color: rgba(0, 0, 0, .4);
 
@@ -533,6 +540,7 @@
   --theme-calendar-event-available-bgcolor: #f6f9fe;
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
+  --theme-calendar-zone: rgba(64, 109, 223, 0.1);
 
   --theme-diffview-block-header-color: rgb(221, 244, 255);
   --theme-diffview-line-color: var(--theme-content-color);
@@ -714,7 +722,11 @@
   --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
   --theme-label-blue-border-color: rgba(59, 130, 246, .15);
 
+  --theme-label-orange-color: rgba(194, 65, 12, 0.9);
+  --theme-label-orange-bg-color: rgba(249, 115, 22, .08);
+  --theme-label-orange-border-color: rgba(249, 115, 22, .15);
+
   --theme-label-gray-color: rgba(0, 0, 0, .6);
   --theme-label-gray-bg-color: rgba(0, 0, 0, .02);
-  --theme-label-gray-border-color: rgba(0, 0, 0, .09)
+  --theme-label-gray-border-color: rgba(0, 0, 0, .09);
 }

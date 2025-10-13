@@ -18,7 +18,7 @@
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Card } from '@hcengineering/card'
   import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
-  import type { MessageID, SocialID } from '@hcengineering/communication-types'
+  import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
   import { MessageAction } from '@hcengineering/communication'
@@ -29,9 +29,12 @@
   import OneRowMessageBody from './OneRowMessageBody.svelte'
   import {
     messageEditingStore,
-    TranslateMessagesStatus,
     translateMessagesStore,
-    threadCreateMessageStore
+    threadCreateMessageStore,
+    showOriginalMessagesStore,
+    isMessageTranslated,
+    translateToStore,
+    dontTranslateStore
   } from '../../stores'
   import { getMessageActions } from '../../actions'
   import communication from '../../plugin'
@@ -41,13 +44,15 @@
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
+  export let hideHeader: boolean = false
   export let readonly: boolean = false
+  export let showThreads: boolean = true
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
 
   let isEditing = false
-  let isDeleted = false
   let author: Person | undefined
 
-  $: isDeleted = message.removed
   $: isEditing = $messageEditingStore === message.id
   $: void updateAuthor(message.creator)
 
@@ -96,7 +101,14 @@
   let excludedActions: Ref<MessageAction>[] = []
   let actions: MessageAction[] = []
 
-  $: excludedActions = getExcludedActions($translateMessagesStore)
+  $: isTranslated = isMessageTranslated(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
+  $: excludedActions = getExcludedActions(isTranslated)
 
   $: void getMessageActions(message).then((res) => {
     allActions = res
@@ -104,15 +116,12 @@
 
   $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
 
-  function getExcludedActions (translatedMessages: Map<MessageID, TranslateMessagesStatus>): Ref<MessageAction>[] {
-    const result: TranslateMessagesStatus | undefined = translatedMessages.get(message.id)
-    if (result === undefined || result.inProgress || !result.shown) {
+  function getExcludedActions (isTranslated: boolean): Ref<MessageAction>[] {
+    if (!isTranslated) {
       return [communication.messageAction.ShowOriginalMessage]
-    } else if (result.shown) {
+    } else {
       return [communication.messageAction.TranslateMessage]
     }
-
-    return []
   }
 
   function handleContextMenu (event: MouseEvent): void {
@@ -136,8 +145,7 @@
 
   let isActionsPanelOpened = false
 
-  $: showActions = !isEditing && !isDeleted && !readonly
-  $: isThread = message.thread != null
+  $: showActions = !isEditing && !readonly
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -150,10 +158,21 @@
   class:noHover={readonly}
   style:padding
 >
-  {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
-    <OneRowMessageBody {message} {card} {author} {hideAvatar} />
+  {#if message.type === MessageType.Activity}
+    <OneRowMessageBody {message} {card} {author} {hideAvatar} {hideHeader} />
   {:else}
-    <MessageBody {message} {card} {author} {isEditing} compact={compact && !isThread} {hideAvatar} />
+    <MessageBody
+      {message}
+      {card}
+      {author}
+      {isEditing}
+      compact={compact && message.threads.length === 0}
+      {hideAvatar}
+      {hideHeader}
+      {showThreads}
+      {collapsible}
+      {maxHeight}
+    />
   {/if}
 
   {#if showActions}

@@ -103,6 +103,7 @@ import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
+import SocialIdentityPresenter from './components/SocialIdentityPresenter.svelte'
 import PersonIdFilter from './components/PersonIdFilter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SelectAvatars from './components/SelectAvatars.svelte'
@@ -125,9 +126,10 @@ import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 import PersonPreviewProvider from './components/person/PersonPreviewProvider.svelte'
+import TranslationSettings from './components/TranslationSettings.svelte'
 
 import { get } from 'svelte/store'
-import { canResendInvitation } from './visibilityTester'
+import { canMergePersons, canResendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -155,6 +157,7 @@ import {
 export * from './utils'
 export { employeeByIdStore } from './utils'
 export * from './assignee'
+export * from './translation'
 export {
   PersonIdArrayEditor,
   AccountArrayEditor,
@@ -191,6 +194,7 @@ export {
   OrganizationPresenter,
   PersonIcon,
   PersonPresenter,
+  SocialIdentityPresenter,
   PersonRefPresenter,
   SelectAvatars,
   SelectUsersPopup,
@@ -397,7 +401,9 @@ export default async (): Promise<Resources> => ({
     SpaceMembersEditor,
     ContactNamePresenter,
     PersonIdFilter,
-    AssigneePopup
+    AssigneePopup,
+    TranslationSettings,
+    SocialIdentityPresenter
   },
   completion: {
     EmployeeQuery: async (
@@ -458,7 +464,8 @@ export default async (): Promise<Resources> => ({
     PersonTooltipProvider: getPersonTooltip,
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
-    CanResendInvitation: canResendInvitation
+    CanResendInvitation: canResendInvitation,
+    CanMergePersons: canMergePersons
   },
   resolver: {
     Location: resolveLocation,

@@ -66,8 +66,6 @@ export default mergeIds(viewId, view, {
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
-    DateEditor: '' as AnyComponent,
-    DatePresenter: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
@@ -98,7 +96,8 @@ export default mergeIds(viewId, view, {
     BaseDocPresenter: '' as AnyComponent,
     MasterDetailView: '' as AnyComponent,
     AssociationPresenter: '' as AnyComponent,
-    TreeView: '' as AnyComponent
+    TreeView: '' as AnyComponent,
+    AddRelationPopup: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

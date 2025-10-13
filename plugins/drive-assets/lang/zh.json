@@ -27,6 +27,8 @@
     "Rename": "重命名",
     "Restore": "恢复",
     "RoleLabel": "角色",
-    "Root": "/"
+    "Root": "/",
+    "ForbidCreateDrivePermission": "禁止创建磁盘",
+    "ForbidCreateDrivePermissionDescription": "禁止用户创建新磁盘"
   }
 }

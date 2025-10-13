@@ -6,6 +6,7 @@
     "Save": "Enregistrer",
     "Saved": "Enregistré...",
     "Download": "Télécharger",
+    "DownloadOriginal": "Télécharger l'original",
     "Delete": "Supprimer",
     "Close": "Fermer",
     "NotSelected": "Non sélectionné",
@@ -44,7 +45,15 @@
     "DocumentUrlCopied": "Copié !",
     "CopyLink": "Copier le lien",
     "AccessDenied": "L’objet n’existe pas ou vous n’êtes pas autorisé à y accéder.",
-    "UnableToFollowMention": "Impossible d’ouvrir l’objet mentionné"
+    "UnableToFollowMention": "Impossible d’ouvrir l’objet mentionné",
+    "Undo": "Annuler",
+    "Redo": "Rétablir",
+    "ClearCanvas": "Effacer la toile",
+    "PenTool": "Outil stylo",
+    "EraserTool": "Outil gomme",
+    "PanTool": "Outil déplacement",
+    "TextTool": "Outil texte",
+    "PaletteManagementMenu": "Gérer les préréglages de couleur"
   },
   "status": {
     "FileTooLarge": "Fichier trop volumineux"

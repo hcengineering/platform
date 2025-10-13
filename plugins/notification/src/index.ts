@@ -45,7 +45,6 @@ import { PersonSpace } from '@hcengineering/contact'
 import { Readable, Writable } from './types'
 
 export * from './types'
-export * from './utils'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 export const DOMAIN_DOC_NOTIFY = 'notification-dnc' as Domain

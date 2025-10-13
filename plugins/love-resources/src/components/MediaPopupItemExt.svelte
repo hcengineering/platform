@@ -1,14 +1,14 @@
 <script lang="ts">
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { isOffice } from '@hcengineering/love'
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, myInfo, myOffice, rooms, currentMeetingMinutes } from '../stores'
-  import { endMeeting, leaveRoom } from '../utils'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { currentRoom, infos, myInfo, myOffice } from '../stores'
+  import { liveKitClient } from '../utils'
+  import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
+  import MeetingHeader from './meeting/MeetingHeader.svelte'
+  import { leaveMeeting } from '../meetings'
 
   export let limit: number = 4
 
@@ -20,45 +20,23 @@
   let leaving = false
   async function handleLeaveClick (): Promise<void> {
     leaving = true
-    await leaveRoom($myInfo, $myOffice)
+    await leaveMeeting()
     dispatch('close')
   }
 
   let ending = false
   async function handleEndMeetingClick (): Promise<void> {
     ending = true
-    const room = $currentRoom
-    if (room !== undefined && isOffice(room) && $myInfo !== undefined) {
-      await endMeeting(room, $rooms, $infos, $myInfo)
-    }
+    await leaveMeeting()
     dispatch('close')
   }
 
-  function formatElapsedTime (elapsed: number): string {
-    const seconds = Math.floor(elapsed / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-
-    const displaySeconds = (seconds % 60).toString().padStart(2, '0')
-    const displayMinutes = (minutes % 60).toString().padStart(2, '0')
-
-    return hours > 0 ? `${hours}:${displayMinutes}:${displaySeconds}` : `${displayMinutes}:${displaySeconds}`
+  async function stopShare (): Promise<void> {
+    await liveKitClient.setScreenShareEnabled(false)
   }
-
-  let now = Date.now()
 
   $: participants = $infos.filter((p) => p.room === $currentRoom?._id)
   $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
-
-  onMount(() => {
-    const interval = setInterval(() => {
-      now = Date.now()
-    }, 1000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  })
 </script>
 
 {#if $lkSessionConnected && $currentRoom != null}
@@ -66,34 +44,7 @@
 
   <div class="m-1 p-2">
     <div class="flex-col flex-grow flex-gap-0-5">
-      <!-- subtitle -->
-      {#if $currentMeetingMinutes !== undefined}
-        <div class="flex-between flex-gap-2">
-          <DocNavLink object={$currentRoom}>
-            <span class="font-medium-12 secondary-textColor overflow-label">{$currentRoom.name}</span>
-          </DocNavLink>
-
-          <!-- elapsed time from start -->
-          {#if $currentMeetingMinutes?.createdOn !== undefined}
-            {@const elapsed = now - $currentMeetingMinutes.createdOn}
-            <div class="font-medium-12 secondary-textColor">{formatElapsedTime(elapsed)}</div>
-          {/if}
-        </div>
-      {/if}
-
-      <div class="flex-between flex-gap-2">
-        <!-- title -->
-        {#if $currentMeetingMinutes !== undefined}
-          <DocNavLink object={$currentMeetingMinutes}>
-            <span class="font-medium overflow-label">{$currentMeetingMinutes.title}</span>
-          </DocNavLink>
-        {:else}
-          <DocNavLink object={$currentRoom}>
-            <span class="font-medium overflow-label">{$currentRoom.name}</span>
-          </DocNavLink>
-        {/if}
-      </div>
-
+      <MeetingHeader room={$currentRoom} />
       <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
         {#if overLimit}
@@ -123,28 +74,41 @@
           </div>
         {/if}
 
-        <!-- Leave Button -->
-        {#if allowLeave || leaving}
-          <Button
-            icon={love.icon.LeaveRoom}
-            kind={'dangerous'}
-            size={'x-small'}
-            label={view.string.Leave}
-            showTooltip={{ label: love.string.LeaveRoom }}
-            padding={'0 .5rem'}
-            on:click={handleLeaveClick}
-          />
-        {:else if isMyOffice || ending}
-          <Button
-            icon={love.icon.LeaveRoom}
-            kind={'dangerous'}
-            size={'x-small'}
-            label={love.string.EndMeeting}
-            showTooltip={{ label: love.string.EndMeeting }}
-            padding={'0 .5rem'}
-            on:click={handleEndMeetingClick}
-          />
-        {/if}
+        <div class="flex-row-center flex-gap-3">
+          <!-- Leave Button -->
+          {#if allowLeave || leaving}
+            <Button
+              icon={love.icon.LeaveRoom}
+              kind={$screenSharingState === ScreenSharingState.Local ? 'regular' : 'dangerous'}
+              size={'x-small'}
+              label={view.string.Leave}
+              showTooltip={{ label: love.string.LeaveRoom }}
+              padding={'0 .5rem'}
+              on:click={handleLeaveClick}
+            />
+          {:else if isMyOffice || ending}
+            <Button
+              icon={love.icon.LeaveRoom}
+              kind={$screenSharingState === ScreenSharingState.Local ? 'regular' : 'dangerous'}
+              size={'x-small'}
+              label={love.string.EndMeeting}
+              showTooltip={{ label: love.string.EndMeeting }}
+              padding={'0 .5rem'}
+              on:click={handleEndMeetingClick}
+            />
+          {/if}
+          {#if $screenSharingState === ScreenSharingState.Local}
+            <Button
+              icon={love.icon.SharingEnabled}
+              kind="dangerous"
+              size={'x-small'}
+              label={love.string.StopShare}
+              showTooltip={{ label: love.string.StopShare }}
+              padding={'0 .5rem'}
+              on:click={stopShare}
+            />
+          {/if}
+        </div>
       </div>
     </div>
   </div>

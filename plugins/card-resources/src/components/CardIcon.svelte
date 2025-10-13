@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { getClient, createQuery } from '@hcengineering/presentation'
-  import { Button, ButtonSize, Icon, IconSize, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonSize, Component, Icon, IconSize, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { IconPicker } from '@hcengineering/view-resources'
   import { Ref } from '@hcengineering/core'
@@ -23,23 +23,24 @@
   import card from '../plugin'
   import { getCardIconInfo } from '../utils'
 
-  export let value: Card | undefined = undefined
+  export let value: Card | undefined | null = undefined
   export let _id: Ref<Card> | undefined = undefined
   export let size: IconSize = 'small'
   export let buttonSize: ButtonSize = 'medium'
   export let editable: boolean = false
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const query = createQuery()
 
-  let doc: Card | undefined = value
+  let doc: Card | undefined = value ?? undefined
 
-  $: if (_id !== undefined && doc === undefined) {
+  $: if (_id !== undefined && value == null) {
     query.query(card.class.Card, { _id }, (res) => {
       doc = res[0]
     })
   } else {
-    doc = value
+    doc = value ?? undefined
     query.unsubscribe()
   }
 
@@ -55,9 +56,12 @@
   }
 
   $: iconData = getCardIconInfo(doc)
+  $: iconMixin = doc ? hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectIcon) : undefined
 </script>
 
-{#if editable}
+{#if iconMixin && iconMixin._id !== card.class.Card}
+  <Component is={iconMixin.component} props={{ value: doc, size, editable }} />
+{:else if editable}
   <Button
     size={buttonSize}
     kind={'ghost'}

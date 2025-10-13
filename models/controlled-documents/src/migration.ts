@@ -145,6 +145,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         requests: 0,
         reviewers: [],
         approvers: [],
+        externalApprovers: [],
         coAuthors: [],
         code: `TMPL-${seq.sequence + 1}`,
         seqNumber: 0,
@@ -513,6 +514,19 @@ async function migrateCancelDuplicateActiveRequests (client: MigrationClient): P
   await client.bulk(DOMAIN_REQUEST, operations)
 }
 
+async function migrateExternalApprovers (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_DOCUMENTS,
+    {
+      _class: documents.class.ControlledDocument,
+      externalApprovers: { $exists: false }
+    },
+    {
+      externalApprovers: []
+    }
+  )
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, documentsId, [
@@ -550,6 +564,10 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateCancelDuplicateActiveRequests',
         func: migrateCancelDuplicateActiveRequests
+      },
+      {
+        state: 'migrateExternalApprovers',
+        func: migrateExternalApprovers
       }
     ])
   },

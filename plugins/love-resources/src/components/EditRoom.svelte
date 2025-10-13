@@ -19,9 +19,10 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect } from '../utils'
-  import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
+  import { getRoomName } from '../utils'
+  import { infos, myOffice, currentRoom } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
+  import { createMeeting, joinMeeting } from '../meetings'
 
   export let object: Room
 
@@ -38,21 +39,14 @@
     dispatch('open', { ignoreKeys: ['name'] })
   })
 
-  let tryConnecting = false
+  const tryConnecting = false
 
   async function connect (): Promise<void> {
-    tryConnecting = true
-    const place = $selectedRoomPlace
-    await tryConnect(
-      $myInfo,
-      object,
-      $infos,
-      $myRequests,
-      $invites,
-      place?._id === object._id ? { x: place.x, y: place.y } : undefined
-    )
-    tryConnecting = false
-    selectedRoomPlace.set(undefined)
+    if ($infos.some(({ room }) => room === object._id)) {
+      await joinMeeting(object)
+    } else {
+      await createMeeting(object)
+    }
   }
 
   $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$lkSessionConnected)

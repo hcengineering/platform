@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "AI Asistan",
+    "IntegrationDescription": "Platformdaki günlük iş akışınızı düzenlemeye, otomatikleştirmeye ve kolaylaştırmaya yardımcı olan yapay zeka destekli kişisel asistanınız",
+    "ConfigLabel": "AI Asistan",
+    "ConfigDescription": "Yapay zeka destekli kişisel asistan",
+    "Connect": "Bağlan",
+    "Cancel": "İptal",
+    "Status": "Durum",
+    "FailedToConnect": "AI Asistan servisi kullanılamıyor",
+    "Configure": "AI Asistanı Yapılandır"
+  }
+}

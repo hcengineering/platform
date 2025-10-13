@@ -387,15 +387,15 @@
         <div class="no-results" transition:fade>
           {#if searchQuery}
             <div class="no-results-content">
-              <span class="no-results-title">
+              <span class="fs-title">
                 <Label label={telegram.string.NoChannelsFound} />
               </span>
-              <span class="no-results-subtitle">
-                <Label label={telegram.string.TryAdjustingSearch} />
-                <button class="link-button" on:click={clearSearch}>
-                  <Label label={telegram.string.ClearSearch} />
-                </button>
-              </span>
+              <div class="flex-col flex-center">
+                <span class="text-md content-color">
+                  <Label label={telegram.string.TryAdjustingSearch} />
+                </span>
+                <Button kind="link" label={telegram.string.ClearSearch} on:click={clearSearch} />
+              </div>
             </div>
           {:else}
             <span>
@@ -457,7 +457,6 @@
                     kind={'regular'}
                     size={'medium'}
                     justify={'left'}
-                    allowDeselect
                     autoSelect={false}
                     readonly={readonly || !item.syncEnabled || item.readonlyAccess}
                     space={item.space}
@@ -518,31 +517,6 @@
     align-items: center;
     gap: 0.5rem;
     text-align: center;
-  }
-
-  .no-results-title {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--theme-content-color);
-  }
-
-  .no-results-subtitle {
-    font-size: 0.875rem;
-    color: var(--theme-content-trans-color);
-  }
-
-  .link-button {
-    background: none;
-    border: none;
-    color: var(--theme-primary-color);
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: inherit;
-    padding: 0;
-
-    &:hover {
-      color: var(--theme-primary-hover-color);
-    }
   }
 
   .error-container {

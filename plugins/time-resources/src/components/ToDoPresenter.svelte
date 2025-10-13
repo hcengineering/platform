@@ -13,15 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import calendar from '@hcengineering/calendar'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { ToDo } from '@hcengineering/time'
+  import { CheckBox, Label } from '@hcengineering/ui'
   import time from '../plugin'
   import WorkItemPresenter from './WorkItemPresenter.svelte'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import calendar from '@hcengineering/calendar'
-  import { CheckBox, Label } from '@hcengineering/ui'
 
   export let value: ToDo
   export let withoutSpace: boolean = false
+  export let withouthWorkItem: boolean = false
   export let showCheck = false
 
   function isVisible (value: ToDo): boolean {
@@ -33,12 +36,27 @@
   }
 
   $: visible = isVisible(value)
+
+  const me = getCurrentEmployee()
+
+  $: readonly = value.user !== me || updating !== undefined
+
+  const client = getClient()
+
+  let updating: Promise<any> | undefined = undefined
+
+  async function markDone (): Promise<void> {
+    await updating
+    updating = client.update(value, { doneOn: value.doneOn == null ? Date.now() : null })
+    await updating
+    updating = undefined
+  }
 </script>
 
 {#if showCheck}
   <div class="flex-row-center items-start">
     <div class="mt-0-5">
-      <CheckBox readonly checked={value.doneOn != null} kind={'positive'} size={'medium'} />
+      <CheckBox {readonly} checked={value.doneOn != null} kind={'positive'} size={'medium'} on:value={markDone} />
     </div>
     <div class="ml-2 flex-col">
       <div class="overflow-label flex-no-shrink">
@@ -48,7 +66,7 @@
           <Label label={calendar.string.Busy} />
         {/if}
       </div>
-      {#if value.attachedTo !== time.ids.NotAttached && visible}
+      {#if value.attachedTo !== time.ids.NotAttached && visible && !withouthWorkItem}
         <div class:mt-1={value.title}>
           <WorkItemPresenter todo={value} {withoutSpace} />
         </div>
@@ -64,7 +82,7 @@
         <Label label={calendar.string.Busy} />
       {/if}
     </div>
-    {#if value.attachedTo !== time.ids.NotAttached && visible}
+    {#if value.attachedTo !== time.ids.NotAttached && visible && !withouthWorkItem}
       <div>
         <WorkItemPresenter todo={value} {withoutSpace} />
       </div>

@@ -14,11 +14,12 @@
 -->
 
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { Process } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import AttributeCriteria from './AttributeCriteria.svelte'
 
+  export let _class: Ref<Class<Doc>>
   export let readonly: boolean
   export let process: Process
   export let keys: string[]
@@ -38,9 +39,10 @@
   }
 </script>
 
-<div class="grid">
+<div class="editor-grid">
   {#each keys as key}
     <AttributeCriteria
+      {_class}
       {process}
       {key}
       {params}
@@ -54,17 +56,3 @@
     />
   {/each}
 </div>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    margin-top: 0.5rem;
-    height: min-content;
-  }
-</style>

@@ -14,11 +14,11 @@
 //
 
 import card, { cardId } from '@hcengineering/card'
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type Viewlet } from '@hcengineering/view'
+import type { ViewletDescriptor, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(cardId, card, {
   component: {
@@ -49,7 +49,11 @@ export default mergeIds(cardId, card, {
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
     CardWidget: '' as AnyComponent,
-    CardWidgetTab: '' as AnyComponent
+    CardWidgetTab: '' as AnyComponent,
+    CreateCard: '' as AnyComponent
+  },
+  function: {
+    CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
   },
   sectionComponent: {
     AttachmentsSection: '' as AnyComponent,
@@ -65,7 +69,9 @@ export default mergeIds(cardId, card, {
   viewlet: {
     CardTable: '' as Ref<Viewlet>,
     CardList: '' as Ref<Viewlet>,
-    CardChildList: '' as Ref<Viewlet>
+    CardChildList: '' as Ref<Viewlet>,
+    CardFeedDescriptor: '' as Ref<ViewletDescriptor>,
+    CardFeed: '' as Ref<Viewlet>
   },
   string: {
     CreateMasterTag: '' as IntlString,
@@ -99,6 +105,11 @@ export default mergeIds(cardId, card, {
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
     Properties: '' as IntlString,
-    NoChildren: '' as IntlString
+    NoChildren: '' as IntlString,
+    AddCollaborators: '' as IntlString,
+    CardTitle: '' as IntlString,
+    CardContent: '' as IntlString,
+    Post: '' as IntlString,
+    ShowLess: '' as IntlString
   }
 })

@@ -23,9 +23,9 @@ interface LiveKitSession {
   sessionId: string
   createdAt: string
   lastActive: string
-  bandwidthIn: string
-  bandwidthOut: string
-  numParticipants: string
+  bandwidthIn?: string
+  bandwidthOut?: string
+  numParticipants?: string
   roomName: string
   endedAt?: string
 }
@@ -104,7 +104,7 @@ export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void>
         sessionId: session.sessionId,
         sessionStart: session.createdAt,
         sessionEnd: session.endedAt ?? session.lastActive,
-        bandwidth: Math.max(Number(session.bandwidthOut), Number(session.bandwidthIn)),
+        bandwidth: Math.max(Number(session.bandwidthOut ?? '0'), Number(session.bandwidthIn ?? '0')),
         minutes: Math.round((sessionEnd - sessionStart) / (1000 * 60)),
         room: session.roomName
       })

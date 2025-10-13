@@ -21,10 +21,11 @@ import core, {
   type TxApplyIf,
   type TxResult,
   type TxUpdateDoc,
-  TxProcessor
+  TxProcessor,
+  SortingOrder
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import process, { ExecutionStatus, type ProcessToDo } from '@hcengineering/process'
+import process, { ExecutionStatus, type ProcessToDo, isUpdateTx } from '@hcengineering/process'
 import { createExecution, getNextStateUserInput, requestResult, pickTransition } from './utils'
 import cardPlugin, { type Card } from '@hcengineering/card'
 
@@ -68,8 +69,8 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
   }
 
   private async handleCardUpdate (etx: Tx): Promise<void> {
-    if (etx._class === core.class.TxUpdateDoc) {
-      const updateTx = etx as TxUpdateDoc<Card>
+    if (etx._class === core.class.TxUpdateDoc || etx._class === core.class.TxMixin) {
+      const updateTx = etx as TxUpdateDoc<Card> | TxMixin<Card, Card>
       const hierarchy = this.client.getHierarchy()
       if (!hierarchy.isDerived(updateTx.objectClass, cardPlugin.class.Card)) return
       const executions = await this.client.findAll(process.class.Execution, {
@@ -81,27 +82,29 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: updateTx.objectId
       })
       if (card === undefined) return
-      const updated = TxProcessor.updateDoc2Doc(hierarchy.clone(card), updateTx)
+      const updated = isUpdateTx(updateTx)
+        ? TxProcessor.updateDoc2Doc<Card>(hierarchy.clone(card), updateTx)
+        : TxProcessor.updateMixin4Doc<Card, Card>(hierarchy.clone(card), updateTx)
       for (const execution of executions) {
-        const transitions = this.client.getModel().findAllSync(process.class.Transition, {
-          process: execution.process,
-          from: execution.currentState,
-          trigger: process.trigger.OnCardUpdate
-        })
-        const transition = await pickTransition(
-          this.client.getModel(),
-          this.client.getHierarchy(),
-          execution,
-          transitions,
-          updated
+        const transitions = this.client.getModel().findAllSync(
+          process.class.Transition,
+          {
+            process: execution.process,
+            from: execution.currentState,
+            trigger: { $in: [process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges] }
+          },
+          { sort: { rank: SortingOrder.Ascending } }
         )
+        const transition = await pickTransition(this.client, execution, transitions, {
+          card: updated,
+          operations: isUpdateTx(updateTx) ? updateTx.operations : updateTx.attributes
+        })
         if (transition === undefined) return
         const context = await getNextStateUserInput(execution, transition, execution.context)
         const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
         await txop.update(execution, {
           context
         })
-        await requestResult(txop, execution, transition, execution.context)
       }
     }
   }
@@ -153,25 +156,23 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: todo.execution
       })
       if (execution === undefined) return
+      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+      await requestResult(txop, execution, todo.results, execution.context)
       const transitions = this.client.getModel().findAllSync(process.class.Transition, {
         process: execution.process,
         from: execution.currentState,
         trigger: process.trigger.OnToDoClose
       })
-      const transition = await pickTransition(
-        this.client.getModel(),
-        this.client.getHierarchy(),
-        execution,
-        transitions,
+      const transition = await pickTransition(this.client, execution, transitions, {
         todo
-      )
+      })
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
-      await txop.update(execution, {
-        context
-      })
-      await requestResult(txop, execution, transition, execution.context)
+      if (context !== undefined) {
+        await txop.update(execution, {
+          context
+        })
+      }
     }
   }
 }

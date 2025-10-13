@@ -16,12 +16,13 @@ import { type Attachment } from '@hcengineering/attachment'
 import { type Ref, generateId } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type CompAndProps, type PopupAlignment, popupstore, showPopup } from '@hcengineering/ui'
-import documents, { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
+import { type Document, type DocumentComment } from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../../utils'
 import {
-  DocumentCommentPopupCategory,
   type DocumentCommentsFilter,
+  DocumentCommentPopupCategory,
   documentCommentPopupsOpened,
+  documentCommentsAddCanceled,
   documentCommentsDisplayRequested,
   documentCommentsHighlightCleared,
   documentCommentsHighlightUpdated,
@@ -31,8 +32,11 @@ import {
   documentCommentsSortByChanged,
   documentCommentsUpdated,
   controlledDocumentClosed,
-  savedAttachmentsUpdated
+  savedAttachmentsUpdated,
+  controlledDocumentOpened
 } from './actions'
+
+import documents from '../../../plugin'
 
 export const $areDocumentCommentPopupsOpened = createStore(false).on(
   documentCommentPopupsOpened,
@@ -116,17 +120,25 @@ export const showDocumentCommentsPopupFx = createEffect(
 export const showAddCommentPopupFx = createEffect((payload: { element?: PopupAlignment, nodeId?: string | null }) => {
   showPopup(
     documents.component.AddCommentPopup,
-    payload,
+    {
+      ...payload,
+      popupId: documents.ids.AddCommentPopup
+    },
     payload.element,
     (result) => {
       if (result === null || result === undefined) {
+        documentCommentsAddCanceled({ nodeId: payload.nodeId })
         documentCommentsHighlightCleared()
       } else {
         documentCommentsDisplayRequested(payload)
       }
     },
     undefined,
-    { category: DocumentCommentPopupCategory, overlay: true }
+    {
+      id: documents.ids.AddCommentPopup,
+      category: DocumentCommentPopupCategory,
+      overlay: true
+    }
   )
 })
 
@@ -187,4 +199,5 @@ export const $savedAttachments = createStore<Array<Ref<Attachment>>>([])
   .on(savedAttachmentsUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
+forward({ from: controlledDocumentOpened, to: documentCommentsHighlightCleared })
 forward({ from: documentCommentsLocationNavigateRequested, to: documentCommentsHighlightUpdated })

@@ -20,7 +20,8 @@ import {
   type WorkspaceMemberInfo,
   type AccountRole,
   type WorkspaceUuid,
-  type AccountUuid
+  type AccountUuid,
+  type PersonUuid
 } from '@hcengineering/core'
 
 import { getMigrations } from './migrations'
@@ -1151,6 +1152,12 @@ export class PostgresAccountDB implements AccountDB {
         return converted as AccountAggregatedInfo
       })
     })
+  }
+
+  async generatePersonUuid (): Promise<PersonUuid> {
+    const res = await this.client`SELECT gen_random_uuid();`
+
+    return res[0].gen_random_uuid as PersonUuid
   }
 
   protected getMigrations (): [string, string][] {

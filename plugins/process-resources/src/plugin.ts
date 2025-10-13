@@ -37,7 +37,9 @@ export default mergeIds(processId, process, {
     ProcessesExtension: '' as AnyComponent,
     ProcessPresenter: '' as AnyComponent,
     ExecutonPresenter: '' as AnyComponent,
+    ExecutionMyToDos: '' as AnyComponent,
     ExecutonProgressPresenter: '' as AnyComponent,
+    ExecutionContextSelector: '' as AnyComponent,
     NestedContextSelector: '' as AnyComponent,
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,
@@ -63,25 +65,33 @@ export default mergeIds(processId, process, {
     AddRelationPresenter: '' as AnyComponent,
     CardUpdateEditor: '' as AnyComponent,
     CardUpdatePresenter: '' as AnyComponent,
-    ToDoSettingPresenter: '' as AnyComponent
+    FieldChangesEditor: '' as AnyComponent,
+    ToDoSettingPresenter: '' as AnyComponent,
+    TimeEditor: '' as AnyComponent,
+    TimePresenter: '' as AnyComponent,
+    AddTagEditor: '' as AnyComponent,
+    AddTagPresenter: '' as AnyComponent,
+    FunctionSubmenu: '' as AnyComponent
   },
   criteriaEditor: {
-    StringCriteria: '' as AnyComponent,
-    NumberCriteria: '' as AnyComponent,
-    DateCriteria: '' as AnyComponent,
-    BooleanCriteria: '' as AnyComponent,
-    ArrayCriteria: '' as AnyComponent,
-    EnumCriteria: '' as AnyComponent,
-    RefCriteria: '' as AnyComponent
+    BaseCriteria: '' as AnyComponent,
+    RangeCriteria: '' as AnyComponent,
+    ArraySizeCriteria: '' as AnyComponent
   },
   transformEditor: {
+    MultiArrayElementEditor: '' as AnyComponent,
     ArrayElementEditor: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     AppendEditor: '' as AnyComponent,
     ReplaceEditor: '' as AnyComponent,
     SplitEditor: '' as AnyComponent,
-    CutEditor: '' as AnyComponent
+    CutEditor: '' as AnyComponent,
+    FilterEditor: '' as AnyComponent
+  },
+  transformPresenter: {
+    NumberPresenter: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -119,6 +129,8 @@ export default mergeIds(processId, process, {
     ReplaceAll: '' as IntlString,
     Split: '' as IntlString,
     Cut: '' as IntlString,
+    Filter: '' as IntlString,
+    FirstMatchValue: '' as IntlString,
     FirstValue: '' as IntlString,
     LastValue: '' as IntlString,
     Random: '' as IntlString,
@@ -133,6 +145,7 @@ export default mergeIds(processId, process, {
     Divide: '' as IntlString,
     Modulo: '' as IntlString,
     Power: '' as IntlString,
+    Sqrt: '' as IntlString,
     Round: '' as IntlString,
     Absolute: '' as IntlString,
     Ceil: '' as IntlString,
@@ -153,7 +166,9 @@ export default mergeIds(processId, process, {
     EnterValue: '' as IntlString,
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
-    OnCardUpdate: '' as IntlString,
+    WaitUntil: '' as IntlString,
+    WhenCardMatches: '' as IntlString,
+    WhenFieldChanges: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,
     NoResultRequired: '' as IntlString,
@@ -181,6 +196,15 @@ export default mergeIds(processId, process, {
     ArraySizeGt: '' as IntlString,
     ArraySizeGte: '' as IntlString,
     ArraySizeLt: '' as IntlString,
-    ArraySizeLte: '' as IntlString
+    ArraySizeLte: '' as IntlString,
+    CurrentUser: '' as IntlString,
+    CurrentDate: '' as IntlString,
+    AddResult: '' as IntlString,
+    For: '' as IntlString,
+    Attribute: '' as IntlString,
+    Context: '' as IntlString,
+    EmptyArray: '' as IntlString,
+    ExecutionInitiator: '' as IntlString,
+    ExecutionStarted: '' as IntlString
   }
 })

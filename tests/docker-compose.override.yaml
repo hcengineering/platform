@@ -12,6 +12,7 @@ services:
     environment:
       - DB_URL=${DB_PG_URL}
       - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+      - ACCOUNTS_DB_URL=${DB_PG_URL}
   fulltext:
     environment:
       - DB_URL=${DB_PG_URL}

@@ -49,7 +49,7 @@
 
   $: tabId = widgetState?.tab
   $: tabs = widgetState?.tabs ?? []
-  $: tab = tabId !== undefined ? tabs.find((it) => it.id === tabId) ?? tabs[0] : tabs[0]
+  $: tab = tabId !== undefined ? (tabs.find((it) => it.id === tabId) ?? tabs[0]) : tabs[0]
 
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))

@@ -203,6 +203,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REGION=
       - ACCOUNTS_URL=http://huly.local:3003
+      - ACCOUNTS_DB_URL=${DB_EU_URL}
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
@@ -227,6 +228,7 @@ services:
       - STATS_URL=http://huly.local:4901
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3003
+      - ACCOUNTS_DB_URL=${DB_EU_URL}
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}

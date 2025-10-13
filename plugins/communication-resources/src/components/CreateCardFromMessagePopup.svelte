@@ -70,6 +70,9 @@
       if (_class.label === undefined) continue
       if (_class.kind !== ClassifierKind.CLASS) continue
       if ((_class as MasterTag).removed === true) continue
+      if (hierarchy.isDerived(_id, communication.type.Direct) || hierarchy.isDerived(_id, communication.type.Poll)) {
+        continue
+      }
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
@@ -79,6 +82,12 @@
         if (_class.label === undefined) continue
         if (_class.kind !== ClassifierKind.CLASS) continue
         if ((_class as MasterTag).removed === true) continue
+        if (
+          hierarchy.isDerived(desc, communication.type.Direct) ||
+          hierarchy.isDerived(desc, communication.type.Poll)
+        ) {
+          continue
+        }
         added.add(desc)
         toAdd.push(_class)
       }
@@ -107,7 +116,8 @@
   type="type-popup"
   okLabel={presentation.string.Create}
   okAction={attachCard}
-  canSave={selectedType !== undefined && title.trim() !== '' && _message.thread == null}
+  okLoading={inProgress}
+  canSave={selectedType !== undefined && title.trim() !== ''}
   onCancel={() => dispatch('close')}
   on:close
 >
@@ -127,15 +137,8 @@
       />
     </div>
     <div class="mt-4" />
-    <MessagePresenter {card} message={{ ..._message, reactions: [], thread: undefined }} readonly={true} padding="0" />
+    <MessagePresenter {card} message={{ ..._message, reactions: {}, threads: [] }} readonly={true} padding="0" />
   </div>
-  <svelte:fragment slot="footer">
-    {#if _message.thread != null && !inProgress}
-      <div class="footer-error">
-        <Label label={communication.string.MessageAlreadyHasCardAttached} />
-      </div>
-    {/if}
-  </svelte:fragment>
 </Modal>
 
 <style lang="scss">

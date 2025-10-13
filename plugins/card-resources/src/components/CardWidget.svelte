@@ -26,6 +26,7 @@
   import EditCardNewContent from './EditCardNewContent.svelte'
   import { showMenu } from '@hcengineering/view-resources'
   import TagsEditor from './TagsEditor.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
   export let widget: Widget | undefined
   export let tab: WidgetTab | undefined
@@ -65,7 +66,7 @@
     )
 
   $: tab?.id &&
-    contextsQuery.query({ card: tab.id as Ref<Card>, limit: 1 }, (res) => {
+    contextsQuery.query({ cardId: tab.id as Ref<Card>, limit: 1 }, (res) => {
       context = res.getResult()[0]
       isContextLoaded = true
     })
@@ -107,6 +108,7 @@
             dispatch('close')
           }}
         />
+        <ParentNamesPresenter value={doc} compact={true} />
       </svelte:fragment>
 
       <svelte:fragment slot="actions">

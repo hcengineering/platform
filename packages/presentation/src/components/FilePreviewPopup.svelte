@@ -73,7 +73,6 @@
           .catch((error) => {
             drawingLoading = false
             Analytics.handleError(error)
-            console.error('Failed to load drawings for file', file, error)
           })
       }
     }
@@ -198,7 +197,11 @@
       />
       <div class="buttons-divider" />
     {/if}
-    <DownloadFileButton {name} {file} />
+    <DownloadFileButton
+      {name}
+      {file}
+      tooltip={props.drawingAvailable === true ? presentation.string.DownloadOriginal : undefined}
+    />
     <ComponentExtensions
       extension={presentation.extension.FilePreviewPopupActions}
       props={{

@@ -14,17 +14,23 @@
 -->
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
+  import {
+    ActivityMessagePresenter,
+    canGroupMessages,
+    messageInFocus,
+    editingMessageStore
+  } from '@hcengineering/activity-resources'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
   import { ModernButton, Scroller } from '@hcengineering/ui'
   import { afterUpdate, onDestroy, onMount, tick } from 'svelte'
+  import { ChatMessage } from '@hcengineering/chunter'
 
   import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import chunter from '../plugin'
-  import { getScrollToDateOffset, getSelectedDate, jumpToDate, readViewportMessages } from '../scroll'
+  import { getScrollToDateOffset, getSelectedDate, jumpToDate, messageInView, readViewportMessages } from '../scroll'
   import { chatReadMessagesStore, recheckNotifications } from '../utils'
   import BaseChatScroller from './BaseChatScroller.svelte'
   import BlankView from './BlankView.svelte'
@@ -571,6 +577,40 @@
   })
 
   $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread
+
+  export function editLastMessage (): void {
+    if ($isLoadingStore || !isScrollInitialized || !$isTailLoadedStore || scrollDiv == null) return
+    if (!isScrollAtBottom) return
+    const me = getCurrentAccount()
+    let lastMessage: ChatMessage | undefined = undefined
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i]
+      if (!hierarchy.isDerived(message._class, chunter.class.ChatMessage)) continue
+      if (message.createdBy == null || !me.socialIds.includes(message.createdBy)) continue
+      lastMessage = message as ChatMessage
+      break
+    }
+
+    if (lastMessage == null) return
+    editingMessageStore.set(lastMessage._id)
+    const messagesElements = contentDiv?.getElementsByClassName('activityMessage')
+    const msgElement = messagesElements?.[selectedMessageId as any]
+    if (msgElement == null) return
+    const scrollRect = scrollDiv.getBoundingClientRect()
+
+    if (!messageInView(msgElement, scrollRect)) {
+      msgElement.scrollIntoView({ behavior: 'instant', block: 'end' })
+    }
+  }
+
+  function handleKeyDown (e: KeyboardEvent): void {
+    const key = e.key
+
+    if (key === 'ArrowUp') {
+      if ($editingMessageStore !== undefined) return
+      editLastMessage()
+    }
+  }
 </script>
 
 <div class="flex-col relative" class:h-full={fullHeight}>
@@ -641,7 +681,15 @@
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
     {#if !fixedInput && withInput && !readonly}
-      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+      <ChannelInput
+        {object}
+        {readonly}
+        boundary={scrollDiv}
+        {collection}
+        {isThread}
+        {autofocus}
+        onKeyDown={handleKeyDown}
+      />
     {/if}
   </BaseChatScroller>
   {#if !isThread && isLatestMessageButtonVisible}
@@ -658,7 +706,15 @@
 </div>
 
 {#if fixedInput && withInput && !readonly}
-  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+  <ChannelInput
+    {object}
+    {readonly}
+    boundary={scrollDiv}
+    {collection}
+    {isThread}
+    {autofocus}
+    onKeyDown={handleKeyDown}
+  />
 {/if}
 
 {#if readonly}

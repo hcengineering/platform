@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { Process, State, Transition } from '@hcengineering/process'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
@@ -68,13 +68,27 @@
     }
   })
 
-  $: statesQuery.query(process.class.State, { process: _id }, (res) => {
-    states = res
-  })
+  $: statesQuery.query(
+    process.class.State,
+    { process: _id },
+    (res) => {
+      states = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
-  $: transitionsQ.query(process.class.Transition, { process: _id }, (res) => {
-    transitions = res
-  })
+  $: transitionsQ.query(
+    process.class.Transition,
+    { process: _id },
+    (res) => {
+      transitions = res
+    },
+    {
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   async function saveName (): Promise<void> {
     if (value !== undefined) {
@@ -130,7 +144,13 @@
       <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
         <div class="hulyComponent-content gap">
           <div class="header flex-between">
-            <EditBox bind:value={value.name} on:change={saveName} placeholder={process.string.Untitled} />
+            <EditBox
+              bind:value={value.name}
+              kind="modern-ghost-large"
+              on:change={saveName}
+              required
+              placeholder={process.string.Untitled}
+            />
             <div class="flex-row-center flex-gap-2">
               <ButtonIcon icon={IconSettings} size="small" kind="secondary" on:click={handleSettings} />
               <ButtonIcon
@@ -151,7 +171,7 @@
           </div>
           <div class="hulyComponent-content flex-col-center flex-gap-4">
             <StatesInlineEditor {states} {readonly} process={value} />
-            <TransitionsInlineEditor {transitions} {readonly} process={value} />
+            <TransitionsInlineEditor {readonly} process={value} />
           </div>
         </div>
       </Scroller>

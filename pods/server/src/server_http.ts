@@ -158,6 +158,19 @@ export function startHttpServer (
     )
   })
 
+  app.get('/api/v1/health', (req, res) => {
+    try {
+      const status = sessions.checkHealth()
+      const code = status === 'unhealthy' ? 503 : 200
+      res.status(code).send(status)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('error', { err })
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+
   app.get('/api/v1/statistics', (req, res) => {
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
@@ -308,7 +321,7 @@ export function startHttpServer (
       try {
         const authHeader = req.headers.authorization
         if (authHeader === undefined) {
-          res.status(403).end(JSON.stringify({ error: 'Unauthorized' }))
+          res.status(401).end(JSON.stringify({ error: 'Unauthorized' }))
           return
         }
 
@@ -316,7 +329,7 @@ export function startHttpServer (
         const wsIds = await getWorkspaceIds(token)
 
         if (wsIds.uuid == null) {
-          res.status(401).end(JSON.stringify({ error: 'No workspace found' }))
+          res.status(403).end(JSON.stringify({ error: 'No workspace found' }))
           return
         }
 
@@ -357,7 +370,7 @@ export function startHttpServer (
             })
             res.end(JSON.stringify({ success: true }))
           },
-          { file: name, contentType, workspace: wsIds.uuid }
+          { contentType, workspace: wsIds.uuid }
         )
       } catch (err: any) {
         Analytics.handleError(err)
@@ -377,7 +390,7 @@ export function startHttpServer (
       try {
         const authHeader = req.headers.authorization
         if (authHeader === undefined) {
-          res.status(403).send({ error: 'Unauthorized' })
+          res.status(401).send({ error: 'Unauthorized' })
           return
         }
 
@@ -385,7 +398,7 @@ export function startHttpServer (
         const wsIds = await getWorkspaceIds(token)
 
         if (wsIds.uuid == null) {
-          res.status(401).send({ error: 'No workspace found' })
+          res.status(403).send({ error: 'No workspace found' })
         }
 
         const name = req.query.name as string

@@ -12,6 +12,7 @@
     "Parent": "Parent",
     "Tags": "Étiquettes",
     "Tag": "Étiquette",
+    "AddTag": "Ajouter une étiquette",
     "CardLibrary": "Bibliothèque de cartes",
     "MinimizeAll": "Tout réduire",
     "ExpandAll": "Tout développer",
@@ -39,6 +40,14 @@
     "Labels": "Étiquettes",
     "Properties": "Propriétés",
     "NoChildren": "Pas d'enfants",
-    "ConfigDescription": "Extension pour la gestion des connaissances de style base de données."
+    "ConfigDescription": "Extension pour la gestion des connaissances de style base de données.",
+    "AddCollaborators": "Ajouter des collaborateurs",
+    "CardTitle": "Titre",
+    "Post": "Publier",
+    "GetIndividualPublicLink": "Obtenir un lien public personnalisé",
+    "ShowLess": "Afficher moins",
+    "CardContent": "Que voulez-vous partager ?",
+    "Feed": "Flux",
+    "AllCards": "Toutes les Cartes"
   }
 }

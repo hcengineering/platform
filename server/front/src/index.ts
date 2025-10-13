@@ -268,6 +268,7 @@ export function start (
     collaborator?: string
     collaboratorUrl: string
     brandingUrl?: string
+    previewUrl?: string
     previewConfig: string
     uploadConfig: string
     linkPreviewUrl?: string
@@ -277,6 +278,8 @@ export function start (
     streamUrl?: string
     mailUrl?: string
     billingUrl?: string
+    pulseUrl?: string
+    hulylakeUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -346,6 +349,7 @@ export function start (
       STREAM_URL: config.streamUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
+      PREVIEW_URL: config.previewUrl,
       PREVIEW_CONFIG: config.previewConfig,
       UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
@@ -353,6 +357,8 @@ export function start (
       HIDE_LOCAL_LOGIN: config.hideLocalLogin,
       MAIL_URL: config.mailUrl,
       BILLING_URL: config.billingUrl,
+      PULSE_URL: config.pulseUrl,
+      HULYLAKE_URL: config.hulylakeUrl,
       ...(extraConfig ?? {})
     }
     res.status(200)

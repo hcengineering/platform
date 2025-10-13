@@ -16,31 +16,46 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { Process, Step } from '@hcengineering/process'
-  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
-  import { Label } from '@hcengineering/ui'
+  import { Label, Scroller } from '@hcengineering/ui'
   import processPlugin from '../../plugin'
+  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
+  import { ProcessContextView } from '../../types'
 
   export let process: Process
   export let step: Step<Doc>
 
   $: currentContext = step.context ? process.context[step.context._id] : undefined
 
-  $: currentResultContext = step.result ? process.context[step.result._id] : undefined
+  let resultContext: ProcessContextView[] = []
+  $: resultContext =
+    step.results != null
+      ? step.results.map((r) => {
+        const exists = process.context[r._id]
+        if (exists != null) return exists
+        return {
+          name: r.name,
+          _class: r.type._class
+        }
+      })
+      : []
 </script>
 
-{#if currentContext || currentResultContext}
-  <Label label={processPlugin.string.Result} />
-{/if}
-{#if currentContext}
-  <div class="container">
-    <ProcessContextPresenter context={currentContext} />
-  </div>
-{/if}
-
-{#if currentResultContext}
-  <div class="container">
-    <ProcessContextPresenter context={currentResultContext} />
-  </div>
+{#if currentContext || resultContext.length > 0}
+  <Scroller horizontal>
+    <div class="flex-row-center flex-gap-2">
+      <Label label={processPlugin.string.Result} />:
+      {#if currentContext}
+        <div class="container">
+          <ProcessContextPresenter context={currentContext} />
+        </div>
+      {/if}
+      {#each resultContext as ctx}
+        <div class="container">
+          <ProcessContextPresenter context={ctx} />
+        </div>
+      {/each}
+    </div>
+  </Scroller>
 {/if}
 
 <style lang="scss">

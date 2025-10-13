@@ -18,7 +18,6 @@ import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { type Card } from '@hcengineering/card'
 import { MessageID, MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
-import { PersonSpace } from '@hcengineering/contact'
 import core, {
   type Blob,
   type MeasureContext,
@@ -28,7 +27,8 @@ import core, {
   type TxOperations,
   AccountUuid,
   generateId,
-  RateLimiter
+  RateLimiter,
+  Space
 } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 
@@ -45,7 +45,7 @@ import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, SyncOptions, type Attachment } from './types'
 import { COMMUNICATION_DOMAIN, EmailMessage, MailRecipient, MessageData } from './types'
-import { getBlobMetadata, getMdContent, MessageTimeShift } from './utils'
+import { getBlobMetadata, getHulyIdFromEmailMessageId, getMdContent, MessageTimeShift } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
@@ -152,7 +152,10 @@ export async function createMessages (
 
   for (const person of messageRecipients) {
     try {
-      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)
+      let spaces = options?.spaceId != null ? [options.spaceId] : undefined
+      if (spaces === undefined) {
+        spaces = (await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)).map((s) => s._id)
+      }
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           config,
@@ -169,7 +172,7 @@ export async function createMessages (
           content,
           attachedBlobs,
           person,
-          message.sendOn,
+          message,
           channelCache,
           replyTo,
           options
@@ -189,21 +192,21 @@ async function saveMessageToSpaces (
   threadLookup: ThreadLookupService,
   wsInfo: WorkspaceLoginInfo,
   mailId: string,
-  spaces: PersonSpace[],
+  spaces: Ref<Space>[],
   participants: PersonId[],
   modifiedBy: PersonId,
   subject: string,
   content: string,
   attachments: Attachment[],
   recipient: MailRecipient,
-  createdDate: number,
+  mailMessage: EmailMessage,
   channelCache: ChannelCache,
   inReplyTo?: string,
   options?: SyncOptions
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
-  for (const space of spaces) {
-    const spaceId = space._id
+  const createdDate = mailMessage.sendOn ?? Date.now()
+  for (const spaceId of spaces) {
     let isReply = false
     await rateLimiter.add(async () => {
       let threadId = await threadLookup.getThreadId(mailId, spaceId, recipient.email)
@@ -220,7 +223,7 @@ async function saveMessageToSpaces (
       if (threadId === undefined) {
         const newThreadId = await client.createDoc(
           chat.masterTag.Thread,
-          space._id,
+          spaceId,
           {
             title: subject,
             description: content,
@@ -243,6 +246,7 @@ async function saveMessageToSpaces (
 
       const messageData: MessageData = {
         subject,
+        from: mailMessage.from.email,
         content,
         channel,
         created,
@@ -262,7 +266,7 @@ async function saveMessageToSpaces (
       const messageId = await createMailMessage(producer, config, messageData, threadId, options)
       await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
-      await threadLookup.setThreadId(mailId, space._id, threadId, recipient.email)
+      await threadLookup.setThreadId(mailId, spaceId, threadId, recipient.email)
     })
   }
   await rateLimiter.waitProcessing()
@@ -277,7 +281,7 @@ async function createMailThread (
   const subjectId = generateMessageId()
   const createSubjectEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
-    messageType: MessageType.Message,
+    messageType: MessageType.Text,
     cardId: data.channel,
     cardType: chat.masterTag.Thread,
     content: data.subject,
@@ -315,10 +319,10 @@ async function createMailMessage (
   threadId: Ref<Card>,
   options?: SyncOptions
 ): Promise<MessageID> {
-  const messageId = generateMessageId()
+  const messageId = getHulyIdFromEmailMessageId(data.mailId, data.from) ?? generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
-    messageType: MessageType.Message,
+    messageType: MessageType.Text,
     cardId: threadId,
     cardType: chat.masterTag.Thread,
     content: data.content,
@@ -327,7 +331,8 @@ async function createMailMessage (
     messageId,
     options: {
       noNotify: options?.noNotify
-    }
+    },
+    extra: data.extra
   }
   const createMessageData = toEventBuffer(createMessageEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)

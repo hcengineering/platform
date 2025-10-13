@@ -1,0 +1,19 @@
+{
+  "string": {
+    "ConfirmationText": "{name}'e olan ilginiz için teşekkür ederiz. Kayıt işlemini tamamlamak için lütfen şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Saygılarımızla, {name} Ekibi.",
+    "ConfirmationHTML": "<p>Merhaba,</p><p>{name}'e olan ilginiz için teşekkür ederiz. Kayıt işlemini tamamlamak için lütfen <a href={link}>bu bağlantıya</a> tıklayın veya şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın.</p><p>{link}</p><p>Saygılarımızla,</p><p>{name} Ekibi.</p>",
+    "ConfirmationSubject": "{name}'e kaydolmak için e-posta adresinizi doğrulayın",
+    "RecoveryText": "Hesabınızın şifresini sıfırlama talebi aldık. Şifrenizi sıfırlamak için lütfen şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Eğer şifre sıfırlama talebinde bulunmadıysanız, bu e-postayı görmezden gelebilirsiniz.",
+    "RecoveryHTML": "<p>Hesabınızın şifresini sıfırlama talebi aldık. Şifrenizi sıfırlamak için lütfen aşağıdaki bağlantıya tıklayın: <a href={link}>Şifreyi sıfırla</a></p><p>Yukarıdaki şifre sıfırlama bağlantısı çalışmıyorsa, şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Eğer şifre sıfırlama talebinde bulunmadıysanız, bu e-postayı görmezden gelebilirsiniz.</p>",
+    "RecoverySubject": "Şifre kurtarma",
+    "InviteText": "{ws} çalışma alanına davet edildiniz. Katılmak için lütfen şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Bu bağlantı {expHours} saat geçerlidir.",
+    "InviteHTML": "<p>{ws} çalışma alanına davet edildiniz. Katılmak için lütfen aşağıdaki bağlantıya tıklayın: <a href={link}>Katıl</a></p><p>Yukarıdaki davet bağlantısı çalışmıyorsa, şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Bu bağlantı {expHours} saat geçerlidir.</p>",
+    "InviteSubject": "{ws} çalışma alanına davet",
+    "OtpText": "{app} uygulamasına erişmek için e-posta adresinizi doğrulayın!\n\nDoğrulama kodunuz aşağıdadır - {app} için oturum açmaya başladığınız pencereye girin.\n\n{code}\n\nBu e-postayı siz talep etmediyseniz, endişelenmenize gerek yok — güvenle görmezden gelebilirsiniz.",
+    "OtpHTML": "<h3>{app} uygulamasına erişmek için e-posta adresinizi doğrulayın!</h3><p>Doğrulama kodunuz aşağıdadır - {app} için oturum açmaya başladığınız pencereye girin.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Bu e-postayı siz talep etmediyseniz, endişelenmenize gerek yok — güvenle görmezden gelebilirsiniz.</p>",
+    "OtpSubject": "{app} doğrulama kodu: {code}",
+    "ResendInviteText": "{ws} çalışma alanına yeniden davet edildiniz. Katılmak için lütfen şu bağlantıyı kullanın: {link}. Yeniden davet bağlantısı {expHours} saat geçerlidir.",
+    "ResendInviteHTML": "<p>{ws} çalışma alanına yeniden davet edildiniz. Katılmak için aşağıdaki bağlantıya tıklayın: <a href={link}>Katıl</a></p><p>Yukarıdaki davet bağlantısı çalışmıyorsa, şu bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Yeniden davet bağlantısı {expHours} saat geçerlidir.</p>",
+    "ResendInviteSubject": "{ws} çalışma alanına yeniden davet"
+  }
+}

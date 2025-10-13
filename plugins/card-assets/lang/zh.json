@@ -12,6 +12,7 @@
     "Parent": "父级",
     "Tags": "标签",
     "Tag": "标签",
+    "AddTag": "添加标签",
     "CardLibrary": "卡片库",
     "MinimizeAll": "全部最小化",
     "ExpandAll": "全部展开",
@@ -39,6 +40,14 @@
     "Labels": "标签",
     "Properties": "属性",
     "NoChildren": "没有子级",
-    "ConfigDescription": "用于数据库风格知识管理的扩展。"
+    "ConfigDescription": "用于数据库风格知识管理的扩展。",
+    "AddCollaborators": "添加协作者",
+    "CardTitle": "标题",
+    "Post": "发布",
+    "GetIndividualPublicLink": "获取个性化公共链接",
+    "ShowLess": "收起详情",
+    "CardContent": "你想分享什么？",
+    "Feed": "动态",
+    "AllCards": "所有卡片"
   }
 }

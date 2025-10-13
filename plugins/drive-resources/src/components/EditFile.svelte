@@ -32,8 +32,8 @@
 
   $: query.query(drive.class.FileVersion, { _id: object.file }, (res) => {
     ;[version] = res
-    blob = version.file
-    contentType = version.type
+    blob = version?.file
+    contentType = version?.type
   })
 
   onMount(() => {

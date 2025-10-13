@@ -262,7 +262,7 @@
   const onSelected = (e: CustomEvent<string>): void => {
     selected = e.detail
     localStorage.setItem('firstDayOfWeek', `${e.detail}`)
-    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : parseInt(e.detail, 10) ?? 1
+    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : (parseInt(e.detail, 10) ?? 1)
   }
 </script>
 
@@ -353,7 +353,7 @@
             <Component
               is={card.component.CardArrayEditor}
               props={{
-                _class: chat.masterTag.Channel,
+                _class: chat.masterTag.Thread,
                 value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
                 label: settingsRes.string.GuestChannelsArrayLabel,
                 onChange: onAllowedCardsChange

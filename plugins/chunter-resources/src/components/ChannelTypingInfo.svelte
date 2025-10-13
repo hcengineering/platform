@@ -13,53 +13,50 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
   import chunter from '@hcengineering/chunter'
-  import { getName, getCurrentEmployee } from '@hcengineering/contact'
+  import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { PresenceTyping } from '../types'
+  import { typing } from '@hcengineering/presence-resources'
+  import { Doc, type Ref } from '@hcengineering/core'
 
-  export let typingInfo: PresenceTyping[] = []
-
-  const typingDelay = 2000
   const maxTypingPersons = 3
   const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
+  export let object: Doc
+
+  let typingInfo = new Map<string, Ref<Person>>()
   let typingPersonsLabel: string = ''
   let typingPersonsCount = 0
   let moreCount: number = 0
 
   $: void updateTypingPersons(typingInfo)
 
-  async function updateTypingPersons (typingInfo: PresenceTyping[]): Promise<void> {
-    const now = Date.now()
-    const personIds = new Set(
-      typingInfo.filter((info) => info.person !== me && now - info.lastTyping < typingDelay).map((info) => info.person)
-    )
-    const persons = await getPersonsByPersonRefs(Array.from(personIds))
+  async function updateTypingPersons (typingInfo: Map<string, Ref<Person>>): Promise<void> {
+    const persons = await getPersonsByPersonRefs(Array.from(typingInfo.values()))
     const names = Array.from(persons.values())
       .map((person) => getName(hierarchy, person))
       .sort((name1, name2) => name1.localeCompare(name2))
-
     typingPersonsCount = names.length
     typingPersonsLabel = names.slice(0, maxTypingPersons).join(', ')
     moreCount = Math.max(names.length - maxTypingPersons, 0)
   }
 
-  onMount(() => {
-    const interval = setInterval(() => {
-      void updateTypingPersons(typingInfo)
-    }, typingDelay)
-    return () => {
-      clearInterval(interval)
-    }
-  })
+  function handleTyping (typing: Map<string, Ref<Person>>): void {
+    typingInfo = typing
+  }
 </script>
 
-<span class="root h-4 mt-1 mb-1 ml-0-5 overflow-label">
+<span
+  class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
+  use:typing={{
+    personId: me,
+    objectId: object._id,
+    onTyping: handleTyping
+  }}
+>
   {#if typingPersonsLabel !== ''}
     <span class="fs-bold">
       {typingPersonsLabel}

@@ -8,6 +8,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const sass = require('../common/scripts/sass-quiet.js')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -16,7 +17,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 console.log('mode', mode)
 const { EsbuildPlugin } = require('esbuild-loader')
 
-const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
+const doValidate = !prod || process.env.DO_VALIDATE === 'true'
 
 /**
  * @type {Configuration}
@@ -144,6 +145,7 @@ module.exports = [
         fs: false
       },
       extensions: ['.mjs', '.js', '.svelte', '.ts'],
+      mainFields: ['svelte', 'browser', 'module', 'main'],
       conditionNames: ['svelte', 'browser', 'import']
     },
     output: {
@@ -156,10 +158,7 @@ module.exports = [
     },
     optimization: prod
       ? {
-          minimize: true,
-          minimizer: [
-            new EsbuildPlugin({ target: 'es2021' })
-          ]
+          minimize: true
         }
       : {
           minimize: false,
@@ -224,8 +223,8 @@ module.exports = [
         },
 
         {
-          // required to prevent errors from Svelte on Webpack 5+, omit on Webpack 4
-          test: /node_modules\/svelte\/.*\.mjs$/,
+          // Fix for packages with "type": "module" that use extensionless imports
+          test: /\.m?js$/,
           resolve: {
             fullySpecified: false
           }
@@ -248,7 +247,13 @@ module.exports = [
             'style-loader',
             'css-loader',
             'postcss-loader',
-            'sass-loader'
+            {
+              loader: "sass-loader",
+              options: {
+                api: "modern",
+                implementation: sass
+              }
+            }
           ]
         },
 
@@ -338,11 +343,7 @@ module.exports = [
       new DefinePlugin({
         'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
       }),
-      ...(doValidate
-        ? [
-            new ForkTsCheckerWebpackPlugin()
-          ]
-        : [])
+      ...(doValidate ? [new ForkTsCheckerWebpackPlugin()] : [])
     ],
     watchOptions: {
       // for some systems, watching many files can result in a lot of CPU or memory usage

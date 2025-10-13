@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@hcengineering/core'
-  import { findAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { Component, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getCirteriaEditor, getContext } from '../../utils'
+  import { getCriteriaEditor, getContext } from '../../utils'
 
+  export let _class: Ref<Class<Doc>>
   export let readonly: boolean
   export let process: Process
   export let key: string
@@ -30,12 +31,11 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: attribute = hierarchy.getAttribute(process.masterTag, key)
+  $: attribute = hierarchy.getAttribute(_class, key)
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
-  $: editor = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
-
-  $: baseEditor = findAttributeEditor(client, process.masterTag, key)
+  $: updateCriteria = getCriteriaEditor(presenterClass.attrClass, presenterClass.category)
+  $: editor = updateCriteria?.editor
 
   $: value = params[key]
 
@@ -59,7 +59,7 @@
   </div>
   <Component
     is={editor}
-    props={{ value, readonly, context, process, attribute, baseEditor }}
+    props={{ value, readonly, context, process, attribute, ...updateCriteria?.props }}
     on:change={onChange}
     on:delete
   />

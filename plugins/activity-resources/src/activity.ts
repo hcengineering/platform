@@ -19,6 +19,7 @@ import { writable } from 'svelte/store'
 
 export const savedMessagesStore = writable<Array<WithLookup<SavedMessage>>>([])
 export const messageInFocus = writable<Ref<ActivityMessage> | undefined>(undefined)
+export const editingMessageStore = writable<Ref<ActivityMessage> | undefined>(undefined)
 
 const savedMessagesQuery = createQuery(true)
 

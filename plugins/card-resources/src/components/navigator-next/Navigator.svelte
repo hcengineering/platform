@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Scroller } from '@hcengineering/ui'
-  import cardPlugin, { MasterTag, Card, CardSpace } from '@hcengineering/card'
+  import { MasterTag, Card, CardSpace } from '@hcengineering/card'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { SavedView } from '@hcengineering/workbench-resources'
@@ -24,6 +24,8 @@
   import { type NavigatorConfig } from '../../types'
   import NavigatorSpace from './NavigatorSpace.svelte'
   import NavigatorVariant from './NavigatorVariant.svelte'
+
+  import cardPlugin from '../../plugin'
 
   export let config: NavigatorConfig
   export let applicationId: string

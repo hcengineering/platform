@@ -57,6 +57,7 @@
     "Czech": "Čeština",
     "German": "Deutsch",
     "Japanese": "日本語",
+    "Turkish": "Türkçe",
     "MinutesBefore": "{minutes, plural, =1 {за минуту} one {за # минуту} few {за # минуты} other {за # минут}}",
     "HoursBefore": "{hours, plural, =1 {за час} one {за # час} few {за # часа} other {за # часов}}",
     "DaysBefore": "{days, plural, =1 {за день} one {за # день} few {за # дня} other {за # дней}}",
@@ -100,6 +101,13 @@
     "WeeksWOValue": "{weeks, plural, one {неделя} few {недели} other {недель}}",
     "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}",
     "Filter": "Фильтр",
-    "Clear": "Очистить"
+    "Clear": "Очистить",
+    "Yesterday": "Вчера",
+    "ThisWeek": "Эта неделя",
+    "ThisMonth": "Этот месяц",
+    "ThisYear": "Этот год",
+    "EmojiStyle": "Стиль эмодзи",
+    "EmojiSystem": "Системный по умолчанию",
+    "EmojiNoto": "Noto Color"
   }
 }

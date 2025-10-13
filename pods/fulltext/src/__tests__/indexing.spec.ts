@@ -31,8 +31,9 @@ import { createDoc, test, type TestDocument } from './minmodel'
 import { dbConfig, dbUrl, elasticIndexName, model, prepare, preparePipeline } from './utils'
 
 prepare()
+jest.mock('franc-min', () => ({ franc: () => 'en' }), { virtual: true })
 
-jest.setTimeout(500000)
+jest.setTimeout(30000)
 
 class TestWorkspaceManager extends WorkspaceManager {
   public async getWorkspaceInfo (ctx: MeasureContext, token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
@@ -82,6 +83,7 @@ class TestQueue {
       elasticIndexName,
       serverSecret: 'secret',
       dbURL: dbUrl,
+      hulylakeUrl: 'http://localhost:8096',
       config: dbConfig,
       externalStorage: createDummyStorageAdapter(),
       listener: {
@@ -138,7 +140,7 @@ describe('full-text-indexing', () => {
       const dataId = generateId()
 
       await queue.expectIndexingDoc(dataId, async () => {
-        await txProducer.send(wsId, [
+        await txProducer.send(toolCtx, wsId, [
           createDoc(test.class.TestDocument, {
             title: 'first doc',
             description: dataId
@@ -211,7 +213,7 @@ describe('full-text-indexing', () => {
         }
       })
 
-      await wsProcessor.send(wsIds.uuid, [workspaceEvents.fullReindex()])
+      await wsProcessor.send(toolCtx, wsIds.uuid, [workspaceEvents.fullReindex()])
 
       // Wait for reindex
       await reindexAllP

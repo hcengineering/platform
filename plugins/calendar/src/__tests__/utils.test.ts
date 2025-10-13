@@ -161,4 +161,40 @@ describe('generateRecurringValues', () => {
     }
     expect(() => generateRecurringValues(rule as any, baseDate, from, to)).toThrow('Invalid recurring rule frequency')
   })
+
+  it('generates simple monthly recurring values (no specific rules)', () => {
+    const rule: RecurringRule = {
+      freq: 'MONTHLY',
+      interval: 1
+    }
+    const startDate = new Date('2024-01-15T10:00:00Z').getTime() // 15th of month
+    const from = new Date('2024-01-01T00:00:00Z').getTime()
+    const to = new Date('2024-04-30T23:59:59Z').getTime()
+    const result = generateRecurringValues(rule, startDate, from, to)
+
+    // Should generate events on 15th of each month: Jan, Feb, Mar, Apr
+    expect(result.length).toBe(4)
+    expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-01-15')
+    expect(new Date(result[1]).toISOString().slice(0, 10)).toBe('2024-02-15')
+    expect(new Date(result[2]).toISOString().slice(0, 10)).toBe('2024-03-15')
+    expect(new Date(result[3]).toISOString().slice(0, 10)).toBe('2024-04-15')
+  })
+
+  it('generates simple yearly recurring values (no specific rules)', () => {
+    const rule: RecurringRule = {
+      freq: 'YEARLY',
+      interval: 1
+    }
+    const startDate = new Date('2024-03-10T10:00:00Z').getTime() // March 10th
+    const from = new Date('2024-01-01T00:00:00Z').getTime()
+    const to = new Date('2027-12-31T23:59:59Z').getTime()
+    const result = generateRecurringValues(rule, startDate, from, to)
+
+    // Should generate events on March 10th of each year: 2024, 2025, 2026, 2027
+    expect(result.length).toBe(4)
+    expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-03-10')
+    expect(new Date(result[1]).toISOString().slice(0, 10)).toBe('2025-03-10')
+    expect(new Date(result[2]).toISOString().slice(0, 10)).toBe('2026-03-10')
+    expect(new Date(result[3]).toISOString().slice(0, 10)).toBe('2027-03-10')
+  })
 })

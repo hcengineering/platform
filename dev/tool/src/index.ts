@@ -51,7 +51,19 @@ import {
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
-import { getMongoAccountDB } from '@hcengineering/account-service'
+import {
+  getMongoAccountDB,
+  type Account as OldAccount,
+  type Workspace as OldWorkspace
+} from '@hcengineering/account-service'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import {
+  getDBClient,
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -65,6 +77,7 @@ import {
   isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
+  SocialId,
   SocialIdType,
   systemAccountEmail,
   systemAccountUuid,
@@ -76,7 +89,8 @@ import {
   type Tx,
   type Version,
   type WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type PersonUuid
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import {
@@ -88,12 +102,6 @@ import {
 } from '@hcengineering/mongo'
 
 import { getModelVersion } from '@hcengineering/model-all'
-import {
-  createPostgreeDestroyAdapter,
-  createPostgresAdapter,
-  createPostgresTxAdapter,
-  shutdownPostgres
-} from '@hcengineering/postgres'
 import {
   QueueTopic,
   workspaceEvents,
@@ -113,7 +121,8 @@ import {
   migrateMergedAccounts,
   migrateTrustedV6Accounts,
   moveAccountDbFromMongoToPG,
-  restoreFromv6All
+  restoreFromv6All,
+  restoreTrustedV6Workspace
 } from './db'
 import { performGithubAccountMigrations } from './github'
 import { performGmailAccountMigrations } from './gmail'
@@ -125,7 +134,9 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
-import { performIntegrationMigrations } from './integrations'
+import { restoreGithubIntegrations } from './restoreGithub'
+import { migrateWorkspaceMessages } from './communication'
+import { type CardID } from '@hcengineering/communication-types'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -415,7 +426,7 @@ export function devTool (
             progress: 100
           })
 
-          await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
+          await wsProducer.send(measureCtx, res.workspaceUuid, [workspaceEvents.created()])
           await queue.shutdown()
           console.log(queue)
         })
@@ -500,7 +511,7 @@ export function devTool (
 
       console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
 
-      await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
+      await wsProducer.send(measureCtx, info.uuid, [workspaceEvents.upgraded()])
       await queue.shutdown()
       console.log('upgrade-workspace done')
     })
@@ -916,7 +927,7 @@ export function devTool (
 
   program
     .command('backup <dirName> <workspace>')
-    .description('dump workspace transactions and minio resources')
+    .description('dump workspace transactions, blobs and accounts')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--full', 'Full recheck', false)
@@ -929,6 +940,7 @@ export function devTool (
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
+    .option('-fv, --fullVerify', 'Full verification', false)
     .action(
       async (
         dirName: string,
@@ -942,6 +954,7 @@ export function devTool (
           contentTypes: string
           full: boolean
           keepSnapshots: string
+          fullVerify: boolean
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
@@ -980,7 +993,7 @@ export function devTool (
               return
             }
 
-            await backup(toolCtx, pipeline, wsIds, storage, {
+            await backup(toolCtx, pipeline, wsIds, storage, db, {
               force: cmd.force,
               include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
               skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
@@ -991,7 +1004,8 @@ export function devTool (
                 .split(';')
                 .map((it) => it.trim())
                 .filter((it) => it.length > 0),
-              keepSnapshots: parseInt(cmd.keepSnapshots)
+              keepSnapshots: parseInt(cmd.keepSnapshots),
+              fullVerify: cmd.fullVerify
             })
           } catch (err: any) {
             toolCtx.error('Failed to backup workspace', { err, workspace })
@@ -1160,7 +1174,7 @@ export function devTool (
           const queue = getPlatformQueue('tool', ws.region)
           const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
 
-          await wsProducer.send(ws.uuid, [workspaceEvents.restoring()])
+          await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restoring()])
 
           const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -1202,7 +1216,7 @@ export function devTool (
             }
 
             console.log('workspace restored')
-            await wsProducer.send(ws.uuid, [workspaceEvents.restored()])
+            await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restored()])
           } catch (err) {
             toolCtx.error('failed to restore', { err })
           }
@@ -2226,7 +2240,7 @@ export function devTool (
         console.log('reindex workspace', workspace)
         const queue = getPlatformQueue('tool', ws.region)
         const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.fullReindex()])
         await queue.shutdown()
         console.log('done', workspace)
       })
@@ -2262,7 +2276,7 @@ export function devTool (
         console.log('reindex workspace', ws)
         const queue = getPlatformQueue('tool', ws.region)
         const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.fullReindex()])
         await queue.shutdown()
       }
       console.log('done')
@@ -2702,13 +2716,12 @@ export function devTool (
     })
 
   program
-    .command('migrate-integrations')
-    .option('--db <db>', 'DB name', 'gmail-service')
-    .option('--region <region>', 'DB region')
-    .action(async (cmd: { db: string, region?: string }) => {
-      const { dbUrl, txes } = prepareTools()
+    .command('restore-github-integrations')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      const { dbUrl } = prepareTools()
 
-      await performIntegrationMigrations(dbUrl, cmd.region ?? null, txes)
+      await restoreGithubIntegrations(dbUrl, cmd.dryrun)
     })
 
   program
@@ -2745,6 +2758,144 @@ export function devTool (
 
       await withAccountDatabase(async (pgDb) => {
         await restoreFromv6All(toolCtx, pgDb, dirName, txes, dbUrl)
+      }, dbUrl)
+    })
+
+  program
+    .command('restore-v6-from-storage <workspace> <accsRoot>')
+    .description('Restore a workspace from v6 backup storage with accounts info')
+    .option('-r, --region <region>', 'Region to restore workspace to')
+    .option('-b, --branding <branding>', 'Branding to restore workspace with', 'huly')
+    .option('-s, --suffix <suffix>', 'Url suffix if conflicting', 'bold')
+    .option('-f, --force', 'Force restore if the same uuid', false)
+    .action(async (workspace, accsRoot, cmd: { suffix: string, region: string, branding: string, force: boolean }) => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide bucket name env')
+        process.exit(1)
+      }
+
+      const backupStorageConfig = storageConfigFromEnv(process.env.BACKUP_STORAGE)
+      const backupStorageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
+      const backupAccsStorage = await createStorageBackupStorage(toolCtx, backupStorageAdapter, backupIds, accsRoot)
+      const v6AccountsFile = 'account.accounts.json'
+      const v6WorkspacesFile = 'account.workspaces.json'
+      const v6InvitesFile = 'account.invites.json'
+
+      if (!(await backupAccsStorage.exists(v6AccountsFile))) {
+        toolCtx.error('file not present', { file: v6AccountsFile })
+        throw new Error(`${v6AccountsFile} should be present to restore`)
+      }
+      if (!(await backupAccsStorage.exists(v6WorkspacesFile))) {
+        toolCtx.error('file not present', { file: v6WorkspacesFile })
+        throw new Error(`${v6WorkspacesFile} should be present to restore`)
+      }
+      if (!(await backupAccsStorage.exists(v6InvitesFile))) {
+        toolCtx.error('file not present', { file: v6InvitesFile })
+        throw new Error(`${v6InvitesFile} should be present to restore`)
+      }
+
+      const v6Workspaces = JSON.parse((await backupAccsStorage.loadFile(v6WorkspacesFile)).toString()) as OldWorkspace[]
+      const v6Workspace = v6Workspaces.find((it) => it.workspace === workspace)
+
+      if (v6Workspace == null) {
+        toolCtx.error('workspace not found in the accounts backup', { workspace })
+        throw new Error(`workspace ${workspace} not found in the accounts backup`)
+      }
+
+      const uniqueWorkspaceAccounts = new Set((v6Workspace.accounts ?? []).map((it) => it.toString()))
+      const v6AccountsRaw = JSON.parse((await backupAccsStorage.loadFile(v6AccountsFile)).toString()) as any[]
+      const v6WorkspaceAccountsRaw = v6AccountsRaw.filter((acc) => uniqueWorkspaceAccounts.has(acc._id.toString()))
+
+      const v6WorkspaceAccounts: OldAccount[] = []
+      for (const rawAccount of v6WorkspaceAccountsRaw) {
+        const hashTypedArray = rawAccount.hash != null ? new Uint8Array(rawAccount.hash.data) : null
+        const saltTypedArray = new Uint8Array(rawAccount.salt.data)
+
+        v6WorkspaceAccounts.push({
+          ...rawAccount,
+          hash: hashTypedArray != null ? Buffer.from(hashTypedArray.buffer) : null,
+          salt: Buffer.from(saltTypedArray.buffer)
+        })
+      }
+
+      let v6Invites = JSON.parse((await backupAccsStorage.loadFile(v6InvitesFile)).toString()) as any[]
+      v6Invites = v6Invites.filter((invite: any) => invite.workspace.name === v6Workspace.workspace)
+
+      const { txes, dbUrl } = prepareTools()
+      const backupWsStorage = await createStorageBackupStorage(
+        toolCtx,
+        backupStorageAdapter,
+        backupIds,
+        v6Workspace.uuid ?? v6Workspace.workspace
+      )
+
+      const storageConfig = storageConfigFromEnv()
+      const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
+      const { suffix, region, branding, force } = cmd
+
+      await withAccountDatabase(async (pgDb) => {
+        await restoreTrustedV6Workspace(
+          toolCtx,
+          pgDb,
+          v6Workspace,
+          v6WorkspaceAccounts,
+          v6Invites,
+          backupWsStorage,
+          workspaceStorage,
+          txes,
+          dbUrl,
+          { conflictSuffix: suffix, region, branding, force }
+        )
+      }, dbUrl)
+    })
+
+  program
+    .command('migrate-communication-to-hulylake <workspace>')
+    .description('Migrate communication messages to hulylake')
+    .option('-c, --card <card>', 'Card to migrate')
+    .action(async (workspace: WorkspaceUuid, cmd: { card?: CardID }) => {
+      const { dbUrl } = prepareTools()
+      const hulylakeUrl = process.env.HULYLAKE_URL ?? ''
+
+      console.log('Workspace', workspace)
+      console.log('Card', cmd.card)
+      if (hulylakeUrl === '') {
+        throw new Error('HULYLAKE_URL should be specified')
+      }
+
+      const token = generateToken(systemAccountUuid, undefined, {
+        service: 'tool'
+      })
+      const db = getDBClient(dbUrl, undefined, 'tool')
+      const dbClient = await db.getClient()
+      const accountClient = getAccountClient(token)
+      const personUuidBySocialId = new Map<PersonId, PersonUuid>()
+
+      await withAccountDatabase(async (accountDb) => {
+        const ws = (await accountDb.workspace.find({ uuid: workspace }))[0]
+        if (ws === undefined) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+        try {
+          const hulylake = getHulylakeClient(hulylakeUrl, ws.uuid, token)
+          console.log('start workspace migration', ws.name)
+          await migrateWorkspaceMessages(
+            toolCtx.newChild(ws.name, {}),
+            ws,
+            cmd.card,
+            dbClient,
+            hulylake,
+            accountClient,
+            personUuidBySocialId
+          )
+          console.log('done workspace migration', ws.name)
+        } catch (err: any) {
+          console.error('failed to migrate workspace', ws.name)
+          console.error(err)
+        }
+        db.close()
       }, dbUrl)
     })
 

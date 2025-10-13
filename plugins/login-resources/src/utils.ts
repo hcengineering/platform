@@ -20,7 +20,10 @@ import type {
   RegionInfo,
   WorkspaceLoginInfo,
   WorkspaceInviteInfo,
-  ProviderInfo
+  ProviderInfo,
+  LoginInfoRequest,
+  LoginInfoByToken,
+  LoginInfoRequestData
 } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
@@ -328,7 +331,13 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 
   try {
     // even if "token" is null here it still might be supplied from the cookie
-    return await getAccountClient(token).getLoginInfoByToken()
+    const result = await getAccountClient(token).getLoginInfoByToken()
+
+    if (isLoginInfoRequest(result)) {
+      throw new Error('Not supported')
+    }
+
+    return result
   } catch (err: any) {
     if (err instanceof PlatformError) {
       await handleStatusError('Get account error', err.status)
@@ -385,13 +394,13 @@ export async function getRegionInfo (doNavigate: boolean = true): Promise<Region
 export async function selectWorkspace (
   workspaceUrl: string,
   token?: string | null | undefined
-): Promise<[Status, WorkspaceLoginInfo | null]> {
+): Promise<[Status, WorkspaceLoginInfo | null, boolean]> {
   const actualToken = token ?? getMetadata(presentation.metadata.Token) ?? undefined
 
   try {
     const loginInfo = await getAccountClient(actualToken).selectWorkspace(workspaceUrl)
 
-    return [OK, loginInfo]
+    return [OK, loginInfo, true]
   } catch (err: any) {
     if (err instanceof PlatformError && err.status.code === platform.status.Unauthorized) {
       const loc = getCurrentLocation()
@@ -399,16 +408,16 @@ export async function selectWorkspace (
       loc.path[1] = 'login'
       loc.path.length = 2
       navigate(loc)
-      return [unknownStatus('Please login'), null]
+      return [unknownStatus('Please login'), null, true]
     } else if (err instanceof PlatformError) {
       Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspaceUrl, ok: false })
       await handleStatusError('Select workspace error', err.status)
 
-      return [err.status, null]
+      return [err.status, null, true]
     } else {
       Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspaceUrl, ok: false })
       Analytics.handleError(err)
-      return [unknownError(err), null]
+      return [unknownError(err), null, false]
     }
   }
 }
@@ -417,10 +426,10 @@ export async function exchangeGuestToken (token: string): Promise<string> {
   return await getAccountClient(token).exchangeGuestToken(token)
 }
 
-export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatus | null]> {
+export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatus | null, boolean]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
-    return [unknownStatus('Please login'), null]
+    return [unknownStatus('Please login'), null, true]
   }
 
   try {
@@ -429,16 +438,16 @@ export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatu
     Analytics.handleEvent('Fetch workspace')
     // Analytics.setWorkspace(workspaceWithStatus.url)
 
-    return [OK, workspaceWithStatus]
+    return [OK, workspaceWithStatus, true]
   } catch (err: any) {
     if (err instanceof PlatformError) {
       await handleStatusError('Fetch workspace error', err.status)
 
-      return [err.status, null]
+      return [err.status, null, true]
     } else {
       Analytics.handleError(err)
 
-      return [unknownError(err), null]
+      return [unknownError(err), null, false]
     }
   }
 }
@@ -834,7 +843,13 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
 
 export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
   try {
-    return await getAccountClient().getLoginInfoByToken()
+    const result = await getAccountClient().getLoginInfoByToken()
+
+    if (isLoginInfoRequest(result)) {
+      throw new Error('Not supported')
+    }
+
+    return result
   } catch (err: any) {
     if (err instanceof PlatformError) {
       if (err.status.code === platform.status.Unauthorized) {
@@ -864,7 +879,7 @@ export function getAutoJoinInfo (): any {
   return { token, autoJoin, inviteId, navigateUrl }
 }
 
-export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
+export async function getLoginInfoFromQuery (data?: LoginInfoRequestData): Promise<LoginInfoByToken> {
   const token = getCurrentLocation().query?.token
 
   if (token == null) {
@@ -872,7 +887,7 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLog
   }
 
   try {
-    return await getAccountClient(token).getLoginInfoByToken()
+    return await getAccountClient(token).getLoginInfoByToken(data)
   } catch (err: any) {
     if (!(err instanceof PlatformError)) {
       Analytics.handleError(err)
@@ -989,9 +1004,15 @@ export async function doLoginNavigate (
 }
 
 export function isWorkspaceLoginInfo (
-  info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | null
+  info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
 ): info is WorkspaceLoginInfo {
-  return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
+  return !isLoginInfoRequest(info) && (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
+}
+
+export function isLoginInfoRequest (
+  info: LoginInfo | WorkspaceLoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
+): info is LoginInfoRequest {
+  return (info as LoginInfoRequest)?.request
 }
 
 export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined): string {

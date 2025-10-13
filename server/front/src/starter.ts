@@ -99,9 +99,19 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
 
+  let previewUrl = process.env.PREVIEW_URL
+  if (previewUrl === undefined) {
+    previewUrl = ''
+  }
+
   let filesUrl = process.env.FILES_URL
   if (filesUrl === undefined) {
     filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
+  }
+
+  let pulseUrl = process.env.PULSE_URL
+  if (pulseUrl === undefined) {
+    pulseUrl = ''
   }
 
   const pushPublicKey = process.env.PUSH_PUBLIC_KEY
@@ -119,6 +129,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const mailUrl = process.env.MAIL_URL
 
   const billingUrl = process.env.BILLING_URL
+
+  const hulylakeUrl = process.env.HULYLAKE_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
   setMetadata(serverToken.metadata.Service, 'front')
@@ -141,6 +153,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaboratorUrl,
     collaborator,
     brandingUrl,
+    previewUrl,
     previewConfig,
     uploadConfig,
     pushPublicKey,
@@ -149,7 +162,9 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     linkPreviewUrl,
     streamUrl,
     mailUrl,
-    billingUrl
+    billingUrl,
+    pulseUrl,
+    hulylakeUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

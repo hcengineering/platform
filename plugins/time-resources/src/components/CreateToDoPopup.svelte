@@ -41,6 +41,7 @@
     workslots: 0,
     title: value,
     description: '',
+    doneOn: null,
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,
     visibility: 'private',
@@ -83,6 +84,7 @@
         priority: todo.priority,
         visibility: todo.visibility,
         user: me,
+        doneOn: null,
         dueDate: todo.dueDate,
         attachedSpace: todo.attachedSpace,
         rank: makeRank(undefined, latestTodo?.rank)

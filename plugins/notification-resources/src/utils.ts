@@ -34,13 +34,13 @@ import core, {
   type Ref,
   SortingOrder,
   type TxOperations,
-  type WithLookup
+  type WithLookup,
+  getClassCollaborators
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
   type DisplayInboxNotification,
   type DocNotifyContext,
-  getClassCollaborators,
   type InboxNotification,
   type MentionInboxNotification,
   notificationId,
@@ -621,10 +621,10 @@ export async function selectInboxContext (
         (object as ActivityMessage) ??
         (await client.findOne(activity.class.ActivityMessage, { _id: message.attachedTo as Ref<ActivityMessage> }))
       const isThread = hierarchy.isDerived(reactedTo._class, chunter.class.ThreadMessage)
-      const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : reactedTo?.attachedTo ?? objectId
+      const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : (reactedTo?.attachedTo ?? objectId)
       const channelClass = isThread
         ? (reactedTo as ThreadMessage)?.objectClass
-        : reactedTo?.attachedToClass ?? objectClass
+        : (reactedTo?.attachedToClass ?? objectClass)
 
       void navigateToInboxDoc(
         linkProviders,

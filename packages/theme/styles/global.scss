@@ -13,26 +13,27 @@
 // limitations under the License.
 //
 
-@import "./_vars.scss";
-@import "./_colors.scss";
-@import "./_lumia-colors.scss";
-@import "./_layouts.scss";
-@import "./_print.scss";
-@import "./common.scss";
-@import "./button.scss";
-@import "./editors.scss";
-@import "./components.scss";
-@import "./dialogs.scss";
-@import "./popups.scss";
-@import "./mixins.scss";
-@import "./panel.scss";
-@import "./prose.scss";
-@import "./tables.scss";
-@import "./_text-editor.scss";
+@use "./_vars.scss" as *;
+@use "./_colors.scss" as *;
+@use "./_lumia-colors.scss" as *;
+@use "./_layouts.scss" as *;
+@use "./_print.scss" as *;
+@use "./common.scss" as *;
+@use "./button.scss" as *;
+@use "./editors.scss" as *;
+@use "./components.scss" as *;
+@use "./dialogs.scss" as *;
+@use "./popups.scss" as *;
+@use "./mixins.scss" as *;
+@use "./panel.scss" as *;
+@use "./prose.scss" as *;
+@use "./tables.scss" as *;
+@use "./_text-editor.scss" as *;
 
-@import "./love.scss";
+@use "./love.scss" as *;
 
-@import "./mono.scss";
+@use "./mono.scss" as *;
+@use "./noto-color.scss" as *;
 
 @font-face {
   font-family: 'IBM Plex Sans';

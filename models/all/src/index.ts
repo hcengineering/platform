@@ -107,6 +107,8 @@ import testManagement, {
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
+import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
+import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
 
 import {
   serverDocumentsId,
@@ -116,7 +118,6 @@ import survey, { surveyId, createModel as surveyModel } from '@hcengineering/mod
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
-import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
 import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
@@ -189,6 +190,7 @@ export default function buildModel (): Builder {
         label: contact.string.ConfigLabel,
         description: contact.string.ConfigDescription,
         enabled: true,
+        system: true,
         beta: false,
         icon: contact.icon.ContactApplication,
         classFilter: defaultFilter
@@ -353,10 +355,11 @@ export default function buildModel (): Builder {
       requestModel,
       requestId,
       {
-        // label: request.string.ConfigLabel,
+        label: setting.string.Configure,
         // description: request.string.ConfigDescription,
         enabled: false,
         beta: false,
+        hidden: true,
         classFilter: defaultFilter
       }
     ],
@@ -420,8 +423,10 @@ export default function buildModel (): Builder {
       questionsModel,
       questionsId,
       {
+        label: setting.string.Configure,
         enabled: false,
         beta: false,
+        hidden: true,
         classFilter: defaultFilter
       }
     ],
@@ -473,18 +478,35 @@ export default function buildModel (): Builder {
     [
       chatModel,
       chatId,
-      { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
-    ],
-    [
-      inboxModel,
-      inboxId,
-      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+      { label: chat.string.Chat, hidden: false, enabled: true, beta: true, classFilter: defaultFilter }
     ],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
     [communicationModel, communicationId],
     [mailModel, mailId],
-    [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
+    [
+      billingModel,
+      billingId,
+      {
+        label: setting.string.Configure,
+        beta: false,
+        hidden: true,
+        enabled: true
+      }
+    ],
+    [hulyMailModel, hulyMailId],
+    [
+      aiAssistantModel,
+      aiAssistantId,
+      {
+        label: aiAssistant.string.ConfigLabel,
+        description: aiAssistant.string.ConfigDescription,
+        hidden: true,
+        enabled: false,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -534,7 +556,9 @@ export default function buildModel (): Builder {
         pluginId: id,
         transactions: txes.map((it) => it._id),
         ...config,
-        enabled: config?.label === undefined || ((config?.enabled ?? true) && !(config.hidden ?? false)),
+        label: config?.label ?? setting.string.Configure,
+        hidden: config !== undefined ? config.hidden : true,
+        enabled: (config?.enabled ?? true) && !(config?.hidden ?? false),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>

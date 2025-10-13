@@ -123,6 +123,12 @@
     "EveryoneDescription": "Notificar a todos en este {title}",
     "HereDescription": "Notificar a todos en este {title}",
     "Guest": "Invitado",
-    "Deleted": "Eliminado"
+    "Deleted": "Eliminado",
+    "CannotMerge": "Error: No se pueden fusionar personas globales",
+    "AutoTranslation": "Traducción automática",
+    "TranslateTo": "Traducir a",
+    "DontTranslate": "No traducir",
+    "SelectLanguage": "Seleccionar idioma",
+    "SelectLanguages": "Seleccionar idiomas"
   }
 }

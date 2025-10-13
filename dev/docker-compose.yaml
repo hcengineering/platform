@@ -28,8 +28,20 @@ services:
       - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
     restart: unless-stopped
+  preview:
+    image: 'hardcoreeng/preview'
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: preview
+    environment:
+      - SECRET=secret
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - CACHE_PATH=/data/cache
+    ports:
+      - 4040:4040
+    restart: unless-stopped
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -56,6 +68,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
+      - --memory 256M
     container_name: redpanda
     volumes:
       - redpanda:/var/lib/redpanda/data
@@ -69,6 +82,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
   redpanda_console:
     image: docker.redpanda.com/redpandadata/console:v2.8.3
     extra_hosts:
@@ -91,6 +105,7 @@ services:
       - 8000:8080
     depends_on:
       - redpanda
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -123,18 +138,27 @@ services:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - ES_JAVA_OPTS=-Xms256m -Xmx450m
     healthcheck:
       interval: 20s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+  redis:
+    image: redis:8.0.2-alpine3.21
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+
   account:
     image: hardcoreeng/account
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - minio
       - stats
     ports:
       - 3000:3000
@@ -197,6 +221,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
@@ -227,10 +252,6 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - minio
-      - elastic
-      - transactor_cockroach
-      - collaborator
       - stats
     ports:
       - 8087:8080
@@ -242,6 +263,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
       - UPLOAD_URL=http://huly.local:4030/upload/form-data/:workspace
+      - PREVIEW_URL=http://huly.local:4040
       - PREVIEW_CONFIG=image|http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|http://huly.local:4030/meta/:workspace/:blobId
       - GMAIL_URL=http://huly.local:8093
       - CALENDAR_URL=http://huly.local:8095
@@ -263,6 +285,8 @@ services:
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - PULSE_URL=ws://huly.local:8099/ws
+      - HULYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
@@ -298,13 +322,13 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
-      - MSG2FILE_URL=http://huly.local:9087
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
       - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
       - RATE_LIMIT_WINDOW=30000
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
       - COMMUNICATION_API_ENABLED=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HYLYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -343,6 +367,7 @@ services:
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HULYLAKE_URL=http://huly.local:8096
   print:
     image: hardcoreeng/print
     extra_hosts:
@@ -373,9 +398,8 @@ services:
       - MINIO_ENDPOINT=minio
       - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - MINIO_ACCESS_KEY=minioadmin
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
-      - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
       - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
@@ -402,37 +426,23 @@ services:
   #     - STATS_URL=http://huly.local:4900
   # #      - LOVE_ENDPOINT=http://huly.local:8096
   # #      - OPENAI_API_KEY=token
-  # analytics:
-  #   image: hardcoreeng/analytics-collector
-  #   extra_hosts:
-  #     - 'huly.local:host-gateway'
-  #   restart: unless-stopped
-  #   ports:
-  #     - 4017:4017
-  #   environment:
-  #     - SECRET=secret
-  #     - PORT=4017
-  #     - SERVICE_ID=analytics-collector-service
-  #     - ACCOUNTS_URL=http://huly.local:3000
-  #     - STATS_URL=http://huly.local:4900
-  #     - POSTHOG_HOST=${POSTHOG_HOST}
-  #     - POSTHOG_API_KEY=${POSTHOG_API_KEY}
-  #     - MAX_PAYLOAD_SIZE=10mb
-  msg2file:
-    image: hardcoreeng/msg2file
-    ports:
-      - 9087:9087
+  analytics:
+    image: hardcoreeng/analytics-collector
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
+    ports:
+      - 4017:4017
     environment:
-      - ACCOUNTS_URL=http://huly.local:3000
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
-      - PORT=9087
       - SECRET=secret
-      - SERVICE_ID=msg2file-service
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - PORT=4017
+      - SERVICE_ID=analytics-collector-service
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      # - POSTHOG_HOST=${POSTHOG_HOST}
+      # - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      # - MAX_PAYLOAD_SIZE=10mb
   export:
     image: hardcoreeng/export
     extra_hosts:
@@ -451,6 +461,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
   datalake:
     image: hardcoreeng/datalake
     extra_hosts:
@@ -476,6 +487,25 @@ services:
       - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+  hulylake:
+    image: hardcoreeng/hulylake
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+    ports:
+      - 8096:8096
+    environment:
+      - HULY_TOKEN_SECRET=secret
+      - HULY_DB_CONNECTION=${DB_CR_URL}
+      - AWS_ENDPOINT_URL=http://minio:9000
+      - AWS_REGION=local
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
     restart: unless-stopped
   hulykvs:
     image: hardcoreeng/hulykvs
@@ -505,6 +535,18 @@ services:
       - HULY_TOKEN_SECRET=secret
       - HULY_ACCOUNT_SERVICE=http://huly.local:3000
     restart: unless-stopped
+  hulypulse:
+    image: hardcoreeng/hulypulse
+    depends_on:
+      redis:
+        condition: service_started
+    ports:
+      - 8099:8099
+    environment:
+      - HULY_REDIS_URLS=redis://redis:6379
+      - HULY_BIND_PORT=8099
+    restart: unless-stopped
+
   process-service:
     image: hardcoreeng/process
     extra_hosts:
@@ -520,6 +562,22 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped
+#  translate:
+#    image: hardcoreeng/translate
+#    extra_hosts:
+#      - 'huly.local:host-gateway'
+#    depends_on:
+#      redpanda:
+#        condition: service_started
+#      account:
+#        condition: service_started
+#    environment:
+#      - SECRET=secret
+#      - ACCOUNTS_URL=http://huly.local:3000
+#      - HULYLAKE_URL=http://huly.local:8096
+#      - QUEUE_CONFIG=${QUEUE_CONFIG}
+#      - QUEUE_REGION=cockroach
+#    restart: unless-stopped
   backup-cockroach:
     image: hardcoreeng/backup
     extra_hosts:
@@ -536,6 +594,7 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_DB_URL=${DB_CR_URL}
       - STATS_URL=http://huly.local:4900
       - DB_URL=${DB_CR_URL}
       - REGION=cockroach
@@ -544,6 +603,8 @@ services:
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - WORKSPACE_STORAGE=${STORAGE_CONFIG}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - TEMPORAL_ADDRESS=localhost:7233
     restart: unless-stopped
   backup-api:
     image: hardcoreeng/backup-api

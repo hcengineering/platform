@@ -17,14 +17,17 @@
 
   import LiteNodeContent from './LiteNodeContent.svelte'
   import NodeMarks from '../NodeMarks.svelte'
+  import { ParsedTextWithEmojis } from '@hcengineering/emoji'
 
   export let node: MarkupNode
+  export let colorInherit: boolean = false
+  export let parseEmojisFunction: ((text: string) => ParsedTextWithEmojis) | undefined = undefined
 </script>
 
 {#if node}
   {@const marks = node.marks ?? []}
 
   <NodeMarks {marks}>
-    <LiteNodeContent {node} />
+    <LiteNodeContent {node} {parseEmojisFunction} {colorInherit} />
   </NodeMarks>
 {/if}

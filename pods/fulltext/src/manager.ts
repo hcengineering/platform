@@ -18,6 +18,7 @@ import {
   QueueTopic,
   QueueWorkspaceEvent,
   workspaceEvents,
+  getDeadletterTopic,
   type ConsumerControl,
   type ConsumerHandle,
   type ConsumerMessage,
@@ -33,6 +34,7 @@ import {
 import { type QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { type Event } from '@hcengineering/communication-sdk-types'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
 
 import { WorkspaceIndexer } from './workspace'
 
@@ -48,6 +50,7 @@ export class WorkspaceManager {
 
   fulltextConsumer?: ConsumerHandle
   txConsumer?: ConsumerHandle
+  txDeadLetterProducer?: PlatformQueueProducer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>
 
   constructor (
     readonly ctx: MeasureContext,
@@ -55,6 +58,7 @@ export class WorkspaceManager {
     private readonly opt: {
       queue: PlatformQueue
       dbURL: string
+      hulylakeUrl: string
       config: FulltextDBConfiguration
       externalStorage: StorageAdapter
       elasticIndexName: string
@@ -117,8 +121,8 @@ export class WorkspaceManager {
       this.ctx,
       QueueTopic.Workspace,
       this.opt.queue.getClientId(),
-      async (msg, control) => {
-        await this.processWorkspaceEvent(msg, control)
+      async (ctx, msg, control) => {
+        await this.processWorkspaceEvent(ctx, msg, control)
       }
     )
 
@@ -126,7 +130,7 @@ export class WorkspaceManager {
       this.ctx,
       QueueTopic.Fulltext,
       this.opt.queue.getClientId(),
-      async (msg, control) => {
+      async (ctx, msg, control) => {
         await this.processFulltextEvent(msg, control)
       }
     )
@@ -136,25 +140,30 @@ export class WorkspaceManager {
       this.ctx,
       QueueTopic.Tx,
       this.opt.queue.getClientId(),
-      async (msg, control) => {
+      async (ctx, msg, control) => {
         clearTimeout(this.txInformer)
         this.txInformer = setTimeout(() => {
           this.ctx.info('tx message', { count: txMessages })
           txMessages = 0
         }, 5000)
 
-        txMessages += msg.length
+        txMessages += 1
 
         await this.processTransactions(msg, control)
       }
     )
+
+    this.txDeadLetterProducer = this.opt.queue.getProducer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>(
+      this.ctx,
+      getDeadletterTopic(QueueTopic.Tx)
+    )
   }
 
   private async processTransactions (
-    msg: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<QueueSourced<Event>>>[],
+    m: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<QueueSourced<Event>>>,
     control: ConsumerControl
   ): Promise<void> {
-    for (const m of msg) {
+    try {
       const ws = m.workspace
 
       let token: string
@@ -162,122 +171,124 @@ export class WorkspaceManager {
         token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
       } catch (err: any) {
         this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
-        continue
+        throw err
       }
 
       await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-        await indexer.fulltext.processTransactions(this.ctx, m.value, control)
+        await indexer.fulltext.processTransactions(this.ctx, [m.value], control)
       })
+    } catch (err: any) {
+      if (this.txDeadLetterProducer !== undefined) {
+        await this.txDeadLetterProducer.send(this.ctx, m?.workspace ?? 'N/A', [m.value])
+      } else {
+        this.ctx.error('Could not send failed transaction to dead letter queue - no producer available', { m })
+      }
+      this.ctx.error('Could not process transactions', { err, m })
     }
   }
 
   private async processWorkspaceEvent (
-    msg: ConsumerMessage<QueueWorkspaceMessage>[],
+    ctx: MeasureContext,
+    m: ConsumerMessage<QueueWorkspaceMessage>,
     control: ConsumerControl
   ): Promise<void> {
-    for (const m of msg) {
-      const ws = m.workspace
+    const ws = m.workspace
+    const mm = m.value
 
-      for (const mm of m.value) {
-        this.ctx.info('workspace event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
-        let token: string
-        try {
-          token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
-        } catch (err: any) {
-          this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
-          continue
-        }
+    this.ctx.info('workspace event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
+    let token: string
+    try {
+      token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+    } catch (err: any) {
+      this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+      return
+    }
 
-        if (mm.type === QueueWorkspaceEvent.Restoring) {
-          this.restoring.add(ws)
-          await this.closeWorkspace(ws)
-        } else if (
-          mm.type === QueueWorkspaceEvent.Created ||
-          mm.type === QueueWorkspaceEvent.Restored ||
-          mm.type === QueueWorkspaceEvent.FullReindex
-        ) {
-          if (mm.type === QueueWorkspaceEvent.Restored) {
-            this.restoring.delete(ws)
-          }
-
-          if (this.restoring.has(ws)) {
-            // Ignore fulltext in case of restoring
-            continue
-          }
-          await this.fulltextProducer.send(ws, [workspaceEvents.fullReindex()])
-        } else if (
-          mm.type === QueueWorkspaceEvent.Deleted ||
-          mm.type === QueueWorkspaceEvent.Archived ||
-          mm.type === QueueWorkspaceEvent.ClearIndex
-        ) {
-          const workspaceInfo = await this.getWorkspaceInfo(this.ctx, token)
-          if (workspaceInfo !== undefined) {
-            await this.fulltextAdapter.clean(
-              this.ctx,
-              (workspaceInfo.dataId as unknown as WorkspaceUuid) ?? workspaceInfo.uuid
-            )
-          }
-        } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
-          this.ctx.warn('Upgraded', this.supportedVersion)
-          await this.closeWorkspace(ws)
-        }
+    if (mm.type === QueueWorkspaceEvent.Restoring) {
+      this.restoring.add(ws)
+      await this.closeWorkspace(ws)
+    } else if (
+      mm.type === QueueWorkspaceEvent.Created ||
+      mm.type === QueueWorkspaceEvent.Restored ||
+      mm.type === QueueWorkspaceEvent.FullReindex
+    ) {
+      if (mm.type === QueueWorkspaceEvent.Restored) {
+        this.restoring.delete(ws)
       }
+
+      if (this.restoring.has(ws)) {
+        // Ignore fulltext in case of restoring
+        return
+      }
+      await this.fulltextProducer.send(ctx, ws, [workspaceEvents.fullReindex()])
+    } else if (
+      mm.type === QueueWorkspaceEvent.Deleted ||
+      mm.type === QueueWorkspaceEvent.Archived ||
+      mm.type === QueueWorkspaceEvent.ClearIndex
+    ) {
+      const workspaceInfo = await this.getWorkspaceInfo(this.ctx, token)
+      if (workspaceInfo !== undefined) {
+        await this.fulltextAdapter.clean(
+          this.ctx,
+          (workspaceInfo.dataId as unknown as WorkspaceUuid) ?? workspaceInfo.uuid
+        )
+      }
+    } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
+      this.ctx.warn('Upgraded', this.supportedVersion)
+      await this.closeWorkspace(ws)
     }
   }
 
   private async processFulltextEvent (
-    msg: ConsumerMessage<QueueWorkspaceMessage>[],
+    m: ConsumerMessage<QueueWorkspaceMessage>,
     control: ConsumerControl
   ): Promise<void> {
-    for (const m of msg) {
-      const ws = m.workspace
+    const ws = m.workspace
+    const mm = m.value
 
-      for (const mm of m.value) {
-        this.ctx.info('fulltext event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
-        let token: string
-        try {
-          token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
-        } catch (err: any) {
-          this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
-          continue
-        }
+    this.ctx.info('fulltext event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
+    let token: string
+    try {
+      token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+    } catch (err: any) {
+      this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+      return
+    }
 
-        if (mm.type === QueueWorkspaceEvent.FullReindex) {
-          await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-            await indexer.dropWorkspace()
-            const toIndex = await indexer.getIndexClassess()
-            this.ctx.info('reindex starting full', { workspace: ws })
-            await this.ctx.with(
-              'reindex-workspace',
-              {},
-              async (ctx) => {
-                for (const { domain, classes } of toIndex) {
-                  try {
-                    await control.heartbeat()
-                    await indexer.reindex(ctx, domain, classes, control)
-                  } catch (err: any) {
-                    ctx.error('failed to reindex domain', { workspace: ws })
-                    throw err
-                  }
-                }
-              },
-              { workspace: ws }
-            )
-            this.ctx.info('reindex full done', { workspace: ws })
-          })
-        } else if (mm.type === QueueWorkspaceEvent.Reindex) {
-          const mmd = mm as QueueWorkspaceReindexMessage
-          if (!this.restoring.has(ws)) {
-            await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+    if (mm.type === QueueWorkspaceEvent.FullReindex) {
+      await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+        await indexer.dropWorkspace()
+        const toIndex = await indexer.getIndexClassess()
+        this.ctx.info('reindex starting full', { workspace: ws })
+        await this.ctx.with(
+          'reindex-workspace',
+          {},
+          async (ctx) => {
+            for (const { domain, classes } of toIndex) {
               try {
-                await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
+                await control.heartbeat()
+                await indexer.reindex(ctx, domain, classes, control)
               } catch (err: any) {
-                this.ctx.error('failed to reindex domain', { workspace: ws })
+                ctx.error('failed to reindex domain', { workspace: ws })
                 throw err
               }
-            })
+            }
+          },
+          { workspace: ws }
+        )
+        this.ctx.info('reindex full done', { workspace: ws })
+      })
+    } else if (mm.type === QueueWorkspaceEvent.Reindex) {
+      const mmd = mm as QueueWorkspaceReindexMessage
+      if (!this.restoring.has(ws)) {
+        await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+          try {
+            await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
+          } catch (err: any) {
+            this.ctx.error('failed to reindex domain', { workspace: ws })
+            throw err
           }
-        }
+        })
       }
     }
   }
@@ -339,6 +350,7 @@ export class WorkspaceManager {
         this.opt.externalStorage,
         this.fulltextAdapter,
         this.contentAdapter,
+        getHulylakeClient(this.opt.hulylakeUrl, workspace, token ?? ''),
         (token) => this.getTransactorAPIEndpoint(token),
         this.opt.listener
       )

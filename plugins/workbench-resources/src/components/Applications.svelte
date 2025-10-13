@@ -20,7 +20,7 @@
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
-  import { inboxId } from '@hcengineering/inbox'
+  import { chatId } from '@hcengineering/chat'
   import { getMetadata } from '@hcengineering/platform'
 
   import AppItem from './AppItem.svelte'
@@ -28,8 +28,18 @@
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
+  export let customAppProps: Map<string, any> = new Map<string, any>()
 
   const dispatch = createEventDispatcher()
+
+  function getClickHandler (app: Application, customProps: any) {
+    return (
+      customProps.onClick ??
+      (() => {
+        if (app._id === active) dispatch('toggleNav')
+      })
+    )
+  }
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
@@ -69,13 +79,16 @@
   $: topApps = apps
     .filter((it) => it.position === 'top' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
-  $: midApps = apps.filter(
-    (it) =>
-      !hiddenAppsIds.includes(it._id) &&
-      !excludedApps.includes(it.alias) &&
-      it.position !== 'top' &&
-      it.position !== 'bottom'
-  )
+  $: midApps = apps
+    .filter(
+      (it) =>
+        !hiddenAppsIds.includes(it._id) &&
+        !excludedApps.includes(it.alias) &&
+        it.position !== 'top' &&
+        it.position !== 'bottom'
+    )
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+
   $: bottomApps = apps.filter(
     (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
   )
@@ -93,16 +106,16 @@
       buttons={'union'}
     >
       {#each topApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            notify={app.alias === inboxId && hasNewInboxNotifications}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
+            notify={app.alias === chatId && hasNewInboxNotifications}
+            {...customProps}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
@@ -110,31 +123,31 @@
         <div class="divider" />
       {/if}
       {#each midApps as app}
+        {@const customProps = customAppProps.get(app.alias) ?? {}}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem
             selected={app._id === active}
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            on:click={() => {
-              if (app._id === active) dispatch('toggleNav')
-            }}
+            {...customProps}
+            on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
       {/each}
       {#if bottomApps.length > 0}
         <div class="divider" />
         {#each bottomApps as app}
+          {@const customProps = customAppProps.get(app.alias) ?? {}}
           <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
             <AppItem
               selected={app._id === active}
               icon={app.icon}
               label={app.label}
               navigator={app._id === active && $deviceInfo.navigator.visible}
-              notify={app.alias === inboxId && hasNewInboxNotifications}
-              on:click={() => {
-                if (app._id === active) dispatch('toggleNav')
-              }}
+              notify={app.alias === chatId && hasNewInboxNotifications}
+              {...customProps}
+              on:click={getClickHandler(app, customProps)}
             />
           </NavLink>
         {/each}

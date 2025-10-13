@@ -28,6 +28,7 @@ import TrainingCodePresenter from './components/TrainingCodePresenter.svelte'
 import TrainingCreator from './components/TrainingCreator.svelte'
 import TrainingPanel from './components/TrainingPanel.svelte'
 import TrainingPassingScorePresenter from './components/TrainingPassingScorePresenter.svelte'
+import TrainingPresenter from './components/TrainingPresenter.svelte'
 import TrainingRequestDueDateEditor from './components/TrainingRequestDueDateEditor.svelte'
 import TrainingRequestMaxAttemptsEditor from './components/TrainingRequestMaxAttemptsEditor.svelte'
 import TrainingRequestMaxAttemptsPresenter from './components/TrainingRequestMaxAttemptsPresenter.svelte'
@@ -36,6 +37,7 @@ import TrainingRequestPanel from './components/TrainingRequestPanel.svelte'
 import TrainingRequestTraineesEditor from './components/TrainingRequestTraineesEditor.svelte'
 import TrainingStateFilterPresenter from './components/TrainingStateFilterPresenter.svelte'
 import TrainingStatePresenter from './components/TrainingStatePresenter.svelte'
+import TrainingTitlePresenter from './components/TrainingTitlePresenter.svelte'
 import ViewAllTrainings from './components/ViewAllTrainings.svelte'
 import ViewIncomingRequests from './components/ViewIncomingRequests.svelte'
 import ViewMyResults from './components/ViewMyResults.svelte'
@@ -76,6 +78,7 @@ export default async (): Promise<Resources> => ({
     TrainingCreator,
     TrainingPanel,
     TrainingPassingScorePresenter,
+    TrainingPresenter,
     TrainingRequestDueDateEditor,
     TrainingRequestMaxAttemptsEditor,
     TrainingRequestMaxAttemptsPresenter,
@@ -84,6 +87,7 @@ export default async (): Promise<Resources> => ({
     TrainingRequestTraineesEditor,
     TrainingStateFilterPresenter,
     TrainingStatePresenter,
+    TrainingTitlePresenter,
     ViewAllTrainings,
     ViewIncomingRequests,
     ViewMyTrainings,

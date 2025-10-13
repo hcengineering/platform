@@ -52,17 +52,18 @@
 
   async function save (): Promise<void> {
     if (value === undefined) {
-      await client.createDoc(core.class.Enum, core.space.Model, {
+      const _id = await client.createDoc(core.class.Enum, core.space.Model, {
         name,
         enumValues: values
       })
+      dispatch('close', _id)
     } else {
       await client.update(value, {
         name,
         enumValues: values
       })
+      dispatch('close', value._id)
     }
-    dispatch('close')
   }
 
   function add (): void {
@@ -180,8 +181,10 @@
 
   function showConfirmationDialog (): void {
     const isEnumEmpty = values.length === 0
+    const oldValues = value?.enumValues ?? []
+    const isEnumSame = values.length === oldValues.length && values.every((it, i) => it === oldValues[i])
 
-    if (isEnumEmpty) {
+    if (isEnumEmpty || isEnumSame) {
       dispatch('close')
     } else {
       showPopup(

@@ -14,12 +14,21 @@
 // limitations under the License.
 //
 
-import { type Data, type Doc, type DocumentUpdate, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import {
+  type Data,
+  type Doc,
+  type DocumentUpdate,
+  Ref,
+  Space,
+  systemAccountUuid,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
 import { type KeyValueClient, getClient as getKeyValueClient } from '@hcengineering/kvs-client'
 import { type Token, type User } from './types'
 import config from './config'
+import { Integration } from '@hcengineering/account-client'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -106,4 +115,8 @@ export function createGmailSearchQuery (fromDate: Date, toDate: Date, fromEmail:
   const beforeDate = formatDate(adjustedToDate)
 
   return `after:${afterDate} before:${beforeDate} from:${fromEmail}`
+}
+
+export function getSpaceId (integration: Integration | null | undefined): Ref<Space> | undefined {
+  return integration?.data?.config?.spaceId
 }

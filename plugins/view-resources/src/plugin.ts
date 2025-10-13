@@ -38,6 +38,7 @@ export default mergeIds(viewId, view, {
   string: {
     Contains: '' as IntlString,
     NotContains: '' as IntlString,
+    ValueIsSet: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
@@ -73,7 +74,6 @@ export default mergeIds(viewId, view, {
     MatchCriteria: '' as IntlString,
     DontMatchCriteria: '' as IntlString,
     MarkupEditor: '' as IntlString,
-    Select: '' as IntlString,
     Grouping: '' as IntlString,
     Ordering: '' as IntlString,
     Manual: '' as IntlString,

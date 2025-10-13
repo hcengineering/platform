@@ -2,7 +2,7 @@ import { loginId } from '@hcengineering/login'
 import { loveId } from '@hcengineering/love'
 import { timeId } from '@hcengineering/time'
 
-import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { MessageBox, setDownloadProgress, getClient } from '@hcengineering/presentation'
 import setting, { settingId } from '@hcengineering/setting'
 import {
@@ -18,23 +18,36 @@ import {
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
-import { inboxId } from '@hcengineering/inbox'
+import { chatId } from '@hcengineering/chat'
 import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
-import { encodeObjectURI } from '@hcengineering/view'
+import view, { Action, encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
 
-import { isOwnerOrMaintainer, getCurrentAccount } from '@hcengineering/core'
+import { isOwnerOrMaintainer, getCurrentAccount, Ref } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams } from './types'
+import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams, CommandCloseTab } from './types'
 import { ipcMainExposed } from './typesUtils'
-import { themeStore } from '@hcengineering/theme'
+import { themeStore, ThemeVariant } from '@hcengineering/theme'
 import type { Application } from '@hcengineering/workbench'
 import { isAllowedToRole } from '@hcengineering/workbench-resources'
 
 function currentOsIsWindows (): boolean {
   return (window as any).windowsPlatform === true
+}
+
+async function executePlatformAction (action: Ref<Action>): Promise<void> {
+  try {
+    const client = getClient()
+    const actions = client.getModel().findAllSync<Action>(view.class.Action, { _id: action })
+    if (actions.length > 0) {
+      const actionBody = await getResource(actions[0].action)
+      await actionBody(undefined)
+    }
+  } catch (error) {
+    console.error('failed to execute platform action', error)
+  }
 }
 
 defineScreenShare()
@@ -46,19 +59,18 @@ window.addEventListener('DOMContentLoaded', () => {
   if (currentOsIsWindows()) {
     const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
     if (titleBarRoot != null) {
-      const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
+      void setupTitleBarMenu(ipcMain, titleBarRoot).then((menuBar) => {
+        themeStore.subscribe((themeOptions) => {
+          if (themeOptions != null) {
+            menuBar.setTheme(themeOptions.variant)
+          }
+        })
 
-      themeStore.subscribe((themeOptions) => {
-        if (themeOptions != null) {
-          const isDarkTheme = themeOptions.dark
-          menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
-        }
-      })
-
-      void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
-        menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
-      }).catch(() => {
-        menuBar.setTheme('light') // fallback
+        void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+          menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
+        }).catch(() => {
+          menuBar.setTheme(ThemeVariant.Light) // fallback
+        })
       })
     }
   }
@@ -125,6 +137,10 @@ window.addEventListener('DOMContentLoaded', () => {
     openScreen(loveId)
   })
 
+  ipcMain.on(CommandCloseTab, () => {
+    void executePlatformAction(workbench.action.CloseCurrentTab)
+  })
+
   ipcMain.on(CommandOpenPlanner, () => {
     openScreen(timeId)
   })
@@ -170,7 +186,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Support for new inbox with cardId (card-based)
     if (notificationParams.cardId != null) {
       const currentLocation = getCurrentResolvedLocation()
-      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${inboxId}/${notificationParams.cardId}`)
+      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${chatId}/${notificationParams.cardId}`)
       return
     }
 

@@ -193,8 +193,12 @@
     "ServiceIsUnavailable": "Dienst ist nicht verfügbar",
     "Integrated": "Integriert",
     "Connected": "Verbunden",
+    "Disconnected": "Getrennt",
     "Available": "Verfügbar",
     "NotConnectedIntegration": "Das Konto {account} ist nicht mit dem Arbeitsbereich integriert",
-    "IntegrationIsUnstable": "Der Integrationsdienst hat Probleme. Einige Funktionen funktionieren möglicherweise nicht richtig."
+    "IntegrationIsUnstable": "Der Integrationsdienst hat Probleme. Einige Funktionen funktionieren möglicherweise nicht richtig.",
+    "MinValue": "Minimalwert",
+    "MaxValue": "Maximalwert",
+    "IntegerOnly": "Nur ganze Zahlen"
   }
 }

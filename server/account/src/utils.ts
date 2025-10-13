@@ -41,7 +41,7 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
 import { Analytics } from '@hcengineering/analytics'
-import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
+import { decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'
@@ -52,6 +52,7 @@ import {
   type AccountMethodHandler,
   type Integration,
   type LoginInfo,
+  type LoginInfoRequestData,
   type Meta,
   type Operations,
   type OtpInfo,
@@ -66,7 +67,7 @@ import {
 } from './types'
 import { isAdminEmail } from './admin'
 
-export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
 export async function getAccountDB (
   uri: string,
@@ -475,15 +476,19 @@ export async function isOtpValid (db: AccountDB, socialId: PersonId, code: strin
   return (otpData?.expiresOn ?? 0) > Date.now()
 }
 
+/**
+ * Creates an account and a Huly social id for the specified person.
+ * Returns the _id of the newly created Huly social id.
+ */
 export async function createAccount (
   db: AccountDB,
   personUuid: PersonUuid,
   confirmed = false,
   automatic = false,
   createdOn = Date.now()
-): Promise<void> {
+): Promise<PersonId> {
   // Create Huly social id and account
-  await db.socialId.insertOne({
+  const socialId = await db.socialId.insertOne({
     type: SocialIdType.HULY,
     value: personUuid,
     personUuid,
@@ -495,6 +500,8 @@ export async function createAccount (
     eventType: AccountEventType.ACCOUNT_CREATED,
     time: createdOn
   })
+
+  return socialId
 }
 
 export async function signUpByEmail (
@@ -545,6 +552,44 @@ export async function signUpByEmail (
   return { account, socialId }
 }
 
+export async function signUpByGrant (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  accountUuid: AccountUuid,
+  grant: PermissionsGrant,
+  info?: LoginInfoRequestData
+): Promise<{ account: AccountUuid, socialId: PersonId }> {
+  const firstName = grant.firstName ?? info?.firstName
+  const lastName = grant.lastName ?? info?.lastName
+
+  if (firstName == null || firstName === '') {
+    ctx.error('First name is required for grant sign up', { grant, info })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const existingAccount = await db.account.findOne({ uuid: accountUuid })
+
+  if (existingAccount != null) {
+    ctx.error('An account with the provided uuid already exists', { accountUuid })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
+  }
+
+  const existingPerson = await db.person.findOne({ uuid: accountUuid })
+
+  if (existingPerson == null) {
+    await db.person.insertOne({ uuid: accountUuid, firstName, lastName: lastName ?? '' })
+  }
+
+  // If there's no account there should be no Huly social id associated with the person if it existed
+  // also, there should be no confirmed social ids associated
+  // so we can safely proceed to account creation
+
+  const socialId = await createAccount(db, accountUuid, true, true)
+
+  return { account: accountUuid, socialId }
+}
+
 export async function selectWorkspace (
   ctx: MeasureContext,
   db: AccountDB,
@@ -566,6 +611,10 @@ export async function selectWorkspace (
 
   let accountUuid: AccountUuid
   let extra: Record<string, any> | undefined
+  let grant: PermissionsGrant | undefined
+  let sub: AccountUuid | undefined
+  let exp: number | undefined
+  let nbf: number | undefined
   try {
     const decodedToken = decodeTokenVerbose(ctx, token ?? '')
     accountUuid = decodedToken.account
@@ -573,6 +622,10 @@ export async function selectWorkspace (
       workspace = await getWorkspaceById(db, decodedToken.workspace)
     }
     extra = decodedToken.extra
+    grant = decodedToken.grant
+    sub = decodedToken.sub
+    exp = decodedToken.exp
+    nbf = decodedToken.nbf
   } catch (e) {
     if (workspace?.allowReadOnlyGuest === true) {
       accountUuid = readOnlyGuestAccountUuid
@@ -621,7 +674,12 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra),
+      token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+        grant,
+        sub,
+        exp,
+        nbf
+      }),
       endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
@@ -651,7 +709,7 @@ export async function selectWorkspace (
   }
 
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
-    void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
+    void setTimezone(ctx, db, accountUuid, account, meta)
   }
 
   if (role === AccountRole.ReadOnlyGuest) {
@@ -678,7 +736,12 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra),
+    token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+      grant,
+      sub,
+      exp,
+      nbf
+    }),
     endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,
@@ -959,15 +1022,15 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
   // TODO: consider not using RegExp with user input as some regexes might
   // be slow or even cause catastrophic backtracking
-  if (
-    invite.emailPattern != null &&
-    invite.emailPattern.trim().length > 0 &&
-    !new RegExp(invite.emailPattern).test(email)
-  ) {
-    ctx.error("Invite doesn't allow this email address", { email, ...invite })
-    Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  // if (
+  //   invite.emailPattern != null &&
+  //   invite.emailPattern.trim().length > 0 &&
+  //   !new RegExp(invite.emailPattern).test(email)
+  // ) {
+  //   ctx.error("Invite doesn't allow this email address", { email, ...invite })
+  //   Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
+  //   throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  // }
 
   if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
     ctx.error("Invite doesn't allow this email address", { email, ...invite })
@@ -1483,12 +1546,12 @@ export function verifyAllowedServices (services: string[], extra: any, shouldThr
 }
 
 export function verifyAllowedRole (
-  targetRole: AccountRole | null,
+  callerRole: AccountRole | null,
   minRole: AccountRole,
   extra: any,
   shouldThrow = true
 ): boolean {
-  const ok = extra?.admin === 'true' || (targetRole != null && getRolePower(targetRole) >= getRolePower(minRole))
+  const ok = extra?.admin === 'true' || (callerRole != null && getRolePower(callerRole) >= getRolePower(minRole))
 
   if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1717,7 +1780,7 @@ export function generatePassword (len: number = 24): string {
   return randomBytes(len).toString('base64').slice(0, len)
 }
 
-export async function setTimezoneIfNotDefined (
+export async function setTimezone (
   ctx: MeasureContext,
   db: AccountDB,
   accountId: AccountUuid,
@@ -1731,7 +1794,7 @@ export async function setTimezoneIfNotDefined (
       ctx.warn('Failed to find account')
       return
     }
-    if (existingAccount.timezone != null) return
+    if (existingAccount.timezone === meta?.timezone) return
     await db.account.update({ uuid: accountId }, { timezone: meta.timezone })
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
@@ -1748,6 +1811,7 @@ export const integrationServices = [
   'gmail',
   'google-calendar',
   'huly-mail',
+  'ai-assistant',
   'tool',
   'admin'
 ]

@@ -21,6 +21,7 @@
   import contact from '../plugin'
   import { employeeByPersonIdStore, primarySocialIdByEmployeeRefStore } from '../utils'
   import UserBox from './UserBox.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let label: IntlString = contact.string.Employee
   export let value: PersonId | null | undefined
@@ -73,6 +74,7 @@
       }
       if (socialString === undefined) {
         console.error('Social id not found for person', e.detail)
+        Analytics.handleError(new Error(`Social id not found for person ${e.detail}`))
         return
       }
 

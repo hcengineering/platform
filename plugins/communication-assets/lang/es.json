@@ -85,6 +85,9 @@
     "Voted": "Votado",
     "VotedFor": "Votado por",
     "RevokedVote": "Revocar voto",
-    "AnonymousQuiz": "Quiz anónimo"
+    "AnonymousQuiz": "Quiz anónimo",
+    "Direct": "Directo",
+    "Directs": "Directos",
+    "Members": "Miembros"
   }
 }

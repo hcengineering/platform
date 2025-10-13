@@ -46,7 +46,7 @@
     dispatch('close', parent)
   }
 
-  $: selected = !Array.isArray(value) ? value.parent ?? undefined : undefined
+  $: selected = !Array.isArray(value) ? (value.parent ?? undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? [value._id] : undefined
 
   $: cards = new Set(Array.isArray(value) ? value.map((p) => p._id) : [value._id])

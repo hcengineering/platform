@@ -1,4 +1,8 @@
+import { Tx, TxUpdateDoc } from '@hcengineering/core/types/tx'
 import { SelectedContext } from './types'
+import core from '@hcengineering/core'
+import { Card } from '@hcengineering/card'
+import { parseDSLContext } from './dslContext'
 
 export function parseContext (value: any): SelectedContext | undefined {
   if (value === undefined) return
@@ -12,5 +16,11 @@ export function parseContext (value: any): SelectedContext | undefined {
     const res = JSON.parse(content) as SelectedContext
     if (res.type === undefined) return
     return res
-  } catch {}
+  } catch {
+    return parseDSLContext(value)
+  }
+}
+
+export function isUpdateTx (etx: Tx): etx is TxUpdateDoc<Card> {
+  return etx._class === core.class.TxUpdateDoc
 }

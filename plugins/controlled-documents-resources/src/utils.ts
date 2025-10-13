@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import chunter from '@hcengineering/chunter'
-import { type Employee, type Person, getCurrentEmployee } from '@hcengineering/contact'
+import contact, { type Employee, type Person, getCurrentEmployee } from '@hcengineering/contact'
 import documents, {
   type ControlledDocument,
   type Document,
@@ -52,9 +52,12 @@ import core, {
   type Tx,
   type TxOperations,
   type WithLookup,
+  type AccountUuid,
+  type Collaborator,
   SortingOrder,
   checkPermission,
-  getCurrentAccount
+  getCurrentAccount,
+  notEmpty
 } from '@hcengineering/core'
 import { type IntlString, translate } from '@hcengineering/platform'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
@@ -245,7 +248,9 @@ export async function sendReviewRequest (
 export async function sendApprovalRequest (
   client: TxOperations,
   controlledDoc: ControlledDocument,
-  approvers: Array<Ref<Employee>>
+  approvers: Array<Ref<Employee>>,
+  externalApprovers: Array<Ref<Employee>>,
+  oldExternalApprovers: Array<Ref<Employee>>
 ): Promise<void> {
   const approveTx = client.txFactory.createTxUpdateDoc(controlledDoc._class, controlledDoc.space, controlledDoc._id, {
     controlledState: ControlledDocumentState.Approved
@@ -255,10 +260,32 @@ export async function sendApprovalRequest (
     controlledState: ControlledDocumentState.Rejected
   })
 
-  await client.update(controlledDoc, {
+  const added = new Set<Ref<Person>>()
+  const removed = new Set<Ref<Person>>()
+
+  for (const user of externalApprovers) {
+    if (!oldExternalApprovers.includes(user)) {
+      added.add(user)
+    }
+  }
+
+  for (const user of oldExternalApprovers) {
+    if (!externalApprovers.includes(user)) {
+      removed.add(user)
+    }
+  }
+
+  const ops = client.apply(controlledDoc._id)
+
+  await ops.update(controlledDoc, {
     approvers,
+    externalApprovers,
     controlledState: ControlledDocumentState.InApproval
   })
+
+  await updateExternalApproversAccess(ops, controlledDoc, Array.from(added), Array.from(removed))
+
+  await ops.commit()
 
   await createRequest(
     client,
@@ -266,11 +293,85 @@ export async function sendApprovalRequest (
     controlledDoc._class,
     documents.class.DocumentApprovalRequest,
     controlledDoc.space,
-    approvers,
+    [...approvers, ...externalApprovers],
     approveTx,
     rejectTx,
     true
   )
+}
+
+export async function updateExternalApproversAccess (
+  client: TxOperations,
+  controlledDoc: ControlledDocument,
+  added: Array<Ref<Person>>,
+  removed: Array<Ref<Person>>
+): Promise<void> {
+  if (added.length > 0) {
+    const addedPersons = (
+      await client.findAll(contact.class.Person, {
+        _id: { $in: added }
+      })
+    ).filter((p) => p.personUuid != null)
+    const projectDocs = await client.findAll(documents.class.ProjectDocument, {
+      document: controlledDoc._id
+    })
+
+    for (const person of addedPersons) {
+      for (const projectDoc of projectDocs) {
+        await client.createDoc(core.class.Collaborator, controlledDoc.space, {
+          attachedTo: projectDoc._id,
+          attachedToClass: projectDoc._class,
+          collection: 'collaborators',
+          collaborator: person.personUuid as AccountUuid
+        })
+      }
+
+      if (controlledDoc.changeControl !== undefined) {
+        await client.createDoc(core.class.Collaborator, controlledDoc.space, {
+          attachedTo: controlledDoc.changeControl,
+          attachedToClass: documents.class.ChangeControl,
+          collection: 'collaborators',
+          collaborator: person.personUuid as AccountUuid
+        })
+      }
+    }
+  }
+
+  if (removed.length > 0) {
+    const removedPersons = await client.findAll(contact.class.Person, {
+      _id: { $in: removed }
+    })
+    const removedPersonUuids = removedPersons.map((rp) => rp.personUuid as AccountUuid).filter(notEmpty)
+    const removedControlledDocCollabs: Collaborator[] =
+      removedPersons.length === 0
+        ? []
+        : await client.findAll(core.class.Collaborator, {
+          attachedTo: controlledDoc._id,
+          attachedToClass: controlledDoc._class,
+          collection: 'collaborators',
+          collaborator: { $in: removedPersonUuids }
+        })
+    const projectDocs = await client.findAll(documents.class.ProjectDocument, {
+      document: controlledDoc._id
+    })
+    const removedProjectDocCollabs = await client.findAll(core.class.Collaborator, {
+      attachedTo: { $in: projectDocs.map((pd) => pd._id) },
+      attachedToClass: documents.class.ProjectDocument,
+      collection: 'collaborators',
+      collaborator: { $in: removedPersonUuids }
+    })
+
+    const changeControlCollabs = await client.findAll(core.class.Collaborator, {
+      attachedTo: controlledDoc.changeControl,
+      attachedToClass: documents.class.ChangeControl,
+      collection: 'collaborators',
+      collaborator: { $in: removedPersonUuids }
+    })
+
+    for (const collab of [...removedControlledDocCollabs, ...removedProjectDocCollabs, ...changeControlCollabs]) {
+      await client.remove(collab)
+    }
+  }
 }
 
 async function createRequest<T extends Doc> (
@@ -1016,18 +1117,6 @@ export function createDocumentHierarchyQuery (): DocumentHiearchyQuery {
   return new DocumentHiearchyQuery()
 }
 
-export async function syncDocumentMetaTitle (
-  client: Client & TxOperations,
-  _id: Ref<DocumentMeta>,
-  code: string,
-  title: string
-): Promise<void> {
-  const meta = await client.findOne(documents.class.DocumentMeta, { _id })
-  if (meta !== undefined) {
-    await client.update(meta, { title: `${code} ${title}` })
-  }
-}
-
 export async function extractValidationWorkflow (
   hierarchy: Hierarchy,
   bundle: DocumentBundle
@@ -1124,7 +1213,7 @@ export async function extractValidationWorkflow (
       const anchor = review ?? approval
       const author =
         anchor?.createdBy !== undefined
-          ? (await getPersonRefByPersonId(anchor.createdBy)) ?? document.author
+          ? ((await getPersonRefByPersonId(anchor.createdBy)) ?? document.author)
           : document.author
 
       state.approvals = [
@@ -1132,7 +1221,7 @@ export async function extractValidationWorkflow (
           person: author,
           role: 'author',
           state: anchor !== undefined ? 'approved' : 'waiting',
-          timestamp: anchor !== undefined ? anchor.createdOn ?? document.createdOn : undefined
+          timestamp: anchor !== undefined ? (anchor.createdOn ?? document.createdOn) : undefined
         },
         ...(await getApprovalStates(review)),
         ...(await getApprovalStates(approval))

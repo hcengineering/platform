@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Association, Doc, generateId, Ref, RefTo, Relation } from '@hcengineering/core'
+  import core, { AnyAttribute, Association, Ref, Relation } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Process, Step } from '@hcengineering/process'
   import { Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getContext } from '../../utils'
+  import { getContext, getMockAttribute } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
   import AssociationSelector from './AssociationSelector.svelte'
 
@@ -56,22 +56,14 @@
     }
   }
 
-  let attribute: AnyAttribute
-  $: attribute = {
-    attributeOf: process.masterTag,
-    name: '',
-    type: {
-      label: core.string.Ref,
-      _class: core.class.RefTo,
-      to: targetClass
-    },
-    _id: generateId(),
-    space: core.space.Model,
-    modifiedOn: 0,
-    modifiedBy: core.account.System,
-    _class: core.class.Attribute,
-    label: core.string.Object
+  $: type = {
+    label: core.string.Ref,
+    _class: core.class.RefTo,
+    to: targetClass ?? process.masterTag
   }
+
+  let attribute: AnyAttribute
+  $: attribute = getMockAttribute(targetClass ?? process.masterTag, core.string.Object, type)
 
   $: context = targetClass && getContext(client, process, targetClass, 'object')
 </script>

@@ -42,7 +42,13 @@ import aiBot from '@hcengineering/ai-bot'
 import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.svelte'
 
 import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
-import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
+import {
+  isMessageManualTranslating,
+  messageEditingStore,
+  showOriginalMessagesStore,
+  threadCreateMessageStore,
+  translateMessagesStore
+} from './stores'
 
 export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
   if (!isCardAllowedForCommunications(card)) {
@@ -72,21 +78,10 @@ export const replyInThread: MessageActionFunction = async (message: Message, par
     await showForbidden()
     return
   }
-  await attachCardToMessage(message, parentCard, createThreadTitle(message, parentCard), chat.masterTag.Thread)
-}
 
-export async function attachCardToMessage (
-  message: Message,
-  parentCard: Card,
-  title: string,
-  type: Ref<MasterTag>
-): Promise<void> {
-  const client = getClient()
-  const communicationClient = getCommunicationClient()
-  const hierarchy = client.getHierarchy()
-
-  const thread = message.thread
+  const thread = message.threads[0]
   if (thread != null) {
+    const client = getClient()
     const _id = thread.threadId
     const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
     if (card === undefined) return
@@ -95,9 +90,27 @@ export async function attachCardToMessage (
     return
   }
 
-  const threadCardID = generateId<Card>()
+  await attachCardToMessage(
+    message,
+    parentCard,
+    createThreadTitle(message, parentCard),
+    chat.masterTag.Thread,
+    `${parentCard._id}_${message.id}` as Ref<Card>
+  )
+}
 
-  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, type)
+export async function attachCardToMessage (
+  message: Message,
+  parentCard: Card,
+  title: string,
+  type: Ref<MasterTag>,
+  _id?: Ref<Card>
+): Promise<void> {
+  const client = getClient()
+  const communicationClient = getCommunicationClient()
+  const hierarchy = client.getHierarchy()
+
+  const threadCardID = _id ?? generateId<Card>()
 
   const author =
     get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
@@ -108,10 +121,8 @@ export async function attachCardToMessage (
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
-      parent: parentCard._id,
       blobs: {},
       parentInfo: [
-        ...(parentCard.parentInfo ?? []),
         {
           _id: parentCard._id,
           _class: parentCard._class,
@@ -121,10 +132,8 @@ export async function attachCardToMessage (
     },
     type
   )
-  const apply = client.apply('create thread', undefined, true)
-  await apply.createDoc(type, parentCard.space, data, threadCardID)
-  await apply.commit()
-
+  await client.createDoc(type, parentCard.space, data, threadCardID)
+  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, type)
   if (author?.active === true && author?.personUuid !== undefined) {
     await communicationClient.addCollaborators(threadCardID, type, [author.personUuid])
   }
@@ -142,42 +151,46 @@ function createThreadTitle (message: Message, parent: Card): string {
 }
 
 export const canReplyInThread: MessageActionVisibilityTester = (message: Message): boolean => {
-  return (
-    message.type === MessageType.Message &&
-    message.extra?.threadRoot !== true &&
-    (!message.removed || message.thread != null)
-  )
+  return message.type === MessageType.Text && message.extra?.threadRoot !== true
 }
 
 export const translateMessage: MessageActionFunction = async (message: Message): Promise<void> => {
-  if (isMessageTranslating(message.id)) return
-  const result = get(translateMessagesStore).get(message.id)
+  if (isMessageManualTranslating(message.cardId, message.id)) return
+  const result = get(translateMessagesStore).find((it) => it.cardId === message.cardId && it.messageId === message.id)
 
-  if (result?.result != null) {
-    translateMessagesStore.update((store) => {
-      store.set(message.id, { ...result, shown: true })
-      return store
-    })
+  if (result != null) {
+    showOriginalMessagesStore.update((store) =>
+      store.filter(([cId, mId]) => cId !== message.cardId || mId !== message.id)
+    )
     return
   }
 
   translateMessagesStore.update((store) => {
-    store.set(message.id, { inProgress: true, shown: false })
+    store.push({ inProgress: true, messageId: message.id, cardId: message.cardId })
     return store
   })
 
   const markup = toMarkup(message.content)
-  const response = await aiTranslate(markup, get(languageStore))
+  const lang = get(languageStore)
+  const currentTranslate = message?.translates?.[lang] ?? ''
+  const response = currentTranslate !== '' ? toMarkup(currentTranslate) : (await aiTranslate(markup, lang))?.text
 
   if (response !== undefined) {
     translateMessagesStore.update((store) => {
-      store.set(message.id, { inProgress: false, result: response.text, shown: true })
-      return store
+      return store.map((it) => {
+        if (it.cardId === message.cardId && it.messageId === message.id) {
+          return {
+            ...it,
+            inProgress: false,
+            result: response
+          }
+        }
+        return it
+      })
     })
   } else {
     translateMessagesStore.update((store) => {
-      store.delete(message.id)
-      return store
+      return store.filter((it) => it.cardId !== message.cardId || it.messageId !== message.id)
     })
   }
 }
@@ -185,15 +198,14 @@ export const translateMessage: MessageActionFunction = async (message: Message):
 export const canTranslateMessage: MessageActionVisibilityTester = (message: Message): boolean => {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   if (url === '') return false
-  return message.type === MessageType.Message && !message.removed
+  return message.type === MessageType.Text
 }
 
 export const showOriginalMessage: MessageActionFunction = async (message: Message): Promise<void> => {
   const messageId = message.id
-  translateMessagesStore.update((store) => {
-    const status = store.get(messageId)
-    if (status == null) return store
-    store.set(messageId, { ...status, shown: false })
+
+  showOriginalMessagesStore.update((store) => {
+    store.push([message.cardId, messageId])
     return store
   })
 }
@@ -207,19 +219,18 @@ export const editMessage: MessageActionFunction = async (message: Message): Prom
 }
 
 export const canEditMessage: MessageActionVisibilityTester = (message: Message): boolean => {
-  if (message.type !== MessageType.Message || message.removed) return false
+  if (message.type !== MessageType.Text) return false
   const me = getCurrentAccount()
   return me.socialIds.includes(message.creator)
 }
 
 export const removeMessage: MessageActionFunction = async (message: Message): Promise<void> => {
   const communicationClient = getCommunicationClient()
-  message.removed = true
   await communicationClient.removeMessage(message.cardId, message.id)
 }
 
 export const canRemoveMessage: MessageActionVisibilityTester = (message: Message): boolean => {
-  if (message.type !== MessageType.Message || message.removed) return false
+  if (message.type !== MessageType.Text) return false
   const me = getCurrentAccount()
   return me.socialIds.includes(message.creator)
 }
@@ -236,7 +247,7 @@ export const createCard: MessageActionFunction = async (message: Message, card: 
 }
 
 export const canCreateCard: MessageActionVisibilityTester = (message: Message): boolean => {
-  return canReplyInThread(message) && message.thread == null
+  return canReplyInThread(message)
 }
 
 let allMessageActions: MessageAction[] | undefined

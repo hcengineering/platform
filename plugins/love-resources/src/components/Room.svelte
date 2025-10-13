@@ -13,21 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { ActionContext } from '@hcengineering/presentation'
+  import { ActionContext } from '@hcengineering/presentation'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../plugin'
-  import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import { isFullScreen, tryConnect } from '../utils'
-  import ControlBar from './ControlBar.svelte'
-  import { lkSessionConnected } from '../liveKitClient'
+  import { waitForOfficeLoaded, currentRoom } from '../stores'
+  import { isFullScreen, lk } from '../utils'
+  import ControlBar from './meeting/ControlBar.svelte'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
 
-  export let withVideo: boolean
   export let canMaximize: boolean = true
   export let room: TypeRoom
 
@@ -39,21 +37,15 @@
 
   onMount(async () => {
     loading = true
-
     const wsURL = getMetadata(love.metadata.WebSocketURL)
 
     if (wsURL === undefined) {
       return
     }
-
     configured = true
 
     await waitForOfficeLoaded()
 
-    if (!$lkSessionConnected && $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)) {
-      const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($myInfo, room, info, $myRequests, $invites)
-    }
     roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
@@ -125,6 +117,7 @@
   }
 
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
+  $: updateStyle(lk.numParticipants, withScreenSharing)
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
@@ -146,16 +139,14 @@
     <div class="screenContainer">
       <ScreenSharingView bind:hasActiveTrack={withScreenSharing} />
     </div>
-    {#if withVideo}
-      <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
-        <ParticipantsListView
-          room={room._id}
-          on:participantsCount={(evt) => {
-            updateStyle(evt.detail, withScreenSharing)
-          }}
-        />
-      </div>
-    {/if}
+    <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
+      <ParticipantsListView
+        room={room._id}
+        on:participantsCount={(evt) => {
+          updateStyle(evt.detail, withScreenSharing)
+        }}
+      />
+    </div>
   </div>
   {#if $currentRoom}
     <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} {canMaximize} />

@@ -13,23 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
+  import { showPopup, HeaderButton } from '@hcengineering/ui'
   import lead from '../plugin'
   import CreateCustomer from './CreateCustomer.svelte'
+  import { AccountRole } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+
+  const client = getClient()
 
   async function newIssue (): Promise<void> {
     showPopup(CreateCustomer, {}, 'top')
   }
 </script>
 
-<div class="antiNav-subheader">
-  <Button
-    icon={IconAdd}
-    label={lead.string.CreateCustomerLabel}
-    justify={'left'}
-    width={'100%'}
-    kind={'primary'}
-    gap={'large'}
-    on:click={newIssue}
-  />
-</div>
+<HeaderButton
+  {client}
+  mainActionId={lead.string.CreateCustomerLabel}
+  visibleActions={[lead.string.CreateCustomerLabel]}
+  actions={[
+    {
+      id: lead.string.CreateCustomerLabel,
+      label: lead.string.CreateCustomerLabel,
+      accountRole: AccountRole.User,
+      callback: newIssue
+    }
+  ]}
+/>

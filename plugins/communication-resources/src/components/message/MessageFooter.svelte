@@ -15,10 +15,10 @@
 
 <script lang="ts">
   import { getClient, getCommunicationClient } from '@hcengineering/presentation'
-  import cardPlugin from '@hcengineering/card'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
-  import { AttachmentID, Message, MessageType } from '@hcengineering/communication-types'
+  import { AttachmentID, Emoji, Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
   import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
   import { Component } from '@hcengineering/ui'
@@ -29,6 +29,7 @@
   import communication from '../../plugin'
 
   export let message: Message
+  export let showThreads: boolean = true
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
@@ -38,16 +39,18 @@
     return message.type !== MessageType.Activity && message.extra?.threadRoot !== true
   }
 
-  async function handleReaction (event: CustomEvent<string>): Promise<void> {
+  async function handleReaction (event: CustomEvent<Emoji>): Promise<void> {
     event.preventDefault()
     event.stopPropagation()
     const emoji = event.detail
     await toggleReaction(message, emoji)
   }
 
-  async function handleReply (): Promise<void> {
+  async function handleReply (event: CustomEvent<Ref<Card> | undefined>): Promise<void> {
     if (!canReply()) return
-    const t = message.thread
+    const threadID = event.detail
+    if (threadID === undefined) return
+    const t = message.threads.find((it) => it.threadId === threadID)
     if (t === undefined) return
     const _id = t.threadId
     const client = getClient()
@@ -69,10 +72,10 @@
   $: applets = message.attachments.filter(isAppletAttachment) ?? []
 </script>
 
-{#if applets.length > 0 && !message.removed}
+{#if applets.length > 0}
   <div class="message__applets">
     {#each applets as applet (applet.id)}
-      {@const appletModel = appletsModels.find((it) => it.type === applet.type)}
+      {@const appletModel = appletsModels.find((it) => it.type === applet.mimeType)}
       {#if appletModel}
         <Component
           is={appletModel.component}
@@ -86,13 +89,13 @@
   </div>
 {/if}
 
-{#if blobs.length > 0 && !message.removed}
+{#if blobs.length > 0}
   <div class="message__files">
     {#each blobs as blob (blob.id)}
       <AttachmentPreview
         value={{
           file: blob.params.blobId,
-          type: blob.params.mimeType,
+          type: blob.mimeType,
           name: blob.params.fileName,
           size: blob.params.size,
           metadata: blob.params.metadata
@@ -102,7 +105,7 @@
     {/each}
   </div>
 {/if}
-{#if links.length > 0 && !message.removed}
+{#if links.length > 0}
   <div class="message__links">
     {#each links as link (link.id)}
       <LinkPreview
@@ -125,14 +128,17 @@
     {/each}
   </div>
 {/if}
-{#if message.reactions.length > 0 && !message.removed}
+{#if Object.keys(message.reactions).length > 0}
   <div class="message__reactions">
     <ReactionsList reactions={message.reactions} on:click={handleReaction} />
   </div>
 {/if}
-{#if message.thread && message.thread.threadId}
+
+{#if showThreads && message.threads.length > 0}
   <div class="message__replies overflow-label">
-    <MessageThread thread={message.thread} on:click={handleReply} />
+    {#each message.threads as thread (thread.threadId)}
+      <MessageThread {thread} on:click={handleReply} />
+    {/each}
   </div>
 {/if}
 
@@ -146,15 +152,16 @@
     margin-left: -0.5rem;
     padding-bottom: 0;
     display: flex;
-    align-items: flex-start;
-    align-self: stretch;
+    flex-direction: column;
+    gap: 0.5rem;
     overflow: hidden;
+    width: 100%;
   }
 
   .message__files {
-    display: grid;
-    grid-gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, 25rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     min-height: 2.5rem;
     width: 100%;
     overflow: hidden;

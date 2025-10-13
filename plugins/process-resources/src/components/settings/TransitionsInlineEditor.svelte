@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Doc, Ref } from '@hcengineering/core'
   import { Process, Transition } from '@hcengineering/process'
   import { Button, getCurrentLocation, IconAdd, Label, navigate, showPopup } from '@hcengineering/ui'
   import plugin from '../../plugin'
   import AddTransitionPopup from './AddTransitionPopup.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
+  import { SortableDocList } from '@hcengineering/view-resources'
 
   export let process: Process
-  export let transitions: Transition[]
   export let readonly: boolean
 
   function addTransition (): void {
@@ -35,6 +35,10 @@
     loc.path[6] = id
     navigate(loc, true)
   }
+
+  function toTransition (doc: Doc): Transition {
+    return doc as Transition
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -43,23 +47,26 @@
   <div class="header w-full p-4">
     <Label label={plugin.string.Transitions} />
   </div>
-  {#each transitions as transition (transition._id)}
-    <Button
-      width={'100%'}
-      kind={'ghost'}
-      justify={'left'}
-      on:click={() => {
-        handleSelect(transition._id)
-      }}
-    >
-      <svelte:fragment slot="content">
-        <div class="flex-row-center flex-gap-4">
-          <TransitionPresenter {transition} />
-          <TriggerPresenter value={transition.trigger} {process} params={transition.triggerParams} withLabel={true} />
-        </div>
-      </svelte:fragment>
-    </Button>
-  {/each}
+  <SortableDocList _class={plugin.class.Transition} query={{ process: process._id }}>
+    <svelte:fragment slot="object" let:value>
+      {@const transition = toTransition(value)}
+      <Button
+        width={'100%'}
+        kind={'ghost'}
+        justify={'left'}
+        on:click={() => {
+          handleSelect(transition._id)
+        }}
+      >
+        <svelte:fragment slot="content">
+          <div class="flex-row-center flex-gap-4">
+            <TransitionPresenter {transition} />
+            <TriggerPresenter value={transition.trigger} {process} params={transition.triggerParams} withLabel={true} />
+          </div>
+        </svelte:fragment>
+      </Button>
+    </svelte:fragment>
+  </SortableDocList>
   {#if !readonly}
     <Button kind={'ghost'} width={'100%'} icon={IconAdd} label={plugin.string.AddTransition} on:click={addTransition} />
   {/if}

@@ -15,18 +15,19 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
-
-  import { type PresenceClient, connect } from '../client'
+  import { HulypulseClient } from '@hcengineering/hulypulse-client'
+  import { createPulseClient } from '@hcengineering/presentation'
 
   let parentElement: HTMLDivElement
-  let client: PresenceClient | undefined
 
-  onMount(() => {
-    client = connect()
+  let pulseclient: HulypulseClient | undefined
+
+  onMount(async () => {
+    pulseclient = await createPulseClient()
   })
 
   onDestroy(() => {
-    client?.close()
+    pulseclient?.close()
   })
 </script>
 

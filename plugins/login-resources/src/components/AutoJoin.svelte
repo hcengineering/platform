@@ -15,15 +15,15 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
-  import { logIn, workbenchId } from '@hcengineering/workbench'
+  import { logIn } from '@hcengineering/workbench'
   import { setMetadata, translate } from '@hcengineering/platform'
-  import { Location, Loading, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { Loading, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { type LoginInfo } from '@hcengineering/account-client'
   import { loginId } from '@hcengineering/login'
   import { themeStore } from '@hcengineering/theme'
   import presentation from '@hcengineering/presentation'
 
-  import { setLoginInfo, checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
+  import { checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
   import login from '../plugin'
   import LoginForm from './LoginForm.svelte'
 
@@ -72,16 +72,20 @@
         } else {
           if (result.email == null) {
             console.error('No email in auto join info')
+            Analytics.handleError(new Error('No email in auto join info'))
             navigate({ path: [loginId] })
             return
           }
 
           email = result.email
-          name = result.name
+          name = result.name ?? ''
         }
       }
     } catch (err: any) {
       console.error('Failed to check auto join', err)
+      Analytics.handleError(
+        new Error('Failed to check auto join: ' + (err instanceof Error ? err.message : String(err)))
+      )
       navigate({ path: [loginId] })
       return
     }

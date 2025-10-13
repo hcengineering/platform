@@ -123,7 +123,8 @@ jest.mock('../utils', () => ({
     setValue: jest.fn().mockImplementation(() => Promise.resolve(undefined)),
     deleteKey: jest.fn().mockImplementation(() => Promise.resolve(undefined)),
     listKeys: jest.fn()
-  }))
+  })),
+  getSpaceId: jest.fn().mockReturnValue('test-space-id')
 }))
 
 // Mock gmail module
@@ -376,7 +377,7 @@ describe('GmailClient', () => {
     // Fix unbound method reference by using the spy
     expect(jest.spyOn(SyncManager.prototype, 'sync')).toHaveBeenCalledWith(
       mockSocialId._id,
-      { noNotify: true },
+      { noNotify: true, spaceId: 'test-space-id' },
       'test@example.com'
     )
   })

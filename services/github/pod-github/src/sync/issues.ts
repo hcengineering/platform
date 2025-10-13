@@ -111,11 +111,16 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       const urlId = issueEvent.issue.url
 
       await syncRunner.exec(urlId, async () => {
-        await this.processEvent(ctx, issueEvent, derivedClient, repository, integration, project)
+        try {
+          await this.processEvent(ctx, issueEvent, derivedClient, repository, integration, project)
+        } catch (err: any) {
+          ctx.error('Error processing event', { error: err })
+        }
       })
     }
   }
 
+  @withContext('issues-processEvent')
   private async processEvent (
     ctx: MeasureContext,
     event: IssuesEvent,
@@ -129,8 +134,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     let externalData: IssueExternalData | undefined
     if (event.action !== 'deleted') {
       try {
-        const response: any = await integration.octokit?.graphql(
-          `query listIssue($name: String!, $owner: String!, $issue: Int!) {
+        const response: any = await ctx.with('graphql', {}, (ctx) =>
+          integration.octokit?.graphql(
+            `query listIssue($name: String!, $owner: String!, $issue: Int!) {
           repository(name: $name, owner: $owner) {
             issue(number: $issue) {
               ${issueDetails(true)}
@@ -138,11 +144,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           }
         }
         `,
-          {
-            name: repo.name,
-            owner: repo.owner?.login,
-            issue: event.issue.number
-          }
+            {
+              name: repo.name,
+              owner: repo.owner?.login,
+              issue: event.issue.number
+            }
+          )
         )
         externalData = response.repository.issue
       } catch (err: any) {
@@ -351,7 +358,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       const description = await ctx.with(
         'query collaborative description',
         {},
-        async () => {
+        async (ctx) => {
           const collabId = makeDocCollabId(existing, 'description')
           return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
         },
@@ -367,7 +374,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       const createdIssueData = await ctx.with(
         'create github issue',
         {},
-        async () => {
+        async (ctx) => {
           this.createPromise = this.createGithubIssue(
             ctx,
             container,
@@ -501,10 +508,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         await ctx.with(
           'create platform issue',
           {},
-          async () => {
+          async (ctx) => {
             const st = (await guessStatus(issueExternal, statuses))._id as Ref<Status>
 
             await this.createNewIssue(
+              ctx,
               info,
               accountGH,
               {
@@ -555,7 +563,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         const updateResult = await ctx.with(
           'diff update',
           {},
-          async () =>
+          async (ctx) =>
             await this.handleDiffUpdate(
               ctx,
               container,
@@ -655,7 +663,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         await ctx.with(
           '==> updateIssue',
           {},
-          async () => {
+          async (ctx) => {
             ctx.info('update fields', {
               url: issueExternal.url,
               ...issueUpdate,
@@ -696,7 +704,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         await ctx.with(
           '==> updateIssue',
           {},
-          async () => {
+          async (ctx) => {
             ctx.info('update fields', { ...issueUpdate, workspace: this.provider.getWorkspaceId() })
             if (isGHWriteAllowed()) {
               const hasOtherChanges = Object.keys(issueUpdate).length > 0
@@ -807,7 +815,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     }
   }
 
+  @withContext('issues-createNewIssue')
   private async createNewIssue (
+    ctx: MeasureContext,
     info: DocSyncInfo,
     account: PersonId,
     issueData: GithubIssueData & { status: Issue['status'] },
@@ -930,7 +940,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           const response: any = await ctx.with(
             'graphql.listIssue',
             {},
-            () =>
+            (ctx) =>
               integration.octokit.graphql(
                 `query listIssues {
                     nodes(ids: [${idsp}] ) {

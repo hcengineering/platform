@@ -122,6 +122,7 @@ services:
       - TRANSACTOR_URL=ws://transactor:3334;ws://huly.local:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://account:3003
+      - ACCOUNTS_DB_URL=${DB_PG_URL}
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   front:

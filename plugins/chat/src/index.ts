@@ -29,15 +29,21 @@ const chat = plugin(chatId, {
     MessageIn: '' as IntlString,
     Thread: '' as IntlString,
     Threads: '' as IntlString,
-    Title: '' as IntlString
+    Title: '' as IntlString,
+    Inbox: '' as IntlString,
+    All: '' as IntlString,
+    ClearAll: '' as IntlString,
+    InboxIsClear: '' as IntlString,
+    YouDontHaveAnyNewMessages: '' as IntlString,
+    ReactedToYourMessage: '' as IntlString
   },
   icon: {
-    Channel: '' as Asset,
     ChatBubble: '' as Asset,
-    Thread: '' as Asset
+    Thread: '' as Asset,
+    Inbox: '' as Asset,
+    All: '' as Asset
   },
   masterTag: {
-    Channel: '' as Ref<MasterTag>,
     Thread: '' as Ref<MasterTag>
   }
 })

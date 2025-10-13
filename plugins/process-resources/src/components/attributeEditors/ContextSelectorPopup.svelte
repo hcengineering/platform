@@ -19,16 +19,17 @@
   import {
     Context,
     Process,
-    ProcessContext,
+    ProcessExecutionContext,
     ProcessFunction,
     RelatedContext,
     SelectedContext
   } from '@hcengineering/process'
-  import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, resizeObserver, Scroller, showPopup, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { generateContextId, getRelationObjectReduceFunc, getValueReduceFunc } from '../../utils'
   import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
+  import ConstValuePopup from './ConstValuePopup.svelte'
 
   export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
@@ -44,17 +45,12 @@
     dispatch('close')
   }
 
-  function onCustom (): void {
-    onSelect(null)
-    dispatch('close')
-  }
-
   function onAttribute (val: AnyAttribute): void {
     const valueFunc = getValueReduceFunc(val, attribute)
     onClick({
       type: 'attribute',
       key: val.name,
-      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : []
+      functions: valueFunc !== undefined ? [valueFunc] : []
     })
   }
 
@@ -83,7 +79,7 @@
     dispatch('close')
   }
 
-  function onProcessContext (ctx: ProcessContext): void {
+  function onProcessContext (ctx: ProcessExecutionContext): void {
     onSelect(ctx.value)
     dispatch('close')
   }
@@ -107,6 +103,19 @@
       sourceFunction: reduceFunc
     })
     dispatch('close')
+  }
+
+  function onConst (e: MouseEvent): void {
+    showPopup(ConstValuePopup, { attribute }, eventToHTMLElement(e), (res) => {
+      if (res != null) {
+        onSelect({
+          type: 'const',
+          key: attribute.name,
+          value: res
+        })
+      }
+      dispatch('close')
+    })
   }
 </script>
 
@@ -155,15 +164,30 @@
       <div class="menu-separator" />
     {/if}
     {#if processContext.length > 0}
-      {#each processContext as f}
-        <button
-          on:click={() => {
-            onProcessContext(f)
-          }}
-          class="menu-item"
-        >
-          <ExecutionContextPresenter {process} contextValue={f.value} />
-        </button>
+      {#each processContext as pc}
+        {#if pc.attributes.length > 0}
+          <Submenu
+            component={ExecutionContextPresenter}
+            props={{
+              context: pc,
+              target: attribute,
+              contextValue: pc.value,
+              process,
+              onSelect: onClick
+            }}
+            options={{ component: plugin.component.ExecutionContextSelector }}
+            withHover
+          />
+        {:else}
+          <button
+            on:click={() => {
+              onProcessContext(pc)
+            }}
+            class="menu-item"
+          >
+            <ExecutionContextPresenter {process} contextValue={pc.value} />
+          </button>
+        {/if}
       {/each}
       <div class="menu-separator" />
     {/if}
@@ -226,13 +250,7 @@
       <div class="menu-separator" />
     {/if}
     {#if !forbidValue}
-      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-      <button
-        on:click={() => {
-          onCustom()
-        }}
-        class="menu-item"
-      >
+      <button on:click={onConst} class="menu-item">
         <span class="overflow-label pr-1">
           <Label label={plugin.string.CustomValue} />
         </span>

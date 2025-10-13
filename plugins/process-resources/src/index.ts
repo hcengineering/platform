@@ -15,6 +15,7 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
+import ExecutionContextSelector from './components/attributeEditors/ExecutionContextSelector.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
 import RoleEditor from './components/contextEditors/RoleEditor.svelte'
@@ -22,6 +23,7 @@ import ErrorPresenter from './components/ErrorPresenter.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
 import ExecutonProgressPresenter from './components/ExecutonProgressPresenter.svelte'
 import Main from './components/Main.svelte'
+import ExecutionMyToDos from './components/ExecutionMyToDos.svelte'
 import SubProcessPresenter from './components/presenters/SubProcessPresenter.svelte'
 import ToDoPresenter from './components/presenters/ToDoPresenter.svelte'
 import UpdateCardPresenter from './components/presenters/UpdateCardPresenter.svelte'
@@ -41,33 +43,47 @@ import ToDoRemoveParamsEditor from './components/settings/ToDoRemoveParamsEditor
 import TransitionEditor from './components/settings/TransitionEditor.svelte'
 import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
+import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
+import MultiArrayElementEditor from './components/transformEditors/MultiArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
-import ArrayElementEditor from './components/transformEditors/ArrayElementEditor.svelte'
+import FilterEditor from './components/transformEditors/FilterEditor.svelte'
+import FunctionSubmenu from './components/settings/FunctionSubmenu.svelte'
 
+import ArraySizeCriteria from './components/criterias/ArraySizeCriteria.svelte'
+import BaseCriteria from './components/criterias/BaseCriteria.svelte'
+import RangeCriteria from './components/criterias/RangeCriteria.svelte'
 import LogActionPresenter from './components/LogActionPresenter.svelte'
 import NotifierExtension from './components/NotifierExtension.svelte'
 import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
 import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
 import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
-import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import AddTagEditor from './components/settings/AddTagEditor.svelte'
+import AddTagPresenter from './components/presenters/AddTagPresenter.svelte'
 import CardUpdateEditor from './components/settings/CardUpdateEditor.svelte'
+import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
+import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import TimeEditor from './components/settings/TimeEditor.svelte'
+import TimePresenter from './components/settings/TimePresenter.svelte'
+import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
-import DateCriteria from './components/criterias/DateCriteria.svelte'
-import BooleanCriteria from './components/criterias/BooleanCriteria.svelte'
-import NumberCriteria from './components/criterias/NumberCriteria.svelte'
-import StringCriteria from './components/criterias/StringCriteria.svelte'
-import RefCriteria from './components/criterias/RefCriteria.svelte'
-import EnumCriteria from './components/criterias/EnumCriteria.svelte'
-import ArrayCriteria from './components/criterias/ArrayCriteria.svelte'
-import CardUpdatePresenter from './components/settings/CardUpdatePresenter.svelte'
-import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
+import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
+import RolePresenter from './components/transformPresenters/RolePresenter.svelte'
 import { ProcessMiddleware } from './middleware'
-import { continueExecution, showDoneQuery, todoTranstionCheck, updateCardTranstionCheck } from './utils'
+import {
+  continueExecution,
+  showDoneQuery,
+  timeTransitionCheck,
+  todoTranstionCheck,
+  matchCardCheck,
+  subProcessesDoneCheck,
+  fieldChangesCheck
+} from './utils'
+import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
 export * from './query'
 
@@ -91,6 +107,7 @@ export default async (): Promise<Resources> => ({
     ProcessPresenter,
     NestedContextSelector,
     RelatedContextSelector,
+    ExecutionContextSelector,
     FunctionSelector,
     Main,
     RunProcessCardPopup,
@@ -114,29 +131,41 @@ export default async (): Promise<Resources> => ({
     AddRelationEditor,
     AddRelationPresenter,
     CardUpdatePresenter,
-    ToDoSettingPresenter
+    ToDoSettingPresenter,
+    TimeEditor,
+    TimePresenter,
+    AddTagEditor,
+    AddTagPresenter,
+    ExecutionMyToDos,
+    FieldChangesEditor,
+    FunctionSubmenu
   },
   criteriaEditor: {
-    DateCriteria,
-    StringCriteria,
-    BooleanCriteria,
-    NumberCriteria,
-    RefCriteria,
-    EnumCriteria,
-    ArrayCriteria
+    BaseCriteria,
+    ArraySizeCriteria,
+    RangeCriteria
+  },
+  transformPresenter: {
+    NumberPresenter,
+    RolePresenter
   },
   transformEditor: {
     ArrayElementEditor,
+    MultiArrayElementEditor,
     DateOffsetEditor,
     NumberEditor,
     AppendEditor,
     ReplaceEditor,
     SplitEditor,
-    CutEditor
+    CutEditor,
+    FilterEditor
   },
   triggerCheck: {
-    UpdateCheck: updateCardTranstionCheck,
-    ToDo: todoTranstionCheck
+    MatchCheck: matchCardCheck,
+    FieldChangedCheck: fieldChangesCheck,
+    SubProcessesDoneCheck: subProcessesDoneCheck,
+    ToDo: todoTranstionCheck,
+    Time: timeTransitionCheck
   },
   function: {
     ShowDoneQuery: showDoneQuery,

@@ -21,12 +21,13 @@
   export let limit: number = 240
   export let ignore: boolean = false
   export let fixed: boolean = false
+  export let bigger: boolean = false
 
   let cHeight: number
-  let bigger: boolean = false
   let crop: boolean = false
 
-  const toggle = (): void => {
+  const toggle = (event: MouseEvent): void => {
+    event.stopPropagation()
     crop = !crop
   }
 

@@ -36,7 +36,8 @@
     toIdMap,
     TxProcessor,
     WithLookup,
-    type Blob
+    type Blob,
+    type PersonId
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
@@ -81,7 +82,7 @@
   const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
   const id: Ref<Candidate> = generateId()
   const draftController = new DraftController<CandidateDraft>(
-    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    shouldSaveDraft ? (mDraftController.getNext() ?? id) : undefined,
     recruit.mixin.Candidate
   )
 
@@ -456,7 +457,6 @@
       object.skills = [...object.skills, ...newSkills]
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 
@@ -464,8 +464,8 @@
     if (object.resumeUuid) {
       try {
         await deleteFile(object.resumeUuid)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     }
   }
@@ -576,6 +576,9 @@
       )
     }
   }
+
+  const onsite = hierarchy.findAttribute(recruit.mixin.Candidate, 'onsite')
+  const remote = hierarchy.findAttribute(recruit.mixin.Candidate, 'remote')
 </script>
 
 <FocusHandler {manager} />
@@ -664,24 +667,28 @@
       kind={'regular'}
       size={'large'}
     />
-    <YesNo
-      disabled={loading}
-      focusIndex={100}
-      label={recruit.string.Onsite}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.onsite}
-      kind={'regular'}
-      size={'large'}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={101}
-      label={recruit.string.Remote}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.remote}
-      kind={'regular'}
-      size={'large'}
-    />
+    {#if onsite?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={100}
+        label={recruit.string.Onsite}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.onsite}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
+    {#if remote?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={101}
+        label={recruit.string.Remote}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.remote}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{

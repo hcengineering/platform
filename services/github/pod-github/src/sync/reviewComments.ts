@@ -88,8 +88,13 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     await this.eventSync.get(event.comment.html_url)
     const promise = this.processEvent(ctx, event, derivedClient, repository, integration)
     this.eventSync.set(event.comment.html_url, promise)
-    await promise
-    this.eventSync.delete(event.comment.html_url)
+    try {
+      await promise
+    } catch (err: any) {
+      ctx.error('Error processing event', { error: err })
+    } finally {
+      this.eventSync.delete(event.comment.html_url)
+    }
   }
 
   async handleDelete (
@@ -364,7 +369,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     }
     if (existing === undefined) {
       try {
-        await this.createReviewComment(info, messageData, parent, reviewComment, account)
+        await this.createReviewComment(ctx, info, messageData, parent, reviewComment, account)
         return { needSync: githubSyncVersion, current: messageData }
       } catch (err: any) {
         ctx.error('Error', { err })
@@ -387,6 +392,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     return { current: messageData, needSync: githubSyncVersion }
   }
 
+  @withContext('handleDiffUpdate-comment')
   private async handleDiffUpdate (
     ctx: MeasureContext,
     existing: Doc,
@@ -458,7 +464,9 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     }
   }
 
+  @withContext('review-comments-createReviewComment')
   private async createReviewComment (
+    ctx: MeasureContext,
     info: DocSyncInfo,
     messageData: ReviewCommentData,
     parent: DocSyncInfo,
@@ -482,6 +490,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     )
   }
 
+  @withContext('review-comments-create')
   async createGithubReviewComment (
     ctx: MeasureContext,
     container: ContainerFocus,

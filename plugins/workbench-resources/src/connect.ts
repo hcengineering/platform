@@ -1,4 +1,4 @@
-import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { getClient as getAccountClient, type WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import contact, { ensureEmployee, setCurrentEmployee, setCurrentEmployeeSpace } from '@hcengineering/contact'
@@ -17,7 +17,8 @@ import core, {
   type SocialId,
   type Version,
   versionToString,
-  SocialIdType
+  SocialIdType,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import login, { loginId, type Pages } from '@hcengineering/login'
 import platform, {
@@ -35,6 +36,7 @@ import platform, {
 import presentation, {
   loadServerConfig,
   purgeClient,
+  purgeCommunicationClient,
   refreshClient,
   refreshCommunicationClient,
   setClient,
@@ -94,16 +96,28 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const [, workspaceLoginInfo] = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
+  let workspaceLoginInfo: WorkspaceLoginInfo | undefined
 
-  if (workspaceLoginInfo == null) {
-    console.error(
-      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
-    )
-    // something went wrong with selecting workspace with the selected token
-    await logOut()
-    navigate({ path: [loginId] })
-    return
+  while (true) {
+    const selectResult = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
+    workspaceLoginInfo = selectResult[1] ?? undefined
+    if (!selectResult[2]) {
+      // Connection error happen, wait and retry
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
+
+    // OK but unauthorized - we need to login
+    if (workspaceLoginInfo == null) {
+      console.error(
+        `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+      )
+      // something went wrong with selecting workspace with the selected token
+      await logOut()
+      navigate({ path: [loginId] })
+      return
+    }
+    break
   }
 
   const token = workspaceLoginInfo.token
@@ -113,17 +127,30 @@ export async function connect (title: string): Promise<Client | undefined> {
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-  let workspace = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace())[1])
 
-  if (workspace == null) {
-    // something went wrong, workspace not exist, redirect to login
-    console.error(
-      `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
-    )
-    navigate({
-      path: [loginId]
-    })
-    return
+  let workspace: WorkspaceInfoWithStatus | undefined
+
+  while (true) {
+    const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+
+    if (!fetchResult[2]) {
+      // Connection error happen, wait and retry
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
+
+    workspace = fetchResult[1]
+    if (workspace == null) {
+      // something went wrong, workspace not exist, redirect to login
+      console.error(
+        `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
+      )
+      navigate({
+        path: [loginId]
+      })
+      return
+    }
+    break
   }
 
   setMetadata(presentation.metadata.WorkspaceDataId, workspace.dataId)
@@ -133,7 +160,13 @@ export async function connect (title: string): Promise<Client | undefined> {
       if (wsUrl !== getCurrentLocation().path[1]) return
 
       workspaceCreating.set(workspace.processingProgress ?? 0)
-      workspace = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace())[1])
+      const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+      if (!fetchResult[2]) {
+        // Connection error happen, wait and retry
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        continue
+      }
+      workspace = fetchResult[1]
 
       if (workspace == null) {
         // something went wrong, workspace not exist, redirect to login
@@ -175,6 +208,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     // We need to flush all data from memory
     await ctx.with('purge-client', {}, async () => {
       await purgeClient()
+      await purgeCommunicationClient()
     })
     await ctx.with('close previous client', {}, async () => {
       await _client?.close()
@@ -209,6 +243,7 @@ export async function connect (title: string): Promise<Client | undefined> {
               localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
               // It might have been refreshed manually and download has started - do not reload
               if (!isUpgrading) {
+                console.log('reload due to version upgrade')
                 location.reload()
               }
 
@@ -221,6 +256,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   // It might be possible that this callback will fire after the user has spent some time
                   // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
                   if (get(upgradeDownloadProgress) < 0) {
+                    console.log('reload due to upgrade download')
                     location.reload()
                   }
                 }, 10000)
@@ -234,6 +270,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           return true
         },
         onUpgrade: () => {
+          console.log('reload due to upgrade')
           location.reload()
         },
         onUnauthorized: () => {
@@ -258,6 +295,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {
+              console.log('reload due to migration')
               location.reload()
             }, 5000)
           })
@@ -292,15 +330,17 @@ export async function connect (title: string): Promise<Client | undefined> {
             }
 
             if (event === ClientConnectEvent.Upgraded) {
+              console.log('reload due to upgrade')
               window.location.reload()
             }
 
             void (async () => {
               if (_client !== undefined) {
+                const client = _client
                 const newVersion = await ctx.with(
                   'find-version',
                   {},
-                  async () => await newClient.findOne<Version>(core.class.Version, {})
+                  async () => await client.findOne<Version>(core.class.Version, {})
                 )
                 console.log('Reconnect Model version', newVersion)
 
@@ -309,6 +349,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
+                  console.log('reload due to version mismatch')
                   location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
@@ -322,6 +363,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 if (reconnectVersionStr !== '' && currentVersionStr !== reconnectVersionStr) {
                   if (typeof sessionStorage !== 'undefined') {
                     if (sessionStorage.getItem(versionStorageKey) !== reconnectVersionStr) {
+                      console.log('reload due to version mismatch')
                       sessionStorage.setItem(versionStorageKey, reconnectVersionStr)
                       location.reload()
                     }
@@ -332,8 +374,15 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
                 const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
                 if (currentFrontVersion !== undefined) {
-                  const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
-                  if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                  try {
+                    const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
+                    if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                      console.log('reload due to config version mismatch')
+                      location.reload()
+                    }
+                  } catch (err: any) {
+                    // Failed to load server config, reload location
+                    console.log('reload due to config loading error')
                     location.reload()
                   }
                 }

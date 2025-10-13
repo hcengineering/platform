@@ -1,5 +1,13 @@
-import { isCustomEmoji, fetchEmojis, fetchMessages } from '@hcengineering/emoji'
-import type { EmojiWithGroup, ExtendedEmoji, Locale, Emoji, CustomEmoji } from '@hcengineering/emoji'
+import { emojiGlobalRegex, shortcodeGlobalRegex, isCustomEmoji, fetchEmojis, fetchMessages } from '@hcengineering/emoji'
+import type {
+  EmojiWithGroup,
+  ExtendedEmoji,
+  Locale,
+  Emoji,
+  CustomEmoji,
+  TextOrEmoji,
+  ParsedTextWithEmojis
+} from '@hcengineering/emoji'
 import { emojiCategories } from './types'
 import { unicodeEmojiStore, customEmojiStore, getSkinTone } from './store'
 import { get } from 'svelte/store'
@@ -82,6 +90,13 @@ export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: n
   }, skinTone)
 }
 
+export function getEmojiByUnicode (emoji: string): ExtendedEmoji | undefined {
+  return findEmoji((e) => {
+    if (isCustomEmoji(e)) return e.shortcode === emoji
+    return e.emoji === emoji
+  })
+}
+
 export function getCustomEmoji (shortcode: string | undefined): CustomEmoji | undefined {
   if (shortcode === undefined) return undefined
   const pureShortcode = shortcode.replaceAll(':', '')
@@ -108,4 +123,44 @@ function findEmoji (
 export function getEmojiSkins (emoji: ExtendedEmoji): Emoji.Emoji[] | undefined {
   if (isCustomEmoji(emoji)) return undefined
   return emoji.skins
+}
+
+export function parseTextWithEmojis (text: string): ParsedTextWithEmojis {
+  const matches = [...text.matchAll(emojiGlobalRegex), ...text.matchAll(shortcodeGlobalRegex)]
+  if (matches.length === 0) return { nodes: [text], emojisOnly: false }
+  matches.sort((a, b) => a.index - b.index)
+
+  const nodes: TextOrEmoji[] = []
+  let emojisOnly: boolean = true
+
+  const pushNode = (node: TextOrEmoji): void => {
+    if (typeof node === 'string') {
+      if (node !== '') {
+        emojisOnly = false
+        nodes.push(node)
+      }
+    } else {
+      nodes.push(node)
+    }
+  }
+
+  let startIndex = 0
+  for (let index = 0; index < matches.length; index++) {
+    const matchStart = matches[index].index
+    pushNode(text.substring(startIndex, matchStart))
+    startIndex = matchStart + matches[index][0].length
+    const emojiText = text.substring(matches[index].index, startIndex)
+    if (emojiText.startsWith(':')) {
+      const customEmoji = getCustomEmoji(emojiText)
+      if (customEmoji === undefined) {
+        pushNode(emojiText)
+      } else {
+        pushNode({ emoji: emojiText, image: customEmoji.image })
+      }
+    } else {
+      pushNode({ emoji: emojiText })
+    }
+  }
+  pushNode(text.substring(startIndex, text.length))
+  return { nodes, emojisOnly }
 }

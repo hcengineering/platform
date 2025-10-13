@@ -43,6 +43,7 @@
   export let focusIndex: number = -1
   export let dataId: string | undefined = undefined
   export let noFocus: boolean = false
+  export let withSearch: boolean = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -58,7 +59,7 @@
   function openPopup () {
     if (!opened) {
       opened = true
-      showPopup(DropdownLabelsPopupIntl, { items, selected, params }, container, (result) => {
+      showPopup(DropdownLabelsPopupIntl, { items, selected, params, withSearch }, container, (result) => {
         if (result) {
           selected = result
           dispatch('selected', result)
@@ -99,7 +100,7 @@
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
       <Label
         label={selectedItem ? selectedItem.label : label}
-        params={selectedItem ? selectedItem.params ?? params : params}
+        params={selectedItem ? (selectedItem.params ?? params) : params}
       />
     </span>
     <svelte:fragment slot="iconRight">

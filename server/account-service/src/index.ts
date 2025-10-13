@@ -17,7 +17,7 @@ import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
+import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -220,17 +220,38 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     return meta
   }
 
-  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
-    const requestUrl = ctx.request.href
-    const url = new URL(requestUrl)
-    const domain = getCookieDomain(requestUrl)
+  function getBranding (ctx: Koa.Context): Branding | null {
+    let host: string | undefined
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    if (origin !== undefined) {
+      host = new URL(origin).host
+    }
+    return host !== undefined ? brandings[host] : null
+  }
 
-    return {
+  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption[] {
+    const option = {
       httpOnly: true,
-      domain,
-      secure: url?.protocol === 'https',
+      secure: ctx.request.secure,
       maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
     }
+
+    const options = []
+
+    const branding = getBranding(ctx)
+
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    const target = ctx.request.href
+
+    const originDomain = origin !== undefined ? getCookieDomain(origin) : undefined
+    const targetDomain = getCookieDomain(target)
+
+    options.push({ ...option, domain: targetDomain })
+    if (originDomain !== undefined && originDomain !== targetDomain && branding !== undefined) {
+      options.push({ ...option, domain: originDomain })
+    }
+
+    return options
   }
 
   const getCookieDomain = (url: string): string => {
@@ -297,16 +318,20 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const tokenWithoutWorkspace = generateToken(account, undefined, extra)
 
     const cookieOpts = getCookieOptions(ctx)
+    for (const opt of cookieOpts) {
+      ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, opt)
+    }
 
-    ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, cookieOpts)
     ctx.res.writeHead(204)
     ctx.res.end()
   })
 
   router.delete('/cookie', async (ctx) => {
-    const cookieOpts = { ...getCookieOptions(ctx), maxAge: 0 }
+    const cookieOpts = getCookieOptions(ctx)
+    for (const opt of cookieOpts) {
+      ctx.cookies.set(AUTH_TOKEN_COOKIE, '', { ...opt, maxAge: 0 })
+    }
 
-    ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
     ctx.res.writeHead(204)
     ctx.res.end()
   })
@@ -375,12 +400,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const [db] = await accountsDb
     await migrations
 
-    let host: string | undefined
-    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
-    if (origin !== undefined) {
-      host = new URL(origin).host
-    }
-    const branding = host !== undefined ? brandings[host] : null
+    const branding = getBranding(ctx)
 
     let source = ''
     try {
@@ -409,7 +429,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
         ctx.res.end(body)
       },
-      { ...request }
+      { method: request.method }
     )
   })
 

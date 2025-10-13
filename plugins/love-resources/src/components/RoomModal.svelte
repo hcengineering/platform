@@ -16,28 +16,29 @@
   import { createEventDispatcher } from 'svelte'
   import presentation from '@hcengineering/presentation'
   import { Modal } from '@hcengineering/ui'
-  import love, { RoomType } from '@hcengineering/love'
+  import { RoomType } from '@hcengineering/love'
 
   import { currentRoom } from '../stores'
   import RoomComponent from './Room.svelte'
-  import { screenSharing } from '../utils'
 
   const dispatch = createEventDispatcher()
 
-  $: if ($currentRoom === undefined || (!$screenSharing && $currentRoom.type !== RoomType.Video)) {
+  $: if ($currentRoom === undefined) {
     dispatch('close')
   }
 </script>
 
-{#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
+{#if $currentRoom !== undefined}
   <Modal
-    label={love.string.Room}
     type="type-popup"
     okLabel={presentation.string.Create}
     hideFooter
     padding="0"
     on:close={() => dispatch('close')}
   >
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} canMaximize={false} />
+    <svelte:fragment slot="title">
+      {$currentRoom.name}
+    </svelte:fragment>
+    <RoomComponent room={$currentRoom} canMaximize={false} />
   </Modal>
 {/if}

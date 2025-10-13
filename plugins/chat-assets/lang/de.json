@@ -8,6 +8,12 @@
     "MessageIn": "Nachricht in #{title}",
     "Thread": "Thread",
     "Threads": "Threads",
-    "Title": "Titel"
+    "Title": "Titel",
+    "All": "Alle",
+    "Inbox": "Posteingang",
+    "ReactedToYourMessage": "reagierte auf Ihre Nachricht",
+    "ClearAll": "Alles löschen",
+    "InboxIsClear": "Posteingang ist leer",
+    "YouDontHaveAnyNewMessages": "Sie haben keine neuen Nachrichten"
   }
 }

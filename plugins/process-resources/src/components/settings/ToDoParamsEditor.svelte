@@ -14,11 +14,12 @@
 -->
 
 <script lang="ts">
-  import { Process } from '@hcengineering/process'
+  import { Process, UserResult } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
+  import ResultCriteriaEditor from './ResultCriteriaEditor.svelte'
 
   export let readonly: boolean
   export let process: Process
@@ -30,25 +31,21 @@
   function change (e: CustomEvent<string>): void {
     if (readonly || e.detail == null) return
     params._id = e.detail
-    dispatch('change', params)
+    params.result = undefined
+    dispatch('change', { params })
+  }
+
+  function changeResult (e: CustomEvent<any>): void {
+    if (readonly) return
+    params.result = e.detail
+    dispatch('change', { params })
   }
 </script>
 
-<div class="grid">
+<div class="editor-grid">
   <Label label={plugin.string.ToDo} />
   <ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
+  {#if !skipRollback}
+    <ResultCriteriaEditor {readonly} {process} result={params.result} value={params._id} on:change={changeResult} />
+  {/if}
 </div>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.5rem;
-    column-gap: 1rem;
-    margin-top: 0.5rem;
-    height: min-content;
-  }
-</style>

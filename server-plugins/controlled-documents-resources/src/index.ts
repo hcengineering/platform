@@ -287,6 +287,29 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
+export async function OnDocTitleChanged (
+  txes: TxUpdateDoc<ControlledDocument>[],
+  control: TriggerControl
+): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    if (tx.operations.code === undefined && tx.operations.title === undefined) {
+      continue
+    }
+
+    const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
+    if (doc === undefined) {
+      continue
+    }
+
+    const olderEffective = await getDocsOlderThanDoc(doc, control, [DocumentState.Effective])
+    if (olderEffective.length === 0 && doc.state === DocumentState.Draft) {
+      result.push(...updateMeta(doc, control.txFactory))
+    }
+  }
+  return result
+}
+
 export async function OnDocEnteredNonActionableState (
   txes: TxUpdateDoc<ControlledDocument>[],
   control: TriggerControl
@@ -411,7 +434,7 @@ async function CoAuthorsTypeMatch (
   if (originTx._class === core.class.TxUpdateDoc) {
     const tx = originTx as TxUpdateDoc<ControlledDocument>
     const employees = Array.isArray(tx.operations.coAuthors)
-      ? tx.operations.coAuthors ?? []
+      ? (tx.operations.coAuthors ?? [])
       : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
 
     return employees.some((it) => it === person)
@@ -431,7 +454,8 @@ export default async () => ({
     OnDocEnteredNonActionableState,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
-    OnDocHasBecomeEffective
+    OnDocHasBecomeEffective,
+    OnDocTitleChanged
   },
   function: {
     ControlledDocumentTextPresenter,

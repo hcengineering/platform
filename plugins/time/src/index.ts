@@ -60,7 +60,7 @@ export interface ToDo extends AttachedDoc {
   dueDate?: Timestamp | null
   priority: ToDoPriority
   visibility: Visibility
-  doneOn?: Timestamp | null
+  doneOn: Timestamp | null
   user: Ref<Employee>
   attachedSpace?: Ref<Space>
   labels?: number
@@ -121,7 +121,8 @@ export default plugin(timeId, {
   component: {
     Me: '' as AnyComponent,
     Team: '' as AnyComponent,
-    EditToDo: '' as AnyComponent
+    EditToDo: '' as AnyComponent,
+    ToDoPresenter: '' as AnyComponent
   },
   class: {
     WorkSlot: '' as Ref<Class<WorkSlot>>,
@@ -134,7 +135,8 @@ export default plugin(timeId, {
     ItemPresenter: '' as Ref<Mixin<ItemPresenter>>
   },
   ids: {
-    NotAttached: '' as Ref<Doc>
+    NotAttached: '' as Ref<Doc>,
+    TimeNotificationGroup: '' as Ref<Doc>
   },
   space: {
     ToDos: '' as Ref<Space>

@@ -16,9 +16,9 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Process, Transition, type Step } from '@hcengineering/process'
+  import { Method, Process, Transition, type Step } from '@hcengineering/process'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import { ButtonIcon, IconDelete, Modal } from '@hcengineering/ui'
+  import { ButtonIcon, IconDelete, Label, Modal } from '@hcengineering/ui'
   import plugin from '../../plugin'
   import StepEditor from './StepEditor.svelte'
   import ContextFooter from './ContextFooter.svelte'
@@ -29,6 +29,16 @@
   export let _id: Ref<Transition>
 
   const client = getClient()
+
+  $: method = getMethod(step.methodId)
+
+  function getMethod (_id: Ref<Method<Doc>>): Method<Doc> {
+    if (method?._id !== _id) {
+      const res = client.getModel().findAllSync(plugin.class.Method, { _id })[0]
+      return res
+    }
+    return method
+  }
 
   async function save (): Promise<void> {
     const doc = client.getModel().findObject(_id)
@@ -56,7 +66,6 @@
 </script>
 
 <Modal
-  label={plugin.string.Step}
   type={'type-aside'}
   okLabel={presentation.string.Save}
   okAction={save}
@@ -69,10 +78,17 @@
       <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} on:click={remove} />
     {/if}
   </svelte:fragment>
-  {#if step != null}
-    <StepEditor bind:step {process} on:change={change} />
-  {/if}
+  <div class="fs-title title text-xl" slot="title">
+    <Label label={method.label} />
+  </div>
+  <StepEditor {step} {process} on:change={change} />
   <div slot="footer" class="flex-row-center flex-gap-2 w-full">
     <ContextFooter {process} {step} />
   </div>
 </Modal>
+
+<style lang="scss">
+  .title {
+    padding-left: 2rem;
+  }
+</style>

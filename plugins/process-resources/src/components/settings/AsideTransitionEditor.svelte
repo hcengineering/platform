@@ -34,7 +34,9 @@
   }
 
   function change (e: CustomEvent<Record<string, any>>): void {
-    params = e.detail
+    if (e.detail?.params !== undefined) {
+      params = e.detail.params
+    }
   }
 
   let selectedTrigger: Ref<Trigger> = transition.trigger
@@ -66,21 +68,22 @@
       </div>
     </div>
     {#if trigger !== undefined}
-      <div class="grid">
+      <div class="editor-grid">
         <Label label={plugin.string.Trigger} />
         <DropdownLabelsIntl
           items={triggersItems}
           bind:selected={selectedTrigger}
           label={plugin.string.Trigger}
+          on:selected={() => {
+            params = {}
+          }}
           justify={'left'}
           width={'100%'}
           kind={'no-border'}
         />
       </div>
       {#if trigger.editor !== undefined}
-        <div class="editor">
-          <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
-        </div>
+        <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
       {/if}
     {/if}
   </div>
@@ -88,23 +91,7 @@
 
 <style lang="scss">
   .header {
-    padding: 1rem 1.25rem 2rem 1.25rem;
-  }
-
-  .editor {
-    margin: 0.25rem 2rem 0;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.25rem;
-    column-gap: 1rem;
-    margin: 0.25rem 2rem 0;
-    height: min-content;
+    padding-left: 2rem;
   }
 
   .title {

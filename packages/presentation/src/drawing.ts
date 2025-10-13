@@ -13,31 +13,55 @@
 // limitations under the License.
 //
 
+import { type ThemeVariantType } from '@hcengineering/theme'
+import {
+  type CanvasPoint,
+  easeInOutCubic,
+  middlePoint,
+  offsetInParent,
+  offsetPoint,
+  rescaleToFitAspectRatio,
+  scalePoint,
+  type Point,
+  makeCanvasPoint,
+  type NodePoint,
+  type MouseScaledPoint,
+  makeMouseScaledPoint,
+  makeNodePoint,
+  offsetCanvasPoint,
+  type ColorMetaNameOrHex
+} from './drawingUtils'
+import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, makeCommandUid } from './drawingCommand'
+import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
+
 export interface DrawingData {
   content?: string
 }
 
 export interface DrawingProps {
   readonly: boolean
+  colorsList: ColorsList
+  getCurrentTheme: () => ThemeVariantType
+  subscribeOnThemeChange: (callback: () => void) => void
   autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  commands: DrawingCmd[]
+  commands?: DrawingCmd[]
   offset?: Point
   tool?: DrawingTool
-  penColor?: string
+  penColor?: ColorMetaNameOrHex
   penWidth?: number
   eraserWidth?: number
   fontSize?: number
   defaultCursor?: string
-  changingCmdId?: string
+  changingCmdId?: CommandUid
   personCursorPos?: Point
   personCursorVisible?: boolean
   cmdAdded?: (cmd: DrawingCmd) => void
-  cmdChanging?: (id: string) => void
-  cmdUnchanged?: (id: string) => void
+  cmdChanging?: (id: CommandUid) => void
+  cmdUnchanged?: (id: CommandUid) => void
   cmdChanged?: (cmd: DrawingCmd) => void
-  cmdDeleted?: (id: string) => void
+  cmdDeleted?: (id: CommandUid) => void
   editorCreated?: (editor: HTMLDivElement) => void
   pointerMoved?: (canvasPos: Point) => void
   personCursorMoved?: (nodePos: Point) => void
@@ -45,55 +69,20 @@ export interface DrawingProps {
   panned?: (offset: Point) => void
 }
 
-export interface DrawingCmd {
-  id: string
-  type: 'line' | 'text'
-}
-
-export interface DrawTextCmd extends DrawingCmd {
-  text: string
-  pos: Point
-  fontSize: number
-  fontFace: string
-  color: string
-}
-
-export interface DrawLineCmd extends DrawingCmd {
-  lineWidth: number
-  erasing: boolean
-  penColor: string
-  points: Point[]
-}
-
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
 
-export interface Point {
-  x: number
-  y: number
-}
-
-function avgPoint (p1: Point, p2: Point): Point {
-  return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }
-}
-
 const maxTextLength = 500
-
-export const makeCommandId = (): string => {
-  return crypto.randomUUID().toString()
-}
-
-function easeInOutCubic (x: number): number {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
-}
 
 const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
 </svg>`
 
+type PointStatus = 'last-point' | 'intermediate-point'
+
 class DrawState {
   on = false
   tool: DrawingTool = 'pen'
-  penColor = 'blue'
+  penColor: ColorMetaNameOrHex = 'alpha'
   penWidth = 4
   eraserWidth = 30
   minLineLength = 6
@@ -101,13 +90,14 @@ class DrawState {
   fontFace = '"IBM Plex Sans"'
   center: Point = { x: 0, y: 0 }
   offset: Point = { x: 0, y: 0 }
-  points: Point[] = []
+  points: CanvasPoint[] = []
   scale: Point = { x: 1, y: 1 }
-  ctx: CanvasRenderingContext2D
+  cssTransformScale: Point = { x: 1, y: 1 }
 
-  constructor (ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx
-  }
+  constructor (
+    readonly ctx: CanvasRenderingContext2D,
+    readonly colors: DrawingBoardColoringSetup
+  ) {}
 
   cursorWidth = (): number => {
     return Math.max(8, this.tool === 'erase' ? this.eraserWidth : this.penWidth)
@@ -117,22 +107,22 @@ class DrawState {
     return (this.scale.x + this.scale.y) / 2
   }
 
-  addPoint = (mouseX: number, mouseY: number): void => {
-    this.points.push(this.mouseToCanvasPoint({ x: mouseX, y: mouseY }))
+  addPoint = (target: MouseScaledPoint): void => {
+    this.points.push(this.mouseToCanvasPoint(target))
   }
 
-  mouseToCanvasPoint = (mouse: Point): Point => {
-    return {
-      x: Math.round(mouse.x * this.scale.x - this.offset.x - this.center.x),
-      y: Math.round(mouse.y * this.scale.y - this.offset.y - this.center.y)
-    }
+  mouseToCanvasPoint = (mouse: MouseScaledPoint): CanvasPoint => {
+    return makeCanvasPoint(
+      Math.round(mouse.x * this.scale.x - this.offset.x - this.center.x),
+      Math.round(mouse.y * this.scale.y - this.offset.y - this.center.y)
+    )
   }
 
-  canvasToMousePoint = (canvas: Point): Point => {
-    return {
-      x: Math.round(canvas.x / this.scale.x + this.offset.x + this.center.x),
-      y: Math.round(canvas.y / this.scale.y + this.offset.y + this.center.y)
-    }
+  canvasToMousePoint = (canvas: CanvasPoint): MouseScaledPoint => {
+    return makeMouseScaledPoint(
+      Math.round(canvas.x / this.scale.x + this.offset.x + this.center.x),
+      Math.round(canvas.y / this.scale.y + this.offset.y + this.center.y)
+    )
   }
 
   isDrawingTool = (): boolean => {
@@ -143,62 +133,66 @@ class DrawState {
     this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
   }
 
-  drawLive = (x: number, y: number, lastPoint = false): void => {
+  drawLine = (point: MouseScaledPoint, status: PointStatus, currentTheme: ThemeVariantType): void => {
     window.requestAnimationFrame(() => {
-      if (!lastPoint || this.points.length > 1) {
-        this.addPoint(x, y)
+      if (status === 'intermediate-point' || this.points.length <= 1) {
+        this.addPoint(point)
       }
       const erasing = this.tool === 'erase'
       this.ctx.save()
-      this.translateCtx()
-      this.ctx.beginPath()
-      this.ctx.lineCap = 'round'
-      this.ctx.strokeStyle = this.penColor
-      this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
-      this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
-      if (this.points.length === 1) {
-        this.drawPoint(this.points[0], erasing)
-      } else {
-        this.drawSmoothSegment(this.points, this.points.length - 1, lastPoint)
-        this.ctx.stroke()
+      try {
+        this.translateCtx()
+        this.ctx.beginPath()
+        this.ctx.lineCap = 'round'
+        this.ctx.strokeStyle = metaColorNameToHex(this.penColor, currentTheme, this.colors)
+        this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
+        this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
+        if (this.points.length === 1) {
+          this.drawPoint(this.points[0], erasing)
+        } else {
+          this.drawSmoothSegment(this.points, this.points.length - 1, status)
+          this.ctx.stroke()
+        }
+      } finally {
+        this.ctx.restore()
       }
-      this.ctx.restore()
     })
   }
 
-  drawCommand = (cmd: DrawingCmd): void => {
+  drawCommand = (cmd: DrawingCmd, currentTheme: ThemeVariantType): void => {
     if (cmd.type === 'text') {
-      this.drawTextCommand(cmd as DrawTextCmd)
+      this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
     } else {
-      this.drawLineCommand(cmd as DrawLineCmd)
+      this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
   }
 
-  drawLineCommand = (cmd: DrawLineCmd): void => {
+  drawLineCommand = (cmd: DrawLineCmd, currentTheme: ThemeVariantType): void => {
     this.ctx.save()
     this.translateCtx()
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
-    this.ctx.strokeStyle = cmd.penColor
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
     this.ctx.lineWidth = cmd.lineWidth
     this.ctx.globalCompositeOperation = cmd.erasing ? 'destination-out' : 'source-over'
     if (cmd.points.length === 1) {
       this.drawPoint(cmd.points[0], cmd.erasing)
     } else {
       for (let i = 1; i < cmd.points.length; i++) {
-        this.drawSmoothSegment(cmd.points, i, i === cmd.points.length - 1)
+        const pointStatus: PointStatus = i === cmd.points.length - 1 ? 'last-point' : 'intermediate-point'
+        this.drawSmoothSegment(cmd.points, i, pointStatus)
       }
       this.ctx.stroke()
     }
     this.ctx.restore()
   }
 
-  drawTextCommand = (cmd: DrawTextCmd): void => {
+  drawTextCommand = (cmd: DrawTextCmd, currentTheme: ThemeVariantType): void => {
     const p = { ...cmd.pos }
     this.ctx.save()
     this.translateCtx()
     this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
-    this.ctx.fillStyle = cmd.color
+    this.ctx.fillStyle = metaColorNameToHex(cmd.color, currentTheme, this.colors)
     this.ctx.textBaseline = 'top'
     const lines = cmd.text.split('\n').map((l) => l.trim())
     for (let i = 0; i < lines.length; i++) {
@@ -209,7 +203,7 @@ class DrawState {
     this.ctx.restore()
   }
 
-  isPointInText = (p: Point, cmd: DrawTextCmd): boolean => {
+  isPointInText = (p: CanvasPoint, cmd: DrawTextCmd): boolean => {
     this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
     const lines = cmd.text.split('\n').map((l) => l.trim())
     for (let i = 0; i < lines.length; i++) {
@@ -239,21 +233,21 @@ class DrawState {
     this.ctx.fill()
   }
 
-  drawSmoothSegment = (points: Point[], index: number, lastPoint: boolean): void => {
+  drawSmoothSegment = (points: Point[], index: number, status: PointStatus): void => {
     const curPos = points[index]
     const prevPos = points[index - 1]
-    const avg = avgPoint(prevPos, curPos)
+    const avg = middlePoint(prevPos, curPos)
     if (index === 1) {
       this.ctx.moveTo(prevPos.x, prevPos.y)
-      if (lastPoint) {
+      if (status === 'last-point') {
         this.ctx.lineTo(curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(curPos.x, curPos.y, avg.x, avg.y)
       }
     } else {
-      const prevAvg = avgPoint(points[index - 2], prevPos)
+      const prevAvg = middlePoint(points[index - 2], prevPos)
       this.ctx.moveTo(prevAvg.x, prevAvg.y)
-      if (lastPoint) {
+      if (status === 'last-point') {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, curPos.x, curPos.y)
       } else {
         this.ctx.quadraticCurveTo(prevPos.x, prevPos.y, avg.x, avg.y)
@@ -300,11 +294,12 @@ export function drawing (
   node.appendChild(toolCursor)
 
   let readonly = props.readonly ?? false
-  let prevPos: Point = { x: 0, y: 0 }
-  let personCursorPos: Point = { x: 0, y: 0 }
+  let prevPos: MouseScaledPoint = makeMouseScaledPoint(0, 0)
+  let personCursorPos: CanvasPoint = makeCanvasPoint(0, 0)
   let isPersonCursorAnimating = false
 
-  const draw = new DrawState(ctx)
+  const colorsSetup = new DrawingBoardColoringSetup(props.colorsList)
+  const draw = new DrawState(ctx, colorsSetup)
   draw.tool = props.tool ?? draw.tool
   draw.penColor = props.penColor ?? draw.penColor
   draw.penWidth = props.penWidth ?? draw.penWidth
@@ -317,15 +312,32 @@ export function drawing (
   updateCanvasTouchAction()
 
   interface LiveTextBox {
-    pos: Point
+    pos: MouseScaledPoint
     box: HTMLDivElement
     editor: HTMLDivElement
-    cmdId: string
+    cmdId: CommandUid
   }
   let liveTextBox: LiveTextBox | undefined
 
-  let commands = props.commands
-  replayCommands()
+  let currentCommands = props.commands
+
+  function traverseCommands (target: DrawingCmd[] | undefined, delegate: (command: DrawingCmd) => boolean): void {
+    if (undefined === target) {
+      return
+    }
+    for (let i = 0; i < target.length; i++) {
+      if (delegate(target[i])) {
+        break
+      }
+    }
+  }
+
+  replayCommands(currentCommands)
+
+  props.subscribeOnThemeChange(() => {
+    updateToolCursor()
+    replayCommands(currentCommands)
+  })
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -334,14 +346,26 @@ export function drawing (
           draw.scale = { x: 1, y: 1 }
           canvas.width = Math.floor(entry.contentRect.width)
           canvas.height = Math.floor(entry.contentRect.height)
-          draw.center.x = canvas.width / 2
-          draw.center.y = canvas.height / 2
-          replayCommands()
-        } else {
-          draw.scale = {
-            x: canvas.width / entry.contentRect.width,
-            y: canvas.height / entry.contentRect.height
+          draw.center = {
+            x: canvas.width / 2,
+            y: canvas.height / 2
           }
+          replayCommands(currentCommands)
+        } else {
+          const imageWidth = props.imageWidth ?? 1
+          const imageHeight = props.imageHeight ?? 1
+          const scale = rescaleToFitAspectRatio(
+            imageWidth,
+            imageHeight,
+            entry.contentRect.width,
+            entry.contentRect.height
+          )
+          canvas.style.transform = `scale(${scale.x}, ${scale.y})`
+          draw.scale = {
+            x: canvas.width / entry.contentRect.width / scale.x,
+            y: canvas.height / entry.contentRect.height / scale.y
+          }
+          draw.cssTransformScale = scale
         }
       }
     }
@@ -359,19 +383,13 @@ export function drawing (
     }
   }
 
-  function touchToNodePoint (touch: Touch, node: HTMLElement): Point {
+  function touchToNodePoint (touch: Touch, node: HTMLElement): NodePoint {
     const rect = node.getBoundingClientRect()
-    return {
-      x: Math.round(touch.clientX - rect.left),
-      y: Math.round(touch.clientY - rect.top)
-    }
+    return makeNodePoint(Math.round(touch.clientX - rect.left), Math.round(touch.clientY - rect.top))
   }
 
-  function pointerToNodePoint (e: PointerEvent): Point {
-    return {
-      x: Math.round(e.offsetX),
-      y: Math.round(e.offsetY)
-    }
+  function pointerToNodePoint (e: PointerEvent): NodePoint {
+    return makeNodePoint(Math.round(e.offsetX), Math.round(e.offsetY))
   }
 
   canvas.ontouchstart = (e) => {
@@ -449,34 +467,46 @@ export function drawing (
     }
   }
 
-  function drawStart (p: Point): void {
+  function rescaleWithCss (target: NodePoint): MouseScaledPoint {
+    const scaled = scalePoint(target, draw.cssTransformScale)
+    return makeMouseScaledPoint(scaled.x, scaled.y)
+  }
+
+  function drawStart (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
     draw.on = true
     draw.points = []
-    prevPos = p
+    prevPos = scaledPoint
     if (draw.isDrawingTool()) {
-      draw.addPoint(p.x, p.y)
+      draw.addPoint(scaledPoint)
     }
   }
 
-  function drawContinue (p: Point): void {
+  function drawContinue (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
+
     if (draw.isDrawingTool()) {
-      const w = draw.cursorWidth()
-      toolCursor.style.left = `${p.x - w / 2}px`
-      toolCursor.style.top = `${p.y - w / 2}px`
+      const cursorSize = draw.cursorWidth()
+
+      const canvasOffsetInParent = offsetInParent(node, canvas)
+      const parentRelativeLocation = offsetPoint(scaledPoint, canvasOffsetInParent)
+      toolCursor.style.left = `${parentRelativeLocation.x - cursorSize / 2}px`
+      toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
+
       if (draw.on) {
-        if (Math.hypot(prevPos.x - p.x, prevPos.y - p.y) >= draw.minLineLength) {
-          draw.drawLive(p.x, p.y)
-          prevPos = p
+        if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
+          draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
+          prevPos = scaledPoint
         }
       }
     }
 
     if (draw.on && draw.tool === 'pan') {
       requestAnimationFrame(() => {
-        draw.offset.x += p.x - prevPos.x
-        draw.offset.y += p.y - prevPos.y
-        replayCommands()
-        prevPos = p
+        draw.offset.x += scaledPoint.x - prevPos.x
+        draw.offset.y += scaledPoint.y - prevPos.y
+        replayCommands(currentCommands)
+        prevPos = scaledPoint
         if (props.panning !== undefined) {
           props.panning(draw.offset)
         }
@@ -484,40 +514,43 @@ export function drawing (
     }
 
     if (draw.on && draw.tool === 'text') {
-      prevPos = p
+      prevPos = scaledPoint
     }
 
     if (props.pointerMoved !== undefined) {
-      props.pointerMoved(draw.mouseToCanvasPoint(p))
+      props.pointerMoved(draw.mouseToCanvasPoint(scaledPoint))
     }
   }
 
-  function drawEnd (p: Point): void {
+  function drawEnd (p: NodePoint): void {
+    const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (draw.isDrawingTool()) {
-        draw.drawLive(p.x, p.y, true)
+        draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
         storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
         if (liveTextBox !== undefined) {
-          storeTextCommand()
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: false })
         } else {
           const cmd = findTextCommand(prevPos)
-          props.cmdChanging?.(cmd?.id ?? '')
+          props.cmdChanging?.(cmd?.id ?? ('' as CommandUid))
         }
       }
       draw.on = false
     }
   }
 
-  function findTextCommand (mousePos: Point): DrawTextCmd | undefined {
+  function findTextCommand (mousePos: MouseScaledPoint): DrawTextCmd | undefined {
+    if (currentCommands === undefined) {
+      return undefined
+    }
     const pos = draw.mouseToCanvasPoint(mousePos)
-    for (let i = commands.length - 1; i >= 0; i--) {
-      const anyCmd = commands[i]
-      if (anyCmd.type === 'text') {
-        const cmd = anyCmd as DrawTextCmd
+    for (let i = currentCommands.length - 1; i >= 0; i--) {
+      const candidate = currentCommands[i]
+      if (candidate.type === 'text') {
+        const cmd = candidate as DrawTextCmd
         if (draw.isPointInText(pos, cmd)) {
           return cmd
         }
@@ -526,25 +559,32 @@ export function drawing (
     return undefined
   }
 
-  function makeLiveTextBox (cmdId: string): void {
+  function makeLiveTextBox (targetCommandId: CommandUid): void {
     let pos = prevPos
-    let existingCmd: DrawTextCmd | undefined
-    for (const cmd of commands) {
-      if (cmd.id === cmdId && cmd.type === 'text') {
-        existingCmd = cmd as DrawTextCmd
-        pos = draw.canvasToMousePoint(existingCmd.pos)
-        break
+    let foundTextCommand: DrawTextCmd | undefined
+    traverseCommands(currentCommands, (candidate) => {
+      if (candidate.id === targetCommandId && candidate.type === 'text') {
+        foundTextCommand = candidate as DrawTextCmd
+        pos = draw.canvasToMousePoint(foundTextCommand.pos)
+        return true
       }
-    }
+      return false
+    })
 
     const padding = 6
     const handleSize = 14
 
     const box = document.createElement('div')
+    const editor = document.createElement('div')
+    box.appendChild(editor)
+
+    const canvasOffsetInParent = offsetInParent(node, canvas)
+    const parentRelativeLocation = offsetPoint(pos, canvasOffsetInParent)
+
     box.style.zIndex = '1'
     box.style.position = 'absolute'
-    box.style.left = `calc(${pos.x}px - ${padding}px)`
-    box.style.top = `calc(${pos.y}px - ${padding}px)`
+    box.style.left = `calc(${parentRelativeLocation.x}px - ${padding}px)`
+    box.style.top = `calc(${parentRelativeLocation.y}px - ${padding}px)`
     box.style.border = '1px solid var(--theme-editbox-focus-border)'
     box.style.borderRadius = 'var(--small-BorderRadius)'
     box.style.padding = `${padding}px`
@@ -558,15 +598,14 @@ export function drawing (
       editor.focus()
     })
 
-    const editor = document.createElement('div')
     editor.style.cursor = 'text'
     editor.style.padding = '0'
     editor.contentEditable = 'true'
     editor.style.outline = 'none'
     editor.style.minWidth = '2rem'
     editor.style.whiteSpace = 'nowrap'
-    if (existingCmd !== undefined) {
-      editor.innerText = existingCmd.text
+    if (foundTextCommand !== undefined) {
+      editor.innerText = foundTextCommand.text
     }
     editor.addEventListener('input', (e) => {
       if (editor.innerText.length > maxTextLength) {
@@ -615,14 +654,12 @@ export function drawing (
           }, 0)
         }
         closeLiveTextBox()
-        replayCommands()
+        replayCommands(currentCommands)
       } else if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault()
-        storeTextCommand()
-        closeLiveTextBox()
+        commitTextEdit({ deferCommandStore: false })
       }
     })
-    box.appendChild(editor)
 
     const moveCaretToEnd = (): void => {
       const selection = window.getSelection()
@@ -657,25 +694,28 @@ export function drawing (
     }
 
     const moveTextBox = (dx: number, dy: number): void => {
-      let newX = box.offsetLeft + dx
-      let newY = box.offsetTop + dy
+      const canvasOffset = offsetInParent(node, canvas)
+      let actualNewX = box.offsetLeft + dx
+      let actualNewY = box.offsetTop + dy
       // For screenshots the canvas always has the same size as the underlying image
       // and we should not be able to drag the text box outside of the screenshot
       if (props.autoSize !== true) {
-        newX = Math.max(0, newX)
-        newY = Math.max(0, newY)
-        if (newX + box.offsetWidth > node.clientWidth) {
-          newX = node.clientWidth - box.offsetWidth
+        const canvasSize: Point = { x: canvas.getBoundingClientRect().width, y: canvas.getBoundingClientRect().height }
+        actualNewX = Math.max(canvasOffset.x, actualNewX)
+        actualNewY = Math.max(canvasOffset.y, actualNewY)
+
+        if (actualNewX > canvasOffset.x + canvasSize.x) {
+          actualNewX = canvasOffset.x + canvasSize.x
         }
-        if (newY + box.offsetHeight > node.clientHeight) {
-          newY = node.clientHeight - box.offsetHeight
+        if (actualNewY > canvasOffset.y + canvasSize.y) {
+          actualNewY = canvasOffset.y + canvasSize.y
         }
       }
-      box.style.left = `${newX}px`
-      box.style.top = `${newY}px`
+      box.style.left = `${actualNewX}px`
+      box.style.top = `${actualNewY}px`
       if (liveTextBox !== undefined) {
-        liveTextBox.pos.x = newX + padding
-        liveTextBox.pos.y = newY + padding
+        liveTextBox.pos.x = actualNewX - canvasOffset.x + padding
+        liveTextBox.pos.y = actualNewY - canvasOffset.y + padding
       }
     }
 
@@ -687,12 +727,12 @@ export function drawing (
       e.preventDefault()
       dragHandle.style.cursor = 'grabbing'
       dragHandle.setPointerCapture(e.pointerId)
-      let prevPos = { x: e.clientX, y: e.clientY }
+      let previousDragPosition = { x: e.clientX, y: e.clientY }
       const pointerMove = (e: PointerEvent): void => {
         e.preventDefault()
-        const p = { x: e.clientX, y: e.clientY }
-        moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
-        prevPos = p
+        const currentDragPosition = { x: e.clientX, y: e.clientY }
+        moveTextBox(currentDragPosition.x - previousDragPosition.x, currentDragPosition.y - previousDragPosition.y)
+        previousDragPosition = currentDragPosition
       }
       const pointerUp = (e: PointerEvent): void => {
         setTimeout(() => {
@@ -713,13 +753,13 @@ export function drawing (
       dragHandle.style.cursor = 'grabbing'
       const touch = e.changedTouches[0]
       const touchId = touch.identifier
-      let prevPos = touchToNodePoint(touch, dragHandle)
+      let prevPos: MouseScaledPoint = rescaleWithCss(touchToNodePoint(touch, dragHandle))
       const touchMove = (e: TouchEvent): void => {
         const touch = findTouch(e.changedTouches, touchId)
         if (touch !== undefined) {
-          const p = touchToNodePoint(touch, dragHandle)
-          moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
-          prevPos = p
+          const scaledPoint: MouseScaledPoint = rescaleWithCss(touchToNodePoint(touch, dragHandle))
+          moveTextBox(scaledPoint.x - prevPos.x, scaledPoint.y - prevPos.y)
+          prevPos = scaledPoint
         }
       }
       const touchEnd = (e: TouchEvent): void => {
@@ -751,7 +791,7 @@ export function drawing (
     box.appendChild(deleteButton)
 
     node.appendChild(box)
-    liveTextBox = { box, editor, pos, cmdId }
+    liveTextBox = { box, editor, pos, cmdId: targetCommandId }
     updateLiveTextBox()
     setTimeout(() => {
       editor.focus()
@@ -762,7 +802,7 @@ export function drawing (
 
   function updateLiveTextBox (): void {
     if (liveTextBox !== undefined) {
-      liveTextBox.editor.style.color = draw.penColor
+      liveTextBox.editor.style.color = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
       liveTextBox.editor.style.lineHeight = `${draw.fontSize / draw.lineScale()}px`
       liveTextBox.editor.style.fontSize = `${draw.fontSize / draw.lineScale()}px`
       liveTextBox.editor.style.fontFamily = draw.fontFace
@@ -776,13 +816,13 @@ export function drawing (
     }
   }
 
-  function storeTextCommand (defer = false): void {
+  function storeTextCommand (parameters: { defer: boolean }): void {
     if (liveTextBox !== undefined) {
       const text = (liveTextBox.editor.innerText ?? '').trim()
       if (text !== '') {
         const cmdId = liveTextBox.cmdId
         const cmd: DrawTextCmd = {
-          id: cmdId === '' ? makeCommandId() : cmdId,
+          id: cmdId === '' ? makeCommandUid() : cmdId,
           type: 'text',
           text,
           pos: draw.mouseToCanvasPoint(liveTextBox.pos),
@@ -797,7 +837,7 @@ export function drawing (
             props.cmdAdded?.(cmd)
           }
         }
-        if (defer) {
+        if (parameters.defer) {
           setTimeout(notify, 0)
         } else {
           notify()
@@ -808,11 +848,16 @@ export function drawing (
     }
   }
 
+  function commitTextEdit (parameters: { deferCommandStore: boolean }): void {
+    storeTextCommand({ defer: parameters.deferCommandStore })
+    closeLiveTextBox()
+  }
+
   function storeLineCommand (): void {
     if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
       const cmd: DrawLineCmd = {
-        id: makeCommandId(),
+        id: makeCommandUid(),
         type: 'line',
         lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
         erasing,
@@ -832,7 +877,9 @@ export function drawing (
       toolCursor.style.visibility = 'visible'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
-      toolCursor.style.background = erasing ? 'none' : draw.penColor
+      toolCursor.style.background = erasing
+        ? 'none'
+        : metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
       toolCursor.style.boxShadow = erasing
         ? '0px 0px 1px 1px white inset, 0px 0px 2px 1px black'
         : '0px 0px 3px 0px var(--theme-button-contrast-enabled)'
@@ -896,10 +943,7 @@ export function drawing (
       if (deltaTime > frameInterval) {
         lastTime = currentTime - (deltaTime % frameInterval)
         const frac = Math.min((lastTime - startTime) / animDuration, 1)
-        personCursorPos = {
-          x: Math.round(oldPos.x + distanceX * frac),
-          y: Math.round(oldPos.y + distanceY * frac)
-        }
+        personCursorPos = offsetCanvasPoint(oldPos, distanceX, distanceY, frac)
         if (props.personCursorMoved !== undefined) {
           const p = draw.canvasToMousePoint(personCursorPos)
           const x = Math.max(0, Math.min(p.x, canvas.width))
@@ -929,14 +973,25 @@ export function drawing (
     canvas.style.touchAction = readonly ? 'unset' : 'none'
   }
 
-  function replayCommands (): void {
+  function replayCommands (drawing: DrawingCmd[] | undefined): void {
     draw.ctx.reset()
-    for (const cmd of commands) {
-      if (cmd.id !== undefined && liveTextBox?.cmdId === cmd.id) {
-        continue
+
+    /*
+    On Safari (checked on 22.08.2025) reset() does not immediatly resets the canvas.
+    The result looks like the "reset" command being cached and executed upon some
+    action like mouse entering the canvas. Anyway with this line undo/redo (instantly
+    adding commands) works good.
+    */
+    draw.ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    const currentTheme: ThemeVariantType = props.getCurrentTheme()
+
+    traverseCommands(drawing, (command) => {
+      if (command.id === undefined || liveTextBox?.cmdId !== command.id) {
+        draw.drawCommand(command, currentTheme)
       }
-      draw.drawCommand(cmd)
-    }
+      return false
+    })
   }
 
   return {
@@ -946,6 +1001,7 @@ export function drawing (
       let offsetDelta: Point | undefined
       let replay = false
       let syncToolCursor = false
+      let toolChanged = false
       let syncPersonCursor: Point | undefined
       let syncLiveTextBox = false
       if (props.offset !== undefined && !isOffsetAnimating) {
@@ -961,8 +1017,8 @@ export function drawing (
         }
       }
       if (props.commands !== undefined) {
-        if (commands !== props.commands) {
-          commands = props.commands
+        if (currentCommands !== props.commands) {
+          currentCommands = props.commands
           replay = true
         }
       }
@@ -970,6 +1026,7 @@ export function drawing (
         if (draw.tool !== props.tool) {
           draw.tool = props.tool
           syncToolCursor = true
+          toolChanged = true
         }
       }
       if (props.penColor !== undefined) {
@@ -1009,22 +1066,24 @@ export function drawing (
           syncPersonCursor = props.personCursorPos
         }
       }
-      if (props.changingCmdId === undefined) {
+
+      if (props.changingCmdId === undefined || toolChanged) {
         if (liveTextBox !== undefined) {
-          storeTextCommand(true)
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: true })
           replay = true
         }
       } else {
         if (liveTextBox === undefined) {
-          makeLiveTextBox(props.changingCmdId)
-          replay = true
+          if (props.tool === 'text') {
+            makeLiveTextBox(props.changingCmdId)
+            replay = true
+          }
         } else if (liveTextBox.cmdId !== props.changingCmdId) {
-          storeTextCommand(true)
-          closeLiveTextBox()
+          commitTextEdit({ deferCommandStore: true })
           replay = true
         }
       }
+
       if (syncToolCursor) {
         updateToolCursor()
       }
@@ -1059,7 +1118,7 @@ export function drawing (
                 x: Math.round(oldOffset.x + distance.x * fracDist),
                 y: Math.round(oldOffset.y + distance.y * fracDist)
               }
-              replayCommands()
+              replayCommands(currentCommands)
               updatePersonCursor()
               if (fracTime >= 1) {
                 isOffsetAnimating = false
@@ -1071,7 +1130,7 @@ export function drawing (
           isOffsetAnimating = true
           requestAnimationFrame(animate)
         } else {
-          replayCommands()
+          replayCommands(currentCommands)
           updatePersonCursor()
         }
       }

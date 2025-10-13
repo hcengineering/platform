@@ -11,19 +11,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  AccountID,
-  AppletAttachment,
-  AppletParams,
-  AppletType,
-  Message,
-  MessageID
-} from '@hcengineering/communication-types'
-import { AttachedDoc, Configuration, Doc, Ref } from '@hcengineering/core'
+import { AppletAttachment, AppletParams, AppletType, Message, MessageID } from '@hcengineering/communication-types'
+import { AttachedDoc, Configuration, Doc, Ref, AccountUuid } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card, MasterTag } from '@hcengineering/card'
 import { AnyComponent } from '@hcengineering/ui'
 import { PersonSpace } from '@hcengineering/contact'
+
+export * from './poll'
+export * from './direct'
 
 export enum MessagesNavigationAnchors {
   ConversationStart = 'conversationStart',
@@ -82,7 +78,7 @@ export interface PollAnswer extends AttachedDoc<Poll> {
 }
 
 export interface UserVote {
-  account: AccountID
+  account: AccountUuid
   options: { id: string, label: string, votedAt: Date }[]
 }
 

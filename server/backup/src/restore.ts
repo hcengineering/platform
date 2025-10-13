@@ -37,7 +37,7 @@ import { extract } from 'tar-stream'
 import { createGunzip, gunzipSync } from 'zlib'
 import { BackupStorage } from './storage'
 import type { BackupInfo } from './types'
-import { doTrimHash, loadDigest, migradeBlobData } from './utils'
+import { doTrimHash, isAccountDomain, loadDigest, migradeBlobData } from './utils'
 export * from './storage'
 
 const dataUploadSize = 2 * 1024 * 1024
@@ -147,7 +147,7 @@ export async function restore (
       ctx.info('no changes in domain', { domain: c })
       return
     }
-    const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date)
+    const changeset = (await loadDigest(ctx, storage, snapshots, c, opt.date)) as Map<Ref<Doc>, string>
     // We need to load full changeset from server
     const serverChangeset = new Map<Ref<Doc>, string>()
 
@@ -299,7 +299,7 @@ export async function restore (
       const d = s.domains[c]
 
       if (d !== undefined && docsToAdd.size > 0) {
-        const sDigest = await loadDigest(ctx, storage, [s], c)
+        const sDigest = (await loadDigest(ctx, storage, [s], c)) as Map<Ref<Doc>, string>
         const requiredDocs = new Map(Array.from(sDigest.entries()).filter(([it]) => docsToAdd.has(it)))
 
         let lastSendTime = Date.now()
@@ -487,6 +487,10 @@ export async function restore (
     }
   }
 
+  async function processAccountDomain (c: Domain): Promise<void> {
+    // TODO
+  }
+
   const limiter = new RateLimiter(opt.parallel ?? 1)
 
   try {
@@ -508,7 +512,8 @@ export async function restore (
         while (retry > 0) {
           retry--
           try {
-            await processDomain(c)
+            const doProcessDomain = isAccountDomain(c) ? processAccountDomain : processDomain
+            await doProcessDomain(c)
             if (delay > 1) {
               ctx.warn('retry-success', { retry, delay, workspaceId })
             }

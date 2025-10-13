@@ -8,6 +8,12 @@
     "MessageIn": "Message dans #{title}",
     "Thread": "Fil de discussion",
     "Threads": "Fils de discussion",
-    "Title": "Titre"
+    "Title": "Titre",
+    "All": "Tout",
+    "Inbox": "Boîte de réception",
+    "ReactedToYourMessage": "a réagi à votre message",
+    "ClearAll": "Tout effacer",
+    "InboxIsClear": "Boîte de réception est vide",
+    "YouDontHaveAnyNewMessages": "Vous n'avez aucun nouveau message"
   }
 }

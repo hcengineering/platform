@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Process, ProcessToDo, Step } from '@hcengineering/process'
+  import { Process, ProcessToDo, Step, UserResult } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ParamsEditor from './ParamsEditor.svelte'
-  import ResultEditor from './ResultEditor.svelte'
   import { Label, Toggle } from '@hcengineering/ui'
+  import ResultsEditor from './ResultsEditor.svelte'
 
   export let process: Process
   export let step: Step<ProcessToDo>
@@ -35,14 +35,14 @@
     }
   }
 
-  const keys = ['title', 'user', 'dueDate']
-
-  function changeResult (e: CustomEvent<any>): void {
+  function changeResults (e: CustomEvent<UserResult[]>): void {
     if (e.detail !== undefined) {
-      step = e.detail
+      step.results = e.detail
       dispatch('change', step)
     }
   }
+
+  const keys = ['title', 'user', 'dueDate']
 </script>
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
@@ -61,9 +61,7 @@
   />
 </div>
 <div class="divider" />
-{#key step._id}
-  <ResultEditor {step} on:change={changeResult} />
-{/key}
+<ResultsEditor {process} result={step.results} on:change={changeResults} />
 
 <style lang="scss">
   .divider {

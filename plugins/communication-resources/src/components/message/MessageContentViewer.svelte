@@ -15,62 +15,68 @@
 
 <script lang="ts">
   import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
-  import { Markdown, Message, MessageID } from '@hcengineering/communication-types'
+  import { Markdown, Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
-  import { Label } from '@hcengineering/ui'
   import { Person } from '@hcengineering/contact'
   import { Markup } from '@hcengineering/core'
+  import { ShowMore } from '@hcengineering/ui'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
-  import communication from '../../plugin'
-  import { isShownTranslatedMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
+  import {
+    isShownManualTranslatedMessage,
+    translateMessagesStore,
+    showOriginalMessagesStore,
+    getMessageTranslation,
+    translateToStore,
+    dontTranslateStore
+  } from '../../stores'
   import { translateMessage } from '../../actions'
 
   export let card: Card
   export let message: Message
   export let author: Person | undefined
+  export let collapsible: boolean = true
+  export let maxHeight: string = '30rem'
+  export let isShowMoreActive: boolean = false
 
   let displayMarkup: Markup = toMarkup(message.content)
   let prevContent: Markdown | undefined = undefined
 
-  $: updateDisplayMarkup(message, $translateMessagesStore)
-
-  function updateDisplayMarkup (message: Message, translateMessages: Map<MessageID, TranslateMessagesStatus>): void {
-    const translateResult = translateMessages.get(message.id)
-    if (translateResult?.shown === true && translateResult?.result != null) {
-      displayMarkup = translateResult.result
-    } else {
-      displayMarkup = toMarkup(message.content)
-    }
-  }
+  $: translatedMarkup = getMessageTranslation(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
+  $: displayMarkup = translatedMarkup ?? toMarkup(message.content)
 
   $: if (prevContent !== message.content) {
     prevContent = message.content
-    if (isShownTranslatedMessage(message.id)) {
+    if (isShownManualTranslatedMessage(message.cardId, message.id)) {
       void translateMessage(message, card)
     } else {
       translateMessagesStore.update((store) => {
-        store.delete(message.id)
-        return store
+        return store.filter((it) => it.cardId !== message.cardId || it.messageId !== message.id)
       })
     }
   }
+
+  function getMaxSize (maxHeight: string): number {
+    const remValue = parseFloat(maxHeight.replace('rem', ''))
+    if (isNaN(remValue) || remValue <= 0) {
+      return 480 // 30rem * 16px
+    }
+    return remValue * 16
+  }
 </script>
 
-{#if isActivityMessage(message)}
-  <ActivityMessageViewer {message} {card} {author} />
-{:else if message.removed}
-  <span class="overflow-label removed-label">
-    <Label label={communication.string.MessageWasRemoved} />
-  </span>
-{:else}
-  <MarkupMessageViewer message={displayMarkup} />
-{/if}
-
-<style lang="scss">
-  .removed-label {
-    color: var(--theme-text-placeholder-color);
-  }
-</style>
+<ShowMore limit={getMaxSize(maxHeight)} ignore={!collapsible} bind:bigger={isShowMoreActive}>
+  {#if isActivityMessage(message)}
+    <ActivityMessageViewer {message} {card} {author} />
+  {:else}
+    <MarkupMessageViewer message={displayMarkup} />
+  {/if}
+</ShowMore>

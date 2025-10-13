@@ -119,6 +119,12 @@
     "EveryoneDescription": "Benachrichtigen Sie alle in diesem {title}",
     "HereDescription": "Benachrichtigen Sie alle in diesem {title}",
     "Guest": "Gast",
-    "Deleted": "Gelöscht"
+    "Deleted": "Gelöscht",
+    "CannotMerge": "Fehler: Globale Personen können nicht zusammengeführt werden",
+    "AutoTranslation": "Automatische Übersetzung",
+    "TranslateTo": "Übersetzen in",
+    "DontTranslate": "Nicht übersetzen",
+    "SelectLanguage": "Sprache auswählen",
+    "SelectLanguages": "Sprachen auswählen"
   }
 }

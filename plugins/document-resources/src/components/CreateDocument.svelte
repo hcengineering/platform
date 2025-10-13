@@ -114,7 +114,7 @@
       kind={'regular'}
       size={'small'}
       label={document.string.NoParentDocument}
-      searchField={'name'}
+      searchField={'title'}
       allowDeselect={true}
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}
@@ -128,7 +128,7 @@
         size={'medium'}
         kind={'link-bordered'}
         noFocus
-        icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : object.icon ?? document.icon.Document}
+        icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : (object.icon ?? document.icon.Document)}
         iconProps={object.icon === view.ids.IconWithEmoji
           ? { icon: object.color, size: 'medium' }
           : {

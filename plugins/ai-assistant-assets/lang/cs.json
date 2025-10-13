@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "AI Asistent",
+    "IntegrationDescription": "Váš AI asistent poháněný umělou inteligencí, který pomáhá organizovat, automatizovat a zjednodušit váš denní pracovní tok napříč platformou",
+    "ConfigLabel": "AI Asistent",
+    "ConfigDescription": "Osobní asistent poháněný umělou inteligencí",
+    "Connect": "Připojit",
+    "Cancel": "Zrušit",
+    "Status": "Stav",
+    "FailedToConnect": "Služba AI Asistenta není dostupná",
+    "Configure": "Konfigurovat AI Asistenta"
+  }
+}

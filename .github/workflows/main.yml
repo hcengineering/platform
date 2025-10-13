@@ -79,10 +79,6 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -238,10 +234,6 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -368,10 +360,6 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -463,10 +451,6 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -541,10 +525,6 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -612,6 +592,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Configure docker
@@ -653,10 +644,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -671,7 +658,9 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -v
+        run: |
+          node common/scripts/install-run-rush.js docker:build -v
+          docker builder prune -a -f
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -732,19 +721,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
         run: node common/scripts/install-run-rush.js package --to desktop -v
-      - name: Package JSON
+      - name: Bump package JSON version
         run: |
           cd desktop-package
+          node ../common/scripts/install-run-rushx.js bump
           cat ./package.json
       - name: Install the Apple certificate and provisioning profile
         env:
@@ -837,19 +823,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
         run: node common/scripts/install-run-rush.js package --to qms-desktop -v
-      - name: Package JSON
+      - name: Bump package JSON version
         run: |
           cd qms-desktop-package
+          node ../common/scripts/install-run-rushx.js bump
           cat ./package.json
       - name: Install the Apple certificate and provisioning profile
         env:

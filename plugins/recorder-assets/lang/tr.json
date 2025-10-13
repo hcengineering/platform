@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "İptal",
+    "Pause": "Duraklat",
+    "Stop": "Durdur",
+    "Resume": "Devam et",
+    "Record": "Kaydet",
+    "Done": "Tamam",
+    "CancelRecording": "Kaydı iptal et",
+    "CancelRecordingConfirm": "Kaydı iptal etmek istediğinizden emin misiniz?",
+    "RestartRecording": "Kaydı yeniden başlat",
+    "RestartRecordingConfirm": "Kaydı yeniden başlatmak istediğinizden emin misiniz?",
+    "ScreenRecordingName": "Ekran Kaydı {date}",
+    "CameraRecordingName": "Kamera Kaydı {date}",
+    "ClickToSkip": "Atlamak için tıkla",
+    "RecordVideo": "Video kaydet",
+    "ShareWithAudio": "Ses ile paylaş",
+    "ShareScreen": "Ekranı paylaş",
+    "StopSharing": "Paylaşmayı durdur",
+    "SelectVideoToRecord": "Kaydetmek için video kamerayı etkinleştirin veya ekranı paylaşın",
+    "CameraSize": "Kamera boyutu",
+    "CameraPos": "Kamera konumu",
+    "Small": "Küçük",
+    "Medium": "Orta",
+    "Large": "Büyük",
+    "TopLeft": "Sol üst",
+    "TopRight": "Sağ üst",
+    "BottomLeft": "Sol alt",
+    "BottomRight": "Sağ alt",
+    "Resolution": "Çözünürlük",
+    "Original": "Orijinal"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/love-agent",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
@@ -21,8 +21,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.29",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "esbuild": "^0.20.2",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^8.8.0",
@@ -30,7 +30,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
-    "prettier": "^3.1.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {

@@ -68,7 +68,7 @@
       {#if tag.icon}
         <div class="hulyTaskNavLink-icon">
           <Icon
-            icon={tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : tag.icon ?? card.icon.MasterTag}
+            icon={tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : (tag.icon ?? card.icon.MasterTag)}
             iconProps={tag.icon === view.ids.IconWithEmoji ? { icon: tag.color } : {}}
             size="small"
             fill="currentColor"

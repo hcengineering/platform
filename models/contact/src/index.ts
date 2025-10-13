@@ -33,7 +33,8 @@ import {
   type PersonSpace,
   type SocialIdentity,
   type Status,
-  type SocialIdentityProvider
+  type SocialIdentityProvider,
+  type Translation
 } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -90,6 +91,7 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
 import contact from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import preference, { TPreference } from '@hcengineering/model-preference'
 
 export { contactId } from '@hcengineering/contact'
 export { contactOperation } from './migration'
@@ -291,6 +293,14 @@ export class TUserRole extends TDoc implements UserRole {
   role!: Ref<Role>
 }
 
+@Model(contact.class.Translation, preference.class.Preference)
+export class TTranslation extends TPreference implements Translation {
+  declare attachedTo: Ref<Employee>
+  enabled!: boolean
+  translateTo?: string
+  dontTranslate!: string[]
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAvatarProvider,
@@ -306,7 +316,8 @@ export function createModel (builder: Builder): void {
     TMember,
     TContactsTab,
     TPersonSpace,
-    TUserRole
+    TUserRole,
+    TTranslation
   )
 
   builder.mixin(contact.class.PersonSpace, core.class.Class, core.mixin.TxAccessLevel, {
@@ -921,6 +932,10 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonPresenter
   })
 
+  builder.mixin(contact.class.SocialIdentity, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: contact.component.SocialIdentityPresenter
+  })
+
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.AccountArrayEditor
   })
@@ -1141,6 +1156,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.MergePersons,
       category: contact.category.Contact,
       target: contact.class.Person,
+      visibilityTester: contact.function.CanMergePersons,
       input: 'focus',
       context: {
         mode: ['context'],
@@ -1399,5 +1415,15 @@ export function createModel (builder: Builder): void {
     type: TypeRef(contact.class.Person),
     isCustom: true,
     readonly: true
+  })
+
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'translation',
+    label: contact.string.AutoTranslation,
+    icon: view.icon.Translate,
+    component: contact.component.TranslationSettings,
+    group: 'settings-account',
+    role: AccountRole.Guest,
+    order: 1600
   })
 }

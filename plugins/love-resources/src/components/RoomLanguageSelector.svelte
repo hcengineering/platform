@@ -21,7 +21,6 @@
 
   import { languagesDisplayData } from '../types'
   import LanguageIcon from './LanguageIcon.svelte'
-  import { updateSessionLanguage } from '../utils'
 
   export let room: Room
   export let kind: 'dropdown' | 'icon' = 'dropdown'
@@ -44,7 +43,6 @@
     if (newLang == null) return
 
     await client.diffUpdate(room, { language: newLang })
-    await updateSessionLanguage(room)
   }
 
   function showLanguagesPopup (): void {

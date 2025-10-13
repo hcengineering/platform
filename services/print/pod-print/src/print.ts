@@ -1,7 +1,10 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
 //
+import { MeasureContext } from '@hcengineering/core'
 import puppeteer, { Page, Viewport } from 'puppeteer'
+
+import config from './config'
 
 export interface PrintOptions {
   kind?: ExportKind
@@ -19,11 +22,11 @@ export type ExportKind = (typeof validKinds)[number]
  * @param options - The options to use when printing the webpage.
  * @returns Buffer with the printed content.
  */
-export async function print (url: string, options?: PrintOptions): Promise<Buffer | undefined> {
+export async function print (ctx: MeasureContext, url: string, options?: PrintOptions): Promise<Buffer | undefined> {
   const kind = options?.kind ?? 'pdf'
   const viewport = options?.viewport ?? { width: 1440, height: 900 }
 
-  console.log(`Printing ${url} to ${kind} with viewport ${JSON.stringify(viewport)}`)
+  ctx.info('print', { url, kind, viewport })
 
   // TODO: think of having a "hot" browser instance to avoid the overhead of launching a new one every time
   const browser = await puppeteer.launch({
@@ -33,17 +36,18 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--disable-extensions',
-      '--disable-setuid-sandbox'
+      '--disable-setuid-sandbox',
+      ...config.PuppeteerArgs
     ]
   })
   const page = await browser.newPage()
 
   page
     .on('pageerror', ({ message }) => {
-      console.log(message)
+      ctx.warn('pageerror', { message })
     })
     .on('requestfailed', (request) => {
-      console.log(`${request.failure()?.errorText} ${request.url()}`)
+      ctx.warn('requestfailed', { url: request.url(), errorText: request.failure()?.errorText })
     })
 
   await page.setViewport(viewport)
@@ -55,7 +59,7 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
   })
   await page.waitForNetworkIdle({ idleTime: 1000 })
 
-  let res: Buffer | undefined
+  let res: Uint8Array | undefined
 
   if (kind === 'pdf') {
     await page.emulateMediaType('print')
@@ -76,29 +80,31 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
 
     const displayHeaderFooter = pageHeader !== '' || pageFooter !== ''
 
-    res = await page.pdf({
-      format: 'A4',
-      landscape: false,
-      timeout: 0,
-      headerTemplate: pageHeader,
-      footerTemplate: pageFooter,
-      displayHeaderFooter,
-      margin: {
-        top: '1.5cm',
-        right: '1cm',
-        bottom: '1.5cm',
-        left: '1cm'
-      }
-    })
+    res = await ctx.with('pdf', {}, () =>
+      page.pdf({
+        format: 'A4',
+        landscape: false,
+        timeout: 0,
+        headerTemplate: pageHeader,
+        footerTemplate: pageFooter,
+        displayHeaderFooter,
+        margin: {
+          top: '1.5cm',
+          right: '1cm',
+          bottom: '1.5cm',
+          left: '1cm'
+        }
+      })
+    )
   } else {
     // Note: currently we do not take the full page screenshot - only the viewport
     // might make it configurable in the future
-    res = await page.screenshot({ type: kind })
+    res = await ctx.with('screenshot', { kind }, () => page.screenshot({ type: kind }))
   }
 
   await browser.close()
 
-  return res
+  return res !== undefined ? Buffer.from(res) : undefined
 }
 
 async function scrollThrough (page: Page): Promise<void> {

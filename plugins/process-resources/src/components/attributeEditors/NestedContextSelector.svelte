@@ -48,7 +48,7 @@
       type: 'nested',
       key: attr.name,
       path: context.attribute.name,
-      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : [],
+      functions: valueFunc !== undefined ? [valueFunc] : [],
       sourceFunction: pathReduce
     })
   }

@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag, Tag } from '@hcengineering/card'
-  import { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import {
@@ -65,11 +64,22 @@
     }
   }
 
-  const reduceFuncs = client
-    .getModel()
-    .findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
-    .filter((p) => p.category === undefined || (allowArray && p.category === 'array'))
-    .map((it) => it._id)
+  function getReduceFunctions (): Ref<ProcessFunction>[] {
+    const model = client.getModel()
+    const h = client.getHierarchy()
+    const res: Ref<ProcessFunction>[] = []
+    const all = model.findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
+    for (const f of all) {
+      if (f.category === undefined || (allowArray && f.category === 'array')) {
+        if (f.of === core.class.ArrOf || h.isDerived(f.of, attrClass)) {
+          res.push(f._id)
+        }
+      }
+    }
+    return res
+  }
+
+  const reduceFuncs = getReduceFunctions()
 
   $: availableFunctions = getAvailableFunctions(contextValue.functions, attrClass, category)
 
@@ -106,7 +116,7 @@
 
   $: sourceFunc =
     contextValue.sourceFunction !== undefined
-      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction })[0]
+      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction.func })[0]
       : undefined
 
   $: functionButtonIndex = functionsLength + (sourceFunc !== undefined ? 1 : 0)
@@ -126,10 +136,31 @@
   }
 
   function onFunctionSelect (e: Ref<ProcessFunction>): void {
-    // if editor is undefined
-    const func = client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: e })[0]
+    onFunction(e, {}, addFunction)
+  }
+
+  function addFunction (func: Func): void {
+    const arr = contextValue.functions ?? []
+    arr.push(func)
+    contextValue.functions = arr
+    onChange(contextValue)
+  }
+
+  function onSourceFunctionSelect (e: Ref<ProcessFunction>): void {
+    onFunction(e, contextValue.sourceFunction?.props ?? {}, (res) => (contextValue.sourceFunction = res))
+  }
+
+  function onSourceFunctionChange (e: Func): void {
+    contextValue.sourceFunction = e
+    onChange(contextValue)
+  }
+
+  function onFunction (_func: Ref<ProcessFunction>, props: Record<string, any>, cb: (res: Func) => void) {
+    const func = client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: _func })[0]
     if (func.editor === undefined) {
-      addFunction(e, {})
+      const res: Func = { func: _func, props: {} }
+      cb(res)
+      onChange(contextValue)
       closeTooltip()
     } else {
       showPopup(
@@ -139,43 +170,46 @@
           process,
           masterTag: process.masterTag,
           context,
-          attribute
+          attribute,
+          props
         },
-        elements[functionButtonIndex],
+        elements[0],
         (res) => {
           if (res != null) {
-            addFunction(e, res)
+            const result: Func = { func: _func, props: res }
+            cb(result)
+            onChange(contextValue)
+            closeTooltip()
           }
         }
       )
     }
   }
 
-  function addFunction (func: Ref<ProcessFunction>, props: Record<string, any>): void {
-    const arr = contextValue.functions ?? []
-    arr.push({
-      func,
-      props
-    })
-    contextValue.functions = arr
-    onChange(contextValue)
-  }
-
-  function onSourceFunctionSelect (e: Ref<ProcessFunction>): void {
-    contextValue.sourceFunction = e
-    onChange(contextValue)
-  }
-
   function onFunctionChange (e: Ref<ProcessFunction>, i: number): void {
-    if (contextValue.functions === undefined) return
-    contextValue.functions[i].func = e
-    contextValue.functions = contextValue.functions
-    onChange(contextValue)
+    onFunction(e, contextValue.functions?.[i]?.props ?? {}, (res) => {
+      if (contextValue.functions === undefined) {
+        contextValue.functions = []
+      }
+      contextValue.functions[i] = res
+      contextValue.functions = contextValue.functions
+    })
   }
 
-  function getFunctionChange (i: number): (e: Ref<ProcessFunction>) => void {
+  function getFunctionSelect (i: number): (e: Ref<ProcessFunction>) => void {
     return (e: Ref<ProcessFunction>) => {
       onFunctionChange(e, i)
+    }
+  }
+
+  function getFunctionChange (i: number): (e: Func) => void {
+    return (e: Func) => {
+      if (contextValue.functions === undefined) {
+        contextValue.functions = []
+      }
+      contextValue.functions[i] = e
+      contextValue.functions = contextValue.functions
+      onChange(contextValue)
     }
   }
 
@@ -188,13 +222,14 @@
     onChange(contextValue)
   }
 
-  function onConfigure (e: MouseEvent, func: ProcessFunction, pos: number): void {
-    if (contextValue.functions === undefined || func.editor === undefined) return
+  function onConfigure (e: MouseEvent, func: Func, pos: number): void {
+    const f = getFunction(func.func)
+    if (contextValue.functions === undefined || f.editor === undefined) return
     const val = contextValue.functions[pos]
     showPopup(
-      func.editor,
+      f.editor,
       {
-        func,
+        func: f,
         masterTag: process.masterTag,
         process,
         context,
@@ -225,6 +260,10 @@
     }
     onChange(contextValue)
   }
+
+  function getFunction (_id: Ref<ProcessFunction>): ProcessFunction {
+    return client.getModel().findAllSync(plugin.class.ProcessFunction, { _id })[0]
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -241,17 +280,25 @@
         }}
         label={sourceFunc.label}
         props={{
+          attribute,
+          process,
+          context,
+          func: contextValue.sourceFunction,
           availableFunctions: reduceFuncs,
-          onSelect: onSourceFunctionSelect
+          onSelect: onSourceFunctionSelect,
+          onChange: onSourceFunctionChange
         }}
+        component={plugin.component.FunctionSubmenu}
         options={{ component: plugin.component.FunctionSelector }}
         withHover
       />
-      <div class="menu-separator" />
     {/if}
     {#if availableFunctions.length > 0 || functionsLength > 0}
-      {#each funcs as f, i}
-        {#if reduceFuncs.includes(f._id)}
+      {#if sourceFunc !== undefined}
+        <div class="menu-separator" />
+      {/if}
+      {#each contextValue.functions ?? [] as f, i}
+        {#if reduceFuncs.includes(f.func)}
           <Submenu
             bind:element={elements[i + (sourceFunc !== undefined ? 1 : 0)]}
             on:keydown={(event) => {
@@ -260,11 +307,17 @@
             on:mouseover={() => {
               elements[i + (sourceFunc !== undefined ? 1 : 0)]?.focus()
             }}
-            label={f.label}
+            label={getFunction(f.func)?.label}
             props={{
+              func: f,
+              attribute,
+              process,
+              context,
               availableFunctions: reduceFuncs,
-              onSelect: getFunctionChange(i)
+              onSelect: getFunctionSelect(i),
+              onChange: getFunctionChange(i)
             }}
+            component={plugin.component.FunctionSubmenu}
             options={{ component: plugin.component.FunctionSelector }}
             withHover
           />
@@ -282,10 +335,10 @@
             }}
           >
             <div>
-              <Label label={f.label} />
+              <Label label={getFunction(f.func).label} />
             </div>
             <div>
-              {#if f.editor}
+              {#if getFunction(f.func).editor}
                 <ButtonIcon
                   icon={IconSettings}
                   size="small"
@@ -326,9 +379,11 @@
         />
         <!-- <div class="menu-separator" /> -->
       {/if}
-      <div class="menu-separator" />
     {/if}
     {#if !forbidValue}
+      {#if sourceFunc !== undefined || availableFunctions.length > 0 || functionsLength > 0}
+        <div class="menu-separator" />
+      {/if}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
         bind:this={elements[functionButtonIndex + 1]}

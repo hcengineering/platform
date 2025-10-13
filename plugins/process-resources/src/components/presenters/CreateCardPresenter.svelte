@@ -44,7 +44,7 @@
   {#if icon}
     <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
       <Icon
-        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card}
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : (icon ?? card.icon.Card)}
         iconProps={{ icon: _class?.color }}
         size={'small'}
       />

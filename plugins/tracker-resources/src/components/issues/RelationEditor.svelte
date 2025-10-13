@@ -9,7 +9,7 @@
   export let disabled: boolean = false
   export let readonly: boolean = false
 
-  $: valueGroup = (type === 'isBlocking' ? blockedBy ?? [] : value[type] ?? []).reduce<
+  $: valueGroup = (type === 'isBlocking' ? (blockedBy ?? []) : (value[type] ?? [])).reduce<
   Map<Ref<Class<Doc>>, Ref<Doc>[]>
   >((rv, x) => {
     if (rv.has(x._class)) {

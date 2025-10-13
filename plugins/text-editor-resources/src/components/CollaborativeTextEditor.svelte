@@ -28,7 +28,7 @@
     makeDocCollabId,
     type Ref
   } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import {
     DrawingCmd,
     getAttribute,
@@ -68,7 +68,7 @@
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
   import { Provider } from '../provider/types'
-  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
+  import { createRemoteProvider } from '../provider/utils'
   import { addTableHandler } from '../utils'
 
   import { noSelectionRender, renderCursor } from './editor/collaboration'
@@ -88,7 +88,9 @@
   export let buttonSize: IconSize = 'small'
   export let actionsButtonSize: IconSize = 'medium'
   export let full: boolean = false
+
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
+  export let placeholderParams: Record<string, any> = {}
 
   export let refActions: RefAction[] = []
 
@@ -122,41 +124,21 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId(), gc: false })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
-  const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
+  const provider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
-  let localSynced = false
-  let remoteSynced = false
+  let synced = false
+  let editorReady = false
 
-  $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && !contentError && remoteSynced && hasAccountRole(account, AccountRole.User)
+  $: loading = !synced
+  $: editable = !readonly && !contentError && synced && editorReady && hasAccountRole(account, AccountRole.User)
 
-  void localProvider.loaded.then(() => (localSynced = true))
-  void remoteProvider.loaded.then(() => (remoteSynced = true))
-
-  void Promise.all([localProvider.loaded, remoteProvider.loaded]).then(() => {
-    dispatch('loaded')
-  })
+  void provider.loaded.then(() => (synced = true))
+  void provider.loaded.then(() => dispatch('loaded'))
 
   let editor: Editor
   let element: HTMLElement
   let editorPopupContainer: HTMLElement
-
-  let placeHolderStr: string = ''
-
-  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
-    if (editor !== undefined && placeHolderStr !== r) {
-      const placeholderIndex = editor.extensionManager.extensions.findIndex(
-        (extension) => extension.name === 'placeholder'
-      )
-      if (placeholderIndex !== -1) {
-        editor.extensionManager.extensions[placeholderIndex].options.placeholder = r
-        editor.view.dispatch(editor.state.tr)
-      }
-    }
-    placeHolderStr = r
-  })
 
   $: dispatch('editor', editor)
 
@@ -229,7 +211,7 @@
     needFocus = false
   }
 
-  $: if (editor !== undefined) {
+  $: if (editor !== undefined && editorReady && editable !== editor.isEditable) {
     // When the content is invalid, we don't want to emit an update
     // Preventing synchronization of the invalid content
     const emitUpdate = !contentError
@@ -325,14 +307,12 @@
 
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
-    remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+    provider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
   interface SavedBoardRaw {
     ydoc: YDoc
-    localProvider: Provider
     remoteProvider: Provider
-    localSynced: boolean
     remoteSynced: boolean
   }
   const savedBoards: Record<string, SavedBoardRaw> = {}
@@ -349,26 +329,23 @@
         objectId: id as Ref<Doc>,
         objectAttr: 'content'
       }
-      const localProvider = createLocalProvider(ydoc, collabId)
       const remoteProvider = createRemoteProvider(ydoc, collabId, id as Ref<Blob>)
-      savedBoards[id] = { ydoc, localProvider, remoteProvider, localSynced: false, remoteSynced: false }
-      void localProvider.loaded.then(() => (savedBoards[id].localSynced = true))
+      savedBoards[id] = { ydoc, remoteProvider, remoteSynced: false }
       void remoteProvider.loaded.then(() => (savedBoards[id].remoteSynced = true))
       board = savedBoards[id]
     }
     return {
+      document: board.ydoc,
       props: board.ydoc.getMap('props'),
       commands: board.ydoc.getArray<DrawingCmd>('commands'),
-      loading: !board.localSynced || !board.remoteSynced
+      loading: !board.remoteSynced
     }
   }
 
   onMount(async () => {
-    await ph
-
     // it is recommended to wait for the local provider to be loaded
     // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
-    await localProvider.loaded
+    await provider.loaded
 
     const canAttachFiles = attachFile != null
 
@@ -380,10 +357,10 @@
 
         history: false,
         shortcuts: {
-          submit: false,
           imageUpload: canAttachFiles && { attachFile, getFileUrl },
           fileUpload: canAttachFiles && { attachFile }
         },
+        submit: false,
         toolbar: {
           boundary,
           popupContainer: editorPopupContainer
@@ -415,11 +392,15 @@
         },
         inlineCommands:
           withInlineCommands && inlineCommandsConfig(handleLeftMenuClick, canAttachFiles ? [] : ['image']),
-        placeholder: { placeholder: placeHolderStr },
+        placeholder: {
+          placeholderIntl: placeholder,
+          placeholderIntlParams: placeholderParams,
+          themeStore
+        },
         collaboration: {
           collaboration: { document: ydoc, field },
           collaborationCursor: {
-            provider: remoteProvider,
+            provider,
             user,
             render: renderCursor,
             selectionRender: noSelectionRender
@@ -428,22 +409,30 @@
             ydoc,
             boundary,
             popupContainer: editorPopupContainer,
-            requestSideSpace
+            requestSideSpace,
+            whenSync: provider.loaded
           }
         }
       },
       kitOptions
     )
 
+    // Create editor immediately with cached content
+    // BUT keep it read-only until remote sync completes
+    // This prevents stale cached content from overwriting newer server content
     editor = new Editor({
       extensions: [kit],
       element,
+      editable: false,
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' })
       },
       enableContentCheck: true,
       parseOptions: {
         preserveWhitespace: 'full'
+      },
+      onCreate: () => {
+        editorReady = true
       },
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
@@ -481,9 +470,8 @@
       } catch (err: any) {}
     }
     if (contextProvider === undefined) {
-      void remoteProvider.destroy()
+      void provider.destroy()
     }
-    void localProvider.destroy()
   })
 </script>
 
@@ -514,11 +502,6 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    <!-- <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
-      {#if remoteProvider && editor && userComponent}
-        <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
-      {/if}
-    </div> -->
   </div>
 
   {#if refActions.length > 0}

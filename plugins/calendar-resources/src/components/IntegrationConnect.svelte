@@ -41,6 +41,10 @@
         'Content-Type': 'application/json'
       }
     })
+    if (res.status !== 200) {
+      connecting = false
+      return
+    }
     const redirectTo = await res.text()
     window.open(redirectTo, '_blank', 'location=yes,height=870,width=720,scrollbars=yes,status=yes')
     dispatch('close')

@@ -1,7 +1,7 @@
 // preload.js
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { BrandingMap, Config, IPCMainExposed, MenuBarAction, NotificationParams, JumpListSpares } from './types'
+import { BrandingMap, Config, IPCMainExposed, JumpListSpares, MenuBarAction, NotificationParams } from './types'
 
 /**
  * @public
@@ -18,27 +18,23 @@ export function concatLink (host: string, path: string): string {
 }
 
 async function loadServerConfig (url: string): Promise<any> {
-  let retries = 5
+  let retries = 1
   let res: Response | undefined
 
-  do {
+  while (true) {
     try {
       res = await fetch(url, {
         keepalive: true
       })
+      if (res === undefined) {
+        // In theory should never get here
+        throw new Error('Failed to load server config')
+      }
       break
     } catch (e) {
-      retries--
-      if (retries === 0) {
-        throw new Error(`Failed to load server config: ${e}`)
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+      retries++
+      await new Promise((resolve) => setTimeout(resolve, 1000 * Math.min(5, retries)))
     }
-  } while (retries > 0)
-
-  if (res === undefined) {
-    // In theory should never get here
-    throw new Error('Failed to load server config')
   }
 
   return await res.json()
@@ -65,11 +61,11 @@ const expose: IPCMainExposed = {
   minimizeWindow: () => {
     ipcRenderer.invoke('window-minimize')
   },
-  
+
   maximizeWindow: () => {
     ipcRenderer.invoke('window-maximize')
   },
-  
+
   closeWindow: () => {
     ipcRenderer.invoke('window-close')
   },
@@ -82,7 +78,7 @@ const expose: IPCMainExposed = {
     ipcRenderer.on('window-focus-loss', callback)
   },
 
-  isOsUsingDarkTheme: async ()  =>  { 
+  isOsUsingDarkTheme: async () => {
     return await ipcRenderer.invoke('get-is-os-using-dark-theme')
   },
 
@@ -181,6 +177,13 @@ const expose: IPCMainExposed = {
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
   startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) },
 
-  rebuildJumpList: (spares: JumpListSpares) => ipcRenderer.send('rebuild-user-jump-list', spares) 
+  rebuildJumpList: (spares: JumpListSpares) => { ipcRenderer.send('rebuild-user-jump-list', spares) },
+
+  isMinimizeToTrayEnabled: async () => {
+    return await ipcRenderer.invoke('get-minimize-to-tray-enabled')
+  },
+  onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => {
+    ipcRenderer.on('minimize-to-tray-setting-changed', (_event, enabled: boolean) => { callback(enabled) })
+  }
 }
 contextBridge.exposeInMainWorld('electron', expose)

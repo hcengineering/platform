@@ -16,8 +16,7 @@
 import { type IntlString } from '@hcengineering/platform'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { type LinkPreviewParams, type BlobParams, type AppletType } from '@hcengineering/communication-types'
-import type { Markup, Ref, Timestamp } from '@hcengineering/core'
-import type { Person } from '@hcengineering/contact'
+import type { Markup, Ref } from '@hcengineering/core'
 import type { IconComponent } from '@hcengineering/ui'
 import { type Applet } from '@hcengineering/communication'
 
@@ -40,14 +39,9 @@ export interface Action {
   disabled?: boolean
 }
 
-export interface PresenceTyping {
-  person: Ref<Person>
-  lastTyping: Timestamp
-}
-
 export interface AppletDraft {
   id: string
-  type: AppletType
+  mimeType: AppletType
   appletId: Ref<Applet>
   params: Record<string, any>
 }
@@ -55,7 +49,7 @@ export interface AppletDraft {
 export interface MessageDraft {
   _id: string
   content: Markup
-  blobs: BlobParams[]
+  blobs: Array<BlobParams & { mimeType: string }>
   links: LinkPreviewParams[]
   applets: AppletDraft[]
 }

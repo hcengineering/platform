@@ -5,6 +5,8 @@ import { employeeBySocialKeyStore, getPersonByPersonId } from '@hcengineering/co
 import { buildSocialIdString, type PersonId, SocialIdType, type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
+import type { Integration } from '@hcengineering/account-client'
+
 import gmail from './plugin'
 
 export function getTime (time: number): string {
@@ -121,4 +123,8 @@ export async function MessageTitleProvider (client: Client, ref: Ref<Message>, d
   const object = doc ?? (await client.findOne(gmail.class.Message, { _id: ref }))
 
   return object?.subject ?? ''
+}
+
+export function isNewGmailIntegration (integration: Integration): boolean {
+  return integration.data?.integrationVersion === 'v2'
 }

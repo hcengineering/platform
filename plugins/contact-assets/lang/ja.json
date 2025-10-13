@@ -123,6 +123,12 @@
     "EveryoneDescription": "この{title}のすべてに通知する",
     "HereDescription": "この{title}のすべてに通知する",
     "Guest": "ゲスト",
-    "Deleted": "削除済み"
+    "Deleted": "削除済み",
+    "CannotMerge": "エラー：グローバル個人は統合できません",
+    "AutoTranslation": "自動翻訳",
+    "TranslateTo": "翻訳先",
+    "DontTranslate": "翻訳しない",
+    "SelectLanguage": "言語を選択",
+    "SelectLanguages": "言語を選択"
   }
 }

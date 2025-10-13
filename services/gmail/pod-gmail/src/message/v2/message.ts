@@ -25,8 +25,7 @@ import {
   getProducer,
   MailRecipient,
   getMessageExtra,
-  HulyMailHeader,
-  HulyMessageIdHeader,
+  MailHeader,
   SyncOptions
 } from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
@@ -95,11 +94,11 @@ function getHeaderValue (payload: gmail_v1.Schema$MessagePart | undefined, name:
 }
 
 export function isHulyMessage (payload: gmail_v1.Schema$MessagePart | undefined): boolean {
-  const hulyHeader = getHeaderValue(payload, HulyMailHeader)
+  const hulyHeader = getHeaderValue(payload, MailHeader.HulySent)
   if (hulyHeader !== undefined) {
     return true
   }
-  const hulyMessage = getHeaderValue(payload, HulyMessageIdHeader)
+  const hulyMessage = getHeaderValue(payload, MailHeader.HulyMessageType)
   return hulyMessage !== undefined
 }
 

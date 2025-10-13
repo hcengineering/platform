@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.151.0",
+  "rushVersion": "5.158.1",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,92 +26,10 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "9.15.3",
+  "pnpmVersion": "10.15.1",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
-
-  /**
-   * Options that are only used when the PNPM package manager is selected
-   */
-  "pnpmOptions": {
-    /**
-     * Specifies the location of the PNPM store.  There are two possible values:
-     *
-     * - "local" - use the "pnpm-store" folder in the current configured temp folder:
-     *   "common/temp/pnpm-store" by default.
-     * - "global" - use PNPM's global store, which has the benefit of being shared
-     *    across multiple repo folders, but the disadvantage of less isolation for builds
-     *    (e.g. bugs or incompatibilities when two repos use different releases of PNPM)
-     *
-     * RUSH_PNPM_STORE_PATH will override the directory that will be used as the store
-     *
-     * In all cases, the store path will be overridden by the environment variable RUSH_PNPM_STORE_PATH.
-     *
-     * The default value is "local".
-     */
-    // "pnpmStore": "local",
-
-    /**
-     * If true, then Rush will add the "--strict-peer-dependencies" option when invoking PNPM.
-     * This causes "rush install" to fail if there are unsatisfied peer dependencies, which is
-     * an invalid state that can cause build failures or incompatible dependency versions.
-     * (For historical reasons, JavaScript package managers generally do not treat this invalid
-     * state as an error.)
-     *
-     * The default value is false to avoid legacy compatibility issues.
-     * It is strongly recommended to set strictPeerDependencies=true.
-     */
-    "strictPeerDependencies": false
-
-    /**
-     * Configures the strategy used to select versions during installation.
-     *
-     * This feature requires PNPM version 3.1 or newer.  It corresponds to the "--resolution-strategy" command-line
-     * option for PNPM.  Possible values are "fast" and "fewer-dependencies".  PNPM's default is "fast", but this may
-     * be incompatible with certain packages, for example the "@types" packages from DefinitelyTyped.  Rush's default
-     * is "fewer-dependencies", which causes PNPM to avoid installing a newer version if an already installed version
-     * can be reused; this is more similar to NPM's algorithm.
-     *
-     * After modifying this field, it's recommended to run "rush update --full" so that the package manager
-     * will recalculate all version selections.
-     */
-    // "resolutionStrategy": "fast",
-
-    /**
-     * If true, then `rush install` will report an error if manual modifications
-     * were made to the PNPM shrinkwrap file without running "rush update" afterwards.
-     *
-     * This feature protects against accidental inconsistencies that may be introduced
-     * if the PNPM shrinkwrap file ("pnpm-lock.yaml") is manually edited.  When this
-     * feature is enabled, "rush update" will append a hash to the file as a YAML comment,
-     * and then "rush update" and "rush install" will validate the hash.  Note that this does not prohibit
-     * manual modifications, but merely requires "rush update" be run
-     * afterwards, ensuring that PNPM can report or repair any potential inconsistencies.
-     *
-     * To temporarily disable this validation when invoking "rush install", use the
-     * "--bypass-policy" command-line parameter.
-     *
-     * The default value is false.
-     */
-    // "preventManualShrinkwrapChanges": true,
-
-    /**
-     * If true, then `rush install` will use the PNPM workspaces feature to perform the
-     * install.
-     *
-     * This feature uses PNPM to perform the entire monorepo install. When using workspaces, Rush will
-     * generate a "pnpm-workspace.yaml" file referencing all local projects to install. Rush will
-     * also generate a "pnpmfile.js" which is used to provide preferred versions support. When install
-     * is run, this pnpmfile will be used to replace dependency version ranges with a smaller subset
-     * of the original range. If the preferred version is not fully a subset of the original version
-     * range, it will be left as-is. After this, the pnpmfile.js provided in the repository (if one
-     * exists) will be called to further modify package dependencies.
-     *
-     * This option is experimental. The default value is false.
-     */
-    // "useWorkspaces": true
-  },
 
   /**
    * Older releases of the Node.js engine may be missing features required by your system.
@@ -124,7 +42,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <25.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -137,7 +55,7 @@
    * pre-LTS versions in preparation for supporting the first LTS version, you can use this setting
    * to disable Rush's warning.
    */
-  // "suppressNodeLtsWarning": false,
+  "suppressNodeLtsWarning": true,
 
   /**
    * If you would like the version specifiers for your dependencies to be consistent, then
@@ -150,7 +68,7 @@
    * version. In those cases, you will need to add an entry to the "allowedAlternativeVersions"
    * section of the common-versions.json.
    */
-  // "ensureConsistentVersions": true,
+  "ensureConsistentVersions": false,
 
   /**
    * Large monorepos can become intimidating for newcomers if project folder paths don't follow
@@ -413,59 +331,14 @@
     // },
     //
     {
-      "packageName": "@hcengineering/platform-rig",
-      "projectFolder": "packages/platform-rig",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/platform",
-      "projectFolder": "packages/platform",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/measurements",
-      "projectFolder": "packages/measurements",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/measurements-otlp",
-      "projectFolder": "packages/measurements-otlp",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/core",
-      "projectFolder": "packages/core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/analytics",
-      "projectFolder": "packages/analytics",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/analytics-providers",
       "projectFolder": "packages/analytics-providers",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/analytics-service",
-      "projectFolder": "packages/analytics-service",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/storage",
-      "projectFolder": "packages/storage",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/highlight",
       "projectFolder": "packages/highlight",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/api-client",
-      "projectFolder": "packages/api-client",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/api-tests",
@@ -478,11 +351,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/collaboration",
-      "projectFolder": "server/collaboration",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/hls",
       "projectFolder": "packages/hls",
       "shouldPublish": true
@@ -490,31 +358,6 @@
     {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-core",
-      "projectFolder": "packages/text-core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-markdown",
-      "projectFolder": "packages/text-markdown",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-html",
-      "projectFolder": "packages/text-html",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text",
-      "projectFolder": "packages/text",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/text-ydoc",
-      "projectFolder": "packages/text-ydoc",
       "shouldPublish": true
     },
     {
@@ -598,16 +441,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/collaborator-client",
-      "projectFolder": "packages/collaborator-client",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/account-client",
-      "projectFolder": "packages/account-client",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@hcengineering/billing-client",
       "projectFolder": "packages/billing-client",
       "shouldPublish": true
@@ -618,28 +451,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-core",
-      "projectFolder": "server/core",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-indexer",
       "projectFolder": "server/indexer",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-token",
-      "projectFolder": "server/token",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/server",
-      "projectFolder": "server/server",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-storage",
-      "projectFolder": "server/server-storage",
       "shouldPublish": false
     },
     {
@@ -665,7 +478,7 @@
     {
       "packageName": "@hcengineering/onboard",
       "projectFolder": "plugins/onboard",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/onboard-assets",
@@ -685,7 +498,7 @@
     {
       "packageName": "@hcengineering/workbench-assets",
       "projectFolder": "plugins/workbench-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/workbench-resources",
@@ -703,26 +516,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/client",
-      "projectFolder": "plugins/client",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/client-resources",
-      "projectFolder": "plugins/client-resources",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/query",
-      "projectFolder": "packages/query",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/rank",
-      "projectFolder": "packages/rank",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@hcengineering/view",
       "projectFolder": "plugins/view",
       "shouldPublish": true
@@ -730,17 +523,12 @@
     {
       "packageName": "@hcengineering/view-assets",
       "projectFolder": "plugins/view-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/view-resources",
       "projectFolder": "plugins/view-resources",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model",
-      "projectFolder": "packages/model",
-      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-core",
@@ -765,7 +553,7 @@
     {
       "packageName": "@hcengineering/contact-assets",
       "projectFolder": "plugins/contact-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/contact-resources",
@@ -780,7 +568,7 @@
     {
       "packageName": "@hcengineering/task-assets",
       "projectFolder": "plugins/task-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/task-resources",
@@ -825,7 +613,7 @@
     {
       "packageName": "@hcengineering/chunter-assets",
       "projectFolder": "plugins/chunter-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/chunter-resources",
@@ -845,7 +633,7 @@
     {
       "packageName": "@hcengineering/recruit-assets",
       "projectFolder": "plugins/recruit-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/recruit-resources",
@@ -916,31 +704,6 @@
       "packageName": "@hcengineering/server-contact-resources",
       "projectFolder": "server-plugins/contact-resources",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/mongo",
-      "projectFolder": "server/mongo",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/postgres",
-      "projectFolder": "server/postgres",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/postgres-base",
-      "projectFolder": "server/postgres-base",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/elastic",
-      "projectFolder": "server/elastic",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/rpc",
-      "projectFolder": "server/rpc",
-      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/pod-front",
@@ -1025,7 +788,7 @@
     {
       "packageName": "@hcengineering/activity-assets",
       "projectFolder": "plugins/activity-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/activity-resources",
@@ -1045,7 +808,7 @@
     {
       "packageName": "@hcengineering/setting-assets",
       "projectFolder": "plugins/setting-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/setting-resources",
@@ -1095,7 +858,7 @@
     {
       "packageName": "@hcengineering/attachment-assets",
       "projectFolder": "plugins/attachment-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/attachment-resources",
@@ -1165,7 +928,7 @@
     {
       "packageName": "@hcengineering/inventory-assets",
       "projectFolder": "plugins/inventory-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/inventory-resources",
@@ -1180,7 +943,7 @@
     {
       "packageName": "@hcengineering/templates-assets",
       "projectFolder": "plugins/templates-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/templates-resources",
@@ -1210,11 +973,6 @@
     {
       "packageName": "@hcengineering/server-tool",
       "projectFolder": "server/tool",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-client",
-      "projectFolder": "server/client",
       "shouldPublish": false
     },
     {
@@ -1250,7 +1008,7 @@
     {
       "packageName": "@hcengineering/notification-assets",
       "projectFolder": "plugins/notification-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/notification-resources",
@@ -1405,7 +1163,7 @@
     {
       "packageName": "@hcengineering/calendar-assets",
       "projectFolder": "plugins/calendar-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/calendar-resources",
@@ -1506,7 +1264,7 @@
     {
       "packageName": "@hcengineering/board-assets",
       "projectFolder": "plugins/board-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/board-resources",
@@ -1544,11 +1302,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/middleware",
-      "projectFolder": "server/middleware",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-backup",
       "projectFolder": "server/backup",
       "shouldPublish": false
@@ -1574,6 +1327,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-preview",
+      "projectFolder": "pods/preview",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
@@ -1581,7 +1339,7 @@
     {
       "packageName": "@hcengineering/hr-assets",
       "projectFolder": "plugins/hr-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/hr-resources",
@@ -1606,21 +1364,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/minio",
-      "projectFolder": "server/minio",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/s3",
-      "projectFolder": "server/s3",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/datalake",
-      "projectFolder": "server/datalake",
       "shouldPublish": false
     },
     {
@@ -1721,7 +1464,7 @@
     {
       "packageName": "@hcengineering/support-assets",
       "projectFolder": "plugins/support-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/support-resources",
@@ -2444,11 +2187,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-msg2file",
-      "projectFolder": "services/msg2file",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/process",
       "projectFolder": "plugins/process",
       "shouldPublish": false
@@ -2484,31 +2222,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/kafka",
-      "projectFolder": "server/kafka",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/inbox",
-      "projectFolder": "plugins/inbox",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/inbox-assets",
-      "projectFolder": "plugins/inbox-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/inbox-resources",
-      "projectFolder": "plugins/inbox-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-inbox",
-      "projectFolder": "models/inbox",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-mail-worker",
       "projectFolder": "services/mail/pod-mail-worker",
       "shouldPublish": false
@@ -2536,6 +2249,11 @@
     {
       "packageName": "@hcengineering/kvs-client",
       "projectFolder": "packages/kvs-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/hulypulse-client",
+      "projectFolder": "packages/hulypulse-client",
       "shouldPublish": false
     },
     {
@@ -2584,56 +2302,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/retry",
-      "projectFolder": "packages/retry",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-types",
-      "projectFolder": "communication/packages/types",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-sdk-types",
-      "projectFolder": "communication/packages/sdk-types",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-shared",
-      "projectFolder": "communication/packages/shared",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-yaml",
-      "projectFolder": "communication/packages/yaml",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-rest-client",
-      "projectFolder": "communication/packages/rest-client",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-cockroach",
-      "projectFolder": "communication/packages/cockroach",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-server",
-      "projectFolder": "communication/packages/server",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-query",
-      "projectFolder": "communication/packages/query",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/communication-client-query",
-      "projectFolder": "communication/packages/client-query",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/backup-api-pod",
       "projectFolder": "services/backup/backup-api-pod",
       "shouldPublish": false
@@ -2666,6 +2334,56 @@
     {
       "packageName": "@hcengineering/integration-client",
       "projectFolder": "packages/integration-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-huly-mail",
+      "projectFolder": "models/huly-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail",
+      "projectFolder": "plugins/huly-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail-assets",
+      "projectFolder": "plugins/huly-mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/huly-mail-resources",
+      "projectFolder": "plugins/huly-mail-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-ai-assistant",
+      "projectFolder": "models/ai-assistant",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant",
+      "projectFolder": "plugins/ai-assistant",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant-assets",
+      "projectFolder": "plugins/ai-assistant-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-assistant-resources",
+      "projectFolder": "plugins/ai-assistant-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-worker",
+      "projectFolder": "services/worker",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-translate",
+      "projectFolder": "services/translate",
       "shouldPublish": false
     }
   ]

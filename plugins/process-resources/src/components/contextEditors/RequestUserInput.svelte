@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import presentation, { Card, getAttributeEditor, getClient } from '@hcengineering/presentation'
+  import core, { Class, Doc, generateId, Ref } from '@hcengineering/core'
+  import presentation, { Card, findAttributeEditor, getClient } from '@hcengineering/presentation'
   import { Process, Transition } from '@hcengineering/process'
-  import { AnySvelteComponent, Label } from '@hcengineering/ui'
+  import { AnyComponent, Component, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import TransitionPresenter from '../settings/TransitionPresenter.svelte'
@@ -30,18 +31,42 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const attribute = client.getHierarchy().findAttribute(_class, key)
+  const hierarchy = client.getHierarchy()
+  const model = client.getModel()
+  const attribute =
+    (hierarchy.findAttribute(_class, key) ?? key === '')
+      ? {
+          attributeOf: _class,
+          name: '',
+          type: {
+            label: core.string.Ref,
+            _class: core.class.RefTo,
+            to: _class
+          },
+          _id: generateId(),
+          space: core.space.Model,
+          modifiedOn: 0,
+          modifiedBy: core.account.System,
+          _class: core.class.Attribute,
+          label: core.string.Object
+        }
+      : undefined
 
   function save (): void {
     dispatch('close', { value })
   }
 
-  let editor: AnySvelteComponent | undefined
+  let editor: AnyComponent | undefined
 
-  function getBaseEditor (_class: Ref<Class<Doc>>, key: string): void {
-    void getAttributeEditor(client, _class, key).then((p) => {
-      editor = p
-    })
+  function getEditor (_class: Ref<Class<Doc>>, key: string): void {
+    if (key === '' || key === '_id') {
+      const mixin = hierarchy.classHierarchyMixin(_class, view.mixin.AttributeEditor)
+      if (mixin?.inlineEditor !== undefined) {
+        editor = mixin.inlineEditor
+        return
+      }
+    }
+    editor = findAttributeEditor(client, _class, key)
   }
 
   function onChange (val: any | undefined): void {
@@ -52,10 +77,10 @@
     return false
   }
 
-  const transitionVal = client.getModel().findObject(transition)
-  const processVal = client.getModel().findObject(processId)
+  const transitionVal = model.findObject(transition)
+  const processVal = model.findObject(processId)
 
-  $: getBaseEditor(_class, key)
+  $: getEditor(_class, key)
 </script>
 
 <Card
@@ -77,18 +102,20 @@
   {/if}
   {#if editor}
     <div class="w-full mt-2">
-      <svelte:component
-        this={editor}
-        label={attribute?.label}
-        placeholder={attribute?.label}
-        kind={'ghost'}
-        size={'large'}
-        width={'100%'}
-        justify={'left'}
-        type={attribute?.type}
-        {value}
-        {onChange}
-        {focus}
+      <Component
+        is={editor}
+        props={{
+          label: attribute?.label,
+          placeholder: attribute?.label,
+          kind: 'ghost',
+          size: 'large',
+          width: '100%',
+          justify: 'left',
+          type: attribute?.type,
+          value,
+          onChange,
+          focus
+        }}
       />
     </div>
   {/if}

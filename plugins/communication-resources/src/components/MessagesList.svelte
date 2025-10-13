@@ -15,6 +15,7 @@
   import { Card } from '@hcengineering/card'
   import {
     type Message,
+    MessageType,
     Notification,
     NotificationContext,
     NotificationType,
@@ -29,11 +30,13 @@
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
-  import { isAppFocusedStore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, isAppFocusedStore } from '@hcengineering/ui'
+  import { translationStore } from '@hcengineering/contact-resources'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
   import MessagesLoading from './message/MessagesLoading.svelte'
+  import { messageEditingStore } from '../stores'
 
   export let card: Card
   export let context: NotificationContext | undefined = undefined
@@ -99,29 +102,39 @@
     readNotifications(new Date())
   }
 
+  $: translation = $translationStore
+
   $: reinit(position)
 
-  $: query.query(queryDef, (res: Window<Message>) => {
-    window = res
-    messages = (queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()).filter(
-      (it) => !it.removed || it.thread != null
-    )
+  $: query.query(
+    queryDef,
+    (res: Window<Message>) => {
+      window = res
+      messages = queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
 
-    if (messages.length < limit && res.hasNextPage()) {
-      void window.loadNextPage()
-    } else if (messages.length < limit && res.hasPrevPage()) {
-      void window.loadPrevPage()
+      if (messages.length < limit && res.hasNextPage()) {
+        void window.loadNextPage()
+      } else if (messages.length < limit && res.hasPrevPage()) {
+        void window.loadPrevPage()
+      }
+
+      groups = groupMessagesByDay(messages)
+      isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
+      void onUpdate(messages)
+    },
+    {
+      autoExpand: true,
+      threads: true,
+      attachments: true,
+      reactions: true,
+      language: translation?.enabled === true ? translation?.translateTo : undefined
     }
-
-    groups = groupMessagesByDay(messages)
-    isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
-    void onUpdate(messages)
-  })
+  )
 
   $: if (context !== undefined) {
     void notificationsQuery.query(
       {
-        context: context.id,
+        contextId: context.id,
         read: false
       },
       (res) => {
@@ -193,10 +206,7 @@
   function getBaseQuery (): MessageQueryParams {
     if (position === MessagesNavigationAnchors.ConversationStart) {
       return {
-        card: card._id,
-        replies: true,
-        attachments: true,
-        reactions: true,
+        cardId: card._id,
         order: SortingOrder.Ascending,
         limit
       }
@@ -206,10 +216,7 @@
     const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
     const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
-      card: card._id,
-      replies: true,
-      attachments: true,
-      reactions: true,
+      cardId: card._id,
       order,
       limit,
       from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined
@@ -609,6 +616,36 @@
   onMount(() => {
     scrollDiv.addEventListener('scroll', handleScroll, { passive: true })
   })
+
+  export function editLastMessage (): void {
+    if (window == null || window.hasNextPage()) return
+    if (!atBottom) return
+
+    const me = getCurrentAccount()
+
+    let lastMessage: Message | undefined = undefined
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i]
+      if (message.type === MessageType.Activity) continue
+      if (!me.socialIds.includes(message.creator)) continue
+      lastMessage = message
+      break
+    }
+    if (lastMessage == null) return
+
+    messageEditingStore.set(lastMessage.id)
+    const messagesElement = contentDiv.querySelector(`[id="${lastMessage.id}"]`)
+    if (messagesElement == null) return
+
+    const containerRect = scrollDiv.getBoundingClientRect()
+    const rect = messagesElement.getBoundingClientRect()
+
+    const isVisible = rect.top < containerRect.bottom && rect.bottom > containerRect.top
+
+    if (!isVisible) {
+      messagesElement.scrollIntoView({ behavior: 'instant', block: 'end' })
+    }
+  }
 </script>
 
 {#if window !== undefined && window.hasPrevPage()}

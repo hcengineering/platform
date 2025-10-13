@@ -1,9 +1,9 @@
 import { Doc, Mixin, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { CheckFunc, Method, ProcessFunction, Trigger } from '@hcengineering/process'
+import { Execution, Method, ProcessFunction, Trigger } from '@hcengineering/process'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { ExecuteFunc, RollbackFunc, TransformFunc } from './types'
+import { ExecuteFunc, ProcessControl, RollbackFunc, TransformFunc } from './types'
 
 export * from './types'
 
@@ -11,6 +11,13 @@ export * from './types'
  * @public
  */
 export const serverProcessId = 'server-process' as Plugin
+
+export type CheckFunc = (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+) => Promise<boolean>
 
 export interface TriggerImpl extends Trigger {
   serverCheckFunc?: Resource<CheckFunc>
@@ -46,8 +53,13 @@ export default plugin(serverProcessId, {
     CreateCard: '' as Resource<ExecuteFunc>,
     AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
-    CheckToDo: '' as Resource<CheckFunc>,
-    OnCardUpdateCheck: '' as Resource<CheckFunc>
+    AddTag: '' as Resource<ExecuteFunc>,
+    CheckToDoDone: '' as Resource<CheckFunc>,
+    CheckToDoCancelled: '' as Resource<CheckFunc>,
+    MatchCardCheck: '' as Resource<CheckFunc>,
+    FieldChangedCheck: '' as Resource<CheckFunc>,
+    CheckSubProcessesDone: '' as Resource<CheckFunc>,
+    CheckTime: '' as Resource<CheckFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,
@@ -69,6 +81,7 @@ export default plugin(serverProcessId, {
     Divide: '' as Resource<TransformFunc>,
     Modulo: '' as Resource<TransformFunc>,
     Power: '' as Resource<TransformFunc>,
+    Sqrt: '' as Resource<TransformFunc>,
     Round: '' as Resource<TransformFunc>,
     Absolute: '' as Resource<TransformFunc>,
     Ceil: '' as Resource<TransformFunc>,
@@ -79,7 +92,14 @@ export default plugin(serverProcessId, {
     Insert: '' as Resource<TransformFunc>,
     Remove: '' as Resource<TransformFunc>,
     RemoveFirst: '' as Resource<TransformFunc>,
-    RemoveLast: '' as Resource<TransformFunc>
+    RemoveLast: '' as Resource<TransformFunc>,
+    CurrentUser: '' as Resource<TransformFunc>,
+    CurrentDate: '' as Resource<TransformFunc>,
+    EmptyArray: '' as Resource<TransformFunc>,
+    Filter: '' as Resource<TransformFunc>,
+    FirstMatchValue: '' as Resource<TransformFunc>,
+    ExecutionInitiator: '' as Resource<TransformFunc>,
+    ExecutionStarted: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

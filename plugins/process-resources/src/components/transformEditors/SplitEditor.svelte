@@ -38,6 +38,7 @@
     <StringEditor
       bind:value={separator}
       size={'large'}
+      label={process.string.Separator}
       placeholder={process.string.Separator}
       kind={'regular'}
       justify={'left'}

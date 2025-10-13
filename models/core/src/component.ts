@@ -14,7 +14,8 @@
 //
 
 import core, { coreId } from '@hcengineering/core'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(coreId, core, {
   string: {
