@@ -14,26 +14,25 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Room } from '@hcengineering/love'
   import { closePopup, eventToHTMLElement, showPopup, closeTooltip } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { closeWidget } from '@hcengineering/workbench-resources'
 
   import love from '../../plugin'
   import { infos, myInfo, rooms } from '../../stores'
-  import { getRoomName } from '../../utils'
+  import { getMeetingName, getRoomName } from '../../utils'
   import PersonActionPopup from '../PersonActionPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { leaveMeeting } from '../../meetings'
+  import { currentMeetingRoom, leaveMeeting } from '../../meetings'
   import { lkSessionConnected } from '../../liveKitClient'
-  import { activeRooms } from '../../meetingPresence'
+  import { OngoingMeeting, ongoingMeetings } from '../../meetingPresence'
   import { Person } from '@hcengineering/contact'
 
-  function openRoom (room: Room): (e: MouseEvent) => void {
+  function openMeeting (meeting: OngoingMeeting): (e: MouseEvent) => void {
     return (e: MouseEvent) => {
       closeTooltip()
-      showPopup(RoomPopup, { room }, eventToHTMLElement(e))
+      showPopup(RoomPopup, { meeting }, eventToHTMLElement(e))
     }
   }
 
@@ -73,14 +72,14 @@
 </script>
 
 <div class="flex-row-center flex-gap-2">
-  {#if $activeRooms.length > 0}
-    {#each $activeRooms as activeRoom}
-      {#await getRoomName(activeRoom.room) then name}
+  {#if $ongoingMeetings.length > 0}
+    {#each $ongoingMeetings as ongoingMeeting}
+      {#await getMeetingName(ongoingMeeting) then name}
         <RoomButton
           label={name}
-          active={activeRoom.myRoom}
-          on:click={openRoom(activeRoom.room)}
-          participants={activeRoom.persons.map((person) => ({
+          active={$currentMeetingRoom?._id === ongoingMeeting.meetingId}
+          on:click={openMeeting(ongoingMeeting)}
+          participants={ongoingMeeting.persons.map((person) => ({
             person
           }))}
         />
@@ -88,7 +87,7 @@
     {/each}
   {/if}
   {#if reception !== undefined && receptionParticipants.length > 0}
-    {#if $activeRooms.length > 0}
+    {#if $ongoingMeetings.length > 0}
       <div class="divider" />
     {/if}
     {#await getRoomName(reception) then name}

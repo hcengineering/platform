@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
   import { UserInfo, getPersonByPersonRef } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   import { IconArrowLeft, Location, ModernButton, Scroller, location, navigate, panelstore } from '@hcengineering/ui'
 
-  import { MeetingMinutes, Room, loveId } from '@hcengineering/love'
+  import { MeetingMinutes, loveId } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -31,17 +30,19 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting, currentMeetingMinutes } from '../meetings'
-  import { activeRooms } from '../meetingPresence'
+  import { joinMeeting, currentMeetingMinutes, currentMeetingRoom } from '../meetings'
+  import { OngoingMeeting, ongoingMeetings } from '../meetingPresence'
+  import { rooms } from '../stores'
 
-  export let room: Room
-  $: activeRoom = $activeRooms.find((r) => r.room._id === room._id)
-  $: myRoom = activeRoom?.myRoom === true
+  export let meeting: OngoingMeeting
+  $: room = $rooms.find((r) => r._id === meeting.meetingId)
+  $: myRoom = $currentMeetingRoom?._id === meeting.meetingId
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
+    if (room === undefined) return
     await joinMeeting(room)
     dispatch('close')
   }
@@ -79,7 +80,7 @@
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
-        {#each activeRoom?.persons ?? [] as personRef}
+        {#each meeting?.persons ?? [] as personRef}
           {#await getPersonByPersonRef(personRef) then person}
             {#if person}
               <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>

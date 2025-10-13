@@ -5,7 +5,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { SortingOrder } from '@hcengineering/core'
 
-  export let room: Room
+  export let room: Room | undefined
 
   const client = getClient()
   let currentMeetingMinutes: MeetingMinutes | undefined
@@ -13,7 +13,7 @@
   $: void client
     .findOne(
       love.class.MeetingMinutes,
-      { attachedTo: room._id, status: MeetingStatus.Active },
+      { attachedTo: room?._id, status: MeetingStatus.Active },
       { sort: { createdOn: SortingOrder.Descending } }
     )
     .then((res) => {
@@ -47,7 +47,7 @@
 {#if currentMeetingMinutes !== undefined}
   <div class="flex-between flex-gap-2">
     <DocNavLink object={room}>
-      <span class="font-medium-12 secondary-textColor overflow-label">{room.name}</span>
+      <span class="font-medium-12 secondary-textColor overflow-label">{room?.name}</span>
     </DocNavLink>
 
     <!-- elapsed time from start -->
@@ -66,7 +66,7 @@
     </DocNavLink>
   {:else}
     <DocNavLink object={room}>
-      <span class="font-medium overflow-label">{room.name}</span>
+      <span class="font-medium overflow-label">{room?.name}</span>
     </DocNavLink>
   {/if}
 </div>

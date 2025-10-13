@@ -42,7 +42,7 @@
 
 {#if widgetState !== undefined && $currentMeetingRoom !== undefined}
   <div>
-    <MeetingWidgetHeader doc={$currentMeetingMinutes} room={$currentMeetingRoom} on:close={handleClose} />
+    <MeetingWidgetHeader doc={$currentMeetingMinutes} on:close={handleClose} />
   </div>
   <div style="height: 100%; overflow: scroll" bind:clientHeight={contentHeight}>
     {#if widgetState.tab === 'video'}

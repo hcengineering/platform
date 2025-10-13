@@ -22,17 +22,16 @@
     showPopup,
     PopupResult
   } from '@hcengineering/ui'
-  import { MeetingMinutes, Room } from '@hcengineering/love'
+  import { MeetingMinutes } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
 
   import RoomModal from '../../RoomModal.svelte'
-  import { currentRoom } from '../../../stores'
   import MeetingOptionsButton from '../controls/MeetingOptionsButton.svelte'
   import RecordingButton from '../controls/RecordingButton.svelte'
   import TranscriptionButton from '../controls/TranscriptionButton.svelte'
   import RoomAccessButton from '../controls/RoomAccessButton.svelte'
+  import { currentMeetingRoom } from '../../../meetings'
 
-  export let room: Room
   export let doc: MeetingMinutes | undefined = undefined
 
   let breadcrumbs: BreadcrumbItem[]
@@ -41,12 +40,12 @@
   $: breadcrumbs = [
     {
       id: 'meeting',
-      title: doc?.title ?? room.name
+      title: doc?.title ?? $currentMeetingRoom?.name
     }
   ]
 
   function maximize (): void {
-    popup = showPopup(RoomModal, { room }, 'full-centered')
+    popup = showPopup(RoomModal, { room: $currentMeetingRoom }, 'full-centered')
   }
 
   onDestroy(() => {
@@ -57,11 +56,11 @@
 <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
-    {#if $currentRoom !== undefined}
-      <RoomAccessButton {room} kind="tertiary" size="small" />
-      <RecordingButton {room} kind="tertiary" size="small" />
-      <TranscriptionButton {room} kind="tertiary" size="small" />
-      <MeetingOptionsButton {room} kind="tertiary" size="small" />
+    {#if $currentMeetingRoom !== undefined}
+      <RoomAccessButton room={$currentMeetingRoom} kind="tertiary" size="small" />
+      <RecordingButton room={$currentMeetingRoom} kind="tertiary" size="small" />
+      <TranscriptionButton room={$currentMeetingRoom} kind="tertiary" size="small" />
+      <MeetingOptionsButton room={$currentMeetingRoom} kind="tertiary" size="small" />
       <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
     {/if}
   </svelte:fragment>

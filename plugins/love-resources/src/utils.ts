@@ -64,6 +64,7 @@ import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { currentMeetingMinutes, currentMeetingRoom } from './meetings'
+import { type OngoingMeeting } from './meetingPresence'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
@@ -237,6 +238,12 @@ export function closeMeetingMinutes (): void {
     }
   }
   currentMeetingMinutes.set(undefined)
+}
+
+export async function getMeetingName (meeting: OngoingMeeting): Promise<string> {
+  const room = get(rooms).find((r) => r._id === meeting.meetingId)
+  if (room === undefined) return ''
+  return await getRoomName(room)
 }
 
 export async function getRoomName (room: Room): Promise<string> {

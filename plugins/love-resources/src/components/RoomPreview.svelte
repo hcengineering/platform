@@ -22,11 +22,12 @@
   import { openDoc } from '@hcengineering/view-resources'
 
   import love from '../plugin'
-  import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
+  import { myInfo, selectedRoomPlace } from '../stores'
   import { getRoomLabel } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import { IntlString } from '@hcengineering/platform'
   import { lkSessionConnected } from '../liveKitClient'
+  import { currentMeetingMinutes, currentMeetingRoom } from '../meetings'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -72,7 +73,7 @@
   async function openRoom (x: number, y: number): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    if ($lkSessionConnected && $currentRoom?._id === room._id) {
+    if ($lkSessionConnected && $currentMeetingRoom?._id === room._id) {
       let meeting = $currentMeetingMinutes
       if (meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
         meeting = await client.findOne(love.class.MeetingMinutes, {

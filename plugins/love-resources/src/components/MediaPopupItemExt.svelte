@@ -4,11 +4,11 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, myInfo, myOffice } from '../stores'
+  import { infos, myInfo, myOffice } from '../stores'
   import { liveKitClient } from '../utils'
   import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { leaveMeeting } from '../meetings'
+  import { currentMeetingRoom, leaveMeeting } from '../meetings'
 
   export let limit: number = 4
 
@@ -35,16 +35,16 @@
     await liveKitClient.setScreenShareEnabled(false)
   }
 
-  $: participants = $infos.filter((p) => p.room === $currentRoom?._id)
+  $: participants = $infos.filter((p) => p.room === $currentMeetingRoom?._id)
   $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
 </script>
 
-{#if $lkSessionConnected && $currentRoom != null}
+{#if $lkSessionConnected && $currentMeetingRoom != null}
   {@const overLimit = participants.length > limit}
 
   <div class="m-1 p-2">
     <div class="flex-col flex-grow flex-gap-0-5">
-      <MeetingHeader room={$currentRoom} />
+      <MeetingHeader room={$currentMeetingRoom} />
       <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
         {#if overLimit}

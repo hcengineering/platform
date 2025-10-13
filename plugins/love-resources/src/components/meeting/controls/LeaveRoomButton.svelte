@@ -6,13 +6,13 @@
   import { createEventDispatcher } from 'svelte'
   import { leaveMeeting } from '../../../meetings'
 
-  export let room: Room
+  export let room: Room | undefined
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
   export let noLabel: boolean = false
 
   const dispatch = createEventDispatcher()
 
-  $: isMyOffice = isOffice(room) && $myInfo?.room === $myOffice?._id
+  $: isMyOffice = room !== undefined && isOffice(room) && $myInfo?.room === $myOffice?._id
 
   async function leave (): Promise<void> {
     await leaveMeeting()

@@ -20,11 +20,12 @@
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../plugin'
-  import { waitForOfficeLoaded, currentRoom } from '../stores'
+  import { waitForOfficeLoaded } from '../stores'
   import { isFullScreen, lk } from '../utils'
   import ControlBar from './meeting/ControlBar.svelte'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
+  import { currentMeetingRoom } from '../meetings'
 
   export let canMaximize: boolean = true
   export let room: TypeRoom
@@ -148,8 +149,8 @@
       />
     </div>
   </div>
-  {#if $currentRoom}
-    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} {canMaximize} />
+  {#if $currentMeetingRoom}
+    <ControlBar room={$currentMeetingRoom} fullScreen={$isFullScreen} {onFullScreen} {canMaximize} />
   {/if}
 </div>
 

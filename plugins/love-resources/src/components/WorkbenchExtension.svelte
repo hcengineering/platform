@@ -86,11 +86,15 @@
     const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
     if (room === undefined) {
+      void deletePresence()
       if (isMeetingWidgetCreated) {
         closeWidget(love.ids.MeetingWidget)
-        void deletePresence()
       }
       return
+    } else if (presenceRoom !== room._id) {
+      presenceRoom = room._id
+      presenceInterval = setInterval(updatePresence, (meetingPresenceTtlSeconds - 2) * 1000)
+      void updatePresence()
     }
 
     if (meetingSessionConnected) {
@@ -99,15 +103,11 @@
 
       if (!isMeetingWidgetCreated) {
         createMeetingWidget(widget, room._id, meetingSessionConnected)
-        presenceRoom = room._id
-        presenceInterval = setInterval(updatePresence, (meetingPresenceTtlSeconds - 2) * 1000)
-        void updatePresence()
         void navigateToMeetingMinutes($currentMeetingMinutes)
       }
     } else {
       if (isMeetingWidgetCreated) {
         closeWidget(love.ids.MeetingWidget)
-        void deletePresence()
       }
     }
   }
