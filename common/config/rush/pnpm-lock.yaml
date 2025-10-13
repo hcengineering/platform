@@ -37,9 +37,6 @@ importers:
       '@hcengineering/account-client':
         specifier: ^0.7.3
         version: 0.7.3
-      '@hcengineering/analytics':
-        specifier: ^0.7.3
-        version: 0.7.3
       '@hcengineering/analytics-service':
         specifier: ^0.7.3
         version: 0.7.3(encoding@0.1.13)
@@ -31446,6 +31443,7 @@ snapshots:
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@hcengineering/account-client': 0.7.3
+      '@hcengineering/analytics': 0.7.3
       '@hcengineering/core': 0.7.3
       '@hcengineering/platform': 0.7.3
       '@hcengineering/platform-rig': 0.7.15
