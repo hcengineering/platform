@@ -160,8 +160,8 @@ async function updatePackageDependencies(project, latestVersions, dryRun = false
       }
 
       if (isNewerVersion(currentVersion, latestVersion)) {
-        const prefix = currentVersion.match(/^[\^~]/)?.[0] || '^'
-        const newVersion = `${prefix}${latestVersion}`
+        // Use fixed version without ^ prefix for hcengineering packages
+        const newVersion = latestVersion
 
         changes.push({
           depType,
