@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -34,19 +34,19 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/attachment": "^0.7.0",
-    "@hcengineering/attachment-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/model": "^0.7.3",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-preference": "^0.7.0",
-    "@hcengineering/model-view": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/model-presentation": "^0.7.0",
-    "@hcengineering/model-uploader": "^0.7.0",
-    "@hcengineering/workbench": "^0.7.0"
+    "@hcengineering/activity": "0.7.0",
+    "@hcengineering/attachment": "0.7.0",
+    "@hcengineering/attachment-resources": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/model": "0.7.3",
+    "@hcengineering/model-core": "0.7.0",
+    "@hcengineering/model-preference": "0.7.0",
+    "@hcengineering/model-view": "0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/ui": "0.7.0",
+    "@hcengineering/view": "0.7.0",
+    "@hcengineering/model-presentation": "0.7.0",
+    "@hcengineering/model-uploader": "0.7.0",
+    "@hcengineering/workbench": "0.7.0"
   }
 }

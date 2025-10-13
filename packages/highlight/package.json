@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "svelte-loader": "^3.2.0",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "sass": "^1.80.0",
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/ui": "0.7.0",
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0"
   }

@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -46,24 +46,24 @@
     "@types/morgan": "~1.9.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/platform": "0.7.3",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "express-static-gzip": "^2.2.0",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
-    "@hcengineering/account-client": "^0.7.3",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/storage": "^0.7.3",
-    "@hcengineering/server-storage": "^0.7.1",
-    "@hcengineering/server-token": "^0.7.0",
-    "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/account-client": "0.7.3",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/storage": "0.7.3",
+    "@hcengineering/server-storage": "0.7.1",
+    "@hcengineering/server-token": "0.7.2",
+    "@hcengineering/attachment": "0.7.0",
     "body-parser": "^1.20.3",
     "sharp": "~0.34.3",
-    "@hcengineering/minio": "^0.7.0",
-    "@hcengineering/mongo": "^0.7.0",
+    "@hcengineering/minio": "0.7.0",
+    "@hcengineering/mongo": "0.7.0",
     "morgan": "^1.10.0",
-    "@hcengineering/analytics": "^0.7.3"
+    "@hcengineering/analytics": "0.7.3"
   }
 }

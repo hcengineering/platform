@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -39,9 +39,9 @@
     "typed-emitter": "^2.1.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/ui": "0.7.0",
     "events": "^3.3.0"
   },
   "repository": "https://github.com/hcengineering/platform",

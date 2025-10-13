@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -36,13 +36,13 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-templates": "^0.7.0",
-    "@hcengineering/templates": "^0.7.0",
-    "@hcengineering/analytics-collector": "^0.7.0"
+    "@hcengineering/chunter": "0.7.0",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/server-templates": "0.7.0",
+    "@hcengineering/templates": "0.7.0",
+    "@hcengineering/analytics-collector": "0.7.0"
   }
 }

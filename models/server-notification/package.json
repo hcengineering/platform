@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -34,16 +34,16 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/model": "^0.7.3",
-    "@hcengineering/model-chunter": "^0.7.0",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-notification": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-notification": "^0.7.0"
+    "@hcengineering/activity": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/model": "0.7.3",
+    "@hcengineering/model-chunter": "0.7.0",
+    "@hcengineering/model-core": "0.7.0",
+    "@hcengineering/model-notification": "0.7.0",
+    "@hcengineering/notification": "0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/server-notification": "0.7.0"
   }
 }

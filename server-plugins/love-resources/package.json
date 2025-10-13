@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,15 +37,15 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/love": "^0.7.0"
+    "@hcengineering/view": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/server-contact": "0.7.0",
+    "@hcengineering/notification": "0.7.0",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/workbench": "0.7.0",
+    "@hcengineering/server-notification-resources": "0.7.0",
+    "@hcengineering/love": "0.7.0"
   }
 }

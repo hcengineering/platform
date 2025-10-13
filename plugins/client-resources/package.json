@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -38,13 +38,13 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/client": "^0.7.3",
-    "@hcengineering/communication-sdk-types": "^0.7.3",
-    "@hcengineering/communication-types": "^0.7.3",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/rpc": "^0.7.3",
+    "@hcengineering/analytics": "0.7.3",
+    "@hcengineering/client": "0.7.3",
+    "@hcengineering/communication-sdk-types": "0.7.3",
+    "@hcengineering/communication-types": "0.7.3",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/rpc": "0.7.3",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",

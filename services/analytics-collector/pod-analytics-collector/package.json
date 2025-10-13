@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
@@ -52,15 +52,15 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/analytics-collector": "^0.7.0",
-    "@hcengineering/analytics-collector-assets": "^0.7.0",
-    "@hcengineering/analytics-service": "^0.7.3",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-client": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-token": "^0.7.0",
+    "@hcengineering/analytics": "0.7.3",
+    "@hcengineering/analytics-collector": "0.7.0",
+    "@hcengineering/analytics-collector-assets": "0.7.0",
+    "@hcengineering/analytics-service": "0.7.3",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/server-client": "0.7.0",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/server-token": "0.7.2",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",

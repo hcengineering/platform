@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@tsconfig/node16": "^1.0.4",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -51,19 +51,19 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.3",
-    "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/analytics-service": "^0.7.3",
-    "@hcengineering/api-client": "^0.7.3",
-    "@hcengineering/calendar": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/kafka": "^0.7.0",
-    "@hcengineering/love": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-token": "^0.7.0",
+    "@hcengineering/account-client": "0.7.3",
+    "@hcengineering/analytics": "0.7.3",
+    "@hcengineering/analytics-service": "0.7.3",
+    "@hcengineering/api-client": "0.7.3",
+    "@hcengineering/calendar": "0.7.0",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/kafka": "0.7.0",
+    "@hcengineering/love": "0.7.0",
+    "@hcengineering/notification": "0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/server-core": "0.7.0",
+    "@hcengineering/server-token": "0.7.2",
     "dotenv": "~16.0.0"
   }
 }

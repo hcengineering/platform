@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -38,16 +38,16 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "0.7.3",
     "svelte": "^4.2.20",
-    "@hcengineering/inventory": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/panel": "^0.7.0",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/login": "^0.7.0",
-    "@hcengineering/workbench": "^0.7.0"
+    "@hcengineering/inventory": "0.7.0",
+    "@hcengineering/ui": "0.7.0",
+    "@hcengineering/panel": "0.7.0",
+    "@hcengineering/presentation": "0.7.0",
+    "@hcengineering/view": "0.7.0",
+    "@hcengineering/view-resources": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/login": "0.7.0",
+    "@hcengineering/workbench": "0.7.0"
   }
 }

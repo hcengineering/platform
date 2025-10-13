@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,20 +37,20 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/attachment": "^0.7.0",
-    "@hcengineering/request": "^0.7.0",
-    "@hcengineering/tags": "^0.7.0",
-    "@hcengineering/training": "^0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/ui": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/view": "0.7.0",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/notification": "0.7.0",
+    "@hcengineering/attachment": "0.7.0",
+    "@hcengineering/request": "0.7.0",
+    "@hcengineering/tags": "0.7.0",
+    "@hcengineering/training": "0.7.0",
     "lexorank": "~1.0.4",
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/rank": "^0.7.3"
+    "@hcengineering/activity": "0.7.0",
+    "@hcengineering/chunter": "0.7.0",
+    "@hcengineering/rank": "0.7.3"
   },
   "publishConfig": {
     "@hcengineering:registry": "https://npm.pkg.github.com"

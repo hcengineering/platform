@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "0.7.15",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -39,16 +39,16 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/theme": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/billing": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/billing-client": "^0.7.0",
-    "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/love": "^0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/presentation": "0.7.0",
+    "@hcengineering/theme": "0.7.0",
+    "@hcengineering/ui": "0.7.0",
+    "@hcengineering/billing": "0.7.0",
+    "@hcengineering/view": "0.7.0",
+    "@hcengineering/view-resources": "0.7.0",
+    "@hcengineering/billing-client": "0.7.0",
+    "@hcengineering/drive": "0.7.0",
+    "@hcengineering/love": "0.7.0",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"
   }

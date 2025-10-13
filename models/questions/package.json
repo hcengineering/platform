@@ -35,16 +35,16 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
-    "@hcengineering/questions": "^0.7.0",
-    "@hcengineering/questions-resources": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/model": "^0.7.3",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-tracker": "^0.7.0",
-    "@hcengineering/model-view": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/view": "^0.7.0"
+    "@hcengineering/platform-rig": "0.7.15",
+    "@hcengineering/questions": "0.7.0",
+    "@hcengineering/questions-resources": "0.7.0",
+    "@hcengineering/contact": "0.7.0",
+    "@hcengineering/core": "0.7.3",
+    "@hcengineering/model": "0.7.3",
+    "@hcengineering/model-core": "0.7.0",
+    "@hcengineering/model-tracker": "0.7.0",
+    "@hcengineering/model-view": "0.7.0",
+    "@hcengineering/platform": "0.7.3",
+    "@hcengineering/view": "0.7.0"
   }
 }
