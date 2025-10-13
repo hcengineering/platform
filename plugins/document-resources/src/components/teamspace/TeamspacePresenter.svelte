@@ -29,7 +29,7 @@
   <div class="flex-presenter cursor-default" class:inline-presenter={inline} class:no-pointer={noCursor}>
     <div class="icon" class:emoji={value.icon === view.ids.IconWithEmoji}>
       <Icon
-        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? document.icon.Teamspace}
+        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : (value.icon ?? document.icon.Teamspace)}
         iconProps={value.icon === view.ids.IconWithEmoji
           ? { icon: value.color }
           : {

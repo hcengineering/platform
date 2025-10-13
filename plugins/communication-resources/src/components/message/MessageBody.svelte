@@ -14,9 +14,9 @@
 -->
 
 <script lang="ts">
-  import { PersonPreviewProvider, Avatar, translationStore } from '@hcengineering/contact-resources'
+  import { PersonPreviewProvider, Avatar } from '@hcengineering/contact-resources'
   import { formatName, Person } from '@hcengineering/contact'
-  import { CardID, Message, MessageID } from '@hcengineering/communication-types'
+  import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { Label } from '@hcengineering/ui'
 
@@ -28,7 +28,10 @@
     translateMessagesStore,
     messageEditingStore,
     TranslateMessagesStatus,
-    showOriginalMessagesStore
+    showOriginalMessagesStore,
+    isMessageTranslated,
+    translateToStore,
+    dontTranslateStore
   } from '../../stores'
   import { showOriginalMessage } from '../../actions'
 
@@ -52,35 +55,19 @@
     })
   }
 
-  let isTranslating = false
-  let translateStatus: TranslateMessagesStatus | undefined = undefined
-  let translateShown = false
+  let isManualTranslating = false
+  let manualTranslateStatus: TranslateMessagesStatus | undefined = undefined
+  let isTranslated = false
 
-  $: language = $translationStore?.enabled === true ? $translationStore?.translateTo : undefined
-  $: dontTranslate = $translationStore?.enabled === true ? $translationStore?.dontTranslate ?? [] : []
-
-  $: translateStatus = $translateMessagesStore.find((it) => it.cardId === card._id && it.messageId === message.id)
-  $: isTranslating = translateStatus?.inProgress === true
-  $: translateShown = isTranslateShown(message, translateStatus, language, $showOriginalMessagesStore, dontTranslate)
-
-  function isTranslateShown (
-    message: Message,
-    translateStatus?: TranslateMessagesStatus,
-    language?: string,
-    showOriginalMessages: Array<[CardID, MessageID]> = [],
-    dontTranslate: string[] = []
-  ): boolean {
-    const showOriginal = showOriginalMessages.some(([cId, mId]) => cId === card._id && mId === message.id)
-
-    if (showOriginal) return false
-    if (translateStatus?.result != null) return true
-    if (language == null || message.language === language) return false
-    if (message.language != null && dontTranslate.includes(message.language)) return false
-
-    const translate = message.translates?.[language]
-
-    return translate != null
-  }
+  $: manualTranslateStatus = $translateMessagesStore.find((it) => it.cardId === card._id && it.messageId === message.id)
+  $: isManualTranslating = manualTranslateStatus?.inProgress === true
+  $: isTranslated = isMessageTranslated(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
 </script>
 
 {#if compact || hideHeader}
@@ -141,12 +128,12 @@
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
-        {#if isTranslating}
+        {#if isManualTranslating}
           <div class="message__translating">
             <Label label={communication.string.Translating} />
           </div>
         {/if}
-        {#if translateShown}
+        {#if isTranslated}
           <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
             <Label label={communication.string.ShowOriginal} />
           </div>

@@ -31,7 +31,7 @@
   }
 
   let url: string
-  $: url = isAsset(icon) ? getMetadata(toAsset(icon)) ?? 'https://anticrm.org/logo.svg' : ''
+  $: url = isAsset(icon) ? (getMetadata(toAsset(icon)) ?? 'https://anticrm.org/logo.svg') : ''
 
   $: _fill = iconProps?.fill ?? fill
 </script>

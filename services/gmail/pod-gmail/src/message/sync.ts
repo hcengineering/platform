@@ -256,7 +256,7 @@ export class SyncManager {
       const isUpdateAfterFullSync = (await this.stateManager.getLastSyncDate(userId)) != null
       return {
         ...(syncOptions ?? {}),
-        noNotify: isUpdateAfterFullSync ? syncOptions?.noNotify ?? false : true
+        noNotify: isUpdateAfterFullSync ? (syncOptions?.noNotify ?? false) : true
       }
     } catch (err) {
       this.ctx.error('Error getting last sync date', { workspace: this.workspace, userId, err })

@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { AnyAttribute } from '@hcengineering/core'
-  import { findAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { findAttributeEditorByAttribute, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Context, createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import { Button, Component, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -81,7 +81,7 @@
 
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
 
-  $: baseEditor = findAttributeEditor(client, process.masterTag, attribute.name)
+  $: baseEditor = findAttributeEditorByAttribute(client, attribute)
 </script>
 
 <div class="flex-row-center flex-gap-2">

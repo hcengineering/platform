@@ -112,7 +112,7 @@ export const $projectDocuments = createStore<ProjectDocument[]>([])
   .reset(controlledDocumentClosed)
 
 export const $documentTraining = $controlledDocument.map((document) =>
-  document === null ? null : getDocumentTraining(getClient().getHierarchy(), document) ?? null
+  document === null ? null : (getDocumentTraining(getClient().getHierarchy(), document) ?? null)
 )
 
 export const $training = createStore<Training | null>(null)

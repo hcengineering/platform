@@ -199,8 +199,32 @@
    * PNPM documentation: https://pnpm.io/package_json#pnpmoverrides
    */
   "globalOverrides": {
-    // "example1": "^1.0.0",
-    // "example2": "npm:@company/example2@^1.0.0"
+    // DEV: Uncomment the lines below to use local huly.core packages
+    // Then "rush update --full" to update the dependencies.
+    // NOTE:  It's configured to work if huly.core is placed adjacent to the platform. If you have it in a different location, you need to change the paths below.
+
+    // "@hcengineering/account-client": "file:../../../huly.core/packages/account-client",
+    // "@hcengineering/analytics": "file:../../../huly.core/packages/analytics",
+    // "@hcengineering/analytics-service": "file:../../../huly.core/packages/analytics-service",
+    // "@hcengineering/api-client": "file:../../../huly.core/packages/api-client",
+    // "@hcengineering/client": "file:../../../huly.core/packages/client",
+    // "@hcengineering/client-resources": "file:../../../huly.core/packages/client-resources",
+    // "@hcengineering/collaborator-client": "file:../../../huly.core/packages/collaborator-client",
+    // "@hcengineering/core": "file:../../../huly.core/packages/core",
+    // "@hcengineering/hulylake-client": "file:../../../huly.core/packages/hulylake-client",
+    // "@hcengineering/model": "file:../../../huly.core/packages/model",
+    // "@hcengineering/platform": "file:../../../huly.core/packages/platform",
+    // "@hcengineering/query": "file:../../../huly.core/packages/query",
+    // "@hcengineering/rank": "file:../../../huly.core/packages/rank",
+    // "@hcengineering/retry": "file:../../../huly.core/packages/retry",
+    // "@hcengineering/rpc": "file:../../../huly.core/packages/rpc",
+    // "@hcengineering/storage": "file:../../../huly.core/packages/storage",
+    // "@hcengineering/text": "file:../../../huly.core/packages/text",
+    // "@hcengineering/text-core": "file:../../../huly.core/packages/text-core",
+    // "@hcengineering/text-html": "file:../../../huly.core/packages/text-html",
+    // "@hcengineering/text-markdown": "file:../../../huly.core/packages/text-markdown",
+    // "@hcengineering/text-ydoc": "file:../../../huly.core/packages/text-ydoc",
+    // "@hcengineering/token": "file:../../../huly.core/packages/token"
   },
 
   /**

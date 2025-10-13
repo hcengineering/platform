@@ -153,7 +153,7 @@ function collectFileMetadata (
   const notionParentId =
     ancestors[ancestors.length - 1] !== undefined ? extractNotionId(ancestors[ancestors.length - 1]) : undefined
   const notionSubRootId =
-    ancestors[1] !== undefined ? extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1]) : undefined
+    ancestors[1] !== undefined ? (extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1])) : undefined
 
   documentMetaMap.set(notionId, {
     id: generateId(),

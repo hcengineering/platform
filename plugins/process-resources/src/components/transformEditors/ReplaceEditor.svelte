@@ -39,6 +39,7 @@
     <StringEditor
       bind:value={search}
       size={'large'}
+      label={process.string.Search}
       placeholder={process.string.Search}
       kind={'regular'}
       justify={'left'}
@@ -48,6 +49,7 @@
     <StringEditor
       bind:value={replacement}
       size={'large'}
+      label={process.string.Replacement}
       placeholder={process.string.Replacement}
       kind={'regular'}
       justify={'left'}

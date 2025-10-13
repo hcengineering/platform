@@ -18,7 +18,7 @@
   import { Process, ProcessFunction } from '@hcengineering/process'
   import { Button, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getCirteriaEditor } from '../../utils'
+  import { getCriteriaEditor } from '../../utils'
   import CriteriasEditor from '../criterias/CriteriasEditor.svelte'
 
   export let func: ProcessFunction
@@ -45,7 +45,7 @@
       if (key === '_id' || key === '_class') continue
       if (attr.hidden === true) continue
       const presenterClass = getAttributePresenterClass(hierarchy, attr.type)
-      const updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+      const updateCriteria = getCriteriaEditor(presenterClass.attrClass, presenterClass.category)
       const editor = updateCriteria?.editor
       if (editor == null) continue
       res.push(attr)

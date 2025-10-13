@@ -57,7 +57,7 @@
 
   $: messagesStore = dataProvider?.messagesStore
   $: readonly = hierarchy.isDerived(message.attachedToClass, core.class.Space)
-    ? (readonly || (channel as Space)?.archived) ?? false
+    ? ((readonly || (channel as Space)?.archived) ?? false)
     : readonly
 </script>
 

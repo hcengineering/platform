@@ -548,7 +548,7 @@ async function getObjectFromFragment (
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
   const linkProvider = linkProviders.find(({ _id }) => hierarchy.isDerived(objectclass, _id))
   const _id: Ref<Doc> | undefined =
-    linkProvider !== undefined ? (await (await getResource(linkProvider.decode))(id)) ?? id : id
+    linkProvider !== undefined ? ((await (await getResource(linkProvider.decode))(id)) ?? id) : id
 
   return {
     _id,

@@ -32,7 +32,7 @@
   <div class="flex-presenter cursor-default" class:inline-presenter={inline} class:colorInherit>
     <div class="icon" class:emoji={value.icon === view.ids.IconWithEmoji}>
       <Icon
-        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? tracker.icon.Home}
+        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : (value.icon ?? tracker.icon.Home)}
         iconProps={value.icon === view.ids.IconWithEmoji
           ? { icon: value.color }
           : {

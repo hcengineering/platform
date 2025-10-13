@@ -71,7 +71,7 @@
   $: showColors = (viewOptions as any).shouldShowColors !== false
   $: headerBGColor =
     level === 0 && showColors
-      ? accentColor?.background ?? defaultBackground($themeStore.dark)
+      ? (accentColor?.background ?? defaultBackground($themeStore.dark))
       : defaultBackground($themeStore.dark)
 
   $: headerTextColor = accentColor?.title ?? 'var(--theme-caption-color)'

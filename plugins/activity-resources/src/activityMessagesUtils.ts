@@ -537,7 +537,7 @@ export async function getLinkData (
   if (hierarchy.isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
     linkObject = parentObject
   } else if (message._class === activity.class.DocUpdateMessage) {
-    linkObject = (message as DocUpdateMessage).action === 'update' ? object : parentObject ?? object
+    linkObject = (message as DocUpdateMessage).action === 'update' ? object : (parentObject ?? object)
   } else {
     linkObject = parentObject ?? object
   }

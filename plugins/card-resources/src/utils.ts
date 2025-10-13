@@ -345,7 +345,7 @@ export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: Icon
   const clazz = hierarchy.getClass(doc._class) as MasterTag
 
   return {
-    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
+    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (clazz?.icon ?? card.icon.MasterTag),
     props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
   }
 }

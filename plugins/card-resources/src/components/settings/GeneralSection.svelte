@@ -109,7 +109,7 @@
   <div class="hulyComponent-content__header items-center">
     <div class="flex items-center flex-grow">
       <ButtonIcon
-        icon={masterTag.icon === view.ids.IconWithEmoji ? IconWithEmoji : masterTag.icon ?? card.icon.MasterTag}
+        icon={masterTag.icon === view.ids.IconWithEmoji ? IconWithEmoji : (masterTag.icon ?? card.icon.MasterTag)}
         iconProps={masterTag.icon === view.ids.IconWithEmoji ? { icon: masterTag.color, size: 'large' } : {}}
         size={'large'}
         iconSize={'large'}

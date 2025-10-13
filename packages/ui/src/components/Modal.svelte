@@ -98,7 +98,7 @@
     {#if scrollableContent}
       <Scroller
         padding={padding ?? typePadding}
-        bottomPadding={bottomPadding ?? type === 'type-popup'
+        bottomPadding={(bottomPadding ?? type === 'type-popup')
           ? undefined
           : type === 'type-aside'
             ? 'var(--spacing-2)'

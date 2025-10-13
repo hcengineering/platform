@@ -431,7 +431,8 @@
     height: 1.25rem;
     padding: var(--spacing-1);
     border-radius: 50%;
-    background: linear-gradient(0deg, var(--button-primary-BackgroundColor), var(--button-primary-BackgroundColor)),
+    background:
+      linear-gradient(0deg, var(--button-primary-BackgroundColor), var(--button-primary-BackgroundColor)),
       linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
     border: 1px solid var(--global-ui-BackgroundColor);
     top: -0.5rem;

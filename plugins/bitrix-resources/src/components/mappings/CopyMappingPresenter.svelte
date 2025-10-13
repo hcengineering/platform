@@ -7,7 +7,7 @@
   $: op = value.operation as CopyValueOperation
 
   const fieldOf = (field?: string) =>
-    field ? mapping.bitrixFields[field]?.formLabel ?? mapping.bitrixFields[field]?.title : field ?? ''
+    field ? (mapping.bitrixFields[field]?.formLabel ?? mapping.bitrixFields[field]?.title) : (field ?? '')
 </script>
 
 <div class="flex-row-center flex-wrap">

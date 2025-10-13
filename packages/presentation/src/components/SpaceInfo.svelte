@@ -42,7 +42,7 @@
   <div class="icon medium-gap">
     <Icon
       {size}
-      icon={value.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : value.icon ?? defaultIcon ?? IconFolder}
+      icon={value.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : (value.icon ?? defaultIcon ?? IconFolder)}
       iconProps={value.icon === iconWithEmoji && iconWithEmoji
         ? { icon: value.color }
         : {

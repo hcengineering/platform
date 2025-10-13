@@ -225,7 +225,7 @@ function fillResult (mode: Mode, obj: any, value: any): void {
           obj[key] = undefined
         }
       } else {
-        obj[key] = mode.withoutEditor === true ? v : value ?? v
+        obj[key] = mode.withoutEditor === true ? v : (value ?? v)
       }
     }
   }
