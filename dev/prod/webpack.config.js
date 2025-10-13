@@ -13,13 +13,15 @@
 // limitations under the License.
 //
 
+// Load sass-quiet FIRST to install stderr filter
+const sass = require('../../common/scripts/sass-quiet.js')
+
 const Dotenv = require('dotenv-webpack')
 const path = require('path')
 const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { Configuration } = require('webpack')
-const sass = require('../../common/scripts/sass-quiet.js')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -314,7 +316,10 @@ module.exports = [
                 hotReload: !prod,
                 preprocess: require('svelte-preprocess')({
                   postcss: true,
-                  sourceMap: true
+                  sourceMap: true,
+                  scss: {
+                    implementation: sass
+                  }
                 }),
                 hotOptions: {
                   // Prevent preserving local component state
