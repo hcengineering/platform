@@ -6277,7 +6277,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/view-resources@file:projects/view-resources.tgz':
-    resolution: {integrity: sha512-L3IzKi6Lo78o7lDzz+V2Ap+7lStsOm0mhIuaOtFk/UQQjSHp8CVcN0RwubG+KEHV/zv2li/pXTjNes3Ayg+Xsw==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-iBRhD5GGptL67zFov48Awf3MSVsnV6uctkmKFRv7EzGXUXpbS5E5uv3mS0TUlwEV2GCGIxejsbnQ8tJrHYqMNw==, tarball: file:projects/view-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/view@file:projects/view.tgz':
@@ -34768,6 +34768,7 @@ snapshots:
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@hcengineering/query': 0.7.6
       '@hcengineering/text': 0.7.5(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
+      '@hcengineering/text-markdown': 0.7.5
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.9.3)

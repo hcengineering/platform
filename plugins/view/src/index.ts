@@ -156,7 +156,8 @@ const view = plugin(viewId, {
     OpenInNewTab: '' as Ref<Action>,
     RemoveRelation: '' as Ref<Action>,
 
-    CopyLink: '' as Ref<Action<Doc, any>>
+    CopyLink: '' as Ref<Action<Doc, any>>,
+    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
@@ -250,7 +251,8 @@ const view = plugin(viewId, {
     Icon: '' as IntlString,
     Select: '' as IntlString,
     Color: '' as IntlString,
-    AutomationOnly: '' as IntlString
+    AutomationOnly: '' as IntlString,
+    CopyDocumentMarkdown: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -301,7 +303,8 @@ const view = plugin(viewId, {
     Feather: '' as Asset,
     MasterDetail: '' as Asset,
     Tree: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    Print: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -343,6 +346,10 @@ const view = plugin(viewId, {
     CopyTextToClipboard: '' as ViewAction<{
       textProvider: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
       props?: Record<string, any>
+    }>,
+    CopyDocumentMarkdown: '' as ViewAction<{
+      contentClass: Ref<Class<Doc>>
+      contentField: string
     }>,
     UpdateDocument: '' as ViewAction<{
       key: string

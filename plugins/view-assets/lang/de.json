@@ -112,6 +112,7 @@
     "Or": "Oder",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "In die Zwischenablage kopieren",
+    "CopyDocumentMarkdown": "Als Markdown kopieren",
     "PublicView": "Öffentlich",
 
     "ChooseIcon": "Symbol wählen",
