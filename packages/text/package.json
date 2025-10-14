@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -37,11 +37,12 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@types/markdown-it": "~13.0.0"
+    "@types/markdown-it": "~13.0.0",
+    "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.6",
-    "@hcengineering/text-core": "workspace:^0.7.4",
+    "@hcengineering/core": "workspace:^0.7.7",
+    "@hcengineering/text-core": "workspace:^0.7.5",
     "@tiptap/core": "^2.11.7",
     "@tiptap/html": "^2.11.7",
     "@tiptap/pm": "^2.11.7",

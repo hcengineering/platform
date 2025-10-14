@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/client-resources
 
-This log was last generated on Sat, 11 Oct 2025 18:20:33 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 04:58:17 GMT and should not be manually modified.
+
+## 0.7.6
+Tue, 14 Oct 2025 04:58:17 GMT
+
+### Patches
+
+- update deps
 
 ## 0.7.5
 Sat, 11 Oct 2025 18:20:33 GMT

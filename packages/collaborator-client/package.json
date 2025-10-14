@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/collaborator-client",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -39,10 +39,11 @@
     "typescript": "^5.9.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.6"
+    "@hcengineering/core": "workspace:^0.7.7"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {

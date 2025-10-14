@@ -12,7 +12,8 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "eslint-config-standard-with-typescript": "^40.0.0"
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "eslint-plugin-svelte": "^2.35.1"
   },
   "private": true
 }
