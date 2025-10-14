@@ -16,7 +16,6 @@
 import type { LoginInfoWithWorkspaces } from '@hcengineering/account-client'
 import {
   generateId,
-  type PermissionsGrant,
   TxProcessor,
   type Account,
   type AccountUuid,
@@ -31,6 +30,7 @@ import {
   type LoadModelResponse,
   type MeasureContext,
   type OperationDomain,
+  type PermissionsGrant,
   type PersonId,
   type Ref,
   type SearchOptions,
@@ -38,21 +38,23 @@ import {
   type SearchResult,
   type SessionData,
   type SocialId,
+  type Space,
   type Timestamp,
   type Tx,
   type TxCUD,
   type TxResult,
   type WorkspaceDataId,
-  type WorkspaceIds,
-  type Space
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   BackupClientOps,
   createBroadcastEvent,
+  estimateDocSize,
   SessionDataImpl,
   type ClientSessionCtx,
   type ConnectionSocket,
+  type OneSecondCounters,
   type Pipeline,
   type Session,
   type SessionRequest,
@@ -89,7 +91,8 @@ export class ClientSession implements Session {
     readonly workspace: WorkspaceIds,
     readonly account: Account,
     readonly info: LoginInfoWithWorkspaces,
-    readonly allowUpload: boolean
+    readonly allowUpload: boolean,
+    readonly counter: OneSecondCounters
   ) {
     this.isAdmin = this.token.extra?.admin === 'true'
   }
@@ -128,9 +131,12 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
+    this.counter.add('loadModel', 1)
     try {
       this.includeSessionContext(ctx)
       const result = await ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash)
+
+      this.counter.add('clientSendMemory', estimateDocSize(result))
       await ctx.sendResponse(ctx.requestId, result)
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to loadModel', unknownError(err))
@@ -139,6 +145,7 @@ export class ClientSession implements Session {
   }
 
   async loadModelRaw (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<LoadModelResponse | Tx[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.includeSessionContext(ctx)
     return await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
   }
@@ -195,8 +202,11 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
+    this.counter.add('find-' + ctx.pipeline.context.hierarchy.getBaseClass(_class), 1)
     try {
-      await ctx.sendResponse(ctx.requestId, await this.findAllRaw(ctx, _class, query, options))
+      const result = await this.findAllRaw(ctx, _class, query, options)
+      this.counter.add('clientSendMemory', estimateDocSize(result))
+      await ctx.sendResponse(ctx.requestId, result)
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
       ctx.ctx.error('failed to findAll', { err })
@@ -204,6 +214,7 @@ export class ClientSession implements Session {
   }
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
+    this.counter.add('fulltext', 1)
     try {
       this.lastRequest = Date.now()
       this.includeSessionContext(ctx)
@@ -271,6 +282,13 @@ export class ClientSession implements Session {
   }
 
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
+    this.counter.add(
+      'tx-' +
+        ctx.pipeline.context.hierarchy.getBaseClass(
+          TxProcessor.isExtendsCUD(tx._class) ? (tx as TxCUD<Doc>).objectClass : tx._class
+        ),
+      1
+    )
     try {
       const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
       await broadcastPromise
@@ -395,6 +413,8 @@ export class ClientSession implements Session {
   }
 
   async domainRequest (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.counter.add('dr-' + domain, 1)
     try {
       const { asyncsPromise, broadcastPromise } = await this.domainRequestRaw(ctx, domain, params)
 

@@ -13,33 +13,33 @@ importers:
   ../../packages/client:
     dependencies:
       '@hcengineering/account-client':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/client':
-        specifier: ^0.7.5
-        version: 0.7.5
-      '@hcengineering/client-resources':
-        specifier: ^0.7.5
-        version: 0.7.5
-      '@hcengineering/core':
         specifier: ^0.7.6
         version: 0.7.6
+      '@hcengineering/client-resources':
+        specifier: ^0.7.6
+        version: 0.7.6
+      '@hcengineering/core':
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       ws:
         specifier: ^8.18.2
         version: 8.18.3(utf-8-validate@6.0.5)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -73,6 +73,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -89,17 +92,17 @@ importers:
   ../../packages/collaboration:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/text':
-        specifier: ^0.7.4
-        version: 0.7.4(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
+        specifier: ^0.7.5
+        version: 0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
       '@hcengineering/text-ydoc':
-        specifier: ^0.7.4
-        version: 0.7.4(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
+        specifier: ^0.7.5
+        version: 0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
@@ -108,8 +111,8 @@ importers:
         version: 13.6.27
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -137,6 +140,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -153,8 +159,8 @@ importers:
   ../../packages/core:
     dependencies:
       '@hcengineering/analytics':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-sdk-types':
         specifier: ^0.7.3
         version: 0.7.3
@@ -162,23 +168,23 @@ importers:
         specifier: ^0.7.3
         version: 0.7.3
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
-      '@hcengineering/query':
         specifier: ^0.7.5
         version: 0.7.5
+      '@hcengineering/query':
+        specifier: ^0.7.6
+        version: 0.7.6
       '@hcengineering/rpc':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/storage':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
@@ -187,8 +193,8 @@ importers:
         version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -219,6 +225,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -235,21 +244,21 @@ importers:
   ../../packages/datalake:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -277,6 +286,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -299,21 +311,21 @@ importers:
         specifier: ^7.17.14
         version: 7.17.14
       '@hcengineering/analytics':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -338,6 +350,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -357,24 +372,24 @@ importers:
   ../../packages/hulylake:
     dependencies:
       '@hcengineering/core':
+        specifier: ^0.7.7
+        version: 0.7.7
+      '@hcengineering/hulylake-client':
         specifier: ^0.7.6
         version: 0.7.6
-      '@hcengineering/hulylake-client':
+      '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
-      '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -402,6 +417,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -421,24 +439,24 @@ importers:
   ../../packages/kafka:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/storage':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       kafkajs:
         specifier: ^2.2.4
         version: 2.2.4
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -466,6 +484,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -482,17 +503,17 @@ importers:
   ../../packages/middleware:
     dependencies:
       '@hcengineering/analytics':
-        specifier: ^0.7.4
-        version: 0.7.4
-      '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
-      '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
-      '@hcengineering/query':
         specifier: ^0.7.5
         version: 0.7.5
+      '@hcengineering/core':
+        specifier: ^0.7.7
+        version: 0.7.7
+      '@hcengineering/platform':
+        specifier: ^0.7.5
+        version: 0.7.5
+      '@hcengineering/query':
+        specifier: ^0.7.6
+        version: 0.7.6
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
@@ -501,8 +522,8 @@ importers:
         version: 5.3.2
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -530,6 +551,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -546,11 +570,11 @@ importers:
   ../../packages/minio:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
@@ -559,8 +583,8 @@ importers:
         version: 8.0.6
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -588,6 +612,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -604,11 +631,11 @@ importers:
   ../../packages/mongo:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
@@ -620,8 +647,8 @@ importers:
         version: 6.20.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -649,6 +676,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -665,11 +695,11 @@ importers:
   ../../packages/postgres:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/postgres-base':
         specifier: ^0.7.12
         version: 0.7.12
@@ -681,8 +711,8 @@ importers:
         version: 3.4.7
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -710,6 +740,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -735,24 +768,24 @@ importers:
         specifier: ^3.738.0
         version: 3.901.0
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/storage':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@smithy/node-http-handler':
         specifier: ^4.0.2
         version: 4.3.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -780,6 +813,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -796,33 +832,33 @@ importers:
   ../../packages/server:
     dependencies:
       '@hcengineering/account-client':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/analytics':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/rpc':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/server-core':
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       utf-8-validate:
         specifier: ^6.0.4
         version: 6.0.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -853,6 +889,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -869,11 +908,11 @@ importers:
   ../../packages/server-storage:
     dependencies:
       '@hcengineering/analytics':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/datalake':
         specifier: workspace:0.7.3
         version: link:../datalake
@@ -884,8 +923,8 @@ importers:
         specifier: workspace:0.7.3
         version: link:../minio
       '@hcengineering/platform':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/s3':
         specifier: workspace:0.7.3
         version: link:../s3
@@ -893,15 +932,15 @@ importers:
         specifier: workspace:0.7.3
         version: link:../core
       '@hcengineering/server-token':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/storage':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
@@ -932,6 +971,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.18.8)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
@@ -951,8 +993,8 @@ importers:
   ../scripts:
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.18
-        version: 0.7.18(@babel/core@7.28.4)
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
@@ -974,6 +1016,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       istanbul-lib-coverage:
         specifier: ^3.2.2
         version: 3.2.2
@@ -1524,17 +1569,17 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
-  '@hcengineering/account-client@0.7.4':
-    resolution: {integrity: sha512-CY5On4xHez/tg+9TeeqdcjCNQ4LPTDHFyCPWsMs62Kfk/nGallrYEBCxIVRxLp1Lnx57OGjx4GVAjzQYwyIQ5Q==}
+  '@hcengineering/account-client@0.7.5':
+    resolution: {integrity: sha512-OLJ8wrsJAYx4tbjh1XB86FXLpKdF2E7Tr71Gx8sFp7HhIGNBxsX7DR+JlKM2ih3+sczamuftpTipP6BrqPRK2A==}
 
-  '@hcengineering/analytics@0.7.4':
-    resolution: {integrity: sha512-W80+eFKR+Ty1gmzYOZk45vRjhQGn8SrdfqSfuCE1Bk9iYXGCAbzy5UtNQxfNSp8BzFkS/GZdoZL022saBKg8bQ==}
+  '@hcengineering/analytics@0.7.5':
+    resolution: {integrity: sha512-pc76hJxJWh3/9//P/+l8WyowJ/+tpmicrTXwG5c5TBPXAEtqvat/vZF8WOgCo0/0tajISChJ4l1O2GJuPzljhA==}
 
-  '@hcengineering/client-resources@0.7.5':
-    resolution: {integrity: sha512-nMVmRoHor0IEk7gh9IeXbKeW99a3/XJZBj/3dBsCehw/5A/wv+nvNtLaCFgMljW3w0zNUYOio8USkn4yDH3I0Q==}
+  '@hcengineering/client-resources@0.7.6':
+    resolution: {integrity: sha512-J2zr71x/D1IDE/udl5Q65K4HY+2P5TLiwOxsyaQr5EMuYFVT5WI7ddlQme4mbwJvfVdaEWJzcpG+TRxIH8z+Fw==}
 
-  '@hcengineering/client@0.7.5':
-    resolution: {integrity: sha512-dZR1mIg0ogsf8g+BmKw5/LkipcyhHYYvd02hxaltwtAuEOkj7X+JKwuw/JEp4SgKrYU1OOncVw9TF8YtOlDHXg==}
+  '@hcengineering/client@0.7.6':
+    resolution: {integrity: sha512-QBRDi/kIqmwdEmNjaXEZE0KbW/E6H8J4J2p0j3hPmJS2tmHs3U4o4etl0ZLMMmDloskfxlI10smQm3fWLAqIYA==}
 
   '@hcengineering/communication-sdk-types@0.7.3':
     resolution: {integrity: sha512-Noi9J+s0IH5qbnt5wV8WXMClKmCCnvPpquf3GjJ8CuBmmQvUAv0ogIy7mbuC60ZZDJaHHY9ihtrxZY3lNOJsvA==}
@@ -1542,48 +1587,48 @@ packages:
   '@hcengineering/communication-types@0.7.3':
     resolution: {integrity: sha512-FeOx3oXgzhTq2abEZY4YZ6aqMTv0QxSx94OAkWvW1JD8l0GyYCf2Qnx1aC9pRIUzrEA61Eri9PLBj/+y00BItw==}
 
-  '@hcengineering/core@0.7.6':
-    resolution: {integrity: sha512-MWaN7XCwERBP4o4xbApqNGCshRlgElosTSWvxt+7h/qlvXYMpVLrOsfHemgpuhwwQe+ruwH0jdPmCHak9t+09A==}
+  '@hcengineering/core@0.7.7':
+    resolution: {integrity: sha512-SgCZ87CHeOuUjxkKOYQlW3fKf6WSTgGjJi9vHWt2ceqhqb9eFc8x3RtDwKsHo3MW6+dzg/f76SMTwYkV5qyJSA==}
 
-  '@hcengineering/hulylake-client@0.7.5':
-    resolution: {integrity: sha512-Vf8QMGfmd4eRsqXGMqe/TiGB9JvJ2dpV3x3NKy9lInOl6n4nrajSyTpQ2lWN+gOhSmUG8muu2XgTjsS9XBkLbw==}
+  '@hcengineering/hulylake-client@0.7.6':
+    resolution: {integrity: sha512-UwWerlpMVSJgkb6Z8qBnbX4Eq5HoCEAlLtHYKV0SIyBnuubfhxfEN2NMK86EGWwmOBbf5urozdVrQWRfZTvyLQ==}
 
-  '@hcengineering/measurements@0.7.10':
-    resolution: {integrity: sha512-6xsrHorpJkQth4GVtdPoCM5s6USyYtoV9j8tCPhbLUk5yQn+CIvrDZxN60JGBOqvL6hYb6cis2FrAG5NC3HYPw==}
+  '@hcengineering/measurements@0.7.13':
+    resolution: {integrity: sha512-v2Cr10kPxulHMTxX8rP0EoaafYB9tGdcUlXGRrAirS+NX1/1rMtm9WSBKkFHH8F9TfzH7FO6owRVfw9uIO0REg==}
 
-  '@hcengineering/platform-rig@0.7.18':
-    resolution: {integrity: sha512-XCeXtmbvMiHuCN31oV4ofVC3q/aqZ37zLOY+YVS0W+5SPM9rs7I4v7GrI4IYAhD8TM9EMbUwuOdq1mhaez6qeg==}
+  '@hcengineering/platform-rig@0.7.19':
+    resolution: {integrity: sha512-3Fi5nU+nEPjzzcm3FIfEZU+ZgdkiSfL46ojbj42jdXnWMkxew2aZZVtfmIpPnMUP9AMZlj2/EA+yOcMzfY/VmA==}
     hasBin: true
 
-  '@hcengineering/platform@0.7.4':
-    resolution: {integrity: sha512-IP+L+UHf6L2D7aoBOZoDyibwURmOOfdNJtWAVTWkHeba/RnAiqohq4LgxUJinUlXITaHM+k/YPdbVabFaIqXrA==}
+  '@hcengineering/platform@0.7.5':
+    resolution: {integrity: sha512-muxvDzIpB6chefTdL5vDt3wS8jQbxRXrq5DagXMt/QrgKr3dz0Xbk2sWocuaJXRGrtcllReWHm0OM0Ck+Pd9Ww==}
 
   '@hcengineering/postgres-base@0.7.12':
     resolution: {integrity: sha512-46RH23C0YLjrvZANX/+SLK0wb7cyqtrxdtXlOVAzRg9UHjy0hHfG+rbgOQ03x7LzBdDQaIKdgRCfydfYkQperA==}
 
-  '@hcengineering/query@0.7.5':
-    resolution: {integrity: sha512-Ka+7gH63tjxC225Z5Waj8UOG0033sQDpnpfPAxKtp9AkdS/B7KSrkaDr5B8DUBG1EQrda3VeheAVI8t7xpJiCg==}
+  '@hcengineering/query@0.7.6':
+    resolution: {integrity: sha512-/C7p9Kl3JoJftzmPNIXWt8J+auG7OkqYOowXWu4ocFsIxkAGFGR91NqpUALf+DP15XHaGYyuecwhOP2AUHH3rA==}
 
-  '@hcengineering/retry@0.7.4':
-    resolution: {integrity: sha512-XgfAHhf4Qnkp/eSyDMXMt9+9X8OdQNx3MLKYfZQnHjdBvmMmSl5XQ6lS6FO8M8RC1/H3W1PSO2dJ3jT5tuyDyg==}
+  '@hcengineering/retry@0.7.5':
+    resolution: {integrity: sha512-cpqDgavawmph13wVzUF3mgOJRSsK/phNTYV3z7k8WCjrTWDlVEJjUJis4FcMbIXvK8qrshSlCKs59HQfn2AkRg==}
 
-  '@hcengineering/rpc@0.7.4':
-    resolution: {integrity: sha512-y6zCo1ZnbzCwyUAIy8aaowxOJU3dNBeLCKIWpBxanQkVuExwkFAvV3Feuh2X0ZvO6BoG16poN3b+usLu0nES2Q==}
+  '@hcengineering/rpc@0.7.5':
+    resolution: {integrity: sha512-ecM3z+CdbB/XAkezj0k1s2vJGUQSv3kLCqrd9aYaxUD0fRAflt7MuVb8DtQn8s50H/i7rFu9wR6ELxXo0KAUuQ==}
 
-  '@hcengineering/server-token@0.7.4':
-    resolution: {integrity: sha512-n4/BS9lPbvFup1WXZLzAlBQ4XoHkd0wGnFu40O6xjmB6Uu7QI334mfzpg41aNnyV4u0iiFh7c8lFNt0ATmpmtQ==}
+  '@hcengineering/server-token@0.7.5':
+    resolution: {integrity: sha512-icoQGUbWoxh6yQWT+81y36iUhfUr/UHrXOepEf2sFV+Vxn2s9cTgaVIqmalyBvTlwPzycIDrfQwUvNWm1jDEeQ==}
 
-  '@hcengineering/storage@0.7.4':
-    resolution: {integrity: sha512-Y4JxAZIvnr1INKnI1ANyLGV7C/lb0RRbTcb/afflK7Pwjbbigh8PYVfS+uur68ImAnUhrjbFvJNY+vbnOUNBtg==}
+  '@hcengineering/storage@0.7.5':
+    resolution: {integrity: sha512-E7PiVruvqVhxUDqMEmsTOKu9knVeElyyU796wbRE5SEFOd9MY0p2lLr7vcwmbc0U/NPA+JD5NWHZwoTmdvBcgg==}
 
-  '@hcengineering/text-core@0.7.4':
-    resolution: {integrity: sha512-I/HL+d93GPV03nxTA0Jgm1LRD3R9tkwZwmbTe7XiQycfsroBXNR/nFZtnPCj8lTB40XQRaDW0z8lCV/R6vy8pA==}
+  '@hcengineering/text-core@0.7.5':
+    resolution: {integrity: sha512-kT9USjZkXdwzEUITvHYhbkzFLtQR4ioEuSiX4SNVYbHxeWoFsNTJgT02H3wTX/3PYKZTpLgLR2srJDW4GY+86g==}
 
-  '@hcengineering/text-ydoc@0.7.4':
-    resolution: {integrity: sha512-z73L8PLTBTmTTb3GXavoMWCuovSHj/5CNewd3zNUxUmZr/f4106laXwoxrNSm13b6XHcaVB5z6nl/SD+5chFpA==}
+  '@hcengineering/text-ydoc@0.7.5':
+    resolution: {integrity: sha512-vOhHVUDuO2j+9uTDjCUyuiarGmR6XOIm8oREKDAE7pMKbdXtibOP63A8CTiGGlYulBd8sBRBEO1lF9x9nly/Uw==}
 
-  '@hcengineering/text@0.7.4':
-    resolution: {integrity: sha512-0CHE1tnUlj8yEn7Srz3my+MXl5lOFeJVzaSwFMnlo8EStJonQc7qJFeKyDapncwY7jukHIv8RJxgy7qnjdyimA==}
+  '@hcengineering/text@0.7.5':
+    resolution: {integrity: sha512-oyG5ksha3t5TZ+PC33kIgRYdDBt2wRV8ZRKCwcv5tdx19xSp5ut5CGWVhnk7bWnf00FyJY8K2YM+UU4KzSR/iQ==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -2592,6 +2637,11 @@ packages:
     resolution: {integrity: sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA==}
     engines: {node: '>= 6'}
 
+  cssesc@3.0.0:
+    resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
+    engines: {node: '>=4'}
+    hasBin: true
+
   data-view-buffer@1.0.2:
     resolution: {integrity: sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ==}
     engines: {node: '>= 0.4'}
@@ -2742,12 +2792,12 @@ packages:
     peerDependencies:
       esbuild: '>= 0.14.0'
 
-  esbuild-svelte@0.8.2:
-    resolution: {integrity: sha512-tG97WrhH/OH8wFCmRBk6sRggMVMPNZDktGx1jJcvh9Obvjwm8M1UYoXmliuLL+4fs/wfyVVwM2fvyNYz2e6UPQ==}
-    engines: {node: '>=14'}
+  esbuild-svelte@0.9.3:
+    resolution: {integrity: sha512-CgEcGY1r/d16+aggec3czoFBEBaYIrFOnMxpsO6fWNaNEqHregPN5DLAPZDqrL7rXDNplW+WMu8s3GMq9FqgJA==}
+    engines: {node: '>=18'}
     peerDependencies:
-      esbuild: '>=0.9.6'
-      svelte: '>=3.43.0 <6 || ^5.0.0-next.0'
+      esbuild: '>=0.17.0'
+      svelte: '>=4.2.1 <6'
 
   esbuild@0.25.10:
     resolution: {integrity: sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==}
@@ -2765,6 +2815,12 @@ packages:
   escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
+
+  eslint-compat-utils@0.5.1:
+    resolution: {integrity: sha512-3z3vFexKIEnjHE3zCMRo6fn/e44U7T1khUjg+Hp0ZQMCigh28rALD0nPFBcGZuiLC5rLZa2ubQHDRln09JfU2Q==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      eslint: '>=6.0.0'
 
   eslint-config-standard-with-typescript@40.0.0:
     resolution: {integrity: sha512-GXUJcwIXiTQaS3H4etv8a1lejVVdZYaxZNz3g7vt6GoJosQqMTurbmSC4FVGyHiGT/d1TjFr3+47A3xsHhsG+Q==}
@@ -2821,6 +2877,16 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
+
+  eslint-plugin-svelte@2.46.1:
+    resolution: {integrity: sha512-7xYr2o4NID/f9OEYMqxsEQsCsj4KaMy4q5sANaKkAb6/QeCjYFxRmDm2S3YC3A3pl1kyPZ/syOx/i7LcWYSbIw==}
+    engines: {node: ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      eslint: ^7.0.0 || ^8.0.0-0 || ^9.0.0-0
+      svelte: ^3.37.0 || ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      svelte:
+        optional: true
 
   eslint-scope@7.2.2:
     resolution: {integrity: sha512-dOt21O7lTMhDM+X9mB4GX+DZrZtCUJPL/wlcTqxyrx5IvO0IYtILdtrQGQp+8n5S0gwSVmOf9NQrjMOgfQZlIg==}
@@ -3481,6 +3547,9 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
+  known-css-properties@0.35.0:
+    resolution: {integrity: sha512-a/RAk2BfKk+WFGhhOCAYqSiFLc34k8Mt/6NWRI4joER0EYUzXIcFivjjnoD3+XU1DggLn/tZc3DOAgke7l8a4A==}
+
   lcov-parse@1.0.0:
     resolution: {integrity: sha512-aprLII/vPzuQvYZnDRU78Fns9I2Ag3gi4Ipga/hxnVMCZC8DnR2nI7XBqrPoywGfxqIx/DgarGvDJZAD3YBTgQ==}
     hasBin: true
@@ -3497,6 +3566,10 @@ packages:
     resolution: {integrity: sha512-gcxmNFzA4hv8UYi8j43uPlQ7CGcyMJ2KQb5kZASw6SnAKAf10hK12i2fjrS3Cl/ugZa5Ui6WwIu1/6MIXiHttQ==}
     engines: {node: '>=16'}
     hasBin: true
+
+  lilconfig@2.1.0:
+    resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
+    engines: {node: '>=10'}
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -3645,6 +3718,11 @@ packages:
   msgpackr@1.11.5:
     resolution: {integrity: sha512-UjkUHN0yqp9RWKy0Lplhh+wlpdt9oQBYgULZOiFhV3VclSF1JnSQWZ5r9gORQlNYaUKQoR8itv7g7z1xDDuACA==}
 
+  nanoid@3.3.11:
+    resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
+    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -3783,6 +3861,38 @@ packages:
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
+
+  postcss-load-config@3.1.4:
+    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
+
+  postcss-safe-parser@6.0.0:
+    resolution: {integrity: sha512-FARHN8pwH+WiS2OPCxJI8FuRJpTVnn6ZNFiqAM2aeW2LwTHWWmWgIyKC6cUo0L8aeKiF/14MNvnpls6R2PBeMQ==}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.3.3
+
+  postcss-scss@4.0.9:
+    resolution: {integrity: sha512-AjKOeiwAitL/MXxQW2DliT28EKukvvbEWx3LBmJIRN8KfBGZbRTxNYW0kSqi1COiTZ57nZ9NW06S6ux//N1c9A==}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.4.29
+
+  postcss-selector-parser@6.1.2:
+    resolution: {integrity: sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==}
+    engines: {node: '>=4'}
+
+  postcss@8.5.6:
+    resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
+    engines: {node: ^10 || ^12 || >=14}
 
   postgres@3.4.7:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
@@ -4159,6 +4269,24 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  svelte-eslint-parser@0.33.1:
+    resolution: {integrity: sha512-vo7xPGTlKBGdLH8T5L64FipvTrqv3OQRx9d2z5X05KKZDlF4rQk8KViZO4flKERY+5BiVdOh7zZ7JGJWo5P0uA==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      svelte: ^3.37.0 || ^4.0.0
+    peerDependenciesMeta:
+      svelte:
+        optional: true
+
+  svelte-eslint-parser@0.43.0:
+    resolution: {integrity: sha512-GpU52uPKKcVnh8tKN5P4UZpJ/fUDndmq7wfsvoVXsyP+aY0anol7Yqo01fyrlaWGMFfm4av5DyrjlaXdLRJvGA==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      svelte: ^3.37.0 || ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      svelte:
+        optional: true
+
   svelte-preprocess@5.1.4:
     resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
     engines: {node: '>= 16.0.0'}
@@ -4458,6 +4586,10 @@ packages:
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
+
+  yaml@1.10.2:
+    resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
+    engines: {node: '>= 6'}
 
   yargs-parser@21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
@@ -5316,68 +5448,70 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@hcengineering/account-client@0.7.4':
+  '@hcengineering/account-client@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
 
-  '@hcengineering/analytics@0.7.4':
+  '@hcengineering/analytics@0.7.5':
     dependencies:
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/platform': 0.7.5
 
-  '@hcengineering/client-resources@0.7.5':
+  '@hcengineering/client-resources@0.7.6':
     dependencies:
-      '@hcengineering/analytics': 0.7.4
-      '@hcengineering/client': 0.7.5
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
-      '@hcengineering/rpc': 0.7.4
+      '@hcengineering/analytics': 0.7.5
+      '@hcengineering/client': 0.7.6
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
+      '@hcengineering/rpc': 0.7.5
       snappyjs: 0.7.0
 
-  '@hcengineering/client@0.7.5':
+  '@hcengineering/client@0.7.6':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
 
   '@hcengineering/communication-sdk-types@0.7.3':
     dependencies:
       '@hcengineering/communication-types': 0.7.3
-      '@hcengineering/core': 0.7.6
+      '@hcengineering/core': 0.7.7
 
   '@hcengineering/communication-types@0.7.3':
     dependencies:
-      '@hcengineering/core': 0.7.6
+      '@hcengineering/core': 0.7.7
 
-  '@hcengineering/core@0.7.6':
+  '@hcengineering/core@0.7.7':
     dependencies:
-      '@hcengineering/analytics': 0.7.4
-      '@hcengineering/measurements': 0.7.10
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/analytics': 0.7.5
+      '@hcengineering/measurements': 0.7.13
+      '@hcengineering/platform': 0.7.5
       fast-equals: 5.3.2
 
-  '@hcengineering/hulylake-client@0.7.5':
+  '@hcengineering/hulylake-client@0.7.6':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/retry': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/retry': 0.7.5
 
-  '@hcengineering/measurements@0.7.10': {}
+  '@hcengineering/measurements@0.7.13': {}
 
-  '@hcengineering/platform-rig@0.7.18(@babel/core@7.28.4)':
+  '@hcengineering/platform-rig@0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       esbuild: 0.25.10
       esbuild-plugin-copy: 2.1.1(esbuild@0.25.10)
-      esbuild-svelte: 0.8.2(esbuild@0.25.10)(svelte@4.2.20)
+      esbuild-svelte: 0.9.3(esbuild@0.25.10)(svelte@4.2.20)
       eslint: 8.57.1
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-import: 2.32.0(eslint@8.57.1)
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
       eslint-plugin-promise: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       svelte: 4.2.20
-      svelte-preprocess: 5.1.4(@babel/core@7.28.4)(svelte@4.2.20)(typescript@5.9.3)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.20)
+      svelte-preprocess: 5.1.4(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(svelte@4.2.20)(typescript@5.9.3)
       svelte2tsx: 0.7.45(svelte@4.2.20)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -5391,8 +5525,9 @@ snapshots:
       - stylus
       - sugarss
       - supports-color
+      - ts-node
 
-  '@hcengineering/platform@0.7.4':
+  '@hcengineering/platform@0.7.5':
     dependencies:
       intl-messageformat: 10.7.17
 
@@ -5400,45 +5535,45 @@ snapshots:
     dependencies:
       postgres: 3.4.7
 
-  '@hcengineering/query@0.7.5':
+  '@hcengineering/query@0.7.6':
     dependencies:
-      '@hcengineering/analytics': 0.7.4
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/analytics': 0.7.5
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
       fast-equals: 5.3.2
 
-  '@hcengineering/retry@0.7.4': {}
+  '@hcengineering/retry@0.7.5': {}
 
-  '@hcengineering/rpc@0.7.4':
+  '@hcengineering/rpc@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
       msgpackr: 1.11.5
 
-  '@hcengineering/server-token@0.7.4':
+  '@hcengineering/server-token@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
       jwt-simple: 0.5.6
       uuid: 8.3.2
 
-  '@hcengineering/storage@0.7.4':
+  '@hcengineering/storage@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/platform': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/platform': 0.7.5
       fast-equals: 5.3.2
 
-  '@hcengineering/text-core@0.7.4':
+  '@hcengineering/text-core@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.6
+      '@hcengineering/core': 0.7.7
       fast-equals: 5.3.2
       hash-it: 6.0.0
 
-  '@hcengineering/text-ydoc@0.7.4(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
+  '@hcengineering/text-ydoc@0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/text': 0.7.4(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
-      '@hcengineering/text-core': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/text': 0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
+      '@hcengineering/text-core': 0.7.5
       y-protocols: 1.0.6(yjs@13.6.27)
       yjs: 13.6.27
     transitivePeerDependencies:
@@ -5447,10 +5582,10 @@ snapshots:
       - prosemirror-state
       - prosemirror-view
 
-  '@hcengineering/text@0.7.4(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
+  '@hcengineering/text@0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
     dependencies:
-      '@hcengineering/core': 0.7.6
-      '@hcengineering/text-core': 0.7.4
+      '@hcengineering/core': 0.7.7
+      '@hcengineering/text-core': 0.7.5
       '@tiptap/core': 2.26.2(@tiptap/pm@2.26.2)
       '@tiptap/extension-blockquote': 2.26.2(@tiptap/core@2.26.2(@tiptap/pm@2.26.2))
       '@tiptap/extension-bold': 2.26.2(@tiptap/core@2.26.2(@tiptap/pm@2.26.2))
@@ -6803,6 +6938,8 @@ snapshots:
 
   css-what@6.2.2: {}
 
+  cssesc@3.0.0: {}
+
   data-view-buffer@1.0.2:
     dependencies:
       call-bound: 1.0.4
@@ -6988,7 +7125,7 @@ snapshots:
       fs-extra: 10.1.0
       globby: 11.1.0
 
-  esbuild-svelte@0.8.2(esbuild@0.25.10)(svelte@4.2.20):
+  esbuild-svelte@0.9.3(esbuild@0.25.10)(svelte@4.2.20):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       esbuild: 0.25.10
@@ -7028,6 +7165,11 @@ snapshots:
   escape-string-regexp@2.0.0: {}
 
   escape-string-regexp@4.0.0: {}
+
+  eslint-compat-utils@0.5.1(eslint@8.57.1):
+    dependencies:
+      eslint: 8.57.1
+      semver: 7.7.2
 
   eslint-config-standard-with-typescript@40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3):
     dependencies:
@@ -7105,6 +7247,25 @@ snapshots:
   eslint-plugin-promise@6.6.0(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
+
+  eslint-plugin-svelte@2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.9.0(eslint@8.57.1)
+      '@jridgewell/sourcemap-codec': 1.5.5
+      eslint: 8.57.1
+      eslint-compat-utils: 0.5.1(eslint@8.57.1)
+      esutils: 2.0.3
+      known-css-properties: 0.35.0
+      postcss: 8.5.6
+      postcss-load-config: 3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
+      postcss-safe-parser: 6.0.0(postcss@8.5.6)
+      postcss-selector-parser: 6.1.2
+      semver: 7.7.2
+      svelte-eslint-parser: 0.43.0(svelte@4.2.20)
+    optionalDependencies:
+      svelte: 4.2.20
+    transitivePeerDependencies:
+      - ts-node
 
   eslint-scope@7.2.2:
     dependencies:
@@ -7989,6 +8150,8 @@ snapshots:
 
   kleur@3.0.3: {}
 
+  known-css-properties@0.35.0: {}
+
   lcov-parse@1.0.0: {}
 
   leven@3.1.0: {}
@@ -8001,6 +8164,8 @@ snapshots:
   lib0@0.2.114:
     dependencies:
       isomorphic.js: 0.2.5
+
+  lilconfig@2.1.0: {}
 
   lines-and-columns@1.2.4: {}
 
@@ -8140,6 +8305,8 @@ snapshots:
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
+  nanoid@3.3.11: {}
+
   natural-compare@1.4.0: {}
 
   neo-async@2.6.2: {}
@@ -8275,6 +8442,33 @@ snapshots:
       find-up: 4.1.0
 
   possible-typed-array-names@1.1.0: {}
+
+  postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)):
+    dependencies:
+      lilconfig: 2.1.0
+      yaml: 1.10.2
+    optionalDependencies:
+      postcss: 8.5.6
+      ts-node: 10.9.2(@types/node@22.18.8)(typescript@5.9.3)
+
+  postcss-safe-parser@6.0.0(postcss@8.5.6):
+    dependencies:
+      postcss: 8.5.6
+
+  postcss-scss@4.0.9(postcss@8.5.6):
+    dependencies:
+      postcss: 8.5.6
+
+  postcss-selector-parser@6.1.2:
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
+
+  postcss@8.5.6:
+    dependencies:
+      nanoid: 3.3.11
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
 
   postgres@3.4.7: {}
 
@@ -8707,7 +8901,27 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-preprocess@5.1.4(@babel/core@7.28.4)(svelte@4.2.20)(typescript@5.9.3):
+  svelte-eslint-parser@0.33.1(svelte@4.2.20):
+    dependencies:
+      eslint-scope: 7.2.2
+      eslint-visitor-keys: 3.4.3
+      espree: 9.6.1
+      postcss: 8.5.6
+      postcss-scss: 4.0.9(postcss@8.5.6)
+    optionalDependencies:
+      svelte: 4.2.20
+
+  svelte-eslint-parser@0.43.0(svelte@4.2.20):
+    dependencies:
+      eslint-scope: 7.2.2
+      eslint-visitor-keys: 3.4.3
+      espree: 9.6.1
+      postcss: 8.5.6
+      postcss-scss: 4.0.9(postcss@8.5.6)
+    optionalDependencies:
+      svelte: 4.2.20
+
+  svelte-preprocess@5.1.4(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(svelte@4.2.20)(typescript@5.9.3):
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
@@ -8717,6 +8931,8 @@ snapshots:
       svelte: 4.2.20
     optionalDependencies:
       '@babel/core': 7.28.4
+      postcss: 8.5.6
+      postcss-load-config: 3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       typescript: 5.9.3
 
   svelte2tsx@0.7.45(svelte@4.2.20)(typescript@5.9.3):
@@ -9013,6 +9229,8 @@ snapshots:
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
+
+  yaml@1.10.2: {}
 
   yargs-parser@21.1.1: {}
 

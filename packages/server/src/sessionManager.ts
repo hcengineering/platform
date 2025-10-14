@@ -255,38 +255,31 @@ export class TSessionManager implements SessionManager {
     return { sys, user, anonymous }
   }
 
+  counters = new Map<string, number>()
+
+  add (counter: string, count: number): void {
+    this.counters.set(counter, (this.counters.get(counter) ?? 0) + count)
+  }
+
   private handleWorkspaceTick (): void {
-    this.ctx.measure('sessions', this.sessions.size)
+    this.ctx.measure('sessions', this.sessions.size, true)
 
-    const { sys, user, anonymous } = this.calcWorkspaceStats(Array.from(this.sessions.values()))
+    if (this.ticks % ticksPerSecond === 0) {
+      // Let's update workspace statistics every 10 seconds
+      this.sendUserWorkspaceStats()
 
-    let userWorkspaces: number = 0
-    let sysOnlyWorkspaces: number = 0
-
-    for (const ws of this.workspaces.values()) {
-      const { sys, user } = this.calcWorkspaceStats(Array.from(ws.sessions.values()))
-      if (user > 0) {
-        userWorkspaces++
-      } else {
-        if (sys > 0) {
-          sysOnlyWorkspaces++
-        }
+      // Send extra counters and clear them to collect again
+      for (const [c, v] of [...this.counters.entries()]) {
+        this.ctx.measure('_' + c, v, true)
+        this.counters.set(c, 0)
       }
     }
-
-    this.ctx.measure('sessions-user', user)
-    this.ctx.measure('sessions-system', sys)
-    this.ctx.measure('sessions-anonymous', anonymous)
-
-    this.ctx.measure('workspaces', this.workspaces.size)
-    this.ctx.measure('workspaces-user', userWorkspaces)
-    this.ctx.measure('workspaces-systemonly', sysOnlyWorkspaces)
 
     if (this.ticks % (60 * ticksPerSecond) === 0) {
       const workspacesToUpdate: WorkspaceUuid[] = []
 
       for (const [wsId, workspace] of this.workspaces.entries()) {
-        // update account lastVisit every minute per every workspace.∏
+        // update account lastVisit every minute per every workspace.
         for (const val of workspace.sessions.values()) {
           if (val.session.getUser() !== systemAccountUuid) {
             workspacesToUpdate.push(wsId)
@@ -342,6 +335,32 @@ export class TSessionManager implements SessionManager {
         workspace.softShutdown = workspaceSoftShutdownTicks
       }
     }
+  }
+
+  private sendUserWorkspaceStats (): void {
+    const { sys, user, anonymous } = this.calcWorkspaceStats(Array.from(this.sessions.values()))
+
+    let userWorkspaces: number = 0
+    let sysOnlyWorkspaces: number = 0
+
+    for (const ws of this.workspaces.values()) {
+      const { sys, user } = this.calcWorkspaceStats(Array.from(ws.sessions.values()))
+      if (user > 0) {
+        userWorkspaces++
+      } else {
+        if (sys > 0) {
+          sysOnlyWorkspaces++
+        }
+      }
+    }
+
+    this.ctx.measure('sessions-user', user, true)
+    this.ctx.measure('sessions-system', sys, true)
+    this.ctx.measure('sessions-anonymous', anonymous, true)
+
+    this.ctx.measure('workspaces', this.workspaces.size, true)
+    this.ctx.measure('workspaces-user', userWorkspaces, true)
+    this.ctx.measure('workspaces-systemonly', sysOnlyWorkspaces, true)
   }
 
   private handleSessionTick (now: number): void {
@@ -422,7 +441,8 @@ export class TSessionManager implements SessionManager {
         role
       },
       info,
-      token.extra?.mode === 'backup'
+      token.extra?.mode === 'backup',
+      this
     )
   }
 
@@ -513,7 +533,7 @@ export class TSessionManager implements SessionManager {
       }
     }
 
-    this.ctx.measure('sessions-hung', hungSessions)
+    this.ctx.measure('sessions-hung', hungSessions, true)
 
     const hungSessionsPercent = totalSessions > 0 ? (100 * hungSessions) / totalSessions : 0
 
@@ -664,6 +684,7 @@ export class TSessionManager implements SessionManager {
     sessionId: string | undefined
   ): Promise<AddSessionResponse> {
     return await ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
+      this.add('addSession', 1)
       let account: LoginInfoWithWorkspaces | undefined
 
       try {
@@ -919,6 +940,8 @@ export class TSessionManager implements SessionManager {
     workspaceDataId: WorkspaceDataId | undefined,
     branding: Branding | null
   ): Workspace {
+    this.add('startWorkspace', 1)
+
     const upgrade = token.extra?.model === 'upgrade'
     const context = ctx.newChild('🧲 session', {}, { span: false })
     const workspaceIds: WorkspaceIds = {
@@ -1026,6 +1049,7 @@ export class TSessionManager implements SessionManager {
 
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
+      // We need to close all requests from counters
       ctx.info('bye happen', {
         workspaceId: workspace?.wsId.uuid,
         userId: sessionRef.session.getUser(),
@@ -1324,6 +1348,7 @@ export class TSessionManager implements SessionManager {
     request: Request<any>,
     workspaceId: WorkspaceUuid
   ): Promise<void> {
+    this.add('request', 1)
     // Calculate total number of clients
     const reqId = generateId()
     const source = service.token.extra?.service ?? '🤦‍♂️user'
@@ -1458,6 +1483,7 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
+    this.add('request', 1)
     const rateLimitStatus = this.checkRate(service)
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {

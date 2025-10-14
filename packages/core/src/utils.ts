@@ -44,20 +44,37 @@ import type { Pipeline } from './types'
 
 /**
  * Return some estimation for object size
+ * Optimized version that handles circular references and uses more efficient queue processing
  */
 export function estimateDocSize (_obj: any): number {
   let result = 0
   const toProcess = [_obj]
-  while (toProcess.length > 0) {
-    const obj = toProcess.shift()
-    if (typeof obj === 'undefined') {
+  const visited = new WeakSet<object>()
+  let index = 0
+
+  while (index < toProcess.length) {
+    const obj = toProcess[index++]
+
+    if (typeof obj === 'undefined' || typeof obj === 'function') {
       continue
     }
-    if (typeof obj === 'function') {
+
+    // Handle primitives directly
+    const objType = typeof obj
+    if (objType !== 'object' || obj === null) {
       continue
     }
-    for (const key in obj) {
-      // include prototype properties
+
+    // Check for circular references
+    if (visited.has(obj)) {
+      continue
+    }
+    visited.add(obj)
+
+    // Use Object.keys to only iterate over own properties (not prototype chain)
+    const keys = Object.keys(obj)
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
       const value = obj[key]
       const type = getTypeOf(value)
       result += key.length

@@ -572,6 +572,14 @@ export interface ClientSessionCtx {
   sendError: (id: ReqId | undefined, msg: any, error: any) => Promise<void>
 }
 
+//
+// Will add some values to global one second counters map
+//
+export interface OneSecondCounters {
+  // Will add value, and then done is called, value will be returned
+  add: (counter: string, count: number) => void
+}
+
 /**
  * @public
  */
@@ -710,7 +718,7 @@ export type SessionHealth = 'healthy' | 'degraded' | 'unhealthy'
 /**
  * @public
  */
-export interface SessionManager {
+export interface SessionManager extends OneSecondCounters {
   // workspaces: Map<WorkspaceUuid, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 

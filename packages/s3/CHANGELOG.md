@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/s3
 
-This log was last generated on Mon, 13 Oct 2025 12:15:35 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 05:23:10 GMT and should not be manually modified.
+
+## 0.7.4
+Tue, 14 Oct 2025 05:23:10 GMT
+
+### Patches
+
+- deps
 
 ## 0.7.3
 Mon, 13 Oct 2025 12:15:35 GMT

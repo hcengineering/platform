@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-core",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.18",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -32,18 +32,19 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@types/uuid": "^8.3.1"
+    "@types/uuid": "^8.3.1",
+    "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.4",
+    "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/communication-sdk-types": "^0.7.3",
     "@hcengineering/communication-types": "^0.7.3",
-    "@hcengineering/core": "^0.7.6",
-    "@hcengineering/platform": "^0.7.4",
-    "@hcengineering/query": "^0.7.5",
-    "@hcengineering/rpc": "^0.7.4",
-    "@hcengineering/server-token": "^0.7.4",
-    "@hcengineering/storage": "^0.7.4",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/query": "^0.7.6",
+    "@hcengineering/rpc": "^0.7.5",
+    "@hcengineering/server-token": "^0.7.5",
+    "@hcengineering/storage": "^0.7.5",
     "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/kafka",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.18",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -31,13 +31,14 @@
     "@types/node": "^22.15.29",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.6",
-    "@hcengineering/platform": "^0.7.4",
-    "@hcengineering/server-core": "workspace:0.7.3",
-    "@hcengineering/storage": "^0.7.4",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/server-core": "workspace:0.7.4",
+    "@hcengineering/storage": "^0.7.5",
     "kafkajs": "^2.2.4"
   },
   "repository": "https://github.com/hcengineering/huly.server",
