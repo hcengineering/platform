@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import {
   type Account,
   type AccountRole,
@@ -249,12 +248,6 @@ export type PipelineFactory = (
   broadcast: BroadcastOps,
   branding: Branding | null
 ) => Promise<Pipeline>
-
-export type CommunicationApiFactory = (
-  ctx: MeasureContext,
-  ws: WorkspaceIds,
-  callbacks: CommunicationCallbacks
-) => Promise<CommunicationApi>
 
 /**
  * @public

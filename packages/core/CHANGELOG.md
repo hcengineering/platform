@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/server-core
 
-This log was last generated on Tue, 14 Oct 2025 05:23:10 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 10:31:32 GMT and should not be manually modified.
+
+## 0.7.5
+Tue, 14 Oct 2025 10:31:32 GMT
+
+### Patches
+
+- Remove communication dependencies
 
 ## 0.7.4
 Tue, 14 Oct 2025 05:23:10 GMT

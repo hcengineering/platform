@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -41,7 +41,7 @@
     "@hcengineering/core": "^0.7.7",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/rpc": "^0.7.5",
-    "@hcengineering/server-core": "workspace:0.7.4",
+    "@hcengineering/server-core": "workspace:0.7.5",
     "@hcengineering/server-token": "^0.7.5",
     "utf-8-validate": "^6.0.4"
   },

@@ -28,7 +28,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -95,7 +95,7 @@ importers:
         specifier: ^0.7.7
         version: 0.7.7
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/text':
         specifier: ^0.7.5
@@ -161,12 +161,6 @@ importers:
       '@hcengineering/analytics':
         specifier: ^0.7.5
         version: 0.7.5
-      '@hcengineering/communication-sdk-types':
-        specifier: ^0.7.3
-        version: 0.7.3
-      '@hcengineering/communication-types':
-        specifier: ^0.7.3
-        version: 0.7.3
       '@hcengineering/core':
         specifier: ^0.7.7
         version: 0.7.7
@@ -250,7 +244,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -320,7 +314,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
@@ -381,7 +375,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -445,7 +439,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.5
@@ -515,7 +509,7 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
@@ -576,7 +570,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       minio:
         specifier: ^8.0.5
@@ -637,7 +631,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       bson:
         specifier: ^6.10.3
@@ -704,7 +698,7 @@ importers:
         specifier: ^0.7.12
         version: 0.7.12
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       postgres:
         specifier: ^3.4.7
@@ -774,7 +768,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.5
@@ -847,7 +841,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -914,22 +908,22 @@ importers:
         specifier: ^0.7.7
         version: 0.7.7
       '@hcengineering/datalake':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../datalake
       '@hcengineering/hulylake':
-        specifier: workspace:0.7.5
+        specifier: workspace:0.7.6
         version: link:../hulylake
       '@hcengineering/minio':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../minio
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/s3':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../s3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.4
+        specifier: workspace:0.7.5
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -1580,12 +1574,6 @@ packages:
 
   '@hcengineering/client@0.7.6':
     resolution: {integrity: sha512-QBRDi/kIqmwdEmNjaXEZE0KbW/E6H8J4J2p0j3hPmJS2tmHs3U4o4etl0ZLMMmDloskfxlI10smQm3fWLAqIYA==}
-
-  '@hcengineering/communication-sdk-types@0.7.3':
-    resolution: {integrity: sha512-Noi9J+s0IH5qbnt5wV8WXMClKmCCnvPpquf3GjJ8CuBmmQvUAv0ogIy7mbuC60ZZDJaHHY9ihtrxZY3lNOJsvA==}
-
-  '@hcengineering/communication-types@0.7.3':
-    resolution: {integrity: sha512-FeOx3oXgzhTq2abEZY4YZ6aqMTv0QxSx94OAkWvW1JD8l0GyYCf2Qnx1aC9pRIUzrEA61Eri9PLBj/+y00BItw==}
 
   '@hcengineering/core@0.7.7':
     resolution: {integrity: sha512-SgCZ87CHeOuUjxkKOYQlW3fKf6WSTgGjJi9vHWt2ceqhqb9eFc8x3RtDwKsHo3MW6+dzg/f76SMTwYkV5qyJSA==}
@@ -5470,15 +5458,6 @@ snapshots:
     dependencies:
       '@hcengineering/core': 0.7.7
       '@hcengineering/platform': 0.7.5
-
-  '@hcengineering/communication-sdk-types@0.7.3':
-    dependencies:
-      '@hcengineering/communication-types': 0.7.3
-      '@hcengineering/core': 0.7.7
-
-  '@hcengineering/communication-types@0.7.3':
-    dependencies:
-      '@hcengineering/core': 0.7.7
 
   '@hcengineering/core@0.7.7':
     dependencies:
