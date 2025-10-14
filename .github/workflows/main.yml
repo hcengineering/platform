@@ -79,6 +79,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -223,6 +226,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -349,6 +356,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -440,6 +450,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -513,6 +526,9 @@ jobs:
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
