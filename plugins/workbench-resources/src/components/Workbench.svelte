@@ -642,6 +642,12 @@
         return sp
       }
     }
+    for (const g of navigatorModel?.groups ?? []) {
+      const sp = g.specials?.find((x) => x.id === id)
+      if (sp !== undefined) {
+        return sp
+      }
+    }
   }
 
   let cover: HTMLElement

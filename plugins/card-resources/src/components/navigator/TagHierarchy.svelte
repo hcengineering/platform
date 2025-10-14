@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import { NavItem, getCurrentLocation, navigate } from '@hcengineering/ui'
-  import card from '../../plugin'
   import view from '@hcengineering/view'
+  import card from '../../plugin'
 
-  export let space: Ref<Space>
+  export let space: Ref<Space> | undefined
   export let classes: MasterTag[] = []
   export let allClasses: MasterTag[] = []
   export let _class: Ref<Class<Doc>> | undefined
@@ -28,6 +29,7 @@
   export let currentSpace: Ref<Space> | undefined
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
   let descendants = new Map<Ref<Class<Doc>>, MasterTag[]>()
 
   function getDescendants (_class: Ref<MasterTag>): MasterTag[] {
@@ -72,7 +74,11 @@
     {level}
     selected={clazz._id === _class && currentSpace === space}
     on:click={() => {
-      select(clazz._id, space)
+      if (space !== undefined) {
+        select(clazz._id, space)
+      } else {
+        dispatch('select', clazz._id)
+      }
     }}
   >
     <svelte:fragment slot="dropbox">

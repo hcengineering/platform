@@ -98,7 +98,8 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const id = loc.path[3]
-  if (loc.path[4] === undefined && id !== undefined && id !== 'browser') {
+  const specialItems = ['browser', 'type', 'all']
+  if (loc.path[4] === undefined && id !== undefined && !specialItems.includes(id)) {
     return await generateLocation(loc, id)
   }
 }

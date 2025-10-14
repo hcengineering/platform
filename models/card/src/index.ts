@@ -447,15 +447,24 @@ export function createModel (builder: Builder): void {
             position: 'top'
           }
         ],
-        spaces: [
+        spaces: [],
+        groups: [
           {
-            id: 'spaces',
-            label: core.string.Spaces,
-            spaceClass: card.class.CardSpace,
-            addSpaceLabel: core.string.Space,
-            icon: card.icon.Space,
-            // intentionally left empty in order to make space presenter working
-            specials: []
+            id: 'types',
+            label: card.string.MasterTags,
+            groupByClass: card.class.MasterTag,
+            icon: card.icon.MasterTags,
+            component: card.component.TypesNavigator,
+            specials: [
+              {
+                id: 'type',
+                label: card.string.Cards,
+                component: card.component.Main,
+                componentProps: {
+                  defaultViewletDescriptor: card.viewlet.CardFeedDescriptor
+                }
+              }
+            ]
           }
         ]
       },
@@ -658,7 +667,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ClassFilters, {
-    filters: [],
+    filters: ['space'],
     ignoreKeys: ['parent']
   })
 
