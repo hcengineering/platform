@@ -147,8 +147,11 @@ export function getFileSrcSet (_blob: Ref<Blob>, width?: number, height?: number
  */
 export async function getVideoMeta (file: string, filename?: string): Promise<VideoMeta | undefined> {
   try {
+    const token = getMetadata(presentation.metadata.Token) ?? ''
+    const workspace = getCurrentWorkspaceUuid()
+
     const storage = getFileStorage()
-    const meta = await storage.getFileMeta(file)
+    const meta = await storage.getFileMeta(token, workspace, file)
     return meta as VideoMeta
   } catch {
     return {}

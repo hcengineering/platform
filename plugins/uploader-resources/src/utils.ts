@@ -15,7 +15,8 @@
 
 import { type FileUploadOptions, type FileUploadPopupOptions, toFileWithPath } from '@hcengineering/uploader'
 import { type Ref, type Blob, RateLimiter } from '@hcengineering/core'
-import { generateFileId, getFileMetadata, getFileStorage } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
+import presentation, { generateFileId, getFileMetadata, getFileStorage } from '@hcengineering/presentation'
 import { type FileUpload, type FileUploadInfo, type Upload, trackUpload, untrackUpload } from './store'
 
 const DEFAULT_MAX_PARALLEL_UPLOADS = 10
@@ -135,6 +136,9 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
  */
 async function uploadFile (info: FileUploadInfo, upload: Upload, options: FileUploadOptions): Promise<void> {
   const { file, name, uuid, type, path } = info
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+
   const storage = getFileStorage()
 
   const controller = new AbortController()
@@ -186,7 +190,7 @@ async function uploadFile (info: FileUploadInfo, upload: Upload, options: FileUp
 
   try {
     // Upload file using storage backend with progress tracking
-    await storage.uploadFile(uuid, file, {
+    await storage.uploadFile(token, workspace, uuid, file, {
       signal: controller.signal,
       onProgress: (progress) => {
         const prev = fileUpload.progress

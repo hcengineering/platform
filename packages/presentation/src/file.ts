@@ -15,10 +15,10 @@
 
 import { type Blob as PlatformBlob, type Ref, type WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import { type FileStorage, createFileStorage as createStorageClient } from '@hcengineering/storage-client'
 import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
-import { type FileStorage } from './types'
 import { getFileMetadata } from './filetypes'
 
 export function getCurrentWorkspaceUuid (): WorkspaceUuid {
@@ -26,9 +26,18 @@ export function getCurrentWorkspaceUuid (): WorkspaceUuid {
   return workspaceUuid as WorkspaceUuid
 }
 
+function getToken (): string {
+  return getMetadata(plugin.metadata.Token) ?? ''
+}
+
 /** @public */
 export function generateFileId (): string {
   return uuid()
+}
+
+/** @public */
+export function createFileStorage (uploadUrl: string, datalakeUrl?: string, hulylakeUrl?: string): FileStorage {
+  return createStorageClient({ uploadUrl, datalakeUrl, hulylakeUrl })
 }
 
 /** @public */
@@ -47,8 +56,10 @@ export function getFileUrl (file: string, filename?: string): string {
     return file
   }
 
+  const workspace = getCurrentWorkspaceUuid()
+
   const storage = getFileStorage()
-  return storage.getFileUrl(file, filename)
+  return storage.getFileUrl(workspace, file, filename)
 }
 
 /** @public */
@@ -58,8 +69,11 @@ export async function uploadFile (
 ): Promise<{ uuid: Ref<PlatformBlob>, metadata: Record<string, any> }> {
   uuid ??= generateFileId() as Ref<PlatformBlob>
 
+  const token = getToken()
+  const workspace = getCurrentWorkspaceUuid()
+
   const storage = getFileStorage()
-  await storage.uploadFile(uuid, file)
+  await storage.uploadFile(token, workspace, uuid, file)
 
   const metadata = (await getFileMetadata(file, uuid)) ?? {}
 
@@ -68,8 +82,11 @@ export async function uploadFile (
 
 /** @public */
 export async function deleteFile (file: string): Promise<void> {
+  const token = getToken()
+  const workspace = getCurrentWorkspaceUuid()
+
   const storage = getFileStorage()
-  await storage.deleteFile(file)
+  await storage.deleteFile(token, workspace, file)
 }
 
 export async function getJsonOrEmpty<T = any> (file: string, name: string): Promise<T | undefined> {

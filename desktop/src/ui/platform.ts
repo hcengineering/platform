@@ -288,6 +288,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
   setMetadata(login.metadata.HideLocalLogin, config.HIDE_LOCAL_LOGIN === 'true')
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
+  setMetadata(presentation.metadata.UploadURL, config.FILES_URL)
   setMetadata(presentation.metadata.DatalakeUrl, config.DATALAKE_URL ?? '')
   setMetadata(presentation.metadata.FileStorage, createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL))
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)

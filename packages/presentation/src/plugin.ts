@@ -38,6 +38,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { type FileStorage } from '@hcengineering/storage-client'
 import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import {
@@ -45,10 +46,11 @@ import {
   type DocCreateExtension,
   type DocRules,
   type FilePreviewExtension,
-  type FileStorage,
   type InstantTransactions,
   type ObjectSearchCategory
 } from './types'
+
+export type { FileStorage } from '@hcengineering/storage-client'
 
 /**
  * @public
