@@ -444,6 +444,11 @@
       "packageName": "@hcengineering/hulylake-client",
       "projectFolder": "packages/hulylake-client",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/storage-client",
+      "projectFolder": "packages/storage-client",
+      "shouldPublish": true
     }
   ]
 }

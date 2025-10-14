@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/storage-client",
+      "comment": "new storage client",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/storage-client"
+}
