@@ -88,25 +88,9 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  let uploadConfig = process.env.UPLOAD_CONFIG
-  if (uploadConfig === undefined) {
-    uploadConfig = ''
-  }
-
-  let previewConfig = process.env.PREVIEW_CONFIG
-  if (previewConfig === undefined) {
-    // Use universal preview config
-    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
-  }
-
   let previewUrl = process.env.PREVIEW_URL
   if (previewUrl === undefined) {
     previewUrl = ''
-  }
-
-  let filesUrl = process.env.FILES_URL
-  if (filesUrl === undefined) {
-    filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
   }
 
   let pulseUrl = process.env.PULSE_URL
@@ -145,7 +129,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     accountsUrl,
     accountsUrlInternal,
     uploadUrl,
-    filesUrl,
     modelVersion,
     version,
     gmailUrl,
@@ -156,8 +139,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaborator,
     brandingUrl,
     previewUrl,
-    previewConfig,
-    uploadConfig,
     pushPublicKey,
     disableSignUp,
     hideLocalLogin,

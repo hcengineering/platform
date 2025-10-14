@@ -118,6 +118,8 @@
           name,
           file,
           uuid: result.uuid as Ref<Blob>,
+          type: result.type,
+          path: undefined,
           metadata: {
             width: result.width,
             height: result.height

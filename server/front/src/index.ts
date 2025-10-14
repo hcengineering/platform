@@ -258,7 +258,6 @@ export function start (
     accountsUrl: string
     accountsUrlInternal?: string
     uploadUrl: string
-    filesUrl: string
     modelVersion: string
     version: string
     rekoniUrl: string
@@ -269,8 +268,6 @@ export function start (
     collaboratorUrl: string
     brandingUrl?: string
     previewUrl?: string
-    previewConfig: string
-    uploadConfig: string
     linkPreviewUrl?: string
     pushPublicKey?: string
     disableSignUp?: string
@@ -338,7 +335,6 @@ export function start (
     const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
-      FILES_URL: config.filesUrl,
       MODEL_VERSION: config.modelVersion,
       VERSION: config.version,
       REKONI_URL: config.rekoniUrl,
@@ -351,8 +347,6 @@ export function start (
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_URL: config.previewUrl,
-      PREVIEW_CONFIG: config.previewConfig,
-      UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
       DISABLE_SIGNUP: config.disableSignUp,
       HIDE_LOCAL_LOGIN: config.hideLocalLogin,

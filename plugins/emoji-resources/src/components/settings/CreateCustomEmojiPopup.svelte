@@ -20,7 +20,7 @@
 
   async function save (): Promise<void> {
     if (file === undefined) return
-    const uuid = await uploadFile(file)
+    const { uuid } = await uploadFile(file)
     await client.createDoc(emojiPlugin.class.CustomEmoji, core.space.Workspace, {
       shortcode: shortcode.toLowerCase(),
       image: uuid

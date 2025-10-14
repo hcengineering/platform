@@ -140,8 +140,7 @@ class DatalakeStorage implements FileStorage {
 
     if (file.size <= 10 * 1024 * 1024) {
       const formData = new FormData()
-      formData.append('file', file)
-      formData.append('uuid', uuid)
+      formData.append('file', file, uuid)
 
       await uploadXhr(
         {

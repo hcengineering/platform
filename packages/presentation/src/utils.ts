@@ -65,7 +65,7 @@ import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
-import { getFileStorage, type KeyedAttribute } from '..'
+import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin, { type ClientHook } from './plugin'
 

@@ -37,7 +37,6 @@
     draftsStore,
     fetchLinkPreviewDetails,
     getClient,
-    getFileMetadata,
     isLinkPreviewEnabled,
     uploadFile,
     LinkPreviewAttachmentMetadata
@@ -189,9 +188,8 @@
 
   async function createAttachment (file: File, meta?: AttachmentMetadata): Promise<void> {
     try {
-      const uuid = await uploadFile(file)
-      const metadata = meta ?? (await getFileMetadata(file, uuid))
-      await _createAttachment(uuid, file.name, file, metadata)
+      const { uuid, metadata } = await uploadFile(file)
+      await _createAttachment(uuid, file.name, file, meta ?? metadata)
     } catch (err: any) {
       void setPlatformStatus(unknownError(err))
     }

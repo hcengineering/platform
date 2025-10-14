@@ -15,20 +15,7 @@ Front service is suited to deliver application bundles and resource assets, it a
 * COLLABORATOR_URL: Specifies the URL of the collaborator service.
 * MODEL_VERSION: Specifies the required model version.
 * SERVER_SECRET: Specifies the server secret.
-* PREVIEW_CONFIG: Specifies the preview configuration.
-* UPLOAD_CONFIG: Specifies the upload configuration.
 * BRANDING_URL: Specifies the URL of the branding service.
-
-## Preview service configuration
-
-PREVIEW_CONFIG env variable format.
-
-A `;` separated list of pairs, mediaType|previewUrl.
-
-* mediaType - a type of media, image or video.
-* previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
-
-PREVIEW_CONFIG=image|https://front.hc.engineering/files/:workspace/api/preview/?width=:size&image=:downloadFile
 
 ## Variables
 

@@ -13,41 +13,35 @@
 // limitations under the License.
 //
 
-import {
-  type FileUploadOptions,
-  type FileUploadPopupOptions,
-  type FileWithPath,
-  toFileWithPath
-} from '@hcengineering/uploader'
-import { type Blob, type Ref, RateLimiter, hasAccountRole, getCurrentAccount, AccountRole } from '@hcengineering/core'
-import { type FileUpload, type Upload, trackUpload, untrackUpload, updateUploads } from './store'
-import { generateFileId, getFileUploadParams } from '@hcengineering/presentation'
-import { addNotification, NotificationSeverity } from '@hcengineering/ui'
-import { translate } from '@hcengineering/platform'
-import view from '@hcengineering/view'
-import { getCurrentLanguage } from '@hcengineering/theme'
+import { type FileUploadOptions, type FileUploadPopupOptions, toFileWithPath } from '@hcengineering/uploader'
+import { type Ref, type Blob, RateLimiter } from '@hcengineering/core'
+import { generateFileId, getFileMetadata, getFileStorage } from '@hcengineering/presentation'
+import { type FileUpload, type FileUploadInfo, type Upload, trackUpload, untrackUpload } from './store'
+
+const DEFAULT_MAX_PARALLEL_UPLOADS = 10
+const UPLOAD_SUCCESS_DISPLAY_DURATION = 2000
 
 export async function showFilesUploadPopup (
   options: FileUploadOptions,
   popupOptions: FileUploadPopupOptions
 ): Promise<void> {
-  await uploadXHR(popupOptions.fileManagerSelectionType === 'folders', options)
+  await uploadXHR(options, popupOptions)
 }
 
 export async function uploadXHRFiles (options: FileUploadOptions): Promise<void> {
-  await uploadXHR(false, options)
+  await uploadXHR(options, { itemsType: 'files' })
 }
 
 export async function uploadXHRFolders (options: FileUploadOptions): Promise<void> {
-  await uploadXHR(true, options)
+  await uploadXHR(options, { itemsType: 'folders' })
 }
 
-export async function uploadXHR (folders: boolean, options: FileUploadOptions): Promise<void> {
+export async function uploadXHR (options: FileUploadOptions, popupOptions: FileUploadPopupOptions): Promise<void> {
   const input = document.createElement('input')
   input.type = 'file'
-  input.webkitdirectory = folders
-  input.multiple = true
-  input.accept = options.allowedFileTypes?.join(',') ?? '*'
+  input.webkitdirectory = popupOptions.itemsType === 'folders'
+  input.multiple = popupOptions.itemsCount !== 'single'
+  input.accept = popupOptions.allowedFileTypes?.join(',') ?? '*'
 
   input.onchange = async (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -70,14 +64,11 @@ const callbackLimiter = new RateLimiter(1)
 
 /** @public */
 export async function uploadFiles (files: File[] | FileList, options: FileUploadOptions): Promise<void> {
-  const items = Array.from(files, (p) => {
-    const renamedFile = new File([p], generateFileId(), { type: p.type })
-    return toFileWithPath(renamedFile, toFileWithPath(p).relativePath)
-  })
-
+  const items = Array.from(files).map((file) => toFileWithPath(file))
   if (items.length === 0) {
     return
   }
+
   const upload: Upload = {
     uuid: generateFileId(),
     progress: 0,
@@ -85,130 +76,161 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
     files: new Map<string, FileUpload>()
   }
 
-  const limiter = new RateLimiter(options.maxNumberOfFiles ?? 10)
-  for (let i = 0; i < files.length; i++) {
-    const data = items[i]
-    const { relativePath } = data
-    const uuid = data.name
+  // Pre-create all file upload entries so UI shows all files from the start
+  const fileInfos: FileUploadInfo[] = []
+  for (const item of items) {
+    const uuid = generateFileId()
+    const name = item.name
+    const type = item.type
+    const path = item.relativePath ?? item.webkitRelativePath
+
+    // Storage backend expects file name to be unique hence renaming it here
+    const file = new File([item], uuid, { type })
+
+    // Add file to upload tracking immediately
+    const fileUpload: FileUpload = {
+      uuid,
+      name,
+      finished: false,
+      progress: 0
+    }
+    upload.files.set(uuid, fileUpload)
+
+    fileInfos.push({ file, name, uuid, type, path })
+  }
+
+  // Track the upload batch from the start (after all files are added)
+  trackUpload(upload)
+
+  const limiter = new RateLimiter(options.maxParallelUploads ?? DEFAULT_MAX_PARALLEL_UPLOADS)
+  for (const info of fileInfos) {
     void limiter.add(async () => {
-      await uploadFile(data, { name: files[i].name, uuid, type: data.type, relativePath }, upload, options)
+      await uploadFile(info, upload, options)
     })
   }
 
   await limiter.waitProcessing()
-  untrackUpload(upload)
-}
 
-export async function uploadFile (
-  file: FileWithPath,
-  metadata: Record<string, any>,
-  upload: Upload,
-  options: FileUploadOptions,
-  xhr = new XMLHttpRequest()
-): Promise<void> {
-  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
-    addNotification(
-      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
-      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
-      view.component.ReadOnlyNotification,
-      undefined,
-      NotificationSeverity.Info,
-      'readOnlyNotification'
-    )
+  // Check if all files were cancelled
+  if (upload.files.size === 0) {
+    // All files were cancelled, untrack immediately
+    untrackUpload(upload)
     return
   }
-  await new Promise<void>((resolve) => {
-    const fileUpload: FileUpload = {
-      name: metadata.name,
+
+  // Check if any files had errors and set upload-level error
+  const hasErrors = Array.from(upload.files.values()).some((f) => f.error !== undefined)
+  if (hasErrors) {
+    upload.error = 'Some files failed to upload'
+    trackUpload(upload)
+  } else {
+    // All files finished successfully - wait a bit then untrack
+    // This gives the user a moment to see the completion state
+    setTimeout(() => {
+      untrackUpload(upload)
+    }, UPLOAD_SUCCESS_DISPLAY_DURATION)
+  }
+} /**
+ * Uploads a single file with progress tracking, cancel/retry support
+ */
+async function uploadFile (info: FileUploadInfo, upload: Upload, options: FileUploadOptions): Promise<void> {
+  const { file, name, uuid, type, path } = info
+  const storage = getFileStorage()
+
+  const controller = new AbortController()
+
+  let fileUpload = upload.files.get(uuid)
+
+  if (fileUpload === undefined) {
+    // first upload, initialize state
+    fileUpload = {
+      uuid,
+      name,
       finished: false,
       progress: 0
     }
-    fileUpload.retry = async () => {
-      fileUpload.cancel?.()
-      await uploadFile(file, metadata, upload, options)
-    }
 
-    fileUpload.cancel = () => {
-      xhr.abort()
-      upload.files.delete(metadata.uuid ?? file.name)
-      upload.progress -= fileUpload.progress
-      resolve()
-      updateUploads()
-    }
+    upload.files.set(uuid, fileUpload)
+  } else {
+    // retry upload, reset state
+    fileUpload.error = undefined
+    fileUpload.finished = false
 
-    upload.files.set(metadata.uuid ?? file.name, fileUpload)
+    upload.progress -= fileUpload.progress
+    fileUpload.progress = 0
+
+    upload.error = undefined
+  }
+
+  fileUpload.retry = async () => {
+    // Just call uploadFile again with the same parameters
+    // The function will detect it's a retry and reset the state
+    await uploadFile(info, upload, options)
+  }
+
+  fileUpload.cancel = () => {
+    controller.abort()
+
+    upload.progress -= fileUpload.progress
+    upload.files.delete(uuid)
+
+    // If all files were cancelled, untrack the upload immediately
+    if (upload.files.size === 0) {
+      untrackUpload(upload)
+    } else {
+      trackUpload(upload)
+    }
+  }
+
+  trackUpload(upload)
+
+  try {
+    // Upload file using storage backend with progress tracking
+    await storage.uploadFile(uuid, file, {
+      signal: controller.signal,
+      onProgress: (progress) => {
+        const prev = fileUpload.progress
+        fileUpload.progress = progress.percentage
+        // Update overall progress (sum of all file percentages)
+        upload.progress += fileUpload.progress - prev
+        trackUpload(upload)
+      }
+    })
+
+    const metadata = (await getFileMetadata(file, uuid as Ref<Blob>)) ?? {}
+
+    // Mark as finished and ensure progress is at 100%
+    fileUpload.finished = true
+    const prev = fileUpload.progress
+    fileUpload.progress = 100
+    upload.progress += fileUpload.progress - prev
     trackUpload(upload)
 
-    const uploadParams = getFileUploadParams(file.name, file)
-    xhr.open('POST', uploadParams.url, true)
-
-    for (const key in uploadParams.headers) {
-      xhr.setRequestHeader(key, uploadParams.headers[key])
-    }
-
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const prev = fileUpload.progress
-        const percentComplete = (event.loaded / event.total) * 100
-        fileUpload.progress = percentComplete
-        upload.progress += fileUpload.progress - prev
-        updateUploads()
+    // Call the upload callback if provided
+    const { onFileUploaded } = options
+    if (onFileUploaded !== undefined) {
+      try {
+        await callbackLimiter.exec(async () => {
+          await onFileUploaded({
+            uuid: uuid as Ref<Blob>,
+            file,
+            name,
+            type,
+            path,
+            metadata
+          })
+        })
+      } catch (error) {
+        fileUpload.error = error instanceof Error ? error.message : String(error)
+        trackUpload(upload)
       }
     }
-
-    xhr.onload = async () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const uuid = metadata.uuid as Ref<Blob>
-        const { onFileUploaded } = options
-        if (uuid !== undefined && onFileUploaded !== undefined) {
-          try {
-            void callbackLimiter.exec(async () => {
-              await onFileUploaded({
-                uuid,
-                file,
-                name: metadata.name,
-                path: metadata.relativePath,
-                metadata
-              })
-            })
-            fileUpload.finished = true
-          } catch (error) {
-            fileUpload.error = error as string
-          }
-        } else {
-          fileUpload.error = 'missed metadata uuid'
-        }
-        resolve()
-      } else {
-        fileUpload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
-        resolve()
-      }
-      updateUploads()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Upload aborted') {
+      return
     }
 
-    xhr.onerror = () => {
-      fileUpload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
-      resolve()
-    }
-
-    xhr.ontimeout = () => {
-      fileUpload.error = 'upload timeout'
-      resolve()
-    }
-
-    if (uploadParams.method === 'form-data') {
-      const formData = new FormData()
-      formData.append('file', file)
-      Object.entries(metadata).forEach(([key, value]) => {
-        if (value === undefined) {
-          return
-        }
-        formData.append(key, value)
-      })
-      xhr.send(formData)
-    } else {
-      xhr.setRequestHeader('Content-Type', file.type)
-      xhr.send(file)
-    }
-  })
+    fileUpload.error = error instanceof Error ? error.message : String(error)
+    trackUpload(upload)
+  }
 }

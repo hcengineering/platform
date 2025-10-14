@@ -47,13 +47,14 @@
     if (!file.type.startsWith('image/')) return
     loading++
     try {
-      const uuid = await uploadFile(file)
+      const { uuid, metadata } = await uploadFile(file)
       await client.addCollection(attachment.class.Photo, space, objectId, _class, 'attachments', {
         name: file.name,
         file: uuid,
         type: file.type,
         size: file.size,
-        lastModified: file.lastModified
+        lastModified: file.lastModified,
+        metadata
       })
     } catch (err: any) {
       await setPlatformStatus(unknownError(err))

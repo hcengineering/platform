@@ -19,6 +19,7 @@ import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
 import { type FileStorage } from './types'
+import { getFileMetadata } from './filetypes'
 
 export function getCurrentWorkspaceUuid (): WorkspaceUuid {
   const workspaceUuid = getMetadata(plugin.metadata.WorkspaceUuid) ?? ''
@@ -51,13 +52,18 @@ export function getFileUrl (file: string, filename?: string): string {
 }
 
 /** @public */
-export async function uploadFile (file: File, uuid?: Ref<PlatformBlob>): Promise<Ref<PlatformBlob>> {
+export async function uploadFile (
+  file: File,
+  uuid?: Ref<PlatformBlob>
+): Promise<{ uuid: Ref<PlatformBlob>, metadata: Record<string, any> }> {
   uuid ??= generateFileId() as Ref<PlatformBlob>
 
   const storage = getFileStorage()
   await storage.uploadFile(uuid, file)
 
-  return uuid
+  const metadata = (await getFileMetadata(file, uuid)) ?? {}
+
+  return { uuid, metadata }
 }
 
 /** @public */

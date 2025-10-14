@@ -107,7 +107,6 @@
         "QUEUE_CONFIG": "huly.local:19092",
         "REGION": "cockroach",
         "QUEUE_REGION": "cockroach",
-        "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
         "BRANDING_PATH": "${workspaceRoot}/dev/branding.json"
       },
@@ -833,7 +832,7 @@
         "SECRET": "secret",
         "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
         "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://huly.local:3000",
         "STATS_URL": "http://huly.local:4900",
         "QUEUE_CONFIG": "localhost:19092"
       },
