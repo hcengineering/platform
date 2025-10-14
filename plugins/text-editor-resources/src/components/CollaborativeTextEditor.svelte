@@ -458,6 +458,7 @@
       onContentError: ({ error, disableCollaboration }) => {
         disableCollaboration()
         contentError = true
+        console.error(error)
         Analytics.handleError(error)
       }
     })

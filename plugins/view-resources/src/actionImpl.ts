@@ -1,4 +1,6 @@
-import {
+import contact from '@hcengineering/contact'
+import core, {
+  type Blob,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -6,17 +8,21 @@ import {
   type Ref,
   type Space,
   type TxResult,
-  getCurrentAccount
+  getCurrentAccount,
+  makeDocCollabId
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
 import {
-  MessageBox,
-  getClient,
-  updateAttribute,
   type ContextStore,
+  MessageBox,
   contextStore,
-  copyTextToClipboardOldBrowser
+  copyTextToClipboardOldBrowser,
+  getClient,
+  getMarkup,
+  updateAttribute
 } from '@hcengineering/presentation'
+import { markupToJSON } from '@hcengineering/text'
+import { markupToMarkdown } from '@hcengineering/text-markdown'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -24,10 +30,12 @@ import {
   type PopupPosAlignment,
   closeTooltip,
   isPopupPosAlignment,
+  locationToUrl,
   navigate,
   showPanel,
   showPopup
 } from '@hcengineering/ui'
+import { get } from 'svelte/store'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
 import {
@@ -36,13 +44,10 @@ import {
   type SelectionStore,
   focusStore,
   previewDocument,
-  selectionStore,
-  selectionLimit
+  selectionLimit,
+  selectionStore
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
-import contact from '@hcengineering/contact'
-import { locationToUrl } from '@hcengineering/ui'
-import { get } from 'svelte/store'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -65,21 +70,20 @@ async function CopyTextToClipboard (
   }
 ): Promise<void> {
   const getText = await getResource(props.textProvider)
+  const text = Array.isArray(doc)
+    ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
+    : await getText(doc, props.props)
+  await copyText(text, 'text/plain')
+}
+
+async function copyText (text: any, contentType: string = 'text/plain'): Promise<void> {
   try {
-    // Safari specific behavior
-    // see https://bugs.webkit.org/show_bug.cgi?id=222262
-    const text = Array.isArray(doc)
-      ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
-      : await getText(doc, props.props)
     const clipboardItem = new ClipboardItem({
       'text/plain': text
     })
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    const text = Array.isArray(doc)
-      ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
-      : await getText(doc, props.props)
     if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
       await navigator.clipboard.writeText(text)
     } else copyTextToClipboardOldBrowser(text)
@@ -589,6 +593,41 @@ async function getPopupAlignment (
   }
 }
 
+async function CopyDocumentMarkdown (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    contentClass: Ref<Class<Doc>>
+    contentField: string
+  }
+): Promise<void> {
+  const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
+  if (docs.length !== 1) {
+    return
+  }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const contentClass = hierarchy.getClass(props.contentClass)
+  if (contentClass == null) {
+    return
+  }
+  const contentField = hierarchy.findAttribute(props.contentClass, props.contentField)
+  if (contentField == null) {
+    return
+  }
+  if (contentField.type._class === core.class.TypeCollaborativeDoc) {
+    const content = await getMarkup(
+      makeDocCollabId(docs[0], props.contentField),
+      (docs[0] as any)[props.contentField] as Ref<Blob>
+    )
+    if (content !== null) {
+      const jsonMarkup = markupToJSON(content)
+      const contentJson = markupToMarkdown(jsonMarkup)
+      await copyText(contentJson, 'text/markdown')
+    }
+  }
+}
+
 /**
  * @public
  */
@@ -616,5 +655,6 @@ export const actionImpl = {
   ShowPopup,
   ShowEditor,
   ValueSelector,
-  AttributeSelector
+  AttributeSelector,
+  CopyDocumentMarkdown
 }

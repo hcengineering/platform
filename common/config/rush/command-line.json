@@ -249,6 +249,14 @@
     },
     {
       "commandKind": "global",
+      "name": "docker-server",
+      "summary": "Build docker with platform",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/docker-server.sh && rush docker:up"
+    },
+    {
+      "commandKind": "global",
       "name": "docker:up",
       "summary": "Up development build",
       "description": "Up development build",
