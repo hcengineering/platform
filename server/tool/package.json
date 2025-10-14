@@ -51,7 +51,7 @@
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-client": "^0.7.5",
-    "@hcengineering/server": "^0.7.5",
+    "@hcengineering/server": "^0.7.6",
     "@hcengineering/server-storage": "^0.7.6",
     "@hcengineering/mongo": "^0.7.5",
     "@hcengineering/collaboration": "^0.7.5",

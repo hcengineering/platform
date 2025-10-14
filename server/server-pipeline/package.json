@@ -44,7 +44,7 @@
     "@hcengineering/server-attachment-resources": "^0.7.0",
     "@hcengineering/server-collaboration": "^0.7.0",
     "@hcengineering/server-collaboration-resources": "^0.7.0",
-    "@hcengineering/server": "^0.7.5",
+    "@hcengineering/server": "^0.7.6",
     "@hcengineering/server-contact": "^0.7.0",
     "@hcengineering/server-contact-resources": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",
