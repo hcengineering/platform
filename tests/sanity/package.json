@@ -52,6 +52,7 @@
     "@hcengineering/core": "^0.7.7",
     "@hcengineering/client-resources": "^0.7.6",
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.5"
+    "@hcengineering/account-client": "^0.7.5",
+    "@hcengineering/server-token": "^0.7.5"
   }
 }
