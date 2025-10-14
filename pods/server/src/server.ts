@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Tx, type WorkspaceIds } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { startSessionManager } from '@hcengineering/server'
 import {
-  type CommunicationApiFactory,
+  type CommunicationCallbacks,
   type PlatformQueue,
   type SessionManager,
   type StorageConfiguration
@@ -52,6 +52,7 @@ import {
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 import { startHttpServer } from './server_http'
+import type { ServerApi } from '@hcengineering/communication-sdk-types'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -110,7 +111,11 @@ export function start (
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
-  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+  const communicationApiFactory = async (
+    ctx: MeasureContext,
+    workspace: WorkspaceIds,
+    broadcastSessions: CommunicationCallbacks
+  ): Promise<ServerApi> => {
     if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
       return {
         findMessagesMeta: async () => [],

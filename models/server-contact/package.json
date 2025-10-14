@@ -38,7 +38,7 @@
     "@hcengineering/model": "^0.7.5",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/server-templates": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",

@@ -21,10 +21,11 @@ import core, {
   type MeasureContext,
   type OperationDomain,
   type SessionData,
-  type TxDomainEvent
+  type TxDomainEvent,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import {
-  type CommunicationApiFactory,
+  type CommunicationCallbacks,
   type Middleware,
   type MiddlewareCreator,
   type PipelineContext,
@@ -32,6 +33,12 @@ import {
 } from '@hcengineering/server-core'
 
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
+
+export type CommunicationApiFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIds,
+  callbacks: CommunicationCallbacks
+) => Promise<ServerApi>
 
 /**
  * @public
