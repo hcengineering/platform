@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -40,15 +40,15 @@
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-core": "^0.7.0",
+    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.4",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-task-resources": "^0.7.0",
     "@hcengineering/task": "^0.7.0",
-    "@hcengineering/text-core": "^0.7.3",
+    "@hcengineering/text-core": "^0.7.5",
     "@hcengineering/tracker": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0"

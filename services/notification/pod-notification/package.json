@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -54,12 +54,12 @@
     "@types/web-push": "^3.6.4"
   },
   "dependencies": {
-    "@hcengineering/client": "^0.7.3",
-    "@hcengineering/client-resources": "^0.7.3",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/client": "^0.7.6",
+    "@hcengineering/client-resources": "^0.7.6",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/server-token": "^0.7.0",
+    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/server-token": "^0.7.5",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",

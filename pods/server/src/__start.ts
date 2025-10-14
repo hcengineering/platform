@@ -24,7 +24,7 @@ import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
 import { start } from '.'
-import { profileStart, profileStop } from './inspector'
+import { profileStart, profileStop } from './profiler'
 
 configureAnalytics('server', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'transactor')

@@ -32,14 +32,14 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/questions": "^0.7.0"
   },

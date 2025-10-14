@@ -14,7 +14,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -37,7 +37,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "svelte": "^4.2.20",
     "@hcengineering/bitrix": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
@@ -46,7 +46,7 @@
     "@hcengineering/lead": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
