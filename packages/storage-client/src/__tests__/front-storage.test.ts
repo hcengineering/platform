@@ -175,8 +175,10 @@ describe('FrontStorage', () => {
       // Check FormData contents
       const uploadCall = mockUploadXhr.mock.calls[0]
       const formData = uploadCall[0].body as FormData
-      expect(formData.get('file')).toBe(file)
-      expect(formData.get('uuid')).toBe(uuid)
+      const uploadedFile = formData.get('file') as File
+      expect(uploadedFile).toBeInstanceOf(File)
+      expect(uploadedFile.name).toBe(uuid)
+      expect(uploadedFile.type).toBe('text/plain')
     })
 
     it('should upload file with progress tracking', async () => {
@@ -254,8 +256,10 @@ describe('FrontStorage', () => {
       )
 
       const formData = (mockUploadXhr.mock.calls[0][0] as any).body as FormData
-      expect(formData.get('file')).toBe(file)
-      expect(formData.get('uuid')).toBe(uuid)
+      const uploadedFile = formData.get('file') as File
+      expect(uploadedFile).toBeInstanceOf(File)
+      expect(uploadedFile.name).toBe(uuid)
+      expect(uploadedFile.type).toBe('image/png')
     })
 
     it('should handle empty files', async () => {
@@ -270,8 +274,10 @@ describe('FrontStorage', () => {
 
       expect(mockUploadXhr).toHaveBeenCalled()
       const formData = (mockUploadXhr.mock.calls[0][0] as any).body as FormData
-      expect(formData.get('file')).toBe(file)
-      expect(formData.get('uuid')).toBe(uuid)
+      const uploadedFile = formData.get('file') as File
+      expect(uploadedFile).toBeInstanceOf(File)
+      expect(uploadedFile.name).toBe(uuid)
+      expect(uploadedFile.type).toBe('text/plain')
     })
   })
 

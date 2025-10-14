@@ -53,8 +53,7 @@ export class FrontStorage implements FileStorage {
     options?: FileStorageUploadOptions
   ): Promise<void> {
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('uuid', uuid)
+    formData.append('file', file, uuid)
 
     await uploadXhr(
       {

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/storage-client",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",

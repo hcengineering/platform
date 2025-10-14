@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/storage-client
 
-This log was last generated on Tue, 14 Oct 2025 06:29:02 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 15:36:13 GMT and should not be manually modified.
+
+## 0.7.6
+Tue, 14 Oct 2025 15:36:13 GMT
+
+### Patches
+
+- fix front service upload
 
 ## 0.7.5
 Tue, 14 Oct 2025 06:29:02 GMT
