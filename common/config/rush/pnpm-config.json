@@ -199,10 +199,11 @@
    * PNPM documentation: https://pnpm.io/package_json#pnpmoverrides
    */
   "globalOverrides": {
-    // DEV: Uncomment the lines below to use local huly.core packages
+    // DEV: Uncomment the lines below to use local huly.core, huly.server, and huly.utils packages
     // Then "rush update --full" to update the dependencies.
-    // NOTE:  It's configured to work if huly.core is placed adjacent to the platform. If you have it in a different location, you need to change the paths below.
+    // NOTE:  It's configured to work if huly.core, huly.server, and huly.utils are placed adjacent to the platform. If you have them in a different location, you need to change the paths below.
 
+    // huly.core packages:
     // "@hcengineering/account-client": "file:../../../huly.core/packages/account-client",
     // "@hcengineering/analytics": "file:../../../huly.core/packages/analytics",
     // "@hcengineering/analytics-service": "file:../../../huly.core/packages/analytics-service",
@@ -224,7 +225,30 @@
     // "@hcengineering/text-html": "file:../../../huly.core/packages/text-html",
     // "@hcengineering/text-markdown": "file:../../../huly.core/packages/text-markdown",
     // "@hcengineering/text-ydoc": "file:../../../huly.core/packages/text-ydoc",
-    // "@hcengineering/token": "file:../../../huly.core/packages/token"
+    // "@hcengineering/token": "file:../../../huly.core/packages/token",
+
+    // huly.server packages:
+    // "@hcengineering/collaboration": "file:../../../huly.server/packages/collaboration",
+    // "@hcengineering/datalake": "file:../../../huly.server/packages/datalake",
+    // "@hcengineering/elastic": "file:../../../huly.server/packages/elastic",
+    // "@hcengineering/hulylake": "file:../../../huly.server/packages/hulylake",
+    // "@hcengineering/kafka": "file:../../../huly.server/packages/kafka",
+    // "@hcengineering/middleware": "file:../../../huly.server/packages/middleware",
+    // "@hcengineering/minio": "file:../../../huly.server/packages/minio",
+    // "@hcengineering/mongo": "file:../../../huly.server/packages/mongo",
+    // "@hcengineering/postgres": "file:../../../huly.server/packages/postgres",
+    // "@hcengineering/s3": "file:../../../huly.server/packages/s3",
+    // "@hcengineering/server": "file:../../../huly.server/packages/server",
+    // "@hcengineering/server-client": "file:../../../huly.server/packages/client",
+    // "@hcengineering/server-core": "file:../../../huly.server/packages/core",
+    // "@hcengineering/server-storage": "file:../../../huly.server/packages/server-storage",
+
+    // huly.utils packages:
+    // "@hcengineering/measurements": "file:../../../huly.utils/packages/measurements",
+    // "@hcengineering/measurements-otlp": "file:../../../huly.utils/packages/measurements-otlp",
+    // "@hcengineering/platform-rig": "file:../../../huly.utils/packages/platform-rig",
+    // "@hcengineering/postgres-base": "file:../../../huly.utils/packages/postgres-base",
+    // "@hcengineering/ui-test": "file:../../../huly.utils/packages/ui-test"
   },
 
   /**

@@ -21,7 +21,7 @@
     "node-loader": "~2.0.0",
     "cross-env": "~7.0.3",
     "typescript": "^5.9.3",
-    "electron": "^38.1.1",
+    "electron": "^38.2.2",
     "@types/node": "^22.15.29",
     "electron-builder": "^25.1.8",
     "@electron/notarize": "^2.3.2",

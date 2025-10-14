@@ -14,16 +14,33 @@
 //
 
 import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import { StorageAdapter } from '@hcengineering/server-core'
 
+import { createWriteStream } from 'fs'
+import { pipeline } from 'stream/promises'
+
+import { TemporaryDir } from '../tempdir'
 import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from '../types'
 
 export class OctetStreamProvider implements PreviewProvider {
+  constructor (
+    private readonly storage: StorageAdapter,
+    private readonly tempDir: TemporaryDir
+  ) {}
+
   supports (contentType: string): boolean {
     return contentType === 'application/octet-stream'
   }
 
   async image (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, contentType: string): Promise<PreviewFile> {
-    throw new Error('Cannot generate image preview for application/octet-stream')
+    const path = this.tempDir.tmpFile()
+
+    await ctx.with('blob-read', {}, async (ctx) => {
+      const stream = await this.storage.get(ctx, { uuid: workspace } as any, name)
+      await pipeline(stream, createWriteStream(path))
+    })
+
+    return { mimeType: contentType, filePath: path }
   }
 
   async metadata (
