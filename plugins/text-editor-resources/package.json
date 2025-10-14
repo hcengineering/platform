@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -39,21 +39,21 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "svelte": "^4.2.20",
     "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/analytics": "^0.7.3",
+    "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/highlight": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
-    "@hcengineering/text": "^0.7.3",
+    "@hcengineering/text": "^0.7.5",
     "@hcengineering/text-editor": "^0.7.0",
-    "@hcengineering/collaborator-client": "^0.7.3",
+    "@hcengineering/collaborator-client": "^0.7.5",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/presence": "^0.7.0",
-    "@hcengineering/text-markdown": "^0.7.3",
-    "@hcengineering/text-ydoc": "^0.7.3",
+    "@hcengineering/text-markdown": "^0.7.5",
+    "@hcengineering/text-ydoc": "^0.7.5",
     "@hcengineering/emoji": "^0.7.0",
     "@tiptap/core": "^2.11.7",
     "@tiptap/pm": "^2.11.7",
@@ -100,6 +100,6 @@
     "@hcengineering/workbench": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
     "@hcengineering/time": "^0.7.0",
-    "@hcengineering/rank": "^0.7.3"
+    "@hcengineering/rank": "^0.7.5"
   }
 }

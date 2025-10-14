@@ -30,7 +30,7 @@
     "allure:generate": "allure generate allure-results -o allure-report --clean"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -51,7 +51,7 @@
   "dependencies": {
     "dotenv": "~16.0.0",
     "cross-env": "~7.0.3",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/client-resources": "^0.7.3"
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/client-resources": "^0.7.6"
   }
 }

@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -38,10 +38,10 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.0",
+    "@hcengineering/server-core": "^0.7.4",
     "@hcengineering/document": "^0.7.0",
     "slugify": "^1.6.6"
   }

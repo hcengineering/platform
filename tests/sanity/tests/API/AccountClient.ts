@@ -1,5 +1,7 @@
 import { getClient as getClientRaw, type AccountClient } from '@hcengineering/account-client'
 import { LocalUrl, PlatformAdmin } from '../utils'
+import { systemAccountUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
 let adminAccountClient: AccountClient
 
@@ -17,4 +19,9 @@ export async function getAdminAccountClient (): Promise<AccountClient> {
 
   adminAccountClient = getClientRaw(LocalUrl, loginInfo.token)
   return adminAccountClient
+}
+
+export async function getServiceAccountClient (serviceName: string): Promise<AccountClient> {
+  const token = generateToken(systemAccountUuid, undefined, { service: serviceName }, 'secret')
+  return getClientRaw(LocalUrl, token)
 }

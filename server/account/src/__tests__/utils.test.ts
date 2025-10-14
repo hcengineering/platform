@@ -1686,15 +1686,6 @@ describe('account utils', () => {
       }).not.toThrow()
     })
 
-    test('should not throw for admin', () => {
-      const services = ['service1']
-      const extra = { service: 'service2', admin: 'true' }
-
-      expect(() => {
-        verifyAllowedServices(services, extra)
-      }).not.toThrow()
-    })
-
     test('should throw for unauthorized service', () => {
       const services = ['service1']
       const extra = { service: 'service2' }

@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -38,14 +38,14 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0"
   },

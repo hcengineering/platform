@@ -585,10 +585,12 @@ export async function addSocialIdToPerson (
   const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(
-    ['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram', 'google-calendar', 'ai-assistant'],
-    extra
-  )
+  if (extra?.admin !== 'true') {
+    verifyAllowedServices(
+      ['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram', 'google-calendar', 'ai-assistant'],
+      extra
+    )
+  }
 
   if (person == null || person === '' || !Object.values(SocialIdType).includes(type) || value == null || value === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
