@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -57,18 +57,18 @@
   "dependencies": {
     "@hcengineering/prod": "^1.0.1",
     "@hcengineering/front": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/platform": "^0.7.5",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
-    "@hcengineering/server-core": "^0.7.0",
-    "@hcengineering/server-token": "^0.7.0",
+    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/attachment": "^0.7.0",
     "body-parser": "^1.20.3",
     "sharp": "~0.34.3",
-    "@hcengineering/analytics": "^0.7.3",
-    "@hcengineering/analytics-service": "^0.7.3"
+    "@hcengineering/analytics": "^0.7.5",
+    "@hcengineering/analytics-service": "^0.7.5"
   }
 }

@@ -21,7 +21,7 @@
     "bump": "bump-package-version"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "node-loader": "~2.0.0",
     "cross-env": "~7.0.3",
@@ -73,7 +73,7 @@
     "jest-environment-jsdom": "^30.2.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/theme": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
@@ -82,7 +82,7 @@
     "@hcengineering/onboard": "^0.7.0",
     "@hcengineering/onboard-assets": "^0.7.0",
     "@hcengineering/onboard-resources": "^0.7.0",
-    "@hcengineering/client": "^0.7.3",
+    "@hcengineering/client": "^0.7.6",
     "@hcengineering/workbench": "^0.7.0",
     "@hcengineering/workbench-resources": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
@@ -102,7 +102,7 @@
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/setting-assets": "^0.7.0",
     "@hcengineering/setting-resources": "^0.7.0",
-    "@hcengineering/client-resources": "^0.7.3",
+    "@hcengineering/client-resources": "^0.7.6",
     "@hcengineering/contact-assets": "^0.7.0",
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/activity-assets": "^0.7.0",
@@ -133,7 +133,7 @@
     "@hcengineering/notification-resources": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/preference-assets": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/rekoni": "^0.7.0",
     "@hcengineering/tags-assets": "^0.7.0",
     "@hcengineering/tags": "^0.7.0",

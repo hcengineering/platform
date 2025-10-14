@@ -23,7 +23,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -40,20 +40,20 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.3",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/account": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/model-contact": "^0.7.0",
-    "@hcengineering/client-resources": "^0.7.3",
-    "@hcengineering/client": "^0.7.3",
-    "@hcengineering/model": "^0.7.3",
-    "@hcengineering/analytics": "^0.7.3",
+    "@hcengineering/client-resources": "^0.7.6",
+    "@hcengineering/client": "^0.7.6",
+    "@hcengineering/model": "^0.7.5",
+    "@hcengineering/analytics": "^0.7.5",
     "tar-stream": "^3.1.7",
     "@hcengineering/server-tool": "^0.7.0",
-    "@hcengineering/server-client": "^0.7.0",
-    "@hcengineering/server-token": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.0",
+    "@hcengineering/server-client": "^0.7.4",
+    "@hcengineering/server-token": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.4",
     "fast-equals": "^5.2.2"
   }
 }

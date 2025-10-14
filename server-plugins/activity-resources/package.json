@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,14 +37,14 @@
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-activity": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.0",
+    "@hcengineering/server-core": "^0.7.4",
     "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/text-core": "^0.7.3",
+    "@hcengineering/text-core": "^0.7.5",
     "@hcengineering/communication-sdk-types": "^0.7.3",
     "@hcengineering/communication-types": "^0.7.3"
   }

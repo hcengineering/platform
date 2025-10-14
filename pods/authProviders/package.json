@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -46,9 +46,9 @@
   },
   "dependencies": {
     "mongodb": "^6.16.0",
-    "@hcengineering/core": "^0.7.3",
+    "@hcengineering/core": "^0.7.7",
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.3",
+    "@hcengineering/account-client": "^0.7.5",
     "passport-custom": "~1.1.1",
     "passport-google-oauth20": "~2.0.0",
     "passport-github2": "~0.1.12",
