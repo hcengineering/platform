@@ -27,7 +27,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.18",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
@@ -41,7 +41,7 @@
     "eslint-plugin-n": "^15.4.0"
   },
   "dependencies": {
-    "@hcengineering/measurements": "workspace:^0.7.12",
+    "@hcengineering/measurements": "workspace:^0.7.13",
     "@opentelemetry/sdk-node": "^0.203.0",
     "@opentelemetry/sdk-logs": "^0.203.0",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",

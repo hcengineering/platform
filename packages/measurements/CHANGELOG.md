@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/measurements
 
-This log was last generated on Sat, 11 Oct 2025 19:18:56 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 03:02:36 GMT and should not be manually modified.
+
+## 0.7.13
+Tue, 14 Oct 2025 03:02:36 GMT
+
+### Patches
+
+- Remove zero value measure with override values
 
 ## 0.7.12
 Sat, 11 Oct 2025 19:18:56 GMT

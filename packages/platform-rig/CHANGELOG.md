@@ -1,6 +1,14 @@
 # Change Log - @hcengineering/platform-rig
 
-This log was last generated on Sun, 12 Oct 2025 15:50:41 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 03:02:36 GMT and should not be manually modified.
+
+## 0.7.19
+Tue, 14 Oct 2025 03:02:36 GMT
+
+### Patches
+
+- use fixed versions when upgrading hcengineering deps
+- Revert update-deps script and fix svelte format logic
 
 ## 0.7.18
 Sun, 12 Oct 2025 15:50:41 GMT

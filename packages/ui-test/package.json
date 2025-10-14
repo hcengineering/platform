@@ -32,7 +32,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.18",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "svelte-loader": "^3.2.0",
     "sass": "^1.53.0",
     "svelte-preprocess": "^5.1.3",
