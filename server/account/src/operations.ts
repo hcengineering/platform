@@ -2068,7 +2068,7 @@ export async function ensurePerson (
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
   const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   const allowedService = verifyAllowedServices(
-    ['tool', 'workspace', 'schedule', 'mail', 'github', 'hulygram'],
+    ['tool', 'workspace', 'schedule', 'mail', 'github', 'hulygram', 'admin'],
     extra,
     false
   )
@@ -2361,7 +2361,7 @@ export async function releaseSocialId (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const allowedService = verifyAllowedServices(['github', 'tool', 'workspace'], extra, false)
+  const allowedService = verifyAllowedServices(['github', 'tool', 'workspace', 'admin'], extra, false)
 
   if (!allowedService) {
     if (personUuid != null && personUuid !== account) {
