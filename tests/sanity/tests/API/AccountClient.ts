@@ -22,7 +22,7 @@ export async function getAdminAccountClient (): Promise<AccountClient> {
 }
 
 export async function getServiceAccountClient (serviceName: string): Promise<AccountClient> {
-  const token = generateToken(systemAccountUuid, undefined, serviceName, 'secret')
+  const token = generateToken(systemAccountUuid, undefined, { service: serviceName }, 'secret')
 
   adminAccountClient = getClientRaw(LocalUrl, token)
   return adminAccountClient

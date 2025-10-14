@@ -75,7 +75,7 @@ describe('rest-api-server', () => {
     accountClient = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
     adminAccountClient = getAccountClient(
       config.ACCOUNTS_URL,
-      generateToken(systemAccountUuid, undefined, { admin: 'true' }, 'secret')
+      generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' }, 'secret')
     )
     const person = await accountClient.getPerson()
     const socialIds: SocialId[] = await accountClient.getSocialIds(true)
