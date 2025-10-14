@@ -79,7 +79,7 @@
    * The default value is false to avoid legacy compatibility issues.
    * It is strongly recommended to set `strictPeerDependencies=true`.
    */
-  // "strictPeerDependencies": true,
+  "strictPeerDependencies": true,
 
   /**
    * Environment variables that will be provided to PNPM.
@@ -150,7 +150,6 @@
    * Defines the policies to be checked for the `pnpm-lock.yaml` file.
    */
   "pnpmLockfilePolicies": {
-
     /**
      * This policy will cause "rush update" to report an error if `pnpm-lock.yaml` contains
      * any SHA1 integrity hashes.
@@ -172,7 +171,7 @@
     //    * Enables the "disallowInsecureSha1" policy.  The default value is false.
     //    */
     //   "enabled": true,
-    // 
+    //
     //   /**
     //    * In rare cases, a private NPM registry may continue to serve SHA1 hashes for very old
     //    * package versions, perhaps due to a caching issue or database migration glitch.  To avoid
@@ -297,7 +296,6 @@
     // "request": "*"
   },
 
-
   /**
    * (THIS FIELD IS MACHINE GENERATED)  The "globalPatchedDependencies" field is updated automatically
    * by the `rush-pnpm patch-commit` command.  It is a dictionary, where the key is an NPM package name
@@ -305,7 +303,7 @@
    *
    * PNPM documentation: https://pnpm.io/package_json#pnpmpatcheddependencies
    */
-  "globalPatchedDependencies": { },
+  "globalPatchedDependencies": {},
 
   /**
    * (USE AT YOUR OWN RISK)  This is a free-form property bag that will be copied into
