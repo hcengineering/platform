@@ -14,6 +14,13 @@ const crypto = require('crypto')
 const prettier = require('prettier')
 const { ESLint } = require('eslint')
 
+let pluginSvelte
+try {
+  pluginSvelte = require('prettier-plugin-svelte')
+} catch (e) {
+  console.warn('prettier-plugin-svelte not available')
+}
+
 if (!existsSync('.format')) {
   mkdirSync('.format', { recursive: true })
 }
@@ -102,15 +109,26 @@ if (filesToCheck.length > 0) {
 
       for (const file of filesToCheck) {
         try {
-          const options = await prettier.resolveConfig(file)
+          let options = await prettier.resolveConfig(file)
           const fileInfo = await prettier.getFileInfo(file)
 
           if (!fileInfo.ignored) {
             const input = readFileSync(file, 'utf8')
-            const formatted = await prettier.format(input, {
-              ...options,
-              filepath: file
-            })
+
+            // Build prettier options - remove plugins from config to avoid resolution issues
+            const prettierOptions = {
+              ...(options || {}),
+              filepath: file,
+              plugins: [] // Clear any plugins from config
+            }
+
+            // Add svelte plugin directly if available and file is .svelte
+            if (pluginSvelte && file.endsWith('.svelte')) {
+              prettierOptions.plugins = [pluginSvelte]
+              prettierOptions.parser = 'svelte'
+            }
+
+            const formatted = await prettier.format(input, prettierOptions)
 
             if (input !== formatted) {
               writeFileSync(file, formatted, 'utf8')

@@ -101,7 +101,13 @@ export function updateMeasure (
       params[vKey] = param
     }
     if (override === true) {
-      param.operations = value ?? ed - st
+      if (value === 0) {
+        // We need to delete value, to preserve sending zero values.
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete params[vKey]
+      } else {
+        param.operations = value ?? ed - st
+      }
     } else {
       param.value += value ?? ed - st
       param.operations++
