@@ -43,7 +43,6 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "ts-node-dev": "^2.0.0",
-    "ts-standard": "^12.0.2",
     "bson": "^6.10.3",
     "typescript": "^5.9.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
