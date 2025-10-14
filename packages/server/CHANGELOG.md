@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/server
 
-This log was last generated on Tue, 14 Oct 2025 10:31:32 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Oct 2025 14:07:25 GMT and should not be manually modified.
+
+## 0.7.6
+Tue, 14 Oct 2025 14:07:25 GMT
+
+### Patches
+
+- Optimize gauged reported to open tracing
 
 ## 0.7.5
 Tue, 14 Oct 2025 10:31:32 GMT

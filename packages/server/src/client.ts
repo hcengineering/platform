@@ -202,10 +202,10 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
-    this.counter.add('find-' + ctx.pipeline.context.hierarchy.getBaseClass(_class), 1)
+    this.counter.add('find-' + (ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''), 1)
     try {
       const result = await this.findAllRaw(ctx, _class, query, options)
-      this.counter.add('clientSendMemory', estimateDocSize(result))
+      this.counter.add('clientSendMemory', Math.round((estimateDocSize(result) * 10) / (1024 * 1024)) / 10)
       await ctx.sendResponse(ctx.requestId, result)
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
@@ -284,9 +284,9 @@ export class ClientSession implements Session {
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
     this.counter.add(
       'tx-' +
-        ctx.pipeline.context.hierarchy.getBaseClass(
+        (ctx.pipeline.context.hierarchy.findDomain(
           TxProcessor.isExtendsCUD(tx._class) ? (tx as TxCUD<Doc>).objectClass : tx._class
-        ),
+        ) ?? ''),
       1
     )
     try {
