@@ -36,15 +36,14 @@
     return _classes.filter((it) => it.extends === card.class.Card)
   }
 
-  function buildTypePath(currentPath: any[], type: Ref<MasterTag>): any[] {
-    // Copy the first three segments, then add 'type' and the selected type
-    return [...currentPath.slice(0, 3), 'type', type];
+  function buildTypePath (currentPath: any[], type: Ref<MasterTag>): any[] {
+    return [...currentPath.slice(0, 3), 'type', type]
   }
 
   function selectType (type: Ref<MasterTag>): void {
-    const loc = getCurrentLocation();
-    loc.path = buildTypePath(loc.path, type);
-    navigate(loc);
+    const loc = getCurrentLocation()
+    loc.path = buildTypePath(loc.path, type)
+    navigate(loc)
   }
 
   $: _class = $locationStore.path[4] as Ref<Class<Doc>>

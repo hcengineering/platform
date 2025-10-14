@@ -26,7 +26,6 @@
 
   onDestroy(
     location.subscribe((loc) => {
-      // Check if we're using type-based navigation: /card/type/{typeId}
       const isTypeSpecified = loc.path[3] === 'type'
       _class = isTypeSpecified ? loc.path[4] : card.class.Card
     })
