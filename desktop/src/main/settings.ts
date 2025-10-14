@@ -52,7 +52,11 @@ export class Settings {
   }
 
   setServerUrl (serverUrl: string): void {
-    (this.store as any).set(Settings.SETTINGS_KEY_SERVER, serverUrl)
+    let cleanUrl: string = serverUrl
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.slice(0, -1)
+    }
+    (this.store as any).set(Settings.SETTINGS_KEY_SERVER, cleanUrl)
   }
 
   getWindowBounds (): any {
