@@ -41,6 +41,6 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-hr": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.4"
+    "@hcengineering/server-core": "^0.7.5"
   }
 }

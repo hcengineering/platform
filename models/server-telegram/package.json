@@ -39,7 +39,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-telegram": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/telegram": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/templates": "^0.7.0",

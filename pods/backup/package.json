@@ -52,7 +52,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-token": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-pipeline": "^0.7.0",
     "@hcengineering/client": "^0.7.6",
     "@hcengineering/client-resources": "^0.7.6",
@@ -61,7 +61,7 @@
     "@hcengineering/backup-service": "^0.7.0",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/analytics-service": "^0.7.5",
-    "@hcengineering/mongo": "^0.7.4",
-    "@hcengineering/postgres": "^0.7.4"
+    "@hcengineering/mongo": "^0.7.5",
+    "@hcengineering/postgres": "^0.7.5"
   }
 }

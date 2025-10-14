@@ -47,7 +47,7 @@
     "@hcengineering/server-activity-resources": "^0.7.0",
     "@hcengineering/server-ai-bot": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-templates": "^0.7.0",
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/templates": "^0.7.0"

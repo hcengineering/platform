@@ -82,7 +82,7 @@
     "pdfjs-dist": "2.12.313",
     "sharp": "~0.34.3",
     "morgan": "^1.10.0",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/analytics-service": "^0.7.5"
