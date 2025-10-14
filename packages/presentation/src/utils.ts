@@ -891,7 +891,7 @@ export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUu
       `; path=${path}`
     document.cookie = res
   }
-  setToken('/' + workspaceUuid)
+  setToken('/files/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)
