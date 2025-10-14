@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.15",
+    "@hcengineering/platform-rig": "^0.7.19",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/model": "^0.7.3",
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/model": "^0.7.5",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/auth-providers": "^0.7.0",
-    "@hcengineering/core": "^0.7.3",
-    "@hcengineering/mongo": "^0.7.0",
+    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/mongo": "^0.7.4",
     "@hcengineering/contact": "^0.7.0",
     "mongodb": "^6.16.0",
     "koa": "^2.15.4",
@@ -56,7 +56,7 @@
     "koa-bodyparser": "^4.4.1",
     "cookies": "^0.9.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/server-token": "^0.7.0",
-    "@hcengineering/analytics": "^0.7.3"
+    "@hcengineering/server-token": "^0.7.5",
+    "@hcengineering/analytics": "^0.7.5"
   }
 }
