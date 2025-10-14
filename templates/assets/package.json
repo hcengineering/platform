@@ -1,9 +1,39 @@
 {
   "name": "@hcengineering/assets-package",
   "version": "0.7.0",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "assets",
+    "lang"
+  ],
+   "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    },
+    "./assets": {
+      "require": "./assets",
+      "import": "./assets"
+    },
+    "./assets/*.svg": {
+      "require": "./assets/*.svg",
+      "import": "./assets/*.svg"
+    }
+  },
   "#overrideKeys": [
-    "main"
+    "main", "types", "files", "exports"
   ],
   "scripts": {
     "_phase:build": "compile transpile src",
