@@ -24,7 +24,7 @@
   import PersonActionPopup from '../PersonActionPopup.svelte'
   import RoomPopup from '../RoomPopup.svelte'
   import RoomButton from '../RoomButton.svelte'
-  import { currentMeetingMinutes, leaveMeeting } from '../../meetings'
+  import { activeMeeting, leaveMeeting } from '../../meetings'
   import { lkSessionConnected } from '../../liveKitClient'
   import { OngoingMeeting, ongoingMeetings } from '../../meetingPresence'
   import { Person } from '@hcengineering/contact'
@@ -77,7 +77,7 @@
       {#await getMeetingName(ongoingMeeting) then name}
         <RoomButton
           label={name}
-          active={$currentMeetingMinutes?._id === ongoingMeeting.meetingId}
+          active={$activeMeeting?.meetingId === ongoingMeeting.meetingId}
           on:click={openMeeting(ongoingMeeting)}
           participants={ongoingMeeting.persons.map((person) => ({
             person

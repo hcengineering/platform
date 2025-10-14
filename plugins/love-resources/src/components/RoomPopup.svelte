@@ -30,25 +30,30 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting, currentMeetingMinutes } from '../meetings'
+  import { activeMeeting, activeMeetingMinutes, createCardMeeting, joinMeeting } from '../meetings'
   import { OngoingMeeting } from '../meetingPresence'
   import { getMeetingMinutesRoom } from '../utils'
 
   export let meeting: OngoingMeeting
-  $: myMeeting = $currentMeetingMinutes?._id === meeting.meetingId
+  $: myMeeting = $activeMeeting?.meetingId === meeting.meetingId
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
-    const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
-    if (room === undefined) return
-    await joinMeeting(room)
+    console.log(meeting)
+    if (meeting.meetingType === 'card') {
+      await createCardMeeting(meeting.meetingId)
+    } else {
+      const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
+      if (room === undefined) return
+      await joinMeeting(room)
+    }
     dispatch('close')
   }
 
   async function back (): Promise<void> {
-    const meetingMinutes = $currentMeetingMinutes
+    const meetingMinutes = $activeMeetingMinutes
     if (meetingMinutes !== undefined) {
       const hierarchy = client.getHierarchy()
       const panelComponent = hierarchy.classHierarchyMixin(
@@ -76,7 +81,7 @@
 </script>
 
 <div class="antiPopup room-popup flex-gap-4">
-  <MeetingHeader meetingMinutes={$currentMeetingMinutes} />
+  <MeetingHeader meetingMinutes={$activeMeetingMinutes} />
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
@@ -99,7 +104,7 @@
       </div>
     {/if}
     <div style="width: auto" />
-    {#if canGoBack(myMeeting, $location, $currentMeetingMinutes)}
+    {#if canGoBack(myMeeting, $location, $activeMeetingMinutes)}
       <ModernButton
         icon={IconArrowLeft}
         label={love.string.MeetingMinutes}

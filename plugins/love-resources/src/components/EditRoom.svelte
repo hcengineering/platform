@@ -22,7 +22,7 @@
   import { getRoomName } from '../utils'
   import { infos, myOffice } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
-  import { createMeeting, currentMeetingMinutes, joinMeeting } from '../meetings'
+  import { activeMeetingMinutes, createMeeting, joinMeeting } from '../meetings'
 
   export let object: Room
 
@@ -48,8 +48,7 @@
       await createMeeting(object)
     }
   }
-
-  $: connecting = tryConnecting || ($currentMeetingMinutes?.attachedTo === object._id && !$lkSessionConnected)
+  $: connecting = tryConnecting || ($activeMeetingMinutes?.attachedTo === object._id && !$lkSessionConnected)
 
   let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
     ? love.string.JoinMeeting
@@ -95,7 +94,7 @@
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
-    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $currentMeetingMinutes)}
+    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $activeMeetingMinutes)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>

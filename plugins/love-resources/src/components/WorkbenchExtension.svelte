@@ -6,12 +6,12 @@
   import { createMeetingWidget, liveKitClient, lk, navigateToMeetingMinutes } from '../utils'
   import { lkSessionConnected } from '../liveKitClient'
   import { subscribeInviteRequests, unsubscribeInviteRequests } from '../invites'
-  import { MeetingMinutes, Room } from '@hcengineering/love'
+  import { Room } from '@hcengineering/love'
   import { subscribeJoinRequests, unsubscribeJoinRequests } from '../joinRequests'
   import { Ref } from '@hcengineering/core'
   import { myInfo } from '../stores'
   import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
-  import { currentMeetingMinutes } from '../meetings'
+  import { activeMeeting, activeMeetingMinutes } from '../meetings'
   import { getClient } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
   import {
@@ -21,10 +21,11 @@
     unsubscribeMeetingPresence,
     updateMyMeetingPresence
   } from '../meetingPresence'
+  import { ActiveMeeting } from '../types'
 
   let parentElement: HTMLDivElement
   let presenceInterval: number | NodeJS.Timeout | undefined = undefined
-  let presenceMeeting: string | undefined = undefined
+  let presenceMeeting: ActiveMeeting | undefined = undefined
   const client = getClient()
 
   function handleTrackSubscribed (
@@ -81,7 +82,7 @@
     }
   })
 
-  function checkActiveMeeting (meetingSessionConnected: boolean, meeting: MeetingMinutes | undefined): void {
+  function checkActiveMeeting (meetingSessionConnected: boolean, meeting: ActiveMeeting | undefined): void {
     const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
     const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
@@ -91,8 +92,8 @@
         closeWidget(love.ids.MeetingWidget)
       }
       return
-    } else if (presenceMeeting !== meeting._id) {
-      presenceMeeting = meeting._id
+    } else if (presenceMeeting?.meetingId !== meeting.meetingId) {
+      presenceMeeting = meeting
       presenceInterval = setInterval(updatePresence, (meetingPresenceTtlSeconds - 2) * 1000)
       void updatePresence()
     }
@@ -103,7 +104,7 @@
 
       if (!isMeetingWidgetCreated) {
         createMeetingWidget(widget, meetingSessionConnected)
-        void navigateToMeetingMinutes(meeting)
+        if (meeting.meetingType === 'room') void navigateToMeetingMinutes($activeMeetingMinutes)
       }
     } else {
       if (isMeetingWidgetCreated) {
@@ -116,16 +117,16 @@
     if (presenceInterval === undefined || presenceMeeting === undefined) return
     clearInterval(presenceInterval)
     presenceInterval = undefined
-    await deleteMyMeetingPresence(presenceMeeting)
+    await deleteMyMeetingPresence(presenceMeeting.meetingId)
     presenceMeeting = undefined
   }
 
   async function updatePresence (): Promise<void> {
     if (presenceMeeting === undefined) return
-    await updateMyMeetingPresence(presenceMeeting, 'room')
+    await updateMyMeetingPresence(presenceMeeting.meetingId, presenceMeeting.meetingType)
   }
 
-  $: checkActiveMeeting($lkSessionConnected, $currentMeetingMinutes)
+  $: checkActiveMeeting($lkSessionConnected, $activeMeeting)
 </script>
 
 <div bind:this={parentElement} class="hidden"></div>

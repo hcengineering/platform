@@ -63,7 +63,7 @@ import { $myPreferences, rooms } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
-import { currentMeetingMinutes, currentMeetingRoom } from './meetings'
+import { activeMeetingMinutes, currentMeetingRoom } from './meetings'
 import { type OngoingMeeting } from './meetingPresence'
 
 export const liveKitClient = getLiveKitClient()
@@ -229,15 +229,14 @@ export function closeMeetingMinutes (): void {
   const loc = getCurrentLocation()
 
   if (loc.path[2] === loveId) {
-    const meetingMinutes = get(currentMeetingMinutes)
+    const meetingMinutes = get(activeMeetingMinutes)
     const panel = get(panelstore).panel
     const { _id } = panel ?? {}
 
-    if (_id !== undefined && meetingMinutes !== undefined && _id === meetingMinutes._id) {
+    if (_id !== undefined && meetingMinutes !== undefined && _id === meetingMinutes?._id) {
       closePanel()
     }
   }
-  currentMeetingMinutes.set(undefined)
 }
 
 export async function getMeetingMinutesRoom (meetingId: Ref<MeetingMinutes>): Promise<Room | undefined> {
@@ -393,7 +392,7 @@ export async function startTranscription (): Promise<void> {
 }
 
 export async function stopTranscription (): Promise<void> {
-  const current = get(currentMeetingMinutes)
+  const current = get(activeMeetingMinutes)
   if (current === undefined) return
   await disconnectMeeting(current.attachedTo as Ref<Room>)
 }

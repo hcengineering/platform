@@ -7,7 +7,7 @@
   import { liveKitClient } from '../utils'
   import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../liveKitClient'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { currentMeetingMinutes, leaveMeeting } from '../meetings'
+  import { activeMeeting, activeMeetingMinutes, leaveMeeting } from '../meetings'
 
   const dispatch = createEventDispatcher()
 
@@ -33,10 +33,10 @@
   }
 </script>
 
-{#if $lkSessionConnected && $currentMeetingMinutes != null}
+{#if $lkSessionConnected && $activeMeeting !== undefined}
   <div class="m-1 p-2">
     <div class="flex-col flex-grow flex-gap-0-5">
-      <MeetingHeader meetingMinutes={$currentMeetingMinutes} />
+      <MeetingHeader meetingMinutes={$activeMeetingMinutes} />
       <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
         <div class="flex-row-center flex-gap-3">

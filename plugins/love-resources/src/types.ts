@@ -3,6 +3,11 @@ import { type RoomLanguage } from '@hcengineering/love'
 
 export type MeetingType = 'room' | 'card'
 
+export interface ActiveMeeting {
+  meetingId: string
+  meetingType: MeetingType
+}
+
 export interface ResizeInitParams {
   x: number
   y: number

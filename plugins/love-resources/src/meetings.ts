@@ -23,14 +23,34 @@ import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
+import { type ActiveMeeting } from './types'
 
-export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
+export const activeMeeting = writable<ActiveMeeting | undefined>(undefined)
+export const activeMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 
-export const currentMeetingRoom = derived([rooms, currentMeetingMinutes], ([rooms, currentMeetingMinutes]) => {
+export const currentMeetingRoom = derived([rooms, activeMeetingMinutes], ([rooms, currentMeetingMinutes]) => {
   return rooms.find((r) => r._id === currentMeetingMinutes?.attachedTo)
 })
 
 const meetingQuery = createQuery(true)
+
+export async function createCardMeeting (id: string): Promise<void> {
+  if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
+
+  if (get(activeMeeting) !== undefined) {
+    await leaveMeeting()
+  }
+
+  try {
+    const token = await loveClient.getCardToken(id)
+    const wsURL = getLiveKitEndpoint()
+    await liveKitClient.connect(wsURL, token, true)
+    activeMeeting.set({ meetingId: id, meetingType: 'card' })
+  } catch (err) {
+    console.error(err)
+    await leaveMeeting()
+  }
+}
 
 export async function createMeeting (room: Room): Promise<void> {
   if (room.access === RoomAccess.DND) return
@@ -84,7 +104,8 @@ export async function leaveMeeting (): Promise<void> {
   await liveKitClient.disconnect()
   await unsubscribeJoinRequests()
   closeMeetingMinutes()
-  currentMeetingMinutes.set(undefined)
+  activeMeeting.set(undefined)
+  activeMeetingMinutes.set(undefined)
 }
 
 export async function joinMeeting (room: Room): Promise<void> {
@@ -100,7 +121,7 @@ export async function joinMeeting (room: Room): Promise<void> {
 }
 
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
-  if (get(currentMeetingMinutes)?.attachedTo === roomId) return
+  if (get(activeMeetingMinutes)?.attachedTo === roomId) return
 
   const client = getClient()
   const room = getRoomById(roomId)
@@ -130,9 +151,9 @@ export async function kick (person: Ref<Person>): Promise<void> {
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-  if (get(currentMeetingMinutes)?.attachedTo === room._id) return
+  if (get(activeMeetingMinutes)?.attachedTo === room._id) return
 
-  if (currentMeetingMinutes !== undefined) {
+  if (get(activeMeeting) !== undefined) {
     await leaveMeeting()
   }
 
@@ -145,7 +166,8 @@ async function connectToMeeting (room: Room): Promise<void> {
       { attachedTo: room._id, status: MeetingStatus.Active },
       async (res) => {
         const meetingMinutes = res[0]
-        currentMeetingMinutes.set(meetingMinutes)
+        activeMeetingMinutes.set(meetingMinutes)
+        activeMeeting.set({ meetingId: meetingMinutes._id, meetingType: 'room' })
         meetingQuery.unsubscribe()
       }
     )

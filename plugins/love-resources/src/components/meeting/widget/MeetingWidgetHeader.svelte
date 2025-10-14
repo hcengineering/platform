@@ -30,7 +30,7 @@
   import RecordingButton from '../controls/RecordingButton.svelte'
   import TranscriptionButton from '../controls/TranscriptionButton.svelte'
   import RoomAccessButton from '../controls/RoomAccessButton.svelte'
-  import { currentMeetingMinutes, currentMeetingRoom } from '../../../meetings'
+  import { activeMeeting, currentMeetingRoom } from '../../../meetings'
 
   export let doc: MeetingMinutes | undefined = undefined
 
@@ -56,7 +56,7 @@
 <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
-    {#if $currentMeetingMinutes !== undefined}
+    {#if $activeMeeting !== undefined}
       <RoomAccessButton room={$currentMeetingRoom} kind="tertiary" size="small" />
       <RecordingButton kind="tertiary" size="small" />
       <TranscriptionButton kind="tertiary" size="small" />
