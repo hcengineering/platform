@@ -50,7 +50,7 @@
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/server": "^0.7.5",
+    "@hcengineering/server": "^0.7.6",
     "@hcengineering/text-core": "^0.7.5",
     "@hcengineering/text": "^0.7.5"
   }

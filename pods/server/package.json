@@ -75,7 +75,7 @@
     "@hcengineering/pod-translate": "^0.7.0",
     "@hcengineering/postgres": "^0.7.5",
     "@hcengineering/rpc": "^0.7.5",
-    "@hcengineering/server": "^0.7.5",
+    "@hcengineering/server": "^0.7.6",
     "@hcengineering/server-ai-bot": "^0.7.0",
     "@hcengineering/server-calendar": "^0.7.0",
     "@hcengineering/server-core": "^0.7.5",
