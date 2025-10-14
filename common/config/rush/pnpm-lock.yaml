@@ -986,12 +986,12 @@ importers:
   ../../packages/storage-client:
     dependencies:
       '@hcengineering/core':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.7
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: ^0.7.15
-        version: 0.7.15
+        specifier: ^0.7.19
+        version: 0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.18.8)(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
