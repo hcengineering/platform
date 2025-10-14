@@ -6196,7 +6196,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tests-sanity@file:projects/tests-sanity.tgz':
-    resolution: {integrity: sha512-oAaYl2IO0i1GSSbO6rLxbZOnmAxl3tMQ8mLLe5A3lWMu7eXTFnt6arzUxNixChALxKiO9eCbA1KWpvutJ3dDEw==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-6MzoRP9tBpHv4XkiFFo6bGdKNfW9tAmXZxiPTXHunGc/BIgxEiUqvYlBi28EMp1oYsJWg2s6t4up1hin0sqIFA==, tarball: file:projects/tests-sanity.tgz}
     version: 0.0.0
 
   '@rush-temp/tests-ws-sanity@file:projects/tests-ws-sanity.tgz':
@@ -34129,6 +34129,7 @@ snapshots:
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/core': 0.7.7
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      '@hcengineering/server-token': 0.7.5
       '@playwright/test': 1.49.1
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
