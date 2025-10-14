@@ -54,7 +54,7 @@ export async function performGithubAccountMigrations (
   txes: Tx[],
   region: string | null
 ): Promise<void> {
-  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'tool', admin: 'true' })
   const githubToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
   const accountClient = getAccountClient(token)
 

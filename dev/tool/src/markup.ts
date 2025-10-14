@@ -378,7 +378,7 @@ export async function restoreMarkupRefs (
   storageAdapter: StorageAdapter,
   region: string | null
 ): Promise<void> {
-  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'tool', admin: 'true' })
   const ctx = new MeasureMetricsContext('restore-markup-ref', {})
 
   const accountClient = getAccountClient(token)

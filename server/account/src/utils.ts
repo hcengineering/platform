@@ -1812,8 +1812,7 @@ export const integrationServices = [
   'google-calendar',
   'huly-mail',
   'ai-assistant',
-  'tool',
-  'admin'
+  'tool'
 ]
 
 export async function findExistingIntegration (
