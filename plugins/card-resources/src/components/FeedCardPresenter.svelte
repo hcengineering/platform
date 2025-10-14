@@ -105,12 +105,12 @@
           </div>
         </div>
       {/if}
-      <div class="flex-row flex-row-center" class:opened={isActionsOpened}>
+      <div class="card__actions flex-row flex-row-center" class:opened={isActionsOpened}>
         <Button
           icon={IconDetailsFilled}
           iconProps={{ size: 'medium' }}
           kind="icon"
-          on:click={(e) => {
+          on:click={() => {
             void openCardInSidebar(card._id, card)
           }}
         />
@@ -175,10 +175,6 @@
 
     &:hover {
       background-color: var(--global-ui-hover-BackgroundColor);
-
-      .card__actions {
-        visibility: visible;
-      }
     }
 
     &__body {
@@ -236,18 +232,7 @@
     }
 
     &__actions {
-      display: flex;
-      flex-direction: column;
-      margin-left: auto;
-      padding-left: 0.5rem;
-      visibility: hidden;
-
-      &.opened {
-        visibility: visible;
-      }
-      &:hover {
-        visibility: visible;
-      }
+      min-width: 4rem;
     }
 
     .notifyMarker {
