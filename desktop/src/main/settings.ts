@@ -32,15 +32,9 @@ export class Settings {
   }
 
   readServerUrl (): string {
-    if (this.isDev) {
-      return process.env.FRONT_URL ?? 'http://huly.local:8087'
-    }
-    return (
-      (this.store as any).get(Settings.SETTINGS_KEY_SERVER) as string ??
-      this.packedConfig?.server ??
-      process.env.FRONT_URL ??
-      'https://huly.app'
-    )
+    const url = this.extractUrl()
+    // Motivation: fix existing Huly installations (saved on disk URLs).
+    return Settings.sanitizeUrl(url)
   }
 
   isMinimizeToTrayEnabled (): boolean {
@@ -52,11 +46,8 @@ export class Settings {
   }
 
   setServerUrl (serverUrl: string): void {
-    let cleanUrl: string = serverUrl
-    while (cleanUrl.endsWith('/')) {
-      cleanUrl = cleanUrl.slice(0, -1)
-    }
-    (this.store as any).set(Settings.SETTINGS_KEY_SERVER, cleanUrl)
+    const sanitizedUrl: string = Settings.sanitizeUrl(serverUrl)
+    ;(this.store as any).set(Settings.SETTINGS_KEY_SERVER, sanitizedUrl)
   }
 
   getWindowBounds (): any {
@@ -65,5 +56,25 @@ export class Settings {
 
   setWindowBounds (bounds: any): void {
     (this.store as any).set(Settings.SETTINGS_KEY_WINDOW_BOUNDS, bounds)
+  }
+
+  private extractUrl (): string {
+    if (this.isDev) {
+      return process.env.FRONT_URL ?? 'http://huly.local:8087'
+    }
+    return (
+      (this.store as any).get(Settings.SETTINGS_KEY_SERVER) as string ??
+      this.packedConfig?.server ??
+      process.env.FRONT_URL ??
+      'https://huly.app'
+    )
+  }
+
+  private static sanitizeUrl (serverUrl: string): string {
+    let cleanUrl: string = serverUrl
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.slice(0, -1)
+    }
+    return cleanUrl
   }
 }
