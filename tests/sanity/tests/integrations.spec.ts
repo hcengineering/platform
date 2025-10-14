@@ -4,11 +4,11 @@ import { Integration, IntegrationSecret } from '@hcengineering/account'
 import { buildSocialIdString, IntegrationKind, SocialIdType } from '@hcengineering/core'
 
 import { PlatformUser } from './utils'
-import { getAdminAccountClient } from './API/AccountClient'
+import { getServiceAccountClient } from './API/AccountClient'
 
 test.describe('integrations in accounts tests', () => {
   test('manage integrations', async () => {
-    const accountClient = await getAdminAccountClient()
+    const accountClient = await getServiceAccountClient('github')
 
     const personUuid = await accountClient.findPersonBySocialKey(
       buildSocialIdString({ type: SocialIdType.EMAIL, value: PlatformUser })
