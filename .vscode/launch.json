@@ -107,6 +107,7 @@
         "QUEUE_CONFIG": "huly.local:19092",
         "REGION": "cockroach",
         "QUEUE_REGION": "cockroach",
+        "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
         "BRANDING_PATH": "${workspaceRoot}/dev/branding.json"
       },

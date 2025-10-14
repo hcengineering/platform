@@ -2,6 +2,7 @@
   "ACCOUNTS_URL": "/account",
   "COLLABORATOR_URL": "ws://huly.local:3078",
   "PREVIEW_URL": "http://huly.local:4040",
+  "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename",
   "UPLOAD_URL": "/files",
   "DATALAKE_URL": "http://huly.local:4030",
   "TELEGRAM_URL": "http://huly.local:8086",

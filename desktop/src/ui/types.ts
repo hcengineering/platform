@@ -18,6 +18,7 @@ export interface Config {
   DESKTOP_UPDATES_URL?: string
   DISABLE_SIGNUP?: string
   HIDE_LOCAL_LOGIN?: string
+  FILES_URL: string
   UPLOAD_URL: string
   DATALAKE_URL?: string
   FRONT_URL: string

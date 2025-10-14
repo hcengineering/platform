@@ -1,6 +1,7 @@
 {
   "ACCOUNTS_URL": "https://account.huly.app/",
   "UPLOAD_URL": "/files",
+  "FILES_URL": "/files/:workspace/:filename?file=:blobId&workspace=:workspace",
   "REKONI_URL": "https://rekoni.huly.app",
   "TELEGRAM_URL": "https://telegram.huly.app",
   "GMAIL_URL": "https://gmail.huly.app/",

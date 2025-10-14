@@ -15,5 +15,6 @@
   "DATALAKE_URL": "https://datalake.hc.engineering",
   "HULYLAKE_URL": "https://lake.hc.engineering",
   "PULSE_URL": "wss://pulse.hc.engineering/ws",
-  "COMMUNICATION_API_ENABLED": "true"
+  "COMMUNICATION_API_ENABLED": "true",
+  "FILES_URL": "https://datalake.hc.engineering/blob/:workspace/:blobId/:filename"
 }

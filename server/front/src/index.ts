@@ -258,6 +258,7 @@ export function start (
     accountsUrl: string
     accountsUrlInternal?: string
     uploadUrl: string
+    filesUrl: string
     modelVersion: string
     version: string
     rekoniUrl: string
@@ -335,6 +336,7 @@ export function start (
     const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
+      FILES_URL: config.filesUrl,
       MODEL_VERSION: config.modelVersion,
       VERSION: config.version,
       REKONI_URL: config.rekoniUrl,

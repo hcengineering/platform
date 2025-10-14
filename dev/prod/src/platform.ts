@@ -153,6 +153,7 @@ import { configureAnalytics } from './analytics'
 export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
+  FILES_URL: string
   DATALAKE_URL?: string
   MODEL_VERSION: string
   VERSION: string

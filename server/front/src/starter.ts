@@ -93,6 +93,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewUrl = ''
   }
 
+  let filesUrl = process.env.FILES_URL
+  if (filesUrl === undefined) {
+    filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
+  }
+
   let pulseUrl = process.env.PULSE_URL
   if (pulseUrl === undefined) {
     pulseUrl = ''
@@ -129,6 +134,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     accountsUrl,
     accountsUrlInternal,
     uploadUrl,
+    filesUrl,
     modelVersion,
     version,
     gmailUrl,
