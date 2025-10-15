@@ -43,13 +43,10 @@
   const tryConnecting = false
 
   async function connect (): Promise<void> {
-    console.log('connect', object)
     if ($infos.some(({ room }) => room === object._id)) {
       await joinMeeting(object)
-      console.log('1')
     } else {
       await createMeeting(object)
-      console.log('2')
     }
   }
   $: connecting =

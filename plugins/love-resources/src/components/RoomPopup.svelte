@@ -18,7 +18,7 @@
 
   import { IconArrowLeft, Location, ModernButton, Scroller, location, navigate, panelstore } from '@hcengineering/ui'
 
-  import { MeetingMinutes, loveId } from '@hcengineering/love'
+  import { loveId } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -42,6 +42,7 @@
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
+    dispatch('close')
     if (meetingInfo.meeting.type === 'card') {
       await createCardMeeting(meetingInfo.meeting.document)
     } else {
@@ -49,7 +50,6 @@
       if (room === undefined) return
       await joinMeeting(room)
     }
-    dispatch('close')
   }
 
   async function back (): Promise<void> {
