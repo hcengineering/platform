@@ -342,21 +342,6 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@hcengineering/measurements",
-      "projectFolder": "packages/measurements",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/measurements-otlp",
-      "projectFolder": "packages/measurements-otlp",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/postgres-base",
-      "projectFolder": "packages/postgres-base",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@hcengineering/ui-test",
       "projectFolder": "packages/ui-test",
       "shouldPublish": false

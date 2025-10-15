@@ -1,6 +1,7 @@
 # Huly Utils
 
-Huly Utils is a monorepo managed by [Rush](https://rushjs.io/) that contains various packages and tools for engineering purposes. This repository is structured to support scalable development and efficient collaboration.
+Huly Utils is a monorepo managed by [Rush](https://rushjs.io/) that contains build tools to Huly platform.
+This repository is structured to support scalable development and efficient collaboration.
 
 ## Repository Structure
 
@@ -13,10 +14,7 @@ common/
   scripts/      # Utility scripts for managing the repository
   temp/         # Temporary files and caches
 packages/
-  measurements/         # Measurement utilities
-  measurements-otlp/    # OpenTelemetry-based measurement utilities
   platform-rig/         # Platform rig utilities
-  postgres-base/        # PostgreSQL base utilities
 ```
 
 ## Getting Started
