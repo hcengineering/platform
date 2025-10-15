@@ -28,7 +28,8 @@ import {
   DOMSerializer,
   type DOMOutputSpec,
   DOMParser,
-  type ParseRule
+  type TagParseRule,
+  type Attrs
 } from '@tiptap/pm/model'
 import {
   type EditorStateConfig,
@@ -236,13 +237,14 @@ export function TodoItemPastePlugin (editor: Editor): Plugin<NamedToDosInEditor>
     editor.view.someProp('domParser') ??
     DOMParser.fromSchema(editor.view.state.schema)
   const parseRules = prevClipboardParser.rules.map((rule) => {
-    if (rule.tag === undefined || rule.node !== 'todoItem') {
+    if (rule.tag === undefined || (rule as TagParseRule).node !== 'todoItem') {
       return rule
     }
-    const newRule: ParseRule = {
-      ...rule,
-      getAttrs: (node: HTMLElement) => {
-        const oldAttributes = rule.getAttrs !== undefined ? rule.getAttrs(node) : rule.attrs
+    const tagRule = rule as TagParseRule
+    const newRule = {
+      ...tagRule,
+      getAttrs: (node: HTMLElement): Attrs | false | null => {
+        const oldAttributes = tagRule.getAttrs !== undefined ? tagRule.getAttrs(node) : rule.attrs
         if (oldAttributes === false) {
           return false
         }
