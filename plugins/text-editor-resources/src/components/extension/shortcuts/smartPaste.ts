@@ -55,6 +55,8 @@ function PasteTextAsMarkdownPlugin (): Plugin {
           const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(pastedText))
           if (shouldUseMarkdownOutput(markupNode)) {
             const content = Node.fromJSON(view.state.schema, markupNode)
+            content.check()
+
             const transaction = view.state.tr.replaceSelectionWith(content)
             view.dispatch(transaction)
             return true
