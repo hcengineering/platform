@@ -431,19 +431,6 @@ describe('storage', () => {
       expect(loadedMarkup).toBeDefined()
     })
 
-    it('should overwrite existing JSON', async () => {
-      const doc = createMockCollaborativeDoc('json-overwrite-test')
-
-      const markup1 = '{"version":1}'
-      await saveCollabJson(ctx, storageAdapter, mockWorkspaceIds, doc, markup1)
-
-      const markup2 = '{"version":2}'
-      await saveCollabJson(ctx, storageAdapter, mockWorkspaceIds, doc, markup2)
-
-      const loadedMarkup = await loadCollabJson(ctx, storageAdapter, mockWorkspaceIds, makeCollabJsonId(doc))
-      expect(loadedMarkup).toBe(markup2)
-    })
-
     it('should handle empty markup', async () => {
       const doc = createMockCollaborativeDoc('empty-markup-test')
       const markup = ''

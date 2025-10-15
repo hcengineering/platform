@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/collaboration",
+      "comment": "fix unstable tests",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/collaboration"
+}
