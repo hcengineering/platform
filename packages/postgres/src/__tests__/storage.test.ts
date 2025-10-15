@@ -104,6 +104,7 @@ describe('postgres operations', () => {
       model
     )
 
+    await txStorage.init?.(mctx, {})
     // Put all transactions to Tx
     for (const t of txes) {
       await txStorage.tx(mctx, t)

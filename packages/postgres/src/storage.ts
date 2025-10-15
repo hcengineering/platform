@@ -30,6 +30,7 @@ import core, {
   DOMAIN_TX,
   type FindOptions,
   type FindResult,
+  getClassCollaborators,
   groupByArray,
   type Hierarchy,
   isOperator,
@@ -59,13 +60,13 @@ import core, {
   withContext,
   type WithLookup,
   type WorkspaceIds,
-  type WorkspaceUuid,
-  getClassCollaborators
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   type ConnectionMgr,
   createDBClient,
   type DBClient,
+  type DBResult,
   doFetchTypes,
   getDBClient
 } from '@hcengineering/postgres-base'
@@ -74,6 +75,7 @@ import {
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
+  estimateDocSize,
   type RawFindIterator,
   type ServerFindOptions,
   type TxAdapter
@@ -511,7 +513,38 @@ abstract class PostgresAdapterBase implements DbAdapter {
             const finalSql: string = [select, ...sqlChunks].join(' ')
             fquery = finalSql
 
-            const result = await connection.execute(finalSql, vars.getValues())
+            let result: DBResult = Object.assign([], { count: 0 })
+            if (options?.memoryLimit === undefined) {
+              result = await connection.execute(finalSql, vars.getValues())
+            } else {
+              let currentSize = 0
+              // For unlimited requests, use cursor and check for sizes
+              const params = vars.getValues()
+              const cursor = connection
+                .raw()
+                .unsafe(finalSql, doFetchTypes ? params : convertArrayParams(params))
+                .cursor(options.bulkSize ?? 1000)
+
+              try {
+                for await (const part of cursor) {
+                  for (const pp of part) {
+                    result.push(pp)
+                    currentSize += estimateDocSize(pp)
+                    if (currentSize > options.memoryLimit) {
+                      throw new Error(
+                        `Memory limit of ${options.memoryLimit} bytes exceeded in findAll. Current size: ${currentSize} bytes`
+                      )
+                    }
+                  }
+                  // Properly update count.
+                  result.count += part.length
+                }
+              } catch (err) {
+                const sqlFull = vars.injectVars(fquery)
+                ctx.error('Error in findAll', { err, sql: fquery, sqlFull, query })
+                throw err
+              }
+            }
             if (options?.lookup === undefined && options?.associations === undefined) {
               return toFindResult(
                 result.map((p) => parseDocWithProjection(p, domain, projection)),

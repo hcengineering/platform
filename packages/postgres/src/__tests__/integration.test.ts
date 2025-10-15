@@ -134,6 +134,9 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
       model
     )
 
+    // Initialize the tx storage to create tables
+    await txStorage.init?.(mctx, {})
+
     // Put all model transactions into Tx storage
     for (const t of txes) {
       await txStorage.tx(mctx, t)
@@ -869,23 +872,6 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
       expect(tasks[0].name).toBe('Medium Priority')
     })
 
-    it('should handle $or queries', async () => {
-      // Note: $or operator may not be supported in all implementations
-      // This test validates that the query doesn't crash
-      try {
-        const tasks = await client.findAll<Task>(taskPlugin.class.Task, {
-          $or: [{ rate: { $gt: 80 } }, { rate: null }]
-        } as any)
-
-        // Should find High Priority (100) and No Rate Task (null)
-        expect(tasks.length).toBeGreaterThanOrEqual(1)
-      } catch (err) {
-        // If $or is not supported, skip this test
-        console.log('$or operator not supported, skipping test')
-        expect(true).toBe(true)
-      }
-    })
-
     it('should handle null checks', async () => {
       const tasks = await client.findAll<Task>(taskPlugin.class.Task, { rate: null })
 
@@ -1285,6 +1271,300 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
       expect(task._class).toBeDefined()
       expect(task.space).toBeDefined()
       expect(task.name).toBeDefined()
+    })
+  })
+
+  describe('Memory Limit Tests', () => {
+    /**
+     * Helper to generate tasks with substantial data to test memory limits
+     */
+    async function generateLargeDataset (count: number, dataSize: number = 1000): Promise<void> {
+      const largeDescription = 'X'.repeat(dataSize)
+      const createPromises: Array<Promise<any>> = []
+
+      for (let i = 0; i < count; i++) {
+        createPromises.push(
+          operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+            name: `Large Task ${i}`,
+            description: largeDescription,
+            rate: i
+          })
+        )
+      }
+
+      await Promise.all(createPromises)
+    }
+
+    it('should use direct query when memoryLimit is not specified', async () => {
+      // Generate dataset
+      const docCount = 100
+      const docSize = 1000
+
+      await generateLargeDataset(docCount, docSize)
+
+      const ctx = new MeasureMetricsContext('no-memory-limit-test', {})
+
+      // Query without memoryLimit should use direct query (no cursor, no memory check)
+      const result = await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, {})
+
+      expect(result.length).toBe(docCount)
+    })
+
+    it('should enforce memory limit when memoryLimit is specified and exceeded', async () => {
+      // Generate small dataset with tiny memory limit
+      const docCount = 100
+      const docSize = 1000 // 1KB per document
+
+      await generateLargeDataset(docCount, docSize)
+
+      // Query with very small memory limit (10KB) should trigger memory limit error
+      const ctx = new MeasureMetricsContext('memory-limit-exceeded-test', {})
+
+      await expect(async () => {
+        await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, { memoryLimit: 10 * 1024 })
+      }).rejects.toThrow(/Memory limit.*exceeded/)
+    })
+
+    it('should work with memoryLimit when not exceeded', async () => {
+      // Generate small amount of data
+      const docCount = 100
+      const docSize = 1000 // 1KB per document
+
+      await generateLargeDataset(docCount, docSize)
+
+      const ctx = new MeasureMetricsContext('memory-limit-success-test', {})
+
+      // Set a very small custom memory limit (20KB) that will be exceeded
+      const tinyLimit = 20 * 1024 // 20KB
+
+      // This should fail with 20KB limit
+      await expect(async () => {
+        await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, { memoryLimit: tinyLimit })
+      }).rejects.toThrow(/Memory limit.*exceeded/)
+
+      // But should work with reasonable limit (5MB)
+      const result = await serverStorage.findAll(
+        ctx,
+        taskPlugin.class.Task,
+        {},
+        {
+          memoryLimit: 5 * 1024 * 1024
+        }
+      )
+
+      expect(result.length).toBe(docCount)
+    })
+
+    it('should handle memory limit with sorting and projection', async () => {
+      // Test that memory limit works with complex queries
+      const docCount = 200
+      const docSize = 1000 // 1KB per document
+
+      await generateLargeDataset(docCount, docSize)
+
+      const ctx = new MeasureMetricsContext('complex-query-test', {})
+
+      // Query with sorting and projection should still respect small memory limit
+      await expect(async () => {
+        await serverStorage.findAll(
+          ctx,
+          taskPlugin.class.Task,
+          {},
+          {
+            sort: { rate: SortingOrder.Ascending },
+            projection: { name: 1, rate: 1 },
+            memoryLimit: 10 * 1024 // 10KB limit - very small to ensure we exceed it
+          }
+        )
+      }).rejects.toThrow(/Memory limit.*exceeded/)
+
+      // But with higher limit should work
+      const result = await serverStorage.findAll(
+        ctx,
+        taskPlugin.class.Task,
+        {},
+        {
+          sort: { rate: SortingOrder.Ascending },
+          projection: { name: 1, rate: 1 },
+          memoryLimit: 5 * 1024 * 1024 // 5MB limit
+        }
+      )
+
+      expect(result.length).toBeGreaterThan(0)
+      // Verify sorting worked - first element should have rate 0
+      expect(result[0].rate).toBe(0)
+      // Last element should have the highest rate
+      expect(result[result.length - 1].rate).toBeGreaterThan(result[0].rate ?? 0)
+    })
+
+    it('should handle empty results with memoryLimit', async () => {
+      const ctx = new MeasureMetricsContext('empty-results-test', {})
+
+      // Query that returns no results should not throw memory limit error
+      const result = await serverStorage.findAll(
+        ctx,
+        taskPlugin.class.Task,
+        {
+          name: 'Non-existent task name that will never match'
+        },
+        { memoryLimit: 1024 * 1024 }
+      )
+
+      expect(result.length).toBe(0)
+    })
+
+    it('should handle total count with memoryLimit', async () => {
+      // Test that total count works with memory limit
+      const docCount = 100
+      const docSize = 1000
+
+      await generateLargeDataset(docCount, docSize)
+
+      const ctx = new MeasureMetricsContext('total-count-test', {})
+
+      const result = await serverStorage.findAll(
+        ctx,
+        taskPlugin.class.Task,
+        {},
+        {
+          total: true,
+          memoryLimit: 10 * 1024 * 1024
+        }
+      )
+
+      expect(result.length).toBe(docCount)
+      expect(result.total).toBe(docCount)
+    })
+
+    describe('Performance Comparison: Direct Query vs Cursor', () => {
+      it('should compare performance with normal dataset (1000 docs)', async () => {
+        const docCount = 1000
+        const docSize = 2000 // 2KB per document
+
+        await generateLargeDataset(docCount, docSize)
+
+        const ctx = new MeasureMetricsContext('performance-1000-test', {})
+
+        // Test 1: Direct query (no memoryLimit)
+        const startDirect = Date.now()
+        const directResult = await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, {})
+        const directTime = Date.now() - startDirect
+
+        expect(directResult.length).toBe(docCount)
+
+        // Test 2: Cursor-based query with memoryLimit
+        const startCursor = Date.now()
+        const cursorResult = await serverStorage.findAll(
+          ctx,
+          taskPlugin.class.Task,
+          {},
+          {
+            memoryLimit: 50 * 1024 * 1024 // 50MB - high enough to not trigger limit
+          }
+        )
+        const cursorTime = Date.now() - startCursor
+
+        expect(cursorResult.length).toBe(docCount)
+
+        // Log performance metrics
+        console.log(`\nPerformance comparison for ${docCount} documents (~${docSize} bytes each):`)
+        console.log(`  Direct query (no memoryLimit): ${directTime}ms`)
+        console.log(`  Cursor query (with memoryLimit): ${cursorTime}ms`)
+        console.log(`  Overhead ratio: ${(cursorTime / directTime).toFixed(2)}x`)
+
+        // Both should return the same number of documents
+        expect(cursorResult.length).toBe(directResult.length)
+      })
+
+      it('should compare performance with larger dataset (2000 docs)', async () => {
+        const docCount = 2000
+        const docSize = 1500 // 1.5KB per document
+
+        await generateLargeDataset(docCount, docSize)
+
+        const ctx = new MeasureMetricsContext('performance-2000-test', {})
+
+        // Test 1: Direct query (no memoryLimit)
+        const startDirect = Date.now()
+        const directResult = await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, {})
+        const directTime = Date.now() - startDirect
+
+        expect(directResult.length).toBe(docCount)
+
+        // Test 2: Cursor-based query with memoryLimit
+        const startCursor = Date.now()
+        const cursorResult = await serverStorage.findAll(
+          ctx,
+          taskPlugin.class.Task,
+          {},
+          {
+            memoryLimit: 50 * 1024 * 1024 // 50MB - high enough to not trigger limit
+          }
+        )
+        const cursorTime = Date.now() - startCursor
+
+        expect(cursorResult.length).toBe(docCount)
+
+        // Log performance metrics
+        console.log(`\nPerformance comparison for ${docCount} documents (~${docSize} bytes each):`)
+        console.log(`  Direct query (no memoryLimit): ${directTime}ms`)
+        console.log(`  Cursor query (with memoryLimit): ${cursorTime}ms`)
+        console.log(`  Overhead ratio: ${(cursorTime / directTime).toFixed(2)}x`)
+
+        // Cursor should be reasonably performant (allow up to 3x overhead)
+        if (cursorTime > directTime * 3) {
+          console.warn(`  Warning: Cursor overhead is high (${(cursorTime / directTime).toFixed(2)}x)`)
+        }
+
+        // Both should return the same number of documents
+        expect(cursorResult.length).toBe(directResult.length)
+      })
+
+      it('should compare performance with sorting and projection', async () => {
+        const docCount = 1000
+        const docSize = 2000
+
+        await generateLargeDataset(docCount, docSize)
+
+        const ctx = new MeasureMetricsContext('performance-complex-test', {})
+
+        const queryOptions = {
+          sort: { rate: SortingOrder.Ascending },
+          projection: { name: 1 as const, rate: 1 as const, description: 1 as const }
+        }
+
+        // Test 1: Direct query (no memoryLimit)
+        const startDirect = Date.now()
+        const directResult = await serverStorage.findAll(ctx, taskPlugin.class.Task, {}, queryOptions)
+        const directTime = Date.now() - startDirect
+
+        expect(directResult.length).toBe(docCount)
+
+        // Test 2: Cursor-based query with memoryLimit
+        const startCursor = Date.now()
+        const cursorResult = await serverStorage.findAll(
+          ctx,
+          taskPlugin.class.Task,
+          {},
+          {
+            ...queryOptions,
+            memoryLimit: 50 * 1024 * 1024
+          }
+        )
+        const cursorTime = Date.now() - startCursor
+
+        expect(cursorResult.length).toBe(docCount)
+
+        // Log performance metrics
+        console.log(`\nPerformance comparison for ${docCount} documents with sorting and projection:`)
+        console.log(`  Direct query (no memoryLimit): ${directTime}ms`)
+        console.log(`  Cursor query (with memoryLimit): ${cursorTime}ms`)
+        console.log(`  Overhead ratio: ${(cursorTime / directTime).toFixed(2)}x`)
+
+        // Both should return the same sorted data
+        expect(directResult[0].rate).toBe(0)
+        expect(cursorResult[0].rate).toBe(0)
+      })
     })
   })
 

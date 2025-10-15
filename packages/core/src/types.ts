@@ -70,6 +70,11 @@ export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
 
   // Optional measure context, for server side operations
   ctx?: MeasureContext
+
+  // If passed, a cursor requesting will be used.
+  memoryLimit?: number // in bytes
+  // A bulk size for cursor fetching
+  bulkSize?: number
 }
 
 export type SessionFindAll = <T extends Doc>(

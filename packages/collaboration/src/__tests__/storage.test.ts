@@ -14,18 +14,17 @@
 //
 
 import core, {
+  makeCollabYdocId,
   type Blob,
   type CollaborativeDoc,
   type MeasureContext,
   type Ref,
-  type WorkspaceIds,
-  makeCollabJsonId,
-  makeCollabYdocId
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { getDataId, type StorageAdapter } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 import { Doc as YDoc } from 'yjs'
-import { loadCollabYdoc, saveCollabYdoc, removeCollabYdoc, loadCollabJson, saveCollabJson } from '../storage'
+import { loadCollabJson, loadCollabYdoc, removeCollabYdoc, saveCollabJson, saveCollabYdoc } from '../storage'
 import { yDocToBuffer } from '../ydoc'
 
 // Mock StorageAdapter (simplified version based on MemStorageAdapter)
