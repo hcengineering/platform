@@ -581,8 +581,6 @@ export interface Person {
   uuid: PersonUuid
   firstName: string
   lastName: string
-  country?: string
-  city?: string
 }
 
 export interface PersonInfo extends BasePerson {

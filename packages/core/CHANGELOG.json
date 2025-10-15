@@ -2,6 +2,18 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.8",
+      "tag": "@hcengineering/core_v0.7.8",
+      "date": "Wed, 15 Oct 2025 18:01:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "adjusted interfaces"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.7",
       "tag": "@hcengineering/core_v0.7.7",
       "date": "Tue, 14 Oct 2025 04:58:17 GMT",

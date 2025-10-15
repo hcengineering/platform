@@ -41,7 +41,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.7",
+    "@hcengineering/core": "workspace:^0.7.8",
     "@hcengineering/platform": "workspace:^0.7.5",
     "msgpackr": "^1.11.2"
   },

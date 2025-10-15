@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Tue, 14 Oct 2025 04:58:17 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Oct 2025 18:01:30 GMT and should not be manually modified.
+
+## 0.7.8
+Wed, 15 Oct 2025 18:01:30 GMT
+
+### Patches
+
+- adjusted interfaces
 
 ## 0.7.7
 Tue, 14 Oct 2025 04:58:17 GMT

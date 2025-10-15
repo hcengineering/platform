@@ -46,9 +46,11 @@ import type {
   MailboxOptions,
   MailboxSecret,
   OtpInfo,
+  PersonWithProfile,
   ProviderInfo,
   RegionInfo,
   SocialId,
+  UserProfile,
   WorkspaceLoginInfo,
   WorkspaceOperation
 } from './types'
@@ -226,6 +228,9 @@ export interface AccountClient {
   addEmailSocialId: (email: string) => Promise<OtpInfo>
   addHulyAssistantSocialId: () => Promise<PersonId>
   refreshHulyAssistantToken: () => Promise<void>
+
+  setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
+  getUserProfile: (personUuid?: PersonUuid) => Promise<PersonWithProfile | null>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1150,6 +1155,26 @@ class AccountClientImpl implements AccountClient {
         throw new PlatformError(result.error)
       }
     }
+  }
+
+  async setMyProfile (profile: Partial<Omit<UserProfile, 'personUuid'>>): Promise<void> {
+    const request = {
+      method: 'setMyProfile',
+      params: {
+        profile
+      }
+    }
+
+    await this._rpc(request)
+  }
+
+  async getUserProfile (personUuid?: PersonUuid): Promise<PersonWithProfile | null> {
+    return await this._rpc({
+      method: 'getUserProfile',
+      params: {
+        personUuid
+      }
+    })
   }
 }
 

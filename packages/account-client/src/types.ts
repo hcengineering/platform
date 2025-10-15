@@ -146,3 +146,19 @@ export interface AccountAggregatedInfo extends AccountInfo, Person {
   socialIds: SocialId[]
   workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest' | 'allowGuestSignUp'>[]
 }
+
+/**
+ * User profile with additional information for public sharing
+ * Stored in accounts database (global, not workspace-specific)
+ */
+export interface UserProfile {
+  personUuid: PersonUuid
+  bio?: string // LinkedIn-style bio (up to ~2000 chars)
+  city?: string
+  country?: string
+  website?: string // Personal website URL
+  socialLinks?: Record<string, string> // Flexible storage for social links
+  isPublic: boolean // Public visibility toggle (default: false)
+}
+
+export type PersonWithProfile = Person & Omit<UserProfile, 'personUuid'>

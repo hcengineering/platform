@@ -52,11 +52,11 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.5",
+    "@hcengineering/account-client": "workspace:^0.7.6",
     "@hcengineering/client": "workspace:^0.7.6",
     "@hcengineering/client-resources": "workspace:^0.7.6",
     "@hcengineering/collaborator-client": "workspace:^0.7.5",
-    "@hcengineering/core": "workspace:^0.7.7",
+    "@hcengineering/core": "workspace:^0.7.8",
     "@hcengineering/platform": "workspace:^0.7.5",
     "@hcengineering/text": "workspace:^0.7.5",
     "@hcengineering/text-markdown": "workspace:^0.7.5",
