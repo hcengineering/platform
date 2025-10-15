@@ -2,6 +2,18 @@
   "name": "@hcengineering/server-client",
   "entries": [
     {
+      "version": "0.7.6",
+      "tag": "@hcengineering/server-client_v0.7.6",
+      "date": "Wed, 15 Oct 2025 18:58:52 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.5` to `0.7.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.5",
       "tag": "@hcengineering/server-client_v0.7.5",
       "date": "Tue, 14 Oct 2025 10:31:32 GMT",

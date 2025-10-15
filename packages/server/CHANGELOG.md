@@ -1,6 +1,11 @@
 # Change Log - @hcengineering/server
 
-This log was last generated on Tue, 14 Oct 2025 14:07:25 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Oct 2025 18:58:52 GMT and should not be manually modified.
+
+## 0.7.7
+Wed, 15 Oct 2025 18:58:52 GMT
+
+_Version update only_
 
 ## 0.7.6
 Tue, 14 Oct 2025 14:07:25 GMT

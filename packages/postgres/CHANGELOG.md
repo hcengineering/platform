@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/postgres
 
-This log was last generated on Tue, 14 Oct 2025 10:31:32 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Oct 2025 18:58:52 GMT and should not be manually modified.
+
+## 0.7.6
+Wed, 15 Oct 2025 18:58:52 GMT
+
+### Patches
+
+- Allow to pass memoryLimit/bulkSize to control findAll memory usage
 
 ## 0.7.5
 Tue, 14 Oct 2025 10:31:32 GMT
