@@ -1,12 +1,20 @@
 import { type DefSeparators } from '@hcengineering/ui'
-import { type RoomLanguage } from '@hcengineering/love'
+import { type MeetingMinutes, type RoomLanguage } from '@hcengineering/love'
+import { type Card } from '@hcengineering/card'
 
 export type MeetingType = 'room' | 'card'
 
-export interface ActiveMeeting {
-  meetingId: string
-  meetingType: MeetingType
+export interface ActiveRoomMeeting {
+  type: 'room'
+  document: MeetingMinutes
 }
+
+export interface ActiveCardMeeting {
+  type: 'card'
+  document: Card
+}
+
+export type ActiveMeeting = ActiveRoomMeeting | ActiveCardMeeting
 
 export interface ResizeInitParams {
   x: number

@@ -63,8 +63,9 @@ import { $myPreferences, rooms } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
-import { activeMeetingMinutes, currentMeetingRoom } from './meetings'
-import { type OngoingMeeting } from './meetingPresence'
+import { activeMeeting, createCardMeeting, currentMeetingRoom } from './meetings'
+import { type Card } from '@hcengineering/card'
+import { type ActiveMeeting } from './types'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
@@ -229,26 +230,26 @@ export function closeMeetingMinutes (): void {
   const loc = getCurrentLocation()
 
   if (loc.path[2] === loveId) {
-    const meetingMinutes = get(activeMeetingMinutes)
+    const meeting = get(activeMeeting)
+    if (meeting?.type !== 'room') return
     const panel = get(panelstore).panel
     const { _id } = panel ?? {}
 
-    if (_id !== undefined && meetingMinutes !== undefined && _id === meetingMinutes?._id) {
+    if (_id !== undefined && _id === meeting.document?._id) {
       closePanel()
     }
   }
 }
 
-export async function getMeetingMinutesRoom (meetingId: Ref<MeetingMinutes>): Promise<Room | undefined> {
-  const minutes = await getClient().findOne(love.class.MeetingMinutes, {
-    _id: meetingId
-  })
-  if (minutes === undefined) return undefined
-  return get(rooms).find((r) => r._id === minutes.attachedTo)
+export async function getMeetingMinutesRoom (meeting: MeetingMinutes): Promise<Room | undefined> {
+  return get(rooms).find((r) => r._id === meeting.attachedTo)
 }
 
-export async function getMeetingName (meeting: OngoingMeeting): Promise<string> {
-  const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
+export async function getMeetingName (meeting: ActiveMeeting): Promise<string> {
+  if (meeting.type === 'card') {
+    return meeting.document?.title ?? ''
+  }
+  const room = await getMeetingMinutesRoom(meeting.document)
   if (room === undefined) return ''
   return await getRoomName(room)
 }
@@ -392,15 +393,20 @@ export async function startTranscription (): Promise<void> {
 }
 
 export async function stopTranscription (): Promise<void> {
-  const current = get(activeMeetingMinutes)
-  if (current === undefined) return
-  await disconnectMeeting(current.attachedTo as Ref<Room>)
+  const current = get(activeMeeting)
+  if (current?.type !== 'room') return
+  await disconnectMeeting(current.document.attachedTo as Ref<Room>)
 }
 
 export async function toggleRecording (): Promise<void> {
   const room = get(currentMeetingRoom)
   if (room === undefined) return
   await loveClient.record(room)
+}
+
+export async function startMeetingAction (card?: Card): Promise<void> {
+  if (card === undefined) return
+  await createCardMeeting(card)
 }
 
 export async function showRoomSettings (room?: Room): Promise<void> {

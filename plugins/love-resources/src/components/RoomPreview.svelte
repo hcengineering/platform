@@ -27,7 +27,7 @@
   import PersonActionPopup from './PersonActionPopup.svelte'
   import { IntlString } from '@hcengineering/platform'
   import { lkSessionConnected } from '../liveKitClient'
-  import { activeMeeting, activeMeetingMinutes } from '../meetings'
+  import { activeMeeting } from '../meetings'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -73,12 +73,8 @@
   async function openRoom (x: number, y: number): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    if (
-      $lkSessionConnected &&
-      $activeMeeting?.meetingType === 'room' &&
-      $activeMeetingMinutes?.attachedTo === room._id
-    ) {
-      await openDoc(hierarchy, $activeMeetingMinutes)
+    if ($lkSessionConnected && $activeMeeting?.type === 'room' && $activeMeeting.document?.attachedTo === room._id) {
+      await openDoc(hierarchy, $activeMeeting.document)
     } else {
       selectedRoomPlace.set({ _id: room._id, x, y })
       await openDoc(hierarchy, room)

@@ -22,7 +22,6 @@
     showPopup,
     PopupResult
   } from '@hcengineering/ui'
-  import { MeetingMinutes } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
 
   import RoomModal from '../../RoomModal.svelte'
@@ -31,8 +30,9 @@
   import TranscriptionButton from '../controls/TranscriptionButton.svelte'
   import RoomAccessButton from '../controls/RoomAccessButton.svelte'
   import { activeMeeting, currentMeetingRoom } from '../../../meetings'
+  import { ActiveMeeting } from '../../../types'
 
-  export let doc: MeetingMinutes | undefined = undefined
+  export let meeting: ActiveMeeting | undefined = undefined
 
   let breadcrumbs: BreadcrumbItem[]
   let popup: PopupResult | undefined
@@ -40,7 +40,7 @@
   $: breadcrumbs = [
     {
       id: 'meeting',
-      title: doc?.title
+      title: meeting?.document.title
     }
   ]
 

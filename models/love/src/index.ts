@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import card from '@hcengineering/card'
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -436,6 +437,18 @@ export function createModel (builder: Builder): void {
     visibilityTester: love.function.CanShowRoomSettings,
     context: {
       mode: 'context'
+    }
+  })
+
+  createAction(builder, {
+    action: love.actionImpl.StartMeeting,
+    label: love.string.StartMeeting,
+    icon: love.icon.Cam,
+    input: 'focus',
+    category: love.category.Office,
+    target: card.class.Card,
+    context: {
+      mode: ['context']
     }
   })
 

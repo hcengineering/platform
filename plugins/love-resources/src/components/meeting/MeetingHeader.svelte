@@ -1,9 +1,9 @@
 <script lang="ts">
   import { DocNavLink } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
-  import { MeetingMinutes } from '@hcengineering/love'
+  import { ActiveMeeting } from '../../types'
 
-  export let meetingMinutes: MeetingMinutes | undefined
+  export let meeting: ActiveMeeting | undefined
 
   function formatElapsedTime (elapsed: number): string {
     const seconds = Math.floor(elapsed / 1000)
@@ -29,15 +29,15 @@
   })
 </script>
 
-{#if meetingMinutes !== undefined}
+{#if meeting !== undefined}
   <div class="flex-between flex-gap-2">
-    <DocNavLink object={meetingMinutes}>
-      <span class="font-medium secondary-textColor overflow-label">{meetingMinutes?.title}</span>
+    <DocNavLink object={meeting.document}>
+      <span class="font-medium secondary-textColor overflow-label">{meeting.document.title}</span>
     </DocNavLink>
 
     <!-- elapsed time from start -->
-    {#if meetingMinutes?.createdOn !== undefined}
-      {@const elapsed = now - meetingMinutes.createdOn}
+    {#if meeting.type === 'room' && meeting.document.createdOn !== undefined}
+      {@const elapsed = now - meeting.document.createdOn}
       <div class="font-medium-12 secondary-textColor">{formatElapsedTime(elapsed)}</div>
     {/if}
   </div>

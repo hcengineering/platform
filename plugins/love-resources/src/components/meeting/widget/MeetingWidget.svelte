@@ -27,7 +27,7 @@
   import MicrophoneButton from '../controls/MicrophoneButton.svelte'
   import CameraButton from '../controls/CameraButton.svelte'
   import ShareScreenButton from '../controls/ShareScreenButton.svelte'
-  import { activeMeeting, activeMeetingMinutes } from '../../../meetings'
+  import { activeMeeting } from '../../../meetings'
 
   export let widgetState: WidgetState | undefined
   export let height: string
@@ -42,17 +42,17 @@
 
 {#if widgetState !== undefined && $activeMeeting !== undefined}
   <div>
-    <MeetingWidgetHeader doc={$activeMeetingMinutes} on:close={handleClose} />
+    <MeetingWidgetHeader meeting={$activeMeeting} on:close={handleClose} />
   </div>
   <div style="height: 100%; overflow: scroll" bind:clientHeight={contentHeight}>
     {#if widgetState.tab === 'video'}
       <VideoTab on:close={handleClose} />
     {:else if widgetState.tab === 'chat'}
-      {#if $activeMeetingMinutes === undefined}
+      {#if $activeMeeting === undefined}
         <Loading />
       {:else}
         <ChatTab
-          meetingMinutes={$activeMeetingMinutes}
+          meetingMinutes={$activeMeeting?.type === 'room' ? $activeMeeting.document : undefined}
           {widgetState}
           height={contentHeight + 'px'}
           {width}
@@ -60,11 +60,11 @@
         />
       {/if}
     {:else if widgetState.tab === 'transcription'}
-      {#if $activeMeetingMinutes === undefined}
+      {#if $activeMeeting === undefined}
         <Loading />
       {:else}
         <TranscriptionTab
-          meetingMinutes={$activeMeetingMinutes}
+          meetingMinutes={$activeMeeting?.type === 'room' ? $activeMeeting.document : undefined}
           {widgetState}
           height={contentHeight + 'px'}
           {width}

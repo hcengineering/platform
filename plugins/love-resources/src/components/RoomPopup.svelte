@@ -30,22 +30,22 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { activeMeeting, activeMeetingMinutes, createCardMeeting, joinMeeting } from '../meetings'
-  import { OngoingMeeting } from '../meetingPresence'
+  import { activeMeeting, createCardMeeting, joinMeeting } from '../meetings'
   import { getMeetingMinutesRoom } from '../utils'
+  import { MeetingWithParticipants } from '../meetingPresence'
+  import { ActiveMeeting } from '../types'
 
-  export let meeting: OngoingMeeting
-  $: myMeeting = $activeMeeting?.meetingId === meeting.meetingId
+  export let meetingInfo: MeetingWithParticipants
+  $: myMeeting = $activeMeeting?.document._id === meetingInfo.meeting.document._id
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
-    console.log(meeting)
-    if (meeting.meetingType === 'card') {
-      await createCardMeeting(meeting.meetingId)
+    if (meetingInfo.meeting.type === 'card') {
+      await createCardMeeting(meetingInfo.meeting.document)
     } else {
-      const room = await getMeetingMinutesRoom(meeting.meetingId as Ref<MeetingMinutes>)
+      const room = await getMeetingMinutesRoom(meetingInfo.meeting.document)
       if (room === undefined) return
       await joinMeeting(room)
     }
@@ -53,7 +53,8 @@
   }
 
   async function back (): Promise<void> {
-    const meetingMinutes = $activeMeetingMinutes
+    if (meetingInfo.meeting.type !== 'room') return
+    const meetingMinutes = meetingInfo.meeting.document
     if (meetingMinutes !== undefined) {
       const hierarchy = client.getHierarchy()
       const panelComponent = hierarchy.classHierarchyMixin(
@@ -68,24 +69,24 @@
     }
   }
 
-  function canGoBack (joined: boolean, location: Location, meetingMinutes?: MeetingMinutes): boolean {
+  function canGoBack (joined: boolean, location: Location, activeMeeting?: ActiveMeeting): boolean {
+    if (activeMeeting?.type !== 'room') return false
     if (!joined) return false
     if (location.path[2] !== loveId) return true
-    if (meetingMinutes === undefined) return false
 
     const panel = $panelstore.panel
     const { _id } = panel ?? {}
 
-    return _id !== meetingMinutes._id
+    return _id !== activeMeeting.document._id
   }
 </script>
 
 <div class="antiPopup room-popup flex-gap-4">
-  <MeetingHeader meetingMinutes={$activeMeetingMinutes} />
+  <MeetingHeader meeting={meetingInfo.meeting} />
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
-        {#each meeting?.persons ?? [] as personRef}
+        {#each meetingInfo?.persons ?? [] as personRef}
           {#await getPersonByPersonRef(personRef) then person}
             {#if person}
               <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>
@@ -104,7 +105,7 @@
       </div>
     {/if}
     <div style="width: auto" />
-    {#if canGoBack(myMeeting, $location, $activeMeetingMinutes)}
+    {#if canGoBack(myMeeting, $location, $activeMeeting)}
       <ModernButton
         icon={IconArrowLeft}
         label={love.string.MeetingMinutes}

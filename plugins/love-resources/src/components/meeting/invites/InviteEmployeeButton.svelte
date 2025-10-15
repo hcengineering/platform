@@ -21,7 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import { sendInvites } from '../../../invites'
   import { infos } from '../../../stores'
-  import { activeMeetingMinutes } from '../../../meetings'
+  import { activeMeeting } from '../../../meetings'
 
   export let employee: Employee | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -41,7 +41,8 @@
   }
 
   function openSelectUsersPopup (): void {
-    const skipAccounts = $infos.filter((p) => p.room === $activeMeetingMinutes?.attachedTo).map((p) => p.person)
+    if ($activeMeeting?.type !== 'room') return
+    const skipAccounts = $infos.filter((p) => p.room === $activeMeeting.document.attachedTo).map((p) => p.person)
     showPopup(
       SelectUsersPopup,
       {

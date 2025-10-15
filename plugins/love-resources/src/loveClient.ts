@@ -7,7 +7,7 @@ import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { Analytics } from '@hcengineering/analytics'
 import { get } from 'svelte/store'
-import { activeMeetingMinutes } from './meetings'
+import { activeMeeting } from './meetings'
 
 export function getLoveClient (): LoveClient {
   return new LoveClient()
@@ -59,13 +59,15 @@ export class LoveClient {
           body: JSON.stringify({ roomName, room: room.name })
         })
       } else {
+        const currentMeeting = get(activeMeeting)
+        if (currentMeeting?.type !== 'room') return
         await fetch(concatLink(endpoint, '/startRecord'), {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ roomName, room: room.name, meetingMinutes: get(activeMeetingMinutes)?._id })
+          body: JSON.stringify({ roomName, room: room.name, meetingMinutes: currentMeeting.document?._id })
         })
       }
     } catch (err: any) {

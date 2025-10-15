@@ -45,7 +45,8 @@ export default mergeIds(loveId, love, {
     ToggleMic: '' as ViewAction,
     ToggleVideo: '' as ViewAction,
     ShowRoomSettings: '' as ViewAction,
-    CopyGuestLink: '' as ViewAction
+    CopyGuestLink: '' as ViewAction,
+    StartMeeting: '' as ViewAction
   },
   ids: {
     Settings: '' as Ref<Doc>,

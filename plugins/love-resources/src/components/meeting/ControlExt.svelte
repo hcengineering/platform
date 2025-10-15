@@ -26,13 +26,13 @@
   import RoomButton from '../RoomButton.svelte'
   import { activeMeeting, leaveMeeting } from '../../meetings'
   import { lkSessionConnected } from '../../liveKitClient'
-  import { OngoingMeeting, ongoingMeetings } from '../../meetingPresence'
+  import { MeetingWithParticipants, ongoingMeetings } from '../../meetingPresence'
   import { Person } from '@hcengineering/contact'
 
-  function openMeeting (meeting: OngoingMeeting): (e: MouseEvent) => void {
+  function openMeeting (meetingInfo: MeetingWithParticipants): (e: MouseEvent) => void {
     return (e: MouseEvent) => {
       closeTooltip()
-      showPopup(RoomPopup, { meeting }, eventToHTMLElement(e))
+      showPopup(RoomPopup, { meetingInfo }, eventToHTMLElement(e))
     }
   }
 
@@ -74,10 +74,10 @@
 <div class="flex-row-center flex-gap-2">
   {#if $ongoingMeetings.length > 0}
     {#each $ongoingMeetings as ongoingMeeting}
-      {#await getMeetingName(ongoingMeeting) then name}
+      {#await getMeetingName(ongoingMeeting.meeting) then name}
         <RoomButton
           label={name}
-          active={$activeMeeting?.meetingId === ongoingMeeting.meetingId}
+          active={$activeMeeting?.document._id === ongoingMeeting.meeting.document._id}
           on:click={openMeeting(ongoingMeeting)}
           participants={ongoingMeeting.persons.map((person) => ({
             person

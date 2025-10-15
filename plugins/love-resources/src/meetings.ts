@@ -1,13 +1,5 @@
 import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
-import love, {
-  getFreeRoomPlace,
-  MeetingStatus,
-  type Room,
-  RoomType,
-  isOffice,
-  RoomAccess,
-  type MeetingMinutes
-} from '@hcengineering/love'
+import love, { getFreeRoomPlace, MeetingStatus, type Room, RoomType, isOffice, RoomAccess } from '@hcengineering/love'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import {
   closeMeetingMinutes,
@@ -24,28 +16,29 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { sendJoinRequest, unsubscribeJoinRequests } from './joinRequests'
 import { type ActiveMeeting } from './types'
+import { type Card } from '@hcengineering/card'
 
 export const activeMeeting = writable<ActiveMeeting | undefined>(undefined)
-export const activeMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 
-export const currentMeetingRoom = derived([rooms, activeMeetingMinutes], ([rooms, currentMeetingMinutes]) => {
-  return rooms.find((r) => r._id === currentMeetingMinutes?.attachedTo)
+export const currentMeetingRoom = derived([rooms, activeMeeting], ([rooms, activeMeeting]) => {
+  if (activeMeeting?.type !== 'room') return undefined
+  return rooms.find((r) => r._id === activeMeeting.document?.attachedTo)
 })
 
 const meetingQuery = createQuery(true)
 
-export async function createCardMeeting (id: string): Promise<void> {
+export async function createCardMeeting (meetingCard: Card): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-
+  if (meetingCard === undefined) return
   if (get(activeMeeting) !== undefined) {
     await leaveMeeting()
   }
 
   try {
-    const token = await loveClient.getCardToken(id)
+    const token = await loveClient.getCardToken(meetingCard._id)
     const wsURL = getLiveKitEndpoint()
     await liveKitClient.connect(wsURL, token, true)
-    activeMeeting.set({ meetingId: id, meetingType: 'card' })
+    activeMeeting.set({ document: meetingCard, type: 'card' })
   } catch (err) {
     console.error(err)
     await leaveMeeting()
@@ -105,7 +98,6 @@ export async function leaveMeeting (): Promise<void> {
   await unsubscribeJoinRequests()
   closeMeetingMinutes()
   activeMeeting.set(undefined)
-  activeMeetingMinutes.set(undefined)
 }
 
 export async function joinMeeting (room: Room): Promise<void> {
@@ -121,18 +113,19 @@ export async function joinMeeting (room: Room): Promise<void> {
 }
 
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
-  if (get(activeMeetingMinutes)?.attachedTo === roomId) return
+  const meeting = get(activeMeeting)
+  if (meeting?.type !== 'room' || meeting?.document.attachedTo === roomId) return
 
   const client = getClient()
   const room = getRoomById(roomId)
 
   if (room === undefined) return
 
-  const meeting = await client.findOne(love.class.MeetingMinutes, {
+  const meetingMinutes = await client.findOne(love.class.MeetingMinutes, {
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
-  if (meeting === undefined) {
+  if (meetingMinutes === undefined) {
     await createMeetingDocument(room)
   }
 
@@ -151,9 +144,9 @@ export async function kick (person: Ref<Person>): Promise<void> {
 
 async function connectToMeeting (room: Room): Promise<void> {
   if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
-  if (get(activeMeetingMinutes)?.attachedTo === room._id) return
-
-  if (get(activeMeeting) !== undefined) {
+  const meeting = get(activeMeeting)
+  if (meeting !== undefined) {
+    if (meeting.type !== 'room' || meeting.document.attachedTo === room._id) return
     await leaveMeeting()
   }
 
@@ -166,8 +159,7 @@ async function connectToMeeting (room: Room): Promise<void> {
       { attachedTo: room._id, status: MeetingStatus.Active },
       async (res) => {
         const meetingMinutes = res[0]
-        activeMeetingMinutes.set(meetingMinutes)
-        activeMeeting.set({ meetingId: meetingMinutes._id, meetingType: 'room' })
+        activeMeeting.set({ document: meetingMinutes, type: 'room' })
         meetingQuery.unsubscribe()
       }
     )

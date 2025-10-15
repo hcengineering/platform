@@ -11,7 +11,7 @@
   import { Ref } from '@hcengineering/core'
   import { myInfo } from '../stores'
   import { closeWidget, sidebarStore } from '@hcengineering/workbench-resources'
-  import { activeMeeting, activeMeetingMinutes } from '../meetings'
+  import { activeMeeting } from '../meetings'
   import { getClient } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
   import {
@@ -92,7 +92,7 @@
         closeWidget(love.ids.MeetingWidget)
       }
       return
-    } else if (presenceMeeting?.meetingId !== meeting.meetingId) {
+    } else if (presenceMeeting?.document._id !== meeting.document._id) {
       presenceMeeting = meeting
       presenceInterval = setInterval(updatePresence, (meetingPresenceTtlSeconds - 2) * 1000)
       void updatePresence()
@@ -104,7 +104,7 @@
 
       if (!isMeetingWidgetCreated) {
         createMeetingWidget(widget, meetingSessionConnected)
-        if (meeting.meetingType === 'room') void navigateToMeetingMinutes($activeMeetingMinutes)
+        if (meeting.type === 'room') void navigateToMeetingMinutes(meeting.document)
       }
     } else {
       if (isMeetingWidgetCreated) {
@@ -117,13 +117,13 @@
     if (presenceInterval === undefined || presenceMeeting === undefined) return
     clearInterval(presenceInterval)
     presenceInterval = undefined
-    await deleteMyMeetingPresence(presenceMeeting.meetingId)
+    await deleteMyMeetingPresence(presenceMeeting)
     presenceMeeting = undefined
   }
 
   async function updatePresence (): Promise<void> {
     if (presenceMeeting === undefined) return
-    await updateMyMeetingPresence(presenceMeeting.meetingId, presenceMeeting.meetingType)
+    await updateMyMeetingPresence(presenceMeeting)
   }
 
   $: checkActiveMeeting($lkSessionConnected, $activeMeeting)

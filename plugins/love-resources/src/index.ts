@@ -37,7 +37,8 @@ import {
   startTranscription,
   stopTranscription,
   getMeetingMinutesTitle,
-  queryMeetingMinutes
+  queryMeetingMinutes,
+  startMeetingAction
 } from './utils'
 import { toggleMicState, toggleCamState } from '@hcengineering/media-resources'
 
@@ -94,7 +95,8 @@ export default async (): Promise<Resources> => ({
     StartTranscribing: startTranscription,
     StopTranscribing: stopTranscription,
     ShowRoomSettings: showRoomSettings,
-    CopyGuestLink: copyGuestLink
+    CopyGuestLink: copyGuestLink,
+    StartMeeting: startMeetingAction
   },
   completion: {
     MeetingMinutesQuery: queryMeetingMinutes

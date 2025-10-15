@@ -18,17 +18,19 @@
   import { WidgetState } from '@hcengineering/workbench-resources'
 
   export let widgetState: WidgetState
-  export let meetingMinutes: MeetingMinutes
+  export let meetingMinutes: MeetingMinutes | undefined
   export let height: string
   export let width: string
 </script>
 
-<ChannelEmbeddedContent
-  {width}
-  {height}
-  readonly
-  object={meetingMinutes}
-  threadId={undefined}
-  collection="transcription"
-  on:close
-></ChannelEmbeddedContent>
+{#if meetingMinutes !== undefined}
+  <ChannelEmbeddedContent
+    {width}
+    {height}
+    readonly
+    object={meetingMinutes}
+    threadId={undefined}
+    collection="transcription"
+    on:close
+  ></ChannelEmbeddedContent>
+{/if}

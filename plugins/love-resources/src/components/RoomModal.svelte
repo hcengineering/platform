@@ -18,7 +18,7 @@
   import { Modal } from '@hcengineering/ui'
 
   import RoomComponent from './Room.svelte'
-  import { activeMeeting, activeMeetingMinutes } from '../meetings'
+  import { activeMeeting } from '../meetings'
 
   const dispatch = createEventDispatcher()
 
@@ -36,7 +36,7 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="title">
-      {$activeMeetingMinutes?.title}
+      {$activeMeeting?.document.title}
     </svelte:fragment>
     <RoomComponent canMaximize={false} />
   </Modal>
