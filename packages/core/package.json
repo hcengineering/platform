@@ -47,7 +47,7 @@
   "dependencies": {
     "@hcengineering/platform": "workspace:^0.7.5",
     "@hcengineering/analytics": "workspace:^0.7.5",
-    "@hcengineering/measurements": "^0.7.13",
+    "@hcengineering/measurements": "workspace:^0.7.13",
     "fast-equals": "^5.2.2"
   },
   "repository": "https://github.com/hcengineering/huly.core",
