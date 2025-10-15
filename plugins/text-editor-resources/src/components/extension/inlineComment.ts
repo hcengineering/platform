@@ -251,15 +251,16 @@ function initCommentDecoratorView (options: InlineCommentExtensionOptions, view:
     if (options.whenSync !== undefined) {
       await options.whenSync
     }
+
     commentMap.observe(commentMapObserver)
+    destructors.push(() => {
+      commentMap.unobserve(commentMapObserver)
+    })
+
     commentMapObserver()
   }
 
   void initObserver()
-
-  destructors.push(() => {
-    commentMap.unobserve(commentMapObserver)
-  })
 
   return {
     destroy () {
