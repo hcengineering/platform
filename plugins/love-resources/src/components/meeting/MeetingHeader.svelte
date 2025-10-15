@@ -32,7 +32,7 @@
 {#if meeting !== undefined}
   <div class="flex-between flex-gap-2">
     <DocNavLink object={meeting.document}>
-      <span class="font-medium secondary-textColor overflow-label">{meeting.document.title}</span>
+      <span class="font-medium secondary-textColor overflow-label">{meeting.document.title ?? ''}</span>
     </DocNavLink>
 
     <!-- elapsed time from start -->
