@@ -47,8 +47,9 @@
     if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
       const uploadFile = await getResource(attachment.helper.UploadFile)
       const file = new File([direct], 'avatar', { type: direct.type })
+      const { uuid } = await uploadFile(file)
 
-      result.avatar = await uploadFile(file)
+      result.avatar = uuid
     }
     return result
   }

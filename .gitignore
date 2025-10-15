@@ -113,4 +113,3 @@ dev/tool/history.json
 /combined_dependencies
 .tmp
 ws-tests/docker-compose.override.yml
-.github/copilot-instructions.md
