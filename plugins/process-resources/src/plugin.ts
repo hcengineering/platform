@@ -71,6 +71,8 @@ export default mergeIds(processId, process, {
     TimePresenter: '' as AnyComponent,
     AddTagEditor: '' as AnyComponent,
     AddTagPresenter: '' as AnyComponent,
+    SubProcessMatchEditor: '' as AnyComponent,
+    SubProcessMatchPresenter: '' as AnyComponent,
     FunctionSubmenu: '' as AnyComponent
   },
   criteriaEditor: {
@@ -166,6 +168,7 @@ export default mergeIds(processId, process, {
     EnterValue: '' as IntlString,
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
+    WhenSubProcessMatches: '' as IntlString,
     WaitUntil: '' as IntlString,
     WhenCardMatches: '' as IntlString,
     WhenFieldChanges: '' as IntlString,

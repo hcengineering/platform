@@ -93,6 +93,7 @@ import {
   CheckToDoCancelled,
   MatchCardCheck,
   CheckSubProcessesDone,
+  CheckSubProcessMatch,
   CheckTime,
   FieldChangedCheck
 } from './functions'
@@ -398,6 +399,7 @@ export default async () => ({
     FieldChangedCheck,
     MatchCardCheck,
     CheckSubProcessesDone,
+    CheckSubProcessMatch,
     CheckTime
   },
   transform: {

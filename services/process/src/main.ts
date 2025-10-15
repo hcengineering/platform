@@ -700,7 +700,10 @@ async function checkParent (execution: Execution, control: ProcessControl): Prom
       {
         from: parent.currentState,
         process: parent.process,
-        trigger: process.trigger.OnSubProcessesDone
+        trigger:
+          filtered.length === 0
+            ? { $in: [process.trigger.OnSubProcessesDone, process.trigger.OnSubProcessMatch] }
+            : process.trigger.OnSubProcessMatch
       },
       {
         sort: { rank: SortingOrder.Ascending }

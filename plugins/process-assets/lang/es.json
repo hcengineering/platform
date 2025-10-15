@@ -55,6 +55,7 @@
     "EnterValue": "Ingrese un valor",
     "OnToDoDone": "Al completar la acción",
     "OnSubProcessesDone": "Al finalizar los subprocesos",
+    "WhenSubProcessMatches": "Cuando el subproceso coincide",
     "Result": "Resultado",
     "RequestResult": "Solicitar resultado",
     "NoResultRequired": "No se requiere resultado",

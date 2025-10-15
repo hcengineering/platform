@@ -16,10 +16,11 @@
 <script lang="ts">
   import { AnyAttribute } from '@hcengineering/core'
   import { Context, Process } from '@hcengineering/process'
-  import { Component, DropdownLabelsIntl } from '@hcengineering/ui'
+  import { Component } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { buildResult, Mode, ModeId, Modes, parseValue } from '../../query'
   import BaseCriteriaEditor from './BaseCriteriaEditor.svelte'
+  import ModeSelector from './ModeSelector.svelte'
 
   export let readonly: boolean
   export let value: any
@@ -32,7 +33,6 @@
 
   let [val, selectedMode] = parseValue(modesValues, value)
 
-  $: mode = selectedMode.id
   const dispatch = createEventDispatcher()
 
   $: [val, selectedMode] = parseValue(modesValues, value)
@@ -42,27 +42,18 @@
     value = result
     dispatch('change', result)
   }
+
+  function changeMode (e: CustomEvent): void {
+    const editorChanged = e.detail
+    if (editorChanged) {
+      val = undefined
+    }
+    changeResult(val)
+  }
 </script>
 
 <div class="flex-row-center flex-gap-4">
-  <DropdownLabelsIntl
-    items={modesValues}
-    selected={mode}
-    disabled={readonly}
-    minW0={false}
-    kind={'no-border'}
-    width={'100%'}
-    on:selected={(e) => {
-      mode = e.detail
-      const prevEditor = (selectedMode.editor ?? selectedMode.withoutEditor) ? null : undefined
-      selectedMode = modesValues.find((m) => m.id === mode) ?? modesValues[0]
-      const newEditor = (selectedMode.editor ?? selectedMode.withoutEditor) ? null : undefined
-      if (prevEditor !== newEditor) {
-        val = undefined
-      }
-      changeResult(val)
-    }}
-  />
+  <ModeSelector bind:selectedMode modes={modesValues} {readonly} on:change={changeMode} />
   {#if selectedMode.editor}
     <div class="w-full">
       <Component

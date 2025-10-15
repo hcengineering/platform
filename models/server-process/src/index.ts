@@ -77,6 +77,11 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.CheckSubProcessesDone
   })
 
+  builder.mixin(process.trigger.OnSubProcessMatch, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.CheckSubProcessMatch
+  })
+
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.RunSubProcess
   })

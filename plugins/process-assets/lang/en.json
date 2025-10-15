@@ -51,6 +51,7 @@
     "EnterValue": "Enter value",
     "OnToDoDone": "When action item done",
     "OnSubProcessesDone": "On sub processes done",
+    "WhenSubProcessMatches": "When subprocess matches",
     "Result": "Result",
     "RequestResult": "Request result",
     "NoResultRequired": "No result required",

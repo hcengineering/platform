@@ -165,19 +165,23 @@ function hasSameKeys (target: any, value: any): boolean {
     }
     return true
   } else {
-    return typeof target !== 'object' && typeof value !== 'object'
+    return typeof target !== 'object' && isNotObject(value)
   }
 }
 
+function isNotObject (value: any): boolean {
+  return typeof value !== 'object' || value === null || Array.isArray(value)
+}
+
 function isModeMatch (mode: Mode, value: any): boolean {
-  if (typeof mode.query !== 'object') return typeof value !== 'object' || Array.isArray(value)
-  if (typeof mode.query === 'object' && (typeof value !== 'object' || Array.isArray(value))) return false
+  if (typeof mode.query !== 'object') return isNotObject(value)
+  if (typeof mode.query === 'object' && isNotObject(value)) return false
   return hasSameKeys(mode.query, value)
 }
 
 function getValue (_value: any): any {
   let value = _value
-  while (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 1) {
+  while (!isNotObject(value) && Object.keys(value).length === 1) {
     value = value[Object.keys(value)[0]]
   }
   return value
