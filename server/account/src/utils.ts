@@ -501,6 +501,12 @@ export async function createAccount (
     time: createdOn
   })
 
+  // Create user profile with default values (private by default)
+  await db.userProfile.insertOne({
+    personUuid,
+    isPublic: false
+  })
+
   return socialId
 }
 

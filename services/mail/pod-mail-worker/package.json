@@ -57,7 +57,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.5",
+    "@hcengineering/account-client": "^0.7.6",
     "@hcengineering/analytics-service": "^0.7.5",
     "@hcengineering/api-client": "^0.7.5",
     "@hcengineering/card": "^0.7.0",
@@ -66,7 +66,7 @@
     "@hcengineering/communication-sdk-types": "^0.7.4",
     "@hcengineering/communication-types": "^0.7.4",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/kafka": "^0.7.5",
     "@hcengineering/kvs-client": "^0.7.0",
     "@hcengineering/mail": "^0.7.0",

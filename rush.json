@@ -916,6 +916,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/global-profile",
+      "projectFolder": "plugins/global-profile",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/global-profile-assets",
+      "projectFolder": "plugins/global-profile-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/global-profile-resources",
+      "projectFolder": "plugins/global-profile-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-inventory",
       "projectFolder": "models/inventory",
       "shouldPublish": false

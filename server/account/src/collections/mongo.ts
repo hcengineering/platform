@@ -50,6 +50,7 @@ import type {
   Query,
   SocialId,
   Sort,
+  UserProfile,
   WorkspaceData,
   WorkspaceInfoWithStatus,
   WorkspaceInvite,
@@ -403,6 +404,7 @@ export class MongoAccountDB implements AccountDB {
   mailboxSecret: MongoDbCollection<MailboxSecret>
   integration: MongoDbCollection<Integration>
   integrationSecret: MongoDbCollection<IntegrationSecret>
+  userProfile: MongoDbCollection<UserProfile, 'personUuid'>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
@@ -420,6 +422,7 @@ export class MongoAccountDB implements AccountDB {
     this.mailboxSecret = new MongoDbCollection<MailboxSecret>('mailboxSecrets', db)
     this.integration = new MongoDbCollection<Integration>('integration', db)
     this.integrationSecret = new MongoDbCollection<IntegrationSecret>('integrationSecret', db)
+    this.userProfile = new MongoDbCollection<UserProfile, 'personUuid'>('user_profile', db, 'personUuid')
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }
@@ -520,7 +523,7 @@ export class MongoAccountDB implements AccountDB {
   }
 
   protected getMigrations (): Migration[] {
-    return [this.getV1Migration()]
+    return [this.getV1Migration(), this.getV2Migration()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO DO SOMETHING, ADD A NEW MIGRATION.
@@ -549,6 +552,37 @@ export class MongoAccountDB implements AccountDB {
           console.log(`Migrated ${sidsCount} social ids`)
         } finally {
           await sidCursor.close()
+        }
+      }
+    }
+  }
+
+  private getV2Migration (): Migration {
+    return {
+      key: 'account_db_v2_populate_user_profiles',
+      op: async () => {
+        // Create user_profile entries for all existing persons that don't have one
+        const accountCursor = this.account.findCursor({})
+
+        try {
+          let profilesCreated = 0
+          while (await accountCursor.hasNext()) {
+            const account = await accountCursor.next()
+            if (account == null) break
+
+            const existingProfile = await this.userProfile.findOne({ personUuid: account.uuid })
+            if (existingProfile == null) {
+              await this.userProfile.insertOne({
+                personUuid: account.uuid,
+                isPublic: false
+              })
+              profilesCreated++
+            }
+          }
+
+          console.log(`Created ${profilesCreated} user profiles`)
+        } finally {
+          await accountCursor.close()
         }
       }
     }

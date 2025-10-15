@@ -1,0 +1,29 @@
+{
+  "string": {
+    "GlobalProfile": "グローバルプロフィール",
+    "EditProfile": "プロフィールを編集",
+    "GeneralInformation": "一般情報",
+    "FirstName": "名",
+    "LastName": "姓",
+    "City": "市区町村",
+    "Country": "国",
+    "Bio": "自己紹介",
+    "FirstNamePlaceholder": "名を入力",
+    "LastNamePlaceholder": "姓を入力",
+    "CityPlaceholder": "市区町村を入力",
+    "CountryPlaceholder": "国を入力",
+    "BioPlaceholder": "自己紹介を入力してください...",
+    "Save": "保存",
+    "Cancel": "キャンセル",
+    "MaximumLength": "最大{count}文字",
+    "Required": "この項目は必須です",
+    "ProfileVisibility": "プロフィールの可視性",
+    "PublicProfile": "公開",
+    "PrivateProfile": "非公開",
+    "PublicProfileDescription": "あなたのプロフィールは全員に表示されます",
+    "PrivateProfileDescription": "あなたのプロフィールはあなただけに表示されます",
+    "AddBioPlaceholder": "自己紹介を追加して他の人にあなたのことを知らせましょう...",
+    "AddLocationPlaceholder": "あなたの所在地を追加...",
+    "ProfileNotAvailable": "プロフィールは利用できません"
+  }
+}

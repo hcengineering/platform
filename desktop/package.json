@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/desktop",
-  "version": "0.7.0",
+  "version": "0.7.208",
   "main": "dist/main/electron.js",
   "template": "@hcengineering/webpack-package",
   "scripts": {
@@ -133,7 +133,7 @@
     "@hcengineering/notification-resources": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/preference-assets": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/rekoni": "^0.7.0",
     "@hcengineering/tags-assets": "^0.7.0",
     "@hcengineering/tags": "^0.7.0",
@@ -194,6 +194,9 @@
     "@hcengineering/guest": "^0.7.0",
     "@hcengineering/guest-assets": "^0.7.0",
     "@hcengineering/guest-resources": "^0.7.0",
+    "@hcengineering/global-profile": "^0.7.0",
+    "@hcengineering/global-profile-assets": "^0.7.0",
+    "@hcengineering/global-profile-resources": "^0.7.0",
     "@hcengineering/presence": "^0.7.0",
     "@hcengineering/presence-resources": "^0.7.0",
     "@hcengineering/media": "^0.7.0",

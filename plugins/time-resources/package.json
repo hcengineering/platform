@@ -44,7 +44,7 @@
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/calendar-resources": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/tracker": "^0.7.0",
     "@hcengineering/tracker-resources": "^0.7.0",
