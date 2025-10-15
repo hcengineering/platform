@@ -42,9 +42,9 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/core": "^0.7.7",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4",
-    "@hcengineering/communication-types": "^0.7.3",
-    "@hcengineering/communication-sdk-types": "^0.7.3",
+    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/communication-types": "^0.7.4",
+    "@hcengineering/communication-sdk-types": "^0.7.4",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
     "@hcengineering/contact": "^0.7.0"

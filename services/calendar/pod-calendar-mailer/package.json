@@ -58,11 +58,11 @@
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/core": "^0.7.7",
-    "@hcengineering/kafka": "^0.7.4",
+    "@hcengineering/kafka": "^0.7.5",
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-token": "^0.7.5",
     "dotenv": "~16.0.0"
   }

@@ -52,6 +52,6 @@
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/analytics-service": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4"
+    "@hcengineering/server-core": "^0.7.5"
   }
 }

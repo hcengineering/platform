@@ -58,7 +58,7 @@
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-token": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/analytics-service": "^0.7.5"
   }

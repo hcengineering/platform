@@ -39,7 +39,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.7",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.4",
+    "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/inventory": "^0.7.0",
     "@hcengineering/view": "^0.7.0",

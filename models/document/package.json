@@ -57,7 +57,7 @@
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/document-resources": "^0.7.0",
-    "@hcengineering/collaboration": "^0.7.4",
+    "@hcengineering/collaboration": "^0.7.5",
     "@hcengineering/rank": "^0.7.5"
   }
 }

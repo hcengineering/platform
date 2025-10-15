@@ -112,6 +112,7 @@
     "Or": "Or",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copy to clipboard",
+    "CopyDocumentMarkdown": "Copy as Markdown",
     "PublicView": "Public",
 
     "ChooseIcon": "Choose icon",
