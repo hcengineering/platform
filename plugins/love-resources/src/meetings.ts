@@ -114,7 +114,7 @@ export async function joinMeeting (room: Room): Promise<void> {
 
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
   const meeting = get(activeMeeting)
-  if (meeting?.type !== 'room' || meeting?.document.attachedTo === roomId) return
+  if (meeting?.type === 'card' || meeting?.document.attachedTo === roomId) return
 
   const client = getClient()
   const room = getRoomById(roomId)

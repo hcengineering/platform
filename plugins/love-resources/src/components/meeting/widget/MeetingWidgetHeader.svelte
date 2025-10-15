@@ -40,7 +40,7 @@
   $: breadcrumbs = [
     {
       id: 'meeting',
-      title: meeting?.document.title
+      title: meeting?.document.title ?? ''
     }
   ]
 
