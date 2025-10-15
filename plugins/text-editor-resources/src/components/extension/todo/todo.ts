@@ -28,8 +28,8 @@ import {
   DOMSerializer,
   type DOMOutputSpec,
   DOMParser,
-  type TagParseRule,
-  type Attrs
+  type Attrs,
+  type TagParseRule
 } from '@tiptap/pm/model'
 import {
   type EditorStateConfig,
@@ -237,10 +237,15 @@ export function TodoItemPastePlugin (editor: Editor): Plugin<NamedToDosInEditor>
     editor.view.someProp('domParser') ??
     DOMParser.fromSchema(editor.view.state.schema)
   const parseRules = prevClipboardParser.rules.map((rule) => {
-    if (rule.tag === undefined || (rule as TagParseRule).node !== 'todoItem') {
+    if (rule.tag === undefined) {
       return rule
     }
-    const tagRule = rule as TagParseRule
+    // Strange conversion to be ok for both typescript and eslint
+    // Is ok because rule with 'tag' property is already TagParseRule
+    const tagRule: TagParseRule = rule as any
+    if (tagRule.node !== 'todoItem') {
+      return rule
+    }
     const newRule = {
       ...tagRule,
       getAttrs: (node: HTMLElement): Attrs | false | null => {
