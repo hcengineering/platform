@@ -35,7 +35,6 @@
     draftsStore,
     FileOrBlob,
     getClient,
-    getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -156,8 +155,7 @@
 
   async function attachFile (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     try {
-      const uuid = await uploadFile(file)
-      const metadata = await getFileMetadata(file, uuid)
+      const { uuid, metadata } = await uploadFile(file)
       await createAttachment(uuid, file.name, file, metadata)
       return { file: uuid, type: file.type }
     } catch (err: any) {

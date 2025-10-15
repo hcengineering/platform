@@ -19,6 +19,8 @@ export interface Config {
   DISABLE_SIGNUP?: string
   HIDE_LOCAL_LOGIN?: string
   FILES_URL: string
+  UPLOAD_URL: string
+  DATALAKE_URL?: string
   FRONT_URL: string
   GITHUB_APP: string
   GITHUB_CLIENTID: string
@@ -31,7 +33,6 @@ export interface Config {
   MODEL_VERSION: string
   PRESENCE_URL?: string
   PREVIEW_URL?: string
-  PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
   REKONI_URL: string
@@ -39,8 +40,6 @@ export interface Config {
   STATS_URL?: string
   TELEGRAM_BOT_URL?: string
   TELEGRAM_URL: string
-  UPLOAD_CONFIG: string
-  UPLOAD_URL: string
   VERSION: string
   STREAM_URL?: string
   BACKUP_URL?: string
