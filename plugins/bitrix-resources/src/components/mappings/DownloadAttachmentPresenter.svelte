@@ -11,7 +11,7 @@
   {#each op.fields as p, i}
     <div class="pattern flex-row-center gap-2">
       {#if mapping.bitrixFields}
-        {p.field ? mapping.bitrixFields[p.field]?.formLabel ?? mapping.bitrixFields[p.field]?.title : p.field ?? ''}
+        {p.field ? (mapping.bitrixFields[p.field]?.formLabel ?? mapping.bitrixFields[p.field]?.title) : (p.field ?? '')}
       {/if}
     </div>
   {/each}

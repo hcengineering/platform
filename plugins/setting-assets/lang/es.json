@@ -184,6 +184,7 @@
     "ServiceIsUnavailable": "El servicio no está disponible",
     "Integrated": "Integrado",
     "Connected": "Conectado",
+    "Disconnected": "Desconectado",
     "Available": "Disponible",
     "NotConnectedIntegration": "La cuenta {account} no está integrada con el espacio de trabajo",
     "IntegrationIsUnstable": "El servicio de integración está experimentando problemas. Es posible que algunas funciones no funcionen correctamente.",

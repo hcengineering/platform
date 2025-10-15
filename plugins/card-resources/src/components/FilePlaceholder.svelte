@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { Card } from '@hcengineering/card'
-  import { getClient, getFileMetadata } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import UploadDuo from './icons/UploadDuo.svelte'
@@ -27,8 +27,7 @@
   let inputFile: HTMLInputElement
   let dragover = false
 
-  async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
-    const metadata = await getFileMetadata(file, uuid)
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
     const blobs = doc.blobs ?? {}
     blobs[uuid] = {
       name,

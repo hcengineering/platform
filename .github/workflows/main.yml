@@ -79,6 +79,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -149,17 +152,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Apply templates...
-        run: node common/scripts/install-run-rush.js apply-templates
-
-      - name: Check templates
-        run: |
-          echo '================================================================'
-          echo 'Checking for diff files'
-          echo '================================================================'
-          git diff '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat
-          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
-          echo '================================================================'
       - name: Formatting...
         run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'develop' }}
       - name: Check files formatting
@@ -233,6 +225,10 @@ jobs:
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -360,6 +356,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -451,6 +450,9 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -524,6 +526,9 @@ jobs:
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install

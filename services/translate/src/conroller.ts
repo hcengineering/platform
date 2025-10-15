@@ -34,7 +34,7 @@ import { withRetry } from '@hcengineering/retry'
 import { Analytics } from '@hcengineering/analytics'
 import OpenAI from 'openai'
 import { PlatformQueue } from '@hcengineering/server-core'
-import { MessageEventType, TranslateMessageEvent } from '@hcengineering/communication-sdk-types'
+import { MessageEventType, TranslateMessageEvent, UpdatePatchEvent } from '@hcengineering/communication-sdk-types'
 
 import { Storage } from './storage'
 import config from './config'
@@ -52,12 +52,12 @@ export class Controller {
     this.storage = new Storage(this.ctx)
   }
 
-  public processTx (workspace: WorkspaceUuid, tx: Tx): void {
+  public processTranslationSettingsTx (workspace: WorkspaceUuid, tx: Tx): void {
     if (!this.languagesByWorkspace.has(workspace)) return
-    this.processTranslation(workspace, tx)
+    this.processTranslationSettings(workspace, tx)
   }
 
-  private processTranslation (workspace: WorkspaceUuid, tx: Tx): void {
+  private processTranslationSettings (workspace: WorkspaceUuid, tx: Tx): void {
     if (tx._class === core.class.TxCreateDoc) {
       const createTx = tx as TxCreateDoc<Doc>
       if (createTx.objectClass !== contact.class.Translation) return
@@ -111,28 +111,56 @@ export class Controller {
     return arrayLangs
   }
 
+  private getUpdateLanguageTx (cardId: CardID, messageId: MessageID, language: string): TxDomainEvent {
+    const event: UpdatePatchEvent = {
+      type: MessageEventType.UpdatePatch,
+      cardId,
+      messageId,
+      language,
+      socialId: core.account.System
+    }
+
+    return {
+      _id: generateId(),
+      _class: core.class.TxDomainEvent,
+      space: core.space.Tx,
+      objectSpace: core.space.Workspace,
+      modifiedOn: Date.now(),
+      modifiedBy: core.account.System,
+      domain: 'communication' as Domain,
+      event
+    }
+  }
+
   async processMessageCreate (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
     message: Message,
     blobId: BlobID
   ): Promise<void> {
-    const translateTo = (await this.getLanguages(workspace)).filter((it) => it !== message.language)
+    const initialLanguage = message.language
+    const translateTo = await this.getLanguages(workspace)
     if (translateTo.length === 0) return
-    console.log('translateTo', translateTo)
-    console.log('message', message.content, message.language)
 
+    let originalLanguage = initialLanguage
+
+    const txes: Tx[] = []
     for (const lang of translateTo) {
       try {
         const result = await withRetry(() => this.translate(message.content, lang))
+        if (result == null) continue
+        const translation = result?.translation ?? ''
 
-        if (result !== '') {
-          await this.storage.insertMessage(workspace, message.cardId, blobId, lang, message, result)
+        if (result?.original_language != null && result.original_language !== '') {
+          originalLanguage = result.original_language
+        }
+        if (translation !== '') {
+          await this.storage.insertMessage(workspace, message.cardId, blobId, lang, message, translation)
           const event: TranslateMessageEvent = {
             type: MessageEventType.TranslateMessage,
             cardId: message.cardId,
             messageId: message.id,
-            content: result,
+            content: translation,
             language: lang
           }
 
@@ -146,12 +174,22 @@ export class Controller {
             domain: 'communication' as Domain,
             event
           }
-          const client = await this.getRestClient(workspace)
-          await client.tx(tx)
+          txes.push(tx)
         }
       } catch (e) {
         ctx.error('Failed to translate message', { error: e, messageId: message.id })
         Analytics.handleError(e as Error)
+      }
+    }
+
+    if (originalLanguage != null && originalLanguage !== '' && originalLanguage !== initialLanguage) {
+      txes.unshift(this.getUpdateLanguageTx(message.cardId, message.id, originalLanguage))
+    }
+
+    if (txes.length > 0) {
+      const client = await this.getRestClient(workspace)
+      for (const tx of txes) {
+        await client.tx(tx)
       }
     }
   }
@@ -162,22 +200,30 @@ export class Controller {
     cardId: CardID,
     messageId: MessageID,
     content: Markdown,
-    blobId: BlobID
+    blobId: BlobID,
+    language?: string
   ): Promise<void> {
     const translateTo = await this.getLanguages(workspace)
     if (translateTo.length === 0) return
+    const txes: Tx[] = []
+
+    let originalLanguage = language
 
     for (const lang of translateTo) {
       try {
         const result = await withRetry(() => this.translate(content, lang))
-
-        if (result !== '') {
-          await this.storage.updateMessage(workspace, cardId, blobId, messageId, lang, result)
+        if (result == null) continue
+        const translation = result?.translation ?? ''
+        if (result?.original_language != null && result.original_language !== '') {
+          originalLanguage = result.original_language
+        }
+        if (translation !== '') {
+          await this.storage.updateMessage(workspace, cardId, blobId, messageId, lang, translation)
           const event: TranslateMessageEvent = {
             type: MessageEventType.TranslateMessage,
             cardId,
             messageId,
-            content: result,
+            content: translation,
             language: lang
           }
           const tx: TxDomainEvent = {
@@ -190,12 +236,23 @@ export class Controller {
             domain: 'communication' as Domain,
             event
           }
-          const client = await this.getRestClient(workspace)
-          await client.tx(tx)
+
+          txes.push(tx)
         }
       } catch (e) {
         ctx.error('Failed to update message translation', { error: e, messageId })
         Analytics.handleError(e as Error)
+      }
+    }
+
+    if (originalLanguage != null && originalLanguage !== '' && originalLanguage !== language) {
+      txes.unshift(this.getUpdateLanguageTx(cardId, messageId, originalLanguage))
+    }
+
+    if (txes.length > 0) {
+      const client = await this.getRestClient(workspace)
+      for (const tx of txes) {
+        await client.tx(tx)
       }
     }
   }
@@ -220,14 +277,28 @@ export class Controller {
     }
   }
 
-  private async translate (markdown: string, lang: string): Promise<string> {
+  private async translate (
+    markdown: string,
+    lang: string
+  ): Promise<{ original_language?: string, translation?: string } | undefined> {
+    const systemPropmpt = `You are a translation model. 
+You are a translation model. Your only task is to translate the given markdown text into the ${lang} language.
+Detect the original language of the input.
+If the input markdown is already written in ${lang}, do not translate. Preserve names and terms if they have no clear equivalent.
+ Be as literal and accurate as possible while keeping the meaning natural. Keep markdown structire.
+Output the result strictly as a JSON object in the following format:
+{
+  "original_language": "<detected language in iso 639-1>",
+  "translation": "<translated markdown or empty string if no translation was needed>"
+}
+Do not add any explanations, comments, or extra text outside the JSON.`
+
     const response = await this.openai.chat.completions.create({
       model: config.OpenAIModel,
       messages: [
         {
           role: 'system',
-          content: `You are a translation model.Your only task is to translate the given markdown text into the ${lang} language.
-Output only the translation, nothing else. Do not add explanations, comments, or formatting.Preserve names and terms if they have no clear equivalent. Be as literal and accurate as possible while keeping the meaning natural.`
+          content: systemPropmpt
         },
         {
           role: 'user',
@@ -236,6 +307,18 @@ Output only the translation, nothing else. Do not add explanations, comments, or
       ]
     })
 
-    return response.choices[0].message.content ?? ''
+    const res = response.choices[0].message.content ?? ''
+
+    try {
+      const parsed = JSON.parse(res)
+      if (typeof parsed !== 'object' || parsed === null) {
+        console.log('Failed to parse translation response', { response: res })
+        return undefined
+      }
+      return parsed
+    } catch (e) {
+      console.log('Failed to parse translation response', { response: res, error: e })
+      return undefined
+    }
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import contact, { getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
-import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
+import { type IntegrationKind, type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import login from '@hcengineering/login'
 import presentation, { getClient } from '@hcengineering/presentation'
@@ -9,6 +9,10 @@ import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
 import { get } from 'svelte/store'
+import {
+  getIntegrationClient as getIntegrationClientRaw,
+  type IntegrationClient
+} from '@hcengineering/integration-client'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   let ancestors = [p._id]
@@ -99,4 +103,13 @@ export function getAccountClient (): AccountClient {
   const token = getMetadata(presentation.metadata.Token)
 
   return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function getIntegrationClient (kind: IntegrationKind): Promise<IntegrationClient> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+  if (accountsUrl === undefined || token === undefined) {
+    throw new Error('Accounts URL or token is not defined')
+  }
+  return getIntegrationClientRaw(accountsUrl, token, kind, 'settings')
 }

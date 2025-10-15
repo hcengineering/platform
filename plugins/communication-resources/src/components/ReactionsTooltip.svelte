@@ -29,7 +29,7 @@
   let shortCode: string = ''
   $: extendedEmoji = getEmojiByUnicode(emoji)
   $: shortCode =
-    extendedEmoji && isCustomEmoji(extendedEmoji) ? extendedEmoji.shortcode : extendedEmoji?.shortcodes?.[0] ?? ''
+    extendedEmoji && isCustomEmoji(extendedEmoji) ? extendedEmoji.shortcode : (extendedEmoji?.shortcodes?.[0] ?? '')
 </script>
 
 <div class="m-2 flex-col flex-gap-2">

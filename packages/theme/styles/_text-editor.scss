@@ -1,3 +1,5 @@
+@use 'sass:meta';
+
 .ProseMirror {
   outline: none;
 
@@ -436,11 +438,11 @@
 }
 
 .theme-dark {
-  @import './github-dark.scss';
+  @include meta.load-css('./github-dark.scss');
 }
 
 .theme-light {
-  @import './github-light.scss';
+  @include meta.load-css('./github-light.scss');
 }
 
 .theme-dark .text-editor-note-marker {

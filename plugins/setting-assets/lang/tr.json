@@ -193,6 +193,7 @@
     "ServiceIsUnavailable": "Servis kullanılamıyor",
     "Integrated": "Entegre",
     "Connected": "Bağlandı",
+    "Disconnected": "Bağlantı Kesildi",
     "Available": "Kullanılabilir",
     "NotConnectedIntegration": "{account} hesabı çalışma alanıyla entegre değil",
     "IntegrationIsUnstable": "Entegrasyon servisi sorunlar yaşıyor. Bazı özellikler düzgün çalışmayabilir.",

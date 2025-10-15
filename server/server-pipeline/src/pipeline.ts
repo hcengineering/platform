@@ -45,6 +45,7 @@ import {
   SpaceSecurityMiddleware,
   TriggersMiddleware,
   TxMiddleware,
+  TxOrderingMiddleware,
   UserStatusMiddleware
 } from '@hcengineering/middleware'
 import {
@@ -53,7 +54,6 @@ import {
   createNullAdapter,
   createPipeline,
   type BroadcastOps,
-  type CommunicationApiFactory,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -67,7 +67,7 @@ import {
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { createStorageDataAdapter } from './blobStorage'
-import { CommunicationMiddleware } from './communication'
+import { CommunicationMiddleware, type CommunicationApiFactory } from './communication'
 
 /**
  * @public
@@ -167,6 +167,7 @@ export function createServerPipeline (
           ]
         : []),
       LowLevelMiddleware.create,
+      TxOrderingMiddleware.create(),
       QueryJoinMiddleware.create,
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,

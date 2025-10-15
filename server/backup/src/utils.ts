@@ -1389,7 +1389,7 @@ export async function rebuildSizeInfo (
     if (file != null) {
       try {
         const sz = sizeInfo[file]
-        const fileSize = force ? await storage.stat(file) : sz ?? (await storage.stat(file))
+        const fileSize = force ? await storage.stat(file) : (sz ?? (await storage.stat(file)))
         if (sz === undefined) {
           sizeInfo[file] = fileSize
           processed++

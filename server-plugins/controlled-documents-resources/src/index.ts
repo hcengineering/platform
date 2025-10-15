@@ -434,7 +434,7 @@ async function CoAuthorsTypeMatch (
   if (originTx._class === core.class.TxUpdateDoc) {
     const tx = originTx as TxUpdateDoc<ControlledDocument>
     const employees = Array.isArray(tx.operations.coAuthors)
-      ? tx.operations.coAuthors ?? []
+      ? (tx.operations.coAuthors ?? [])
       : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
 
     return employees.some((it) => it === person)

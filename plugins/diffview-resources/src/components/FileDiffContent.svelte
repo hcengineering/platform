@@ -146,12 +146,14 @@
 </div>
 
 <style lang="scss">
+  @use 'sass:meta';
+
   .highlight-container-light :global {
-    @import './theme/github.scss';
+    @include meta.load-css('./theme/github.scss');
   }
 
   .highlight-container-dark :global {
-    @import './theme/github-dark.scss';
+    @include meta.load-css('./theme/github-dark.scss');
   }
 
   .diff-table {

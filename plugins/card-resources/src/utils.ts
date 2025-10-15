@@ -98,7 +98,8 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const id = loc.path[3]
-  if (loc.path[4] === undefined && id !== undefined && id !== 'browser') {
+  const specialItems = ['browser', 'type', 'all']
+  if (loc.path[4] === undefined && id !== undefined && !specialItems.includes(id)) {
     return await generateLocation(loc, id)
   }
 }
@@ -345,7 +346,7 @@ export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: Icon
   const clazz = hierarchy.getClass(doc._class) as MasterTag
 
   return {
-    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
+    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (clazz?.icon ?? card.icon.MasterTag),
     props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
   }
 }

@@ -82,7 +82,7 @@
   const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
   const id: Ref<Candidate> = generateId()
   const draftController = new DraftController<CandidateDraft>(
-    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    shouldSaveDraft ? (mDraftController.getNext() ?? id) : undefined,
     recruit.mixin.Candidate
   )
 
@@ -474,8 +474,9 @@
     loading = true
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
+      const { uuid } = await uploadFile(file)
 
-      object.resumeUuid = await uploadFile(file)
+      object.resumeUuid = uuid
       object.resumeName = file.name
       object.resumeSize = file.size
       object.resumeType = file.type
@@ -576,6 +577,9 @@
       )
     }
   }
+
+  const onsite = hierarchy.findAttribute(recruit.mixin.Candidate, 'onsite')
+  const remote = hierarchy.findAttribute(recruit.mixin.Candidate, 'remote')
 </script>
 
 <FocusHandler {manager} />
@@ -664,24 +668,28 @@
       kind={'regular'}
       size={'large'}
     />
-    <YesNo
-      disabled={loading}
-      focusIndex={100}
-      label={recruit.string.Onsite}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.onsite}
-      kind={'regular'}
-      size={'large'}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={101}
-      label={recruit.string.Remote}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.remote}
-      kind={'regular'}
-      size={'large'}
-    />
+    {#if onsite?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={100}
+        label={recruit.string.Onsite}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.onsite}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
+    {#if remote?.hidden !== true}
+      <YesNo
+        disabled={loading}
+        focusIndex={101}
+        label={recruit.string.Remote}
+        tooltip={recruit.string.WorkLocationPreferences}
+        bind:value={object.remote}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/if}
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{

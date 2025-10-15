@@ -18,14 +18,7 @@
   import contact from '@hcengineering/contact'
   import core, { BlobMetadata, Doc, PersonId, Ref, generateId, type Blob, type Space } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import {
-    FileOrBlob,
-    KeyedAttribute,
-    createQuery,
-    getClient,
-    getFileMetadata,
-    uploadFile
-  } from '@hcengineering/presentation'
+  import { FileOrBlob, KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import textEditor, { type RefAction, type TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AttachIcon,
@@ -175,8 +168,7 @@
 
   async function attachFile (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     try {
-      const uuid = await uploadFile(file)
-      const metadata = await getFileMetadata(file, uuid)
+      const { uuid, metadata } = await uploadFile(file)
       await createAttachment(uuid, file.name, file, metadata)
       return { file: uuid, type: file.type }
     } catch (err: any) {

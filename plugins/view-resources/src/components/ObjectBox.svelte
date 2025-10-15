@@ -148,7 +148,7 @@
     <Button
       {focusIndex}
       width={width ?? 'min-content'}
-      icon={icon ?? value === undefined ? placeholderIcon : undefined}
+      icon={(icon ?? value === undefined) ? placeholderIcon : undefined}
       iconProps={{ size: kind === 'link' || kind === 'regular' ? 'small' : size }}
       {size}
       {kind}

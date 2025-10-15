@@ -159,10 +159,13 @@ describe('Settings', () => {
     })
 
     describe('setServerUrl', () => {
-      test('write than read', () => {
-        const expectedUrl = 'https://new.server.com'
-
-        systemUnderTest.setServerUrl(expectedUrl)
+      const expectedUrl = 'https://new.server.com'
+      test.each([
+        { serverUrl: 'https://new.server.com' },
+        { serverUrl: 'https://new.server.com/' },
+        { serverUrl: 'https://new.server.com//' }
+      ])('write $serverUrl than read', ({ serverUrl }) => {
+        systemUnderTest.setServerUrl(serverUrl)
 
         expect(systemUnderTest.readServerUrl()).toBe(expectedUrl)
       })

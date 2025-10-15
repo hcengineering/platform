@@ -114,6 +114,7 @@ export interface ApplicationNavModel extends Doc {
 
   spaces?: SpacesNavModel[]
   specials?: SpecialNavModel[]
+  groups?: GroupsNavModel[]
 }
 
 /** @public */
@@ -137,9 +138,24 @@ export interface SpacesNavModel {
 }
 
 /** @public */
+export interface GroupsNavModel {
+  id: string // Id could be used for extending of navigation model
+  label?: IntlString
+  groupByClass: Ref<Class<Doc>> // Any class to group by (MasterTag, Project, etc.)
+  icon?: Asset
+  component?: AnyComponent // Component to render the group navigation (e.g., TypesNavigator)
+
+  // Child special items.
+  specials?: SpecialNavModel[]
+
+  visibleIf?: Resource<(docs: Doc[]) => Promise<boolean>>
+}
+
+/** @public */
 export interface NavigatorModel {
   spaces: SpacesNavModel[]
   specials?: SpecialNavModel[]
+  groups?: GroupsNavModel[]
 }
 
 /** @public */

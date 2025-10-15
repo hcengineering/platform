@@ -16,7 +16,7 @@ export async function restoreGithubIntegrations (dbUrl: string, dryrun: boolean)
   try {
     const pg = getDBClient(dbUrl)
     const pgClient = await pg.getClient()
-    const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
+    const token = generateToken(systemAccountUuid, undefined, { service: 'tool', admin: 'true' })
     const accountClient = getAccountClient(token)
 
     const integrationSettings = await pgClient<

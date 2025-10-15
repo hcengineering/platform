@@ -1536,7 +1536,7 @@ export async function getWorkspaces (
 }
 
 export function verifyAllowedServices (services: string[], extra: any, shouldThrow = true): boolean {
-  const ok = services.includes(extra?.service) || extra?.admin === 'true'
+  const ok = services.includes(extra?.service)
 
   if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1811,7 +1811,8 @@ export const integrationServices = [
   'gmail',
   'google-calendar',
   'huly-mail',
-  'ai-assistant'
+  'ai-assistant',
+  'tool'
 ]
 
 export async function findExistingIntegration (

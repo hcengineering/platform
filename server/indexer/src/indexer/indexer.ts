@@ -94,7 +94,7 @@ import {
   loadMessagesGroups
 } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { type HulylakeClient } from '@hcengineering/hulylake-client'
+import { type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 
 export * from './types'
 export * from './utils'
@@ -237,7 +237,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
-    readonly hulylake: HulylakeClient,
+    readonly hulylake: HulylakeWorkspaceClient,
     readonly communicationApi?: CommunicationApi,
     readonly listener?: FulltextListener
   ) {

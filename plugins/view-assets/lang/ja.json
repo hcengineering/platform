@@ -108,6 +108,7 @@
     "Or": "または",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "クリップボードにコピー",
+    "CopyDocumentMarkdown": "Markdownとしてコピー",
     "PublicView": "公開",
     "ChooseIcon": "アイコンを選択",
     "IconColor": "アイコンの色を選択",

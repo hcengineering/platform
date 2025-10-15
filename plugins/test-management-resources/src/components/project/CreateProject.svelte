@@ -322,7 +322,7 @@
         <Label label={testManagementRes.string.ChooseIcon} />
       </div>
       <Button
-        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? testManagement.icon.Home}
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : (icon ?? testManagement.icon.Home)}
         iconProps={icon === view.ids.IconWithEmoji
           ? { icon: color, size: 'medium' }
           : {

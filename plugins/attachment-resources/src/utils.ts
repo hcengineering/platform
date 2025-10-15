@@ -28,13 +28,7 @@ import {
   type BlobType
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import {
-  type FileOrBlob,
-  getClient,
-  getFileMetadata,
-  getPreviewAlignment,
-  uploadFile
-} from '@hcengineering/presentation'
+import { type FileOrBlob, getClient, getPreviewAlignment, uploadFile } from '@hcengineering/presentation'
 import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
@@ -53,8 +47,8 @@ export async function createAttachments (
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        const uuid = await uploadFile(file)
-        await createAttachment(client, uuid, file.name, file, attachTo, attachmentClass, extraData)
+        const { uuid, metadata } = await uploadFile(file)
+        await createAttachment(client, uuid, file.name, file, metadata, attachTo, attachmentClass, extraData)
       }
     }
   } catch (err: any) {
@@ -67,14 +61,13 @@ export async function createAttachment (
   uuid: Ref<Blob>,
   name: string,
   file: FileOrBlob,
+  metadata: BlobMetadata,
   attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> },
   attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment,
   extraData: Partial<Data<Attachment>> = {}
 ): Promise<void> {
   const { objectClass, objectId, space } = attachTo
   try {
-    const metadata = await getFileMetadata(file, uuid)
-
     await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
       ...extraData,
       name,

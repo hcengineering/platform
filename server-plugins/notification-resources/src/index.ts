@@ -202,7 +202,7 @@ export async function getContentByTemplate (
 
   if (message !== undefined) {
     const markup = await messageToMarkup(control, message)
-    params.message = markup !== undefined ? markupToText(markup) : params.message ?? ''
+    params.message = markup !== undefined ? markupToText(markup) : (params.message ?? '')
   } else if (params.message === undefined) {
     params.message = params.body ?? ''
   }

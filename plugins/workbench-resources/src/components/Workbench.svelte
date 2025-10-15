@@ -410,7 +410,7 @@
     loc.fragment =
       (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
         ? loc.fragment
-        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
+        : (resolved.loc.fragment ?? resolved.defaultLocation.fragment)
     return loc
   }
 
@@ -638,6 +638,12 @@
     }
     for (const s of navigatorModel?.spaces ?? []) {
       const sp = s.specials?.find((x) => x.id === id)
+      if (sp !== undefined) {
+        return sp
+      }
+    }
+    for (const g of navigatorModel?.groups ?? []) {
+      const sp = g.specials?.find((x) => x.id === id)
       if (sp !== undefined) {
         return sp
       }

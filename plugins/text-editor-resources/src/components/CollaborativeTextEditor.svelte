@@ -68,7 +68,7 @@
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
   import { Provider } from '../provider/types'
-  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
+  import { createRemoteProvider } from '../provider/utils'
   import { addTableHandler } from '../utils'
 
   import { noSelectionRender, renderCursor } from './editor/collaboration'
@@ -124,23 +124,17 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId(), gc: false })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
-  const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
+  const provider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
-  let localSynced = false
-  let remoteSynced = false
+  let synced = false
   let editorReady = false
 
-  $: loading = !localSynced
-  $: editable = !readonly && !contentError && remoteSynced && editorReady && hasAccountRole(account, AccountRole.User)
+  $: loading = !synced
+  $: editable = !readonly && !contentError && synced && editorReady && hasAccountRole(account, AccountRole.User)
 
-  void localProvider.loaded.then(() => (localSynced = true))
-  void remoteProvider.loaded.then(() => (remoteSynced = true))
-
-  void Promise.all([localProvider.loaded, remoteProvider.loaded]).then(() => {
-    dispatch('loaded')
-  })
+  void provider.loaded.then(() => (synced = true))
+  void provider.loaded.then(() => dispatch('loaded'))
 
   let editor: Editor
   let element: HTMLElement
@@ -313,14 +307,12 @@
 
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
-    remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+    provider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
   interface SavedBoardRaw {
     ydoc: YDoc
-    localProvider: Provider
     remoteProvider: Provider
-    localSynced: boolean
     remoteSynced: boolean
   }
   const savedBoards: Record<string, SavedBoardRaw> = {}
@@ -337,10 +329,8 @@
         objectId: id as Ref<Doc>,
         objectAttr: 'content'
       }
-      const localProvider = createLocalProvider(ydoc, collabId)
       const remoteProvider = createRemoteProvider(ydoc, collabId, id as Ref<Blob>)
-      savedBoards[id] = { ydoc, localProvider, remoteProvider, localSynced: false, remoteSynced: false }
-      void localProvider.loaded.then(() => (savedBoards[id].localSynced = true))
+      savedBoards[id] = { ydoc, remoteProvider, remoteSynced: false }
       void remoteProvider.loaded.then(() => (savedBoards[id].remoteSynced = true))
       board = savedBoards[id]
     }
@@ -348,14 +338,14 @@
       document: board.ydoc,
       props: board.ydoc.getMap('props'),
       commands: board.ydoc.getArray<DrawingCmd>('commands'),
-      loading: !board.localSynced || !board.remoteSynced
+      loading: !board.remoteSynced
     }
   }
 
   onMount(async () => {
     // it is recommended to wait for the local provider to be loaded
     // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
-    await localProvider.loaded
+    await provider.loaded
 
     const canAttachFiles = attachFile != null
 
@@ -410,7 +400,7 @@
         collaboration: {
           collaboration: { document: ydoc, field },
           collaborationCursor: {
-            provider: remoteProvider,
+            provider,
             user,
             render: renderCursor,
             selectionRender: noSelectionRender
@@ -420,7 +410,7 @@
             boundary,
             popupContainer: editorPopupContainer,
             requestSideSpace,
-            whenSync: remoteProvider.loaded
+            whenSync: provider.loaded
           }
         }
       },
@@ -468,6 +458,7 @@
       onContentError: ({ error, disableCollaboration }) => {
         disableCollaboration()
         contentError = true
+        console.error(error)
         Analytics.handleError(error)
       }
     })
@@ -480,9 +471,8 @@
       } catch (err: any) {}
     }
     if (contextProvider === undefined) {
-      void remoteProvider.destroy()
+      void provider.destroy()
     }
-    void localProvider.destroy()
   })
 </script>
 

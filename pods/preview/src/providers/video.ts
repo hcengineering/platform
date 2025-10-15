@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import { systemAccountUuid, type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 
 import { getImageMetadata } from '../metadata'
 import { TemporaryDir } from '../tempdir'
@@ -22,10 +23,13 @@ import { type PreviewFile, type PreviewMetadata, type PreviewProvider } from '..
 import { extractThumbnail } from '../utils/ffmpeg'
 
 export class VideoProvider implements PreviewProvider {
+  private readonly token: string
   constructor (
     private readonly storage: StorageAdapter,
     private readonly tempDir: TemporaryDir
-  ) {}
+  ) {
+    this.token = generateToken(systemAccountUuid)
+  }
 
   supports (mimeType: string): boolean {
     return mimeType.startsWith('video/')
@@ -36,7 +40,7 @@ export class VideoProvider implements PreviewProvider {
     const url = await this.storage.getUrl(ctx, { uuid: workspace } as any, name)
 
     try {
-      await extractThumbnail(url, pngFile)
+      await extractThumbnail(url, pngFile, this.token)
     } catch (err: any) {
       // remove temporary png file in case of error
       this.tempDir.rm(pngFile)

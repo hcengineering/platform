@@ -112,6 +112,7 @@
     "Or": "或",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "复制到剪贴板",
+    "CopyDocumentMarkdown": "复制为 Markdown",
     "PublicView": "公开视图",
 
     "ChooseIcon": "选择图标",

@@ -35,7 +35,6 @@
     deleteFile,
     getClient,
     getCommunicationClient,
-    getFileMetadata,
     isLinkPreviewEnabled,
     uploadFile
   } from '@hcengineering/presentation'
@@ -302,8 +301,7 @@
   }
 
   async function addFile (file: File): Promise<void> {
-    const uuid = await uploadFile(file)
-    const metadata = await getFileMetadata(file, uuid)
+    const { uuid, metadata } = await uploadFile(file)
 
     const blob = {
       blobId: uuid,
@@ -512,12 +510,12 @@
   async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
     const cardId = card._id
 
-    const onFileUploaded = async ({ uuid, name, file, size, metadata }: FileUploadCallbackParams): Promise<void> => {
+    const onFileUploaded = async ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> => {
       const blob = {
         blobId: uuid,
         mimeType: file.type,
         fileName: name,
-        size: size ?? file.size,
+        size: file.size,
         metadata
       }
 

@@ -15,9 +15,28 @@
 
 import { spawn } from 'child_process'
 
-export async function extractThumbnail (url: string, path: string, timestamp = '00:00:01'): Promise<void> {
+export async function extractThumbnail (
+  url: string,
+  path: string,
+  token: string,
+  timestamp = '00:00:01'
+): Promise<void> {
   await new Promise<void>((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', ['-i', url, '-ss', timestamp, '-frames:v', '1', '-q:v', '2', '-y', path])
+    const args = [
+      '-headers',
+      `Authorization: Bearer ${token}`,
+      '-i',
+      url,
+      '-ss',
+      timestamp,
+      '-frames:v',
+      '1',
+      '-q:v',
+      '2',
+      '-y',
+      path
+    ]
+    const ffmpeg = spawn('ffmpeg', args)
 
     let error = ''
 

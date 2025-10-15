@@ -61,7 +61,7 @@ async function main (): Promise<void> {
     const ws = queueMessage.workspace
     const tx = queueMessage.value
 
-    controller.processTx(ws, tx)
+    controller.processTranslationSettingsTx(ws, tx)
 
     const createMessageData = extractCreateMessageData(tx)
     const updateMessageData = extractUpdateMessageData(tx)
