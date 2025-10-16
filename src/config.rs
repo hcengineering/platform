@@ -58,6 +58,8 @@ pub struct Config {
     pub no_authorization: bool,
 
     pub heartbeat_timeout: u64,
+
+    pub permit_file: Option<String>,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {

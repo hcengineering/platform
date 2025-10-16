@@ -18,15 +18,17 @@ use std::str::FromStr;
 use tracing::*;
 
 use actix_web::{
-    Error, HttpResponse,
+    Error, HttpRequest, HttpResponse,
     error::ParseError,
     http::header::{self, HeaderName, HeaderValue, IfMatch, IfNoneMatch, TryIntoHeaderValue},
     web,
 };
 
 use crate::{
+    config::CONFIG,
     db::Db,
     redis::{SaveMode, Ttl},
+    workspace_owner::test_rego_http,
 };
 
 pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
@@ -58,6 +60,7 @@ pub struct TtlExpiresAtHeader(Option<u64>);
 
 /// list
 pub async fn list(
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::Error> {
@@ -65,18 +68,27 @@ pub async fn list(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
+    if !CONFIG.no_authorization && !test_rego_http(req, "List") {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
+    }
+
     let entries = db.list(&key).await.map_err(map_redis_error)?;
     Ok(HttpResponse::Ok().json(entries))
 }
 
 /// get
 pub async fn get(
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
+
+    if !CONFIG.no_authorization && !test_rego_http(req, "Get") {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
+    }
 
     let entry_opt = db.read(&key).await.map_err(map_redis_error)?;
     let resp = match entry_opt {
@@ -90,6 +102,7 @@ pub async fn get(
 
 /// put
 pub async fn put(
+    req: HttpRequest,
     path: web::Path<PathParams>,
     body: web::Bytes,
     db: web::Data<Db>,
@@ -105,6 +118,10 @@ pub async fn put(
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "put request");
+
+    if !CONFIG.no_authorization && !test_rego_http(req, "Put") {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
+    }
 
     // TTL logic
     let ttl = match (secs?.into_inner().0, expires_at?.into_inner().0) {
@@ -145,6 +162,7 @@ pub async fn put(
 
 /// delete
 pub async fn delete(
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
     if_match: web::Header<header::IfMatch>,
@@ -152,6 +170,10 @@ pub async fn delete(
     let params = path.into_inner();
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
+
+    if !CONFIG.no_authorization && !test_rego_http(req, "Delete") {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
+    }
 
     // MODE logic
     let mode = match if_match.into_inner() {

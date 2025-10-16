@@ -28,6 +28,7 @@ use crate::{
     hub_service::{HubState, ServerMessage, SessionId, new_session_id},
     redis::{SaveMode, Ttl},
     workspace_owner::check_workspace_core,
+    workspace_owner::test_rego_claims,
 };
 
 #[derive(Serialize, Default)]
@@ -55,8 +56,10 @@ struct ReturnBase<'a> {
     // if_none_match: Option<&'a str>,
 }
 
+use strum_macros::AsRefStr;
+
 /// WsCommand - commands enum (put, delete, sub, unsub)
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, AsRefStr)]
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum WsCommand {
     Put {
@@ -209,7 +212,21 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                 ctx.text("pong");
             }
             Ok(ws::Message::Text(text)) => match serde_json::from_str::<WsCommand>(&text) {
-                Ok(cmd) => self.handle_command(cmd, ctx),
+                Ok(cmd) => {
+                    // let x = test_rego_claims(
+                    // let x = self.claims.unwrap().as_ref();
+                    // );
+                    if !CONFIG.no_authorization {
+                        if let Some(ref claim) = self.claims {
+                            if !test_rego_claims(claim, cmd.as_ref()) {
+                                ctx.text("Unauthorized: Rego policy");
+                                ctx.stop();
+                                return;
+                            }
+                        }
+                    }
+                    self.handle_command(cmd, ctx)
+                }
                 Err(err) => ctx.text(format!("Invalid JSON: {}", err)),
             },
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),

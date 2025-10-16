@@ -3,6 +3,7 @@
 /scripts/other
 /scripts/off
 /scripts/typing-test.sh
+/scripts/TEST_LLEOTOKEN.html
 Justfile
 commit.sh
 /src/GO.sh

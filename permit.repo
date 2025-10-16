@@ -1,0 +1,6 @@
+default permit = true
+
+#permit if {
+#    input.command == "Get"
+#    input.claim.workspace == "00000000-0000-0000-0000-000000000001"
+#}

@@ -77,13 +77,6 @@ impl Db {
         ttl: Option<Ttl>,
         mode: Option<SaveMode>,
     ) -> redis::RedisResult<()> {
-        println!(
-            "Db::save key=[{}] value=[{:?}] mode=[{:?}]",
-            key,
-            value.as_ref(),
-            mode
-        );
-
         match &self.inner {
             DbInner::Memory(m) => {
                 memory_save(m, key, value.as_ref(), ttl, mode).await?;

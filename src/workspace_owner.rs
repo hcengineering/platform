@@ -13,7 +13,10 @@
 // limitations under the License.
 //
 
+use actix_web::{HttpMessage, HttpRequest};
 use hulyrs::services::jwt::Claims;
+use serde_json::json;
+use std::{fs, path::Path, sync::LazyLock};
 use uuid::Uuid;
 
 use crate::{config::CONFIG, redis::deprecated_symbol};
@@ -53,3 +56,49 @@ pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(),
 
     Ok(())
 }
+
+pub fn test_rego_claims(claim: &Claims, command: &str) -> bool {
+    let data = serde_json::to_value(&claim).unwrap_or_default();
+    let mut rego = REGORUS_ENGINE.clone();
+
+    rego.set_input(regorus::Value::from(json!({
+        "command": command,
+        "claim": data,
+    })));
+    let result = rego.eval_rule(String::from("data.main.permit")).unwrap();
+
+    result == regorus::Value::Bool(true)
+}
+
+pub fn test_rego_http(req: HttpRequest, command: &str) -> bool {
+    let claims = req
+        .extensions()
+        .get::<Claims>()
+        .expect("Missing claims")
+        .to_owned();
+    test_rego_claims(&claims, command)
+}
+
+pub static POLICY_TEXT: LazyLock<String> = LazyLock::new(|| {
+    let Some(permit_file) = CONFIG.permit_file.as_ref() else {
+        return "package main\n\ndefault permit = true\n".to_string();
+    };
+    let path = Path::new(permit_file);
+    if !path.exists() {
+        panic!("Policy file not found: {}", path.display());
+    }
+    let policy_text = match fs::read_to_string(path) {
+        Ok(text) => format!("package main\n\n{}", text),
+        Err(e) => {
+            panic!("Failed to read policy file {}: {}", path.display(), e);
+        }
+    };
+    policy_text
+});
+
+pub static REGORUS_ENGINE: LazyLock<regorus::Engine> = LazyLock::new(|| {
+    let mut e = regorus::Engine::new();
+    e.add_policy("policy.rego".to_string(), POLICY_TEXT.to_string())
+        .expect("can't add policy");
+    e
+});

@@ -16,3 +16,5 @@ heartbeat_timeout = 90
 
 # optional settings
 # max_size = 100
+
+# permit_file = "/home/user/hulipulse/permit.rego"

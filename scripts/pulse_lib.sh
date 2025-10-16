@@ -2,7 +2,7 @@
 
 clear
 
-URL="http://localhost:8095/api"
+URL="http://localhost:8099/api"
 
 R='\033[0;31m' # Color red
 G='\033[0;32m' # Color green
