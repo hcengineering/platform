@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package 
+    xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+    xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+    xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+    xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
+  
+  <Identity 
+    Name="HardcoreEngineering.Huly"
+    Publisher="CN=Hardcore Engineering Inc"
+    Version="0.6.0.0" />
+
+  <Properties>
+    <DisplayName>Huly</DisplayName>
+    <PublisherDisplayName>Hardcore Engineering Inc</PublisherDisplayName>
+    <Logo>windows_store_assets\StoreLogo.png</Logo>
+    <Description>Huly Desktop experience</Description>
+  </Properties>
+  
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+  
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  
+  <Applications>
+    <Application 
+      Id="Huly" 
+      Executable="Huly.exe" 
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements 
+        DisplayName="Huly"
+        Description="Huly Desktop Experience"
+        BackgroundColor="transparent"
+        Square150x150Logo="windows_store_assets\Square150x150Logo.png"
+        Square44x44Logo="windows_store_assets\Square44x44Logo.png">
+        <uap:DefaultTile 
+            Wide310x150Logo="windows_store_assets\Wide310x150Logo.png"
+            Square310x310Logo="windows_store_assets\Square310x310Logo.png"
+            Square71x71Logo="windows_store_assets\Square71x71Logo.png">
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="windows_store_assets\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+  
+</Package>

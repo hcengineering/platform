@@ -799,6 +799,61 @@ jobs:
         with:
           name: Huly-Linux
           path: ./desktop-package/deploy/Huly-linux-*.zip
+      - name: Upload Windows unpacked for MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: Huly-Windows-Unpacked
+          path: ./desktop-package/deploy/win-unpacked/
+
+  dist-build-msix:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    needs: dist-build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Download Windows unpacked artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Huly-Windows-Unpacked
+          path: ./desktop-package/deploy/win-unpacked/
+
+      - name: Build MSIX package
+        shell: pwsh
+        run: |
+          cd desktop-package
+          .\_dist-win-msix.ps1
+
+      - name: Upload MSIX package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Huly-Windows-MSIX
+          path: ./desktop-package/deploy/Huly-windows-*.msix
+
+      - name: Prepare MSIX for publishing
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path desktop-package/${{ env.PublishTempFolder }} -Force
+          Copy-Item desktop-package/deploy/*.msix desktop-package/${{ env.PublishTempFolder }}/
+
+      - name: Publish MSIX to R2
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: desktop-distro
+          source-dir: desktop-package/${{ env.PublishTempFolder }}
+          destination-dir: ./
 
   qms-dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
