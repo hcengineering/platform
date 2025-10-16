@@ -27,6 +27,7 @@ export interface XHRUpload {
 /** @public */
 export interface XHRUploadResult {
   status: number
+  responseText: string
 }
 
 /** @public */
@@ -64,7 +65,8 @@ export async function uploadXhr (upload: XHRUpload, options?: FileStorageUploadO
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve({
-            status: xhr.status
+            status: xhr.status,
+            responseText: xhr.responseText
           })
         } else {
           reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`))
@@ -119,7 +121,7 @@ export async function uploadMultipart (upload: MultipartUpload, options?: FileSt
 
     const parts: Array<{ partNumber: number, etag: string }> = []
     const totalParts = Math.ceil(body.size / CHUNK_SIZE)
-    let uploadedSize = 0
+    let uploaded = 0
 
     for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
       const start = (partNumber - 1) * CHUNK_SIZE
@@ -128,15 +130,25 @@ export async function uploadMultipart (upload: MultipartUpload, options?: FileSt
 
       throwIfAborted(signal)
 
-      const { etag } = await multipartUploadPart(url, headers, uploadId, partNumber, chunk, signal)
+      const partOptions: FileStorageUploadOptions = {
+        signal,
+        onProgress:
+          onProgress !== undefined
+            ? (progress) => {
+                const loaded = uploaded + progress.loaded
+                onProgress({
+                  loaded,
+                  total: body.size,
+                  percentage: Math.round((loaded * 100) / body.size)
+                })
+              }
+            : undefined
+      }
+
+      const { etag } = await multipartUploadPart(url, headers, uploadId, partNumber, chunk, partOptions)
       parts.push({ partNumber, etag })
 
-      uploadedSize += chunk.size
-      onProgress?.({
-        loaded: uploadedSize,
-        total: body.size,
-        percentage: Math.round((uploadedSize * 100) / body.size)
-      })
+      uploaded += chunk.size
     }
 
     throwIfAborted(signal)
@@ -207,25 +219,28 @@ async function multipartUploadPart (
   uploadId: string,
   partNumber: number,
   blob: Blob,
-  signal?: AbortSignal
+  options?: FileStorageUploadOptions
 ): Promise<{ etag: string }> {
   const url = new URL(concatLink(baseUrl, '/part'))
   url.searchParams.set('uploadId', uploadId)
   url.searchParams.set('partNumber', `${partNumber}`)
 
-  const response = await fetch(url, {
-    signal,
-    method: 'PUT',
-    headers,
-    body: blob
-  })
+  const result = await uploadXhr(
+    {
+      url: url.toString(),
+      method: 'PUT',
+      headers,
+      body: blob
+    },
+    options
+  )
 
-  if (!response.ok) {
-    throw new Error(`Failed to upload part ${partNumber}`)
+  try {
+    const response = JSON.parse(result.responseText)
+    return { etag: response.etag }
+  } catch (err) {
+    throw new Error(`Failed to parse response for part ${partNumber}`)
   }
-
-  const { etag } = await response.json()
-  return { etag }
 }
 
 async function multipartUploadAbort (baseUrl: string, headers: Record<string, string>, uploadId: string): Promise<void> {

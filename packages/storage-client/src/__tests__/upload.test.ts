@@ -23,6 +23,7 @@ class MockXMLHttpRequest {
   public body: any = null
   public status: number = 200
   public statusText: string = 'OK'
+  public responseText: string = ''
   public upload: { onprogress: ((event: ProgressEvent) => void) | null } = { onprogress: null }
   public onload: (() => void) | null = null
   public onerror: (() => void) | null = null
@@ -60,23 +61,31 @@ class MockXMLHttpRequest {
   simulateTimeout (): void {
     this.ontimeout?.()
   }
+
+  simulateSuccess (responseText: string = ''): void {
+    this.responseText = responseText
+    this.onload?.()
+  }
 }
 
 // Mock fetch
 const mockFetch = jest.fn()
 global.fetch = mockFetch as any
 
-// Mock XMLHttpRequest
-const mockXHR = MockXMLHttpRequest
-;(global as any).XMLHttpRequest = mockXHR
+// Track all XHR instances for multipart tests
+const xhrInstances: MockXMLHttpRequest[] = []
 
 describe('uploadXhr', () => {
   let xhrInstance: MockXMLHttpRequest
 
   beforeEach(() => {
     jest.clearAllMocks()
+    xhrInstances.length = 0
     xhrInstance = new MockXMLHttpRequest()
-    jest.spyOn(global as any, 'XMLHttpRequest').mockImplementation(() => xhrInstance)
+    ;(global as any).XMLHttpRequest = jest.fn().mockImplementation(() => {
+      xhrInstances.push(xhrInstance)
+      return xhrInstance
+    })
   })
 
   afterEach(() => {
@@ -93,18 +102,17 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload)
 
-    // Wait for the xhr to be set up
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
+    // XHR setup is synchronous
     expect(xhrInstance.method).toBe('POST')
     expect(xhrInstance.url).toBe('https://example.com/upload')
     expect(xhrInstance.headers.Authorization).toBe('Bearer token')
 
-    // Manually trigger onload to resolve the promise
-    xhrInstance.onload?.()
+    // Manually trigger onload to resolve the promise with response
+    xhrInstance.simulateSuccess('{"result": "success"}')
 
     const result = await uploadPromise
     expect(result.status).toBe(200)
+    expect(result.responseText).toBe('{"result": "success"}')
   })
 
   it('should upload successfully with PUT method', async () => {
@@ -117,16 +125,16 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload)
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
+    // XHR setup is synchronous
     expect(xhrInstance.method).toBe('PUT')
     expect(xhrInstance.headers['Content-Type']).toBe('application/octet-stream')
 
     // Manually trigger onload to resolve the promise
-    xhrInstance.onload?.()
+    xhrInstance.simulateSuccess('')
 
     const result = await uploadPromise
     expect(result.status).toBe(200)
+    expect(result.responseText).toBe('')
   })
 
   it('should track upload progress', async () => {
@@ -140,14 +148,12 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload, { onProgress })
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    // Simulate progress events
+    // Simulate progress events (synchronous)
     xhrInstance.simulateProgress(50, 100)
     xhrInstance.simulateProgress(100, 100)
 
     // Manually trigger onload to resolve the promise
-    xhrInstance.onload?.()
+    xhrInstance.simulateSuccess('')
 
     await uploadPromise
 
@@ -173,7 +179,7 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload)
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    // Simulate error (synchronous)
     xhrInstance.simulateError()
 
     await expect(uploadPromise).rejects.toThrow('Network error')
@@ -192,8 +198,6 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload)
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
     // Manually trigger onload to trigger the status check
     xhrInstance.onload?.()
 
@@ -210,7 +214,7 @@ describe('uploadXhr', () => {
 
     const uploadPromise = uploadXhr(upload)
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    // Simulate timeout (synchronous)
     xhrInstance.simulateTimeout()
 
     await expect(uploadPromise).rejects.toThrow('Upload timeout')
@@ -254,6 +258,13 @@ describe('uploadMultipart', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockFetch.mockClear()
+    mockFetch.mockReset()
+    xhrInstances.length = 0
+    ;(global as any).XMLHttpRequest = jest.fn().mockImplementation(() => {
+      const instance = new MockXMLHttpRequest()
+      xhrInstances.push(instance)
+      return instance
+    })
   })
 
   it('should upload small file in single chunk', async () => {
@@ -266,23 +277,37 @@ describe('uploadMultipart', () => {
       body: file
     }
 
-    // Mock multipart upload responses
+    // Mock multipart upload create and complete (using fetch)
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
       })
       .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ etag: 'test-etag-1' })
-      })
-      .mockResolvedValueOnce({
         ok: true
       })
 
-    await uploadMultipart(upload)
+    const uploadPromise = uploadMultipart(upload)
 
-    expect(mockFetch).toHaveBeenCalledTimes(3)
+    // Wait for async initialization to complete (fetch promise resolution)
+    await new Promise(setImmediate)
+
+    // Should have 1 XHR for the part upload
+    expect(xhrInstances).toHaveLength(1)
+    const partXhr = xhrInstances[0]
+
+    expect(partXhr.method).toBe('PUT')
+    expect(partXhr.url).toContain('/part')
+    expect(partXhr.url).toContain('uploadId=test-upload-id')
+    expect(partXhr.url).toContain('partNumber=1')
+
+    // Simulate successful part upload
+    partXhr.simulateSuccess('{"etag": "test-etag-1"}')
+
+    await uploadPromise
+
+    // Check fetch was called for init and complete
+    expect(mockFetch).toHaveBeenCalledTimes(2)
 
     // Check initialization call
     expect(mockFetch).toHaveBeenNthCalledWith(1, 'https://example.com/upload', {
@@ -291,16 +316,8 @@ describe('uploadMultipart', () => {
       signal: undefined
     })
 
-    // Check part upload call
-    expect(mockFetch).toHaveBeenNthCalledWith(2, expect.any(URL), {
-      method: 'PUT',
-      headers: { Authorization: 'Bearer token' },
-      body: expect.any(Blob),
-      signal: undefined
-    })
-
     // Check completion call
-    expect(mockFetch).toHaveBeenNthCalledWith(3, expect.any(URL), {
+    expect(mockFetch).toHaveBeenNthCalledWith(2, expect.any(URL), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -321,32 +338,41 @@ describe('uploadMultipart', () => {
       body: file
     }
 
-    // Mock multipart upload responses
+    // Mock multipart upload create and complete
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValue({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-1' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-2' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-3' })
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
       })
       .mockResolvedValueOnce({
         ok: true
       })
 
-    await uploadMultipart(upload)
+    const uploadPromise = uploadMultipart(upload)
 
-    // Should be 1 init + 3 parts (12MB / 5MB chunks = 3 parts) + 1 complete = 5 calls
-    expect(mockFetch).toHaveBeenCalledTimes(5)
+    // Wait for async initialization to complete
+    await new Promise(setImmediate)
+
+    // Should have at least 1 XHR created for first part
+    expect(xhrInstances.length).toBeGreaterThan(0)
+
+    // Simulate each part upload sequentially (12MB / 5MB = 3 parts)
+    for (let i = 0; i < 3; i++) {
+      // Wait for XHR to be created if not yet
+      while (xhrInstances[i] === undefined) {
+        await new Promise(setImmediate)
+      }
+      xhrInstances[i].simulateSuccess(`{"etag": "test-etag-${i + 1}"}`)
+      // Allow upload to process the completion
+      await new Promise(setImmediate)
+    }
+
+    await uploadPromise
+
+    // Should be 1 init + 1 complete = 2 fetch calls (parts use XHR)
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    // Should have 3 XHR instances for the 3 parts
+    expect(xhrInstances).toHaveLength(3)
   })
 
   it('should track progress during multipart upload', async () => {
@@ -360,36 +386,56 @@ describe('uploadMultipart', () => {
       body: file
     }
 
-    // Mock multipart upload responses
+    // Mock multipart upload create and complete
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValue({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-1' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-2' })
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
       })
       .mockResolvedValueOnce({
         ok: true
       })
 
-    await uploadMultipart(upload, { onProgress })
+    const uploadPromise = uploadMultipart(upload, { onProgress })
+
+    // Wait for async initialization to complete
+    await new Promise(setImmediate)
+
+    // Simulate progress on first part (should be 2 parts: 5MB + 5MB)
+    if (xhrInstances[0] !== undefined) {
+      xhrInstances[0].simulateProgress(2.5 * 1024 * 1024, 5 * 1024 * 1024) // 2.5MB of 5MB
+      xhrInstances[0].simulateProgress(5 * 1024 * 1024, 5 * 1024 * 1024) // Complete first part
+      xhrInstances[0].simulateSuccess('{"etag": "test-etag-1"}')
+    }
+
+    // Wait for second XHR to be created
+    await new Promise(setImmediate)
+
+    // Simulate second part
+    if (xhrInstances[1] !== undefined) {
+      xhrInstances[1].simulateProgress(2.5 * 1024 * 1024, 5 * 1024 * 1024) // 2.5MB of 5MB (second part)
+      xhrInstances[1].simulateProgress(5 * 1024 * 1024, 5 * 1024 * 1024) // Complete second part
+      xhrInstances[1].simulateSuccess('{"etag": "test-etag-2"}')
+    }
+
+    await uploadPromise
 
     expect(onProgress).toHaveBeenCalled()
-    // Should report progress for each chunk
     const progressCalls = onProgress.mock.calls
+
+    // Check that progress was reported with proper values
     expect(progressCalls.length).toBeGreaterThan(0)
 
-    // Check that progress was reported
+    // First progress should show partial progress of first chunk
     const firstCall = progressCalls[0][0]
     expect(firstCall).toHaveProperty('loaded')
-    expect(firstCall).toHaveProperty('total')
+    expect(firstCall).toHaveProperty('total', 10 * 1024 * 1024)
     expect(firstCall).toHaveProperty('percentage')
+    expect(firstCall.loaded).toBeLessThanOrEqual(firstCall.total)
+
+    // Progress should increase over time
+    const lastCall = progressCalls[progressCalls.length - 1][0]
+    expect(lastCall.loaded).toBeGreaterThanOrEqual(firstCall.loaded)
   })
 
   it('should handle initialization failure', async () => {
@@ -419,18 +465,29 @@ describe('uploadMultipart', () => {
       body: file
     }
 
-    // Mock successful initialization, failed part upload
+    // Mock successful initialization and abort call
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValue({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
       })
       .mockResolvedValueOnce({
-        ok: false,
-        status: 500
+        ok: true // abort call
       })
 
-    await expect(uploadMultipart(upload)).rejects.toThrow('Failed to upload part 1')
+    const uploadPromise = uploadMultipart(upload)
+
+    // Wait for async initialization and XHR to be created
+    await new Promise(setImmediate)
+
+    // Simulate upload failure
+    if (xhrInstances[0] !== undefined) {
+      xhrInstances[0].status = 500
+      xhrInstances[0].statusText = 'Internal Server Error'
+      xhrInstances[0].onload?.()
+    }
+
+    await expect(uploadPromise).rejects.toThrow('Upload failed with status 500')
   })
 
   it('should handle completion failure', async () => {
@@ -443,22 +500,30 @@ describe('uploadMultipart', () => {
       body: file
     }
 
-    // Mock successful init and part, failed completion
+    // Mock successful init, failed completion, and abort
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValue({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ etag: 'test-etag-1' })
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
       })
       .mockResolvedValueOnce({
         ok: false,
         status: 500
       })
+      .mockResolvedValueOnce({
+        ok: true // abort call
+      })
 
-    await expect(uploadMultipart(upload)).rejects.toThrow('Failed to complete multipart upload')
+    const uploadPromise = uploadMultipart(upload)
+
+    // Wait for async initialization and XHR to be created
+    await new Promise(setImmediate)
+
+    if (xhrInstances[0] !== undefined) {
+      xhrInstances[0].simulateSuccess('{"etag": "test-etag-1"}')
+    }
+
+    await expect(uploadPromise).rejects.toThrow('Failed to complete multipart upload')
   })
 
   it('should handle abort signal', async () => {
@@ -474,7 +539,7 @@ describe('uploadMultipart', () => {
     // Mock the initialization call
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: jest.fn().mockResolvedValue({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
+      json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
     })
 
     // Abort immediately - this should be caught before part upload
@@ -482,5 +547,149 @@ describe('uploadMultipart', () => {
 
     // The implementation checks for abort before each part upload
     await expect(uploadMultipart(upload, { signal: controller.signal })).rejects.toThrow('Upload aborted')
+  })
+
+  it('should report immediate progress updates during part upload', async () => {
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    Object.defineProperty(file, 'size', { value: 5 * 1024 * 1024 }) // 5MB
+
+    const progressUpdates: Array<{ loaded: number, total: number, percentage: number }> = []
+    const onProgress = jest.fn((progress) => {
+      progressUpdates.push({ ...progress })
+    })
+
+    const upload: MultipartUpload = {
+      url: 'https://example.com/upload',
+      headers: { Authorization: 'Bearer token' },
+      body: file
+    }
+
+    // Mock multipart upload create and complete
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
+      })
+      .mockResolvedValueOnce({
+        ok: true
+      })
+
+    const uploadPromise = uploadMultipart(upload, { onProgress })
+
+    // Wait for async initialization to complete
+    await new Promise(setImmediate)
+
+    // Simulate incremental progress updates (this is the key feature we're testing)
+    if (xhrInstances[0] !== undefined) {
+      const chunkSize = 5 * 1024 * 1024
+      xhrInstances[0].simulateProgress(1 * 1024 * 1024, chunkSize) // 20% of chunk
+      xhrInstances[0].simulateProgress(2 * 1024 * 1024, chunkSize) // 40% of chunk
+      xhrInstances[0].simulateProgress(3 * 1024 * 1024, chunkSize) // 60% of chunk
+      xhrInstances[0].simulateProgress(4 * 1024 * 1024, chunkSize) // 80% of chunk
+      xhrInstances[0].simulateProgress(5 * 1024 * 1024, chunkSize) // 100% of chunk
+      xhrInstances[0].simulateSuccess('{"etag": "test-etag-1"}')
+    }
+
+    await uploadPromise
+
+    // Verify we got multiple intermediate progress updates
+    expect(progressUpdates.length).toBeGreaterThanOrEqual(5)
+
+    // Verify progress is monotonically increasing
+    for (let i = 1; i < progressUpdates.length; i++) {
+      expect(progressUpdates[i].loaded).toBeGreaterThanOrEqual(progressUpdates[i - 1].loaded)
+    }
+
+    // Verify percentages are calculated correctly
+    expect(progressUpdates[0].percentage).toBe(20)
+    expect(progressUpdates[1].percentage).toBe(40)
+    expect(progressUpdates[2].percentage).toBe(60)
+    expect(progressUpdates[3].percentage).toBe(80)
+    expect(progressUpdates[4].percentage).toBe(100)
+
+    // Verify total is consistent
+    progressUpdates.forEach((update) => {
+      expect(update.total).toBe(5 * 1024 * 1024)
+    })
+  })
+
+  it('should correctly calculate progress across multiple chunks', async () => {
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    Object.defineProperty(file, 'size', { value: 10 * 1024 * 1024 }) // 10MB = 2 chunks
+
+    const progressUpdates: Array<{ loaded: number, total: number, percentage: number }> = []
+    const onProgress = jest.fn((progress) => {
+      progressUpdates.push({ ...progress })
+    })
+
+    const upload: MultipartUpload = {
+      url: 'https://example.com/upload',
+      headers: { Authorization: 'Bearer token' },
+      body: file
+    }
+
+    // Mock multipart upload create and complete
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ uuid: 'test-uuid', uploadId: 'test-upload-id' })
+      })
+      .mockResolvedValueOnce({
+        ok: true
+      })
+
+    const uploadPromise = uploadMultipart(upload, { onProgress })
+
+    // Wait for async initialization to complete
+    await new Promise(setImmediate)
+
+    // Simulate first chunk progress (5MB)
+    if (xhrInstances[0] !== undefined) {
+      xhrInstances[0].simulateProgress(2.5 * 1024 * 1024, 5 * 1024 * 1024) // 25% overall
+      xhrInstances[0].simulateProgress(5 * 1024 * 1024, 5 * 1024 * 1024) // 50% overall
+      xhrInstances[0].simulateSuccess('{"etag": "test-etag-1"}')
+    }
+
+    // Wait for second XHR to be created
+    await new Promise(setImmediate)
+
+    // Simulate second chunk progress (5MB)
+    if (xhrInstances[1] !== undefined) {
+      xhrInstances[1].simulateProgress(2.5 * 1024 * 1024, 5 * 1024 * 1024) // 75% overall
+      xhrInstances[1].simulateProgress(5 * 1024 * 1024, 5 * 1024 * 1024) // 100% overall
+      xhrInstances[1].simulateSuccess('{"etag": "test-etag-2"}')
+    }
+
+    await uploadPromise
+
+    // Verify we got progress updates
+    expect(progressUpdates.length).toBeGreaterThan(0)
+
+    // Find progress updates at key milestones (from first chunk)
+    const progress25 = progressUpdates.find((p) => p.percentage === 25)
+    const progress50 = progressUpdates.find((p) => p.percentage === 50)
+
+    // At least first chunk progress should be reported
+    expect(progress25).toBeDefined()
+    expect(progress50).toBeDefined()
+
+    // Verify the loaded values are correct for milestones that exist
+    if (progress25 !== undefined) {
+      expect(progress25.loaded).toBe(2.5 * 1024 * 1024)
+      expect(progress25.total).toBe(10 * 1024 * 1024)
+    }
+    if (progress50 !== undefined) {
+      expect(progress50.loaded).toBe(5 * 1024 * 1024)
+      expect(progress50.total).toBe(10 * 1024 * 1024)
+    }
+
+    // Verify that progress updates span across the upload
+    const progressValues = progressUpdates.map((p) => p.loaded)
+    const minProgress = Math.min(...progressValues)
+    const maxProgress = Math.max(...progressValues)
+
+    // Should have progress from start through at least first chunk
+    expect(minProgress).toBeGreaterThan(0)
+    expect(maxProgress).toBeGreaterThanOrEqual(2.5 * 1024 * 1024)
   })
 })
