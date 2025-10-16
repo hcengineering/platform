@@ -16,17 +16,37 @@
 import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type ActionContext } from '@hcengineering/text-editor'
-import { findParentNode, getNodeType, InputRule, isList, type RawCommands } from '@tiptap/core'
+import { type Editor, findParentNode, getNodeType, InputRule, isList, type RawCommands } from '@tiptap/core'
 import TaskItem, { type TaskItemOptions } from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
-import { Fragment, NodeRange, Slice, type NodeType } from '@tiptap/pm/model'
-import { Plugin, type Command, type EditorState, type Selection, type Transaction } from '@tiptap/pm/state'
+import {
+  Fragment,
+  NodeRange,
+  Slice,
+  type NodeType,
+  type Node,
+  DOMSerializer,
+  type DOMOutputSpec,
+  DOMParser,
+  type Attrs,
+  type TagParseRule
+} from '@tiptap/pm/model'
+import {
+  type EditorStateConfig,
+  Plugin,
+  type Command,
+  type EditorState,
+  type Selection,
+  type Transaction,
+  PluginKey
+} from '@tiptap/pm/state'
 import { canJoin, findWrapping, liftTarget, ReplaceAroundStep } from '@tiptap/pm/transform'
 import { type EditorView } from '@tiptap/pm/view'
 import { getDataAttribute } from '../../../utils'
 import { SvelteNodeViewRenderer } from '../../node-view'
 import ToDoItemNodeView from './ToDoItemNodeView.svelte'
 import ToDoListNodeView from './ToDoListNodeView.svelte'
+import { editorContextPluginKey } from '../editorContext'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -86,7 +106,7 @@ export const TodoItemExtension = TaskItem.extend<TodoItemExtensionOptions>({
   },
 
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), TodoItemDowncastPlugin()]
+    return [...(this.parent?.() ?? []), TodoItemDowncastPlugin(), TodoItemPastePlugin(this.editor)]
   },
 
   addNodeView () {
@@ -162,6 +182,124 @@ export function TodoItemDowncastPlugin (): Plugin {
 
         return false
       }
+    }
+  })
+}
+
+interface NamedToDosInEditor {
+  todoIds: Set<string>
+}
+
+function collectTodoIds (doc: Node): Set<string> {
+  const result = new Set<string>()
+  doc.descendants((node: Node) => {
+    if (node.type.name === 'todoItem' && node.attrs.todoid != null) {
+      result.add(node.attrs.todoid)
+    }
+  })
+
+  return result
+}
+
+const namedTodosPluginKey = new PluginKey<NamedToDosInEditor>('named-todos-plugin')
+
+export function TodoItemPastePlugin (editor: Editor): Plugin<NamedToDosInEditor> {
+  const prevClipboardSerializer =
+    editor.view.someProp('clipboardSerializer') ?? DOMSerializer.fromSchema(editor.view.state.schema)
+  const nodeSerializers = Object.assign(prevClipboardSerializer.nodes, {
+    todoItem: (node: Node): DOMOutputSpec => {
+      const prevSpec = editor.state.schema.spec.nodes.get(node.type.name)?.toDOM?.(node) ?? ['li']
+      // Expect [tag, attrs, children[]] form of DOM spec from toDOM
+      if (Array.isArray(prevSpec)) {
+        const attrs = prevSpec[1]
+        if (
+          attrs != null &&
+          typeof attrs === 'object' &&
+          attrs['data-type'] === 'todoItem' &&
+          attrs['data-todoid'] != null
+        ) {
+          const newSpec = prevSpec.slice() as [string, any[]]
+          const context = editorContextPluginKey.getState(editor.view.state) ?? {}
+          const attrs = Object.assign(newSpec[1], {
+            'data-parentid': context.objectId,
+            'data-parentclass': context.objectClass,
+            'data-parentspace': context.objectSpace
+          })
+          newSpec[1] = attrs
+          return newSpec
+        }
+      }
+      return prevSpec
+    }
+  })
+  const prevClipboardParser =
+    editor.view.someProp('clipboardParser') ??
+    editor.view.someProp('domParser') ??
+    DOMParser.fromSchema(editor.view.state.schema)
+  const parseRules = prevClipboardParser.rules.map((rule) => {
+    if (rule.tag === undefined) {
+      return rule
+    }
+    // Strange conversion to be ok for both typescript and eslint
+    // Is ok because rule with 'tag' property is already TagParseRule
+    const tagRule: TagParseRule = rule as any
+    if (tagRule.node !== 'todoItem') {
+      return rule
+    }
+    const newRule = {
+      ...tagRule,
+      getAttrs: (node: HTMLElement): Attrs | false | null => {
+        const oldAttributes = tagRule.getAttrs !== undefined ? tagRule.getAttrs(node) : rule.attrs
+        if (oldAttributes === false) {
+          return false
+        }
+        if (oldAttributes == null) {
+          return null
+        }
+        const todoId = oldAttributes.todoid
+        if (todoId == null) {
+          return oldAttributes
+        }
+        let state = namedTodosPluginKey.getState(editor.state)
+        if (state === undefined) {
+          state = { todoIds: new Set() }
+        }
+        const context = editorContextPluginKey.getState(editor.state) ?? {}
+        const parentId = node.getAttribute('data-parentid')
+        const parentClass = node.getAttribute('data-parentclass')
+        const parentSpace = node.getAttribute('data-parentspace')
+        if (
+          state.todoIds.has(todoId) ||
+          parentId !== context.objectId ||
+          parentClass !== context.objectClass ||
+          parentSpace !== context.objectSpace
+        ) {
+          return { ...oldAttributes, userid: null, todoid: null }
+        }
+        return {
+          ...oldAttributes
+        }
+      }
+    }
+    return newRule
+  })
+  return new Plugin<NamedToDosInEditor>({
+    key: namedTodosPluginKey,
+    state: {
+      init: function (config: EditorStateConfig, instance: EditorState) {
+        return { todoIds: collectTodoIds(instance.doc) }
+      },
+      apply: function (tr: Transaction, value: NamedToDosInEditor, oldState: EditorState, newState: EditorState) {
+        if (!tr.docChanged) {
+          return value
+        }
+        const newTodoIds = collectTodoIds(newState.doc)
+        return { todoIds: newTodoIds }
+      }
+    },
+    props: {
+      clipboardSerializer: new DOMSerializer(nodeSerializers, prevClipboardSerializer.marks),
+      clipboardParser: new DOMParser(prevClipboardParser.schema, parseRules)
     }
   })
 }

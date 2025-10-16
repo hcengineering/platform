@@ -742,6 +742,10 @@ export function findAttributeEditorByAttribute (client: Client, attribute: AnyAt
   const hierarchy = client.getHierarchy()
   if (attribute === undefined) return
 
+  if (attribute.editor != null) {
+    return attribute.editor
+  }
+
   if (attribute.type._class === core.class.TypeAny) {
     const _type: TypeAny = attribute.type as TypeAny<AnyComponent>
     return _type.editor ?? _type.presenter
@@ -769,9 +773,6 @@ export function findAttributeEditorByAttribute (client: Client, attribute: AnyAt
     }
   }
 
-  if (attribute.editor != null) {
-    return attribute.editor
-  }
   const editorMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
 
   if (editorMixin?.inlineEditor === undefined) {

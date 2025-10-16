@@ -55,6 +55,7 @@
     "EnterValue": "Saisir une valeur",
     "OnToDoDone": "Lors de l'achèvement de l'action",
     "OnSubProcessesDone": "Au fin des sous-processus",
+    "WhenSubProcessMatches": "Lorsque le sous-processus correspond",
     "Result": "Résultat",
     "RequestResult": "Demander le résultat",
     "NoResultRequired": "Aucun résultat requis",

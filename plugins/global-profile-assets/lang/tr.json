@@ -1,0 +1,29 @@
+{
+  "string": {
+    "GlobalProfile": "Küresel Profil",
+    "EditProfile": "Profili Düzenle",
+    "GeneralInformation": "Genel Bilgiler",
+    "FirstName": "Ad",
+    "LastName": "Soyad",
+    "City": "Şehir",
+    "Country": "Ülke",
+    "Bio": "Biyografi",
+    "FirstNamePlaceholder": "Adınızı girin",
+    "LastNamePlaceholder": "Soyadınızı girin",
+    "CityPlaceholder": "Şehir girin",
+    "CountryPlaceholder": "Ülke girin",
+    "BioPlaceholder": "Kendinizden bahsedin...",
+    "Save": "Kaydet",
+    "Cancel": "İptal",
+    "MaximumLength": "Maksimum {count} karakter",
+    "Required": "Bu alan zorunludur",
+    "ProfileVisibility": "Profil Görünürlüğü",
+    "PublicProfile": "Herkese Açık",
+    "PrivateProfile": "Özel",
+    "PublicProfileDescription": "Profiliniz herkese görünür",
+    "PrivateProfileDescription": "Profiliniz sadece size görünür",
+    "AddBioPlaceholder": "Kendiniz hakkında başkalarına anlatmak için bir biyografi ekleyin...",
+    "AddLocationPlaceholder": "Konumunuzu ekleyin...",
+    "ProfileNotAvailable": "Profil mevcut değil"
+  }
+}

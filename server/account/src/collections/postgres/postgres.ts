@@ -46,7 +46,8 @@ import type {
   MailboxSecret,
   Integration,
   IntegrationSecret,
-  AccountAggregatedInfo
+  AccountAggregatedInfo,
+  UserProfile
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -518,6 +519,7 @@ export class PostgresAccountDB implements AccountDB {
   mailboxSecret: PostgresDbCollection<MailboxSecret>
   integration: PostgresDbCollection<Integration>
   integrationSecret: PostgresDbCollection<IntegrationSecret>
+  userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
 
   constructor (
     readonly client: Sql,
@@ -560,6 +562,11 @@ export class PostgresAccountDB implements AccountDB {
     this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient })
     this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, {
       ns,
+      withRetryClient
+    })
+    this.userProfile = new PostgresDbCollection<UserProfile, 'personUuid'>('user_profile', client, {
+      ns,
+      idKey: 'personUuid',
       withRetryClient
     })
   }

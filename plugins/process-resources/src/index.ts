@@ -67,6 +67,8 @@ import TimeEditor from './components/settings/TimeEditor.svelte'
 import TimePresenter from './components/settings/TimePresenter.svelte'
 import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
+import SubProcessMatchEditor from './components/settings/SubProcessMatchEditor.svelte'
+import SubProcessMatchPresenter from './components/settings/SubProcessMatchPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
@@ -81,7 +83,8 @@ import {
   todoTranstionCheck,
   matchCardCheck,
   subProcessesDoneCheck,
-  fieldChangesCheck
+  fieldChangesCheck,
+  subProcessMatchCheck
 } from './utils'
 import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
@@ -138,7 +141,9 @@ export default async (): Promise<Resources> => ({
     AddTagPresenter,
     ExecutionMyToDos,
     FieldChangesEditor,
-    FunctionSubmenu
+    FunctionSubmenu,
+    SubProcessMatchEditor,
+    SubProcessMatchPresenter
   },
   criteriaEditor: {
     BaseCriteria,
@@ -164,6 +169,7 @@ export default async (): Promise<Resources> => ({
     MatchCheck: matchCardCheck,
     FieldChangedCheck: fieldChangesCheck,
     SubProcessesDoneCheck: subProcessesDoneCheck,
+    SubProcessMatchCheck: subProcessMatchCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck
   },

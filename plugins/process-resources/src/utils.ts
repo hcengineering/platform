@@ -656,6 +656,42 @@ export async function subProcessesDoneCheck (
   return res === undefined
 }
 
+export async function subProcessMatchCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  const { process: _process, ...otherCritera } = params
+  if (_process === undefined) return false
+  if (Object.keys(otherCritera).length === 0) return true
+
+  const subProcesses = await client.findAll(process.class.Execution, {
+    parentId: execution._id,
+    process: params.process
+  })
+
+  if (subProcesses.length === 0) return false
+
+  const [predicate, value] = Object.entries(otherCritera)[0]
+
+  const res = matchQuery(
+    subProcesses,
+    { currentState: { $in: value } },
+    process.class.Execution,
+    client.getHierarchy(),
+    true
+  )
+  if (predicate === '$all') {
+    return res.length === subProcesses.length
+  } else if (predicate === '$any') {
+    return res.length > 0
+  } else if (predicate === '$nin') {
+    return res.length === 0
+  }
+  return false
+}
+
 export function getCriteriaEditor (
   of: Ref<Class<Doc>>,
   category: AttributeCategory

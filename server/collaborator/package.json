@@ -48,9 +48,9 @@
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/analytics": "^0.7.5",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.5",
+    "@hcengineering/account-client": "^0.7.6",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-client": "^0.7.5",
     "@hcengineering/server-storage": "^0.7.6",

@@ -44,7 +44,7 @@
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/analytics-collector": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "ua-parser-js": "^2.0.4",
     "@hcengineering/ui": "^0.7.0"
   },

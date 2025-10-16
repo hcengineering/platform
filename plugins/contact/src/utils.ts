@@ -447,7 +447,7 @@ export async function ensureEmployeeForPerson (
       const data = {
         personUuid: person.uuid,
         name: combineName(globalPerson.firstName, globalPerson.lastName),
-        city: globalPerson.city,
+        city: '',
         avatarType: AvatarType.COLOR
       }
       personRef = generateId()

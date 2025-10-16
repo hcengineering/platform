@@ -55,6 +55,7 @@
     "EnterValue": "Введите значение",
     "OnToDoDone": "При завершении задачи",
     "OnSubProcessesDone": "При завершении подпроцессов",
+    "WhenSubProcessMatches": "Когда подпроцесс соответствует условию",
     "Result": "Результат",
     "NoResultRequired": "Результат не требуется",
     "RequestResult": "Запросить результат",

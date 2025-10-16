@@ -11,7 +11,7 @@
     "test": "echo \"No test specified\""
   },
   "devDependencies": {
-    "@hcengineering/platform": "^0.7.3",
+    "@hcengineering/platform": "^0.7.5",
     "@hcengineering/theme": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@storybook/addon-essentials": "^7.0.6",
