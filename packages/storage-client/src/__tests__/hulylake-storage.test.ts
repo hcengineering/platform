@@ -151,7 +151,7 @@ describe('HulylakeStorage', () => {
       const uuid = 'file-uuid-123'
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file)
 
@@ -177,7 +177,7 @@ describe('HulylakeStorage', () => {
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
       const onProgress = jest.fn()
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file, { onProgress })
 
@@ -191,7 +191,7 @@ describe('HulylakeStorage', () => {
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
       const controller = new AbortController()
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file, { signal: controller.signal })
 
@@ -215,7 +215,7 @@ describe('HulylakeStorage', () => {
       const uuid = 'image-uuid-123'
       const file = new File(['binary data'], 'image.png', { type: 'image/png' })
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 201 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 201, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file)
 
@@ -238,7 +238,7 @@ describe('HulylakeStorage', () => {
       const uuid = 'empty-uuid-123'
       const file = new File([''], 'empty.txt', { type: 'text/plain' })
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file)
 
@@ -261,7 +261,7 @@ describe('HulylakeStorage', () => {
       const file = new File(['test content'], filename, { type: 'text/plain' })
 
       // Upload file
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
       await storage.uploadFile(token, workspace, uuid, file)
 
       // Get file URL

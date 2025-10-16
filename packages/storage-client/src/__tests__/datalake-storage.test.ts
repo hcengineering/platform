@@ -213,7 +213,7 @@ describe('DatalakeStorage', () => {
         const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
         Object.defineProperty(file, 'size', { value: 5 * 1024 * 1024 }) // 5MB
 
-        mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+        mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
         await storage.uploadFile(token, workspace, uuid, file)
 
@@ -244,7 +244,7 @@ describe('DatalakeStorage', () => {
         const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
         Object.defineProperty(file, 'size', { value: 10 * 1024 * 1024 }) // exactly 10MB
 
-        mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+        mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
         await storage.uploadFile(token, workspace, uuid, file)
 
@@ -261,7 +261,7 @@ describe('DatalakeStorage', () => {
         const onProgress = jest.fn()
         const controller = new AbortController()
 
-        mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+        mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
         await storage.uploadFile(token, workspace, uuid, file, {
           onProgress,
@@ -374,7 +374,7 @@ describe('DatalakeStorage', () => {
       Object.defineProperty(file, 'size', { value: 1024 }) // 1KB
 
       // Upload small file
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
       await storage.uploadFile(token, workspace, uuid, file)
 
       // Get file URL
@@ -441,7 +441,7 @@ describe('DatalakeStorage', () => {
       const smallFile = new File(['content'], 'small.txt', { type: 'text/plain' })
       Object.defineProperty(smallFile, 'size', { value: 10 * 1024 * 1024 })
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
       await storage.uploadFile(token, workspace, smallUuid, smallFile)
       expect(mockUploadXhr).toHaveBeenCalled()
       expect(mockUploadMultipart).not.toHaveBeenCalled()

@@ -93,7 +93,7 @@ describe('Storage Client Integration Tests', () => {
       const file = new File(['Integration test content'], filename, { type: 'text/plain' })
 
       // Mock successful upload
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       // Upload file
       await storage.uploadFile(token, workspace, uuid, file)
@@ -138,7 +138,7 @@ describe('Storage Client Integration Tests', () => {
       const file = new File(['Progress test'], 'progress.txt', { type: 'text/plain' })
       const progressCallback = jest.fn()
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file, {
         onProgress: progressCallback
@@ -154,7 +154,7 @@ describe('Storage Client Integration Tests', () => {
       const file = new File(['Abort test'], 'abort.txt', { type: 'text/plain' })
       const controller = new AbortController()
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file, {
         signal: controller.signal
@@ -184,7 +184,7 @@ describe('Storage Client Integration Tests', () => {
       Object.defineProperty(file, 'size', { value: 1024 }) // 1KB
 
       // Mock successful small file upload
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       // Upload small file (should use form-data)
       await storage.uploadFile(token, workspace, uuid, file)
@@ -265,7 +265,7 @@ describe('Storage Client Integration Tests', () => {
       const boundaryFile = new File(['boundary content'], 'boundary.txt', { type: 'text/plain' })
       Object.defineProperty(boundaryFile, 'size', { value: 10 * 1024 * 1024 }) // exactly 10MB
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
       await storage.uploadFile(token, workspace, boundaryUuid, boundaryFile)
 
       expect(mockUploadXhr).toHaveBeenCalled()
@@ -307,7 +307,7 @@ describe('Storage Client Integration Tests', () => {
       const file = new File(['Hulylake test content'], filename, { type: 'text/plain' })
 
       // Mock successful upload
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       // Upload file (always uses PUT method)
       await storage.uploadFile(token, workspace, uuid, file)
@@ -432,7 +432,7 @@ describe('Storage Client Integration Tests', () => {
       const file = new File(['priority test'], 'priority.txt', { type: 'text/plain' })
       Object.defineProperty(file, 'size', { value: 1024 }) // Small file to ensure form-data upload
 
-      mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+      mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
 
       await storage.uploadFile(token, workspace, uuid, file)
 
@@ -479,7 +479,7 @@ describe('Storage Client Integration Tests', () => {
           Object.defineProperty(file, 'size', { value: 1024 }) // Ensure small file for XHR upload
         }
 
-        mockUploadXhr.mockResolvedValueOnce({ status: 200 })
+        mockUploadXhr.mockResolvedValueOnce({ status: 200, responseText: '' })
         mockUploadMultipart.mockResolvedValueOnce()
 
         await storage.uploadFile(token, workspace, uuid, file, options)
