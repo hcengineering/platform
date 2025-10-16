@@ -529,6 +529,9 @@ describe('account operations', () => {
         insertOne: jest.fn(),
         update: jest.fn()
       },
+      userProfile: {
+        insertOne: jest.fn()
+      },
       getWorkspaceRole: jest.fn(),
       assignWorkspace: jest.fn(),
       updateWorkspaceRole: jest.fn(),

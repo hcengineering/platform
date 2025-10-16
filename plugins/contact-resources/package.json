@@ -44,7 +44,7 @@
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/image-cropper": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
@@ -61,7 +61,7 @@
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.5",
+    "@hcengineering/account-client": "^0.7.6",
     "@hcengineering/achievement": "^0.7.0",
     "svelte": "^4.2.20",
     "crypto-js": "^4.2.0"

@@ -58,7 +58,7 @@
     "@temporalio/workflow": "1.12.3",
     "@hcengineering/kafka": "^0.7.5",
     "@hcengineering/process": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/server-core": "^0.7.5"
   }
 }

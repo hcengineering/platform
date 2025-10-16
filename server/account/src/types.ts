@@ -178,6 +178,35 @@ export interface IntegrationSecret {
 
 export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
 
+/**
+ * Known social link keys for user profiles
+ * Stored flexibly in JSONB/object but with known common keys
+ */
+export interface KnownSocialLinks {
+  twitter?: string
+  linkedin?: string
+  github?: string
+  telegram?: string
+  facebook?: string
+  instagram?: string
+}
+
+/**
+ * User profile with additional information for public sharing
+ * Stored in accounts database (global, not workspace-specific)
+ */
+export interface UserProfile {
+  personUuid: PersonUuid
+  bio?: string // LinkedIn-style bio (up to ~2000 chars)
+  country?: string
+  city?: string
+  website?: string // Personal website URL
+  socialLinks?: Record<string, string> // Flexible storage, keys follow KnownSocialLinks convention
+  isPublic: boolean // Public visibility toggle (default: false)
+}
+
+export type PersonWithProfile = Person & Omit<UserProfile, 'personUuid'>
+
 /* ========= S U P P L E M E N T A R Y ========= */
 
 export interface WorkspaceInfoWithStatus extends Workspace {
@@ -207,6 +236,7 @@ export interface AccountDB {
   mailboxSecret: DbCollection<MailboxSecret>
   integration: DbCollection<Integration>
   integrationSecret: DbCollection<IntegrationSecret>
+  userProfile: DbCollection<UserProfile>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>

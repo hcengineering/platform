@@ -41,7 +41,7 @@
     "typed-emitter": "^2.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/media": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/presentation": "^0.7.0",

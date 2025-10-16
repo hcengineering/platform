@@ -1,0 +1,29 @@
+{
+  "string": {
+    "GlobalProfile": "Глобальный профиль",
+    "EditProfile": "Редактировать профиль",
+    "GeneralInformation": "Общая информация",
+    "FirstName": "Имя",
+    "LastName": "Фамилия",
+    "City": "Город",
+    "Country": "Страна",
+    "Bio": "Био",
+    "FirstNamePlaceholder": "Введите имя",
+    "LastNamePlaceholder": "Введите фамилию",
+    "CityPlaceholder": "Введите город",
+    "CountryPlaceholder": "Введите страну",
+    "BioPlaceholder": "Расскажите о себе...",
+    "Save": "Сохранить",
+    "Cancel": "Отмена",
+    "MaximumLength": "Максимум {count} символов",
+    "Required": "Это поле обязательно",
+    "ProfileVisibility": "Видимость профиля",
+    "PublicProfile": "Публичный",
+    "PrivateProfile": "Приватный",
+    "PublicProfileDescription": "Ваш профиль виден всем",
+    "PrivateProfileDescription": "Ваш профиль виден только вам",
+    "AddBioPlaceholder": "Добавьте описание, чтобы рассказать о себе...",
+    "AddLocationPlaceholder": "Добавьте ваше местоположение...",
+    "ProfileNotAvailable": "Профиль недоступен"
+  }
+}

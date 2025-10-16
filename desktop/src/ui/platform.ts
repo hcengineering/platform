@@ -30,6 +30,7 @@ import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
 import exportPlugin, { exportId } from '@hcengineering/export'
 import gmail, { gmailId } from '@hcengineering/gmail'
+import globalProfile, { globalProfileId, globalProfileRoute } from '@hcengineering/global-profile'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
@@ -89,6 +90,7 @@ import '@hcengineering/drive-assets'
 import '@hcengineering/export-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
+import '@hcengineering/global-profile-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
 import '@hcengineering/lead-assets'
@@ -233,6 +235,7 @@ function configureI18n (): void {
   addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+  addStringsLoader(globalProfileId, async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
@@ -350,7 +353,8 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
       [loginId, login.component.LoginApp],
       [onboardId, onboard.component.OnboardApp],
       [calendarId, calendar.component.ConnectApp],
-      [guestId, guest.component.GuestApp]
+      [guestId, guest.component.GuestApp],
+      [globalProfileRoute, globalProfile.component.GlobalProfileApp]
     ])
   )
 
@@ -409,6 +413,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
     async () => await import(/* webpackChunkName: "desktop-downloads" */ '@hcengineering/desktop-downloads-resources')
   )
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
+  addLocation(globalProfileId, () => import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(exportId, () => import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))

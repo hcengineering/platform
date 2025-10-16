@@ -55,7 +55,7 @@
     "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-core": "^0.7.5",
     "@hcengineering/analytics-service": "^0.7.5",

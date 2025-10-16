@@ -41,7 +41,7 @@
     "@hcengineering/ui": "^0.7.0",
     "svelte": "^4.2.20",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/activity": "^0.7.0",

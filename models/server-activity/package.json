@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/model": "^0.7.5",
     "@hcengineering/model-activity": "^0.7.0",

@@ -54,12 +54,14 @@ import {
   type OtpInfo,
   type RegionInfo,
   type SocialId,
+  type UserProfile,
   type WorkspaceInfoWithStatus,
   type WorkspaceInviteInfo,
   type WorkspaceLoginInfo,
   type LoginInfoRequest,
   type LoginInfoRequestData,
-  type Account
+  type Account,
+  type PersonWithProfile
 } from './types'
 import {
   addSocialIdBase,
@@ -2483,6 +2485,116 @@ export async function mergeSpecifiedPersons (
   await doMergePersons(db, primaryPerson, secondaryPerson)
 }
 
+async function setMyProfile (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    profile: Partial<Omit<UserProfile, 'personUuid'>>
+  }
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  const { profile } = params
+
+  // Validate field lengths
+  if (profile.bio !== undefined && profile.bio !== null && profile.bio.length > 150) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'bio', limit: 150 }))
+  }
+  if (profile.city !== undefined && profile.city !== null && profile.city.length > 100) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'city', limit: 100 }))
+  }
+  if (profile.country !== undefined && profile.country !== null && profile.country.length > 50) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'country', limit: 50 }))
+  }
+
+  // Sanitize profile object - only allow known fields to prevent injection
+  const { bio, city, country, website, socialLinks, isPublic } = profile
+  const sanitizedProfile: Partial<Omit<UserProfile, 'personUuid'>> = {
+    bio,
+    city,
+    country,
+    website,
+    socialLinks,
+    isPublic: isPublic ?? false
+  }
+
+  // Get existing profile or create new
+  const existing = await db.userProfile.findOne({ personUuid: account })
+
+  if (existing !== null) {
+    // Update existing profile
+    await db.userProfile.update({ personUuid: account }, sanitizedProfile)
+  } else {
+    // Create new profile
+    await db.userProfile.insertOne({
+      personUuid: account,
+      ...sanitizedProfile
+    })
+  }
+}
+
+async function getUserProfile (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string | undefined,
+  params: {
+    personUuid?: PersonUuid
+  }
+): Promise<PersonWithProfile | null> {
+  const { personUuid } = params
+
+  // Decode token if provided (optional for public profiles)
+  let requestingAccount: PersonUuid | undefined
+  if (token != null && token !== '') {
+    try {
+      const tokenData = decodeTokenVerbose(ctx, token)
+      requestingAccount = tokenData.account
+    } catch {
+      // Invalid token, treat as unauthenticated request
+      requestingAccount = undefined
+    }
+  }
+
+  // If no personUuid provided, return requesting user's own profile
+  const targetPersonUuid = personUuid ?? requestingAccount
+
+  if (targetPersonUuid == null || targetPersonUuid === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: targetPersonUuid })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: targetPersonUuid }))
+  }
+
+  const profile = await db.userProfile.findOne({ personUuid: targetPersonUuid })
+
+  if (profile === null) {
+    return null
+  }
+
+  // Allow access if:
+  // 1. Requesting own profile (authenticated user requesting their own)
+  // 2. Profile is public
+  if (requestingAccount === targetPersonUuid || profile.isPublic) {
+    const res: PersonWithProfile = {
+      ...person,
+      ...profile
+    }
+
+    delete (res as any).personUuid
+
+    return res
+  }
+
+  // Private profile of another user - not accessible
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2541,6 +2653,8 @@ export type AccountMethods =
   | 'deleteAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
+  | 'setMyProfile'
+  | 'getUserProfile'
 
 /**
  * @public
@@ -2588,6 +2702,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     deleteAccount: wrap(deleteAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
+    setMyProfile: wrap(setMyProfile),
+    getUserProfile: wrap(getUserProfile),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
