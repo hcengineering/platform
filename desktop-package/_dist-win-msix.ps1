@@ -7,6 +7,8 @@ $ErrorActionPreference = "Stop"
 
 Set-Location $PSScriptRoot
 
+$appxBuild = $null
+
 try {
     Write-Host "Getting version from show_version.js..."
     $versionOutput = & node "..\common\scripts\show_version.js"
@@ -95,7 +97,7 @@ try {
     Write-Error "Build failed: $_"
     exit 1
 } finally {
-    if (Test-Path $appxBuild) {
+    if ($null -ne $appxBuild -and (Test-Path $appxBuild)) {
         Remove-Item $appxBuild -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
