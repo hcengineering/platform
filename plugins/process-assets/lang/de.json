@@ -51,6 +51,7 @@
     "EnterValue": "Wert eingeben",
     "OnToDoDone": "Beim Erledigen von Action Item",
     "OnSubProcessesDone": "Beim Abschluss von Unterprozessen",
+    "WhenSubProcessMatches": "Wenn Unterprozess übereinstimmt",
     "Result": "Ergebnis",
     "NoResultRequired": "Kein Ergebnis erforderlich",
     "RequestResult": "Ergebnis anfordern",

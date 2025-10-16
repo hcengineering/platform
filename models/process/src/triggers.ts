@@ -98,6 +98,22 @@ export function defineTriggers (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
+      label: process.string.WhenSubProcessMatches,
+      icon: process.icon.WaitSubprocesses,
+      editor: process.component.SubProcessMatchEditor,
+      presenter: process.component.SubProcessMatchPresenter,
+      checkFunction: process.triggerCheck.SubProcessMatchCheck,
+      requiredParams: ['process'],
+      init: false,
+      auto: true
+    },
+    process.trigger.OnSubProcessMatch
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
       label: process.string.WaitUntil,
       icon: process.icon.Time,
       requiredParams: [],

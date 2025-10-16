@@ -51,6 +51,7 @@
     "EnterValue": "Zadat hodnotu",
     "OnToDoDone": "Při dokončení akční položky",
     "OnSubProcessesDone": "Při dokončení podprocesů",
+    "WhenSubProcessMatches": "Když podproces odpovídá podmínce",
     "Result": "Výsledek",
     "NoResultRequired": "Není vyžadován žádný výsledek",
     "RequestResult": "Požádat o výsledek",
