@@ -55,6 +55,7 @@ function makeBigIntId (): bigint {
 function toBase64Url (bytes: Uint8Array): string {
   let s = ''
   for (const b of bytes) s += String.fromCharCode(b)
+  // @ts-expect-error browser btoa / node Buffer
   const base64 = typeof btoa === 'function' ? btoa(s) : Buffer.from(bytes).toString('base64')
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }

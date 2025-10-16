@@ -77,7 +77,7 @@ export class PeersDb extends BaseDb {
   }
 
   async findPeers (params: FindPeersParams): Promise<Peer[]> {
-    const select = `SELECT *, COALESCE(members.members, '[]') AS members
+    const select = `SELECT p.*, COALESCE(members.members, '[]') AS members
                     FROM ${Domain.Peer} p`
 
     const { where, values } = this.buildWhere(params)
