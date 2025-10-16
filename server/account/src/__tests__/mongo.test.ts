@@ -687,7 +687,11 @@ describe('MongoAccountDB', () => {
     // Create mock collections with jest.fn()
     mockAccount = {
       update: jest.fn(),
-      ensureIndices: jest.fn()
+      ensureIndices: jest.fn(),
+      findCursor: jest.fn(() => ({
+        hasNext: jest.fn().mockReturnValue(false),
+        close: jest.fn()
+      }))
     }
 
     mockSocialId = {

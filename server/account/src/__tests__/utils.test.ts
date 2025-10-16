@@ -1299,6 +1299,9 @@ describe('account utils', () => {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['person']['insertOne']>,
         update: jest.fn() as jest.MockedFunction<AccountDB['person']['update']>
       },
+      userProfile: {
+        insertOne: jest.fn()
+      },
       accountEvent: {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['accountEvent']['insertOne']>
       },
@@ -1733,6 +1736,9 @@ describe('account utils', () => {
         findOne: jest.fn(),
         insertOne: jest.fn(),
         update: jest.fn()
+      },
+      userProfile: {
+        insertOne: jest.fn()
       },
       resetPassword: jest.fn()
     } as unknown as AccountDB
