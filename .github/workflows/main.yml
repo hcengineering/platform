@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -116,7 +116,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -140,7 +140,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
@@ -172,7 +172,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
@@ -210,7 +210,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -340,7 +340,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -435,7 +435,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -513,7 +513,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -636,7 +636,7 @@ jobs:
           mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
           rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - uses: pnpm/action-setup@v4
@@ -716,7 +716,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -818,7 +818,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
