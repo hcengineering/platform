@@ -79,9 +79,45 @@ export interface SessionData {
 
 /**
  * @public
- * @deprecated moved to huly.server, marked as any if some code will still use it.
  */
-export type LowLevelStorage = any
+export interface LowLevelStorage {
+  // Low level streaming API to retrieve information
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
+
+  // Load passed documents from domain
+  load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+
+  // Upload new versions of documents
+  // docs - new/updated version of documents.
+  upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
+
+  // Remove a list of documents.
+  clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  // Low level direct group API
+  groupBy: <T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ) => Promise<Map<T, number>>
+
+  // migrations
+  rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
+
+  rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  rawDeleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ) => Promise<Iterator<T>>
+
+  getDomainHash: (ctx: MeasureContext, domain: Domain) => Promise<string>
+}
 
 export interface Iterator<T extends Doc> {
   next: (count: number) => Promise<T[] | null>
