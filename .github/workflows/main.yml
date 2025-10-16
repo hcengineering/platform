@@ -670,7 +670,6 @@ jobs:
           path: ./desktop-package/deploy/win-unpacked/
 
   dist-build-msix:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     needs: dist-build
     runs-on: windows-latest
     timeout-minutes: 30
