@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/datalake
 
-This log was last generated on Wed, 15 Oct 2025 18:58:52 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Oct 2025 05:15:22 GMT and should not be manually modified.
+
+## 0.7.7
+Fri, 17 Oct 2025 05:15:22 GMT
+
+### Patches
+
+- Updte deps
 
 ## 0.7.6
 Wed, 15 Oct 2025 18:58:52 GMT

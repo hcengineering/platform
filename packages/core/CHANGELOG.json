@@ -2,6 +2,18 @@
   "name": "@hcengineering/server-core",
   "entries": [
     {
+      "version": "0.7.7",
+      "tag": "@hcengineering/server-core_v0.7.7",
+      "date": "Fri, 17 Oct 2025 05:15:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix one second gauges"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.6",
       "tag": "@hcengineering/server-core_v0.7.6",
       "date": "Wed, 15 Oct 2025 18:58:52 GMT",
