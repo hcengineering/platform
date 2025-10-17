@@ -38,10 +38,10 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/client-resources": "^0.7.6",
     "@hcengineering/client": "^0.7.6",
-    "@hcengineering/account-client": "^0.7.5",
+    "@hcengineering/account-client": "^0.7.6",
     "@hcengineering/server-core": "workspace:0.7.6",
     "@hcengineering/server-token": "^0.7.5",
     "ws": "^8.18.2"
