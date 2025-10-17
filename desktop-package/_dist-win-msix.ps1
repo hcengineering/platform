@@ -31,9 +31,32 @@ try {
     
     $makeappxPath = Get-Command "makeappx.exe" -ErrorAction SilentlyContinue
     if (!$makeappxPath) {
-        Write-Error "ERROR: makeappx.exe not found!"
-        Write-Host "Please install Windows 10 SDK from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/"
-        exit 1
+        Write-Host "makeappx.exe not found in PATH, searching in Windows SDK..."
+        
+        $sdkBasePath = "C:\Program Files (x86)\Windows Kits\10\bin"
+        
+        if (Test-Path $sdkBasePath) {
+            # Найти последнюю версию SDK
+            $latestSDK = Get-ChildItem $sdkBasePath -Directory | 
+                        Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } | 
+                        Sort-Object Name -Descending | 
+                        Select-Object -First 1
+            
+            if ($latestSDK) {
+                $makeappxFullPath = Join-Path $latestSDK.FullName "x64\makeappx.exe"
+                
+                if (Test-Path $makeappxFullPath) {
+                    Write-Host "Found makeappx.exe at: $makeappxFullPath"
+                    $makeappxPath = Get-Command $makeappxFullPath
+                }
+            }
+        }
+        
+        if (!$makeappxPath) {
+            Write-Error "ERROR: makeappx.exe not found!"
+            Write-Host "Please install Windows 10 SDK from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/"
+            exit 1
+        }
     }
     
     $appxBuild = "deploy\__appx-build"
@@ -77,7 +100,7 @@ try {
     }
     
     $makeappxArgs = @("pack", "/d", $appxBuild, "/p", $appxOutput, "/overwrite")
-    & makeappx.exe $makeappxArgs
+    & $makeappxPath $makeappxArgs
     
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create MSIX package!"
