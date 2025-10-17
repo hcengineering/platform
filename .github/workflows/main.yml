@@ -694,7 +694,7 @@ jobs:
         shell: pwsh
         run: |
           cd desktop-package
-          .\_dist-win-msix.ps1
+          .\_win-make-msix.ps1
 
       - name: Upload MSIX package
         uses: actions/upload-artifact@v4
