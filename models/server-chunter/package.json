@@ -38,7 +38,7 @@
     "@hcengineering/model": "^0.7.5",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-chunter": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",
