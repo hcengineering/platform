@@ -51,13 +51,14 @@ import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
 import CreateCardButton from './components/CreateCardButton.svelte'
 import CardArrayEditor from './components/CardArrayEditor.svelte'
-import NewCardHeader from './components/navigator/NewCardHeader.svelte'
 import SpacePresenter from './components/navigator/SpacePresenter.svelte'
 import TypesNavigator from './components/navigator/TypesNavigator.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
 import RolesSection from './components/settings/RolesSection.svelte'
 import EditRole from './components/settings/EditRole.svelte'
 import CardWidget from './components/CardWidget.svelte'
+import CreateSpace from './components/navigator/CreateSpace.svelte'
+import CardHeaderButton from './components/navigator/CardHeaderButton.svelte'
 
 // Card Sections
 import AttachmentsCardSection from './components/sections/AttachmentsSection.svelte'
@@ -110,7 +111,6 @@ export default async (): Promise<Resources> => ({
     ChangeType,
     CreateCardButton,
     CardArrayEditor,
-    NewCardHeader,
     SpacePresenter,
     TypesNavigator,
     LabelsPresenter,
@@ -122,7 +122,9 @@ export default async (): Promise<Resources> => ({
     CardTagColored,
     CardTagsColored,
     CardIcon,
-    CardFeedView
+    CardFeedView,
+    CreateSpace,
+    CardHeaderButton
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,

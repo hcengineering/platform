@@ -51,6 +51,7 @@ export interface Application extends Doc {
   component?: AnyComponent
 
   navHeaderComponent?: AnyComponent
+  navHeaderActions?: AnyComponent
   accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
 }

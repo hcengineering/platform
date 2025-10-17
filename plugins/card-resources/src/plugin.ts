@@ -44,14 +44,15 @@ export default mergeIds(cardId, card, {
     CardRefPresenter: '' as AnyComponent,
     ChangeType: '' as AnyComponent,
     CreateCardButton: '' as AnyComponent,
-    NewCardHeader: '' as AnyComponent,
+    CreateSpace: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     TypesNavigator: '' as AnyComponent,
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
     CardWidget: '' as AnyComponent,
     CardWidgetTab: '' as AnyComponent,
-    CreateCard: '' as AnyComponent
+    CreateCard: '' as AnyComponent,
+    CardHeaderButton: '' as AnyComponent
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
