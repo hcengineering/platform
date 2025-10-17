@@ -154,7 +154,7 @@ export class CommentSyncManager implements DocSyncManager {
       }
     }`
     if (isGHWriteAllowed()) {
-      await okit?.graphql(q, {
+      await okit.graphql(q, {
         commentID: id
       })
     }
@@ -353,7 +353,7 @@ export class CommentSyncManager implements DocSyncManager {
       const okit = (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit
       const mdown = await this.provider.getMarkdown(existingComment.message)
       if (mdown.trim().length > 0) {
-        await okit?.rest.issues.updateComment({
+        await okit.rest.issues.updateComment({
           owner: repository.owner?.login as string,
           repo: repository.name,
           issue_number: parent.githubNumber,
@@ -429,7 +429,7 @@ export class CommentSyncManager implements DocSyncManager {
     try {
       const mdown = await this.provider.getMarkdown(chatMessage.message)
       if (mdown.trim().length > 0) {
-        const result = await okit?.rest.issues.createComment({
+        const result = await okit.rest.issues.createComment({
           owner: repo.owner?.login as string,
           repo: repo.name,
           issue_number: parent.githubNumber,
