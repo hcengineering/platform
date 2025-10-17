@@ -50,7 +50,9 @@ export interface Application extends Doc {
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
   component?: AnyComponent
 
+  // Component to display below the navigator header
   navHeaderComponent?: AnyComponent
+  // Component to display in the actions area of the navigator header
   navHeaderActions?: AnyComponent
   accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
