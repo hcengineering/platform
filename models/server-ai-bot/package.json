@@ -49,7 +49,7 @@
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-ai-bot": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/view": "^0.7.0"
   }
 }
