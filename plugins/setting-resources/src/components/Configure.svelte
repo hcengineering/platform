@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PluginConfiguration } from '@hcengineering/core'
-  import { pluginConfigurationStore, getClient } from '@hcengineering/presentation'
+  import { PluginConfiguration, systemAccountUuid } from '@hcengineering/core'
+  import { createQuery, getClient, pluginConfigurationStore, hasResource } from '@hcengineering/presentation'
+  import ratingPlugin, { getRaiting, type PersonRating } from '@hcengineering/rating'
   import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
@@ -25,6 +26,19 @@
       enabled: value
     })
   }
+
+  const sysQuery = createQuery()
+  let sysRating: PersonRating | undefined
+
+  sysQuery.query(ratingPlugin.class.PersonRating, { accountId: systemAccountUuid }, (res) => {
+    sysRating = res[0]
+  })
+
+  $: totalVisible = getRaiting(
+    100,
+    sysRating,
+    $pluginConfigurationStore.list.filter((it) => it.enabled && it.hidden !== true && it.system !== true)
+  )
 </script>
 
 <div class="hulyComponent">
@@ -39,6 +53,7 @@
       <div class="flex-row-center flex-wrap gap-around-4">
         {#each $pluginConfigurationStore.list as config}
           {#if config.hidden !== true && config.system !== true}
+            {@const pluginRating = getRaiting(totalVisible, sysRating, [config])}
             <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
               <div class="flex-row-center">
                 <span class="mr-2">
@@ -46,6 +61,10 @@
                 </span>
                 <span class="fs-title">
                   <Label label={config.label} />
+
+                  {#if hasResource(ratingPlugin.component.RatingRing)}
+                    - ({pluginRating}%)
+                  {/if}
                 </span>
               </div>
               {#if config.description}

@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import contact, { SocialIdentity, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
+  import { SocialIdentityPresenter } from '@hcengineering/contact-resources'
   import {
     getCurrentAccount,
     loginSocialTypes,
@@ -21,19 +22,20 @@
     setCurrentAccount,
     SocialId
   } from '@hcengineering/core'
-  import { Button, getPlatformColorDef, Label, PaletteColorIndexes, showPopup, themeStore } from '@hcengineering/ui'
-  import contact, { SocialIdentity, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
-  import { SocialIdentityPresenter } from '@hcengineering/contact-resources'
-  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import { getPlatformColorDef, Label, PaletteColorIndexes, showPopup, themeStore } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import setting from '../../plugin'
   import { getAccountClient } from '../../utils'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let socialId: SocialId
   export let socialIdProvider: SocialIdentityProvider
   export let canRelease: boolean = false
+  export let socialIdRating: number | undefined = undefined
+  export let socialIdRatingTotal: number | undefined = undefined
 
   const client = getClient()
   const accountClient = getAccountClient()
@@ -115,6 +117,12 @@
 
 <div class="flex-row-center flex-gap-2 root">
   <SocialIdentityPresenter value={socialIdentity} {socialIdProvider} />
+
+  {#if socialIdRating != null && socialIdRatingTotal != null && socialIdRatingTotal > 0}
+    <div class="on-hover">
+      {Math.round((socialIdRating / socialIdRatingTotal) * 100)}%
+    </div>
+  {/if}
 
   <div class="flex-grow" />
 

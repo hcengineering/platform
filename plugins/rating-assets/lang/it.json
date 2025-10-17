@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Valutazione",
+    "RatingWidgetEmpty": "Non ci sono ancora documenti contrassegnati con una stella. Per vederli qui, aggiungi una stella a un documento (clicca sulla reazione a stella su un documento).",
+    "RatingWidget": "Widget di valutazione",
+    "Level": "Livello",
+    "MonthOps": "{month}: {ops} operazioni",
+    "MonthNoOps": "{month}, nessuna operazione",
+    "AddStar": "Aggiungi stella",
+    "AddStarAria": "Aggiungi reazione stella"
+  }
+}

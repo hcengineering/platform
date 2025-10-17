@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   generateId,
   getCurrentAccount,
   type Class,
@@ -31,8 +31,8 @@ import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDocument from './components/CreateDocument.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
-import DocumentItem from './components/DocumentItem.svelte'
 import DocumentInlineEditor from './components/DocumentInlineEditor.svelte'
+import DocumentItem from './components/DocumentItem.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
@@ -110,23 +110,6 @@ async function _createDocument (id: Ref<Document>, space: Ref<Teamspace>, parent
 async function editTeamspace (teamspace: Teamspace | undefined): Promise<void> {
   if (teamspace !== undefined) {
     showPopup(CreateTeamspace, { teamspace })
-  }
-}
-
-export async function starDocument (doc: Document): Promise<void> {
-  const client = getClient()
-
-  await client.createDoc(document.class.SavedDocument, core.space.Workspace, {
-    attachedTo: doc._id
-  })
-}
-
-export async function unstarDocument (doc: Document): Promise<void> {
-  const client = getClient()
-
-  const current = await client.findOne(document.class.SavedDocument, { attachedTo: doc._id })
-  if (current !== undefined) {
-    await client.remove(current)
   }
 }
 

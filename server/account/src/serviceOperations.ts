@@ -921,11 +921,13 @@ export async function findFullSocialIds (
 ): Promise<SocialId[]> {
   const { socialIds } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['gmail', 'tool', 'workspace', 'huly-mail'], extra)
+  verifyAllowedServices(['gmail', 'tool', 'workspace', 'huly-mail', 'rating'], extra)
 
   if (socialIds == null || socialIds.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  // Add validation to social Ids
 
   return await db.socialId.find({ _id: { $in: socialIds } })
 }

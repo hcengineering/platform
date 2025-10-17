@@ -124,6 +124,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceName, workspaceLoginInfo.name ?? workspaceLoginInfo.workspaceUrl)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)

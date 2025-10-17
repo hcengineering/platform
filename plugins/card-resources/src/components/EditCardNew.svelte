@@ -32,7 +32,12 @@
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import presence from '@hcengineering/presence'
-  import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    createNotificationContextsQuery,
+    getClient,
+    ComponentExtensions
+  } from '@hcengineering/presentation'
   import { showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
@@ -188,6 +193,10 @@
           {doc.title}
         {/if}
       </div>
+      <ComponentExtensions
+        extension={view.extensions.EditDocTitleExtension}
+        props={{ size: 'medium', kind: 'ghost', _id, _class: doc._class, value: doc, readonly }}
+      />
     </svelte:fragment>
 
     <svelte:fragment slot="presence">

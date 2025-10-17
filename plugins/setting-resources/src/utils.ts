@@ -1,18 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
 import contact, { getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
-import { type IntegrationKind, type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import login from '@hcengineering/login'
-import presentation, { getClient } from '@hcengineering/presentation'
-import setting from '@hcengineering/setting'
-import { type TemplateDataProvider } from '@hcengineering/templates'
-import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
-import { get } from 'svelte/store'
+import {
+  type Class,
+  type Doc,
+  type Hierarchy,
+  type IntegrationKind,
+  type PluginConfiguration,
+  type Ref
+} from '@hcengineering/core'
 import {
   getIntegrationClient as getIntegrationClientRaw,
   type IntegrationClient
 } from '@hcengineering/integration-client'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import presentation, { getClient } from '@hcengineering/presentation'
+import type { PersonRating } from '@hcengineering/rating'
+import setting from '@hcengineering/setting'
+import { type TemplateDataProvider } from '@hcengineering/templates'
+import { get } from 'svelte/store'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   let ancestors = [p._id]

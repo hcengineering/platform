@@ -562,23 +562,23 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped
-#  translate:
-#    image: hardcoreeng/translate
-#    extra_hosts:
-#      - 'huly.local:host-gateway'
-#    depends_on:
-#      redpanda:
-#        condition: service_started
-#      account:
-#        condition: service_started
-#    environment:
-#      - SECRET=secret
-#      - ACCOUNTS_URL=http://huly.local:3000
-#      - HULYLAKE_URL=http://huly.local:8096
-#      - QUEUE_CONFIG=${QUEUE_CONFIG}
-#      - QUEUE_REGION=cockroach
-#      - OPENAI_API_KEY=
-#    restart: unless-stopped
+  #  translate:
+  #    image: hardcoreeng/translate
+  #    extra_hosts:
+  #      - 'huly.local:host-gateway'
+  #    depends_on:
+  #      redpanda:
+  #        condition: service_started
+  #      account:
+  #        condition: service_started
+  #    environment:
+  #      - SECRET=secret
+  #      - ACCOUNTS_URL=http://huly.local:3000
+  #      - HULYLAKE_URL=http://huly.local:8096
+  #      - QUEUE_CONFIG=${QUEUE_CONFIG}
+  #      - QUEUE_REGION=cockroach
+  #      - OPENAI_API_KEY=
+  #    restart: unless-stopped
   backup-cockroach:
     image: hardcoreeng/backup
     extra_hosts:
@@ -628,6 +628,32 @@ services:
       - BUCKET_NAME=backups
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+
+  rating_cockroach:
+    image: hardcoreeng/rating
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - account
+      - stats
+    depends_on:
+      redpanda:
+        condition: service_started
+    environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - REGION=cockroach
+      - SERVER_SECRET=secret
+      - STATS_URL=http://huly.local:4900
+      - DB_URL=${DB_CR_URL}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://huly.local:3000
+      - COMMUNICATION_TIME_LOGGING_ENABLED=true
+      - COMMUNICATION_API_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HYLYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
   jaeger:
     image: jaegertracing/all-in-one:latest

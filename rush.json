@@ -2420,6 +2420,36 @@
       "packageName": "@hcengineering/pod-translate",
       "projectFolder": "services/translate",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/rating",
+      "projectFolder": "plugins/rating",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/rating-assets",
+      "projectFolder": "plugins/rating-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/rating-resources",
+      "projectFolder": "plugins/rating-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-rating",
+      "projectFolder": "server-plugins/rating",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-rating",
+      "projectFolder": "models/rating",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-rating",
+      "projectFolder": "services/rating",
+      "shouldPublish": false
     }
   ]
 }

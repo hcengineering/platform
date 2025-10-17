@@ -82,6 +82,7 @@ import communication, { communicationId } from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
 import { hulyMailId } from '@hcengineering/huly-mail'
 import { aiAssistantId } from '@hcengineering/ai-assistant'
+import { ratingId } from '@hcengineering/rating'
 import billingPlugin, { billingId } from '@hcengineering/billing'
 
 import '@hcengineering/activity-assets'
@@ -142,6 +143,7 @@ import '@hcengineering/communication-assets'
 import '@hcengineering/billing-assets'
 import '@hcengineering/huly-mail-assets'
 import '@hcengineering/ai-assistant-assets'
+import '@hcengineering/rating-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
@@ -266,6 +268,7 @@ function configureI18n (): void {
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
   addStringsLoader(hulyMailId, async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`))
   addStringsLoader(aiAssistantId, async (lang: string) => await import(`@hcengineering/ai-assistant-assets/lang/${lang}.json`))
+  addStringsLoader(ratingId, async (lang: string) => await import(`@hcengineering/rating-assets/lang/${lang}.json`))
 }
 
 export class PlatformBranding {
@@ -444,6 +447,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(billingId, () => import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources'))
   addLocation(hulyMailId, () => import(/* webpackChunkName: "huly-mail" */ '@hcengineering/huly-mail-resources'))
   addLocation(aiAssistantId, () => import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources'))
+  addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

@@ -115,7 +115,9 @@
     "ExecutionInitiator": "Iniciátor provedení",
     "ExecutionStarted": "Provedení spuštěno",
     "Filter": "Filtr",
-    "FirstMatchValue": "První odpovídající hodnota"
+    "FirstMatchValue": "První odpovídající hodnota",
+    "ConfigLabel": "Konfigurace procesů",
+    "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů."
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

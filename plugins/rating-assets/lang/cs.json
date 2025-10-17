@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Hodnocení",
+    "RatingWidgetEmpty": "Zatím nejsou žádné označené dokumenty. Chcete-li zde zobrazit položky, přidejte hvězdu k dokumentu (klikněte na reakci hvězdy u libovolného dokumentu).",
+    "RatingWidget": "Widget hodnocení",
+    "Level": "Úroveň",
+    "MonthOps": "{month}: {ops} operací",
+    "MonthNoOps": "{month}, žádné operace",
+    "AddStar": "Přidat hvězdu",
+    "AddStarAria": "Přidat reakci hvězdy"
+  }
+}

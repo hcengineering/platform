@@ -13,14 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, loginSocialTypes, notEmpty, SocialIdType } from '@hcengineering/core'
-  import { FocusHandler, createFocusManager, showPopup, Label, Button, Menu, Action, Scroller } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
   import contact from '@hcengineering/contact'
+  import { getCurrentAccount, loginSocialTypes, notEmpty, SocialIdType } from '@hcengineering/core'
+  import { getClient, hasResource } from '@hcengineering/presentation'
+  import { Action, Button, createFocusManager, FocusHandler, Label, Menu, Scroller, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  import SocialIdRow from './SocialIdRow.svelte'
+  import type { PersonRating } from '@hcengineering/rating'
+  import ratingPlugin from '@hcengineering/rating'
   import setting from '../../plugin'
+  import SocialIdRow from './SocialIdRow.svelte'
+
+  export let rating: PersonRating | undefined
 
   let account = getCurrentAccount()
   const manager = createFocusManager()
@@ -59,6 +63,9 @@
   function handleAccountUpdated (): void {
     account = getCurrentAccount()
   }
+
+  $: socialIdRatingTotal =
+    rating != null ? Object.values(rating?.socialIds ?? {}).reduce((sum, val) => sum + (val ?? 0), 0) : 0
 </script>
 
 <FocusHandler {manager} />
@@ -80,8 +87,19 @@
               ? !onlyLogin
               : true}
         {#if socialIdProvider != null && socialId.type !== SocialIdType.HULY}
+          {@const socialIdRating =
+            rating != null && hasResource(ratingPlugin.component.RatingRing)
+              ? rating.socialIds?.[socialId?._id]
+              : undefined}
           <div class="item">
-            <SocialIdRow {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
+            <SocialIdRow
+              {socialId}
+              {socialIdProvider}
+              {canRelease}
+              on:released={handleAccountUpdated}
+              {socialIdRating}
+              {socialIdRatingTotal}
+            />
           </div>
         {/if}
       {/each}
