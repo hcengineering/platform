@@ -574,8 +574,8 @@ export interface ClientSessionCtx {
 // Will add some values to global one second counters map
 //
 export interface OneSecondCounters {
-  // Will add value, and then done is called, value will be returned
-  add: (counter: string, count: number) => void
+  // Will increment and decrement on any issue or timeout.
+  withCounter: <T>(counter: string, count: number, op: () => Promise<T>) => Promise<T>
 }
 
 /**
@@ -716,7 +716,7 @@ export type SessionHealth = 'healthy' | 'degraded' | 'unhealthy'
 /**
  * @public
  */
-export interface SessionManager extends OneSecondCounters {
+export interface SessionManager {
   // workspaces: Map<WorkspaceUuid, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 

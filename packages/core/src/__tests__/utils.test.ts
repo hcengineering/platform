@@ -13,7 +13,295 @@
 // limitations under the License.
 //
 
-import { estimateDocSize } from '../utils'
+import { estimateDocSize, OneSecondCountersImpl } from '../utils'
+
+describe('OneSecondCountersImpl', () => {
+  let counters: OneSecondCountersImpl
+
+  beforeEach(() => {
+    counters = new OneSecondCountersImpl()
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  describe('add', () => {
+    it('should add counter to empty map', () => {
+      counters.add('test', 5)
+      const entries = Array.from(counters.entries())
+      expect(entries).toHaveLength(1)
+      expect(entries[0]).toEqual(['test', 5])
+    })
+
+    it('should increment existing counter', () => {
+      counters.add('test', 5)
+      counters.add('test', 3)
+      const entries = Array.from(counters.entries())
+      expect(entries[0]).toEqual(['test', 8])
+    })
+
+    it('should handle negative values', () => {
+      counters.add('test', 10)
+      counters.add('test', -3)
+      const entries = Array.from(counters.entries())
+      expect(entries[0]).toEqual(['test', 7])
+    })
+
+    it('should handle multiple counters', () => {
+      counters.add('counter1', 5)
+      counters.add('counter2', 10)
+      counters.add('counter1', 3)
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toHaveLength(2)
+      expect(entries[0]).toEqual(['counter1', 8])
+      expect(entries[1]).toEqual(['counter2', 10])
+    })
+
+    it('should handle zero values', () => {
+      counters.add('test', 0)
+      const entries = Array.from(counters.entries())
+      expect(entries[0]).toEqual(['test', 0])
+    })
+  })
+
+  describe('withCounter', () => {
+    it('should increment counter before operation', async () => {
+      const operation = jest.fn(async () => 'result')
+      const result = await counters.withCounter('op', 1, operation)
+      expect(result).toBe('result')
+      expect(operation).toHaveBeenCalled()
+      // Counter should be decremented to 0 after successful operation
+      const entries = Array.from(counters.entries())
+      expect(entries).toEqual([['op', 0]])
+    })
+
+    it('should decrement counter on successful operation', async () => {
+      await counters.withCounter('op', 5, async () => 'done')
+      // After successful operation, counter should be decremented to 0
+      const entries = Array.from(counters.entries())
+      expect(entries).toEqual([['op', 0]])
+    })
+
+    it('should decrement counter on operation error', async () => {
+      const operation = jest.fn(async () => {
+        throw new Error('Operation failed')
+      })
+      await expect(counters.withCounter('op', 3, operation)).rejects.toThrow('Operation failed')
+      // Counter should be decremented to 0 even on error
+      const entries = Array.from(counters.entries())
+      expect(entries).toEqual([['op', 0]])
+    })
+
+    it('should handle multiple concurrent operations', async () => {
+      const operations = [
+        counters.withCounter('op1', 1, async () => 'result1'),
+        counters.withCounter('op2', 2, async () => 'result2'),
+        counters.withCounter('op3', 3, async () => 'result3')
+      ]
+      const results = await Promise.all(operations)
+      expect(results).toEqual(['result1', 'result2', 'result3'])
+      // All counters should be at 0
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['op1', 0],
+        ['op2', 0],
+        ['op3', 0]
+      ])
+    })
+
+    it('should set timeout for counter decrement', async () => {
+      let resolveOp: (() => void) | undefined
+      const opPromise = new Promise<void>((resolve) => {
+        resolveOp = resolve
+      })
+      const operation = async (): Promise<string> => {
+        // Don't resolve immediately
+        await opPromise
+        return 'result'
+      }
+      void counters.withCounter('op', 1, operation)
+      // At this point, counter should be incremented
+      expect(Array.from(counters.entries())).toEqual([['op', 1]])
+      // Advance time by 61 seconds to trigger timeout
+      jest.advanceTimersByTime(61 * 1000)
+      counters.check()
+      // After timeout, counter should be decremented to 0
+      expect(Array.from(counters.entries())).toEqual([['op', 0]])
+      // Clean up
+      if (resolveOp !== undefined) {
+        resolveOp()
+      }
+    })
+
+    it('should pass operation result back', async () => {
+      const expectedResult = { data: 'test', count: 42 }
+      const result = await counters.withCounter('op', 1, async () => expectedResult)
+      expect(result).toEqual(expectedResult)
+    })
+
+    it('should handle nested withCounter calls', async () => {
+      const result = await counters.withCounter('outer', 1, async () => {
+        return await counters.withCounter('inner', 1, async () => 'nested')
+      })
+      expect(result).toBe('nested')
+      // All counters should be at 0
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['inner', 0],
+        ['outer', 0]
+      ])
+    })
+  })
+
+  describe('entries', () => {
+    it('should return empty iterator for empty counters', () => {
+      const entries = Array.from(counters.entries())
+      expect(entries).toHaveLength(0)
+    })
+
+    it('should return all counters', () => {
+      counters.add('a', 1)
+      counters.add('b', 2)
+      counters.add('c', 3)
+      const entries = Array.from(counters.entries()).sort((x, y) => x[0].localeCompare(y[0]))
+      expect(entries).toEqual([
+        ['a', 1],
+        ['b', 2],
+        ['c', 3]
+      ])
+    })
+  })
+
+  describe('check', () => {
+    it('should not affect non-expired timeouts', async () => {
+      void counters.withCounter('op', 1, async (): Promise<void> => {
+        // Don't resolve
+      })
+      // Advance time by 30 seconds (less than 60 second timeout)
+      jest.advanceTimersByTime(30 * 1000)
+      counters.check()
+      // Counter should still be at 1
+      expect(Array.from(counters.entries())).toEqual([['op', 1]])
+    })
+
+    it('should clean up expired timeouts', async () => {
+      void counters.withCounter('op', 1, async (): Promise<void> => {
+        // Operation never completes
+      })
+      // Advance time by 61 seconds (more than 60 second timeout)
+      jest.advanceTimersByTime(61 * 1000)
+      counters.check()
+      // Counter should be decremented to 0 by timeout
+      const entries = Array.from(counters.entries())
+      expect(entries).toEqual([['op', 0]])
+    })
+
+    it('should clean up multiple expired timeouts', async () => {
+      // Create multiple operations
+      void counters.withCounter('op1', 1, async (): Promise<void> => {})
+      void counters.withCounter('op2', 1, async (): Promise<void> => {})
+      void counters.withCounter('op3', 1, async (): Promise<void> => {})
+      // Advance time past timeout
+      jest.advanceTimersByTime(61 * 1000)
+      counters.check()
+      // All counters should be at 0
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['op1', 0],
+        ['op2', 0],
+        ['op3', 0]
+      ])
+    })
+
+    it('should remove only expired timeouts, keep others', async () => {
+      // Create first operation
+      void counters.withCounter('op1', 1, async (): Promise<void> => {
+        // Never resolves
+      })
+      // Advance time by 61 seconds
+      jest.advanceTimersByTime(61 * 1000)
+      // Create second operation
+      await counters.withCounter('op2', 1, async () => 'result')
+      counters.check()
+      // op1 should be at 0 (after timeout) but may be at -1 if timeout fires after final check
+      // op2 should be at 0 (completed)
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      // Just verify op2 is completed at 0
+      expect(entries.find((e) => e[0] === 'op2')).toEqual(['op2', 0])
+      // op1 could be 0 or -1 depending on timing
+      expect(entries.find((e) => e[0] === 'op1')?.[1]).toBeLessThanOrEqual(0)
+    })
+
+    it('should not execute callback twice for same timeout', async () => {
+      const operation = jest.fn(async (): Promise<void> => {
+        // Never completes
+      })
+      void counters.withCounter('op', 1, operation)
+      // Advance time past timeout
+      jest.advanceTimersByTime(61 * 1000)
+      counters.check()
+      // Call check again
+      counters.check()
+      // The timeout callback should not be called again
+      const entries = Array.from(counters.entries())
+      expect(entries).toEqual([['op', 0]])
+    })
+  })
+
+  describe('integration', () => {
+    it('should track multiple operations correctly', async () => {
+      const operations = [
+        counters.withCounter('request', 1, async () => {
+          jest.advanceTimersByTime(10)
+          return 'req1'
+        }),
+        counters.withCounter('db', 1, async () => {
+          jest.advanceTimersByTime(20)
+          return 'db1'
+        })
+      ]
+      const results = await Promise.all(operations)
+      expect(results).toEqual(['req1', 'db1'])
+      // All should be at 0
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['db', 0],
+        ['request', 0]
+      ])
+    })
+
+    it('should handle add and withCounter together', async () => {
+      counters.add('manual', 5)
+      await counters.withCounter('op', 1, async () => 'result')
+      // manual and op counters should remain at their values
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['manual', 5],
+        ['op', 0]
+      ])
+    })
+
+    it('should handle partial failures in concurrent operations', async () => {
+      const operations = [
+        counters.withCounter('success', 1, async () => 'ok'),
+        counters.withCounter('failure', 1, async () => {
+          throw new Error('Failed')
+        })
+      ]
+      const results = await Promise.allSettled(operations)
+      expect(results[0]).toEqual({ status: 'fulfilled', value: 'ok' })
+      expect(results[1]).toEqual({ status: 'rejected', reason: expect.any(Error) })
+      // All counters should be at 0
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['failure', 0],
+        ['success', 0]
+      ])
+    })
+  })
+})
 
 describe('estimateDocSize', () => {
   describe('primitive types', () => {

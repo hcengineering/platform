@@ -1831,4 +1831,166 @@ describe('TSessionManager', () => {
       expect(sessionManager.hungRequestsFailPercent).toBeGreaterThan(0)
     })
   })
+
+  describe('OneSecondCounters integration', () => {
+    it('should initialize counters on session manager creation', () => {
+      expect(sessionManager.counters).toBeDefined()
+      expect(typeof sessionManager.counters.entries).toBe('function')
+      expect(typeof sessionManager.counters.add).toBe('function')
+      expect(typeof sessionManager.counters.check).toBe('function')
+      expect(typeof sessionManager.counters.withCounter).toBe('function')
+    })
+
+    it('should track addSession counter during session addition', async () => {
+      const result = sessionManager.counters.withCounter('addSession', 1, async () => {
+        // Simulate addSession behavior
+        const counter = [...sessionManager.counters.entries()].find((e) => e[0] === 'addSession')
+        expect(counter).toBeDefined()
+        expect(counter?.[1]).toBe(1)
+        return 'session-id'
+      })
+
+      const value = await result
+      expect(value).toBe('session-id')
+      // After successful operation, counter should be at 0
+      const finalCounter = [...sessionManager.counters.entries()].find((e) => e[0] === 'addSession')
+      expect(finalCounter).toEqual(['addSession', 0])
+    })
+
+    it('should track startWorkspace counter during workspace initialization', async () => {
+      const result = sessionManager.counters.withCounter('startWorkspace', 1, async () => {
+        // Verify counter is incremented
+        const counter = [...sessionManager.counters.entries()].find((e) => e[0] === 'startWorkspace')
+        expect(counter).toBeDefined()
+        expect(counter?.[1]).toBe(1)
+        return 'workspace-context'
+      })
+
+      const value = await result
+      expect(value).toBe('workspace-context')
+      // After successful operation, counter should be at 0
+      const finalCounter = [...sessionManager.counters.entries()].find((e) => e[0] === 'startWorkspace')
+      expect(finalCounter).toEqual(['startWorkspace', 0])
+    })
+
+    it('should track request counter during request processing', async () => {
+      const result = sessionManager.counters.withCounter('request', 1, async () => {
+        // Verify counter is incremented
+        const counter = [...sessionManager.counters.entries()].find((e) => e[0] === 'request')
+        expect(counter).toBeDefined()
+        expect(counter?.[1]).toBe(1)
+        return 'request-result'
+      })
+
+      const value = await result
+      expect(value).toBe('request-result')
+      // After successful operation, counter should be at 0
+      const finalCounter = [...sessionManager.counters.entries()].find((e) => e[0] === 'request')
+      expect(finalCounter).toEqual(['request', 0])
+    })
+
+    it('should properly clean up counter on request failure', async () => {
+      const result = sessionManager.counters
+        .withCounter('request', 1, async () => {
+          throw new Error('Request failed')
+        })
+        .catch(() => {
+          // Expected error
+        })
+
+      await result
+      // Counter should be at 0 even on failure
+      const finalCounter = [...sessionManager.counters.entries()].find((e) => e[0] === 'request')
+      expect(finalCounter).toEqual(['request', 0])
+    })
+
+    it('should handle multiple concurrent counters', async () => {
+      const operations = [
+        sessionManager.counters.withCounter('request', 1, async () => 'result1'),
+        sessionManager.counters.withCounter('request', 1, async () => 'result2'),
+        sessionManager.counters.withCounter('addSession', 1, async () => 'session1')
+      ]
+
+      const results = await Promise.all(operations)
+      expect(results).toEqual(['result1', 'result2', 'session1'])
+
+      // All counters should be at 0
+      const entries = Array.from(sessionManager.counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['addSession', 0],
+        ['request', 0]
+      ])
+    })
+
+    it('should expose counter entries for monitoring', () => {
+      sessionManager.counters.add('test-counter', 5)
+      const entries = Array.from(sessionManager.counters.entries())
+      expect(entries).toContainEqual(['test-counter', 5])
+    })
+
+    it('should allow counter check for timeout cleanup', () => {
+      sessionManager.counters.add('test', 1)
+      expect(Array.from(sessionManager.counters.entries())).toHaveLength(1)
+
+      // Call check to process any timeouts
+      sessionManager.counters.check()
+      // Manual counters should remain
+      expect(Array.from(sessionManager.counters.entries())).toHaveLength(1)
+    })
+
+    it('should increment counter before operation in withCounter', async () => {
+      const stateChanges: string[] = []
+      const operation = async (): Promise<void> => {
+        const entries = Array.from(sessionManager.counters.entries())
+        const counter = entries.find((e) => e[0] === 'tracked')
+        if (counter !== undefined) {
+          stateChanges.push(`counter-exists:${counter[1]}`)
+        }
+      }
+
+      await sessionManager.counters.withCounter('tracked', 1, operation)
+      // Verify counter was present during operation
+      expect(stateChanges).toContain('counter-exists:1')
+    })
+
+    it('should decrement counter after successful operation', async () => {
+      const counterBefore = Array.from(sessionManager.counters.entries()).filter((e) => e[1] !== 0).length
+      await sessionManager.counters.withCounter('op', 1, async () => 'done')
+      const counterAfter = Array.from(sessionManager.counters.entries()).filter((e) => e[1] !== 0).length
+      expect(counterAfter).toBe(counterBefore)
+    })
+
+    it('should track multiple operation types separately', async () => {
+      const operations = [
+        sessionManager.counters.withCounter('request', 1, async () => 'req'),
+        sessionManager.counters.withCounter('startWorkspace', 1, async () => 'ws'),
+        sessionManager.counters.withCounter('addSession', 1, async () => 'session')
+      ]
+
+      const results = await Promise.all(operations)
+      expect(results).toEqual(['req', 'ws', 'session'])
+
+      // All should be at 0
+      const entries = Array.from(sessionManager.counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['addSession', 0],
+        ['request', 0],
+        ['startWorkspace', 0]
+      ])
+    })
+
+    it('should properly handle counter increment/decrement on mixed operations', async () => {
+      sessionManager.counters.add('manual', 3)
+      await sessionManager.counters.withCounter('op1', 1, async () => 'result1')
+      await sessionManager.counters.withCounter('op2', 2, async () => 'result2')
+
+      // manual is at 3, op1 at 0, op2 at 0
+      const entries = Array.from(sessionManager.counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      expect(entries).toEqual([
+        ['manual', 3],
+        ['op1', 0],
+        ['op2', 0]
+      ])
+    })
+  })
 })

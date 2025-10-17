@@ -131,13 +131,15 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    this.counter.add('loadModel', 1)
     try {
       this.includeSessionContext(ctx)
-      const result = await ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash)
+      const result = await this.counter.withCounter('loadModel', 1, () =>
+        ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash)
+      )
 
-      this.counter.add('clientSendMemory', estimateDocSize(result))
-      await ctx.sendResponse(ctx.requestId, result)
+      await this.counter.withCounter('clientSendMemory', this.estimateSize(result), () =>
+        ctx.sendResponse(ctx.requestId, result)
+      )
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to loadModel', unknownError(err))
       ctx.ctx.error('failed to loadModel', { err })
@@ -196,17 +198,25 @@ export class ClientSession implements Session {
     return ctx.pipeline.findAll(ctx.ctx, _class, query, options)
   }
 
+  estimateSize (doc: any): number {
+    return Math.round((estimateDocSize(doc) * 10) / (1024 * 1024)) / 10
+  }
+
   async findAll<T extends Doc>(
     ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
-    this.counter.add('find-' + (ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''), 1)
+    const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
     try {
-      const result = await this.findAllRaw(ctx, _class, query, options)
-      this.counter.add('clientSendMemory', Math.round((estimateDocSize(result) * 10) / (1024 * 1024)) / 10)
-      await ctx.sendResponse(ctx.requestId, result)
+      const result = await this.counter.withCounter('find-' + domain, 1, () =>
+        this.findAllRaw(ctx, _class, query, options)
+      )
+
+      await this.counter.withCounter('clientSendMemory', this.estimateSize(result), () =>
+        ctx.sendResponse(ctx.requestId, result)
+      )
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
       ctx.ctx.error('failed to findAll', { err })
@@ -214,11 +224,15 @@ export class ClientSession implements Session {
   }
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
-    this.counter.add('fulltext', 1)
     try {
       this.lastRequest = Date.now()
       this.includeSessionContext(ctx)
-      await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
+      const result = await this.counter.withCounter('fulltext', 1, () =>
+        ctx.pipeline.searchFulltext(ctx.ctx, query, options)
+      )
+      await this.counter.withCounter('clientSendMemory', this.estimateSize(result), () =>
+        ctx.sendResponse(ctx.requestId, result)
+      )
     } catch (err) {
       await ctx.sendError(ctx.requestId, 'Failed to searchFulltext', unknownError(err))
       ctx.ctx.error('failed to searchFulltext', { err })
@@ -282,23 +296,22 @@ export class ClientSession implements Session {
   }
 
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
-    this.counter.add(
-      'tx-' +
-        (ctx.pipeline.context.hierarchy.findDomain(
-          TxProcessor.isExtendsCUD(tx._class) ? (tx as TxCUD<Doc>).objectClass : tx._class
-        ) ?? ''),
-      1
-    )
-    try {
-      const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
-      await broadcastPromise
-      if (asyncsPromise !== undefined) {
-        await asyncsPromise
+    const domain =
+      ctx.pipeline.context.hierarchy.findDomain(
+        TxProcessor.isExtendsCUD(tx._class) ? (tx as TxCUD<Doc>).objectClass : tx._class
+      ) ?? ''
+    await this.counter.withCounter('tx-' + domain, 1, async () => {
+      try {
+        const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
+        await broadcastPromise
+        if (asyncsPromise !== undefined) {
+          await asyncsPromise
+        }
+      } catch (err) {
+        await ctx.sendError(ctx.requestId, 'Failed to tx', unknownError(err))
+        ctx.ctx.error('failed to tx', { err })
       }
-    } catch (err) {
-      await ctx.sendError(ctx.requestId, 'Failed to tx', unknownError(err))
-      ctx.ctx.error('failed to tx', { err })
-    }
+    })
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
@@ -414,19 +427,20 @@ export class ClientSession implements Session {
 
   async domainRequest (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.counter.add('dr-' + domain, 1)
-    try {
-      const { asyncsPromise, broadcastPromise } = await this.domainRequestRaw(ctx, domain, params)
+    await this.counter.withCounter('dr-' + domain, 1, async () => {
+      try {
+        const { asyncsPromise, broadcastPromise } = await this.domainRequestRaw(ctx, domain, params)
 
-      await broadcastPromise
+        await broadcastPromise
 
-      if (asyncsPromise !== undefined) {
-        await asyncsPromise
+        if (asyncsPromise !== undefined) {
+          await asyncsPromise
+        }
+      } catch (err) {
+        await ctx.sendError(ctx.requestId, 'Failed to domainRequest', unknownError(err))
+        ctx.ctx.error('failed to domainRequest', { err })
       }
-    } catch (err) {
-      await ctx.sendError(ctx.requestId, 'Failed to domainRequest', unknownError(err))
-      ctx.ctx.error('failed to domainRequest', { err })
-    }
+    })
   }
 
   async domainRequestRaw (
@@ -444,7 +458,10 @@ export class ClientSession implements Session {
     this.includeSessionContext(ctx)
 
     const result: DomainResult = await ctx.pipeline.domainRequest(ctx.ctx, domain, params)
-    await ctx.sendResponse(ctx.requestId, result)
+
+    await this.counter.withCounter('clientSendMemory', this.estimateSize(result), () =>
+      ctx.sendResponse(ctx.requestId, result)
+    )
     // We need to broadcast all collected transactions
     const broadcastPromise = ctx.pipeline.handleBroadcast(ctx.ctx)
 

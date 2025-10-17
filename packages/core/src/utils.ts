@@ -1,11 +1,13 @@
 import core, {
-  type AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
+  platformNow,
   systemAccount,
+  toFindResult,
   type Account,
+  type AccountRole,
   type AccountUuid,
   type BackupClient,
   type BrandingMap,
@@ -24,6 +26,7 @@ import core, {
   type MeasureContext,
   type ModelDb,
   type OperationDomain,
+  type PermissionsGrant,
   type PersonId,
   type Ref,
   type SearchResult,
@@ -31,16 +34,14 @@ import core, {
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIds,
-  type PermissionsGrant,
-  toFindResult
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
 import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
-import type { Pipeline } from './types'
+import type { OneSecondCounters, Pipeline } from './types'
 
 /**
  * Return some estimation for object size
@@ -425,5 +426,50 @@ export async function calcHashHash (ctx: MeasureContext, domain: Domain, adapter
     return hash.digest('hex')
   } finally {
     await it.close(ctx)
+  }
+}
+
+export class OneSecondCountersImpl implements OneSecondCounters {
+  private readonly counters = new Map<string, number>()
+  private counterTimeouts: [number, () => void][] = []
+
+  add (counter: string, count: number): void {
+    this.counters.set(counter, (this.counters.get(counter) ?? 0) + count)
+  }
+
+  async withCounter<T>(counter: string, count: number, op: () => Promise<T>): Promise<T> {
+    this.add(counter, count)
+    let cleared = false
+    this.counterTimeouts.push([
+      platformNow() + 60 * 1000, // One minute timeout
+      () => {
+        if (!cleared) {
+          this.add(counter, -count)
+        }
+        cleared = true
+      }
+    ])
+    try {
+      return await op()
+    } finally {
+      if (!cleared) {
+        this.add(counter, -count)
+      }
+    }
+  }
+
+  entries (): MapIterator<[string, number]> {
+    return this.counters.entries()
+  }
+
+  check (): void {
+    // Check for timeouts
+    const now = platformNow()
+    for (const [timeout, cb] of this.counterTimeouts) {
+      if (timeout < now) {
+        cb()
+      }
+    }
+    this.counterTimeouts = this.counterTimeouts.filter((it) => it[0] >= now)
   }
 }

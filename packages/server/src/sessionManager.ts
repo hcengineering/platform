@@ -67,6 +67,7 @@ import {
   type ConsumerHandle,
   type GetWorkspaceResponse,
   LOGGING_ENABLED,
+  OneSecondCountersImpl,
   pingConst,
   type Pipeline,
   type PipelineFactory,
@@ -132,6 +133,7 @@ export class TSessionManager implements SessionManager {
   hungSessionsWarnPercent = parseInt(process.env.HUNG_SESSIONS_WARN_PERCENT ?? '25')
   hungSessionsFailPercent = parseInt(process.env.HUNG_SESSIONS_FAIL_PERCENT ?? '75')
   hungRequestsFailPercent = parseInt(process.env.HUNG_REQUESTS_PERCENT ?? '50')
+  counters = new OneSecondCountersImpl()
 
   constructor (
     readonly ctx: MeasureContext,
@@ -255,12 +257,6 @@ export class TSessionManager implements SessionManager {
     return { sys, user, anonymous }
   }
 
-  counters = new Map<string, number>()
-
-  add (counter: string, count: number): void {
-    this.counters.set(counter, (this.counters.get(counter) ?? 0) + count)
-  }
-
   private handleWorkspaceTick (): void {
     this.ctx.measure('sessions', this.sessions.size, true)
 
@@ -271,8 +267,8 @@ export class TSessionManager implements SessionManager {
       // Send extra counters and clear them to collect again
       for (const [c, v] of [...this.counters.entries()]) {
         this.ctx.measure('_' + c, v, true)
-        this.counters.set(c, 0)
       }
+      this.counters.check()
     }
 
     if (this.ticks % (60 * ticksPerSecond) === 0) {
@@ -442,7 +438,7 @@ export class TSessionManager implements SessionManager {
       },
       info,
       token.extra?.mode === 'backup',
-      this
+      this.counters
     )
   }
 
@@ -683,105 +679,106 @@ export class TSessionManager implements SessionManager {
     rawToken: string,
     sessionId: string | undefined
   ): Promise<AddSessionResponse> {
-    return await ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
-      this.add('addSession', 1)
-      let account: LoginInfoWithWorkspaces | undefined
+    return await this.counters.withCounter('addSession', 1, () =>
+      ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
+        let account: LoginInfoWithWorkspaces | undefined
 
-      try {
-        if (token.account === undefined) {
-          return { error: UNAUTHORIZED, terminate: true }
+        try {
+          if (token.account === undefined) {
+            return { error: UNAUTHORIZED, terminate: true }
+          }
+          account =
+            token.account === systemAccountUuid ? this.sysAccount : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
+        } catch (err: any) {
+          return { error: err }
         }
-        account =
-          token.account === systemAccountUuid ? this.sysAccount : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
-      } catch (err: any) {
-        return { error: err }
-      }
 
-      if (account === undefined) {
-        return { error: new Error('Account not found or not available'), terminate: true }
-      }
+        if (account === undefined) {
+          return { error: new Error('Account not found or not available'), terminate: true }
+        }
 
-      let wsInfo = account.workspaces[token.workspace]
+        let wsInfo = account.workspaces[token.workspace]
 
-      if (wsInfo === undefined) {
-        // In case of guest or system account
-        // We need to get workspace info for system account.
-        const workspaceInfo =
-          this.workspaceInfoCache.get(token.workspace) ?? (await this.getWorkspaceInfo(ctx, rawToken, false))
-        if (workspaceInfo === undefined) {
+        if (wsInfo === undefined) {
+          // In case of guest or system account
+          // We need to get workspace info for system account.
+          const workspaceInfo =
+            this.workspaceInfoCache.get(token.workspace) ?? (await this.getWorkspaceInfo(ctx, rawToken, false))
+          if (workspaceInfo === undefined) {
+            return { error: new Error('Workspace not found or not available'), terminate: true }
+          }
+          this.workspaceInfoCache.set(token.workspace, workspaceInfo)
+
+          wsInfo = {
+            url: workspaceInfo.url,
+            mode: workspaceInfo.mode,
+            dataId: workspaceInfo.dataId,
+            version: {
+              versionMajor: workspaceInfo.versionMajor,
+              versionMinor: workspaceInfo.versionMinor,
+              versionPatch: workspaceInfo.versionPatch
+            },
+            role: AccountRole.Owner,
+            endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
+            progress: workspaceInfo.processingProgress,
+            branding: workspaceInfo.branding
+          }
+        } else {
+          this.workspaceInfoCache.delete(token.workspace)
+        }
+        const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
+        if (resp !== undefined) {
+          return resp
+        }
+
+        if (workspace === undefined || account === undefined) {
+          // Should not happen
           return { error: new Error('Workspace not found or not available'), terminate: true }
         }
-        this.workspaceInfoCache.set(token.workspace, workspaceInfo)
 
-        wsInfo = {
-          url: workspaceInfo.url,
-          mode: workspaceInfo.mode,
-          dataId: workspaceInfo.dataId,
-          version: {
-            versionMajor: workspaceInfo.versionMajor,
-            versionMinor: workspaceInfo.versionMinor,
-            versionPatch: workspaceInfo.versionPatch
-          },
-          role: AccountRole.Owner,
-          endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
-          progress: workspaceInfo.processingProgress,
-          branding: workspaceInfo.branding
+        const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
+        if (oldSession !== undefined) {
+          // Just close old socket for old session id.
+          await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
         }
-      } else {
-        this.workspaceInfoCache.delete(token.workspace)
-      }
-      const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
-      if (resp !== undefined) {
-        return resp
-      }
 
-      if (workspace === undefined || account === undefined) {
-        // Should not happen
-        return { error: new Error('Workspace not found or not available'), terminate: true }
-      }
+        const session = this.createSession(token, workspace.wsId, account)
 
-      const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
-      if (oldSession !== undefined) {
-        // Just close old socket for old session id.
-        await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
-      }
+        session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
+        session.sessionInstanceId = generateId()
+        const tickHash = this.tickCounter % ticksPerSecond
 
-      const session = this.createSession(token, workspace.wsId, account)
+        this.sessions.set(ws.id, { session, socket: ws, tickHash })
+        // We need to delete previous session with Id if found.
+        this.tickCounter++
+        workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
 
-      session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
-      session.sessionInstanceId = generateId()
-      const tickHash = this.tickCounter % ticksPerSecond
+        const accountUuid = account.account
+        if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
+          await this.usersProducer.send(ctx, workspace.wsId.uuid, [
+            userEvents.login({
+              user: accountUuid,
+              sessions: this.countUserSessions(workspace, accountUuid),
+              socialIds: account.socialIds.map((it) => it._id)
+            })
+          ])
+        }
 
-      this.sessions.set(ws.id, { session, socket: ws, tickHash })
-      // We need to delete previous session with Id if found.
-      this.tickCounter++
-      workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
+        // Mark workspace as init completed and we had at least one client.
+        if (!workspace.workspaceInitCompleted) {
+          workspace.workspaceInitCompleted = true
+        }
 
-      const accountUuid = account.account
-      if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
-        await this.usersProducer.send(ctx, workspace.wsId.uuid, [
-          userEvents.login({
-            user: accountUuid,
-            sessions: this.countUserSessions(workspace, accountUuid),
-            socialIds: account.socialIds.map((it) => it._id)
-          })
-        ])
-      }
-
-      // Mark workspace as init completed and we had at least one client.
-      if (!workspace.workspaceInitCompleted) {
-        workspace.workspaceInitCompleted = true
-      }
-
-      if (this.timeMinutes > 0) {
-        void ws
-          .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
-          .catch((err) => {
-            ctx.error('failed to send maintenance warning', err)
-          })
-      }
-      return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
-    })
+        if (this.timeMinutes > 0) {
+          void ws
+            .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+            .catch((err) => {
+              ctx.error('failed to send maintenance warning', err)
+            })
+        }
+        return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
+      })
+    )
   }
 
   private async switchToUpgradeSession (
@@ -940,8 +937,6 @@ export class TSessionManager implements SessionManager {
     workspaceDataId: WorkspaceDataId | undefined,
     branding: Branding | null
   ): Workspace {
-    this.add('startWorkspace', 1)
-
     const upgrade = token.extra?.model === 'upgrade'
     const context = ctx.newChild('🧲 session', {}, { span: false })
     const workspaceIds: WorkspaceIds = {
@@ -951,18 +946,20 @@ export class TSessionManager implements SessionManager {
     }
 
     const factory = async (): Promise<Pipeline> => {
-      const pipeline = await this.pipelineFactory(
-        pipelineCtx,
-        workspaceIds,
-        {
-          broadcast: (ctx, tx, targets, exclude) => {
-            this.broadcastAll(ctx, workspaceIds.uuid, tx, targets, exclude)
+      const pipeline = await this.counters.withCounter('startWorkspace', 1, () =>
+        this.pipelineFactory(
+          pipelineCtx,
+          workspaceIds,
+          {
+            broadcast: (ctx, tx, targets, exclude) => {
+              this.broadcastAll(ctx, workspaceIds.uuid, tx, targets, exclude)
+            },
+            broadcastSessions: (ctx, sessions) => {
+              this.broadcastSessions(ctx, sessions)
+            }
           },
-          broadcastSessions: (ctx, sessions) => {
-            this.broadcastSessions(ctx, sessions)
-          }
-        },
-        branding
+          branding
+        )
       )
       return pipeline
     }
@@ -1348,7 +1345,6 @@ export class TSessionManager implements SessionManager {
     request: Request<any>,
     workspaceId: WorkspaceUuid
   ): Promise<void> {
-    this.add('request', 1)
     // Calculate total number of clients
     const reqId = generateId()
     const source = service.token.extra?.service ?? '🤦‍♂️user'
@@ -1438,23 +1434,25 @@ export class TSessionManager implements SessionManager {
           ws.sendPong()
           return
         }
-        await workspace.with(async (pipeline) => {
-          await requestCtx.with(
-            '🧨' + request.method,
-            { source, mode: 'websocket' },
-            (callTx) =>
-              f.apply(service, [
-                this.createOpContext(callTx, requestCtx, pipeline, request.id, service, ws, rateLimit),
-                ...params
-              ]),
-            {
-              user: service.getUser(),
-              socialId: service.getRawAccount().primarySocialId,
-              workspace: workspace.wsId.uuid
-            },
-            { meta: request.meta }
-          )
-        })
+        await this.counters.withCounter('request', 1, () =>
+          workspace.with(async (pipeline) => {
+            await requestCtx.with(
+              '🧨' + request.method,
+              { source, mode: 'websocket' },
+              (callTx) =>
+                f.apply(service, [
+                  this.createOpContext(callTx, requestCtx, pipeline, request.id, service, ws, rateLimit),
+                  ...params
+                ]),
+              {
+                user: service.getUser(),
+                socialId: service.getRawAccount().primarySocialId,
+                workspace: workspace.wsId.uuid
+              },
+              { meta: request.meta }
+            )
+          })
+        )
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
@@ -1483,7 +1481,6 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
-    this.add('request', 1)
     const rateLimitStatus = this.checkRate(service)
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
@@ -1509,22 +1506,24 @@ export class TSessionManager implements SessionManager {
       })
 
       try {
-        await workspace.with(async (pipeline) => {
-          await requestCtx.with(
-            '🧨 ' + method,
-            { source, mode: 'rpc' },
-            (callTx) =>
-              operation(
-                this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
-                rateLimitStatus
-              ),
-            {
-              user: service.getUser(),
-              socialId: service.getRawAccount().primarySocialId,
-              workspace: workspace.wsId.uuid
-            }
-          )
-        })
+        await this.counters.withCounter('request', 1, () =>
+          workspace.with(async (pipeline) => {
+            await requestCtx.with(
+              '🧨 ' + method,
+              { source, mode: 'rpc' },
+              (callTx) =>
+                operation(
+                  this.createOpContext(callTx, requestCtx, pipeline, reqId, service, ws, rateLimitStatus),
+                  rateLimitStatus
+                ),
+              {
+                user: service.getUser(),
+                socialId: service.getRawAccount().primarySocialId,
+                workspace: workspace.wsId.uuid
+              }
+            )
+          })
+        )
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
