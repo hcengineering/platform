@@ -11,12 +11,13 @@ describe('queue', () => {
     const docsCount = 50 // Reduced from 100 for faster tests
     try {
       let msgCount = 0
+      let consumerHandle: any
       const p1 = new Promise<void>((resolve, reject) => {
         const to = setTimeout(() => {
           reject(new Error(`Timeout waiting for messages: received ${msgCount}/${docsCount}`))
         }, 15000) // Reduced from 100000
 
-        queue.createConsumer<string>(
+        consumerHandle = queue.createConsumer<string>(
           testCtx,
           'qtest',
           genId,
@@ -27,12 +28,19 @@ describe('queue', () => {
               resolve()
             }
           },
-          { retryDelay: 100, maxRetryDelay: 3 }
+          { retryDelay: 100, maxRetryDelay: 3, fromBegining: true }
         )
       })
 
-      // Wait a bit for consumer to be ready
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      // Wait for consumer to be connected and subscribed
+      await new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (consumerHandle.isConnected() === true) {
+            clearInterval(checkInterval)
+            resolve(undefined)
+          }
+        }, 50)
+      })
 
       const producer = queue.getProducer<string>(testCtx, 'qtest')
       // Send messages in batches for better performance
@@ -60,12 +68,13 @@ describe('queue', () => {
 
     try {
       let counter = 2
+      let consumerHandle: any
       const p = new Promise<void>((resolve, reject) => {
         const to = setTimeout(() => {
           reject(new Error(`Timeout waiting for retry processing: counter=${counter}`))
         }, 10000) // Added timeout
 
-        queue.createConsumer<string>(
+        consumerHandle = queue.createConsumer<string>(
           testCtx,
           'test',
           genId,
@@ -77,12 +86,19 @@ describe('queue', () => {
             clearTimeout(to)
             resolve()
           },
-          { retryDelay: 50, maxRetryDelay: 3 }
+          { retryDelay: 50, maxRetryDelay: 3, fromBegining: true }
         )
       })
 
-      // Wait a bit for consumer to be ready
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      // Wait for consumer to be connected and subscribed
+      await new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (consumerHandle.isConnected() === true) {
+            clearInterval(checkInterval)
+            resolve(undefined)
+          }
+        }, 50)
+      })
 
       const producer = queue.getProducer<string>(testCtx, 'test')
       await producer.send(testCtx, genId as any as WorkspaceUuid, ['msg'])
