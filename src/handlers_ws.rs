@@ -217,8 +217,17 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                     // let x = self.claims.unwrap().as_ref();
                     // );
                     if !CONFIG.no_authorization {
+                        let key = match &cmd {
+                            WsCommand::Put { key, .. }
+                            | WsCommand::Delete { key, .. }
+                            | WsCommand::Get { key, .. }
+                            | WsCommand::List { key, .. }
+                            | WsCommand::Sub { key, .. }
+                            | WsCommand::Unsub { key, .. } => key.as_str(),
+                            _ => "",
+                        };
                         if let Some(ref claim) = self.claims {
-                            if !test_rego_claims(claim, cmd.as_ref()) {
+                            if !test_rego_claims(claim, cmd.as_ref(), &key) {
                                 ctx.text("Unauthorized: Rego policy");
                                 ctx.stop();
                                 return;

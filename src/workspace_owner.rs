@@ -57,33 +57,34 @@ pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(),
     Ok(())
 }
 
-pub fn test_rego_claims(claim: &Claims, command: &str) -> bool {
+pub fn test_rego_claims(claim: &Claims, command: &str, key: &str) -> bool {
     let data = serde_json::to_value(&claim).unwrap_or_default();
     let mut rego = REGORUS_ENGINE.clone();
 
     rego.set_input(regorus::Value::from(json!({
         "command": command,
         "claim": data,
+        "key": key,
     })));
     let result = rego.eval_rule(String::from("data.main.permit")).unwrap();
 
     result == regorus::Value::Bool(true)
 }
 
-pub fn test_rego_http(req: HttpRequest, command: &str) -> bool {
+pub fn test_rego_http(req: HttpRequest, command: &str, key: &str) -> bool {
     let claims = req
         .extensions()
         .get::<Claims>()
         .expect("Missing claims")
         .to_owned();
-    test_rego_claims(&claims, command)
+    test_rego_claims(&claims, command, key)
 }
 
 pub static POLICY_TEXT: LazyLock<String> = LazyLock::new(|| {
-    let Some(permit_file) = CONFIG.permit_file.as_ref() else {
+    let Some(policy_file) = CONFIG.policy_file.as_ref() else {
         return "package main\n\ndefault permit = true\n".to_string();
     };
-    let path = Path::new(permit_file);
+    let path = Path::new(policy_file);
     if !path.exists() {
         panic!("Policy file not found: {}", path.display());
     }

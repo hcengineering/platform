@@ -15,3 +15,5 @@ DROP_DB.sh
 TODO.txt
 DOCKER.sh
 /lleo
+/client
+/scripts

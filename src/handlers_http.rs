@@ -68,7 +68,7 @@ pub async fn list(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
-    if !CONFIG.no_authorization && !test_rego_http(req, "List") {
+    if !CONFIG.no_authorization && !test_rego_http(req, "List", &key) {
         return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
@@ -86,7 +86,7 @@ pub async fn get(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
 
-    if !CONFIG.no_authorization && !test_rego_http(req, "Get") {
+    if !CONFIG.no_authorization && !test_rego_http(req, "Get", &key) {
         return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
@@ -119,7 +119,7 @@ pub async fn put(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "put request");
 
-    if !CONFIG.no_authorization && !test_rego_http(req, "Put") {
+    if !CONFIG.no_authorization && !test_rego_http(req, "Put", &key) {
         return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
@@ -171,7 +171,7 @@ pub async fn delete(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
 
-    if !CONFIG.no_authorization && !test_rego_http(req, "Delete") {
+    if !CONFIG.no_authorization && !test_rego_http(req, "Delete", &key) {
         return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 

@@ -59,7 +59,7 @@ pub struct Config {
 
     pub heartbeat_timeout: u64,
 
-    pub permit_file: Option<String>,
+    pub policy_file: Option<String>,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
