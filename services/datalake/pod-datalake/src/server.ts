@@ -44,7 +44,6 @@ import {
   handleBlobGet,
   handleBlobHead,
   handleBlobList,
-  handleImageGet,
   handleMetaGet,
   handleMetaPut,
   handleMetaPatch,
@@ -261,10 +260,6 @@ export async function createServer (
     withBlob,
     wrapRequest(ctx, 'multipartUploadAvort', handleMultipartUploadAbort)
   )
-
-  // Image
-
-  app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', handleImageGet)) // no auth
 
   const sendErrorToAnalytics = (err: any): boolean => {
     const ignoreMessages = [
