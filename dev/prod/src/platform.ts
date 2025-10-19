@@ -514,7 +514,7 @@ export async function configurePlatform () {
 
   const languages = myBranding.languages
     ? myBranding.languages.split(',').map((l) => l.trim())
-    : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'tr']
+    : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'tr', 'vi']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 

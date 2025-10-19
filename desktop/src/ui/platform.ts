@@ -353,7 +353,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
 
   setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
 
-  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'tr']
+  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'tr', 'vi']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
