@@ -36,6 +36,7 @@
     "YesterdayAt": "Ontem às {time}",
     "AndMore": "e mais {count}",
     "IsTyping": "{count, plural, =1 {está digitando} other {estão digitando}}",
+    "IsThinking": "{count, plural, =1 {está pensando} other {estão pensando}}",
     "Loading": "Carregando...",
     "MessageIn": "Mensagem #{title}",
     "ThreadWasDeleted": "Este thread foi excluído.",
