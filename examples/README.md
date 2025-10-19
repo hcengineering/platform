@@ -4,11 +4,7 @@ This directory contains comprehensive examples demonstrating various aspects of 
 
 ## 🆕 Updated to Use Typed Proxies
 
-All examples have been updated to demonstrate the new \*\*typed p## Running Examples
-
-## Running Examples
-
-### Run with custom network hostern\*\* using the `cast<T>()` method. This provides:
+All examples have been updated to demonstrate the new **typed proxies** using the `cast<T>()` method. This provides:
 
 - ✅ **Full type safety** - TypeScript checks method signatures
 - ✅ **IDE autocomplete** - Get suggestions for available methods
@@ -16,6 +12,8 @@ All examples have been updated to demonstrate the new \*\*typed p## Running Exam
 - ✅ **Refactoring safety** - Compile-time errors catch issues
 
 See [PROXY_MIGRATION.md](./PROXY_MIGRATION.md) for detailed migration guide.
+
+## Running Examples
 
 ### Example Usage
 
@@ -227,7 +225,7 @@ Production-ready patterns:
 2. `05-error-handling-retry.ts` - Robust error handling
 3. `ha-stateless-container-example.ts` - High availability
 
-## Running Examples
+## How to Run Examples
 
 ### Prerequisites
 

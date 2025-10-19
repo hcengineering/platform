@@ -7,46 +7,24 @@ Welcome to the Huly Virtual Network documentation! This directory contains compr
 ### Getting Started
 
 - **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 5 minutes
-- **[Installation Guide](INSTALLATION.md)** - Detailed installation instructions
 - **[Core Concepts](CORE_CONCEPTS.md)** - Understanding the architecture
 
 ### Guides
 
-- **[Container Development Guide](CONTAINER_DEVELOPMENT.md)** - Building containers
-- **[Agent Development Guide](AGENT_DEVELOPMENT.md)** - Creating and managing agents
-- **[Client Usage Guide](CLIENT_USAGE.md)** - Connecting and using the network
-- **[Network Server Setup](NETWORK_SERVER.md)** - Running the network server
+- **[Container Development Guide](CONTAINER_DEVELOPMENT.md)** - Building containers and implementing services
+- **[Auto-Disposal Guide](AUTO_DISPOSAL_GUIDE.md)** - Managing container lifecycle and cleanup
 
 ### Advanced Topics
 
 - **[High Availability (HA) Stateless Containers](HA_STATELESS_CONTAINERS.md)** - Automatic failover
-- **[Quick Start: HA](QUICKSTART_HA.md)** - HA in 5 minutes
+- **[Quick Start: HA](QUICKSTART_HA.md)** - HA setup in 5 minutes
 - **[Multi-Tenant Architectures](MULTI_TENANT.md)** - Building SaaS applications
-- **[Performance Tuning](PERFORMANCE.md)** - Optimization strategies
-- **[Error Handling Best Practices](ERROR_HANDLING.md)** - Robust error handling
 
 ### Production
 
 - **[Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)** - Going to production
-- **[Monitoring and Observability](MONITORING.md)** - Tracking system health
-- **[Security Best Practices](SECURITY.md)** - Securing your deployment
-- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Common issues and solutions
-
-### API Reference
-
-- **[Core API Reference](API_CORE.md)** - Core package APIs
-- **[Client API Reference](API_CLIENT.md)** - Client package APIs
-- **[Server API Reference](API_SERVER.md)** - Server package APIs
-- **[BackRPC API Reference](API_BACKRPC.md)** - Communication layer APIs
-
-### Migration & Integration
-
-- **[Migration from Other Systems](MIGRATION.md)** - Moving to Huly Network
-- **[Integration Patterns](INTEGRATION.md)** - Integrating with existing systems
 
 ## 🎯 Quick Navigation
-
-### I want to...
 
 **Learn the basics**
 → Start with [Quick Start Guide](QUICKSTART.md) and [Core Concepts](CORE_CONCEPTS.md)
@@ -63,12 +41,6 @@ Welcome to the Huly Virtual Network documentation! This directory contains compr
 **Build a SaaS application**
 → Check [Multi-Tenant Architectures](MULTI_TENANT.md)
 
-**Troubleshoot issues**
-→ Visit [Troubleshooting Guide](TROUBLESHOOTING.md)
-
-**Optimize performance**
-→ Read [Performance Tuning](PERFORMANCE.md)
-
 ## 📖 Reading Order
 
 ### For Beginners
@@ -76,28 +48,23 @@ Welcome to the Huly Virtual Network documentation! This directory contains compr
 1. [Quick Start Guide](QUICKSTART.md)
 2. [Core Concepts](CORE_CONCEPTS.md)
 3. [Container Development Guide](CONTAINER_DEVELOPMENT.md)
-4. [Client Usage Guide](CLIENT_USAGE.md)
 
 ### For Application Developers
 
 1. [Container Development Guide](CONTAINER_DEVELOPMENT.md)
-2. [Agent Development Guide](AGENT_DEVELOPMENT.md)
-3. [Multi-Tenant Architectures](MULTI_TENANT.md)
-4. [Error Handling Best Practices](ERROR_HANDLING.md)
+2. [Multi-Tenant Architectures](MULTI_TENANT.md)
+3. [Auto-Disposal Guide](AUTO_DISPOSAL_GUIDE.md)
 
 ### For DevOps Engineers
 
-1. [Installation Guide](INSTALLATION.md)
-2. [Network Server Setup](NETWORK_SERVER.md)
-3. [Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)
-4. [Monitoring and Observability](MONITORING.md)
-5. [Security Best Practices](SECURITY.md)
+1. [Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)
+2. [High Availability](HA_STATELESS_CONTAINERS.md)
 
 ### For System Architects
 
 1. [Core Concepts](CORE_CONCEPTS.md)
-2. [Performance Tuning](PERFORMANCE.md)
-3. [High Availability](HA_STATELESS_CONTAINERS.md)
+2. [High Availability](HA_STATELESS_CONTAINERS.md)
+3. [Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)
 4. [Integration Patterns](INTEGRATION.md)
 
 ## 🔗 External Resources
