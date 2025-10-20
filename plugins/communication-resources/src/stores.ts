@@ -13,7 +13,14 @@
 
 import { get, writable, derived } from 'svelte/store'
 import { createLabelsQuery, createQuery, onClient, onCommunicationClient } from '@hcengineering/presentation'
-import { type CardID, type Label, type LabelID, type Message, type MessageID } from '@hcengineering/communication-types'
+import {
+  MessageType,
+  type CardID,
+  type Label,
+  type LabelID,
+  type Message,
+  type MessageID
+} from '@hcengineering/communication-types'
 import core, { getCurrentAccount, type Markup, type Ref } from '@hcengineering/core'
 import { languageStore } from '@hcengineering/ui'
 import cardPlugin, { type Card } from '@hcengineering/card'
@@ -64,16 +71,13 @@ export function isShownManualTranslatedMessage (cardId: CardID, messageId: Messa
   return !showOriginal && result?.result != null
 }
 
-export function isMessageTranslated (
+export function hasTranslate (
   message: Message,
   translateTo: string | undefined,
   dontTranslate: string[],
-  translatedMessages: TranslateMessagesStatus[],
-  showOriginalMessage: Array<[CardID, MessageID]>
+  translatedMessages: TranslateMessagesStatus[]
 ): boolean {
-  const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
-  if (showOriginal) return false
-
+  if (message.type !== MessageType.Text) return false
   const manualTranslate = translatedMessages.find((it) => it.cardId === message.cardId && it.messageId === message.id)
   if (manualTranslate?.result != null) return true
 
@@ -87,6 +91,32 @@ export function isMessageTranslated (
   return res !== ''
 }
 
+export function isMessageTranslated (
+  message: Message,
+  translateTo: string | undefined,
+  dontTranslate: string[],
+  translatedMessages: TranslateMessagesStatus[],
+  showOriginalMessage: Array<[CardID, MessageID]>
+): boolean {
+  const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
+  if (showOriginal) return false
+
+  return hasTranslate(message, translateTo, dontTranslate, translatedMessages)
+}
+
+export function isMessageOriginalShown (
+  message: Message,
+  translateTo: string | undefined,
+  dontTranslate: string[],
+  translatedMessages: TranslateMessagesStatus[],
+  showOriginalMessage: Array<[CardID, MessageID]>
+): boolean {
+  const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
+  if (!showOriginal) return false
+
+  return hasTranslate(message, translateTo, dontTranslate, translatedMessages)
+}
+
 export function getMessageTranslation (
   message: Message,
   translateTo: string | undefined,
@@ -94,7 +124,9 @@ export function getMessageTranslation (
   translatedMessages: TranslateMessagesStatus[],
   showOriginalMessage: Array<[CardID, MessageID]>
 ): Markup | undefined {
+  if (message.type !== MessageType.Text) return undefined
   const showOriginal = showOriginalMessage.some(([cId, mId]) => cId === message.cardId && mId === message.id)
+
   if (showOriginal) return undefined
 
   const manualTranslate = translatedMessages.find((it) => it.cardId === message.cardId && it.messageId === message.id)

@@ -51,6 +51,7 @@
     $translateMessagesStore,
     $showOriginalMessagesStore
   )
+
   $: displayMarkup = translatedMarkup ?? toMarkup(message.content)
 
   $: if (prevContent !== message.content) {

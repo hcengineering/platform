@@ -33,7 +33,6 @@ import { BlobID, CardID, Markdown, Message, MessageID } from '@hcengineering/com
 import { withRetry } from '@hcengineering/retry'
 import { Analytics } from '@hcengineering/analytics'
 import OpenAI from 'openai'
-import { PlatformQueue } from '@hcengineering/server-core'
 import { MessageEventType, TranslateMessageEvent, UpdatePatchEvent } from '@hcengineering/communication-sdk-types'
 
 import { Storage } from './storage'
@@ -46,8 +45,7 @@ export class Controller {
 
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly openai: OpenAI,
-    private readonly queue: PlatformQueue
+    private readonly openai: OpenAI
   ) {
     this.storage = new Storage(this.ctx)
   }
@@ -139,6 +137,7 @@ export class Controller {
     blobId: BlobID
   ): Promise<void> {
     const initialLanguage = message.language
+
     const translateTo = await this.getLanguages(workspace)
     if (translateTo.length === 0) return
 
@@ -183,6 +182,7 @@ export class Controller {
     }
 
     if (originalLanguage != null && originalLanguage !== '' && originalLanguage !== initialLanguage) {
+      ctx.info('update original language', { originalLanguage, id: message.id, content: message.content.slice(0, 50) })
       txes.unshift(this.getUpdateLanguageTx(message.cardId, message.id, originalLanguage))
     }
 
@@ -281,24 +281,29 @@ export class Controller {
     markdown: string,
     lang: string
   ): Promise<{ original_language?: string, translation?: string } | undefined> {
-    const systemPropmpt = `You are a translation model. 
-You are a translation model. Your only task is to translate the given markdown text into the ${lang} language.
+    const systemPrompt = `
+You are a translation model.
+Your only task is to translate the given Markdown text into the ${lang} language.
 Detect the original language of the input.
-If the input markdown is already written in ${lang}, do not translate. Preserve names and terms if they have no clear equivalent.
- Be as literal and accurate as possible while keeping the meaning natural. Keep markdown structire.
+If the input Markdown is already written in ${lang}, do not translate.
+Preserve names and terms if they have no clear equivalent.
+Be as literal and accurate as possible while keeping the meaning natural.
+Keep the Markdown structure.
 Output the result strictly as a JSON object in the following format:
 {
   "original_language": "<detected language in iso 639-1>",
   "translation": "<translated markdown or empty string if no translation was needed>"
 }
-Do not add any explanations, comments, or extra text outside the JSON.`
+Do not add any explanations, comments, or extra text outside the JSON.
+`.trim()
 
     const response = await this.openai.chat.completions.create({
       model: config.OpenAIModel,
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
-          content: systemPropmpt
+          content: systemPrompt
         },
         {
           role: 'user',
@@ -307,17 +312,17 @@ Do not add any explanations, comments, or extra text outside the JSON.`
       ]
     })
 
-    const res = response.choices[0].message.content ?? ''
+    const res = response.choices[0]?.message.content ?? ''
 
     try {
       const parsed = JSON.parse(res)
       if (typeof parsed !== 'object' || parsed === null) {
-        console.log('Failed to parse translation response', { response: res })
+        console.error('Failed to parse translation response', { response: res })
         return undefined
       }
       return parsed
     } catch (e) {
-      console.log('Failed to parse translation response', { response: res, error: e })
+      console.error('Failed to parse translation response', { response: res, error: e })
       return undefined
     }
   }

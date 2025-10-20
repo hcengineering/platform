@@ -78,6 +78,7 @@ export default mergeIds(communicationId, communication, {
     LeftThe: '' as IntlString,
     Translating: '' as IntlString,
     ShowOriginal: '' as IntlString,
+    Translate: '' as IntlString,
     AddReaction: '' as IntlString,
     ReplyInThread: '' as IntlString,
     TranslateMessage: '' as IntlString,
