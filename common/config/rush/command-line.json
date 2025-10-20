@@ -30,9 +30,34 @@
       },
       "ignoreMissingScript": true,
       "allowWarningsOnSuccess": false
+    },
+    {
+      "name": "_phase:test",
+      "dependencies": {
+        "self": ["_phase:build"],
+        "upstream": ["_phase:validate"]
+      },
+      "ignoreMissingScript": true,
+      "allowWarningsOnSuccess": true
     }
   ],
   "commands": [
+    {
+      "commandKind": "global",
+      "name": "coverage",
+      "summary": "Run tests, merge LCOV and generate HTML coverage",
+      "description": "Run 'rush test', then merge per-package LCOV files and generate HTML coverage in coverage/html",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush test && node scripts/merge-coverage.js && node scripts/generate-coverage-html.js coverage/lcov.info coverage/html"
+    },
+    {
+      "commandKind": "phased",
+      "summary": "Do testing",
+      "name": "test",
+      "phases": ["_phase:build", "_phase:test"],
+      "enableParallelism": true,
+      "incremental": true
+    },
     {
       "commandKind": "phased",
       "name": "build",
@@ -95,7 +120,6 @@
       "shellCommand": "./common/scripts/node_modules/.bin/bump-changes-from-tag"
     }
   ],
-
   /**
    * Custom "parameters" introduce new parameters for specified Rush command-line commands.
    * For example, you might define a "--production" parameter for the "rush build" command.

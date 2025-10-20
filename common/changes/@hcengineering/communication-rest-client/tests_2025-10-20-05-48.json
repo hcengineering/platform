@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-rest-client",
+      "comment": "Bump core",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-rest-client"
+}

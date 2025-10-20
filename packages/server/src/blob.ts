@@ -44,6 +44,8 @@ import { v4 as uuid } from 'uuid'
 
 import { Metadata } from './types'
 
+const LOG_CARD_ID = '67ecc702f182d88819f0a726' as CardID
+
 export class Blob {
   private readonly client: HulylakeWorkspaceClient
   // Groups sored by fromDate
@@ -100,7 +102,7 @@ export class Blob {
     }
 
     if (this.messageGroupsByCardId.has(cardId)) {
-      return this.messageGroupsByCardId.get(cardId) ?? []
+      return (this.messageGroupsByCardId.get(cardId) ?? []).sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
     }
 
     const existingPromise = this.messageGroupsPromises.get(cardId)
@@ -109,13 +111,17 @@ export class Blob {
     const promise = (async () => {
       try {
         const res = await this.client.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, this.retryOptions)
-        if (res?.body == null) {
+        if (res.status === 404) {
           await this.createMessagesGroupBlob(cardId)
           this.messageGroupsByCardId.set(cardId, [])
           return []
         }
 
-        const groups = Object.values(res.body).map(it => this.deserializeMessageGroup(it)).sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
+        if (cardId === LOG_CARD_ID) {
+          this.ctx.info('Received groups', { groups: JSON.stringify(res.body ?? {}, undefined, 2) })
+        }
+
+        const groups = Object.values(res.body ?? {}).map(it => this.deserializeMessageGroup(it)).sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
         this.messageGroupsByCardId.set(cardId, groups)
         return groups
       } finally {
@@ -129,18 +135,32 @@ export class Blob {
 
   public async getMessageGroupByDate (cardId: CardID, date: Date, create = true): Promise<MessagesGroup | undefined> {
     const all = await this.getAllMessageGroups(cardId)
+    if (cardId === LOG_CARD_ID) {
+      this.ctx.info('all groups sorted', { cardId, sortedGroups: JSON.stringify(all, undefined, 2) })
+    }
     const ts = date.getTime()
 
     const match = all.find(g => g.fromDate.getTime() <= ts && g.toDate.getTime() >= ts)
-    if (match != null) return match
+    if (match != null) {
+      if (cardId === LOG_CARD_ID) {
+        this.ctx.info('math group', { date, match: JSON.stringify(match, undefined, 2) })
+      }
+      return match
+    }
 
     const lastGroup = all[all.length - 1]
     if (lastGroup != null && lastGroup.fromDate.getTime() <= ts && lastGroup.count < this.metadata.messagesPerBlob) {
+      if (cardId === LOG_CARD_ID) {
+        this.ctx.info('last group', { date, match: JSON.stringify(match, undefined, 2) })
+      }
       return lastGroup
     }
 
     const firstGroup = all[0]
     if (firstGroup != null && firstGroup.fromDate.getTime() >= ts && firstGroup.count < this.metadata.messagesPerBlob) {
+      if (cardId === LOG_CARD_ID) {
+        this.ctx.info('first group', { date, match: JSON.stringify(match, undefined, 2) })
+      }
       return firstGroup
     }
 
@@ -235,7 +255,9 @@ export class Blob {
         await this.client.patchJson(`${cardId}/messages/groups`, patches, undefined, this.retryOptions)
         const group = this.deserializeMessageGroup(groupDoc)
         if (this.messageGroupsByCardId.has(cardId)) {
-          this.messageGroupsByCardId.set(cardId, [...this.messageGroupsByCardId.get(cardId) ?? [], group])
+          this.messageGroupsByCardId.set(cardId,
+            [...this.messageGroupsByCardId.get(cardId) ?? [], group].sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
+          )
         } else {
           this.messageGroupsByCardId.set(cardId, [group])
         }
@@ -264,6 +286,10 @@ export class Blob {
   }
 
   async insertMessage (cardId: CardID, group: MessagesGroup, message: Message): Promise<void> {
+    if (cardId === LOG_CARD_ID && group.blobId === 'ad77d5d3-a073-4a14-960b-2f46e844bb6d"') {
+      this.ctx.error('SELECT WRONG GROUP!', { cardId, group, message, groups: this.messageGroupsByCardId.get(cardId) })
+      throw new Error('Select wrong group')
+    }
     const updateToDate = message.created.getTime() > group.toDate.getTime()
     const updateFromDate = message.created.getTime() < group.fromDate.getTime()
 

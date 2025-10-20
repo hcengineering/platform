@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-types",
+      "comment": "Bump core",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-types"
+}

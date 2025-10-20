@@ -25,9 +25,11 @@ import {
   type Collaborator,
   type FindCollaboratorsParams,
   type FindLabelsParams,
+  FindMessagesGroupParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Label,
+  MessagesGroup,
   type Notification,
   type NotificationContext,
   SortingOrder
@@ -48,6 +50,11 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       throw ApiError.badRequest(errors.join(', '))
     }
     return validationResult.data
+  }
+
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
+    this.validate(params, FindMessagesGroupsParamsSchema)
+    return await this.provideFindMessagesGroups(session, params)
   }
 
   async findNotificationContexts (
@@ -224,6 +231,14 @@ const FindNotificationContextParamsSchema = FindParamsSchema.extend({
       total: z.boolean().optional()
     })
     .optional()
+}).strict()
+
+const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
+  cardId: CardIDSchema,
+  id: MessageIDSchema.optional(),
+  blobId: BlobIDSchema.optional(),
+  fromDate: DateOrRecordSchema.optional(),
+  toDate: DateOrRecordSchema.optional()
 }).strict()
 
 const FindNotificationsParamsSchema = FindParamsSchema.extend({

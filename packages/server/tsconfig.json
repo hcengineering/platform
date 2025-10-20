@@ -6,7 +6,7 @@
     "outDir": "./lib",
     "declarationDir": "./types",
     "tsBuildInfoFile": ".build/build.tsbuildinfo",
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib", "dist", "types", "bundle"]

@@ -48,7 +48,6 @@ import { IdentityMiddleware } from './middleware/indentity'
 import { IdMiddleware } from './middleware/id'
 import { PeerMiddleware } from './middleware/peer'
 import { LowLevelClient } from './client'
-import { LanguageMiddleware } from './middleware/language'
 
 export async function buildMiddlewares (
   ctx: MeasureContext,
@@ -64,7 +63,6 @@ export async function buildMiddlewares (
     async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new IdentityMiddleware(context, next),
     async (context, next) => new IdMiddleware(context, next),
-    async (context, next) => new LanguageMiddleware(context, next),
 
     // Validate events
     async (context, next) => new ValidateMiddleware(context, next),

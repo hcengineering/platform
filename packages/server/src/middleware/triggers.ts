@@ -46,6 +46,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async processDerived (session: SessionData, events: Enriched<Event>[], derived: boolean): Promise<void> {
+    // Ensure asyncData is initialized
+    if (session.asyncData === undefined) {
+      session.asyncData = []
+    }
+
     const triggerCtx: Omit<TriggerCtx, 'ctx'> = {
       metadata: this.context.metadata,
       client: this.context.client,
