@@ -14,37 +14,73 @@
 -->
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
-  import { getName, getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { type Doc, type PersonId, getCurrentAccount } from '@hcengineering/core'
+  import { getName, getPersonRefsBySocialIds } from '@hcengineering/contact'
   import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
+  import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { typing } from '@hcengineering/presence-resources'
-  import { Doc, type Ref } from '@hcengineering/core'
-
-  const maxTypingPersons = 3
-  const me = getCurrentEmployee()
-  const hierarchy = getClient().getHierarchy()
+  import { type TypingInfo, typing } from '@hcengineering/presence-resources'
 
   export let object: Doc
 
-  let typingInfo = new Map<string, Ref<Person>>()
-  let typingPersonsLabel: string = ''
-  let typingPersonsCount = 0
-  let moreCount: number = 0
+  const maxTypingPersons = 3
+  const acc = getCurrentAccount()
+  const client = getClient()
+  const hierarchy = getClient().getHierarchy()
+
+  interface TypingGroup {
+    status: IntlString
+    names: string
+    count: number
+    moreCount: number
+  }
+
+  let typingInfo = new Map<string, TypingInfo>()
+  let typingGroups: TypingGroup[] = []
 
   $: void updateTypingPersons(typingInfo)
 
-  async function updateTypingPersons (typingInfo: Map<string, Ref<Person>>): Promise<void> {
-    const persons = await getPersonsByPersonRefs(Array.from(typingInfo.values()))
-    const names = Array.from(persons.values())
-      .map((person) => getName(hierarchy, person))
-      .sort((name1, name2) => name1.localeCompare(name2))
-    typingPersonsCount = names.length
-    typingPersonsLabel = names.slice(0, maxTypingPersons).join(', ')
-    moreCount = Math.max(names.length - maxTypingPersons, 0)
+  async function updateTypingPersons (typingInfo: Map<string, TypingInfo>): Promise<void> {
+    if (typingInfo.size === 0) {
+      typingGroups = []
+      return
+    }
+
+    const groupedByStatus = new Map<IntlString, PersonId[]>()
+    for (const info of typingInfo.values()) {
+      const status = info.status ?? chunter.string.IsTyping
+      const existing = groupedByStatus.get(status) ?? []
+      existing.push(info.socialId)
+      groupedByStatus.set(status, existing)
+    }
+
+    const groups: TypingGroup[] = []
+
+    for (const [status, personIds] of groupedByStatus.entries()) {
+      const personRefs = await getPersonRefsBySocialIds(client, personIds)
+      const persons = await getPersonsByPersonRefs(Object.values(personRefs))
+      const names = Array.from(persons.values())
+        .map((person) => getName(hierarchy, person))
+        .sort((name1, name2) => name1.localeCompare(name2))
+
+      const displayNames = names.slice(0, maxTypingPersons).join(', ')
+      const moreCount = Math.max(names.length - maxTypingPersons, 0)
+
+      groups.push({
+        status,
+        names: displayNames,
+        count: names.length,
+        moreCount
+      })
+    }
+
+    groups.sort((a, b) => a.status.localeCompare(b.status))
+
+    typingGroups = groups
   }
 
-  function handleTyping (typing: Map<string, Ref<Person>>): void {
+  function handleTyping (typing: Map<string, TypingInfo>): void {
     typingInfo = typing
   }
 </script>
@@ -52,20 +88,18 @@
 <span
   class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
   use:typing={{
-    personId: me,
+    socialId: acc.primarySocialId,
     objectId: object._id,
     onTyping: handleTyping
   }}
 >
-  {#if typingPersonsLabel !== ''}
-    <span class="fs-bold">
-      {typingPersonsLabel}
-    </span>
-    {#if moreCount > 0}
-      <span class="ml-1"><Label label={chunter.string.AndMore} params={{ count: moreCount }} /></span>
+  {#each typingGroups as group, index}
+    <span class="fs-bold" class:ml-1={index > 0}>{group.names}</span>
+    {#if group.moreCount > 0}
+      <span class="ml-1"><Label label={chunter.string.AndMore} params={{ count: group.moreCount }} /></span>
     {/if}
-    <span class="ml-1"><Label label={chunter.string.IsTyping} params={{ count: typingPersonsCount }} /></span>
-  {/if}
+    <span class="ml-1"><Label label={group.status} params={{ count: group.count }} /></span>
+  {/each}
 </span>
 
 <style>

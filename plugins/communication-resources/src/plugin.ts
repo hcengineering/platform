@@ -69,6 +69,7 @@ export default mergeIds(communicationId, communication, {
     YesterdayAt: '' as IntlString,
     AndMore: '' as IntlString,
     IsTyping: '' as IntlString,
+    IsThinking: '' as IntlString,
     Loading: '' as IntlString,
     MessageIn: '' as IntlString,
     ThreadWasRemoved: '' as IntlString,
