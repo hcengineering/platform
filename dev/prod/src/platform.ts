@@ -32,6 +32,7 @@ import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
 import exportPlugin, { exportId } from '@hcengineering/export'
 import gmail, { gmailId } from '@hcengineering/gmail'
+import globalProfile, { globalProfileId, globalProfileRoute } from '@hcengineering/global-profile'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
@@ -96,6 +97,7 @@ import '@hcengineering/drive-assets'
 import '@hcengineering/export-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
+import '@hcengineering/global-profile-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
 import '@hcengineering/lead-assets'
@@ -139,8 +141,7 @@ import '@hcengineering/ai-assistant-assets'
 import { coreId } from '@hcengineering/core'
 import presentation, {
   loadServerConfig,
-  parsePreviewConfig,
-  parseUploadConfig,
+  createFileStorage,
   presentationId
 } from '@hcengineering/presentation'
 
@@ -155,6 +156,7 @@ export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
   FILES_URL: string
+  DATALAKE_URL?: string
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
@@ -183,8 +185,6 @@ export interface Config {
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_URL?: string
-  PREVIEW_CONFIG?: string
-  UPLOAD_CONFIG?: string
   STATS_URL?: string
   PRESENCE_URL?: string
   USE_BINARY_PROTOCOL?: boolean
@@ -362,6 +362,7 @@ function configureI18n (): void {
   )
   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+  addStringsLoader(globalProfileId, async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
@@ -459,14 +460,13 @@ export async function configurePlatform () {
 
   setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
 
-  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
+  setMetadata(presentation.metadata.DatalakeUrl, config.DATALAKE_URL)
+  setMetadata(presentation.metadata.FileStorage, createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL))
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
-  setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
-  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG ?? '', config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
@@ -526,7 +526,8 @@ export async function configurePlatform () {
       [onboardId, onboard.component.OnboardApp],
       [githubId, github.component.ConnectApp],
       [calendarId, calendar.component.ConnectApp],
-      [guestId, guest.component.GuestApp]
+      [guestId, guest.component.GuestApp],
+      [globalProfileRoute, globalProfile.component.GlobalProfileApp]
     ])
   )
 
@@ -624,6 +625,7 @@ export async function configurePlatform () {
     async () => await import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources')
   )
   addLocation(guestId, async () => await import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
+  addLocation(globalProfileId, async () => await import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources'))
   addLocation(loveId, async () => await import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, async () => await import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(exportId, async () => await import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))

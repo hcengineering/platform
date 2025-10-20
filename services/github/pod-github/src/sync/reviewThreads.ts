@@ -181,7 +181,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
 
     let externalData: ReviewThreadExternalData
     try {
-      const response: any = await integration.octokit?.graphql(
+      const response: any = await integration.octokit.graphql(
         `
         query listReview($reviewID: ID!) {
           node(id: $reviewID) {
@@ -385,7 +385,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
         }`
         try {
           if (isGHWriteAllowed()) {
-            await okit?.graphql(q, {
+            await okit.graphql(q, {
               threadID: review.id
             })
           }
@@ -474,7 +474,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
             thread: ReviewThreadExternalData
           }
         }
-        | undefined = await okit?.graphql(q, {
+        | undefined = await okit.graphql(q, {
           prID: (parent.external as PullRequestExternalData).id,
           body: EmptyMarkup // TODO: Need to replace with first comment on comment sync.
         })

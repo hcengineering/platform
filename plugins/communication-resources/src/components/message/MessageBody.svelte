@@ -31,9 +31,10 @@
     showOriginalMessagesStore,
     isMessageTranslated,
     translateToStore,
-    dontTranslateStore
+    dontTranslateStore,
+    isMessageOriginalShown
   } from '../../stores'
-  import { showOriginalMessage } from '../../actions'
+  import { showOriginalMessage, translateMessage } from '../../actions'
 
   export let card: Card
   export let author: Person | undefined
@@ -62,6 +63,13 @@
   $: manualTranslateStatus = $translateMessagesStore.find((it) => it.cardId === card._id && it.messageId === message.id)
   $: isManualTranslating = manualTranslateStatus?.inProgress === true
   $: isTranslated = isMessageTranslated(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
+  $: isOriginalShown = isMessageOriginalShown(
     message,
     $translateToStore,
     $dontTranslateStore,
@@ -132,10 +140,13 @@
           <div class="message__translating">
             <Label label={communication.string.Translating} />
           </div>
-        {/if}
-        {#if isTranslated}
+        {:else if isTranslated}
           <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
             <Label label={communication.string.ShowOriginal} />
+          </div>
+        {:else if isOriginalShown}
+          <div class="message__translate" on:click={() => translateMessage(message, card)}>
+            <Label label={communication.string.Translate} />
           </div>
         {/if}
       </div>
@@ -224,7 +235,8 @@
     font-weight: 400;
   }
 
-  .message__show-original {
+  .message__show-original,
+  .message__translate {
     font-size: 0.75rem;
     color: var(--global-tertiary-TextColor);
     cursor: pointer;

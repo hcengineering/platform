@@ -44,7 +44,7 @@
     "@hcengineering/model": "^0.7.5",
     "@hcengineering/panel": "^0.7.0",
     "@hcengineering/guest": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/task": "^0.7.0",

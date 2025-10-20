@@ -55,13 +55,13 @@
     "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/analytics-service": "^0.7.5",
     "@hcengineering/analytics": "^0.7.5",
-    "@hcengineering/server-client": "^0.7.5",
-    "@hcengineering/server-storage": "^0.7.6",
+    "@hcengineering/server-client": "^0.7.7",
+    "@hcengineering/server-storage": "^0.7.8",
     "@hcengineering/server-token": "^0.7.5",
     "sharp": "~0.34.3",
     "blurhash": "^2.0.5",

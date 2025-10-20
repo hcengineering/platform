@@ -474,8 +474,9 @@
     loading = true
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
+      const { uuid } = await uploadFile(file)
 
-      object.resumeUuid = await uploadFile(file)
+      object.resumeUuid = uuid
       object.resumeName = file.name
       object.resumeSize = file.size
       object.resumeType = file.type

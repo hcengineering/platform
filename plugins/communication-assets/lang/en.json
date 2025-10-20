@@ -36,6 +36,7 @@
     "YesterdayAt": "Yesterday at {time}",
     "AndMore": "and {count} more",
     "IsTyping": "{count, plural, =1 {is typing} other {are typing}}...",
+    "IsThinking": "{count, plural, =1 {is thinking} other {are thinking}}...",
     "Loading": "Loading...",
     "MessageIn": "Message #{title}",
     "ThreadWasRemoved": "This thread was removed.",
@@ -88,6 +89,7 @@
     "AnonymousQuiz": "Anonymous quiz",
     "Direct": "Direct",
     "Directs": "Directs",
-    "Members": "Members"
+    "Members": "Members",
+    "Translate": "Translate"
   }
 }

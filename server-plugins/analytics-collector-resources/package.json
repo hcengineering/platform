@@ -38,9 +38,9 @@
   "dependencies": {
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/server-templates": "^0.7.0",
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/analytics-collector": "^0.7.0"

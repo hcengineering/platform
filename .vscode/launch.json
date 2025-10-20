@@ -833,7 +833,7 @@
         "SECRET": "secret",
         "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
         "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://huly.local:3000",
         "STATS_URL": "http://huly.local:4900",
         "QUEUE_CONFIG": "localhost:19092"
       },

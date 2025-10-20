@@ -478,7 +478,7 @@ export default function buildModel (): Builder {
     [
       chatModel,
       chatId,
-      { label: chat.string.Chat, hidden: false, enabled: true, beta: true, classFilter: defaultFilter }
+      { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
     ],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
@@ -490,7 +490,7 @@ export default function buildModel (): Builder {
       {
         label: setting.string.Configure,
         beta: false,
-        hidden: true,
+        system: true,
         enabled: true
       }
     ],

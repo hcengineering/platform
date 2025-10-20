@@ -34,13 +34,13 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/gmail": "^0.7.0",
     "@hcengineering/model": "^0.7.5",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-gmail": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.5",
+    "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0"
   }

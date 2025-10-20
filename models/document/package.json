@@ -48,7 +48,7 @@
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/notification": "^0.7.0",
@@ -57,7 +57,7 @@
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/document-resources": "^0.7.0",
-    "@hcengineering/collaboration": "^0.7.5",
+    "@hcengineering/collaboration": "^0.7.7",
     "@hcengineering/rank": "^0.7.5"
   }
 }

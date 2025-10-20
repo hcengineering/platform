@@ -1,6 +1,17 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 import {
   Plugin,
@@ -30,6 +41,7 @@ import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
 import exportPlugin, { exportId } from '@hcengineering/export'
 import gmail, { gmailId } from '@hcengineering/gmail'
+import globalProfile, { globalProfileId, globalProfileRoute } from '@hcengineering/global-profile'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
@@ -89,6 +101,7 @@ import '@hcengineering/drive-assets'
 import '@hcengineering/export-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
+import '@hcengineering/global-profile-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
 import '@hcengineering/lead-assets'
@@ -131,7 +144,7 @@ import '@hcengineering/ai-assistant-assets'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
 import love, { loveId } from '@hcengineering/love'
-import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { createFileStorage, presentationId } from '@hcengineering/presentation'
 import print, { printId } from '@hcengineering/print'
 import sign from '@hcengineering/sign'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
@@ -233,6 +246,7 @@ function configureI18n (): void {
   addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+  addStringsLoader(globalProfileId, async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
@@ -288,11 +302,11 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
   setMetadata(login.metadata.HideLocalLogin, config.HIDE_LOCAL_LOGIN === 'true')
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
-  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
+  setMetadata(presentation.metadata.UploadURL, config.FILES_URL)
+  setMetadata(presentation.metadata.DatalakeUrl, config.DATALAKE_URL ?? '')
+  setMetadata(presentation.metadata.FileStorage, createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL))
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.PreviewUrl, config.PREVIEW_URL)
-  setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
-  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL ?? '')
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
@@ -350,7 +364,8 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
       [loginId, login.component.LoginApp],
       [onboardId, onboard.component.OnboardApp],
       [calendarId, calendar.component.ConnectApp],
-      [guestId, guest.component.GuestApp]
+      [guestId, guest.component.GuestApp],
+      [globalProfileRoute, globalProfile.component.GlobalProfileApp]
     ])
   )
 
@@ -409,6 +424,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
     async () => await import(/* webpackChunkName: "desktop-downloads" */ '@hcengineering/desktop-downloads-resources')
   )
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
+  addLocation(globalProfileId, () => import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(exportId, () => import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))

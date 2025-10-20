@@ -30,10 +30,7 @@ export type UploadFilesFn = (files: File[] | FileList, options: FileUploadOption
 export type UploadHandler = (options: FileUploadOptions) => Promise<void>
 
 /** @public */
-export interface FileUploadTarget {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-}
+export type GetUploadHandlers = () => Promise<UploadHandlerDefinition[]>
 
 /** @public */
 export interface UploadHandlerDefinition extends Doc {
@@ -45,34 +42,51 @@ export interface UploadHandlerDefinition extends Doc {
 }
 
 /** @public */
+export interface FileUploadTarget {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+}
+
+/** @public */
 export interface FileUploadProgressOptions {
   target: FileUploadTarget
 }
 
 /** @public */
 export interface FileUploadOptions {
-  maxFileSize?: number
-  maxNumberOfFiles?: number
-  allowedFileTypes?: string[] | null
+  /**
+   * Max number of files to be uploaded at the same time.
+   */
+  maxParallelUploads?: number
 
+  /**
+   * Callback to be called when file is uploaded.
+   */
   onFileUploaded?: FileUploadCallback
-  target?: FileUploadTarget
+
+  /**
+   * Whether to show progress for uploading files.
+   */
   showProgress?: FileUploadProgressOptions
+
+  target?: FileUploadTarget
 }
 
 /** @public */
 export interface FileUploadPopupOptions {
-  fileManagerSelectionType?: 'files' | 'folders' | 'both'
+  itemsCount?: 'single' | 'multiple'
+  itemsType?: 'files' | 'folders'
+  allowedFileTypes?: string[]
 }
 
 /** @public */
 export interface FileUploadCallbackParams {
   uuid: Ref<PlatformBlob>
   name: string
+  type: string
   file: File | Blob
-  path?: string
-  size?: number
-  metadata?: Record<string, any>
+  path: string | undefined
+  metadata: Record<string, any>
 }
 
 /** @public */

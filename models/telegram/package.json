@@ -38,7 +38,7 @@
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/model": "^0.7.5",
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-attachment": "^0.7.0",

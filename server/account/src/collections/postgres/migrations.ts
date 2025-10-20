@@ -34,7 +34,9 @@ export function getMigrations (ns: string): [string, string][] {
     getV13Migration(ns),
     getV14Migration(ns),
     getV15Migration(ns),
-    getV16Migration(ns)
+    getV16Migration(ns),
+    getV17Migration(ns),
+    getV18Migration(ns)
   ]
 }
 
@@ -443,6 +445,48 @@ function getV16Migration (ns: string): [string, string] {
     'account_db_v16_add_huly_assistant_social_id_type',
     `
     ALTER TYPE ${ns}.social_id_type ADD VALUE 'huly-assistant' AFTER 'telegram';
+    `
+  ]
+}
+
+function getV17Migration (ns: string): [string, string] {
+  return [
+    'account_db_v17_create_user_profile_table',
+    `
+    /* ======= U S E R   P R O F I L E ======= */
+    CREATE TABLE IF NOT EXISTS ${ns}.user_profile (
+        person_uuid UUID NOT NULL,
+        bio STRING,
+        city STRING,
+        country STRING,
+        website STRING,
+        social_links JSONB,
+        is_public BOOL NOT NULL DEFAULT FALSE,
+        CONSTRAINT user_profile_pk PRIMARY KEY (person_uuid),
+        CONSTRAINT user_profile_person_fk FOREIGN KEY (person_uuid) REFERENCES ${ns}.person(uuid) ON DELETE CASCADE,
+        INDEX user_profile_is_public_idx (is_public) WHERE is_public = TRUE
+    );
+
+    /* Remove city and country from person table */
+    ALTER TABLE ${ns}.person
+      DROP COLUMN IF EXISTS city,
+      DROP COLUMN IF EXISTS country;
+    `
+  ]
+}
+
+function getV18Migration (ns: string): [string, string] {
+  return [
+    'account_db_v18_populate_user_profiles',
+    `
+    /* ======= P O P U L A T E   U S E R   P R O F I L E S ======= */
+    /* Create user_profile entries for all existing persons that don't have one */
+    INSERT INTO ${ns}.user_profile (person_uuid, is_public)
+    SELECT p.uuid, FALSE
+    FROM ${ns}.account p
+    WHERE NOT EXISTS (
+      SELECT 1 FROM ${ns}.user_profile up WHERE up.person_uuid = p.uuid
+    );
     `
   ]
 }

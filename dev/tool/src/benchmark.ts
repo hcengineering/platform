@@ -604,7 +604,6 @@ export async function generateEmployee (client: TxOperations): Promise<AccountUu
   const personUuid = generateId() as unknown as AccountUuid // TODO: will it work or need to actually be a UUID?
   const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
     name: generateId().toString(),
-    city: '',
     avatarType: AvatarType.COLOR,
     personUuid
   })
@@ -656,7 +655,6 @@ async function generateVacancy (client: TxOperations, members: AccountUuid[]): P
     const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
     const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
       name: generateId().toString(),
-      city: '',
       avatarType: AvatarType.COLOR,
       personUuid
     })

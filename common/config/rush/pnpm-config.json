@@ -202,7 +202,6 @@
     // DEV: Uncomment the lines below to use local huly.core, huly.server, and huly.utils packages
     // Then "rush update --full" to update the dependencies.
     // NOTE:  It's configured to work if huly.core, huly.server, and huly.utils are placed adjacent to the platform. If you have them in a different location, you need to change the paths below.
-
     // huly.core packages:
     // "@hcengineering/account-client": "file:../../../huly.core/packages/account-client",
     // "@hcengineering/analytics": "file:../../../huly.core/packages/analytics",
@@ -226,7 +225,9 @@
     // "@hcengineering/text-markdown": "file:../../../huly.core/packages/text-markdown",
     // "@hcengineering/text-ydoc": "file:../../../huly.core/packages/text-ydoc",
     // "@hcengineering/token": "file:../../../huly.core/packages/token",
-
+    // "@hcengineering/measurements": "file:../../../huly.core/packages/measurements",
+    // "@hcengineering/measurements-otlp": "file:../../../huly.core/packages/measurements-otlp",
+    // "@hcengineering/postgres-base": "file:../../../huly.core/packages/postgres-base",
     // huly.server packages:
     // "@hcengineering/collaboration": "file:../../../huly.server/packages/collaboration",
     // "@hcengineering/datalake": "file:../../../huly.server/packages/datalake",
@@ -241,14 +242,21 @@
     // "@hcengineering/server": "file:../../../huly.server/packages/server",
     // "@hcengineering/server-client": "file:../../../huly.server/packages/client",
     // "@hcengineering/server-core": "file:../../../huly.server/packages/core",
-    // "@hcengineering/server-storage": "file:../../../huly.server/packages/server-storage",
+    // "@hcengineering/server-storage": "file:../../../huly.server/packages/server-storage"
 
     // huly.utils packages:
-    // "@hcengineering/measurements": "file:../../../huly.utils/packages/measurements",
-    // "@hcengineering/measurements-otlp": "file:../../../huly.utils/packages/measurements-otlp",
     // "@hcengineering/platform-rig": "file:../../../huly.utils/packages/platform-rig",
-    // "@hcengineering/postgres-base": "file:../../../huly.utils/packages/postgres-base",
     // "@hcengineering/ui-test": "file:../../../huly.utils/packages/ui-test"
+
+    // huly.communication packages
+    // "@hcengineering/communication-types": "file:../../../communication/packages/types",
+    // "@hcengineering/communication-sdk-types": "file:../../../communication/packages/sdk-types",
+    // "@hcengineering/communication-shared": "file:../../../communication/packages/shared",
+    // "@hcengineering/communication-rest-client": "file:../../../communication/packages/rest-client",
+    // "@hcengineering/communication-cockroach": "file:../../../communication/packages/cockroach",
+    // "@hcengineering/communication-server": "file:../../../communication/packages/server",
+    // "@hcengineering/communication-query": "file:../../../communication/packages/query",
+    // "@hcengineering/communication-client-query": "file:../../../communication/packages/client-query"
   },
 
   /**

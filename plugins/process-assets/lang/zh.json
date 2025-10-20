@@ -55,6 +55,7 @@
     "EnterValue": "输入值",
     "OnToDoDone": "任务完成时",
     "OnSubProcessesDone": "子进程完成时",
+    "WhenSubProcessMatches": "当子进程匹配条件时",
     "Result": "结果",
     "RequestResult": "请求结果",
     "NoResultRequired": "无需结果",

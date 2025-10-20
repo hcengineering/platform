@@ -35,10 +35,10 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@hcengineering/account-client": "^0.7.5"
+    "@hcengineering/account-client": "^0.7.6"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.7",
+    "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/ui": "^0.7.0"
   },

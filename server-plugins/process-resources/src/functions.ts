@@ -94,6 +94,42 @@ export async function CheckSubProcessesDone (control: ProcessControl, execution:
   return res === undefined
 }
 
+export async function CheckSubProcessMatch (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  const { process: targetProcess, currentState } = params
+
+  if (targetProcess === undefined || currentState === undefined) return false
+
+  const subExecutions = await control.client.findAll(process.class.Execution, {
+    parentId: execution._id,
+    process: targetProcess
+  })
+
+  if (subExecutions.length === 0) return false
+
+  const [predicate, value] = Object.entries(currentState)[0]
+
+  const res = matchQuery(
+    subExecutions,
+    { currentState: { $in: value as any } },
+    process.class.Execution,
+    control.client.getHierarchy(),
+    true
+  )
+  if (predicate === '$all') {
+    return res.length === subExecutions.length
+  } else if (predicate === '$any') {
+    return res.length > 0
+  } else if (predicate === '$nin') {
+    return res.length === 0
+  }
+  return false
+}
+
 export function MatchCardCheck (
   control: ProcessControl,
   execution: Execution,

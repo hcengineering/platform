@@ -36,6 +36,7 @@
     "YesterdayAt": "Вчера в {time}",
     "AndMore": "и еще {count}",
     "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
+    "IsThinking": "{count, plural, =1 {думает} other {думают}}...",
     "Loading": "Загрузка...",
     "MessageIn": "Сообщение #{title}",
     "ThreadWasRemoved": "Этот поток был удален.",
@@ -88,6 +89,7 @@
     "AnonymousQuiz": "Анонимная викторина",
     "Direct": "Личные сообщения",
     "Directs": "Личные сообщения",
-    "Members": "Участники"
+    "Members": "Участники",
+    "Translate": "Перевести"
   }
 }

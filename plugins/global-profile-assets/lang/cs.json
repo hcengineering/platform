@@ -1,0 +1,30 @@
+{
+  "string": {
+    "GlobalProfile": "Globální profil",
+    "EditProfile": "Upravit profil",
+    "GeneralInformation": "Obecné informace",
+    "FirstName": "Jméno",
+    "LastName": "Příjmení",
+    "City": "Město",
+    "Country": "Země",
+    "Bio": "Bio",
+    "FirstNamePlaceholder": "Zadejte jméno",
+    "LastNamePlaceholder": "Zadejte příjmení",
+    "CityPlaceholder": "Zadejte město",
+    "CountryPlaceholder": "Zadejte zemi",
+    "BioPlaceholder": "Řekněte nám o sobě...",
+    "Save": "Uložit",
+    "Cancel": "Zrušit",
+    "MaximumLength": "Maximálně {count} znaků",
+    "Required": "Toto pole je povinné",
+    "ProfileVisibility": "Viditelnost profilu",
+    "PublicProfile": "Veřejný",
+    "PrivateProfile": "Soukromý",
+    "PublicProfileDescription": "Váš profil je viditelný pro všechny",
+    "PrivateProfileDescription": "Váš profil je viditelný pouze pro vás",
+    "AddBioPlaceholder": "Přidejte životopis, abyste o sobě řekli ostatním...",
+    "AddLocationPlaceholder": "Přidejte svou polohu...",
+    "ProfileNotAvailable": "Profil není k dispozici"
+  }
+}
+

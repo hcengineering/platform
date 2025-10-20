@@ -51,6 +51,7 @@
     "EnterValue": "Değer gir",
     "OnToDoDone": "Eylem öğesi tamamlandığında",
     "OnSubProcessesDone": "Alt süreçler tamamlandığında",
+    "WhenSubProcessMatches": "Alt süreç eşleştiğinde",
     "Result": "Sonuç",
     "RequestResult": "Sonuç talep et",
     "NoResultRequired": "Sonuç gerekmez",

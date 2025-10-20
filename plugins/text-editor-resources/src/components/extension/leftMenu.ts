@@ -56,6 +56,8 @@ function posAtLeftMenuElement (view: EditorView, leftMenuElement: HTMLElement, o
 function LeftMenu (options: LeftMenuOptions): Plugin {
   let leftMenuElement: HTMLElement | null = null
   const offsetX = options.width + options.marginX
+  let rafId: number | null = null
+  let styleCache = new WeakMap<HTMLElement, { lineHeight: number, paddingTop: number, marginTop: number }>()
 
   function hideLeftMenu (): void {
     if (leftMenuElement !== null) {
@@ -67,6 +69,19 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
     if (leftMenuElement !== null) {
       leftMenuElement.classList.remove('hidden')
     }
+  }
+
+  function getCachedStyle (node: HTMLElement): { lineHeight: number, paddingTop: number, marginTop: number } {
+    let cached = styleCache.get(node)
+    if (cached === undefined) {
+      const compStyle = window.getComputedStyle(node)
+      const lineHeight = parseInt(compStyle.lineHeight, 10)
+      const paddingTop = parseInt(compStyle.paddingTop, 10)
+      const marginTop = parseInt(compStyle.marginTop, 10)
+      cached = { lineHeight, paddingTop, marginTop }
+      styleCache.set(node, cached)
+    }
+    return cached
   }
 
   return new Plugin({
@@ -117,8 +132,13 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
 
       return {
         destroy: () => {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId)
+            rafId = null
+          }
           leftMenuElement?.remove?.()
           leftMenuElement = null
+          styleCache = new WeakMap()
         }
       }
     },
@@ -129,52 +149,65 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
             return
           }
 
-          const node = nodeDOMAtCoords({
-            x: event.clientX + offsetX,
-            y: event.clientY
+          if (rafId !== null) {
+            return
+          }
+
+          rafId = requestAnimationFrame(() => {
+            rafId = null
+
+            const node = nodeDOMAtCoords({
+              x: event.clientX + offsetX,
+              y: event.clientY
+            })
+
+            if (!(node instanceof HTMLElement) || node.nodeName === 'HR') {
+              hideLeftMenu()
+              return
+            }
+
+            const parent = node?.parentElement
+            if (!(parent instanceof HTMLElement)) {
+              hideLeftMenu()
+              return
+            }
+
+            // For some reason the offsetTop value for all elements is shifted by the first element's margin
+            // so taking it into account here
+            let firstMargin = 0
+            const firstChild = parent.firstChild
+            if (firstChild !== null && firstChild instanceof HTMLElement) {
+              const { marginTop } = getCachedStyle(firstChild)
+              firstMargin = marginTop
+            }
+
+            const { lineHeight, paddingTop } = getCachedStyle(node)
+            const left = -offsetX
+            let top = node.offsetTop
+            top += (lineHeight - options.height) / 2
+            top += paddingTop
+            top += firstMargin
+
+            if (leftMenuElement === null) return
+
+            leftMenuElement.style.left = `${left}px`
+            leftMenuElement.style.top = `${top}px`
+
+            showLeftMenu()
           })
-
-          if (!(node instanceof HTMLElement) || node.nodeName === 'HR') {
-            hideLeftMenu()
-            return
-          }
-
-          const parent = node?.parentElement
-          if (!(parent instanceof HTMLElement)) {
-            hideLeftMenu()
-            return
-          }
-
-          const compStyle = window.getComputedStyle(node)
-          const lineHeight = parseInt(compStyle.lineHeight, 10)
-          const paddingTop = parseInt(compStyle.paddingTop, 10)
-
-          // For some reason the offsetTop value for all elements is shifted by the first element's margin
-          // so taking it into account here
-          let firstMargin = 0
-          const firstChild = parent.firstChild
-          if (firstChild !== null) {
-            const firstChildCompStyle = window.getComputedStyle(firstChild as HTMLElement)
-            firstMargin = parseInt(firstChildCompStyle.marginTop, 10)
-          }
-
-          const left = -offsetX
-          let top = node.offsetTop
-          top += (lineHeight - options.height) / 2
-          top += paddingTop
-          top += firstMargin
-
-          if (leftMenuElement === null) return
-
-          leftMenuElement.style.left = `${left}px`
-          leftMenuElement.style.top = `${top}px`
-
-          showLeftMenu()
         },
         keydown: () => {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId)
+            rafId = null
+          }
           hideLeftMenu()
         },
         mousewheel: () => {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId)
+            rafId = null
+          }
           hideLeftMenu()
         },
         mouseleave: (view, event) => {

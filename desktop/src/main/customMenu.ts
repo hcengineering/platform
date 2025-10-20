@@ -15,9 +15,10 @@
 
 import { BrowserWindow } from 'electron'
 import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
-import { TrayController } from './tray'
+import { OsIntegration } from './osIntegration'
+import { IpcMessage } from '../ui/ipcMessages'
 
-export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction, tray: TrayController | undefined): void {
+export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction, os: OsIntegration | undefined): void {
   if (mainWindow == null) {
     return
   }
@@ -88,9 +89,16 @@ export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, ac
       mainWindow.setFullScreen(!mainWindow.isFullScreen())
       break
     case 'toggle-minimize-to-tray': {
-      if (tray != null) {
-        const newSetting = tray.toggleMinimizeToTray()
-        mainWindow.webContents.send('minimize-to-tray-setting-changed', newSetting)
+      if (os != null) {
+        const newSetting = os.getTray().toggleMinimizeToTray()
+        mainWindow.webContents.send(IpcMessage.MinimizeToTraySettingChanged, newSetting)
+      }
+      break
+    }
+    case 'toggle-auto-launch': {
+      if (os != null) {
+        const newSetting = os.toggleAutoLaunch()
+        mainWindow.webContents.send(IpcMessage.AutoLaunchSettingChanged, newSetting)
       }
       break
     }

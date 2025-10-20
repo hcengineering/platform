@@ -146,5 +146,25 @@ export function haveTableRelatedChanges (
   newState: EditorState,
   tr: Transaction
 ): table is TableNodeLocation {
-  return editor.isEditable && table !== undefined && (tr.docChanged || !newState.selection.eq(oldState.selection))
+  if (!editor.isEditable || table === undefined) return false
+
+  const selectionChanged = !newState.selection.eq(oldState.selection)
+
+  if (!tr.docChanged) {
+    return selectionChanged
+  }
+
+  const tableStart = table.pos
+  const tableEnd = table.pos + table.node.nodeSize
+
+  let hasTableChange = false
+  tr.mapping.maps.forEach((map) => {
+    map.forEach((oldStart, oldEnd) => {
+      if (oldStart < tableEnd && oldEnd > tableStart) {
+        hasTableChange = true
+      }
+    })
+  })
+
+  return hasTableChange || selectionChanged
 }

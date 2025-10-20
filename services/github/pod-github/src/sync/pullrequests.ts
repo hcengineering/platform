@@ -145,7 +145,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     let externalData: PullRequestExternalData
     try {
       const response: any = await ctx.with('graphql', {}, (ctx) =>
-        integration.octokit?.graphql(
+        integration.octokit.graphql(
           `query listIssue($name: String!, $owner: String!, $issue: Int!) {
           repository(name: $name, owner: $owner) {
             pullRequest(number: $issue) {
@@ -1000,7 +1000,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               workspace: this.provider.getWorkspaceId()
             })
             if (isGHWriteAllowed()) {
-              await okit?.graphql(
+              await okit.graphql(
                 `
             mutation updatePullRequest($issue: ID!, $body: String!) {
               updatePullRequest(input: {
@@ -1034,7 +1034,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               workspace: this.provider.getWorkspaceId()
             })
             if (isGHWriteAllowed()) {
-              await okit?.graphql(
+              await okit.graphql(
                 `
           mutation updatePullRequest($issue: ID!) {
             updatePullRequest(input: {

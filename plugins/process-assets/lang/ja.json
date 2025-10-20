@@ -55,6 +55,7 @@
     "EnterValue": "値を入力",
     "OnToDoDone": "アクション完了時",
     "OnSubProcessesDone": "サブプロセス完了時",
+    "WhenSubProcessMatches": "サブプロセスが条件に一致したとき",
     "RequestResult": "結果をリクエスト",
     "NoResultRequired": "結果は不要",
     "From": "から",

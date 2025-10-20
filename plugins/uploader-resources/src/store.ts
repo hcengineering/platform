@@ -17,19 +17,30 @@ import { type FileUploadTarget } from '@hcengineering/uploader'
 import { writable } from 'svelte/store'
 
 /** @public */
+export interface FileUploadInfo {
+  file: File
+  name: string
+  uuid: string
+  path: string
+  type: string
+}
+
+/** @public */
 export interface FileUpload {
+  uuid: string
+  name: string
+  progress: number // [0, 100]
+  finished: boolean
   error?: string
+
   retry?: () => Promise<void>
   cancel?: () => void
-  progress: number
-  name: string
-  finished: boolean
 }
 
 /** @public */
 export interface Upload {
   uuid: string
-  progress: number
+  progress: number // [0, 100]
   files: Map<string, FileUpload>
   target?: FileUploadTarget
   error?: string
@@ -44,14 +55,8 @@ export function trackUpload (upload: Upload): void {
     return
   }
   uploads.update((m) => {
-    m.set(upload.uuid, upload)
-    return m
+    return m.set(upload.uuid, upload)
   })
-}
-
-/** @public */
-export function updateUploads (): void {
-  uploads.update((m) => m)
 }
 
 /** @public */

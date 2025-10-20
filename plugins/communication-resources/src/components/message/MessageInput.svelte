@@ -27,15 +27,13 @@
     Message,
     MessageID
   } from '@hcengineering/communication-types'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Markup, RateLimiter, Ref } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { clearTyping, setTyping } from '@hcengineering/presence-resources'
   import {
     deleteFile,
     getClient,
     getCommunicationClient,
-    getFileMetadata,
     isLinkPreviewEnabled,
     uploadFile
   } from '@hcengineering/presentation'
@@ -70,7 +68,7 @@
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
   const client = getClient()
-  const me = getCurrentEmployee()
+  const acc = getCurrentAccount()
 
   const maxLinkPreviewCount = 4
   const previewUrls = new Map<string, boolean>()
@@ -141,7 +139,7 @@
       await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
     }
 
-    void clearTyping(me, card._id)
+    void clearTyping(acc.primarySocialId, card._id)
   }
 
   async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
@@ -302,8 +300,7 @@
   }
 
   async function addFile (file: File): Promise<void> {
-    const uuid = await uploadFile(file)
-    const metadata = await getFileMetadata(file, uuid)
+    const { uuid, metadata } = await uploadFile(file)
 
     const blob = {
       blobId: uuid,
@@ -464,7 +461,7 @@
     if (message !== undefined) return
     if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
-        void setTyping(me, card._id)
+        void setTyping(acc.primarySocialId, card._id)
       })
     }
   }
@@ -512,12 +509,12 @@
   async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
     const cardId = card._id
 
-    const onFileUploaded = async ({ uuid, name, file, size, metadata }: FileUploadCallbackParams): Promise<void> => {
+    const onFileUploaded = async ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> => {
       const blob = {
         blobId: uuid,
         mimeType: file.type,
         fileName: name,
-        size: size ?? file.size,
+        size: file.size,
         metadata
       }
 

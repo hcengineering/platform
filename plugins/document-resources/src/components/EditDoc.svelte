@@ -126,7 +126,7 @@
 
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
-      const uuid = await uploadFile(file)
+      const { uuid, metadata } = await uploadFile(file)
       const attachmentId: Ref<Attachment> = generateId()
 
       await client.addCollection(
@@ -140,7 +140,8 @@
           name: file.name,
           type: file.type,
           size: file.size,
-          lastModified: file.lastModified
+          lastModified: file.lastModified,
+          metadata
         },
         attachmentId
       )

@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { Card } from '@hcengineering/card'
-  import { Blob, Ref } from '@hcengineering/core'
+  import { Blob, BlobMetadata, Ref } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
@@ -42,7 +42,7 @@
 
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
-      const uuid = await uploadFile(file)
+      const { uuid } = await uploadFile(file)
       // const attachmentId: Ref<Attachment> = generateId()
 
       // await client.addCollection(
