@@ -36,6 +36,7 @@
     "YesterdayAt": "Hier à {time}",
     "AndMore": "et {count} autres",
     "IsTyping": "{count, plural, =1 {est en train d'écrire} other {écrivent}}",
+    "IsThinking": "{count, plural, =1 {est en train de réfléchir} other {réfléchissent}}",
     "Loading": "Chargement...",
     "MessageIn": "Message #{title}",
     "ThreadWasDeleted": "Ce fil de discussion a été supprimé.",
@@ -88,6 +89,7 @@
     "AnonymousQuiz": "Quiz anonyme",
     "Direct": "Direct",
     "Directs": "Directs",
-    "Members": "Membres"
+    "Members": "Membres",
+    "Translate": "Traduire"
   }
 }

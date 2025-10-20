@@ -36,6 +36,7 @@
     "YesterdayAt": "昨日・{time}",
     "AndMore": "および{count}件の他",
     "IsTyping": "{count, plural, =1 {入力中} other {入力中}}",
+    "IsThinking": "{count, plural, =1 {考え中} other {考え中}}",
     "Loading": "読み込み中...",
     "MessageIn": "メッセージ #{title}",
     "ThreadWasDeleted": "このスレッドは削除されました。",
@@ -88,6 +89,7 @@
     "AnonymousQuiz": "匿名クイズ",
     "Direct": "ダイレクト",
     "Directs": "ダイレクト",
-    "Members": "メンバー"
+    "Members": "メンバー",
+    "Translate": "翻訳"
   }
 }

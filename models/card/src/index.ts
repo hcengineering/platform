@@ -442,7 +442,9 @@ export function createModel (builder: Builder): void {
             componentProps: {
               _class: card.class.CardSpace,
               icon: view.icon.List,
-              label: core.string.Spaces
+              label: core.string.Spaces,
+              createLabel: card.string.CreateSpace,
+              createComponent: card.component.CreateSpace
             },
             position: 'top'
           }
@@ -468,7 +470,7 @@ export function createModel (builder: Builder): void {
           }
         ]
       },
-      navHeaderComponent: card.component.NewCardHeader
+      navHeaderActions: card.component.CardHeaderButton
     },
     card.app.Card
   )

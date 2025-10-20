@@ -14,7 +14,6 @@
 //
 
 export * from './blob'
-export * from './image'
 export * from './meta'
 export * from './multipart'
 export * from './s3'

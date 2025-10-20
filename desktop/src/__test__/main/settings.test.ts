@@ -155,6 +155,19 @@ describe('Settings', () => {
         systemUnderTest.setMinimizeToTrayEnabled(value)
 
         expect(systemUnderTest.isMinimizeToTrayEnabled()).toBe(value)
+        expect(systemUnderTest.isAutoLaunchEnabled()).toBe(false)
+      })
+    })
+
+    describe('setAutoLaunchEnabled', () => {
+      test.each([
+        { value: true, description: 'stored value is true' },
+        { value: false, description: 'stored value is false' }
+      ])('$description', ({ value }) => {
+        systemUnderTest.setAutoLaunchEnabled(value)
+
+        expect(systemUnderTest.isAutoLaunchEnabled()).toBe(value)
+        expect(systemUnderTest.isMinimizeToTrayEnabled()).toBe(false)
       })
     })
 

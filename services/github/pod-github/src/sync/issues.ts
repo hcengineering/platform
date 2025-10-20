@@ -135,7 +135,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     if (event.action !== 'deleted') {
       try {
         const response: any = await ctx.with('graphql', {}, (ctx) =>
-          integration.octokit?.graphql(
+          integration.octokit.graphql(
             `query listIssue($name: String!, $owner: String!, $issue: Int!) {
           repository(name: $name, owner: $owner) {
             issue(number: $issue) {
@@ -624,7 +624,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     // We should allow modification from user.
 
     const closeIssue = async (): Promise<void> => {
-      await okit?.graphql(
+      await okit.graphql(
         `
       mutation closeIssue($issue: ID!) {
         closeIssue(input: {
@@ -642,7 +642,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     }
 
     const reopenIssue = async (): Promise<void> => {
-      await okit?.graphql(
+      await okit.graphql(
         `
       mutation reopenIssue($issue: ID!) {
         reopenIssue(input: {
@@ -675,7 +675,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                 // We need to call re-open issue
                 await reopenIssue()
               }
-              await okit?.graphql(
+              await okit.graphql(
                 `
               mutation updateIssue($issue: ID!, $body: String! ) {
                 updateIssue(input: {
@@ -713,7 +713,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                 await reopenIssue()
               }
               if (hasOtherChanges) {
-                await okit?.graphql(
+                await okit.graphql(
                   `
                 mutation updateIssue($issue: ID!) {
                   updateIssue(input: {
@@ -780,7 +780,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           issue: IssueExternalData
         }
       }
-      | undefined = await okit?.graphql(q, {
+      | undefined = await okit.graphql(q, {
         repo: repoId,
         title: existingIssue.title,
         body,
@@ -809,7 +809,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
     }`
     if (isGHWriteAllowed()) {
-      await okit?.graphql(q, {
+      await okit.graphql(q, {
         issueID: id
       })
     }

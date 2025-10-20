@@ -19,6 +19,7 @@ import { PackedConfig } from './config'
 export class Settings {
   private static readonly SETTINGS_KEY_SERVER = 'server'
   private static readonly SETTINGS_KEY_MINIMIZE_TO_TRAY = 'minimize-to-tray'
+  private static readonly SETTINGS_KEY_AUTO_LAUNCH = 'auto-launch'
   private static readonly SETTINGS_KEY_WINDOW_BOUNDS = 'windowBounds'
 
   private readonly store: Store
@@ -41,8 +42,16 @@ export class Settings {
     return (this.store as any).get(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY) as boolean ?? false
   }
 
+  isAutoLaunchEnabled (): boolean {
+    return (this.store as any).get(Settings.SETTINGS_KEY_AUTO_LAUNCH) as boolean ?? false
+  }
+
   setMinimizeToTrayEnabled (enabled: boolean): void {
     (this.store as any).set(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY, enabled)
+  }
+
+  setAutoLaunchEnabled (enabled: boolean): void {
+    (this.store as any).set(Settings.SETTINGS_KEY_AUTO_LAUNCH, enabled)
   }
 
   setServerUrl (serverUrl: string): void {

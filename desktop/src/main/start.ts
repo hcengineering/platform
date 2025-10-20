@@ -35,6 +35,8 @@ import { readPackedConfig } from './config'
 import { Settings } from './settings'
 import { TrayController } from './tray'
 import { getFileInPublicBundledFolder } from './path'
+import { OsIntegration } from './osIntegration'
+import { IpcMessage } from '../ui/ipcMessages'
 
 let isQuiting = false
 
@@ -211,7 +213,7 @@ function runTheApp (): void {
 
         void (async (): Promise<void> => {
           await window.loadFile(containerPagePath)
-          window.webContents.send('handle-auth', urlObj.searchParams.get('token'))
+          window.webContents.send(IpcMessage.HandleAuth, urlObj.searchParams.get('token'))
         })()
       }
     })
@@ -231,7 +233,7 @@ function runTheApp (): void {
           url: item.getURL(),
           savePath: item.getSavePath()
         }
-        window.webContents.send('handle-download-item', download)
+        window.webContents.send(IpcMessage.HandleDownloadItem, download)
       }
 
       notifyDownloadUpdated()
@@ -275,7 +277,7 @@ function runTheApp (): void {
     hookOpenWindow(mainWindow)
 
     function minimizeToTrayIsOn (): boolean {
-      return settings.isMinimizeToTrayEnabled() && trayController != null
+      return settings.isMinimizeToTrayEnabled() && osIntegration != null
     }
 
     mainWindow.on('close', (event: Event) => {
@@ -299,7 +301,7 @@ function runTheApp (): void {
     })
 
     function sendWindowMaximizedMessage (maximized: boolean): void {
-      mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
+      mainWindow?.webContents.send(IpcMessage.WindowStateChanged, maximized ? 'maximized' : 'unmaximized')
     }
 
     mainWindow.on('focus', () => {
@@ -313,7 +315,7 @@ function runTheApp (): void {
 
     mainWindow.on('blur', () => {
       globalShortcut.unregister(CloseTabHotKey)
-      mainWindow?.webContents.send('window-focus-loss')
+      mainWindow?.webContents.send(IpcMessage.WindowFocusLoss)
     })
 
     mainWindow.on('maximize', () => {
@@ -361,10 +363,11 @@ function runTheApp (): void {
     }
   }
 
-  let trayController: TrayController | undefined
+  let osIntegration: OsIntegration | undefined
 
   void app.whenReady().then(() => {
-    trayController = new TrayController(settings, activateWindow, quitApplication)
+    const trayController = new TrayController(settings, activateWindow, quitApplication)
+    osIntegration = new OsIntegration(settings, trayController)
   })
 
   if (isWindows) {
@@ -379,40 +382,40 @@ function runTheApp (): void {
     showSelectAll: false
   })
 
-  ipcMain.on('set-badge', (_event: any, badge: number) => {
+  ipcMain.on(IpcMessage.SetBadge, (_event: any, badge: number) => {
     app.dock?.setBadge(badge > 0 ? `${badge}` : '')
     app.badgeCount = badge
 
     if (isWindows && winBadge !== undefined) {
       winBadge.update(badge)
     }
-    trayController?.updateTrayBadge(badge)
+    osIntegration?.getTray().updateTrayBadge(badge)
   })
 
-  ipcMain.on('dock-bounce', (_event: any) => {
+  ipcMain.on(IpcMessage.DockBounce, (_event: any) => {
     app.dock?.bounce('informational')
   })
 
-  ipcMain.on('send-notification', (_event: any, notificationParams: NotificationParams) => {
+  ipcMain.on(IpcMessage.SendNotification, (_event: any, notificationParams: NotificationParams) => {
     if (Notification.isSupported()) {
       const notification = new Notification(notificationParams)
 
       notification.on('click', () => {
         mainWindow?.show()
-        mainWindow?.webContents.send('handle-notification-navigation', notificationParams)
+        mainWindow?.webContents.send(IpcMessage.HandleNotificationNavigation, notificationParams)
       })
 
       notification.show()
     }
   })
 
-  ipcMain.on('set-title', (event: any, title: string) => {
+  ipcMain.on(IpcMessage.SetTitle, (event: any, title: string) => {
     const webContents = event.sender
     const window = BrowserWindow.fromWebContents(webContents)
     window?.setTitle(title)
   })
 
-  ipcMain.on('set-combined-config', (_event: any, config: Config) => {
+  ipcMain.on(IpcMessage.SetCombinedConfig, (_event: any, config: Config) => {
     log.info('Config set: ', config)
 
     setupCookieHandler(config)
@@ -444,7 +447,7 @@ function runTheApp (): void {
     void autoUpdater.checkForUpdatesAndNotify()
   })
 
-  ipcMain.handle('get-main-config', (_event: any, _path: any) => {
+  ipcMain.handle(IpcMessage.GetMainConfig, (_event: any, _path: any) => {
     const cfg = {
       CONFIG_URL: process.env.CONFIG_URL ?? '',
       FRONT_URL,
@@ -454,11 +457,11 @@ function runTheApp (): void {
     }
     return cfg
   })
-  ipcMain.handle('get-host', (_event: any, _path: any) => {
+  ipcMain.handle(IpcMessage.GetHost, (_event: any, _path: any) => {
     return new URL(FRONT_URL).host
   })
 
-  ipcMain.on('set-front-cookie', function (event: any, host: string, name: string, value: string) {
+  ipcMain.on(IpcMessage.SetFrontCookie, function (event: any, host: string, name: string, value: string) {
     const webContents = event.sender
     const win = BrowserWindow.fromWebContents(webContents)
     const cv: CookiesSetDetails = {
@@ -474,11 +477,11 @@ function runTheApp (): void {
     void win?.webContents?.session.cookies.set(cv)
   })
 
-  ipcMain.handle('window-minimize', () => {
+  ipcMain.handle(IpcMessage.WindowMinimize, () => {
     mainWindow?.minimize()
   })
 
-  ipcMain.handle('window-maximize', () => {
+  ipcMain.handle(IpcMessage.WindowMaximize, () => {
     if (mainWindow != null) {
       if (mainWindow.isMaximized()) {
         mainWindow.unmaximize()
@@ -488,26 +491,26 @@ function runTheApp (): void {
     }
   })
 
-  ipcMain.handle('window-close', () => {
+  ipcMain.handle(IpcMessage.WindowClose, () => {
     mainWindow?.close()
   })
 
-  ipcMain.handle('get-is-os-using-dark-theme', () => {
+  ipcMain.handle(IpcMessage.GetIsOsUsingDarkTheme, () => {
     return nativeTheme.shouldUseDarkColors
   })
 
-  ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
-    dispatchMenuBarAction(mainWindow, action, trayController)
+  ipcMain.handle(IpcMessage.MenuAction, async (_event: any, action: MenuBarAction) => {
+    dispatchMenuBarAction(mainWindow, action, osIntegration)
   })
 
   if (isWindows) {
-    ipcMain.on('rebuild-user-jump-list', (_event: any, spares: JumpListSpares) => {
+    ipcMain.on(IpcMessage.RebuildUserJumpList, (_event: any, spares: JumpListSpares) => {
       rebuildJumpList(spares)
     })
   }
 
-  ipcMain.handle('get-screen-access', () => systemPreferences.getMediaAccessStatus('screen') === 'granted')
-  ipcMain.handle('get-screen-sources', () => {
+  ipcMain.handle(IpcMessage.GetScreenAccess, () => systemPreferences.getMediaAccessStatus('screen') === 'granted')
+  ipcMain.handle(IpcMessage.GetScreenSources, () => {
     return desktopCapturer.getSources({ types: ['window', 'screen'], fetchWindowIcons: true, thumbnailSize: { width: 225, height: 135 } }).then(async sources => {
       return sources.map((source: any) => {
         return {
@@ -521,6 +524,10 @@ function runTheApp (): void {
 
   ipcMain.handle('get-minimize-to-tray-enabled', () => {
     return settings.isMinimizeToTrayEnabled()
+  })
+
+  ipcMain.handle(IpcMessage.GetAutoLaunchEnabled, () => {
+    return settings.isAutoLaunchEnabled()
   })
 
   async function onReady (): Promise<void> {
@@ -605,7 +612,7 @@ function runTheApp (): void {
       return
     }
     mainWindow.setProgressBar(percent / 100)
-    mainWindow.webContents.send('handle-update-download-progress', percent)
+    mainWindow.webContents.send(IpcMessage.HandleUpdateDownloadProgress, percent)
   }
 
   autoUpdater.on('update-downloaded', (_info: any) => {

@@ -161,7 +161,7 @@ export class ReviewSyncManager implements DocSyncManager {
       }
     }`
     if (isGHWriteAllowed()) {
-      await okit?.graphql(q, {
+      await okit.graphql(q, {
         reviewID: id
       })
     }
@@ -178,7 +178,7 @@ export class ReviewSyncManager implements DocSyncManager {
 
     let externalData: ReviewExternalData
     try {
-      const response: any = await integration.octokit?.graphql(
+      const response: any = await integration.octokit.graphql(
         `
         query listReview($reviewID: ID!) {
           node(id: $reviewID) {
@@ -456,7 +456,7 @@ export class ReviewSyncManager implements DocSyncManager {
             pullRequestReview: ReviewExternalData
           }
         }
-        | undefined = await okit?.graphql(q, {
+        | undefined = await okit.graphql(q, {
           prID: (parent.external as PullRequestExternalData).id,
           body: (await this.provider.getMarkdown(existingReview.body)) ?? '',
           state: existingReview.state

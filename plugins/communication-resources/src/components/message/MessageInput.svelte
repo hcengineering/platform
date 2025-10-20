@@ -27,8 +27,7 @@
     Message,
     MessageID
   } from '@hcengineering/communication-types'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { generateId, Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Markup, RateLimiter, Ref } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { clearTyping, setTyping } from '@hcengineering/presence-resources'
   import {
@@ -69,7 +68,7 @@
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
   const client = getClient()
-  const me = getCurrentEmployee()
+  const acc = getCurrentAccount()
 
   const maxLinkPreviewCount = 4
   const previewUrls = new Map<string, boolean>()
@@ -140,7 +139,7 @@
       await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
     }
 
-    void clearTyping(me, card._id)
+    void clearTyping(acc.primarySocialId, card._id)
   }
 
   async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
@@ -462,7 +461,7 @@
     if (message !== undefined) return
     if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
-        void setTyping(me, card._id)
+        void setTyping(acc.primarySocialId, card._id)
       })
     }
   }
