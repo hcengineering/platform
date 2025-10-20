@@ -47,7 +47,8 @@ import {
   messageEditingStore,
   showOriginalMessagesStore,
   threadCreateMessageStore,
-  translateMessagesStore
+  translateMessagesStore,
+  translateToStore
 } from './stores'
 
 export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
@@ -155,15 +156,16 @@ export const canReplyInThread: MessageActionVisibilityTester = (message: Message
 }
 
 export const translateMessage: MessageActionFunction = async (message: Message): Promise<void> => {
+  const language = get(translateToStore) ?? get(languageStore)
+
   if (isMessageManualTranslating(message.cardId, message.id)) return
   const result = get(translateMessagesStore).find((it) => it.cardId === message.cardId && it.messageId === message.id)
 
-  if (result != null) {
-    showOriginalMessagesStore.update((store) =>
-      store.filter(([cId, mId]) => cId !== message.cardId || mId !== message.id)
-    )
-    return
-  }
+  showOriginalMessagesStore.update((store) =>
+    store.filter(([cId, mId]) => cId !== message.cardId || mId !== message.id)
+  )
+
+  if (result != null) return
 
   translateMessagesStore.update((store) => {
     store.push({ inProgress: true, messageId: message.id, cardId: message.cardId })
@@ -171,9 +173,8 @@ export const translateMessage: MessageActionFunction = async (message: Message):
   })
 
   const markup = toMarkup(message.content)
-  const lang = get(languageStore)
-  const currentTranslate = message?.translates?.[lang] ?? ''
-  const response = currentTranslate !== '' ? toMarkup(currentTranslate) : (await aiTranslate(markup, lang))?.text
+  const currentTranslate = message?.translates?.[language] ?? ''
+  const response = currentTranslate !== '' ? toMarkup(currentTranslate) : (await aiTranslate(markup, language))?.text
 
   if (response !== undefined) {
     translateMessagesStore.update((store) => {

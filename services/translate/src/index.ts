@@ -55,7 +55,7 @@ async function main (): Promise<void> {
   })
 
   const queue = getPlatformQueue(config.ServiceId, config.QueueRegion)
-  const controller = new Controller(ctx, openai, queue)
+  const controller = new Controller(ctx, openai)
 
   const consumer = queue.createConsumer<Tx>(ctx, QueueTopic.Tx, queue.getClientId(), async (ctx, queueMessage) => {
     const ws = queueMessage.workspace
