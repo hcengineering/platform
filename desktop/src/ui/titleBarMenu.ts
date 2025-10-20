@@ -16,7 +16,7 @@
 import { IPCMainExposed, MenuBarAction } from './types'
 import { isMenuBarAction } from './typesUtils'
 import { TitleBarMenuState } from './titleBarMenuState'
-import { ThemeVariant, type ThemeVariantType } from '@hcengineering/theme'
+import { type ThemeVariantType } from '@hcengineering/theme'
 
 const ToggleMinimizeToTrayAction: MenuBarAction = 'toggle-minimize-to-tray'
 
@@ -24,7 +24,7 @@ const LabelMinimizeToTrayEnabled = '☑ Minimize to tray'
 const LabelMinimizeToTrayDisabled = '☐ Minimize to tray'
 
 export async function setupTitleBarMenu (ipcMain: IPCMainExposed, root: HTMLElement): Promise<MenuBar> {
-  const themeManager = new ThemeManager(ThemeVariant.Light)
+  const themeManager = new ThemeManager()
   const menuManager = new MenuBarManager(root, await ipcMain.isMinimizeToTrayEnabled())
 
   const menuBar = menuManager.getView()
@@ -62,11 +62,18 @@ export async function setupTitleBarMenu (ipcMain: IPCMainExposed, root: HTMLElem
 }
 
 export class MenuBar {
+  private static readonly lastUsedThemeKey = 'last-used-theme'
+
   constructor (private readonly theme: ThemeManager) {
   }
 
   public setTheme (theme: ThemeVariantType): void {
+    localStorage.setItem(MenuBar.lastUsedThemeKey, theme)
     this.theme.setTheme(theme)
+  }
+
+  public lastUsedThemeIsUnknown (): boolean {
+    return localStorage.getItem(MenuBar.lastUsedThemeKey) == null
   }
 }
 
@@ -114,14 +121,14 @@ export function buildHulyApplicationMenu (minimizeToTrayEnabled: boolean): HTMLE
 }
 
 class ThemeManager {
-  private readonly domThemeKey = 'data-theme'
-
-  constructor (theme: ThemeVariantType) {
-    this.setTheme(theme)
-  }
+  private static readonly domThemeKey = 'data-theme'
 
   public setTheme (theme: ThemeVariantType): void {
-    document.body.setAttribute(this.domThemeKey, theme)
+    ThemeManager.setTheme(theme)
+  }
+
+  public static setTheme (theme: ThemeVariantType): void {
+    document.body.setAttribute(ThemeManager.domThemeKey, theme)
   }
 }
 
