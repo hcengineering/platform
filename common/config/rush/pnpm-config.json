@@ -247,6 +247,16 @@
     // huly.utils packages:
     // "@hcengineering/platform-rig": "file:../../../huly.utils/packages/platform-rig",
     // "@hcengineering/ui-test": "file:../../../huly.utils/packages/ui-test"
+
+    // huly.communication packages
+    // "@hcengineering/communication-types": "file:../../../communication/packages/types",
+    // "@hcengineering/communication-sdk-types": "file:../../../communication/packages/sdk-types",
+    // "@hcengineering/communication-shared": "file:../../../communication/packages/shared",
+    // "@hcengineering/communication-rest-client": "file:../../../communication/packages/rest-client",
+    // "@hcengineering/communication-cockroach": "file:../../../communication/packages/cockroach",
+    // "@hcengineering/communication-server": "file:../../../communication/packages/server",
+    // "@hcengineering/communication-query": "file:../../../communication/packages/query",
+    // "@hcengineering/communication-client-query": "file:../../../communication/packages/client-query"
   },
 
   /**
