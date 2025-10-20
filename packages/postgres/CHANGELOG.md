@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/postgres
 
-This log was last generated on Fri, 17 Oct 2025 05:15:22 GMT and should not be manually modified.
+This log was last generated on Mon, 20 Oct 2025 03:35:35 GMT and should not be manually modified.
+
+## 0.7.8
+Mon, 20 Oct 2025 03:35:35 GMT
+
+### Patches
+
+- Export domai schemas for extending
 
 ## 0.7.7
 Fri, 17 Oct 2025 05:15:22 GMT

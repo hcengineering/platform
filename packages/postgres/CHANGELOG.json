@@ -2,6 +2,18 @@
   "name": "@hcengineering/postgres",
   "entries": [
     {
+      "version": "0.7.8",
+      "tag": "@hcengineering/postgres_v0.7.8",
+      "date": "Mon, 20 Oct 2025 03:35:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Export domai schemas for extending"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.7",
       "tag": "@hcengineering/postgres_v0.7.7",
       "date": "Fri, 17 Oct 2025 05:15:22 GMT",
