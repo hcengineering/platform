@@ -61,7 +61,10 @@ import {
   type LoginInfoRequest,
   type LoginInfoRequestData,
   type Account,
-  type PersonWithProfile
+  type PersonWithProfile,
+  type Subscription,
+  SubscriptionStatus,
+  type Query
 } from './types'
 import {
   addSocialIdBase,
@@ -2595,6 +2598,69 @@ async function getUserProfile (
   throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
 }
 
+/**
+ * Get subscriptions for a workspace
+ * - Regular users: Must be OWNER or MAINTAINER of the workspace (from token)
+ * - Services: Can query any workspace by workspaceUuid parameter
+ * By default returns only active subscriptions. Set activeOnly=false to include historical subscriptions.
+ * @public
+ */
+export async function getSubscriptions (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    workspaceUuid?: WorkspaceUuid // Optional: used by services only
+    activeOnly?: boolean // Optional: default true - only return active subscriptions
+  }
+): Promise<Subscription[]> {
+  const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
+  const { workspaceUuid, activeOnly = true } = params
+
+  let targetWorkspace: WorkspaceUuid
+
+  // Check if this is a service token
+  const isService = extra?.service !== undefined
+
+  if (isService) {
+    // Services can query any workspace
+    if (workspaceUuid === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    targetWorkspace = workspaceUuid
+  } else {
+    // Regular users: use workspace from token (ignores workspaceUuid param)
+    if (tokenWorkspace === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    targetWorkspace = tokenWorkspace
+
+    // Verify user has OWNER or MAINTAINER role
+    const role = await db.getWorkspaceRole(account, targetWorkspace)
+    if (role === null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    const rolePower = getRolePower(role)
+    const maintainerPower = getRolePower(AccountRole.Maintainer)
+
+    if (rolePower < maintainerPower) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  // Fetch subscriptions for workspace (tier + addons + support)
+  // By default return only active subscriptions, unless activeOnly=false
+  const query: Query<Subscription> = { workspaceUuid: targetWorkspace }
+  if (activeOnly) {
+    query.status = SubscriptionStatus.Active
+  }
+
+  const subscriptions = await db.subscription.find(query)
+  return subscriptions
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2655,6 +2721,7 @@ export type AccountMethods =
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
   | 'getUserProfile'
+  | 'getSubscriptions'
 
 /**
  * @public
@@ -2704,6 +2771,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),
     getUserProfile: wrap(getUserProfile),
+    getSubscriptions: wrap(getSubscriptions),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
