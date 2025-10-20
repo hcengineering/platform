@@ -490,7 +490,7 @@ export default function buildModel (): Builder {
       {
         label: setting.string.Configure,
         beta: false,
-        hidden: true,
+        system: true,
         enabled: true
       }
     ],
