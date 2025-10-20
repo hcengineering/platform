@@ -14,6 +14,7 @@
 //
 
 import {
+  type AccountUuid,
   type IntegrationKind,
   type MeasureContext,
   type PersonId,
@@ -29,11 +30,12 @@ import {
   type Integration,
   type IntegrationKey,
   type IntegrationSecret,
-  type IntegrationSecretKey
+  type IntegrationSecretKey,
+  SubscriptionStatus,
+  SubscriptionType
 } from '../types'
 import * as utils from '../utils'
 import {
-  addIntegrationSecret,
   addSocialIdToPerson,
   createIntegration,
   deleteIntegration,
@@ -43,7 +45,9 @@ import {
   listIntegrations,
   listIntegrationsSecrets,
   updateIntegration,
-  updateIntegrationSecret
+  updateIntegrationSecret,
+  addIntegrationSecret,
+  upsertSubscription
 } from '../serviceOperations'
 
 // Mock platform
@@ -1401,5 +1405,201 @@ describe('integration methods', () => {
 
       expect(mockDb.integrationSecret.find).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('upsertSubscription', () => {
+  const mockCtx = {
+    error: jest.fn(),
+    info: jest.fn()
+  } as unknown as MeasureContext
+
+  const mockBranding = null
+  const mockToken = 'test-token'
+
+  let mockDb: any
+  let getWorkspaceByIdSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    mockDb = {
+      subscription: {
+        findOne: jest.fn(),
+        insertOne: jest.fn(),
+        update: jest.fn()
+      }
+    }
+
+    // Mock getWorkspaceById utility function
+    getWorkspaceByIdSpy = jest.spyOn(utils, 'getWorkspaceById')
+  })
+
+  afterAll(() => {
+    getWorkspaceByIdSpy.mockRestore()
+  })
+
+  test('should create new subscription', async () => {
+    const workspaceUuid = 'test-workspace' as WorkspaceUuid
+    const accountUuid = 'test-account' as AccountUuid
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { service: 'billing' }
+    })
+
+    getWorkspaceByIdSpy.mockResolvedValue({ uuid: workspaceUuid })
+    mockDb.subscription.findOne.mockResolvedValue(null)
+
+    const subscriptionData = {
+      id: 'sub-123',
+      workspaceUuid,
+      accountUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123',
+      providerCheckoutId: 'checkout-456',
+      type: SubscriptionType.Tier,
+      status: SubscriptionStatus.Active,
+      plan: 'pro'
+    }
+
+    await upsertSubscription(mockCtx, mockDb, mockBranding, mockToken, subscriptionData)
+
+    expect(getWorkspaceByIdSpy).toHaveBeenCalledWith(mockDb, workspaceUuid)
+    expect(mockDb.subscription.findOne).toHaveBeenCalledWith({
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123'
+    })
+    expect(mockDb.subscription.insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'sub-123',
+        workspaceUuid,
+        accountUuid,
+        provider: 'polar',
+        providerSubscriptionId: 'polar-sub-123',
+        status: 'active',
+        plan: 'pro'
+      })
+    )
+  })
+
+  test('should update existing subscription', async () => {
+    const workspaceUuid = 'test-workspace' as WorkspaceUuid
+    const accountUuid = 'test-account' as AccountUuid
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { service: 'billing' }
+    })
+
+    const existingSubscription = {
+      id: 'existing-sub-id',
+      workspaceUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123'
+    }
+
+    getWorkspaceByIdSpy.mockResolvedValue({ uuid: workspaceUuid })
+    mockDb.subscription.findOne.mockResolvedValue(existingSubscription)
+
+    const subscriptionData = {
+      id: 'sub-123',
+      workspaceUuid,
+      accountUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123',
+      type: SubscriptionType.Tier,
+      status: SubscriptionStatus.Canceled,
+      plan: 'pro',
+      canceledAt: Date.now()
+    }
+
+    await upsertSubscription(mockCtx, mockDb, mockBranding, mockToken, subscriptionData)
+
+    expect(mockDb.subscription.update).toHaveBeenCalledWith(
+      { id: 'existing-sub-id' },
+      expect.objectContaining({
+        status: 'canceled',
+        canceledAt: subscriptionData.canceledAt
+      })
+    )
+    expect(mockDb.subscription.insertOne).not.toHaveBeenCalled()
+  })
+
+  test('should reject non-billing service', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { service: 'other-service' }
+    })
+
+    const subscriptionData = {
+      workspaceUuid: 'test-workspace' as WorkspaceUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123'
+    } as any
+
+    await expect(upsertSubscription(mockCtx, mockDb, mockBranding, mockToken, subscriptionData)).rejects.toThrow(
+      new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    )
+
+    expect(mockDb.subscription.findOne).not.toHaveBeenCalled()
+  })
+
+  test('should reject if workspace not found', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { service: 'billing' }
+    })
+
+    getWorkspaceByIdSpy.mockResolvedValue(null)
+
+    const subscriptionData = {
+      workspaceUuid: 'nonexistent-workspace' as WorkspaceUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123'
+    } as any
+
+    await expect(upsertSubscription(mockCtx, mockDb, mockBranding, mockToken, subscriptionData)).rejects.toThrow(
+      PlatformError
+    )
+
+    expect(mockDb.subscription.findOne).not.toHaveBeenCalled()
+  })
+
+  test('should handle subscription with optional fields', async () => {
+    const workspaceUuid = 'test-workspace' as WorkspaceUuid
+    const accountUuid = 'test-account' as AccountUuid
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { service: 'billing' }
+    })
+
+    getWorkspaceByIdSpy.mockResolvedValue({ uuid: workspaceUuid })
+    mockDb.subscription.findOne.mockResolvedValue(null)
+
+    const subscriptionData = {
+      id: 'sub-123',
+      workspaceUuid,
+      accountUuid,
+      provider: 'polar',
+      providerSubscriptionId: 'polar-sub-123',
+      providerCheckoutId: 'checkout-456',
+      type: SubscriptionType.Tier,
+      status: SubscriptionStatus.Trialing,
+      plan: 'storage-100gb',
+      periodStart: Date.now(),
+      periodEnd: Date.now() + 30 * 24 * 60 * 60 * 1000,
+      trialEnd: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      providerData: {
+        customerExternalId: 'cus_123',
+        metadata: { source: 'website' }
+      }
+    }
+
+    await upsertSubscription(mockCtx, mockDb, mockBranding, mockToken, subscriptionData)
+
+    expect(mockDb.subscription.insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerCheckoutId: 'checkout-456',
+        trialEnd: subscriptionData.trialEnd,
+        providerData: subscriptionData.providerData
+      })
+    )
   })
 })
