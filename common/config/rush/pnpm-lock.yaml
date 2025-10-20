@@ -59,23 +59,23 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/communication-client-query':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-rest-client':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-server':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-shared':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/communication-types':
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       '@hcengineering/core':
         specifier: ^0.7.8
         version: 0.7.8
@@ -3150,29 +3150,29 @@ packages:
   '@hcengineering/collaborator-client@0.7.5':
     resolution: {integrity: sha512-f6sF1BhNgJBS0VZSJiTJQ/S5Nna0Eyw7THazbdriG1iENgoLtWqszaf4c3sVJdttn2v2+pBXZaf5dfUlM/HcyA==}
 
-  '@hcengineering/communication-client-query@0.7.4':
-    resolution: {integrity: sha512-8btT1bMuetPvSYtJ6s8uVgDhg5+Lb8DrtMjFQIpNpNcJeG7s1Z4J1Y6xTWrQ6y0Bkq8DSzGvR+2froL21otBvg==}
+  '@hcengineering/communication-client-query@0.7.5':
+    resolution: {integrity: sha512-T5DwX/Wax21CeaYrobnStwMVQPKn+soPMPmXuQnlk89wVetZkEWLBBWVEVSChB9dNpOig9MRO3L09MYmBQZZgQ==}
 
-  '@hcengineering/communication-cockroach@0.7.4':
-    resolution: {integrity: sha512-pK8nRN+64FwobBV/58jjvi3/e1YNw6/8D9CiB7C4klGxmHddyM7xU+OCk9GD0v6vIdb9st1OhPityZKWmJu2sg==}
+  '@hcengineering/communication-cockroach@0.7.5':
+    resolution: {integrity: sha512-N19uZ584v4vfBqll5pt9nS7HYaxm6Ep684pkTLPNyec3R6ca2KkZPC/nSD5JnDwyNllOAjpEc3E7WNg6M7Y+3w==}
 
-  '@hcengineering/communication-query@0.7.4':
-    resolution: {integrity: sha512-bNpA8RWxqGt70Iz+xgJmlflBAar0mEETlDDKnP5axhEVLo4skc/pp5d7eEk8w48iY8f+eXrQKEb3XA1WCEPEqA==}
+  '@hcengineering/communication-query@0.7.5':
+    resolution: {integrity: sha512-W3IwoSlV5hdB1XYygqlqkcLG4zr2yVRKTJNOSUkDZy9Vxpco0nOt/3zPWqLWVGGbJDs8znLQ/5HdETN+edRzlg==}
 
-  '@hcengineering/communication-rest-client@0.7.4':
-    resolution: {integrity: sha512-nNB8FXCy9j2yDhZcddrXIUz3M961i83fIgqxLM7x+qpVzHUOE+Gs7DVMmtxdwcrXLa+cJ457a8eP1EdqbvOqMw==}
+  '@hcengineering/communication-rest-client@0.7.5':
+    resolution: {integrity: sha512-qJMiiMUxUKwMsmgHa+Fb21+KA6j5aqZrfIscefOapg1vvXtOT3M+Cw5hyl8sO8wSG5JzYGbrzXK8I9mafLIASw==}
 
-  '@hcengineering/communication-sdk-types@0.7.4':
-    resolution: {integrity: sha512-yrEpETwO1v0izC5evR88LynV00z0uHnm78wpYsDbxAcdiPhCsI4GAKT+0LuYUvd470gF8u5TDUTS84gxaEqx7g==}
+  '@hcengineering/communication-sdk-types@0.7.5':
+    resolution: {integrity: sha512-njGdk6cVKcOBU4071bk89GPlfPT0JuGw2zWMPrUnIjbZKh/rQoK1x1ob2O0FBG9qp0OvVAy9hCsEPdn1KxuO9w==}
 
-  '@hcengineering/communication-server@0.7.4':
-    resolution: {integrity: sha512-qsUto+/+rmEnKjZFAzwWzpzIiQBvoIeOf5HCUGeTgHXXWsNDqpPaXqjXlWWYPjQGxe7VibCjfQ2JSan/olbrWg==}
+  '@hcengineering/communication-server@0.7.5':
+    resolution: {integrity: sha512-lNClMeSFwgNblbhPkQD78s4JZMOroeZ8kd90vyR/WjlH3XmZAdgQaF6XF6Loj7o53RqyFu4c4Uk1P9iKKqi97A==}
 
-  '@hcengineering/communication-shared@0.7.4':
-    resolution: {integrity: sha512-ah1aVxihhvnCjvPwjmoFz9qracI7wxCLNSPOOcUGp4ubvVFe+e0qNPu6WsVJ0Of1JyTxk50fdfs7/hjFXay+ig==}
+  '@hcengineering/communication-shared@0.7.5':
+    resolution: {integrity: sha512-BRoSHxb4b0wmOPzTcGxsqnXD6hrV9g/Q0w9fyl7RBzHG/29hSulGcpX/2+CMmr4iUxzxxxfkOpsIFPrlwG1jow==}
 
-  '@hcengineering/communication-types@0.7.4':
-    resolution: {integrity: sha512-UyYMBOSNzOZAT/1J0JbVb7YGnBfRqjVbSUF3hfCkvyAwDxjCxROfIojz1L/ijJOVGeCjF8XvjT4ivcLTaRztAg==}
+  '@hcengineering/communication-types@0.7.5':
+    resolution: {integrity: sha512-7HlnxdITb8v8PlkmXkQK1P/JJDtMP8G7jP/MQvRyCq3iYCphwemOPAe8ghiqNO3QPV4j9Qmzx3N6A6Jyms2Eog==}
 
   '@hcengineering/core@0.7.8':
     resolution: {integrity: sha512-Ed4JktNRR3TkLwchPUUpD19t+zGX13rARuT21OXaRmoQWpV7dm4bK5YB9kxa+cgol0EJDg53+gEAMAyt+BgYWQ==}
@@ -4700,7 +4700,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/activity-resources@file:projects/activity-resources.tgz':
-    resolution: {integrity: sha512-USkgf29v+Ej3wxdtulhJFJ/fWfxoUAqvS9lK/KDhAVriwUhljRtLluL86H1ifkgHsY9JabinuCNeS7QWPeZqSg==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-f+r+EtyMmn3p77LFYpRvEvCVDsQtqVp8mg6S2zXE6X5RWiMItz55+Gglg33A9ADZWMVnELrEYjTNQkTcdhqnaA==, tarball: file:projects/activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/activity@file:projects/activity.tgz':
@@ -4828,7 +4828,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-yqqsPULZVuorO2ysmMvBFlOysQ1pFKPCVs6nRdQ/VgR8BHw/LJvQX23iwYN4eUIaf6WYSIbyWdAMnotWo/aqDQ==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-TZv/awmN/pD3dcYqEM8yiSnKUFQQELgfJVmjMnPFLKHVTP2u27NAm1uRAexKL7xJGlfwSDafrjA9Dbvi8n0+DA==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4840,7 +4840,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/chat-resources@file:projects/chat-resources.tgz':
-    resolution: {integrity: sha512-pqWmJj6spBit5zlvSd3I424vHNO4Lnk+D+yqIucO/L+Dw6EvzP8rj2nWidR/aiEBdyUWMv0Z9mdD9LwS1U7yTg==, tarball: file:projects/chat-resources.tgz}
+    resolution: {integrity: sha512-WMWOmFsSlb3Zjj12bi7LEPmXkuXc4u1dX64V1STak2SPWJluMDP5Ba1Fy1ba/MzN7utaj8BDLL7YgOs40Yyn4A==, tarball: file:projects/chat-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/chat@file:projects/chat.tgz':
@@ -4868,11 +4868,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
-    resolution: {integrity: sha512-8LIKmDSE9zpVgl95zxQQNZzwkZQKpSkvZJ5otZVW9SdimORGeoyRe2A4RzgwhTBrnzWb14R/XM2SRfvepQooBQ==, tarball: file:projects/communication-resources.tgz}
+    resolution: {integrity: sha512-giYpTd6V5e0F3Roy3PPj3YYg+TKfw+YXpG1GVGaITmvH8ZVTjXG/AfDG0B7oirJIqo/WLK6H0dMsKmw7kzac0A==, tarball: file:projects/communication-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/communication@file:projects/communication.tgz':
-    resolution: {integrity: sha512-yq0ZOpQ2F38TjPX6xpJqI/cP16lObTTbtODqqbIPgDwzcIk0gEubNRtxs5tIteXP7IfojxQB2k2lKd7+jJ3mkg==, tarball: file:projects/communication.tgz}
+    resolution: {integrity: sha512-EBlnBy4oyLwQumc4wuTfFnTB3/b8FFW3DK1reQ7hXIAl5hBhXNLNjLT47a+74CZn1FzVSKTlUS2eTCVNsT2Mjg==, tarball: file:projects/communication.tgz}
     version: 0.0.0
 
   '@rush-temp/contact-assets@file:projects/contact-assets.tgz':
@@ -4928,7 +4928,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-X2tYdyfQiheqvMKHnqm8vhI7Gxp4B0Zjo+d/Gf+KsSjUVeu4x+W4INBxfvDTHa5HlyrUDZuK7mXjFMEWYx5uUg==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-HiBnbdBc/mg0wlsEUcRw05sKWnlyUnExnNV3vkyEFlnSIN3ROFYSIhEI26+UpXhfa+8t6TTSQx9JK8gmiII0aQ==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -5168,7 +5168,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-1dDAO4/L58rgopWpEImJRpUMdZrbcnpIAD+jPX9HfV8bd0drBT5hvDPUmqasydflJXGM1cU81lrKSKHpF01NxQ==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-6z7Dz67d/bidjdkTWwMsidhpsx7LlymN/F0Sd1hVmawZNxVmvRQO281ukHYCAdr5sGTbhpAZZHXTSYqsNv8dvw==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -5244,7 +5244,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-communication@file:projects/model-communication.tgz':
-    resolution: {integrity: sha512-vw9BbEe5cL/V8Lnrnu2uEbYMc62e86FMaiQXlClYP21a8TTwok08vWuwCL5r1TqHsCKGbQXXVwRdGM+4J4WWpQ==, tarball: file:projects/model-communication.tgz}
+    resolution: {integrity: sha512-ljTE/rOcnS7P7lj7yPz323yi0TqZdK5ruWtrHX407hyBRTpo3BNJgBobZwup2SdguIRJ6RjVS0IUk5c6HVb+zQ==, tarball: file:projects/model-communication.tgz}
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
@@ -5620,7 +5620,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-QjADCHNeKLQGYykw8TpPbUe1rl0hrhOgsJ45Jh7TY6vDQfhB5JoPAFb0QFdRBj7yTXLlNGEHRyaIZu0luW3QTQ==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-RlRjNBYGKEGgtGaxw+2Mq/UU3DHmDAoV0e6eXCLCJu1zJKvjKnICH4sH9tSJAmrI85tvcN2P2R9/nYoU8VRbag==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -5636,7 +5636,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
-    resolution: {integrity: sha512-ctEyUfwN35U+TmbveGcQfu7X0sNasenVRg7BBnhf7BvNdEl/1KxDmWVuIGPeF/Wjoo2tJBtjQtMEfPZQExgCmA==, tarball: file:projects/pod-fulltext.tgz}
+    resolution: {integrity: sha512-Ikt/n/RGgmS8tReEWTADcN/lGG3oEV4PUd2byIaJT1iRdYaxgRlefRznfxkESyQ+67HH0rXS89Ojxfv/y2zZBA==, tarball: file:projects/pod-fulltext.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
@@ -5644,7 +5644,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-CKi6pc3CRefNRcBoZ/iYG/lFVhrqcEsiZtaeHe5tm55EyQ6kiN4y9OCM/5rliAbZBDLwF1qwGYO7T0/tTbUkKg==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-JyIeVoVT0XF9FPCmpdFfYiYTj1dCsBo9j2egDEjxIFPMQzOoMXPOSLPSunuJ/6InEQdTnTtwx1YlCb14n67YgQ==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -5652,7 +5652,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz':
-    resolution: {integrity: sha512-xmgjATFsOoFi+4ME2FHXbtdQuQr2keRP/hxgBg5dC+r61nR2xAeiFBfniL5epL43ROSPy2wYKTFn51kZ75rCDA==, tarball: file:projects/pod-mail-worker.tgz}
+    resolution: {integrity: sha512-VST3THf+1dHCsO7fMtB7ZYw+iZvb7Ypj4bhc261DYHw8cAE2UhaMvpsu0X8G9YS2f5PZy27ELoMcuCckrHGh7Q==, tarball: file:projects/pod-mail-worker.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
@@ -5660,7 +5660,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
-    resolution: {integrity: sha512-TOPp3F25AdRBe8ESzvIw+J9N0SuvXNKXHPMuT1hcZKvlrMBIbm1vMjPxHVEvsD7vnLx/vuIDk9OkjjjNpURyHw==, tarball: file:projects/pod-media.tgz}
+    resolution: {integrity: sha512-4Ye1O6iRzmArOU4nGkgfR2BnpINLSPv/E3IUpWnwqaE+8DGwntWSD23EP05yTr7EHOqUtNS4ytwgT2ZmUhjhBg==, tarball: file:projects/pod-media.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz':
@@ -5676,11 +5676,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz':
-    resolution: {integrity: sha512-BwH5x4V45Zv87g9QrqRhnQqsoX6dU8q8w88+bPL9T5CzGJMjqOfDH0QZFXANyAxEHaNXXaCTJJsdBX5qLW78pg==, tarball: file:projects/pod-process.tgz}
+    resolution: {integrity: sha512-iUG8L9JNrxOOzALhuSoHT1EHBz4JelZh36dMKUBJJXTLPMt1EC4X2N6JJOTZPfbPKeH2a89KeS1zwN3sQyjrMg==, tarball: file:projects/pod-process.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-/n7twCNVMt/o8RZ63dYowN9290NSKHZ5xhUdbHA3lk8covUEM1nKsNVOGz2W4lLnxc/fh43mC8compv3AhOokw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-aR9P6JsNdSrHmfvsc3oqgYvdeEhH03KBR/xb0YmaL+Zjcey4erHd4lT0pz5bl8OKQnJKeL9hmuYp+G4PA/J3GQ==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-sign@file:projects/pod-sign.tgz':
@@ -5700,7 +5700,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-translate@file:projects/pod-translate.tgz':
-    resolution: {integrity: sha512-PRENieCbS9fBMtLNMNGlU+FMABWIyO+zVtutw1mK0HpgDmWPwAugLx20wGO6EtMstFOjyL007XxqLd08qSTZZQ==, tarball: file:projects/pod-translate.tgz}
+    resolution: {integrity: sha512-KTyPboJFndNGiYbVmyx4vn4t8VccbSP/MGvnkOM25zzoK13B2AwBftTis1j5Ye1dICrlForEg/RvG1YO6adiLw==, tarball: file:projects/pod-translate.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-worker@file:projects/pod-worker.tgz':
@@ -5728,7 +5728,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-rPyZJWnepbLrlkPpMczPb0fEWXGhSOJ4MRzxL5vBFfAGLXPJ5Lnc29YCn0Fe30c7rAeGs+fxngSHGJQnppHBIA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-zIQTRJuZTrr6uH0xlybJN2QfXk4qryWQxoRnJYwAPwYDYMF+xhcadHPlD5dAt8DsAM6Fooe5GnAnHxDhct1Kkg==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5844,7 +5844,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-activity-resources@file:projects/server-activity-resources.tgz':
-    resolution: {integrity: sha512-MOZw/nyEVyDjyuEcH0y93OY7TT/Kh2sX2OJJIzwurk/MSUXFRRAG+2q8YIS4Sf5XJqKGvTs1nQgGfCAh2yUSQQ==, tarball: file:projects/server-activity-resources.tgz}
+    resolution: {integrity: sha512-mlvStvUKlViTLzdD2iir0RFdYbMtThsI2SGaSJYQS4xNx6kovGnuNzqNh/zT38g7eol5oNDQOep/yV8z+Y4ztQ==, tarball: file:projects/server-activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-activity@file:projects/server-activity.tgz':
@@ -5888,7 +5888,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-card-resources@file:projects/server-card-resources.tgz':
-    resolution: {integrity: sha512-beppu9pCPw3gSArHS1nQfFU8Of2Q8NE119V6s08MBkMhz+DrIGvcHjBCM/9CidrrNkxFfEKVvMgtxHiQQvp0+w==, tarball: file:projects/server-card-resources.tgz}
+    resolution: {integrity: sha512-Xz1ezBcOswOS3D2MjUGoErXbgc3IF0AxUz4sypxW9wMVaSKINLWzJ/ZaB/lkOudwSJqCZVrvp4OlHqTtYdkzCQ==, tarball: file:projects/server-card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-card@file:projects/server-card.tgz':
@@ -5980,7 +5980,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-indexer@file:projects/server-indexer.tgz':
-    resolution: {integrity: sha512-KQYEEvZILW5Y+BrRTsyPzOFUtjEPUFmsU8vxKqO1PVo5Hcqe0UVOSPoapWL7XXhzN0EZJieNp3QBVLErzueXOQ==, tarball: file:projects/server-indexer.tgz}
+    resolution: {integrity: sha512-tFwWOmB1tqKJEHWT6hFIhnx5gCTS6005xFC2p0qIsmLu0zdjWcCyO80IR4ImoEW1uDwblJ4JmrF4kWxWFNP3jg==, tarball: file:projects/server-indexer.tgz}
     version: 0.0.0
 
   '@rush-temp/server-inventory-resources@file:projects/server-inventory-resources.tgz':
@@ -6016,7 +6016,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-pipeline@file:projects/server-pipeline.tgz':
-    resolution: {integrity: sha512-lDlxMB6lqmqqdEQIjj5snk6JXS3a+q8xG/XjPiHbEWiERRd8hIp1SV0XzZLoOfr6d97I5mjyjcnMulZMWjjoxw==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-gSokru75x9kMT2vqcSQR+YNSRSB9K9JujFfu/vslcegHayvwOdHsplJxuKRSkHxgrqKvlfh+dCV1VzJJlI5Hlg==, tarball: file:projects/server-pipeline.tgz}
     version: 0.0.0
 
   '@rush-temp/server-preference@file:projects/server-preference.tgz':
@@ -6256,7 +6256,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-gEOXpK9gv8ZcGhXzJlCOmcpY7YEJu3OfI3tTKJyeIZkF+bQTgyDRsa1PidhI0xEDThqbTtiGXxlV9T1V8Q17oQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-LLM02+C+/DwygCTcINnwd1KI0y7eaZKS5bTE8jmAPmJ15RBvCliX3EuFRuFFhmZ++10TAXTeeYH/rSFOj5Q1aQ==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -8345,9 +8345,6 @@ packages:
   code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
 
-  collapse-white-space@2.1.0:
-    resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
-
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
 
@@ -9888,9 +9885,6 @@ packages:
 
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
-
-  franc-min@6.2.0:
-    resolution: {integrity: sha512-1uDIEUSlUZgvJa2AKYR/dmJC66v/PvGQ9mWfI9nOr/kPpMFyvswK0gPXOwpYJYiYD008PpHLkGfG58SPjQJFxw==}
 
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
@@ -11666,9 +11660,6 @@ packages:
 
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
-
-  n-gram@2.0.2:
-    resolution: {integrity: sha512-S24aGsn+HLBxUGVAUFOwGpKs7LBcG4RudKU//eWzt/mQ97/NMKQxDWHyHx63UNWk/OOdihgmzoETn1tf5nQDzQ==}
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
@@ -13626,9 +13617,6 @@ packages:
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
     hasBin: true
-
-  trigram-utils@2.0.1:
-    resolution: {integrity: sha512-nfWIXHEaB+HdyslAfMxSqWKDdmqY9I32jS7GnqpdWQnLH89r6A5sdk3fDVYqGAZ0CrT8ovAFSAo6HRiWcWNIGQ==}
 
   triple-beam@1.4.1:
     resolution: {integrity: sha512-aZbgViZrg1QNcG+LULa7nhZpJTZSLm/mXnHXnbAbjmN5aSa0y7V+wvv6+4WaBtpISJzThKy+PIPxc1Nq1EJ9mg==}
@@ -15589,67 +15577,66 @@ snapshots:
     dependencies:
       '@hcengineering/core': 0.7.8
 
-  '@hcengineering/communication-client-query@0.7.4':
+  '@hcengineering/communication-client-query@0.7.5':
     dependencies:
-      '@hcengineering/communication-query': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-query': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/hulylake-client': 0.7.6
       fast-equals: 5.2.2
 
-  '@hcengineering/communication-cockroach@0.7.4':
+  '@hcengineering/communication-cockroach@0.7.5':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       postgres: 3.4.7
       uuid: 8.3.2
 
-  '@hcengineering/communication-query@0.7.4':
+  '@hcengineering/communication-query@0.7.5':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/hulylake-client': 0.7.6
       fast-equals: 5.2.2
       uuid: 8.3.2
 
-  '@hcengineering/communication-rest-client@0.7.4':
+  '@hcengineering/communication-rest-client@0.7.5':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       snappyjs: 0.7.0
 
-  '@hcengineering/communication-sdk-types@0.7.4':
+  '@hcengineering/communication-sdk-types@0.7.5':
     dependencies:
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
 
-  '@hcengineering/communication-server@0.7.4':
+  '@hcengineering/communication-server@0.7.5':
     dependencies:
       '@hcengineering/account-client': 0.7.6
-      '@hcengineering/communication-cockroach': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-cockroach': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/hulylake-client': 0.7.6
       '@hcengineering/server-token': 0.7.5
       '@hcengineering/text-core': 0.7.5
       '@hcengineering/text-markdown': 0.7.5
-      franc-min: 6.2.0
       uuid: 8.3.2
       zod: 3.24.2
 
-  '@hcengineering/communication-shared@0.7.4':
+  '@hcengineering/communication-shared@0.7.5':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/hulylake-client': 0.7.6
 
-  '@hcengineering/communication-types@0.7.4':
+  '@hcengineering/communication-types@0.7.5':
     dependencies:
       '@hcengineering/core': 0.7.8
 
@@ -18051,7 +18038,7 @@ snapshots:
   '@rush-temp/activity-resources@file:projects/activity-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -19383,7 +19370,7 @@ snapshots:
     dependencies:
       '@hcengineering/account-client': 0.7.6
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -19510,8 +19497,8 @@ snapshots:
   '@rush-temp/chat-resources@file:projects/chat-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -19843,8 +19830,8 @@ snapshots:
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -19899,7 +19886,7 @@ snapshots:
 
   '@rush-temp/communication@file:projects/communication.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -20456,7 +20443,7 @@ snapshots:
     dependencies:
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -22949,10 +22936,10 @@ snapshots:
     dependencies:
       '@hcengineering/account-client': 0.7.6
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
-      '@hcengineering/communication-rest-client': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-rest-client': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -23695,7 +23682,7 @@ snapshots:
 
   '@rush-temp/model-communication@file:projects/model-communication.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/model': 0.7.5
       '@hcengineering/platform': 0.7.5
@@ -27504,7 +27491,6 @@ snapshots:
       on-headers: 1.0.2
       postgres: 3.4.7
       prettier: 3.6.2
-      sharp: 0.34.3
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)
       typescript: 5.9.3
@@ -27675,8 +27661,8 @@ snapshots:
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-server': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-server': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/elastic': 0.7.7
       '@hcengineering/hulylake-client': 0.7.6
@@ -27867,8 +27853,8 @@ snapshots:
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
-      '@hcengineering/communication-rest-client': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
+      '@hcengineering/communication-rest-client': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/platform': 0.7.5
@@ -28009,9 +27995,9 @@ snapshots:
       '@hcengineering/account-client': 0.7.6
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
-      '@hcengineering/communication-rest-client': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-rest-client': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/platform': 0.7.5
@@ -28136,8 +28122,8 @@ snapshots:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/platform': 0.7.5
@@ -28371,8 +28357,8 @@ snapshots:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/platform': 0.7.5
@@ -28430,8 +28416,8 @@ snapshots:
       '@hcengineering/account-client': 0.7.6
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-server': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-server': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/middleware': 0.7.9
@@ -28791,9 +28777,9 @@ snapshots:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/hulylake-client': 0.7.6
       '@hcengineering/kafka': 0.7.7
@@ -29108,10 +29094,10 @@ snapshots:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
       '@hcengineering/collaborator-client': 0.7.5
-      '@hcengineering/communication-client-query': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-client-query': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/hulylake-client': 0.7.6
       '@hcengineering/platform': 0.7.5
@@ -30323,8 +30309,8 @@ snapshots:
 
   '@rush-temp/server-activity-resources@file:projects/server-activity-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -30747,8 +30733,8 @@ snapshots:
 
   '@rush-temp/server-card-resources@file:projects/server-card-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -31617,10 +31603,10 @@ snapshots:
   '@rush-temp/server-indexer@file:projects/server-indexer.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/communication-rest-client': 0.7.4
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-shared': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-rest-client': 0.7.5
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-shared': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/hulylake-client': 0.7.6
       '@hcengineering/platform': 0.7.5
@@ -31969,8 +31955,8 @@ snapshots:
 
   '@rush-temp/server-pipeline@file:projects/server-pipeline.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.7.4
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-sdk-types': 0.7.5
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/kafka': 0.7.7
       '@hcengineering/middleware': 0.7.9
@@ -34376,7 +34362,7 @@ snapshots:
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/collaboration': 0.7.7(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
-      '@hcengineering/communication-types': 0.7.4
+      '@hcengineering/communication-types': 0.7.5
       '@hcengineering/core': 0.7.8
       '@hcengineering/datalake': 0.7.7
       '@hcengineering/elastic': 0.7.7
@@ -37626,8 +37612,6 @@ snapshots:
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
-  collapse-white-space@2.1.0: {}
-
   collect-v8-coverage@1.0.2: {}
 
   color-convert@1.9.3:
@@ -39410,10 +39394,6 @@ snapshots:
   forwarded@0.2.0: {}
 
   fraction.js@4.3.7: {}
-
-  franc-min@6.2.0:
-    dependencies:
-      trigram-utils: 2.0.1
 
   fresh@0.5.2: {}
 
@@ -41554,8 +41534,6 @@ snapshots:
       any-promise: 1.3.0
       object-assign: 4.1.1
       thenify-all: 1.6.0
-
-  n-gram@2.0.2: {}
 
   nanoid@3.3.11: {}
 
@@ -43709,11 +43687,6 @@ snapshots:
       tslib: 2.8.1
 
   tree-kill@1.2.2: {}
-
-  trigram-utils@2.0.1:
-    dependencies:
-      collapse-white-space: 2.1.0
-      n-gram: 2.0.2
 
   triple-beam@1.4.1: {}
 
