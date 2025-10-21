@@ -187,6 +187,14 @@
     "Disconnected": "Desconectado",
     "Available": "Disponível",
     "NotConnectedIntegration": "A conta {account} não está integrada com o espaço de trabalho",
-    "IntegrationIsUnstable": "O serviço de integração está enfrentando problemas. Algumas funcionalidades podem não funcionar corretamente."
+    "IntegrationIsUnstable": "O serviço de integração está enfrentando problemas. Algumas funcionalidades podem não funcionar corretamente.",
+    "MinValue": "Valor mínimo",
+    "MaxValue": "Valor máximo",
+    "IntegerOnly": "Apenas números inteiros",
+    "AccessControl": "Controle de acesso",
+    "DangerZone": "Zona de perigo",
+    "ApiAccess": "Acesso à API",
+    "ApiToken": "Token de API",
+    "GenerateApiToken": "Gerar token de API"
   }
 }

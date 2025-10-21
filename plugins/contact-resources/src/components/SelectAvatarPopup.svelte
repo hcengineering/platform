@@ -19,9 +19,10 @@
   import type { Ref } from '@hcengineering/core'
   import { Blob as PlatformBlob } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
-  import {
+  import presentation, { Card, getFileUrl, uiContext } from '@hcengineering/presentation'
+  import ui, {
     AnySvelteComponent,
+    Button,
     ColorDefinition,
     Label,
     TabList,
@@ -171,6 +172,12 @@
     }
   }
 
+  function handleClearClick (): void {
+    selectedAvatar = undefined
+    selectedAvatarType = AvatarType.COLOR
+    selectedAvatarProps = { color: getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name }
+  }
+
   const showColorPopup = (event: MouseEvent) => {
     showPopup(
       ColorsPopup,
@@ -238,6 +245,9 @@
       on:select={handleDropdownSelection}
     />
   </div>
+  <svelte:fragment slot="buttons">
+    <Button minWidth={'5rem'} label={ui.string.Clear} kind={'ghost'} size={'large'} on:click={handleClearClick} />
+  </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if selectedAvatarType === AvatarType.GRAVATAR}
       <div class="flex-col">

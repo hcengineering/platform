@@ -37,13 +37,12 @@
     Header,
     IconCheckmark,
     IconClose,
-    IconDelete,
     IconEdit,
     Label,
+    Loading,
     navigate,
     Scroller,
     showPopup,
-    Spinner,
     themeStore,
     Toggle
   } from '@hcengineering/ui'
@@ -57,11 +56,13 @@
   import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
   import card, { Card } from '@hcengineering/card'
   import chat from '@hcengineering/chat'
+  import ApiTokenPopup from './ApiTokenPopup.svelte'
 
   let loading = true
   let isEditingName = false
   let oldName: string
   let name: string = ''
+  let workspaceUrl = ''
   let allowReadOnlyGuests: boolean
   let allowGuestSignUp: boolean
 
@@ -80,6 +81,7 @@
   async function loadWorkspaceName (): Promise<void> {
     const res = await accountClient.getWorkspaceInfo()
 
+    workspaceUrl = res.url
     oldName = res.name
     name = oldName
     allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
@@ -126,25 +128,26 @@
   })
 
   async function handleAvatarDone (): Promise<void> {
-    if (workspaceSettings === undefined) {
+    const existing = await client.findOne(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting })
+    if (existing !== undefined) {
       const avatar = await avatarEditor.createAvatar()
+      // Remove old avatar if changed
+      if (existing.icon != null && existing.icon !== avatar.avatar) {
+        await avatarEditor.removeAvatar(existing.icon)
+      }
+
+      const icon = avatar.avatarType === AvatarType.IMAGE ? avatar.avatar : null
+      await client.diffUpdate(existing, { icon })
+    } else {
+      const avatar = await avatarEditor.createAvatar()
+
       await client.createDoc(
         settingsRes.class.WorkspaceSetting,
         core.space.Workspace,
         { icon: avatar.avatar },
         settingsRes.ids.WorkspaceSetting
       )
-      return
     }
-
-    const avatar = await avatarEditor.createAvatar()
-    if (workspaceSettings.icon != null && workspaceSettings.icon !== avatar.avatar) {
-      // Different avatar
-      await avatarEditor.removeAvatar(workspaceSettings.icon)
-    }
-    await client.update(workspaceSettings, {
-      icon: avatar.avatar
-    })
   }
 
   const permissionConfigurationQuery = createQuery()
@@ -191,6 +194,11 @@
 
   async function handleToggleGuestSignUp (e: CustomEvent<boolean>): Promise<void> {
     await accountClient.updateAllowGuestSignUp(e.detail)
+  }
+
+  async function handleGenerateApiToken (): Promise<void> {
+    const { token } = await accountClient.selectWorkspace(workspaceUrl)
+    showPopup(ApiTokenPopup, { token })
   }
 
   function handleTogglePermissions (): void {
@@ -268,11 +276,13 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={settingsRes.icon.Setting} label={settingsRes.string.General} size={'large'} isCurrent />
+    <Breadcrumb icon={settingsRes.icon.Setting} label={settingsRes.string.WorkspaceSettings} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     {#if loading}
-      <Spinner size={'small'} />
+      <div class="w-full h-full flex-col-center justify-center">
+        <Loading />
+      </div>
     {:else}
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content flex-col flex-gap-4">
@@ -280,10 +290,11 @@
           <div class="ws">
             <EditableAvatar
               person={{
-                avatarType: AvatarType.IMAGE,
+                avatarType: workspaceSettings?.icon !== undefined ? AvatarType.IMAGE : AvatarType.COLOR,
                 avatar: workspaceSettings?.icon
               }}
               size="medium"
+              {name}
               bind:this={avatarEditor}
               on:done={handleAvatarDone}
               imageOnly
@@ -307,13 +318,8 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
-            <Button
-              icon={IconDelete}
-              kind="dangerous"
-              on:click={handleDelete}
-              showTooltip={{ label: settingsRes.string.DeleteWorkspace }}
-            />
           </div>
+
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.Calendar} /></div>
             <div class="flex-row-center flex-gap-4">
@@ -328,46 +334,80 @@
               />
             </div>
           </div>
-          <div class="title mt-6"><Label label={settingsRes.string.GuestAccess} /></div>
-          <div class="flex-row-center flex-gap-4">
-            <Label label={settingsRes.string.GuestAccessDescription} />
-            <Toggle
-              on={allowReadOnlyGuests}
-              on:change={(e) => {
-                void handleToggleReadonlyAccess(e)
-              }}
-            />
+
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.GuestAccess} /></div>
+            <div class="flex-row-center flex-gap-4">
+              <Label label={settingsRes.string.GuestAccessDescription} />
+              <Toggle
+                on={allowReadOnlyGuests}
+                on:change={(e) => {
+                  void handleToggleReadonlyAccess(e)
+                }}
+              />
+            </div>
+
+            <div class="flex-row-center flex-gap-4">
+              <Label label={settingsRes.string.GuestSignUpDescription} />
+              <Toggle
+                disabled={!allowReadOnlyGuests}
+                on={allowGuestSignUp}
+                on:change={(e) => {
+                  void handleToggleGuestSignUp(e)
+                }}
+              />
+            </div>
+
+            <div class="flex-row-center flex-gap-4">
+              <Label label={settingsRes.string.GuestChannelsDescription} />
+              <Component
+                is={card.component.CardArrayEditor}
+                props={{
+                  _class: chat.masterTag.Thread,
+                  value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
+                  label: settingsRes.string.GuestChannelsArrayLabel,
+                  onChange: onAllowedCardsChange
+                }}
+              />
+            </div>
           </div>
-          <div class="flex-row-center flex-gap-4">
-            <Label label={settingsRes.string.GuestSignUpDescription} />
-            <Toggle
-              disabled={!allowReadOnlyGuests}
-              on={allowGuestSignUp}
-              on:change={(e) => {
-                void handleToggleGuestSignUp(e)
-              }}
-            />
+
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.AccessControl} /></div>
+            <div class="w-32">
+              <Button
+                kind="regular"
+                label={arePermissionsDisabled
+                  ? settingsRes.string.EnablePermissions
+                  : settingsRes.string.DisablePermissions}
+                on:click={handleTogglePermissions}
+              />
+            </div>
           </div>
-          <div class="flex-row-center flex-gap-4">
-            <Label label={settingsRes.string.GuestChannelsDescription} />
-            <Component
-              is={card.component.CardArrayEditor}
-              props={{
-                _class: chat.masterTag.Thread,
-                value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                label: settingsRes.string.GuestChannelsArrayLabel,
-                onChange: onAllowedCardsChange
-              }}
-            />
+
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>
+            <div class="w-32">
+              <Button
+                label={settingsRes.string.GenerateApiToken}
+                kind="regular"
+                disabled={workspaceUrl === ''}
+                showTooltip={{ label: settingsRes.string.GenerateApiToken }}
+                on:click={handleGenerateApiToken}
+              />
+            </div>
           </div>
-          <div class="delete">
-            <Button
-              kind="regular"
-              label={arePermissionsDisabled
-                ? settingsRes.string.EnablePermissions
-                : settingsRes.string.DisablePermissions}
-              on:click={handleTogglePermissions}
-            />
+
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.DangerZone} /></div>
+            <div class="w-32">
+              <Button
+                label={settingsRes.string.DeleteWorkspace}
+                kind="dangerous"
+                on:click={handleDelete}
+                showTooltip={{ label: settingsRes.string.DeleteWorkspace }}
+              />
+            </div>
           </div>
         </div>
       </Scroller>
@@ -388,9 +428,5 @@
 
   .editBox {
     width: 16rem;
-  }
-
-  .delete {
-    width: 6rem;
   }
 </style>

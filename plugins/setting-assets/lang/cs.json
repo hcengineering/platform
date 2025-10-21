@@ -197,6 +197,11 @@
     "IntegrationIsUnstable": "Integrační služba má problémy. Některé funkce nemusí fungovat správně.",
     "MinValue": "Minimální hodnota",
     "MaxValue": "Maximální hodnota",
-    "IntegerOnly": "Pouze celá čísla"
+    "IntegerOnly": "Pouze celá čísla",
+    "AccessControl": "Řízení přístupu",
+    "DangerZone": "Nebezpečná zóna",
+    "ApiAccess": "Přístup k API",
+    "ApiToken": "API token",
+    "GenerateApiToken": "Vygenerovat API token"
   }
 }

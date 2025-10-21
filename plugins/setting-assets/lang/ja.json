@@ -199,6 +199,11 @@
     "IntegrationIsUnstable": "統合サービスに問題が発生しています。一部の機能が正しく動作しない可能性があります。",
     "MinValue": "最小値",
     "MaxValue": "最大値",
-    "IntegerOnly": "整数のみ"
+    "IntegerOnly": "整数のみ",
+    "AccessControl": "アクセス制御",
+    "DangerZone": "危険ゾーン",
+    "ApiAccess": "APIアクセス",
+    "ApiToken": "APIトークン",
+    "GenerateApiToken": "APIトークンを生成"
   }
 }
