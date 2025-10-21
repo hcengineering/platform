@@ -230,6 +230,7 @@
       penWidth,
       eraserWidth,
       fontSize,
+      enableMiddleMousePanning: false,
       changingCmdId,
       cmdAdded: addCommand,
       cmdChanging: showCommandProps,

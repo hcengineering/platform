@@ -261,6 +261,7 @@
         eraserWidth,
         fontSize,
         personCursorPos: personCursorCanvasPos,
+        enableMiddleMousePanning: true,
         changingCmdId,
         cmdAdded: (commandToAdd) => {
           commandsProcessor.addCommand(commandToAdd)
