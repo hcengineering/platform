@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/model",
+      "comment": "Add TypeIdentifier for custom attribute incremental IDs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/model"
+}
