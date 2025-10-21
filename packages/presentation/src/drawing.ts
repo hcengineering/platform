@@ -67,6 +67,7 @@ export interface DrawingProps {
   personCursorMoved?: (nodePos: Point) => void
   panning?: (offset: Point) => void
   panned?: (offset: Point) => void
+  toolChanged?: (tool: DrawingTool) => void
 }
 
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
@@ -81,6 +82,7 @@ type PointStatus = 'last-point' | 'intermediate-point'
 
 class DrawState {
   on = false
+  usedBeforePanningTool: DrawingTool | undefined = undefined
   tool: DrawingTool = 'pen'
   penColor: ColorMetaNameOrHex = 'alpha'
   penWidth = 4
@@ -1024,6 +1026,11 @@ export function drawing (
       }
       if (props.tool !== undefined) {
         if (draw.tool !== props.tool) {
+          if (props.tool === 'pan') {
+            draw.usedBeforePanningTool = draw.tool
+          } else {
+            draw.usedBeforePanningTool = props.tool
+          }
           draw.tool = props.tool
           syncToolCursor = true
           toolChanged = true
@@ -1031,6 +1038,10 @@ export function drawing (
       }
       if (props.penColor !== undefined) {
         if (draw.penColor !== props.penColor) {
+          if (draw.tool === 'pan' && draw.usedBeforePanningTool != null) {
+            draw.tool = draw.usedBeforePanningTool
+            toolChanged = true
+          }
           draw.penColor = props.penColor
           syncLiveTextBox = true
           syncToolCursor = true
@@ -1084,6 +1095,9 @@ export function drawing (
         }
       }
 
+      if (toolChanged) {
+        props.toolChanged?.(draw.tool)
+      }
       if (syncToolCursor) {
         updateToolCursor()
       }

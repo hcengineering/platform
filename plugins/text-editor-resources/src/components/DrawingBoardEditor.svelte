@@ -32,7 +32,6 @@
   import { Loading, Component, themeStore } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap, Doc as YDoc } from 'yjs'
-  import { get } from 'svelte/store'
 
   export let boardId: string
   export let document: YDoc
@@ -288,6 +287,9 @@
         },
         personCursorMoved: (nodePos) => {
           personCursorNodePos = nodePos
+        },
+        toolChanged: (newTool) => {
+          tool = newTool
         }
       }}
     >

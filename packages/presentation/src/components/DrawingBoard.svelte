@@ -240,6 +240,9 @@
       cmdDeleted: deleteCommand,
       editorCreated: (editor) => {
         cmdEditor = editor
+      },
+      toolChanged: (newTool) => {
+        tool = newTool
       }
     }}
   >
