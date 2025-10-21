@@ -113,16 +113,25 @@ impl CompactWorker {
         }
     }
 
-    pub async fn send(&self, parts: &Vec<ObjectPart<PartData>>) {
-        if parts.len() > CONFIG.compact_parts_limit {
+    pub async fn try_send(&self, parts: &Vec<ObjectPart<PartData>>) -> bool {
+        if parts.len() >= CONFIG.compact_parts_limit {
             let task = CompactTask {
                 workspace: parts[0].data.workspace,
                 key: parts[0].data.key.clone(),
             };
+            self.send(task).await
+        } else {
+            false
+        }
+    }
 
-            let res = self.ingest_tx.send(task.clone()).await;
-            if let Err(err) = res {
+    pub async fn send(&self, task: CompactTask) -> bool {
+        let res = self.ingest_tx.send(task).await;
+        match res {
+            Ok(_) => true,
+            Err(err) => {
                 warn!(%err, "failed to schedule compact");
+                false
             }
         }
     }

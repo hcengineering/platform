@@ -434,7 +434,7 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                     }
                     None => {
                         let compact = request.app_data::<Data<CompactWorker>>().unwrap();
-                        compact.send(&parts).await;
+                        compact.try_send(&parts).await;
 
                         let stream = merge::stream(s3.clone(), parts).await?;
                         response.body(SizedStream::new(stream.content_length, stream.stream))
