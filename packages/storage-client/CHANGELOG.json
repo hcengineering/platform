@@ -2,6 +2,26 @@
   "name": "@hcengineering/storage-client",
   "entries": [
     {
+      "version": "0.7.7",
+      "tag": "@hcengineering/storage-client_v0.7.7",
+      "date": "Tue, 21 Oct 2025 19:04:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "more accurate upload progress"
+          },
+          {
+            "comment": "update integration tests"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.8` to `0.7.10`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.6",
       "tag": "@hcengineering/storage-client_v0.7.6",
       "date": "Tue, 14 Oct 2025 15:36:13 GMT",

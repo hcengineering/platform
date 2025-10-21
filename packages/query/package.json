@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "workspace:^0.7.5",
-    "@hcengineering/core": "workspace:^0.7.8",
+    "@hcengineering/core": "workspace:^0.7.10",
     "@hcengineering/analytics": "workspace:^0.7.5",
     "fast-equals": "^5.2.2"
   },

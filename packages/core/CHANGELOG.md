@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Wed, 15 Oct 2025 18:01:30 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Oct 2025 19:04:55 GMT and should not be manually modified.
+
+## 0.7.10
+Tue, 21 Oct 2025 19:04:55 GMT
+
+### Patches
+
+- Add TypeIdentifier for custom attribute incremental IDs
 
 ## 0.7.8
 Wed, 15 Oct 2025 18:01:30 GMT

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,7 +36,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.8",
+    "@hcengineering/core": "workspace:^0.7.10",
     "@hcengineering/platform": "workspace:^0.7.5",
     "@hcengineering/storage": "workspace:^0.7.5",
     "@hcengineering/analytics": "workspace:^0.7.5",
