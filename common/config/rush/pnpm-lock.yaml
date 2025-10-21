@@ -22,13 +22,13 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -92,10 +92,10 @@ importers:
   ../../packages/collaboration:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/text':
         specifier: ^0.7.5
@@ -162,8 +162,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
@@ -238,13 +238,13 @@ importers:
   ../../packages/datalake:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -308,13 +308,13 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
     devDependencies:
       '@hcengineering/platform-rig':
@@ -366,8 +366,8 @@ importers:
   ../../packages/hulylake:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/hulylake-client':
         specifier: ^0.7.6
         version: 0.7.6
@@ -375,7 +375,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -433,13 +433,13 @@ importers:
   ../../packages/kafka:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.5
@@ -500,8 +500,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
@@ -509,7 +509,7 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       fast-equals:
         specifier: ^5.2.2
@@ -564,13 +564,13 @@ importers:
   ../../packages/minio:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       minio:
         specifier: ^8.0.5
@@ -625,13 +625,13 @@ importers:
   ../../packages/mongo:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       bson:
         specifier: ^6.10.3
@@ -689,8 +689,8 @@ importers:
   ../../packages/postgres:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
@@ -698,7 +698,7 @@ importers:
         specifier: ^0.7.12
         version: 0.7.12
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       postgres:
         specifier: ^3.4.7
@@ -762,13 +762,13 @@ importers:
         specifier: ^3.738.0
         version: 3.901.0
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/storage':
         specifier: ^0.7.5
@@ -832,8 +832,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
@@ -841,7 +841,7 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -905,25 +905,25 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.10
+        version: 0.7.10
       '@hcengineering/datalake':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../datalake
       '@hcengineering/hulylake':
-        specifier: workspace:0.7.8
+        specifier: workspace:0.7.9
         version: link:../hulylake
       '@hcengineering/minio':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../minio
       '@hcengineering/platform':
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/s3':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../s3
       '@hcengineering/server-core':
-        specifier: workspace:0.7.7
+        specifier: workspace:0.7.8
         version: link:../core
       '@hcengineering/server-token':
         specifier: ^0.7.5
@@ -1575,8 +1575,8 @@ packages:
   '@hcengineering/client@0.7.6':
     resolution: {integrity: sha512-QBRDi/kIqmwdEmNjaXEZE0KbW/E6H8J4J2p0j3hPmJS2tmHs3U4o4etl0ZLMMmDloskfxlI10smQm3fWLAqIYA==}
 
-  '@hcengineering/core@0.7.8':
-    resolution: {integrity: sha512-Ed4JktNRR3TkLwchPUUpD19t+zGX13rARuT21OXaRmoQWpV7dm4bK5YB9kxa+cgol0EJDg53+gEAMAyt+BgYWQ==}
+  '@hcengineering/core@0.7.10':
+    resolution: {integrity: sha512-gMf6cUHkB3FHEPIYOTHwz872p/Ge6iSWy07IiQP7Wg98pfn+7iAFg6mLoT3AAW7PsTjJ2GCZoHLLzTDtkrNbxg==}
 
   '@hcengineering/hulylake-client@0.7.6':
     resolution: {integrity: sha512-UwWerlpMVSJgkb6Z8qBnbX4Eq5HoCEAlLtHYKV0SIyBnuubfhxfEN2NMK86EGWwmOBbf5urozdVrQWRfZTvyLQ==}
@@ -5438,7 +5438,7 @@ snapshots:
 
   '@hcengineering/account-client@0.7.6':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
 
   '@hcengineering/analytics@0.7.5':
@@ -5449,17 +5449,17 @@ snapshots:
     dependencies:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/rpc': 0.7.5
       snappyjs: 0.7.0
 
   '@hcengineering/client@0.7.6':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
 
-  '@hcengineering/core@0.7.8':
+  '@hcengineering/core@0.7.10':
     dependencies:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/measurements': 0.7.13
@@ -5468,7 +5468,7 @@ snapshots:
 
   '@hcengineering/hulylake-client@0.7.6':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/retry': 0.7.5
 
   '@hcengineering/measurements@0.7.13': {}
@@ -5517,7 +5517,7 @@ snapshots:
   '@hcengineering/query@0.7.6':
     dependencies:
       '@hcengineering/analytics': 0.7.5
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       fast-equals: 5.3.2
 
@@ -5525,32 +5525,32 @@ snapshots:
 
   '@hcengineering/rpc@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       msgpackr: 1.11.5
 
   '@hcengineering/server-token@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       jwt-simple: 0.5.6
       uuid: 8.3.2
 
   '@hcengineering/storage@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       fast-equals: 5.3.2
 
   '@hcengineering/text-core@0.7.5':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       fast-equals: 5.3.2
       hash-it: 6.0.0
 
   '@hcengineering/text-ydoc@0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/text': 0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)
       '@hcengineering/text-core': 0.7.5
       y-protocols: 1.0.6(yjs@13.6.27)
@@ -5563,7 +5563,7 @@ snapshots:
 
   '@hcengineering/text@0.7.5(prosemirror-inputrules@1.5.0)(prosemirror-model@1.25.3)(prosemirror-state@1.4.3)(prosemirror-view@1.41.2)':
     dependencies:
-      '@hcengineering/core': 0.7.8
+      '@hcengineering/core': 0.7.10
       '@hcengineering/text-core': 0.7.5
       '@tiptap/core': 2.26.2(@tiptap/pm@2.26.2)
       '@tiptap/extension-blockquote': 2.26.2(@tiptap/core@2.26.2(@tiptap/pm@2.26.2))

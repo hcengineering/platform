@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/s3",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,9 +35,9 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "workspace:0.7.7",
+    "@hcengineering/server-core": "workspace:0.7.8",
     "@hcengineering/storage": "^0.7.5",
     "@aws-sdk/client-s3": "^3.738.0",
     "@aws-sdk/s3-request-presigner": "^3.738.0",

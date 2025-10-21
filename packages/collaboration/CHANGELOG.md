@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/collaboration
 
-This log was last generated on Fri, 17 Oct 2025 05:15:22 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Oct 2025 19:29:19 GMT and should not be manually modified.
+
+## 0.7.8
+Tue, 21 Oct 2025 19:29:19 GMT
+
+### Patches
+
+- bump core
 
 ## 0.7.7
 Fri, 17 Oct 2025 05:15:22 GMT
