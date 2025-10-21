@@ -190,6 +190,11 @@
     "IntegrationIsUnstable": "El servicio de integración está experimentando problemas. Es posible que algunas funciones no funcionen correctamente.",
     "MinValue": "Valor mínimo",
     "MaxValue": "Valor máximo",
-    "IntegerOnly": "Solo números enteros"
+    "IntegerOnly": "Solo números enteros",
+    "AccessControl": "Control de acceso",
+    "DangerZone": "Zona de peligro",
+    "ApiAccess": "Acceso API",
+    "ApiToken": "Token API",
+    "GenerateApiToken": "Generar token API"
   }
 }

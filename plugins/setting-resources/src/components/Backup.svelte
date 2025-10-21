@@ -172,7 +172,7 @@
 
   <Scroller padding={'1.5rem'} noStretch>
     {#if loading}
-      <Loading size={'small'} />
+      <Loading />
     {:else if backupInfo == null}
       <div class="no-backups">
         <Label label={setting.string.BackupNoBackup} />
