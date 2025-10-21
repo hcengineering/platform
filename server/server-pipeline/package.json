@@ -37,7 +37,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-core": "^0.7.7",
     "@hcengineering/server-attachment": "^0.7.0",
@@ -95,7 +95,7 @@
     "@hcengineering/server-controlled-documents-resources": "^0.7.0",
     "@hcengineering/server-training": "^0.7.0",
     "@hcengineering/server-training-resources": "^0.7.0",
-    "@hcengineering/middleware": "^0.7.9",
+    "@hcengineering/middleware": "^0.7.10",
     "@hcengineering/login-assets": "^0.7.0",
     "@hcengineering/onboard-assets": "^0.7.0",
     "@hcengineering/view-assets": "^0.7.0",

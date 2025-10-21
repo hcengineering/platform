@@ -460,6 +460,10 @@ export function createModel (builder: Builder): void {
     editor: setting.component.NumberTypeEditor
   })
 
+  builder.mixin(core.class.TypeIdentifier, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.IdentifierTypeEditor
+  })
+
   builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.RefEditor
   })

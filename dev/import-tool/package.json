@@ -51,7 +51,7 @@
     "@types/js-yaml": "^4.0.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-client": "^0.7.7",
     "@hcengineering/importer": "^0.7.0",

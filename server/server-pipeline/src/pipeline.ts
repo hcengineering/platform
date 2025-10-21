@@ -36,6 +36,7 @@ import {
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
+  IdentifierMiddleware,
   NormalizeTxMiddleware,
   PluginConfigurationMiddleware,
   PrivateMiddleware,
@@ -154,6 +155,7 @@ export function createServerPipeline (
         : []),
       UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
+      IdentifierMiddleware.create, // After ApplyTx to ensure that it pass
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined

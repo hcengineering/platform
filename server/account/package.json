@@ -41,7 +41,7 @@
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "otp-generator": "^4.0.1",
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/analytics": "^0.7.5",

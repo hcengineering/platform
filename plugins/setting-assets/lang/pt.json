@@ -195,6 +195,7 @@
     "DangerZone": "Zona de perigo",
     "ApiAccess": "Acesso à API",
     "ApiToken": "Token de API",
-    "GenerateApiToken": "Gerar token de API"
+    "GenerateApiToken": "Gerar token de API",
+    "IdentifierExists": "Identificador já existe"
   }
 }

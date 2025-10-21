@@ -49,7 +49,7 @@
     "@hcengineering/contact-resources": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/setting-resources": "^0.7.0",

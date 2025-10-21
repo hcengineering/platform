@@ -204,6 +204,7 @@
     "DangerZone": "危険ゾーン",
     "ApiAccess": "APIアクセス",
     "ApiToken": "APIトークン",
-    "GenerateApiToken": "APIトークンを生成"
+    "GenerateApiToken": "APIトークンを生成",
+    "IdentifierExists": "識別子は既に存在します"
   }
 }
