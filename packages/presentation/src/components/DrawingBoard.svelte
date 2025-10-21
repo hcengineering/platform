@@ -230,6 +230,7 @@
       penWidth,
       eraserWidth,
       fontSize,
+      enableMiddleMousePanning: false,
       changingCmdId,
       cmdAdded: addCommand,
       cmdChanging: showCommandProps,
@@ -240,6 +241,9 @@
       cmdDeleted: deleteCommand,
       editorCreated: (editor) => {
         cmdEditor = editor
+      },
+      toolChanged: (newTool) => {
+        tool = newTool
       }
     }}
   >

@@ -57,6 +57,7 @@ export interface DrawingProps {
   changingCmdId?: CommandUid
   personCursorPos?: Point
   personCursorVisible?: boolean
+  enableMiddleMousePanning?: boolean
   cmdAdded?: (cmd: DrawingCmd) => void
   cmdChanging?: (id: CommandUid) => void
   cmdUnchanged?: (id: CommandUid) => void
@@ -67,6 +68,7 @@ export interface DrawingProps {
   personCursorMoved?: (nodePos: Point) => void
   panning?: (offset: Point) => void
   panned?: (offset: Point) => void
+  toolChanged?: (tool: DrawingTool) => void
 }
 
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
@@ -81,6 +83,7 @@ type PointStatus = 'last-point' | 'intermediate-point'
 
 class DrawState {
   on = false
+  usedBeforePanningTool: DrawingTool | undefined = undefined
   tool: DrawingTool = 'pen'
   penColor: ColorMetaNameOrHex = 'alpha'
   penWidth = 4
@@ -373,6 +376,7 @@ export function drawing (
   resizeObserver.observe(canvas)
 
   let touchId: number | undefined
+  let isMiddleMousePanning = false
 
   function findTouch (touches: TouchList, id: number | undefined = touchId): Touch | undefined {
     for (let i = 0; i < touches.length; i++) {
@@ -398,7 +402,8 @@ export function drawing (
     }
     const touch = e.changedTouches[0]
     touchId = touch.identifier
-    drawStart(touchToNodePoint(touch, canvas))
+    const forcePan = false
+    drawStart(touchToNodePoint(touch, canvas), forcePan)
   }
 
   canvas.ontouchmove = (e) => {
@@ -407,7 +412,8 @@ export function drawing (
     }
     const touch = findTouch(e.changedTouches)
     if (touch !== undefined) {
-      drawContinue(touchToNodePoint(touch, canvas))
+      const forcePan = false
+      drawContinue(touchToNodePoint(touch, canvas), forcePan)
     }
   }
 
@@ -417,7 +423,8 @@ export function drawing (
     }
     const touch = findTouch(e.changedTouches)
     if (touch !== undefined) {
-      drawEnd(touchToNodePoint(touch, canvas))
+      const forcePan = false
+      drawEnd(touchToNodePoint(touch, canvas), forcePan)
     }
     touchId = undefined
   }
@@ -428,12 +435,22 @@ export function drawing (
     if (readonly) {
       return
     }
+    const MiddleMouseButton = 1
+    if (e.button === MiddleMouseButton && props.enableMiddleMousePanning === true) {
+      e.preventDefault()
+      isMiddleMousePanning = true
+      canvas.setPointerCapture(e.pointerId)
+      const forcePan = true
+      drawStart(pointerToNodePoint(e), forcePan)
+      return
+    }
     if (e.button !== 0) {
       return
     }
     e.preventDefault()
     canvas.setPointerCapture(e.pointerId)
-    drawStart(pointerToNodePoint(e))
+    const forcePan = false
+    drawStart(pointerToNodePoint(e), forcePan)
   }
 
   canvas.onpointermove = (e) => {
@@ -441,7 +458,8 @@ export function drawing (
       return
     }
     e.preventDefault()
-    drawContinue(pointerToNodePoint(e))
+    const forcePan = isMiddleMousePanning
+    drawContinue(pointerToNodePoint(e), forcePan)
   }
 
   canvas.onpointerup = (e) => {
@@ -450,10 +468,23 @@ export function drawing (
     }
     e.preventDefault()
     canvas.releasePointerCapture(e.pointerId)
-    drawEnd(pointerToNodePoint(e))
+    const forcePan = isMiddleMousePanning
+    drawEnd(pointerToNodePoint(e), forcePan)
+    if (e.button === 1) {
+      isMiddleMousePanning = false
+    }
   }
 
-  canvas.onpointercancel = canvas.onpointerup
+  canvas.onpointercancel = (e) => {
+    if (readonly) {
+      return
+    }
+    e.preventDefault()
+    canvas.releasePointerCapture(e.pointerId)
+    const forcePan = isMiddleMousePanning
+    drawEnd(pointerToNodePoint(e), forcePan)
+    isMiddleMousePanning = false
+  }
 
   canvas.onpointerenter = () => {
     if (!readonly && draw.isDrawingTool()) {
@@ -472,20 +503,20 @@ export function drawing (
     return makeMouseScaledPoint(scaled.x, scaled.y)
   }
 
-  function drawStart (p: NodePoint): void {
+  function drawStart (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
     draw.on = true
     draw.points = []
     prevPos = scaledPoint
-    if (draw.isDrawingTool()) {
+    if (!forcePan && draw.isDrawingTool()) {
       draw.addPoint(scaledPoint)
     }
   }
 
-  function drawContinue (p: NodePoint): void {
+  function drawContinue (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
 
-    if (draw.isDrawingTool()) {
+    if (!forcePan && draw.isDrawingTool()) {
       const cursorSize = draw.cursorWidth()
 
       const canvasOffsetInParent = offsetInParent(node, canvas)
@@ -501,7 +532,7 @@ export function drawing (
       }
     }
 
-    if (draw.on && draw.tool === 'pan') {
+    if (draw.on && (draw.tool === 'pan' || forcePan)) {
       requestAnimationFrame(() => {
         draw.offset.x += scaledPoint.x - prevPos.x
         draw.offset.y += scaledPoint.y - prevPos.y
@@ -513,22 +544,22 @@ export function drawing (
       })
     }
 
-    if (draw.on && draw.tool === 'text') {
+    if (draw.on && draw.tool === 'text' && !forcePan) {
       prevPos = scaledPoint
     }
 
-    if (props.pointerMoved !== undefined) {
+    if (props.pointerMoved !== undefined && !forcePan) {
       props.pointerMoved(draw.mouseToCanvasPoint(scaledPoint))
     }
   }
 
-  function drawEnd (p: NodePoint): void {
+  function drawEnd (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
-      if (draw.isDrawingTool()) {
+      if (!forcePan && draw.isDrawingTool()) {
         draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
         storeLineCommand()
-      } else if (draw.tool === 'pan') {
+      } else if (draw.tool === 'pan' || forcePan) {
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
         if (liveTextBox !== undefined) {
@@ -1024,6 +1055,11 @@ export function drawing (
       }
       if (props.tool !== undefined) {
         if (draw.tool !== props.tool) {
+          if (props.tool === 'pan') {
+            draw.usedBeforePanningTool = draw.tool
+          } else {
+            draw.usedBeforePanningTool = props.tool
+          }
           draw.tool = props.tool
           syncToolCursor = true
           toolChanged = true
@@ -1031,6 +1067,10 @@ export function drawing (
       }
       if (props.penColor !== undefined) {
         if (draw.penColor !== props.penColor) {
+          if (draw.tool === 'pan' && draw.usedBeforePanningTool != null) {
+            draw.tool = draw.usedBeforePanningTool
+            toolChanged = true
+          }
           draw.penColor = props.penColor
           syncLiveTextBox = true
           syncToolCursor = true
@@ -1084,6 +1124,9 @@ export function drawing (
         }
       }
 
+      if (toolChanged) {
+        props.toolChanged?.(draw.tool)
+      }
       if (syncToolCursor) {
         updateToolCursor()
       }
