@@ -526,6 +526,10 @@ function getV19Migration (ns: string): [string, string] {
         status ${ns}.subscription_status NOT NULL DEFAULT 'active',
         plan STRING NOT NULL, -- Plan identifier (e.g. 'rare', 'epic', 'legendary', 'custom')
         
+        -- Amount paid (in cents, e.g. 9999 = $99.99)
+        -- Used primarily for pay-what-you-want/donation subscriptions to track actual payment
+        amount INT8,
+        
         -- Billing period (optional)
         period_start BIGINT,
         period_end BIGINT,
