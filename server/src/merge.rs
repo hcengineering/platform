@@ -1,6 +1,5 @@
 use std::{io::Error as IoError, pin::Pin, sync::Arc};
 
-use actix_web::body::SizedStream;
 use actix_web::error::ErrorBadRequest;
 use async_stream::stream;
 use bytes::Bytes;
@@ -89,7 +88,8 @@ pub fn validate_patch_body(merge_strategy: MergeStrategy, blob: &Blob) -> Handle
 pub struct PartialResponse {
     pub partial: bool,
     pub content_range: Option<String>,
-    pub stream: SizedStream<Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>>,
+    pub content_length: u64,
+    pub stream: Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>,
 }
 
 #[instrument(level = "debug", skip_all)]
@@ -120,15 +120,21 @@ pub async fn partial(
     Ok(PartialResponse {
         partial: part.data.size != content_length as usize,
         content_range,
-        stream: SizedStream::new(content_length, Box::pin(stream)),
+        content_length,
+        stream: Box::pin(stream),
     })
+}
+
+pub struct StreamResponse {
+    pub content_length: u64,
+    pub stream: Pin<Box<dyn Stream<Item = Result<Bytes, IoError>> + Send>>,
 }
 
 #[instrument(level = "debug", skip_all)]
 pub async fn stream(
     s3: Arc<S3Client>,
     parts: Vec<ObjectPart<PartData>>,
-) -> anyhow::Result<SizedStream<Pin<Box<dyn Stream<Item = Result<Bytes, IoError>>>>>> {
+) -> anyhow::Result<StreamResponse> {
     let first = parts.first().unwrap();
     let merge_strategy = first.data.merge_strategy.unwrap();
 
@@ -164,7 +170,10 @@ pub async fn stream(
                 }
             };
 
-            Ok(SizedStream::new(content_length as u64, Box::pin(stream)))
+            Ok(StreamResponse {
+                content_length: content_length as u64,
+                stream: Box::pin(stream),
+            })
         }
 
         MergeStrategy::JsonPatch => {
@@ -197,7 +206,10 @@ pub async fn stream(
                 yield Result::<Bytes, IoError>::Ok(Bytes::from(bytes));
             };
 
-            Ok(SizedStream::new(content_length, Box::pin(stream)))
+            Ok(StreamResponse {
+                content_length,
+                stream: Box::pin(stream),
+            })
         }
     }
 }

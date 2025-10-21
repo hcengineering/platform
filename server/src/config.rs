@@ -39,6 +39,9 @@ pub struct Config {
     pub inline_threshold: Size,
 
     pub cache_control: String,
+
+    pub compact_parts_limit: usize,
+    pub compact_buffer_size: usize,
 }
 
 pub mod hulyrs {
@@ -69,6 +72,9 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
         inline_threshold = "100KB"
 
         cache_control = "public, no-cache"
+
+        compact_parts_limit = 100
+        compact_buffer_size = 1000
     "#;
 
     let mut builder =

@@ -1,4 +1,5 @@
 mod auth;
+mod compact;
 mod config;
 mod get;
 mod head;

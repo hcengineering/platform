@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, io, str::FromStr, sync::Arc, time::SystemTime};
+use std::{collections::HashMap, fmt::Display, io, str::FromStr, time::SystemTime};
 
 use actix_web::{
     HttpRequest, HttpResponse,
@@ -13,13 +13,11 @@ use actix_web::{
 use aws_sdk_s3::error::SdkError;
 use chrono::{DateTime, Utc};
 use futures::{StreamExt, stream};
-use lockable::LockPool;
 use serde::{Deserialize, Serialize};
 use size::Size;
 use tracing::*;
 use uuid::Uuid;
 
-use crate::conditional;
 use crate::s3::S3Client;
 use crate::{
     blob,
@@ -27,6 +25,7 @@ use crate::{
     merge,
     postgres::ObjectPart,
 };
+use crate::{compact::CompactWorker, conditional};
 use crate::{
     config::CONFIG,
     postgres::{self, Pool},
@@ -35,8 +34,8 @@ use crate::{merge::MergeStrategy, recovery};
 
 #[derive(Deserialize, Debug)]
 pub struct ObjectPath {
-    workspace: Uuid,
-    key: String,
+    pub workspace: Uuid,
+    pub key: String,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -188,23 +187,23 @@ async fn extract_range_header(request: &mut ServiceRequest) -> Option<String> {
         .map(|header| header.0.to_string())
         .ok()
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PartData {
-    workspace: Uuid,
-    key: String,
-    part: u32,
+    pub workspace: Uuid,
+    pub key: String,
+    pub part: u32,
     pub size: usize,
     pub blob: String,
-    etag: String,
+    pub etag: String,
 
     #[serde(default)]
-    date: DateTime<Utc>,
+    pub date: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    headers: Option<HashMap<String, String>>,
+    pub headers: Option<HashMap<String, String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    meta: Option<HashMap<String, String>>,
+    pub meta: Option<HashMap<String, String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_strategy: Option<MergeStrategy>,
@@ -226,15 +225,6 @@ pub async fn put(request: HttpRequest, payload: Payload) -> HandlerResult<HttpRe
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
-
-    let lock_pool = request
-        .app_data::<Data<Arc<LockPool<String>>>>()
-        .unwrap()
-        .to_owned();
-
-    let _guard = lock_pool
-        .async_lock(format!("{}:{}", path.workspace, path.key))
-        .await;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
@@ -304,15 +294,6 @@ pub async fn patch(request: HttpRequest, payload: Payload) -> HandlerResult<Http
 
     let pool = request.app_data::<Data<Pool>>().unwrap().to_owned();
     let s3 = request.app_data::<Data<S3Client>>().unwrap().to_owned();
-
-    let lock_pool = request
-        .app_data::<Data<Arc<LockPool<String>>>>()
-        .unwrap()
-        .to_owned();
-
-    let _guard = lock_pool
-        .async_lock(format!("{}:{}", path.workspace, path.key))
-        .await;
 
     let parts = postgres::find_parts::<PartData>(&pool, path.workspace, &path.key).await?;
 
@@ -449,9 +430,15 @@ pub async fn get(request: HttpRequest) -> HandlerResult<HttpResponse> {
                             response.insert_header((header::CONTENT_RANGE, content_range));
                         }
 
-                        response.body(partial.stream)
+                        response.body(SizedStream::new(partial.content_length, partial.stream))
                     }
-                    None => response.body(merge::stream(s3, parts).await?),
+                    None => {
+                        let compact = request.app_data::<Data<CompactWorker>>().unwrap();
+                        compact.send(&parts).await;
+
+                        let stream = merge::stream(s3.clone(), parts).await?;
+                        response.body(SizedStream::new(stream.content_length, stream.stream))
+                    }
                 }
             }
         }

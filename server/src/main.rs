@@ -8,7 +8,6 @@ use actix_web::{
     middleware::{Next, from_fn},
     web::{self, Data, Path},
 };
-use lockable::LockPool;
 use tracing::*;
 use tracing_actix_web::TracingLogger;
 use uuid::Uuid;
@@ -17,16 +16,20 @@ use hulyrs::services::jwt::actix::ServiceRequestExt;
 use hulyrs::services::otel;
 
 mod blob;
+mod compact;
 mod conditional;
 mod config;
 mod handlers;
 mod merge;
+mod mutex;
 mod patch;
 mod postgres;
 mod recovery;
 mod s3;
 
 use config::CONFIG;
+
+use crate::mutex::KeyMutex;
 
 fn initialize_tracing() {
     use opentelemetry::trace::TracerProvider;
@@ -96,7 +99,7 @@ async fn main() -> anyhow::Result<()> {
         "configuration"
     );
 
-    let lock = Arc::new(LockPool::<String>::new());
+    let lock = mutex::KeyMutex::new();
     let postgres = postgres::pool().await?;
     let s3 = s3::client().await;
 
@@ -110,6 +113,7 @@ async fn main() -> anyhow::Result<()> {
 
     let bind_to = SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
+    #[allow(dead_code)]
     async fn auth(
         mut request: ServiceRequest,
         next: Next<impl MessageBody>,
@@ -138,6 +142,30 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
+    async fn mutex(
+        mut request: ServiceRequest,
+        next: Next<impl MessageBody>,
+    ) -> Result<ServiceResponse<impl MessageBody>, Error> {
+        let path = request
+            .extract::<Path<handlers::ObjectPath>>()
+            .await?
+            .into_inner();
+
+        let mutex = request.app_data::<Data<KeyMutex>>().unwrap().to_owned();
+
+        let _guard = mutex.lock(path.workspace, path.key).await;
+
+        next.call(request).await
+    }
+
+    let compactor = compact::CompactWorker::new(
+        Arc::new(s3.clone()),
+        postgres.clone(),
+        lock.clone(),
+        CONFIG.compact_buffer_size,
+    );
+    let compactor_handle = compactor.clone();
+
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -152,6 +180,7 @@ async fn main() -> anyhow::Result<()> {
             .app_data(Data::new(postgres.clone()))
             .app_data(Data::new(s3.clone()))
             .app_data(Data::new(lock.clone()))
+            .app_data(Data::new(compactor.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(
@@ -159,8 +188,11 @@ async fn main() -> anyhow::Result<()> {
                     .wrap(from_fn(auth))
                     .route(KEY_PATH, web::head().to(handlers::head))
                     .route(KEY_PATH, web::get().to(handlers::get))
-                    .route(KEY_PATH, web::put().to(handlers::put))
-                    .route(KEY_PATH, web::patch().to(handlers::patch))
+                    .route(KEY_PATH, web::put().to(handlers::put).wrap(from_fn(mutex)))
+                    .route(
+                        KEY_PATH,
+                        web::patch().to(handlers::patch).wrap(from_fn(mutex)),
+                    )
                     .route(KEY_PATH, web::delete().to(handlers::delete)),
             )
             .route("/status", web::get().to(async || "ok"))
@@ -171,6 +203,7 @@ async fn main() -> anyhow::Result<()> {
     info!("http listener on {}", bind_to);
 
     server.await?;
+    compactor_handle.stop().await;
 
     Ok(())
 }

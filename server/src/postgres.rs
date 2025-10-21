@@ -122,7 +122,7 @@ pub async fn insert_blob(pool: &Pool, key: &str, hash: &str) -> anyhow::Result<(
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectPart<T: DeserializeOwned + std::fmt::Debug> {
     pub inline: Option<Vec<u8>>,
     pub data: T,
