@@ -22,18 +22,8 @@ pub struct CompactTask {
 
 pub struct CompactWorker {
     ingest_tx: mpsc::Sender<CompactTask>,
-    ingest_handle: Arc<tokio::task::JoinHandle<()>>,
-    compact_handle: Arc<tokio::task::JoinHandle<()>>,
-}
-
-impl Clone for CompactWorker {
-    fn clone(&self) -> Self {
-        CompactWorker {
-            ingest_tx: self.ingest_tx.clone(),
-            ingest_handle: self.ingest_handle.clone(),
-            compact_handle: self.compact_handle.clone(),
-        }
-    }
+    ingest_handle: tokio::task::JoinHandle<()>,
+    compact_handle: tokio::task::JoinHandle<()>,
 }
 
 impl CompactWorker {
@@ -64,8 +54,8 @@ impl CompactWorker {
 
         Self {
             ingest_tx,
-            ingest_handle: Arc::new(ingest_handle),
-            compact_handle: Arc::new(compact_handle),
+            ingest_handle,
+            compact_handle,
         }
     }
 

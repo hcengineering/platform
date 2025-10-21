@@ -164,7 +164,8 @@ async fn main() -> anyhow::Result<()> {
         lock.clone(),
         CONFIG.compact_buffer_size,
     );
-    let compactor_handle = compactor.clone();
+    let compactor_data = Data::new(compactor);
+    let compactor_handle = compactor_data.clone();
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
@@ -180,7 +181,7 @@ async fn main() -> anyhow::Result<()> {
             .app_data(Data::new(postgres.clone()))
             .app_data(Data::new(s3.clone()))
             .app_data(Data::new(lock.clone()))
-            .app_data(Data::new(compactor.clone()))
+            .app_data(compactor_data.clone())
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(
