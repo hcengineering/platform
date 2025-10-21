@@ -24,7 +24,12 @@
             box-sizing: border-box;
         }
 
+        body {
+            background-color: var(--bg-body, #ffffff);
+        }
+
         :root {
+            --bg-body: #ffffff;
             --bg-secondary: #f3f3f3;
             --bg-tertiary: #ffffff;
             --bg-hover: #e8e8e8;
@@ -39,6 +44,7 @@
         }
 
         [data-theme="theme-dark"] {
+            --bg-body: #1a1928;
             --bg-secondary: #323233;
             --bg-tertiary: #252526;
             --bg-hover: #2a2d2e;
@@ -237,3 +243,12 @@
 </body>
 
 </html>
+
+<% if (typeof isWindows !== 'undefined' && isWindows) { %>
+<script>
+    const lastUsedTheme = localStorage.getItem('last-used-theme')
+    if (lastUsedTheme != null) {
+      document.body.setAttribute('data-theme', lastUsedTheme)
+    }
+</script>
+<% } %>

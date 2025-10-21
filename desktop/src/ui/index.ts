@@ -25,6 +25,7 @@ import {
   closePopup,
   createApp,
   getCurrentResolvedLocation,
+  Menu,
   navigate,
   parseLocation,
   pushRootBarProgressComponent,
@@ -82,11 +83,13 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         })
 
-        void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
-          menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
-        }).catch(() => {
-          menuBar.setTheme(ThemeVariant.Light) // fallback
-        })
+        if (menuBar.lastUsedThemeIsUnknown()) {
+          void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+            menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
+          }).catch(() => {
+            menuBar.setTheme(ThemeVariant.Light) // fallback
+          })
+        }
       })
     }
   }
