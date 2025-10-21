@@ -14,12 +14,13 @@
 //
 
 import core, {
-  type PersonId,
+  type AccountUuid,
   type AttachedDoc,
   type Attribute,
   type Class,
   type Classifier,
   ClassifierKind,
+  CustomSequence,
   type Data,
   DateRangeMode,
   type Doc,
@@ -35,6 +36,7 @@ import core, {
   type MarkupBlobRef,
   type MixinData,
   type Obj,
+  type PersonId,
   type PropertyType,
   type Rank,
   type Ref,
@@ -50,9 +52,9 @@ import core, {
   type ArrOf as TypeArrOf,
   type Collection as TypeCollection,
   type TypeDate as TypeDateType,
+  type TypeIdentifier as TypeIdentifierType,
   type TypeNumber as TypeNumberType,
-  generateId,
-  type AccountUuid
+  generateId
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -465,6 +467,13 @@ export function TypeDate (mode: DateRangeMode = DateRangeMode.DATE, withShift: b
  */
 export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
   return { _class: core.class.RefTo, label: core.string.Ref, icon: core.icon.TypeRef, to: _class }
+}
+
+/**
+ * @public
+ */
+export function TypeIdentifier (of: Ref<CustomSequence>): TypeIdentifierType {
+  return { _class: core.class.TypeIdentifier, label: core.string.Id, icon: core.icon.TypeRef, of }
 }
 
 /**

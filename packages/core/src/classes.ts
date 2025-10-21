@@ -341,6 +341,13 @@ export interface TypeDate extends Type<Date> {
 /**
  * @public
  */
+export interface TypeIdentifier extends Type<string> {
+  of: Ref<CustomSequence>
+}
+
+/**
+ * @public
+ */
 export interface TypeNumber extends Type<number> {
   min?: number
   max?: number
@@ -626,6 +633,10 @@ export function versionToString (version: Version | Data<Version>): string {
 export interface Sequence extends Doc {
   attachedTo: Ref<Class<Doc>>
   sequence: number
+}
+
+export interface CustomSequence extends Sequence {
+  prefix: string
 }
 
 /**

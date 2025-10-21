@@ -49,6 +49,7 @@ import type {
   Relation,
   Role,
   Sequence,
+  CustomSequence,
   Space,
   SpaceType,
   SpaceTypeDescriptor,
@@ -145,6 +146,7 @@ export default plugin(coreId, {
     TypeCollaborativeDoc: '' as Ref<Class<Type<MarkupBlobRef>>>,
     TypePersonId: '' as Ref<Class<Type<string>>>,
     TypeAccountUuid: '' as Ref<Class<Type<string>>>,
+    TypeIdentifier: '' as Ref<Class<Type<string>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Enum: '' as Ref<Class<Enum>>,
@@ -169,6 +171,7 @@ export default plugin(coreId, {
     Association: '' as Ref<Class<Association>>,
     Relation: '' as Ref<Class<Relation>>,
     Sequence: '' as Ref<Class<Sequence>>,
+    CustomSequence: '' as Ref<Class<CustomSequence>>,
     ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
     Collaborator: '' as Ref<Class<Collaborator>>
   },
