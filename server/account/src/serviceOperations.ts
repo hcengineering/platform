@@ -986,7 +986,7 @@ export async function findPersonBySocialKey (
 
 /**
  * Upsert (create or update) subscription for a workspace
- * Only accessible by billing service
+ * Only accessible by payment service
  * Creates new subscription or updates existing one based on providerId
  * @public
  */
@@ -999,8 +999,8 @@ export async function upsertSubscription (
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  // Only billing service can upsert subscriptions
-  if (extra?.service !== 'billing') {
+  // Only payment service can upsert subscriptions
+  if (extra?.service !== 'payment') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
