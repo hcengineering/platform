@@ -119,7 +119,6 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const space = doc.space
   const special = doc._class
 
   const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
@@ -131,7 +130,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, cardId, space, special],
+      path: [appComponent, workspace, cardId, 'type', special],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
