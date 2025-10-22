@@ -101,7 +101,15 @@ export default defineAgent({
       return
     }
 
-    const stt = getStt(ctx.room)
+    const workspace = (roomName.split('_')[0] ?? '').trim()
+
+    if (workspace === '') {
+      console.error('Workspace is not defined', roomName)
+      ctx.shutdown()
+      return
+    }
+
+    const stt = getStt(ctx.room, workspace)
 
     if (stt === undefined) {
       console.error('Transcription provider is not configured')
