@@ -25,6 +25,7 @@
   export let size: IconSize = 'small'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let withObjectIcon = false
+  export let showLoading = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -38,7 +39,7 @@
 </script>
 
 {#if iconMixin}
-  <Component is={iconMixin.component} props={{ value, size }} />
+  <Component is={iconMixin.component} props={{ value, size }} {showLoading} />
 {:else}
   {@const objectIcon = icon ?? classIcon(client, value._class) ?? getObjectIcon(value)}
   {#if objectIcon}

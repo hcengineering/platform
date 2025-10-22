@@ -291,7 +291,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
-        const result = await combineActivityMessages(res.reverse())
+        const result = combineActivityMessages(res.reverse())
         this.tailStore.set(result)
 
         this.isTailLoaded.set(true)
@@ -368,7 +368,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       from: from.createdOn ?? from.modifiedOn,
       to: to.createdOn ?? to.modifiedOn,
-      data: isBackward ? await combineActivityMessages(messages.reverse()) : await combineActivityMessages(messages)
+      data: isBackward ? combineActivityMessages(messages.reverse()) : combineActivityMessages(messages)
     }
   }
 
