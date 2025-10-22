@@ -63,7 +63,7 @@
     "@hcengineering/model-notification": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/text-editor": "^0.7.0",
-    "@hcengineering/collaboration": "^0.7.7",
+    "@hcengineering/collaboration": "^0.7.8",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/rank": "^0.7.5"
   }

@@ -39,6 +39,6 @@
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/guest": "^0.7.0",
     "@hcengineering/server-guest": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7"
+    "@hcengineering/server-core": "^0.7.8"
   }
 }

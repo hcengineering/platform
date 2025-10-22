@@ -40,6 +40,6 @@
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/model-templates": "^0.7.0",
     "@hcengineering/server-templates": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7"
+    "@hcengineering/server-core": "^0.7.8"
   }
 }

@@ -64,7 +64,7 @@
     "@hcengineering/retry": "^0.7.5",
     "@hcengineering/hulylake-client": "^0.7.6",
     "@hcengineering/hulypulse-client": "^0.7.0",
-    "@hcengineering/storage-client": "^0.7.6",
+    "@hcengineering/storage-client": "^0.7.7",
     "fast-equals": "^5.2.2",
     "png-chunks-extract": "^1.0.0",
     "svelte": "^4.2.20",

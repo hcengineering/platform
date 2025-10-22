@@ -44,7 +44,7 @@
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.7",
+    "@hcengineering/server-core": "^0.7.8",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-task-resources": "^0.7.0",
     "@hcengineering/task": "^0.7.0",

@@ -41,6 +41,6 @@
     "@hcengineering/process": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/server-process": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7"
+    "@hcengineering/server-core": "^0.7.8"
   }
 }

@@ -40,7 +40,7 @@
     "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-notification": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7",
+    "@hcengineering/server-core": "^0.7.8",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/github": "^0.7.0"
   }
