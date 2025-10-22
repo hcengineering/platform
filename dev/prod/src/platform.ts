@@ -73,7 +73,8 @@ import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
-import { achievementId } from '@hcengineering/achievement'
+import {inboxId} from '@hcengineering/inbox'
+import {achievementId} from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
 import billingPlugin, { billingId } from '@hcengineering/billing'
@@ -129,6 +130,7 @@ import '@hcengineering/media-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/chat-assets'
+import '@hcengineering/inbox-assets'
 import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
 import '@hcengineering/achievement-assets'
@@ -387,6 +389,7 @@ function configureI18n (): void {
     communicationId,
     async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`)
   )
+  addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
   addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
   addStringsLoader(

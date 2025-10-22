@@ -22,6 +22,7 @@
   export let loadingOverlay: boolean = false
   export let onScroll: () => void = () => {}
   export let onResize: () => void = () => {}
+  export let key: string
 </script>
 
 {#if loadingOverlay}
@@ -41,7 +42,9 @@
   {onScroll}
   {onResize}
 >
-  <slot />
+  {#key key}
+    <slot />
+  {/key}
 </Scroller>
 
 <style lang="scss">

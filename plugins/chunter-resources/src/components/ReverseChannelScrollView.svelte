@@ -611,6 +611,9 @@
       editLastMessage()
     }
   }
+  function getKey (messages: ActivityMessage[]): string {
+    return `${messages.length}-${Math.max(...messages.map((m) => m.modifiedOn))}`
+  }
 </script>
 
 <div class="flex-col relative" class:h-full={fullHeight}>
@@ -627,6 +630,7 @@
     loadingOverlay={$isLoadingStore || !isScrollInitialized}
     onScroll={handleScroll}
     onResize={handleResize}
+    key={getKey(messages)}
   >
     {#if showBlankView}
       <BlankView

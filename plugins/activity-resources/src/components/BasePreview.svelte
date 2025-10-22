@@ -36,6 +36,8 @@
   export let headerIcon: Asset | undefined = undefined
   export let header: IntlString | undefined = undefined
   export let headerParams: Record<string, any> = {}
+  export let color: 'primary' | 'secondary' = 'primary'
+  export let lower = false
 
   const client = getClient()
   const limit = 300
@@ -132,8 +134,9 @@
 
     {#if text || intlLabel}
       <span
-        class="textContent overflow-label font-normal"
+        class="textContent overflow-label font-normal {color}"
         class:contentOnly={type === 'content-only'}
+        class:lower
         use:tooltip={{ label: text ? getEmbeddedLabel(getTooltipText(text)) : intlLabel }}
       >
         {#if intlLabel}
@@ -249,6 +252,9 @@
     max-height: 1.25rem;
     color: var(--global-primary-TextColor);
 
+    &.secondary {
+      color: var(--global-secondary-TextColor);
+    }
     &.contentOnly {
       margin-left: 0;
     }

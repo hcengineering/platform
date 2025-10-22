@@ -48,17 +48,15 @@
 </script>
 
 <BaseMessagePreview text={value.message} message={value} {type} {readonly} {actions} on:click>
-  {#if value.attachments && type === 'full' && !isEmptyMarkup(value.message)}
+  {#if value.attachments && !isEmptyMarkup(value.message)}
     <div class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
       {value.attachments}
       <Icon icon={attachment.icon.Attachment} size="small" />
     </div>
   {:else if attachments.length > 0 && isEmptyMarkup(value.message)}
-    <span class="font-normal">
+    <span class="font-normal secondaryColor">
       <Label label={attachment.string.Attachments} />:
-      <span class="ml-1">
-        {attachments.map(({ name }) => name).join(', ')}
-      </span>
+      {attachments.map(({ name }) => name).join(', ')}
     </span>
   {/if}
 </BaseMessagePreview>
@@ -76,5 +74,10 @@
       cursor: pointer;
       color: var(--global-primary-TextColor);
     }
+  }
+
+  .secondaryColor {
+    color: var(--global-secondary-TextColor);
+    margin-left: -0.5rem;
   }
 </style>

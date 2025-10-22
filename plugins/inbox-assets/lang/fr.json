@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Inbox": "Boîte de réception",
+    "ReactedToYourMessage": "a réagi à votre message",
+    "ClearAll": "Tout effacer",
+    "InboxIsClear": "Boîte de réception est vide",
+    "YouDontHaveAnyNewMessages": "Vous n'avez aucun nouveau message",
+    "ReadAll": "Tout lire",
+    "Clearing": "Effacement...",
+    "Reading": "Lecture...",
+    "HideUserNames": "Cacher les noms d'utilisateur"
+  }
+}

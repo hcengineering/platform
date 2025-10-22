@@ -136,9 +136,9 @@
     showArchive: boolean
   ): Promise<void> {
     if (showArchive) {
-      inboxData = await getDisplayInboxData(groupByArray(archivedNotifications, (it) => it.docNotifyContext))
+      inboxData = getDisplayInboxData(groupByArray(archivedNotifications, (it) => it.docNotifyContext))
     } else {
-      inboxData = await getDisplayInboxData(notificationsByContext)
+      inboxData = getDisplayInboxData(notificationsByContext)
     }
   }
 
