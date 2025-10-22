@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { ActivityMessage } from '@hcengineering/activity'
+import { ActivityMessage, Reaction } from '@hcengineering/activity'
 import {
   PersonId,
   AnyAttribute,
@@ -265,6 +265,13 @@ export interface CommonInboxNotification extends InboxNotification {
   iconProps?: Record<string, any>
 }
 
+export interface ReactionInboxNotification extends CommonInboxNotification {
+  emoji: string
+  ref: Ref<Reaction>
+  attachedTo: Ref<ActivityMessage>
+  attachedToClass: Ref<Class<ActivityMessage>>
+}
+
 export interface MentionInboxNotification extends CommonInboxNotification {
   mentionedIn: Ref<Doc>
   mentionedInClass: Ref<Class<Doc>>
@@ -314,6 +321,7 @@ export interface InboxNotificationsClient {
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveAllNotifications: () => Promise<void>
+  removeAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
   unreadAllNotifications: () => Promise<void>
 }
@@ -361,7 +369,8 @@ const notification = plugin(notificationId, {
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
     NotificationTypeSetting: '' as Ref<Class<NotificationTypeSetting>>,
     NotificationProviderSetting: '' as Ref<Class<NotificationProviderSetting>>,
-    NotificationProviderDefaults: '' as Ref<Mixin<NotificationProviderDefaults>>
+    NotificationProviderDefaults: '' as Ref<Mixin<NotificationProviderDefaults>>,
+    ReactionInboxNotification: '' as Ref<Class<ReactionInboxNotification>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -386,7 +395,6 @@ const notification = plugin(notificationId, {
     CollaboratorsChanged: '' as AnyComponent,
     DocNotifyContextPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    ReactionNotificationPresenter: '' as AnyComponent,
     GeneralPreferencesGroup: '' as AnyComponent,
     CollaboratorEditor: '' as AnyComponent
   },

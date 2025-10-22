@@ -286,6 +286,9 @@
     "@hcengineering/ai-assistant": "^0.7.0",
     "@hcengineering/ai-assistant-assets": "^0.7.0",
     "@hcengineering/ai-assistant-resources": "^0.7.0",
+    "@hcengineering/inbox": "^0.7.0",
+    "@hcengineering/inbox-assets": "^0.7.0",
+    "@hcengineering/inbox-resources": "^0.7.0",
     "readable-stream": "^4.7.0",
     "svelte": "^4.2.20"
   }

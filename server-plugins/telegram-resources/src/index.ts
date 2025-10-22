@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Channel, Person } from '@hcengineering/contact'
 import core, {
@@ -189,14 +189,6 @@ async function activityMessageToHtml (control: TriggerControl, message: Activity
   return undefined
 }
 
-function isReactionMessage (message?: ActivityMessage): boolean {
-  return (
-    message !== undefined &&
-    message._class === activity.class.DocUpdateMessage &&
-    (message as DocUpdateMessage).objectClass === activity.class.Reaction
-  )
-}
-
 async function getTranslatedData (
   data: InboxNotification,
   doc: Doc,
@@ -216,6 +208,8 @@ async function getTranslatedData (
   if (hierarchy.isDerived(data._class, notification.class.MentionInboxNotification)) {
     const text = (data as MentionInboxNotification).messageHtml
     body = text !== undefined ? jsonToHTML(markupToJSON(text)) : body
+  } else if (hierarchy.isDerived(data._class, notification.class.ReactionInboxNotification)) {
+    title = await translate(activity.string.Reacted, {})
   } else if (data.data !== undefined) {
     body = jsonToHTML(markupToJSON(data.data))
   } else if (message !== undefined) {
@@ -230,10 +224,6 @@ async function getTranslatedData (
     if (html !== undefined) {
       quote = html
     }
-  }
-
-  if (isReactionMessage(message)) {
-    title = await translate(activity.string.Reacted, {})
   }
 
   return {

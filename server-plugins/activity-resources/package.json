@@ -46,6 +46,7 @@
     "@hcengineering/server-notification-resources": "^0.7.0",
     "@hcengineering/text-core": "^0.7.5",
     "@hcengineering/communication-sdk-types": "^0.7.5",
-    "@hcengineering/communication-types": "^0.7.5"
+    "@hcengineering/communication-types": "^0.7.5",
+    "@hcengineering/server-card": "^0.7.0"
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { DisplayDocUpdateMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessagePreviewType, DisplayDocUpdateMessage } from '@hcengineering/activity'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
@@ -23,6 +23,7 @@
   import request from '../plugin'
 
   export let message: DisplayDocUpdateMessage
+  export let type: ActivityMessagePreviewType = 'full'
 
   const me = getCurrentEmployee()
   const client = getClient()
@@ -31,7 +32,7 @@
   $: isAddedMe = message.attributeUpdates?.added.includes(me) ?? false
 </script>
 
-<BaseMessagePreview {message} on:click>
+<BaseMessagePreview {message} {type} on:click>
   <slot name="content">
     <div class="content overflow-label ml-1" class:preview={true}>
       <span class="mr-1">

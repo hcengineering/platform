@@ -44,7 +44,7 @@
   $: void updateDisplayMessage(value.combinedMessages)
 
   async function updateDisplayMessage (messages: ActivityMessage[]): Promise<void> {
-    const combinedMessages = await combineActivityMessages(sortActivityMessages(messages))
+    const combinedMessages = combineActivityMessages(sortActivityMessages(messages))
 
     displayMessage = combinedMessages[0]
   }
@@ -119,6 +119,6 @@
       on:click
     />
   {:else}
-    <ActivityMessagePreview value={displayMessage} {actions} {space} doc={object} on:click />
+    <ActivityMessagePreview value={displayMessage} {actions} {space} doc={object} />
   {/if}
 {/if}

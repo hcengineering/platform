@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity, { type ActivityMessage, type Reaction } from '@hcengineering/activity'
 import { type PersonSpace } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -83,7 +83,8 @@ import {
   type NotificationType,
   type NotificationTypeSetting,
   type PushSubscription,
-  type PushSubscriptionKeys
+  type PushSubscriptionKeys,
+  type ReactionInboxNotification
 } from '@hcengineering/notification'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -285,6 +286,17 @@ export class TMentionInboxNotification extends TCommonInboxNotification implemen
     mentionedInClass!: Ref<Class<Doc>>
 }
 
+@Model(notification.class.ReactionInboxNotification, notification.class.CommonInboxNotification)
+export class TReactionInboxNotification extends TCommonInboxNotification implements ReactionInboxNotification {
+  emoji!: string
+  ref!: Ref<Reaction>
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
+    attachedTo!: Ref<ActivityMessage>
+
+  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
+    attachedToClass!: Ref<Class<ActivityMessage>>
+}
+
 @Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TActivityNotificationViewlet extends TDoc implements ActivityNotificationViewlet {
   messageMatch!: DocumentQuery<Doc>
@@ -358,7 +370,8 @@ export function createModel (builder: Builder): void {
     TNotificationProvider,
     TNotificationProviderSetting,
     TNotificationTypeSetting,
-    TNotificationProviderDefaults
+    TNotificationProviderDefaults,
+    TReactionInboxNotification
   )
 
   builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TransientConfiguration, {
@@ -636,14 +649,6 @@ export function createModel (builder: Builder): void {
     { label: notification.string.Inbox, visible: true },
     notification.category.Notification
   )
-
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    messageMatch: {
-      _class: activity.class.DocUpdateMessage,
-      objectClass: activity.class.Reaction
-    },
-    presenter: notification.component.ReactionNotificationPresenter
-  })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_NOTIFICATION,
