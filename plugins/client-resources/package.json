@@ -38,7 +38,7 @@
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.3",
+    "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/client": "^0.7.3",
     "@hcengineering/communication-sdk-types": "^0.7.5",
     "@hcengineering/communication-types": "^0.7.5",

@@ -593,5 +593,54 @@ describe('drawing module tests', () => {
         ])
       })
     })
+
+    describe('tools selection', () => {
+      it('select color after panning', () => {
+        const colorsList: ColorsList = [
+          ['alpha', new ThemeAwareColor('red', 'yellow')],
+          ['beta', new ThemeAwareColor('blue', 'blue')]
+        ]
+
+        const toolChangedSpy = jest.fn()
+
+        const initialPenColor: ColorMetaNameOrHex = 'alpha'
+        const systemUnderTest = drawing(drawingPlugInPoint, {
+          colorsList,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
+          readonly: false,
+          imageWidth: 400,
+          imageHeight: 300,
+          commands: [],
+          tool: 'pen',
+          penColor: initialPenColor,
+          toolChanged: toolChangedSpy
+        })
+
+        systemUnderTest.update?.({
+          colorsList,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
+          readonly: false,
+          tool: 'pan',
+          toolChanged: toolChangedSpy
+        })
+
+        expect(toolChangedSpy).toHaveBeenCalledWith('pan')
+        toolChangedSpy.mockClear()
+
+        const newColor: ColorMetaNameOrHex = 'beta'
+        systemUnderTest.update?.({
+          colorsList,
+          getCurrentTheme: () => 'theme-light',
+          subscribeOnThemeChange: () => {},
+          readonly: false,
+          penColor: newColor,
+          toolChanged: toolChangedSpy
+        })
+
+        expect(toolChangedSpy).toHaveBeenCalledWith('pen')
+      })
+    })
   })
 })

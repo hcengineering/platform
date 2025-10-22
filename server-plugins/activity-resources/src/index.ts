@@ -35,21 +35,28 @@ import core, {
   type Tx,
   type TxCreateDoc,
   type TxCUD,
-  TxProcessor
+  TxProcessor,
+  type TxRemoveDoc
 } from '@hcengineering/core'
-import { getAccountBySocialId } from '@hcengineering/server-contact'
-import notification, { type NotificationContent } from '@hcengineering/notification'
-import { getResource, translate } from '@hcengineering/platform'
+import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
+import notification, {
+  type NotificationContent,
+  type NotificationType,
+  type ReactionInboxNotification
+} from '@hcengineering/notification'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import { type ActivityControl, type DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import {
-  createCollabDocInfo,
   createCollaboratorNotifications,
-  getTextPresenter,
-  removeDocInboxNotifications
+  getAllowedProviders,
+  getCommonNotificationTxes,
+  getNotificationProviderControl,
+  getReceiversInfo,
+  getTextPresenter
 } from '@hcengineering/server-notification-resources'
-import { type Card } from '@hcengineering/card'
-import { type Person } from '@hcengineering/contact'
+import card, { type Card } from '@hcengineering/card'
+import serverCard from '@hcengineering/server-card'
 
 import { ReferenceTrigger } from './references'
 import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
@@ -60,7 +67,7 @@ export async function OnReactionChanged (txes: Tx[], control: TriggerControl): P
     const innerTx = tx as TxCUD<Reaction>
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const txes = await createReactionNotifications(innerTx, control)
+      const txes = await createReactionNotifications(innerTx as TxCreateDoc<Reaction>, control)
 
       await control.apply(control.ctx, txes)
       continue
@@ -76,85 +83,112 @@ export async function OnReactionChanged (txes: Tx[], control: TriggerControl): P
   return []
 }
 
-export async function removeReactionNotifications (tx: TxCUD<Reaction>, control: TriggerControl): Promise<Tx[]> {
+export async function removeReactionNotifications (tx: TxRemoveDoc<Reaction>, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+
+  const n = await control.findAll(control.ctx, notification.class.ReactionInboxNotification, { ref: tx.objectId })
+
+  for (const nn of n) {
+    res.push(control.txFactory.createTxRemoveDoc(nn._class, nn.space, nn._id))
+  }
+  return res
+}
+
+export async function createReactionNotifications (tx: TxCreateDoc<Reaction>, control: TriggerControl): Promise<Tx[]> {
   if (tx.attachedTo === undefined) return []
-  const message = (
-    await control.findAll(
-      control.ctx,
-      activity.class.ActivityMessage,
-      { objectId: tx.objectId },
-      { projection: { _id: 1, _class: 1, space: 1 } }
-    )
+
+  const reaction = TxProcessor.createDoc2Doc(tx)
+  const parentMessage = (
+    await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: reaction.attachedTo })
   )[0]
 
-  if (message === undefined) {
-    return []
-  }
+  if (parentMessage === undefined) return []
+
+  const doc = (await control.findAll(control.ctx, parentMessage.attachedToClass, { _id: parentMessage.attachedTo }))[0]
+
+  if (doc === undefined) return []
+
+  const userSocialId = parentMessage.createdBy
+
+  if (userSocialId === undefined || userSocialId === core.account.System || userSocialId === tx.modifiedBy) return []
+
+  const account = await getAccountBySocialId(control, userSocialId)
+
+  if (account == null) return []
+
+  const receiver = (await getReceiversInfo(control.ctx, [account], control))[0]
+  if (receiver === undefined) return []
 
   const res: Tx[] = []
-  const txes = await removeDocInboxNotifications(message._id, control)
 
-  const removeTx = control.txFactory.createTxRemoveDoc(message._class, message.space, message._id)
+  const content = await reactionNotificationContentProvider(parentMessage, reaction, control)
+  const data: Partial<Data<ReactionInboxNotification>> = {
+    emoji: reaction.emoji,
+    attachedTo: parentMessage._id,
+    attachedToClass: parentMessage._class,
+    ref: reaction._id,
+    ...content
+  }
 
-  res.push(removeTx)
+  const senderPerson = await getPerson(control, tx.createdBy ?? tx.modifiedBy)
+  const sender = {
+    socialId: tx.createdBy ?? tx.modifiedBy,
+    person: senderPerson
+  }
+  const type: NotificationType = control.modelDb.findAllSync(notification.class.NotificationType, {
+    _id: activity.ids.AddReactionNotification
+  })[0]
+
+  const notificationControl = await getNotificationProviderControl(control.ctx, control)
+  const allowedProviders = getAllowedProviders(control, receiver.socialIds, type, notificationControl)
+  const notifyResult = new Map(allowedProviders.map((it) => [it, [type]]))
+
+  const txes = await getCommonNotificationTxes(
+    control.ctx,
+    control,
+    doc,
+    data,
+    receiver,
+    sender,
+    doc._id,
+    doc._class,
+    doc.space,
+    tx.modifiedOn,
+    notifyResult,
+    notification.class.ReactionInboxNotification,
+    tx
+  )
   res.push(...txes)
 
   return res
 }
 
-export async function createReactionNotifications (tx: TxCUD<Reaction>, control: TriggerControl): Promise<Tx[]> {
-  if (tx.attachedTo === undefined) return []
-  const parentMessage = (
-    await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: tx.attachedTo as Ref<ActivityMessage> })
-  )[0]
+async function reactionNotificationContentProvider (
+  message: ActivityMessage,
+  reaction: Reaction,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const presenter = getTextPresenter(message._class, control.hierarchy)
 
-  if (parentMessage === undefined) {
-    return []
+  let text = ''
+
+  if (presenter !== undefined) {
+    const fn = await getResource(presenter.presenter)
+
+    text = await fn(message, control)
+  } else {
+    text = await translate(activity.string.Message, {})
   }
 
-  const userSocialId = parentMessage.createdBy
-
-  if (userSocialId === undefined || userSocialId === core.account.System || userSocialId === tx.modifiedBy) {
-    return []
+  return {
+    title: activity.string.ReactionNotificationTitle,
+    body: activity.string.ReactionNotificationBody,
+    data: reaction.emoji,
+    intlParams: {
+      title: text,
+      reaction: reaction.emoji
+    }
   }
-
-  let res: Tx[] = []
-
-  const rawMessage: Data<DocUpdateMessage> = {
-    txId: tx._id,
-    attachedTo: parentMessage._id,
-    attachedToClass: parentMessage._class,
-    objectId: tx.objectId,
-    objectClass: tx.objectClass,
-    action: 'create',
-    collection: 'docUpdateMessages',
-    updateCollection: tx.collection
-  }
-
-  const messageTx = getDocUpdateMessageTx(control, tx, parentMessage, rawMessage, tx.modifiedBy)
-
-  if (messageTx === undefined) {
-    return []
-  }
-
-  res.push(messageTx)
-
-  const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
-  const account = await getAccountBySocialId(control, userSocialId)
-
-  if (account == null) {
-    return []
-  }
-
-  res = res.concat(
-    await createCollabDocInfo(control.ctx, res, [account], control, tx, parentMessage, [docUpdateMessage], {
-      isOwn: true,
-      isSpace: false,
-      shouldUpdateTimestamp: false
-    })
-  )
-
-  return res
 }
 
 function isActivityDoc (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): boolean {
@@ -352,6 +386,8 @@ export async function generateDocUpdateMessages (
 }
 
 async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
+  const isCommunicationEnabled = getMetadata(serverCard.metadata.CommunicationEnabled) ?? false
+
   const ltxes = _txes.filter(
     (it) =>
       !(
@@ -369,6 +405,14 @@ async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerCon
   control.contextCache.set('ActivityMessagesHandler', cache)
   const result: Tx[] = []
   for (const tx of ltxes) {
+    if (control.hierarchy.isDerived(tx.objectClass, card.class.Card) && isCommunicationEnabled) continue
+    if (
+      tx.attachedToClass != null &&
+      control.hierarchy.isDerived(tx.attachedToClass, card.class.Card) &&
+      isCommunicationEnabled
+    ) {
+      continue
+    }
     const txes =
       tx.space === core.space.DerivedTx
         ? []
@@ -397,6 +441,13 @@ async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promi
       continue
     }
 
+    if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
+      const reactionNotification = await control.findAll(control.ctx, notification.class.ReactionInboxNotification, {
+        attachedTo: tx.objectId as Ref<ActivityMessage>
+      })
+      result.push(...reactionNotification.map((it) => control.txFactory.createTxRemoveDoc(it._class, it.space, it._id)))
+    }
+
     const activityDocMixin = control.hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.ActivityDoc)
 
     if (activityDocMixin === undefined) {
@@ -415,37 +466,6 @@ async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promi
     )
   }
   return result
-}
-
-async function ReactionNotificationContentProvider (
-  doc: ActivityMessage,
-  originTx: TxCUD<Doc>,
-  _: Ref<Person>,
-  control: TriggerControl
-): Promise<NotificationContent> {
-  const tx = originTx as TxCreateDoc<Reaction>
-  const presenter = getTextPresenter(doc._class, control.hierarchy)
-  const reaction = TxProcessor.createDoc2Doc(tx)
-
-  let text = ''
-
-  if (presenter !== undefined) {
-    const fn = await getResource(presenter.presenter)
-
-    text = await fn(doc, control)
-  } else {
-    text = await translate(activity.string.Message, {})
-  }
-
-  return {
-    title: activity.string.ReactionNotificationTitle,
-    body: activity.string.ReactionNotificationBody,
-    data: reaction.emoji,
-    intlParams: {
-      title: text,
-      reaction: reaction.emoji
-    }
-  }
 }
 
 async function getAttributesUpdatesText (
@@ -533,7 +553,6 @@ export default async () => ({
     HandleCardActivity
   },
   function: {
-    ReactionNotificationContentProvider,
     DocUpdateMessageTextPresenter
   }
 })

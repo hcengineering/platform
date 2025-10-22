@@ -131,12 +131,6 @@
       <Label label={setting.string.Primary} />
     </div>
   {/if}
-
-  {#if canRelease}
-    <div class="on-hover">
-      <Button label={setting.string.Release} kind="ghost" on:click={handleRelease} />
-    </div>
-  {/if}
 </div>
 
 <style lang="scss">

@@ -13,11 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
-  import { Class, Doc, type Ref, type Space } from '@hcengineering/core'
-  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
+  import { Doc, type Ref, type Space } from '@hcengineering/core'
+  import notification, {
+    ActivityNotificationViewlet,
+    CommonInboxNotification,
+    DisplayActivityInboxNotification,
+    DisplayInboxNotification,
+    MentionInboxNotification,
+    ReactionInboxNotification
+  } from '@hcengineering/notification'
+  import ActivityInboxNotificationPresenter from './ActivityInboxNotificationPresenter.svelte'
+  import MentionInboxNotificationPresenter from './MentionInboxNotificationPresenter.svelte'
+  import ReactionInboxNotificationPresenter from './ReactionInboxNotificationPresenter.svelte'
+  import CommonInboxNotificationPresenter from './CommonInboxNotificationPresenter.svelte'
 
   export let value: DisplayInboxNotification
   export let object: Doc | undefined
@@ -27,9 +36,29 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  function asDisplayActivityNotification (notification: DisplayInboxNotification): DisplayActivityInboxNotification {
+    return notification as DisplayActivityInboxNotification
+  }
+
+  function asMentionNotification (notification: DisplayInboxNotification): MentionInboxNotification {
+    return notification as MentionInboxNotification
+  }
+
+  function asReactionNotification (notification: DisplayInboxNotification): ReactionInboxNotification {
+    return notification as ReactionInboxNotification
+  }
+
+  function asCommonNotification (notification: DisplayInboxNotification): CommonInboxNotification {
+    return notification as CommonInboxNotification
+  }
 </script>
 
-{#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, viewlets, space, object }} on:click />
+{#if hierarchy.isDerived(value._class, notification.class.ActivityInboxNotification)}
+  <ActivityInboxNotificationPresenter value={asDisplayActivityNotification(value)} {object} {viewlets} {space} />
+{:else if hierarchy.isDerived(value._class, notification.class.MentionInboxNotification)}
+  <MentionInboxNotificationPresenter value={asMentionNotification(value)} {object} {space} />
+{:else if hierarchy.isDerived(value._class, notification.class.ReactionInboxNotification)}
+  <ReactionInboxNotificationPresenter value={asReactionNotification(value)} {object} />
+{:else if hierarchy.isDerived(value._class, notification.class.CommonInboxNotification)}
+  <CommonInboxNotificationPresenter value={asCommonNotification(value)} />
 {/if}

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
@@ -22,19 +22,48 @@
   import process from '../plugin'
   import { createExecution } from '../utils'
 
-  export let value: Card
+  export let value: Card | Card[] | undefined
+
+  const values = Array.isArray(value) ? value : value ? [value] : []
 
   const client = getClient()
   const h = client.getHierarchy()
 
-  const asc = h.getAncestors(value._class)
-  const mixins = h.getDescendants(value._class).filter((p) => h.hasMixin(value, p))
-  const resClasses = [...asc, ...mixins]
+  const resClasses = getPossibleClasses()
 
   const res = client.getModel().findAllSync(process.class.Process, {})
   const processes = res.filter((it) => resClasses.includes(it.masterTag))
 
+  function getCardPossibleClasses (card: Card): Ref<Class<Doc>>[] {
+    const asc = h.getAncestors(card._class)
+    const mixins = h.getDescendants(card._class).filter((p) => h.hasMixin(card, p))
+    return [...asc, ...mixins]
+  }
+
+  function getPossibleClasses (): Ref<Class<Doc>>[] {
+    if (!value) {
+      return []
+    }
+    const res = new Set<Ref<Class<Doc>>>()
+    for (const val of values) {
+      const resClasses = getCardPossibleClasses(val)
+      if (res.size === 0) {
+        for (const cls of resClasses) {
+          res.add(cls)
+        }
+      } else {
+        for (const cls of Array.from(res)) {
+          if (!resClasses.includes(cls)) {
+            res.delete(cls)
+          }
+        }
+      }
+    }
+    return [...res]
+  }
+
   async function filterProcesses (processes: Process[]): Promise<Process[]> {
+    if (value === undefined) return []
     const res: Process[] = []
     const shouldCheck: Process[] = []
     for (const val of processes) {
@@ -48,6 +77,7 @@
 
     const executions = await client.findAll(process.class.Execution, {
       process: { $in: shouldCheck.map((it) => it._id) },
+      card: { $in: values.map((it) => it._id) },
       done: false
     })
     const notAllowed = new Set(executions.map((it) => it.process))
@@ -62,7 +92,10 @@
   const dispatch = createEventDispatcher()
 
   async function runProcess (_id: Ref<Process>): Promise<void> {
-    await createExecution(value._id, _id, value.space)
+    if (!value) return
+    for (const element of values) {
+      await createExecution(element._id, _id, element.space)
+    }
     dispatch('close')
   }
 </script>

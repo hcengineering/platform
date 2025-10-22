@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayDocUpdateMessage } from '@hcengineering/activity'
+  import { ActivityMessagePreviewType, DisplayDocUpdateMessage } from '@hcengineering/activity'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
 
   import chunter from '../../plugin'
 
   export let message: DisplayDocUpdateMessage
+  export let type: ActivityMessagePreviewType = 'full'
 </script>
 
-<BaseMessagePreview intlLabel={chunter.string.YouJoinedChannel} {message} on:click />
+<BaseMessagePreview intlLabel={chunter.string.YouJoinedChannel} {message} {type} on:click />

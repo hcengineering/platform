@@ -315,7 +315,7 @@ export function createModel (builder: Builder): void {
       },
       label: process.string.RunProcess,
       icon: process.icon.Process,
-      input: 'focus',
+      input: 'any',
       category: view.category.General,
       target: card.class.Card,
       context: {
@@ -588,10 +588,10 @@ export function createModel (builder: Builder): void {
     component: process.component.ProcessesSettingSection
   })
 
-  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
-    extension: workbench.extensions.WorkbenchExtensions,
-    component: process.component.NotifierExtension
-  })
+  // builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+  //   extension: workbench.extensions.WorkbenchExtensions,
+  //   component: process.component.NotifierExtension
+  // })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',

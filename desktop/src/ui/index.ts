@@ -25,6 +25,7 @@ import {
   closePopup,
   createApp,
   getCurrentResolvedLocation,
+  Menu,
   navigate,
   parseLocation,
   pushRootBarProgressComponent,
@@ -33,10 +34,15 @@ import {
 } from '@hcengineering/ui'
 import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import notification, { notificationId } from '@hcengineering/notification'
-import { chatId } from '@hcengineering/chat'
+import { inboxId } from '@hcengineering/inbox'
 import workbench, { workbenchId, logOut } from '@hcengineering/workbench'
 import view, { Action, encodeObjectURI } from '@hcengineering/view'
 import { resolveLocation } from '@hcengineering/notification-resources'
+import { themeStore, ThemeVariant } from '@hcengineering/theme'
+import type { Application } from '@hcengineering/workbench'
+import { isAllowedToRole } from '@hcengineering/workbench-resources'
+import card from '@hcengineering/card'
+import communication from '@hcengineering/communication'
 
 import { isOwnerOrMaintainer, getCurrentAccount, Ref } from '@hcengineering/core'
 import { configurePlatform } from './platform'
@@ -44,9 +50,6 @@ import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
 import { CommandLogout, CommandSelectWorkspace, CommandOpenSettings, CommandOpenInbox, CommandOpenPlanner, CommandOpenOffice, CommandOpenApplication, LaunchApplication, NotificationParams, CommandCloseTab } from './types'
 import { ipcMainExposed } from './typesUtils'
-import { themeStore, ThemeVariant } from '@hcengineering/theme'
-import type { Application } from '@hcengineering/workbench'
-import { isAllowedToRole } from '@hcengineering/workbench-resources'
 import { IpcMessage } from './ipcMessages'
 
 function currentOsIsWindows (): boolean {
@@ -82,11 +85,13 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         })
 
-        void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
-          menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
-        }).catch(() => {
-          menuBar.setTheme(ThemeVariant.Light) // fallback
-        })
+        if (menuBar.lastUsedThemeIsUnknown()) {
+          void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+            menuBar.setTheme(isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light)
+          }).catch(() => {
+            menuBar.setTheme(ThemeVariant.Light) // fallback
+          })
+        }
       })
     }
   }
@@ -194,39 +199,44 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(parseLocation(urlObject))
   }
 
-  function getBasicNotificationPath (notificationParams: NotificationParams): string {
-    return `${workbenchId}/${notificationParams.application ?? notificationId}/${notificationId}`
+  function getBasicNotificationPath (worksapce: string, app: string): string {
+    return `${workbenchId}/${worksapce}/${app}`
   }
 
   ipcMain.handleNotificationNavigation((notificationParams: NotificationParams) => {
+    const currentLocation = getCurrentResolvedLocation()
+    const workspace = currentLocation.path[1]
     // Support for new inbox with cardId (card-based)
     if (notificationParams.cardId != null) {
-      const currentLocation = getCurrentResolvedLocation()
-      navigateToUrl(`${workbenchId}/${currentLocation.path[1]}/${chatId}/${notificationParams.cardId}`)
+      const objectUri = encodeObjectURI(notificationParams.cardId, card.class.Card)
+      navigateToUrl(`${workbenchId}/${workspace}/${inboxId}/${objectUri}`)
       return
     }
+
+    const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
+    const app = isCommunicationEnabled ? inboxId : notificationParams.application
 
     // Support for old inbox with objectId + objectClass (legacy)
     if (notificationParams.objectId != null && notificationParams.objectClass != null) {
       const encodedObjectURI = encodeObjectURI(notificationParams.objectId, notificationParams.objectClass)
       const notificationLocation = {
-        path: [workbenchId, notificationParams.application, notificationId, encodedObjectURI],
+        path: [workbenchId, workspace, app, encodedObjectURI],
         fragment: undefined,
-        query: {}
+        query: undefined
       }
 
       void resolveLocation(notificationLocation).then((resolvedLocation) => {
         if (resolvedLocation?.loc != null) {
           navigate(resolvedLocation.loc)
         } else {
-          navigateToUrl(`${workbenchId}/${notificationParams.application}/${notificationId}/${encodedObjectURI}`)
+          navigateToUrl(`${workbenchId}/${workspace}/${app}/${encodedObjectURI}`)
         }
       }).catch(() => {
-        navigateToUrl(getBasicNotificationPath(notificationParams))
+        navigateToUrl(getBasicNotificationPath(workspace, app))
       })
     } else {
       // Fallback to basic notification navigation
-      navigateToUrl(getBasicNotificationPath(notificationParams))
+      navigateToUrl(getBasicNotificationPath(workspace, app))
     }
   })
 

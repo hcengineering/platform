@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Inbox": "Posteingang",
+    "ReactedToYourMessage": "reagierte auf Ihre Nachricht",
+    "ClearAll": "Alles löschen",
+    "InboxIsClear": "Posteingang ist leer",
+    "YouDontHaveAnyNewMessages": "Sie haben keine neuen Nachrichten",
+    "ReadAll": "Alle lesen",
+    "Clearing": "Lösche...",
+    "Reading": "Lese...",
+    "HideUserNames": "Benutzernamen ausblenden"
+  }
+}
