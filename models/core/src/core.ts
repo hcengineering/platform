@@ -27,6 +27,7 @@ import {
   type Collection,
   type Configuration,
   type ConfigurationElement,
+  type CustomSequence,
   type Doc,
   type Domain,
   DOMAIN_BLOB,
@@ -257,6 +258,12 @@ export class TTypeIntlString extends TType {}
 @Model(core.class.TypeNumber, core.class.Type)
 export class TTypeNumber extends TType {}
 
+@UX(core.string.Id)
+@Model(core.class.TypeIdentifier, core.class.Type)
+export class TTypeIdentifier extends TType {
+  of!: Ref<Sequence>
+}
+
 @UX(core.string.BlobSize)
 @Model(core.class.TypeFileSize, core.class.Type)
 export class TTypeFileSize extends TType {}
@@ -395,6 +402,11 @@ export class TSequence extends TDoc implements Sequence {
     attachedTo!: Ref<Class<Doc>>
 
   sequence!: number
+}
+
+@Model(core.class.CustomSequence, core.class.Sequence)
+export class TCustomSequence extends TSequence implements CustomSequence {
+  prefix!: string
 }
 
 @Model(core.class.ClassCollaborators, core.class.Doc, DOMAIN_MODEL)

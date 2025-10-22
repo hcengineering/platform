@@ -147,6 +147,7 @@ export default mergeIds(settingId, setting, {
     ReleasePrimarySocialId: '' as IntlString,
     ReleasePrimarySocialIdConfirm: '' as IntlString,
     Login: '' as IntlString,
-    Primary: '' as IntlString
+    Primary: '' as IntlString,
+    IdentifierExists: '' as IntlString
   }
 })

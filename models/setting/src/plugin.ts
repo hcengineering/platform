@@ -37,6 +37,7 @@ export default mergeIds(settingId, setting, {
     HyperlinkTypeEditor: '' as AnyComponent,
     BooleanTypeEditor: '' as AnyComponent,
     NumberTypeEditor: '' as AnyComponent,
+    IdentifierTypeEditor: '' as AnyComponent,
     DateTypeEditor: '' as AnyComponent,
     RefEditor: '' as AnyComponent,
     AssociationEditor: '' as AnyComponent,

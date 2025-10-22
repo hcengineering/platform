@@ -202,6 +202,7 @@
     "DangerZone": "Nebezpečná zóna",
     "ApiAccess": "Přístup k API",
     "ApiToken": "API token",
-    "GenerateApiToken": "Vygenerovat API token"
+    "GenerateApiToken": "Vygenerovat API token",
+    "IdentifierExists": "Identifikátor již existuje"
   }
 }
