@@ -67,7 +67,7 @@
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/datalake": "^0.7.8",
     "@hcengineering/s3": "^0.7.8",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/billing-client": "^0.7.0",
     "livekit-server-sdk": "^2.13.3",
     "jwt-simple": "^0.5.6",

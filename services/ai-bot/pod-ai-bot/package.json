@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/ai-bot": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",

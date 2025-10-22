@@ -35,8 +35,8 @@ importers:
         specifier: ^8.4.1
         version: 8.4.1
       '@hcengineering/account-client':
-        specifier: ^0.7.6
-        version: 0.7.6
+        specifier: ^0.7.7
+        version: 0.7.7
       '@hcengineering/analytics':
         specifier: ^0.7.5
         version: 0.7.5
@@ -3138,8 +3138,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hcengineering/account-client@0.7.6':
-    resolution: {integrity: sha512-ckRhpea7t0f/rFejJPHMgX+Br6oIhZ+yMr0AVgPBimsIXoXZylVV8ypUA7h/Exh8txVZSsMzA0MATXeS6WI3qQ==}
+  '@hcengineering/account-client@0.7.7':
+    resolution: {integrity: sha512-bpI6vjCK+j6KfYxvkneYeHbL5B9AFH8zzVx0qFkstT+k97x+0RAuvvKwefHW3VReavTZllqKOd9N5xx+wFHk7g==}
 
   '@hcengineering/analytics-service@0.7.5':
     resolution: {integrity: sha512-LlXfkO8GZvZBcelBVjbc/lsA91ZHry/PZLWaqMacnS46z/F6+EJf0K+IUK8py/yJ8Q7hNcu9Gr188QAX4/lMsw==}
@@ -4724,7 +4724,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ai-assistant-resources@file:projects/ai-assistant-resources.tgz':
-    resolution: {integrity: sha512-+au0gf3jryqBW/iGOufE7mY2uPHvcJghXXBIfD9C1whWecLnfRMwCjVRILjTXgQP7aokhH+PmnpIVMed6c7nHA==, tarball: file:projects/ai-assistant-resources.tgz}
+    resolution: {integrity: sha512-aAI/LcTalVIs0nhKnEGyeDYRkDrFIpMdDapztas2INeZ+52vgiHYYBe+UzR1ibvt00aXZy40po85LA+fGmbBGw==, tarball: file:projects/ai-assistant-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/ai-assistant@file:projects/ai-assistant.tgz':
@@ -4756,7 +4756,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/api-tests@file:projects/api-tests.tgz':
-    resolution: {integrity: sha512-DrMe2L45kQH2UmBpnW9k/3Fbkr9ze3nNisStdCxVsGMyl5IcTOAniyxg+ftaIk/MAxtrpWQw5gsVUhRZ6uUptA==, tarball: file:projects/api-tests.tgz}
+    resolution: {integrity: sha512-PHEvqt85vMmtHI0wAtT/hC30IOfznNiUbZfQJbA9mP6KEwfMzX44Uj58JGSeKVZjHHOd6+5HzK5pCbVqJDJVvg==, tarball: file:projects/api-tests.tgz}
     version: 0.0.0
 
   '@rush-temp/attachment-assets@file:projects/attachment-assets.tgz':
@@ -4772,11 +4772,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/auth-providers@file:projects/auth-providers.tgz':
-    resolution: {integrity: sha512-8g+EB5Cje9vk3//wzA2564i/PLTOVBub2EulTpux6/pNq9IDJE8oCVF2frs64QJz1IlH9v3UIBRNIGq4pWSyWg==, tarball: file:projects/auth-providers.tgz}
+    resolution: {integrity: sha512-jDZU8Nik2fDMGkfqb65CUFpWFWzIYR/VTB8rjPPFMb2fNFxvt0N3Catj3uZ03D7VVzsyITi61RJ8wtEaaAE18Q==, tarball: file:projects/auth-providers.tgz}
     version: 0.0.0
 
   '@rush-temp/backup-api-pod@file:projects/backup-api-pod.tgz':
-    resolution: {integrity: sha512-3N4S/wve38gT4gs2+h2/0ZSavusaK6TH5Z3LtrTpAQVv69gl32Xnq9RgNcMPG7GEd6peK3lum8x4zXxBlXhopA==, tarball: file:projects/backup-api-pod.tgz}
+    resolution: {integrity: sha512-9b9bZtTJLMVkXfB5/40YXAz1fVCVk6K74/7F28yb1lFMzBwpYx9h6u1ppYh62vuGIWUk989+TR2OSPI/Fj616g==, tarball: file:projects/backup-api-pod.tgz}
     version: 0.0.0
 
   '@rush-temp/backup-service@file:projects/backup-service.tgz':
@@ -4828,7 +4828,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz':
-    resolution: {integrity: sha512-GGUIZb4ZqVG9x1w+J0DTl39xgLQXM4BB2dQIRqWiMBhZANK0VeNSWrrfLEouxznem9b8/BearqWH7gDLvY+NJg==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-K6t5JSO7OZZPhDXW5ZBdO4n4Sp2w3mQTzjPycEQUilsMUBgDTX2jqmdQWZTAnmSX0Onmxmcr2nH1QGFy1pTL+w==, tarball: file:projects/calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
@@ -4840,7 +4840,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-yBJXR+Q4a4aYmfY/wmTseZqBfQrYiEodjgTkoBlYBSslG2NPXQRzQkobrJ+Q9wFnmxIpRN5R6d56jM/wqe/eKg==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-b8GWDLMC1hMW5pWF3fJX+Gd7W3p1EyI3iZOk97T7l2X4EowFjZYyK156qmHUH/jYrasJyt4iR/cHn2LTI8crvw==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4872,7 +4872,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/collaborator@file:projects/collaborator.tgz':
-    resolution: {integrity: sha512-U/3NIoZpUnnZOflZGfsbqqShwMyRe7bgtqdd+cM2a4g75bQSNHHpy2Twf+aKIPpgFE+S/aSg0vJv9LV6/3QJuw==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-oHBRf5XQORZAM1gzQvPlHxh8+45k0AxegVB0ZoCOgCdNuGjaaslRFsM/U1hO9ye/ujAIkLhMpgD2p3Vxa8HytQ==, tarball: file:projects/collaborator.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-assets@file:projects/communication-assets.tgz':
@@ -4892,7 +4892,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact-resources@file:projects/contact-resources.tgz':
-    resolution: {integrity: sha512-96lVpfkqANaZKnn/8BbK/1NbuLQziNHX4rXZipvbnUC2LqX1jS8Ng8Ye0iWSlvIiMwON+3LYNr3xyyoQ4LLjGQ==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-8YAud7YPRFogjjse77yQ1y80Xf72ibnbKu5PI/pJrfdX7fM4zxmu14bWqvO+JtoguXwUMNJ10gei21oj2+8iAA==, tarball: file:projects/contact-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
@@ -4904,7 +4904,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/controlled-documents-resources@file:projects/controlled-documents-resources.tgz':
-    resolution: {integrity: sha512-rhGDngyrr9IqAcsiaxZmMOKGLiW1qnIagJApEOWOLv2yqLZTt8+GwlvFN3mt+7HBaSJS8rejfuswz5++cwKZDA==, tarball: file:projects/controlled-documents-resources.tgz}
+    resolution: {integrity: sha512-3kyicn3oruE9DpXq0rOK/H70e11QAQyIr93VdUwTSWmab5PBjuh1HsNAQsgIJLOg9TFcD3LJLlCPZqvnpbLIiQ==, tarball: file:projects/controlled-documents-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents@file:projects/controlled-documents.tgz':
@@ -5012,7 +5012,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/front@file:projects/front.tgz':
-    resolution: {integrity: sha512-TAAxbiFqPyrzMb3mS8ATU4oVMJPh/Zu6mzU3e8O8/c4VniN9XwNUNP9kbMTWfcdVFseHp0+DbqBV3EzIP+VRXA==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-2MRWIxemyIcb2xv78oAnKRlZ09eaDQ+IiTN/GtAP9zlM9nUHRDAbSt6t6T9g9fEO9YPn56DU6N6XEErqi7wKvw==, tarball: file:projects/front.tgz}
     version: 0.0.0
 
   '@rush-temp/github-assets@file:projects/github-assets.tgz':
@@ -5020,7 +5020,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/github-resources@file:projects/github-resources.tgz':
-    resolution: {integrity: sha512-vIkCcgkTBYkye8W1/z/OPjR4eqfSoi6PeLg3O8ml80pjLKDpyCvDl2q4egBc6ncxevB8COSMYsYyxi2Apzt7Cw==, tarball: file:projects/github-resources.tgz}
+    resolution: {integrity: sha512-i9/yq/U80aJCVxbICm8o66H/SiDOJM3SGKCcs5U3lQHF7RFWCHvbHMXL5+g6D5TzzASlDvrNASbmr3m+9g8R0w==, tarball: file:projects/github-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/github@file:projects/github.tgz':
@@ -5032,7 +5032,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/global-profile-resources@file:projects/global-profile-resources.tgz':
-    resolution: {integrity: sha512-4TFuaeK6C2TVDojXWp6o6gh6uCEEvYo0Q6wa8Xc7TrsWYayiMFtUYpDBAR+vnaOzjaqfCRawd/BQx+MUv/nWLA==, tarball: file:projects/global-profile-resources.tgz}
+    resolution: {integrity: sha512-znyH4xSFyhAKiIRSD+JWR1B5YqKMnHDD0Bio7l6Se15MyZiSSoDc1o0LzKXMTABQVZsOEo75Rbb7jOJtxWZ7/Q==, tarball: file:projects/global-profile-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/global-profile@file:projects/global-profile.tgz':
@@ -5044,7 +5044,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-8zmY9VySOGHUIvusSZViEEW1r+jzDBukMjwFkxe5O8rdB0sFIDp76DIWZPV5ZjnXlVrUTY+OcH6Fi7PjI+GL5Q==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-AKkyz0zDu97Edsi2dG8ddPfM9DfMRq09wN1h6Iqwl4DtuxMIqxw/8wKMnGhHjhZ9ydt+x2TD+5dc5RXxhPI/qg==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -5056,7 +5056,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/guest-resources@file:projects/guest-resources.tgz':
-    resolution: {integrity: sha512-Ip9e97Wabf8GPEK8HsPFcdzNQVMMqDzWnu6pzbnwISYduSoZZ8I8ll80v9AtsNIspYRWbdw+D121gIoiTpmzYg==, tarball: file:projects/guest-resources.tgz}
+    resolution: {integrity: sha512-4Q6+uC8ZQMrq7yqksu8MYYvC/t9L/ZvpuoRbBAKO/olLpXZORY5QdBiWxrxe6nz4atA+tGWY/NuhnWoIoLQGTw==, tarball: file:projects/guest-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/guest@file:projects/guest.tgz':
@@ -5088,7 +5088,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/huly-mail-resources@file:projects/huly-mail-resources.tgz':
-    resolution: {integrity: sha512-T4t7zH6FVu3JNJewj8KDLM37KxfNM0AkfJtdIFBomEw+3jTHS+DaT3mrxTZ2ykip6PI+4BYIkwVgDT3+iiVb5w==, tarball: file:projects/huly-mail-resources.tgz}
+    resolution: {integrity: sha512-xG+cdl8rU+hRv+pUwkLCrLTP8TclTQkVWdN/DkggKrfmQsSl9JV2KHWRlYnMf1paLkCpNDG1WPTZuNN5C/UyaQ==, tarball: file:projects/huly-mail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/huly-mail@file:projects/huly-mail.tgz':
@@ -5128,7 +5128,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/integration-client@file:projects/integration-client.tgz':
-    resolution: {integrity: sha512-MBDCDgdNJXH9qixOAC7CHYcdZDyzyWNHdqy9pETKMxdMx8IYUVQ3xuo7pBkFB8/YCA6G6Ka/668Xl6sCZWjJKw==, tarball: file:projects/integration-client.tgz}
+    resolution: {integrity: sha512-Jch1P0LQjcFe3VYU+rK5dUjfS+uK2RuzTDPy/r0qpCUMOHS5/hyQUKQLQQKr2oFnJ/yi7PTIcL8WztoVlZ8Qjg==, tarball: file:projects/integration-client.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -5168,11 +5168,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/login-resources@file:projects/login-resources.tgz':
-    resolution: {integrity: sha512-mfDWmGJi6mU/72Ox/jtlD3diq9SVz7p+D24ivDWXuLuWSlswJQvU0HHGGXw5HDfchqXeYiKLZeawjy0op3UHww==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-+CncoB79GMf2kjJTHplFhQUncp5FKRCFmK3Bi/ruWOn26/gQgXcnd+RZdq9XMtzrKTo9eRZDaEDaa2VEC+z4fg==, tarball: file:projects/login-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/login@file:projects/login.tgz':
-    resolution: {integrity: sha512-5Sw+CNm5weucyZWG3+2YOFHUQgnyTPHaXO0CgE7dvhx6L/CMdQo3xRa7wYeSSyeaB8VDcUtRvBMemfJ3Xc9jbQ==, tarball: file:projects/login.tgz}
+    resolution: {integrity: sha512-8c9PE4EAXqKi0XOfuN79HCOrOy5UjBTzT3mh4HL8M4kWiMaAOCstmDurPmVt8XuXZ41QlIEbrlIykSosTqbjOg==, tarball: file:projects/login.tgz}
     version: 0.0.0
 
   '@rush-temp/love-assets@file:projects/love-assets.tgz':
@@ -5180,7 +5180,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-jK7Tg4VsyzQRi7a3a7SU+G99mI+l+Zq3qxxGTXUscQ3jLogSACL6LOG/ZDwzA5e8KKqJHF8Fjlj8j4/R+hwVmA==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-D09wIOw2L2IHvEaNygOzk3ZB4Ui78yyHG+XilEGkHXlqYEdI3kh++4ZyIMxpY0UG5pbcMkKs3Vx9wC4lT1Mbbg==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -5192,7 +5192,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-LsWUSOgwWBz9Xg7Ea/Axbd/D/uJwk2SKZn8qepmRQh5kLH6J55h5fuxI6xuWM0kKfYuA4VpgQdaYmg6lOqdI5Q==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-U+QVONT/vdPI+E221/SNM7cUquPVZ1gz/HKCRwwBKf7jrDpQTis5LAoG4JnVS49U1Yi+E7sMW3kdK8mw5ys0vg==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -5252,7 +5252,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-calendar@file:projects/model-calendar.tgz':
-    resolution: {integrity: sha512-Zso2HbQ1Qm+E9+LpYDEQQpRt5aONeCnQglXD6z571ETTDsjUEuHC1cxu/DMzxR188i4Rr6JHsHuxqwOAa8cu1A==, tarball: file:projects/model-calendar.tgz}
+    resolution: {integrity: sha512-jwLSKhvnI4tukOdqvS27QHpPSrRFiyh0BRgAqi+J+OKDj6Twlv2sizIrTUutN6ybjATpPuhDYoa6TXfUIKnsfA==, tarball: file:projects/model-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/model-card@file:projects/model-card.tgz':
@@ -5620,7 +5620,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-ai-bot@file:projects/pod-ai-bot.tgz':
-    resolution: {integrity: sha512-VS+zr9BiNOYabOS32fIvNBi71yit0KZAx3B+WymU8s+Hia2gpErxiSlxdbLBopfLpnUoSL6NzXIaXzmyVqXQGg==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-i7ARoUNEidIH+C+xWIrmtTsSR88zlHArLoCwIjeuC5NjjAgd5erkDkPL9IyJ3hwSFjAZ+V0TTtOVLJavcs03ZA==, tarball: file:projects/pod-ai-bot.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-analytics-collector@file:projects/pod-analytics-collector.tgz':
@@ -5632,15 +5632,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-billing@file:projects/pod-billing.tgz':
-    resolution: {integrity: sha512-crbs0z838VBa4QoxpiMt63qsyMXqEAy5P032eE4IWzhXYsTdGyHQh8FHx8Feq7GfwtlCc3kCs/Lhvcw4v4bVFg==, tarball: file:projects/pod-billing.tgz}
+    resolution: {integrity: sha512-EpijdUY8Yw1uQqrSsvR0eNBF2OWFokeHtVDScQ28VKztfELllt3sxfjqlFZosziXPgMoVlSJF6lGu5n19D8PbA==, tarball: file:projects/pod-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-calendar-mailer@file:projects/pod-calendar-mailer.tgz':
-    resolution: {integrity: sha512-iw4byJQuNpxcNorMkJGIsWg8Et6ddlqxaaUMSe7Adv/fRQVzk5DIP5w9eAEICUYrQVKRw2Y+SITsafEvvRL2CA==, tarball: file:projects/pod-calendar-mailer.tgz}
+    resolution: {integrity: sha512-Ewz4ofr5G9uJaMOEBV1aFuRrpDJSpNJOhL0ecvl0hC9Chv+NunyhI+LmnCEW5pNFqd8NqkHZj2oE3hRSum47ug==, tarball: file:projects/pod-calendar-mailer.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-calendar@file:projects/pod-calendar.tgz':
-    resolution: {integrity: sha512-5Ji82SMVnkbswYOGxxVxj2MB7EYhwpwByBMC+QQGctYWpRjwJOUeoJtHRMoPZk027Htxl14nhj1XELvMumjDGg==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-scQveFf0q4pyDuX9HLHcHoJAEBM1ysp/UEscSQBVVWYaSVie+UZvi/kE3fwef8taXJ2UvjR6vV+lLfYV8U1RPg==, tarball: file:projects/pod-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-collaborator@file:projects/pod-collaborator.tgz':
@@ -5648,11 +5648,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-i1X1+yHfUIjSoce4n59KQudczjJaxtRAzPsvWUG4pzGSWbYNuwpjdvgqpHkf1ZEwpvJdLsnIChyH3nkBSmKW/Q==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-Phe9ddE8rkfhMNAMqgS6NKwU8TIsHeGxMu1Zr2kNdz1vNvAqc6jBrNNIhf48GsyfbjFxZOufZC2AHaFDoSZbJQ==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
-    resolution: {integrity: sha512-7kfDHSSERvcHicbh9k4yyPmJgqI3eurYLZPMEB0Sh4dZnTLcLF46Xhx56DbHtjLDGBCuevsXzQcRGFj5MWLwLw==, tarball: file:projects/pod-export.tgz}
+    resolution: {integrity: sha512-gKRvoIrC+Glc8kvMbVIFgwTAXVx1WJx9oO6pTy6QAPLzHGDSMu8+POKxGHAoMrcdFPPJIuNp5254mWwTSPOlkg==, tarball: file:projects/pod-export.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-external@file:projects/pod-external.tgz':
@@ -5668,19 +5668,19 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
-    resolution: {integrity: sha512-cfhlPxHdizrtu4mljyUspA+1avzNzNsV4ZgeDzW7dvWNCLIxSTAYfl1LAhmTMfeXmD0mB9m2yvFsfQ8hcgqmIA==, tarball: file:projects/pod-github.tgz}
+    resolution: {integrity: sha512-ychDfdsAeznvx1+CtIxgXUqQVErBo376VrjK/nl7yEs4/ESz2yAVOEPqTj+UyfqkX6wQbTPR4pU00BKACd/9gg==, tarball: file:projects/pod-github.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-KpM1yGsEbEocIHoaQKKGy2hX0fkNh0ka5tOtKvWzU/A7uyK/g00ajOE6iSX6lCkTR06oLTVOBvyPEgjMZaid9g==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-Fy18dEFo/+eg1uBOC0TbV0bmFem+o+FJXotupbgX2HrIJaE3DybGASb4DbafIopEFxvtHqE9FiKqTvKM7rO98w==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
-    resolution: {integrity: sha512-hzRbITlDPPco526tIIeyqI5iKOQKYWkIVbFN7w+ZnP59FtzKMd8ADVDuJFOfuBRy+mC9GfpL0/1X9tfummyQqw==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-yWMXvOe200TMCxo41hrUeuZxBDz5k6BZcBMwIKl1GxFuNxz3KDw9ITMMAc4wzYp2SJznotv28s0GGxzAxJioyQ==, tarball: file:projects/pod-love.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz':
-    resolution: {integrity: sha512-21/GFJl9iAeqIgWOBj37aiSZFfHGPV0lK+2N14YFzqr7+3jcXjQyQk54/Y2ZXE7zSRcxtisBpT4sPFysYeIWWw==, tarball: file:projects/pod-mail-worker.tgz}
+    resolution: {integrity: sha512-X3wm4jlK15ErKwWntQukoGFk5m2A1GynxZ31bjpVwlG256lB8nAjQyHenz1HKgv9zWaaLPddmOHjj8O9E6TqVQ==, tarball: file:projects/pod-mail-worker.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
@@ -5688,7 +5688,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
-    resolution: {integrity: sha512-OtZwJ8D4rSG2ufrGAJkjvem4r7z1fHOe+XQQd3vFl1l/wjqeXkinNLTbEgtBIRTmBw1on1Ko/hgP49cwFMUzdA==, tarball: file:projects/pod-media.tgz}
+    resolution: {integrity: sha512-P54Re9w8UuEeH6HRyQTrtySSU+kQ0K/7TQlVoPmLlNXDoVprhQWGtevAVUuHxu/0itna/mHGDOERW4ANs6HbQA==, tarball: file:projects/pod-media.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz':
@@ -5700,19 +5700,19 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
-    resolution: {integrity: sha512-l34P+s3PUTPJLXA12syXfKQ/BzUtmA5QlF429/+OU4TVGrV3VaxFityO2imyEyGoqbMRJZwoo+svpO4rAfWitw==, tarball: file:projects/pod-print.tgz}
+    resolution: {integrity: sha512-NkRi/59oCzZr2i5WJKuatYf5xqhJ99EQx2dI+c2QHlTj9Vlp4IW0K24eaCFSmqQbbX2eNiLxr7SVNcI/d1pFCw==, tarball: file:projects/pod-print.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz':
-    resolution: {integrity: sha512-anFJm87Sq2Y6ir157w9+qLqMKk099NUjCtgm03vYWxT1v1WpAqJDCbhIJCz4PcQ8I4kALzPsnSVb/KZRkY1Uhg==, tarball: file:projects/pod-process.tgz}
+    resolution: {integrity: sha512-rv+aR+l8BTZl1iGYWJ/l5jnrN0YTRNBHkoevFlrTbzWkyko7r3v+xHz1LyvulD/1+GMIBSCPo6FRLq2zdt1n5w==, tarball: file:projects/pod-process.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-5JMUg8YGp1E4Aq4+kCKT0EeAaufRTTkIK9HhRIZHwBfSzYHPHMg5au+/v97lSdUUUVASIkqfdtkkHIawTODYrA==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-95U6ez9bMPBMRmkpLDztVDtmF+8a/TjHNPUVm4gRnrTgBJX0rLC0/BSK1AW+xW6itShXMGsONNyCefbXg4Edmg==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-sign@file:projects/pod-sign.tgz':
-    resolution: {integrity: sha512-Zm0e2LyEglonkeORmHiAgIhkKolhjzaVQ06TRMMz+dM2RKfwumKedzZC3Miyza6VPcKFrsHAwx8Hg3cUFHVF5w==, tarball: file:projects/pod-sign.tgz}
+    resolution: {integrity: sha512-VhHhpIMfcdNWZ/rjPTlRnjteqH2PCMQj07OtMoc7MuxNZnjK219um3fpl7JKu6b3NrQ7V/PW03rEC1v9TFMkuA==, tarball: file:projects/pod-sign.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-stats@file:projects/pod-stats.tgz':
@@ -5720,7 +5720,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz':
-    resolution: {integrity: sha512-K/XDOxv/qQiYpFl2lnThB3rCm6VtOFWp9TqVMXfx+pxq98FxnO+A4XsqKMphm2MEVfCCgk0CuEhHPTQ8iq1b6A==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-J6/moR6RsjY8+7QQLbIlYmoKEZ+80A44QwRYETfJS63KEOY3TUdjfLTnEpY8TsUwz8fvDqToV8Y6UcyjdH1iKg==, tarball: file:projects/pod-telegram-bot.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-telegram@file:projects/pod-telegram.tgz':
@@ -5728,7 +5728,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-translate@file:projects/pod-translate.tgz':
-    resolution: {integrity: sha512-iUT904Zc5R+22fZ9FSK8xUh6/H6x57IoWEc4l1USQHwnF89uplB0qmN7eYO8JRqA51OpJy/BM3Xyzyo6eZ6+Hg==, tarball: file:projects/pod-translate.tgz}
+    resolution: {integrity: sha512-YWZPxkubAeu8Se4YwOfZept8ufirQy4ndQ1N+QD9EUAla6VUuRPC0zhcG1Vl3LGKAp9hUR9bZTy0EIPdFHY/AA==, tarball: file:projects/pod-translate.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-worker@file:projects/pod-worker.tgz':
@@ -6120,7 +6120,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-tool@file:projects/server-tool.tgz':
-    resolution: {integrity: sha512-Pdz23WcGmImtZECQuCgwOF41v49Y0kG3c0si/xVk4L4aRynHxTZKPYJkmwiJ9RgYuDqRDCWwMC/Oitsm4yrktg==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-pvMhfHu3CjEOt9njQ2XYYCDZHCHT1lSdUhnLdVTKl/29ufHlPtO/SrSCH/1f68NmGaELLubm1dP3BjGdqxPNzg==, tarball: file:projects/server-tool.tgz}
     version: 0.0.0
 
   '@rush-temp/server-tracker-resources@file:projects/server-tracker-resources.tgz':
@@ -6152,11 +6152,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-veE4wQUveM3w0LLDST9QoZZi2A1cLVzzFADWB3mbB6REMYn0UCz2DvfywHij3BNA3hO568qmHcMlhAv/yXVDjA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-pbBynMMfEXkcUe9e6vzJ8DuJRitJxF7/023EZgZnlHhuvg9AsyGFdu2mVu1BKTkF/3qer86vuNLQ4qw4rJvUsQ==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
-    resolution: {integrity: sha512-woIavPeppLZMxkeczvS/+yFd8+RLst7TJOdQCDnVTw2uXym5Kaz1APKrvqvAEhfd0tVlaaSbx6Y8Qdul9IWNAQ==, tarball: file:projects/setting.tgz}
+    resolution: {integrity: sha512-DbAvfrgtZUygyAxlqtgSZrBI4Pvn48MfwbGHO8Sk+/83A6QIey++rgt6u4LKOuwMD+2+tepBzIO/Xg0FBvDJhg==, tarball: file:projects/setting.tgz}
     version: 0.0.0
 
   '@rush-temp/sign@file:projects/sign.tgz':
@@ -6216,7 +6216,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-RNwOvnOW9b1+XSAATGo3dmT1VuWPAIUk3NjJOvEagrEFHrrgkm1oOVZuhl54M3b0k/H/2VXxfXVY+Xr3p3HNUg==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-zWjFNSncpyq8XP4UMPQxGg1vB3l0eVcxXxl2DgbyFQD5YWz/kQrgg+gUYai/HHyKtcv8OYs7r/5nE4zajtpU6w==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -6248,7 +6248,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tests-sanity@file:projects/tests-sanity.tgz':
-    resolution: {integrity: sha512-UNRo9ccDx6mgiXpMW/jhHqpSWd5I8cSyBfMFd3xJFDtUSkZ/eRzxoZcKoON/nhEuV4Bkz8kb2xsB8QpcyWoegg==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-s3jfNPy4SMXFe2Xwbk1ssUUdzY9/BmMWqh4G04XDGPh2M2zEkkyM2haMBQ9kqI1+bm1kOqYexaS23p0MU7LLvQ==, tarball: file:projects/tests-sanity.tgz}
     version: 0.0.0
 
   '@rush-temp/tests-ws-sanity@file:projects/tests-ws-sanity.tgz':
@@ -6284,7 +6284,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-Y1A2UFoJIrN/HFhw5+kna0JlHOOX6G+7BSB7pT8polTYse0BEkSA/cEnx2V96bOM2B84URNqV1e9Nathy+Fu4w==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-oBVhlTIJ8RunBVn98NNol7eRZdqJiBsOfu3vnFM6feQGyBI9dmWDdDKcOvyxVGpU52hkowJkQgvJNkPSsneI3A==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -6344,7 +6344,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workbench-resources@file:projects/workbench-resources.tgz':
-    resolution: {integrity: sha512-WrodITIyj+PlZJU3NZbflOeDm6d/SA2c1G9KwTDSeDFcomn1jXXS6o29ZVEMCUJFOPLBOxEQVlGAq1Zt6KP2Gw==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-dla2heOJSC2J/ryKed+5LV4mivAmKH8W2KCj4kdemYd9pb2H9NL4jyEJwXhzNNNj+YPwnd1HfAXrPNwQoF6L3A==, tarball: file:projects/workbench-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/workbench@file:projects/workbench.tgz':
@@ -6352,7 +6352,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workspace-service@file:projects/workspace-service.tgz':
-    resolution: {integrity: sha512-Bz0vPYVg4wFjDvmermKue37PJzVsn9abJA1wslY9cRGjQm5TyG1lyaqdfmzAmTEM2Hmf3yPUi5eKnPvlfHfScg==, tarball: file:projects/workspace-service.tgz}
+    resolution: {integrity: sha512-tE0uklxUSjEmCf8j0mmXaPYgzpmgrtGxBzXShxnEROli6bjTGCV3a+cgON5GIRJhzcEG1JUnqbOUwalEI0a3Ag==, tarball: file:projects/workspace-service.tgz}
     version: 0.0.0
 
   '@selderee/plugin-htmlparser2@0.11.0':
@@ -15531,7 +15531,7 @@ snapshots:
       protobufjs: 7.5.3
       yargs: 17.7.2
 
-  '@hcengineering/account-client@0.7.6':
+  '@hcengineering/account-client@0.7.7':
     dependencies:
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -15554,7 +15554,7 @@ snapshots:
 
   '@hcengineering/api-client@0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/collaborator-client': 0.7.5
@@ -15645,7 +15645,7 @@ snapshots:
 
   '@hcengineering/communication-server@0.7.7':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/communication-cockroach': 0.7.7
       '@hcengineering/communication-sdk-types': 0.7.7
       '@hcengineering/communication-shared': 0.7.7
@@ -15754,7 +15754,7 @@ snapshots:
 
   '@hcengineering/model@0.7.6':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -15863,7 +15863,7 @@ snapshots:
 
   '@hcengineering/server-client@0.7.8(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/core': 0.7.10
@@ -15911,7 +15911,7 @@ snapshots:
 
   '@hcengineering/server@0.7.9':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -18186,7 +18186,7 @@ snapshots:
 
   '@rush-temp/ai-assistant-resources@file:projects/ai-assistant-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -18506,7 +18506,7 @@ snapshots:
 
   '@rush-temp/api-tests@file:projects/api-tests.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/core': 0.7.10
@@ -18682,7 +18682,7 @@ snapshots:
 
   '@rush-temp/auth-providers@file:projects/auth-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@types/jest': 29.5.12
@@ -18743,7 +18743,7 @@ snapshots:
 
   '@rush-temp/backup-api-pod@file:projects/backup-api-pod.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/core': 0.7.10
@@ -19272,7 +19272,7 @@ snapshots:
 
   '@rush-temp/calendar-resources@file:projects/calendar-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -19396,7 +19396,7 @@ snapshots:
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@tiptap/pm@2.11.7)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/communication-types': 0.7.7
       '@hcengineering/core': 0.7.10
@@ -19737,7 +19737,7 @@ snapshots:
 
   '@rush-temp/collaborator@file:projects/collaborator.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(@tiptap/pm@2.11.7)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))(y-protocols@1.0.6(yjs@13.6.27))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -19986,7 +19986,7 @@ snapshots:
 
   '@rush-temp/contact-resources@file:projects/contact-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -20110,7 +20110,7 @@ snapshots:
 
   '@rush-temp/controlled-documents-resources@file:projects/controlled-documents-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@tiptap/pm@2.11.7)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -21231,7 +21231,7 @@ snapshots:
 
   '@rush-temp/front@file:projects/front.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/minio': 0.7.8
@@ -21335,7 +21335,7 @@ snapshots:
 
   '@rush-temp/github-resources@file:projects/github-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
       '@hcengineering/core': 0.7.10
@@ -21459,7 +21459,7 @@ snapshots:
 
   '@rush-temp/global-profile-resources@file:projects/global-profile-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -21574,7 +21574,7 @@ snapshots:
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -21696,7 +21696,7 @@ snapshots:
 
   '@rush-temp/guest-resources@file:projects/guest-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
       '@hcengineering/core': 0.7.10
@@ -22023,7 +22023,7 @@ snapshots:
 
   '@rush-temp/huly-mail-resources@file:projects/huly-mail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -22447,7 +22447,7 @@ snapshots:
 
   '@rush-temp/integration-client@file:projects/integration-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -22843,7 +22843,7 @@ snapshots:
 
   '@rush-temp/login-resources@file:projects/login-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(file-loader@6.2.0(webpack@5.97.1))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(webpack@5.97.1)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -22891,7 +22891,7 @@ snapshots:
 
   '@rush-temp/login@file:projects/login.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -22965,7 +22965,7 @@ snapshots:
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -23087,7 +23087,7 @@ snapshots:
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/communication-rest-client': 0.7.7
       '@hcengineering/communication-sdk-types': 0.7.7
@@ -23686,7 +23686,7 @@ snapshots:
 
   '@rush-temp/model-calendar@file:projects/model-calendar.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/model': 0.7.6
       '@hcengineering/platform': 0.7.5
@@ -27214,7 +27214,7 @@ snapshots:
 
   '@rush-temp/pod-ai-bot@file:projects/pod-ai-bot.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(zod@3.24.2)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -27407,7 +27407,7 @@ snapshots:
 
   '@rush-temp/pod-billing@file:projects/pod-billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/core': 0.7.10
@@ -27472,7 +27472,7 @@ snapshots:
 
   '@rush-temp/pod-calendar-mailer@file:projects/pod-calendar-mailer.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
@@ -27528,7 +27528,7 @@ snapshots:
 
   '@rush-temp/pod-calendar@file:projects/pod-calendar.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -27641,7 +27641,7 @@ snapshots:
       '@aws-sdk/client-s3': 3.738.0
       '@aws-sdk/lib-storage': 3.738.0(@aws-sdk/client-s3@3.738.0)
       '@aws-sdk/s3-request-presigner': 3.738.0
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/core': 0.7.10
@@ -27709,7 +27709,7 @@ snapshots:
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/client': 0.7.6
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -27922,7 +27922,7 @@ snapshots:
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.3.7(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
@@ -28038,7 +28038,7 @@ snapshots:
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/client': 0.7.6
@@ -28117,7 +28117,7 @@ snapshots:
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -28182,7 +28182,7 @@ snapshots:
 
   '@rush-temp/pod-mail-worker@file:projects/pod-mail-worker.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/communication-rest-client': 0.7.7
@@ -28308,7 +28308,7 @@ snapshots:
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
@@ -28484,7 +28484,7 @@ snapshots:
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -28543,7 +28543,7 @@ snapshots:
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
@@ -28603,7 +28603,7 @@ snapshots:
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(socks@2.8.3)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/communication-sdk-types': 0.7.7
@@ -28682,7 +28682,7 @@ snapshots:
 
   '@rush-temp/pod-sign@file:projects/pod-sign.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -28806,7 +28806,7 @@ snapshots:
 
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
@@ -28963,7 +28963,7 @@ snapshots:
 
   '@rush-temp/pod-translate@file:projects/pod-translate.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(utf-8-validate@6.0.4)(zod@3.24.2)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
@@ -32868,7 +32868,7 @@ snapshots:
 
   '@rush-temp/server-tool@file:projects/server-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.25.9)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/collaboration': 0.7.8(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
@@ -33199,7 +33199,7 @@ snapshots:
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/model': 0.7.6
@@ -33245,7 +33245,7 @@ snapshots:
 
   '@rush-temp/setting@file:projects/setting.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -33815,7 +33815,7 @@ snapshots:
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
@@ -34142,7 +34142,7 @@ snapshots:
   '@rush-temp/tests-sanity@file:projects/tests-sanity.tgz(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
       '@faker-js/faker': 8.4.1
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/client-resources': 0.7.6
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -34547,7 +34547,7 @@ snapshots:
     dependencies:
       '@elastic/elasticsearch': 7.17.14
       '@faker-js/faker': 8.4.1
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
       '@hcengineering/client': 0.7.6
       '@hcengineering/client-resources': 0.7.6
@@ -35208,9 +35208,10 @@ snapshots:
 
   '@rush-temp/workbench-resources@file:projects/workbench-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/client': 0.7.6
+      '@hcengineering/communication-types': 0.7.7
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -35292,7 +35293,7 @@ snapshots:
 
   '@rush-temp/workspace-service@file:projects/workspace-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/account-client': 0.7.7
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/model': 0.7.6

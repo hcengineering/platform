@@ -48,7 +48,7 @@
     "@hcengineering/model-view": "^0.7.0",
     "@hcengineering/model-setting": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",
     "@hcengineering/model-preference": "^0.7.0",

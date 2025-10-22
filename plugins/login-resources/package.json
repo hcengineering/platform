@@ -49,7 +49,7 @@
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/theme": "^0.7.0",
     "@hcengineering/analytics": "^0.7.5",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/analytics-providers": "^0.7.0"
   }
 }

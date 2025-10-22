@@ -50,7 +50,7 @@
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/contact-resources": "^0.7.0",
     "@hcengineering/tags": "^0.7.0",

@@ -48,7 +48,7 @@
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/guest": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/analytics": "^0.7.5",
     "fast-copy": "^3.0.2",
