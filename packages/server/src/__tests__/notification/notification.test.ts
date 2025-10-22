@@ -708,9 +708,8 @@ describe('notification', () => {
           createdOn: date.getTime()
         } as any
 
-        const notificationContent: Pick<ReactionNotificationContent, 'emoji' | 'creator'> & { title: string, shortText: string, senderName: string } = {
+        const notificationContent: ReactionNotificationContent = {
           emoji: '👍',
-          creator: socialId,
           title: 'Reacted to your message',
           shortText: '👍',
           senderName: 'John Doe'
@@ -723,7 +722,8 @@ describe('notification', () => {
           messageId,
           account: accountUuid,
           created: date,
-          content: notificationContent
+          content: notificationContent,
+          creator: socialId
         }
 
         const context: NotificationContext = {
@@ -801,9 +801,8 @@ describe('notification', () => {
           createdOn: date.getTime()
         } as any
 
-        const notificationContent: Pick<ReactionNotificationContent, 'emoji' | 'creator'> & { title: string, shortText: string, senderName: string } = {
+        const notificationContent: ReactionNotificationContent = {
           emoji: '👍',
-          creator: socialId,
           title: 'Reacted to your message',
           shortText: '👍',
           senderName: 'John Doe'
@@ -816,7 +815,8 @@ describe('notification', () => {
           messageId,
           account: accountUuid,
           created: date,
-          content: notificationContent
+          content: notificationContent,
+          creator: socialId
         }
 
         const olderNotification = {

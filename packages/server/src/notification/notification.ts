@@ -101,8 +101,7 @@ async function removeReactionNotification (
       ctx: ctx.ctx,
       account: ctx.account
     },
-    meta.creator,
-    true
+    meta.creator
   )) as AccountUuid | undefined
   if (messageAccount == null) return result
 
@@ -114,7 +113,7 @@ async function removeReactionNotification (
 
   const toDelete = notifications.find((n) => {
     const content = n.content as ReactionNotificationContent
-    return content.emoji === reaction && content.creator === socialId
+    return content.emoji === reaction && n.creator === socialId
   })
 
   if (toDelete === undefined) return result

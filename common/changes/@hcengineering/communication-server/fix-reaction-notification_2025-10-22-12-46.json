@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-server",
+      "comment": "Remove reaction notification on reaction unset",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-server"
+}
