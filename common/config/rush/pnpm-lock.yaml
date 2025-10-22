@@ -187,7 +187,7 @@ importers:
   ../../packages/api-client:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.7
         version: link:../account-client
       '@hcengineering/client':
         specifier: workspace:^0.7.6
@@ -711,7 +711,7 @@ importers:
   ../../packages/model:
     dependencies:
       '@hcengineering/account-client':
-        specifier: workspace:^0.7.6
+        specifier: workspace:^0.7.7
         version: link:../account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.5
