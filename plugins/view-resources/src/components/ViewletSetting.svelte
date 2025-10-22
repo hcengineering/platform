@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import core, { AnyAttribute, Association, Class, Doc, Ref, Type } from '@hcengineering/core'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { Loading, resizeObserver } from '@hcengineering/ui'
-  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
+  import { DropdownLabelsIntl, Loading, resizeObserver } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
@@ -235,6 +234,33 @@
     return false
   }
 
+  function processAssociation (association: Association, direction: 'A' | 'B', result: Config[]): void {
+    const associationValue = `$associations.${association._id}.${direction}`
+    const name = direction === 'A' ? association.nameA : association.nameB
+    const targetClass = direction === 'A' ? association.classA : association.classB
+
+    if (name.trim().length === 0) return
+
+    for (const res of result) {
+      const key = typeof res.value === 'string' ? res.value : res.value?.key
+      if (key === associationValue) return
+    }
+
+    const clazz = hierarchy.getClass(targetClass)
+    const newValue: AttributeConfig = {
+      type: 'attribute',
+      value: associationValue,
+      label: getEmbeddedLabel(name),
+      enabled: false,
+      _class: targetClass,
+      icon: clazz.icon
+    }
+
+    if (!isExist(result, newValue)) {
+      result.push(newValue)
+    }
+  }
+
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): Config[] {
     const result = getBaseConfig(viewlet)
 
@@ -263,6 +289,20 @@
         hierarchy.getOwnAttributes(it._id).forEach((attr) => {
           processAttribute(attr, result, true)
         })
+      })
+
+      // Process associations
+
+      const allClasses = [...ancestors, ...parentMixins.map((it) => it._id)]
+
+      const associationsB = client.getModel().findAllSync(core.class.Association, { classA: { $in: allClasses } })
+      const associationsA = client.getModel().findAllSync(core.class.Association, { classB: { $in: allClasses } })
+
+      associationsB.forEach((a) => {
+        processAssociation(a, 'B', result)
+      })
+      associationsA.forEach((a) => {
+        processAssociation(a, 'A', result)
       })
     }
 

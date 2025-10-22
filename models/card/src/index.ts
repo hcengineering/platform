@@ -585,6 +585,10 @@ export function createModel (builder: Builder): void {
     presenter: card.component.CardPresenter
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: card.component.CardsPresenter
+  })
+
   builder.mixin(card.class.FavoriteCard, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.FavoriteCardPresenter
   })
