@@ -183,6 +183,6 @@
     "@hcengineering/api-client": "^0.7.5",
     "@faker-js/faker": "^8.4.1",
     "@hcengineering/hulylake-client": "^0.7.6",
-    "@hcengineering/communication-types": "^0.7.5"
+    "@hcengineering/communication-types": "^0.7.7"
   }
 }
