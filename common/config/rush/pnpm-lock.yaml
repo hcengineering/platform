@@ -5560,6 +5560,10 @@ packages:
     resolution: {integrity: sha512-HsfJ8xyxzBNY3mLc2Ft3CfZlOYjgTJyPwv3nl4KYYPgBkG+qFkaoIKZlFOgaHLV5PABSjHdmJw88pL7fLKu+qA==, tarball: file:projects/panel.tgz}
     version: 0.0.0
 
+  '@rush-temp/payment-client@file:projects/payment-client.tgz':
+    resolution: {integrity: sha512-U2Ls0o2V8HfuE6xbHa1qpF5agqQEs+bWKrEuf1sx+3ArDGQJnq5S0JrDwIiaeXuQ0/H7YyDrY43mLLBCfCYbbA==, tarball: file:projects/payment-client.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
     resolution: {integrity: sha512-7Qb1w9VCFpWVKlnl+aFO3H0e4OtzGp+wTmHWMbQbnufQqC0LJaCpgBpsCOfFtyaNCb3V5lHR8iDOsFVPOlsduw==, tarball: file:projects/pod-account.tgz}
     version: 0.0.0
@@ -5638,6 +5642,10 @@ packages:
 
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz':
     resolution: {integrity: sha512-ttkeWBu/a3F0/JI5+lKycEUln4aUuBwaBm1O3pGMDtkSq6rdhbeCa15v7PD6ER/d0gWp/Ll6YOf0y+2XkEoeJg==, tarball: file:projects/pod-notification.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-payment@file:projects/pod-payment.tgz':
+    resolution: {integrity: sha512-He0VYjXeWu4n6ECosCvrJpVklbBIhjpJkCjuN8PQBIOLZszV2LplKfo4+J+f/vJ42KI/Xzf0ydA0jsz8jlwxDA==, tarball: file:projects/pod-payment.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
@@ -9736,6 +9744,9 @@ packages:
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
+
   fast-text-encoding@1.0.6:
     resolution: {integrity: sha512-VhXlQgj9ioXCqGstD37E/HBeqEGV/qOD/kmbVG8h5xKBYvM1L3lR1Zn4555cQ8GkYbJa8aJSipLPndE1k6zK2w==}
 
@@ -13206,6 +13217,9 @@ packages:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}
     engines: {node: '>=10'}
 
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
+
   stat-mode@1.0.0:
     resolution: {integrity: sha512-jH9EhtKIjuXZ2cWxmXS8ZP80XyC3iasQxMDV8jzhNJpfDb7VbQLVW4Wvsxz9QZvzV+G4YoSfBUVKDOyxLzi/sg==}
     engines: {node: '>= 6'}
@@ -14387,6 +14401,9 @@ packages:
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
+
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
@@ -40564,6 +40581,8 @@ snapshots:
 
   fast-safe-stringify@2.1.1: {}
 
+  fast-sha256@1.3.0: {}
+
   fast-text-encoding@1.0.6: {}
 
   fast-uri@3.1.0: {}
@@ -44590,6 +44609,11 @@ snapshots:
   stack-utils@2.0.6:
     dependencies:
       escape-string-regexp: 2.0.0
+
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
 
   stat-mode@1.0.0: {}
 
