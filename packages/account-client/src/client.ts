@@ -50,6 +50,8 @@ import type {
   ProviderInfo,
   RegionInfo,
   SocialId,
+  Subscription,
+  SubscriptionData,
   UserProfile,
   WorkspaceLoginInfo,
   WorkspaceOperation
@@ -231,6 +233,9 @@ export interface AccountClient {
 
   setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
   getUserProfile: (personUuid?: PersonUuid) => Promise<PersonWithProfile | null>
+
+  getSubscriptions: (activeOnly?: boolean) => Promise<Subscription[]>
+  upsertSubscription: (subscription: SubscriptionData) => Promise<void>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1174,6 +1179,22 @@ class AccountClientImpl implements AccountClient {
       params: {
         personUuid
       }
+    })
+  }
+
+  async getSubscriptions (activeOnly: boolean = true): Promise<Subscription[]> {
+    return await this._rpc({
+      method: 'getSubscriptions',
+      params: {
+        activeOnly
+      }
+    })
+  }
+
+  async upsertSubscription (subscription: SubscriptionData): Promise<void> {
+    await this._rpc({
+      method: 'upsertSubscription',
+      params: subscription
     })
   }
 }

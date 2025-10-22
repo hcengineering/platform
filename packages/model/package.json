@@ -41,7 +41,7 @@
     "@hcengineering/storage": "workspace:^0.7.5",
     "@hcengineering/analytics": "workspace:^0.7.5",
     "@hcengineering/rank": "workspace:^0.7.5",
-    "@hcengineering/account-client": "workspace:^0.7.6",
+    "@hcengineering/account-client": "workspace:^0.7.7",
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   },

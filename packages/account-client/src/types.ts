@@ -162,3 +162,74 @@ export interface UserProfile {
 }
 
 export type PersonWithProfile = Person & Omit<UserProfile, 'personUuid'>
+
+/**
+ * Subscription status enum
+ * Reflects the subscription lifecycle from active to canceled/expired
+ */
+export enum SubscriptionStatus {
+  Active = 'active', // Subscription is active and paid
+  Trialing = 'trialing', // In trial period (free usage)
+  PastDue = 'past_due', // Payment failed but subscription not yet canceled
+  Canceled = 'canceled', // Subscription was canceled by user or admin
+  Paused = 'paused', // Subscription is temporarily paused (some providers support this)
+  Expired = 'expired' // Subscription or trial has expired
+}
+
+/**
+ * Subscription type/purpose
+ * Allows multiple active subscriptions per workspace for different purposes
+ */
+export enum SubscriptionType {
+  Tier = 'tier', // Main workspace tier (free, starter, pro, enterprise)
+  Support = 'support' // Voluntary support/donation subscription
+}
+
+/**
+ * Workspace subscription information
+ * Provider-agnostic subscription data managed by billing service
+ * Multiple subscriptions can be active per workspace (tier + addons + support)
+ * Historical subscriptions are preserved with status: canceled/expired
+ */
+export interface Subscription {
+  id: string // Our internal unique subscription ID (UUID)
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid // Account that paid for the subscription
+
+  // Provider details
+  provider: string // Payment provider identifier (e.g. 'polar', 'stripe', 'manual')
+  providerSubscriptionId: string // External subscription ID from the provider
+  providerCheckoutId?: string // External checkout/session ID that created this subscription
+
+  // Subscription classification
+  type: SubscriptionType // What this subscription is for (tier, addon, support)
+  status: SubscriptionStatus // Current status
+  plan: string // Plan/product identifier (e.g. 'free', 'pro', 'storage-100gb', 'supporter')
+
+  // Amount paid (in cents, e.g. 9999 = $99.99)
+  // Used primarily for pay-what-you-want/donation subscriptions to track actual payment
+  amount?: number
+
+  // Billing period (optional - not set for free/manual plans)
+  periodStart?: Timestamp
+  periodEnd?: Timestamp
+
+  // Trial information (optional)
+  trialEnd?: Timestamp
+
+  // Cancellation tracking (optional)
+  canceledAt?: Timestamp
+
+  // Provider-specific data stored as JSONB (optional)
+  providerData?: Record<string, any>
+
+  // Timestamps (managed by database)
+  createdOn: Timestamp
+  updatedOn: Timestamp
+}
+
+/**
+ * Subscription data for creating/updating subscriptions (without timestamps)
+ * Used by billing service to upsert subscription data
+ */
+export type SubscriptionData = Omit<Subscription, 'createdOn' | 'updatedOn'>
