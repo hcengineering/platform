@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-query",
-  "version": "0.7.5",
+  "version": "0.7.7",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -37,9 +37,9 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.5",
-    "@hcengineering/communication-shared": "workspace:^0.7.5",
-    "@hcengineering/communication-types": "workspace:^0.7.5",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.7",
+    "@hcengineering/communication-shared": "workspace:^0.7.7",
+    "@hcengineering/communication-types": "workspace:^0.7.7",
     "@hcengineering/hulylake-client": "^0.7.6",
     "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"

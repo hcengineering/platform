@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-sdk-types",
-  "version": "0.7.5",
+  "version": "0.7.7",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.8",
-    "@hcengineering/communication-types": "workspace:^0.7.5"
+    "@hcengineering/communication-types": "workspace:^0.7.7"
   },
   "repository": {
     "type": "git",
