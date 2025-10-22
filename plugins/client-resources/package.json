@@ -41,7 +41,7 @@
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/client": "^0.7.3",
     "@hcengineering/communication-sdk-types": "^0.7.5",
-    "@hcengineering/communication-types": "^0.7.5",
+    "@hcengineering/communication-types": "^0.7.7",
     "@hcengineering/core": "^0.7.8",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/rpc": "^0.7.3",
