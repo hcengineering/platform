@@ -676,6 +676,10 @@ export async function configurePlatform () {
     aiAssistantId,
     async () => await import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
   )
+  addLocation(
+    inboxId,
+    async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources')
+  )
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

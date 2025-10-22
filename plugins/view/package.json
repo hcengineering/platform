@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/preference": "^0.7.0"
   },

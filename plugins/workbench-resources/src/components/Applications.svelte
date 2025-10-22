@@ -25,6 +25,7 @@
   import { getMetadata, getResource } from '@hcengineering/platform'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import { NotificationType } from '@hcengineering/communication-types'
 
   import AppItem from './AppItem.svelte'
 
@@ -61,10 +62,16 @@
   )
 
   let hasNewInboxNotifications = false
+  let hasNewMessagesNotification = false
   const notificationCountQuery = createNotificationsQuery()
+  const messageNotificationCountQuery = createNotificationsQuery()
 
   notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
     hasNewInboxNotifications = res.getResult().length > 0
+  })
+
+  messageNotificationCountQuery.query({ read: false, type: NotificationType.Message, limit: 1 }, (res) => {
+    hasNewMessagesNotification = res.getResult().length > 0
   })
 
   function updateExcludedApps (): void {
@@ -111,12 +118,17 @@
     hasInboxNotifications = res
   })
 
-  function showNotify (alias: string, hasOldNotifications: boolean, hasNewNotifications: boolean): boolean {
+  function showNotify (
+    alias: string,
+    hasOldNotifications: boolean,
+    hasNewNotifications: boolean,
+    hasNewMessagesNotifications: boolean
+  ): boolean {
     if (alias === inboxId) {
       return hasOldNotifications || hasNewNotifications
     }
     if (alias === chatId) {
-      return hasNewNotifications
+      return hasNewMessagesNotifications
     }
     return false
   }
@@ -141,7 +153,7 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
-            notify={showNotify(app.alias, hasInboxNotifications, hasNewInboxNotifications)}
+            notify={showNotify(app.alias, hasInboxNotifications, hasNewInboxNotifications, hasNewMessagesNotification)}
             {...customProps}
             on:click={getClickHandler(app, customProps)}
           />

@@ -34,11 +34,11 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.8",
-    "@hcengineering/model": "^0.7.5",
+    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/model": "^0.7.6",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-lead": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7",
+    "@hcengineering/server-core": "^0.7.8",
     "@hcengineering/lead": "^0.7.0",
     "@hcengineering/model-lead": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
