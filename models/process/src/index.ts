@@ -315,7 +315,7 @@ export function createModel (builder: Builder): void {
       },
       label: process.string.RunProcess,
       icon: process.icon.Process,
-      input: 'focus',
+      input: 'any',
       category: view.category.General,
       target: card.class.Card,
       context: {
