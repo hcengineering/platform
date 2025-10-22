@@ -1,10 +1,30 @@
 {
   "string": {
     "Billing": "Facturation",
+    "Subscriptions": "Abonnements",
+    "AllPlans": "Tous les plans",
+    "ActivePlan": "Plan actif",
+    "ResourceUsage": "Utilisation des ressources",
     "DriveSize": "Taille des fichiers",
     "DriveCount": "Nombre de fichiers",
     "OfficeSessionsDuration": "Durée des réunions",
     "OfficeSessionsBandwidth": "Bande passante des réunions",
-    "OfficeEgressDuration": "Durée d'enregistrement"
+    "OfficeEgressDuration": "Durée d'enregistrement",
+    "Tier": "Plan",
+    "StorageLimit": "{limit}Go de stockage",
+    "TrafficLimit": "{limit}Go de trafic vidéo/audio",
+    "Common": "Common",
+    "CommonDescription": "Pour les particuliers et les équipes qui débutent avec Huly.",
+    "Rare": "Rare",
+    "RareDescription": "Pour les créateurs individuels, freelancers et micro-agences.",
+    "Epic": "Epic",
+    "EpicDescription": "Pour les entreprises créatives professionnelles et les petites entreprises.",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "Idéal pour les grandes équipes qui nécessitent des capacités maximales.",
+    "UnlimitedUsers": "Utilisateurs illimités",
+    "UnlimitedObjects": "Objets Huly illimités",
+    "Upgrade": "Mettre à niveau",
+    "Monthly": "Mensuel",
+    "SubscriptionEnds": "Jusqu'au {date}"
   }
 }

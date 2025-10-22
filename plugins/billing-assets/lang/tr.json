@@ -1,10 +1,30 @@
 {
   "string": {
     "Billing": "Faturalama",
+    "Subscriptions": "Abonelikler",
+    "AllPlans": "Tüm planlar",
+    "ActivePlan": "Aktif plan",
+    "ResourceUsage": "Kaynak kullanımı",
     "DriveSize": "Dosya boyutu",
     "DriveCount": "Dosya sayısı",
     "OfficeSessionsDuration": "Toplantı süresi",
     "OfficeSessionsBandwidth": "Toplantı bant genişliği",
-    "OfficeEgressDuration": "Kayıt süresi"
+    "OfficeEgressDuration": "Kayıt süresi",
+    "Tier": "Plan",
+    "StorageLimit": "{limit}GB depolama",
+    "TrafficLimit": "{limit}GB video/ses trafiği",
+    "Common": "Common",
+    "CommonDescription": "Huly ile başlayan bireyler ve ekipler için.",
+    "Rare": "Rare",
+    "RareDescription": "Bireysel yaratıcılar, serbest çalışanlar ve mikro ajanslar için.",
+    "Epic": "Epic",
+    "EpicDescription": "Profesyonel yaratıcı şirketler ve küçük işletmeler için.",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "Maksimum yeteneklere ihtiyaç duyan büyük ekipler için en iyisi.",
+    "UnlimitedUsers": "Sınırsız kullanıcı",
+    "UnlimitedObjects": "Sınırsız Huly nesneleri",
+    "Upgrade": "Yükselt",
+    "Monthly": "Aylık",
+    "SubscriptionEnds": "{date} tarihine kadar"
   }
 }

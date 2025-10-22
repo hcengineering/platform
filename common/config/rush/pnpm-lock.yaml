@@ -76,9 +76,6 @@ importers:
       '@hcengineering/communication-types':
         specifier: ^0.7.5
         version: 0.7.5
-      '@hcengineering/core':
-        specifier: ^0.7.8
-        version: 0.7.8
       '@hcengineering/datalake':
         specifier: ^0.7.7
         version: 0.7.7
@@ -103,9 +100,6 @@ importers:
       '@hcengineering/mongo':
         specifier: ^0.7.7
         version: 0.7.7(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
-      '@hcengineering/platform':
-        specifier: ^0.7.5
-        version: 0.7.5
       '@hcengineering/platform-rig':
         specifier: ^0.7.19
         version: 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -193,6 +187,9 @@ importers:
       '@playwright/test':
         specifier: ^1.48.2
         version: 1.49.1
+      '@polar-sh/sdk':
+        specifier: ^0.37.0
+        version: 0.37.0
       '@rush-temp/account':
         specifier: file:./projects/account.tgz
         version: file:projects/account.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
@@ -889,6 +886,9 @@ importers:
       '@rush-temp/panel':
         specifier: file:./projects/panel.tgz
         version: file:projects/panel.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      '@rush-temp/payment-client':
+        specifier: file:./projects/payment-client.tgz
+        version: file:projects/payment-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@rush-temp/pod-account':
         specifier: file:./projects/pod-account.tgz
         version: file:projects/pod-account.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)
@@ -949,6 +949,9 @@ importers:
       '@rush-temp/pod-notification':
         specifier: file:./projects/pod-notification.tgz
         version: file:projects/pod-notification.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)
+      '@rush-temp/pod-payment':
+        specifier: file:./projects/pod-payment.tgz
+        version: file:projects/pod-payment.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)
       '@rush-temp/pod-preview':
         specifier: file:./projects/pod-preview.tgz
         version: file:projects/pod-preview.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)
@@ -4643,6 +4646,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@polar-sh/sdk@0.37.0':
+    resolution: {integrity: sha512-sNAZjHurF3Teew+YKGudXqWvWvaSAkMAttdQUDDBvHfGm6KA7Dkyjoo83n8TmpTMuQVM5sycTUrrfPlPMNDXoQ==}
+
   '@polka/url@1.0.0-next.24':
     resolution: {integrity: sha512-2LuNTFBIO0m7kKIQvvPHN6UE63VjpmL9rnEEaOOaiSPbZK+zUOYIzBAWcED+3XYzhYsd/0mD57VdxAEqqV52CQ==}
 
@@ -4792,7 +4798,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/billing-resources@file:projects/billing-resources.tgz':
-    resolution: {integrity: sha512-yw4RJlT7/vAC9v2mftR3PcRKau1Rb4/cnnqysPa6DGRzFONZaR9bohXis/L09mDAzLckYSqf+f9SUD714MOMbQ==, tarball: file:projects/billing-resources.tgz}
+    resolution: {integrity: sha512-8GFj4AcuB4fGxZdUHEyyhfVbPiMJa0btM557F4EYjuGxIY+3T2DskvLFh88+/e4bNlRS/8nRQsmIjLhaQTWSmQ==, tarball: file:projects/billing-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/billing@file:projects/billing.tgz':
@@ -5240,7 +5246,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-billing@file:projects/model-billing.tgz':
-    resolution: {integrity: sha512-0udxd8csFgejEGxlQMWfZ2CdYO6ggan616flHRCuNjedbYNBovglLN0pvg+GlKSqH8dKV7EQEIasRhdTygy3sw==, tarball: file:projects/model-billing.tgz}
+    resolution: {integrity: sha512-MqcGgBsssH/hXVu/wAzNwlVk/SaHl6414lui4fsf/l3sIzb3OzbFvO7wM7nyFozMM3qWsvha3InmeNtG1iBEyw==, tarball: file:projects/model-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/model-bitrix@file:projects/model-bitrix.tgz':
@@ -5615,6 +5621,10 @@ packages:
     resolution: {integrity: sha512-51YRvHOZSPP4UPTZU/BkVGlnMy+djBQ/nwehIKFACPyULxjNHcL/yMKEdlj3/pCJgSVoMOHgs30HoztDG61xKg==, tarball: file:projects/panel.tgz}
     version: 0.0.0
 
+  '@rush-temp/payment-client@file:projects/payment-client.tgz':
+    resolution: {integrity: sha512-U2Ls0o2V8HfuE6xbHa1qpF5agqQEs+bWKrEuf1sx+3ArDGQJnq5S0JrDwIiaeXuQ0/H7YyDrY43mLLBCfCYbbA==, tarball: file:projects/payment-client.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
     resolution: {integrity: sha512-35V8Si8TYmJxk9usIXLtDXU50WQW1xreKq7AuQWel+hTBLV79M+MjmVbq92ovLel9Ha/QjnaJa0OOufRBbsszQ==, tarball: file:projects/pod-account.tgz}
     version: 0.0.0
@@ -5693,6 +5703,10 @@ packages:
 
   '@rush-temp/pod-notification@file:projects/pod-notification.tgz':
     resolution: {integrity: sha512-jPfkRVsiWLZ12KHNZ6tWv223xyP7xUAVFQZJGdikNjXoRHLbmeFDFHR1zFZxnAK2nV6C3uPebW65d9NUfHdaXA==, tarball: file:projects/pod-notification.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-payment@file:projects/pod-payment.tgz':
+    resolution: {integrity: sha512-EKaFOoBBObhBBH2J6O7QUIYXCqJ4IhjqEhAKXEsYSbxaMvG5RNIjxTE4bwuDgIB5HQZJDfgYJp5IjUyUrBd41Q==, tarball: file:projects/pod-payment.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
@@ -6611,6 +6625,9 @@ packages:
   '@smithy/util-waiter@4.0.2':
     resolution: {integrity: sha512-piUTHyp2Axx3p/kc2CIJkYSv0BAaheBQmbACZgQSSfWUumWNW+R1lL+H9PDBxKJkvOeEX+hKYEFiwO8xagL8AQ==}
     engines: {node: '>=18.0.0'}
+
+  '@stablelib/base64@1.0.1':
+    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
 
   '@swc/core-darwin-arm64@1.13.5':
     resolution: {integrity: sha512-lKNv7SujeXvKn16gvQqUQI5DdyY8v7xcoO3k06/FJbHJS90zEwZdQiMNRiqpYw/orU543tPaWgz7cIYWhbopiQ==}
@@ -9746,6 +9763,9 @@ packages:
 
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
+
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
 
   fast-text-encoding@1.0.6:
     resolution: {integrity: sha512-VhXlQgj9ioXCqGstD37E/HBeqEGV/qOD/kmbVG8h5xKBYvM1L3lR1Zn4555cQ8GkYbJa8aJSipLPndE1k6zK2w==}
@@ -13203,6 +13223,9 @@ packages:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}
     engines: {node: '>=10'}
 
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
+
   stat-mode@1.0.0:
     resolution: {integrity: sha512-jH9EhtKIjuXZ2cWxmXS8ZP80XyC3iasQxMDV8jzhNJpfDb7VbQLVW4Wvsxz9QZvzV+G4YoSfBUVKDOyxLzi/sg==}
     engines: {node: '>= 6'}
@@ -14380,6 +14403,9 @@ packages:
 
   zod@3.24.2:
     resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
+
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
 
@@ -17754,6 +17780,11 @@ snapshots:
     dependencies:
       playwright: 1.49.1
 
+  '@polar-sh/sdk@0.37.0':
+    dependencies:
+      standardwebhooks: 1.0.0
+      zod: 3.25.76
+
   '@polka/url@1.0.0-next.24': {}
 
   '@popperjs/core@2.11.8': {}
@@ -18923,6 +18954,8 @@ snapshots:
 
   '@rush-temp/billing-resources@file:projects/billing-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
+      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/core': 0.7.8
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@types/jest': 29.5.12
@@ -23578,6 +23611,7 @@ snapshots:
     dependencies:
       '@hcengineering/core': 0.7.8
       '@hcengineering/model': 0.7.5
+      '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
@@ -27152,6 +27186,43 @@ snapshots:
       - supports-color
       - ts-node
 
+  '@rush-temp/payment-client@file:projects/payment-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
+    dependencies:
+      '@hcengineering/core': 0.7.8
+      '@hcengineering/platform': 0.7.5
+      '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.9.3)
+      cross-env: 7.0.3
+      esbuild: 0.25.10
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.9.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      prettier: 3.6.2
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.10)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
   '@rush-temp/pod-account@file:projects/pod-account.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(snappy@7.2.2)(socks@2.8.3)':
     dependencies:
       '@hcengineering/analytics': 0.7.5
@@ -28417,6 +28488,69 @@ snapshots:
       - stylus
       - sugarss
       - supports-color
+
+  '@rush-temp/pod-payment@file:projects/pod-payment.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)':
+    dependencies:
+      '@hcengineering/account-client': 0.7.6
+      '@hcengineering/analytics': 0.7.5
+      '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
+      '@hcengineering/core': 0.7.8
+      '@hcengineering/platform': 0.7.5
+      '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      '@hcengineering/server-client': 0.7.7(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@hcengineering/server-core': 0.7.7
+      '@hcengineering/server-token': 0.7.5
+      '@polar-sh/sdk': 0.37.0
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
+      '@types/node': 22.15.29
+      '@types/on-headers': 1.0.3
+      '@types/uuid': 8.3.4
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.9.3)
+      cors: 2.8.5
+      dotenv: 16.0.3
+      esbuild: 0.25.10
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.9.3))(eslint@8.56.0)(typescript@5.9.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.9.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.21.2
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      morgan: 1.10.0
+      on-headers: 1.0.2
+      postgres: 3.4.7
+      prettier: 3.6.2
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.10)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)
+      typescript: 5.9.3
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - coffeescript
+      - encoding
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - utf-8-validate
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@swc/core@1.13.5)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(utf-8-validate@6.0.4)':
     dependencies:
@@ -35728,6 +35862,8 @@ snapshots:
       '@smithy/types': 4.1.0
       tslib: 2.8.1
 
+  '@stablelib/base64@1.0.1': {}
+
   '@swc/core-darwin-arm64@1.13.5':
     optional: true
 
@@ -39400,6 +39536,8 @@ snapshots:
   fast-levenshtein@2.0.6: {}
 
   fast-safe-stringify@2.1.1: {}
+
+  fast-sha256@1.3.0: {}
 
   fast-text-encoding@1.0.6: {}
 
@@ -43357,6 +43495,11 @@ snapshots:
     dependencies:
       escape-string-regexp: 2.0.0
 
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
+
   stat-mode@1.0.0: {}
 
   statuses@1.5.0: {}
@@ -43899,6 +44042,24 @@ snapshots:
   ts-invariant@0.4.4:
     dependencies:
       tslib: 1.14.1
+
+  ts-jest@29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.10)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3):
+    dependencies:
+      bs-logger: 0.2.6
+      fast-json-stable-stringify: 2.1.0
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
+      jest-util: 29.7.0
+      json5: 2.2.3
+      lodash.memoize: 4.1.2
+      make-error: 1.3.6
+      semver: 7.7.2
+      typescript: 5.9.3
+      yargs-parser: 21.1.1
+    optionalDependencies:
+      '@babel/core': 7.23.9
+      '@jest/types': 29.6.3
+      babel-jest: 29.7.0(@babel/core@7.23.9)
+      esbuild: 0.25.10
 
   ts-jest@29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(typescript@5.9.3):
     dependencies:
@@ -44711,3 +44872,5 @@ snapshots:
       readable-stream: 4.7.0
 
   zod@3.24.2: {}
+
+  zod@3.25.76: {}

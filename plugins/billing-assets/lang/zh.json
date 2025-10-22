@@ -1,10 +1,30 @@
 {
   "string": {
     "Billing": "计费",
+    "Subscriptions": "订阅",
+    "AllPlans": "所有计划",
+    "ActivePlan": "当前计划",
+    "ResourceUsage": "资源使用情况",
     "DriveSize": "文件大小",
     "DriveCount": "文件数量",
     "OfficeSessionsDuration": "会议时间",
     "OfficeSessionsBandwidth": "会议带宽",
-    "OfficeEgressDuration": "录制时间"
+    "OfficeEgressDuration": "录制时间",
+    "Tier": "计划",
+    "StorageLimit": "{limit}GB存储空间",
+    "TrafficLimit": "{limit}GB视频/音频流量",
+    "Common": "Common",
+    "CommonDescription": "适合刚开始使用Huly的个人和团队。",
+    "Rare": "Rare",
+    "RareDescription": "适合个人创作者、自由职业者和微型机构。",
+    "Epic": "Epic",
+    "EpicDescription": "适合专业创意公司和小型企业。",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "最适合需要最大功能的大型团队。",
+    "UnlimitedUsers": "无限用户",
+    "UnlimitedObjects": "无限Huly对象",
+    "Upgrade": "升级",
+    "Monthly": "每月",
+    "SubscriptionEnds": "截止至{date}"
   }
 }

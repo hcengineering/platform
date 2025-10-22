@@ -1,10 +1,30 @@
 {
   "string": {
     "Billing": "請求",
+    "Subscriptions": "サブスクリプション",
+    "AllPlans": "すべてのプラン",
+    "ActivePlan": "アクティブなプラン",
+    "ResourceUsage": "リソース使用状況",
     "DriveSize": "ファイルサイズ",
     "DriveCount": "ファイル数",
     "OfficeSessionsDuration": "会議時間",
     "OfficeSessionsBandwidth": "会議帯域幅",
-    "OfficeEgressDuration": "録画時間"
+    "OfficeEgressDuration": "録画時間",
+    "Tier": "プラン",
+    "StorageLimit": "{limit}GBストレージ",
+    "TrafficLimit": "{limit}GBビデオ/オーディオトラフィック",
+    "Common": "Common",
+    "CommonDescription": "Hulyを始める個人とチーム向け。",
+    "Rare": "Rare",
+    "RareDescription": "個人クリエイター、フリーランサー、マイクロエージェンシー向け。",
+    "Epic": "Epic",
+    "EpicDescription": "プロのクリエイティブ企業と中小企業向け。",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "最大限の機能が必要な大規模チームに最適。",
+    "UnlimitedUsers": "無制限のユーザー",
+    "UnlimitedObjects": "無制限のHulyオブジェクト",
+    "Upgrade": "アップグレード",
+    "Monthly": "月額",
+    "SubscriptionEnds": "{date}まで"
   }
 }

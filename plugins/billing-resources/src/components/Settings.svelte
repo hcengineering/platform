@@ -13,120 +13,97 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getBillingClient } from '../utils'
-  import { Breadcrumb, Header, Loading, Scroller, formatDuration, themeStore } from '@hcengineering/ui'
-  import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import billingPlugin from '@hcengineering/billing'
-  import filesize from 'filesize'
-  import StatsCard from './StatsCard.svelte'
-  import drivePlugin from '@hcengineering/drive'
-  import Category from './Category.svelte'
-  import love from '@hcengineering/love'
-  import ChartCard from './ChartCard.svelte'
+  import { type IntlString } from '@hcengineering/platform'
+  import {
+    AnyComponent,
+    Breadcrumb,
+    Component,
+    Header,
+    Location,
+    NavItem,
+    Scroller,
+    Separator,
+    defineSeparators,
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore,
+    twoPanelsSeparators
+  } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
+  import ResourceUsage from './ResourceUsage.svelte'
+  import Subscriptions from './Subscriptions.svelte'
 
-  const billingClient = getBillingClient()
+  import plugin from '../plugin'
 
-  let totalDatalakeSize = 0
-  let totalDatalakeCount = 0
-  let totalSessionsDuration = 0
-  let totalSessionsBandwidth = 0
-  let totalEgressDuration = 0
-  let sessionsDurationByDay: { date: number, value: number }[] = []
-  let sessionsBandwidthByDay: { date: number, value: number }[] = []
-  let egressDurationByDay: { date: number, value: number }[] = []
-
-  async function loadBillingData (): Promise<void> {
-    if (billingClient == null) return
-    const billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
-    totalDatalakeSize = billingStats.datalakeStats.size
-    totalDatalakeCount = billingStats.datalakeStats.count
-    totalSessionsDuration = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.minutes, 0) * 60000
-    totalSessionsBandwidth = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.bandwidth, 0)
-    totalEgressDuration = billingStats.liveKitStats.egress.reduce((sum, e) => sum + e.minutes, 0) * 60000
-
-    sessionsDurationByDay = billingStats.liveKitStats.sessions.map((s) => {
-      const date = new Date(Date.parse(s.day))
-      date.setHours(0, 0, 0, 0)
-      return { date: date.getTime(), value: s.minutes * 60000 }
-    })
-
-    sessionsBandwidthByDay = billingStats.liveKitStats.sessions.map((s) => {
-      const date = new Date(Date.parse(s.day))
-      date.setHours(0, 0, 0, 0)
-      return { date: date.getTime(), value: s.bandwidth }
-    })
-
-    egressDurationByDay = billingStats.liveKitStats.egress.map((s) => {
-      const date = new Date(Date.parse(s.day))
-      date.setHours(0, 0, 0, 0)
-      return { date: date.getTime(), value: s.minutes * 60000 }
-    })
+  interface SettingGroup {
+    key: string
+    icon: string
+    label: IntlString
+    component: AnyComponent
   }
+
+  const groups: SettingGroup[] = [
+    {
+      key: 'usage',
+      icon: plugin.icon.Billing,
+      label: plugin.string.ResourceUsage,
+      component: ResourceUsage
+    },
+    {
+      key: 'subscriptions',
+      icon: plugin.icon.Subscriptions,
+      label: plugin.string.Subscriptions,
+      component: Subscriptions
+    }
+  ]
+
+  let currentGroupKey = groups[0].key
+  let currentGroup = groups[0]
+
+  const unsubscribeLocation = resolvedLocationStore.subscribe((loc) => {
+    void (async (loc: Location): Promise<void> => {
+      const key = loc.path[5]
+      currentGroup = groups.find((g) => g.key === key) ?? groups[0]
+      currentGroupKey = currentGroup.key
+    })(loc)
+  })
+
+  onDestroy(() => {
+    unsubscribeLocation()
+  })
+
+  defineSeparators('billingSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={billingPlugin.icon.Billing} label={billingPlugin.string.Billing} size={'large'} isCurrent />
+    <Breadcrumb icon={plugin.icon.Billing} label={plugin.string.Billing} size={'large'} isCurrent />
   </Header>
-  <div class="hulyComponent-content__column content">
-    {#await loadBillingData()}
-      <Loading />
-    {:then _}
-      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
-        <div class="hulyComponent-content gapV-8">
-          <Category icon={drivePlugin.icon.DriveApplication} label={drivePlugin.string.Drive}>
-            <div class="row">
-              <StatsCard label={billingPlugin.string.DriveSize} text={filesize(totalDatalakeSize, { spacer: ' ' })} />
-              <StatsCard label={billingPlugin.string.DriveCount} text={totalDatalakeCount.toString()} />
-            </div>
-          </Category>
-          <Category icon={love.icon.Love} label={love.string.Office}>
-            <div class="row">
-              <StatsCard
-                label={billingPlugin.string.OfficeSessionsDuration}
-                text={formatDuration(totalSessionsDuration, $themeStore.language)}
-              />
-              <StatsCard
-                label={billingPlugin.string.OfficeSessionsBandwidth}
-                text={filesize(totalSessionsBandwidth, { spacer: ' ' })}
-              />
-              <StatsCard
-                label={billingPlugin.string.OfficeEgressDuration}
-                text={formatDuration(totalEgressDuration, $themeStore.language)}
-              />
-            </div>
-            <div class="row">
-              <ChartCard
-                label={billingPlugin.string.OfficeSessionsDuration}
-                valueFormatter={(v) => formatDuration(v, $themeStore.language)}
-                data={sessionsDurationByDay}
-              />
-            </div>
-            <div class="row">
-              <ChartCard
-                label={billingPlugin.string.OfficeSessionsBandwidth}
-                valueFormatter={(v) => Promise.resolve(filesize(v, { spacer: ' ' }))}
-                data={sessionsBandwidthByDay}
-              />
-            </div>
-            <div class="row">
-              <ChartCard
-                label={billingPlugin.string.OfficeEgressDuration}
-                valueFormatter={(v) => formatDuration(v, $themeStore.language)}
-                data={egressDurationByDay}
-              />
-            </div>
-          </Category>
-        </div>
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column navigation py-2">
+      <Scroller shrink>
+        {#each groups as group}
+          <NavItem
+            icon={group.icon}
+            label={group.label}
+            selected={group.key === currentGroupKey}
+            on:click={() => {
+              currentGroupKey = group.key
+              currentGroup = group
+              const loc = getCurrentResolvedLocation()
+              loc.path[5] = group.key
+              loc.path.length = 6
+              navigate(loc)
+            }}
+          />
+        {/each}
       </Scroller>
-    {/await}
+    </div>
+
+    <Separator name="billingSettings" index={0} color={'var(--theme-divider-color)'} />
+
+    <div class="hulyComponent-content__column content">
+      <Component is={currentGroup.component} />
+    </div>
   </div>
 </div>
-
-<style lang="scss">
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-</style>
