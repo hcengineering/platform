@@ -17,7 +17,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
-  type ApplyOperations,
   ClassifierKind,
   DocManager,
   Hierarchy,
@@ -27,6 +26,9 @@ import core, {
   getObjectValue,
   type AggregateValue,
   type AnyAttribute,
+  type ApplyOperations,
+  type Association,
+  type AssociationQuery,
   type AttachedDoc,
   type CategoryType,
   type Class,
@@ -58,7 +60,7 @@ import core, {
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
-import { getMetadata, getResource, translate } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, {
   createQuery,
   getAttributePresenterClass,
@@ -505,6 +507,20 @@ function getKeyLookup<T extends Doc> (
   return lookup
 }
 
+export function buildConfigAssociation (config: Array<BuildModelKey | string>): AssociationQuery[] | undefined {
+  const res: AssociationQuery[] = []
+  for (const key of config) {
+    const k = typeof key === 'string' ? key : key.key
+    if (k.startsWith('$associations')) {
+      const parts = k.split('.')
+      if (parts.length === 3) {
+        res.push([parts[1] as Ref<Association>, parts[2] === 'A' ? -1 : 1])
+      }
+    }
+  }
+  return res.length > 0 ? res : undefined
+}
+
 export function buildConfigLookup<T extends Doc> (
   hierarchy: Hierarchy,
   _class: Ref<Class<T>>,
@@ -542,6 +558,9 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         // Check if it is a mixin attribute configuration
         const pos = key.key.lastIndexOf('.')
         if (pos !== -1) {
+          if (key.key.startsWith('$associations')) {
+            return await getRelationPresenter(options.client, key)
+          }
           const mixinName = key.key.substring(0, pos) as Ref<Class<Doc>>
           if (!mixinName.includes('$lookup')) {
             const realKey = key.key.substring(pos + 1)
@@ -576,6 +595,43 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
       }
     })
   return (await Promise.all(model)).filter((a) => a !== undefined)
+}
+
+async function getRelationPresenter (client: Client, key: BuildModelKey): Promise<AttributeModel> {
+  const parts = key.key.split('.')
+  if (parts.length !== 3) {
+    throw new Error('invalid relation key ' + key.key)
+  }
+  const assocId = parts[1] as Ref<Association>
+  const assoc = client.getModel().findObject(assocId)
+  if (assoc === undefined) {
+    throw new Error('association not found for ' + assocId)
+  }
+  const _class = parts[2] === 'A' ? assoc.classA : assoc.classB
+  const name = parts[2] === 'A' ? assoc.nameA : assoc.nameB
+
+  const hierarchy = client.getHierarchy()
+
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.CollectionPresenter)
+  if (presenterMixin?.presenter === undefined) {
+    console.error(
+      `object presenter not found for class=${_class}, mixin=${view.mixin.ObjectPresenter}, preserve key ${JSON.stringify(key)}`
+    )
+    throw new Error('presenter not found for ' + _class)
+  }
+  const presenter = await getResource(presenterMixin.presenter)
+
+  return {
+    key: `${parts[0]}.${parts[1]}`,
+    sortingKey: '',
+    _class,
+    label: getEmbeddedLabel(name),
+    presenter,
+    props: key.props,
+    displayProps: key.displayProps,
+    collectionAttr: false,
+    isLookup: true
+  }
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
@@ -1049,7 +1105,19 @@ export function getKeyLabel<T extends Doc> (
   key: string,
   lookup: Lookup<T> | undefined
 ): IntlString {
-  if (key.startsWith('$lookup') && lookup !== undefined) {
+  if (key.startsWith('$relation')) {
+    // Handle association: $relation.[associationId]
+    const parts = key.split('.')
+    if (parts.length === 3) {
+      const associationId = parts[1] as Ref<Association>
+      const association = client.getModel().findObject(associationId)
+      if (association !== undefined) {
+        const name = parts[2] === 'A' ? association.nameA : association.nameB
+        return getEmbeddedLabel(name)
+      }
+    }
+    return key as IntlString
+  } else if (key.startsWith('$lookup') && lookup !== undefined) {
     const lookupClass = getLookupClass(key, lookup, _class)
     const lookupProperty = getLookupProperty(key)
     const lookupKey = { key: lookupProperty[0] }
