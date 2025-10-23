@@ -1003,9 +1003,10 @@ describe('ValidateMiddleware', () => {
 
   describe('findMessagesGroups', () => {
     it('should validate correct params', async () => {
-      const params = { cardId: 'card-123' as CardID }
+      const paramsRaw = { cardId: 'card-123' as CardID, fromDate: { less: '2025-10-20T18:59:17.593Z' as any } }
+      const params = { cardId: 'card-123' as CardID, fromDate: { less: new Date('2025-10-20T18:59:17.593Z') } }
 
-      await middleware.findMessagesGroups(session, params)
+      await middleware.findMessagesGroups(session, paramsRaw)
 
       expect(mockNext.findMessagesGroups).toHaveBeenCalledWith(session, params)
     })

@@ -22,19 +22,27 @@ import {
   PeerEventType
 } from '@hcengineering/communication-sdk-types'
 import {
+  type AccountUuid,
+  type BlobID,
+  type CardID,
+  type CardType,
   type Collaborator,
+  type ContextID,
   type FindCollaboratorsParams,
   type FindLabelsParams,
-  FindMessagesGroupParams,
+  type FindMessagesGroupParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Label,
-  MessagesGroup,
+  type LabelID,
+  type MessageID,
+  type MessagesGroup,
   type Notification,
   type NotificationContext,
+  NotificationType,
   SortingOrder
 } from '@hcengineering/communication-types'
-import { z } from 'zod'
+import { z, ZodString, ZodType, ZodTypeDef } from 'zod'
 import { isBlobAttachmentType, isLinkPreviewAttachmentType } from '@hcengineering/communication-shared'
 
 import type { Enriched, Middleware, Subscription } from '../types'
@@ -42,7 +50,7 @@ import { BaseMiddleware } from './base'
 import { ApiError } from '../error'
 
 export class ValidateMiddleware extends BaseMiddleware implements Middleware {
-  private validate<T>(data: unknown, schema: z.ZodType<T>): T {
+  private validate<T>(data: unknown, schema: z.ZodType<T, ZodTypeDef, any>): T {
     const validationResult = schema.safeParse(data)
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => err.message)
@@ -52,37 +60,33 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return validationResult.data
   }
 
-  async findMessagesGroups (session: SessionData, params: FindMessagesGroupParams): Promise<MessagesGroup[]> {
-    this.validate(params, FindMessagesGroupsParamsSchema)
-    return await this.provideFindMessagesGroups(session, params)
+  async findMessagesGroups (session: SessionData, params: unknown): Promise<MessagesGroup[]> {
+    const validParams: FindMessagesGroupParams = this.validate(params, FindMessagesGroupsParamsSchema)
+    return await this.provideFindMessagesGroups(session, validParams)
   }
 
   async findNotificationContexts (
     session: SessionData,
-    params: FindNotificationContextParams,
+    params: unknown,
     queryId?: Subscription
   ): Promise<NotificationContext[]> {
-    this.validate(params, FindNotificationContextParamsSchema)
-    return await this.provideFindNotificationContexts(session, params, queryId)
+    const validParams: FindNotificationContextParams = this.validate(params, FindNotificationContextParamsSchema)
+    return await this.provideFindNotificationContexts(session, validParams, queryId)
   }
 
-  async findNotifications (
-    session: SessionData,
-    params: FindNotificationsParams,
-    queryId?: Subscription
-  ): Promise<Notification[]> {
-    this.validate(params, FindNotificationsParamsSchema)
-    return await this.provideFindNotifications(session, params, queryId)
+  async findNotifications (session: SessionData, params: unknown, queryId?: Subscription): Promise<Notification[]> {
+    const validParams: FindNotificationsParams = this.validate(params, FindNotificationsParamsSchema)
+    return await this.provideFindNotifications(session, validParams, queryId)
   }
 
-  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: Subscription): Promise<Label[]> {
-    this.validate(params, FindLabelsParamsSchema)
-    return await this.provideFindLabels(session, params, queryId)
+  async findLabels (session: SessionData, params: unknown, queryId?: Subscription): Promise<Label[]> {
+    const validParams: FindLabelsParams = this.validate(params, FindLabelsParamsSchema)
+    return await this.provideFindLabels(session, validParams, queryId)
   }
 
-  async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
-    this.validate(params, FindCollaboratorsParamsSchema)
-    return await this.provideFindCollaborators(session, params)
+  async findCollaborators (session: SessionData, params: unknown): Promise<Collaborator[]> {
+    const validParams: FindCollaboratorsParams = this.validate(params, FindCollaboratorsParamsSchema)
+    return await this.provideFindCollaborators(session, validParams)
   }
 
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
@@ -146,21 +150,26 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
   }
 }
 
+function brandedString<Type extends string> (base: ZodString): ZodType<Type, ZodTypeDef, string> {
+  return base.transform((s): Type => s as Type)
+}
+
 const WorkspaceUuidSchema = z.string().uuid()
-const AccountUuidSchema = z.string()
-const BlobIDSchema = z.string().uuid()
+const AccountUuidSchema = brandedString<AccountUuid>(z.string())
+const BlobIDSchema = brandedString<BlobID>(z.string().uuid())
 const AttachmentIDSchema = z.string().uuid()
-const CardIDSchema = z.string()
-const CardTypeSchema = z.string()
-const ContextIDSchema = z.string()
+const CardIDSchema = brandedString<CardID>(z.string())
+const CardTypeSchema = brandedString<CardType>(z.string())
+const ContextIDSchema = brandedString<ContextID>(z.string())
 const DateSchema = z.coerce.date()
-const LabelIDSchema = z.string()
+const LabelIDSchema = brandedString<LabelID>(z.string())
 const MarkdownSchema = z.string()
 const MessageExtraSchema = z.any()
-const MessageIDSchema = z.string()
+const MessageIDSchema = brandedString<MessageID>(z.string())
 const MessageTypeSchema = z.string()
 const SocialIDSchema = z.string()
 const SortingOrderSchema = z.union([z.literal(SortingOrder.Ascending), z.literal(SortingOrder.Descending)])
+const NotificationTypeSchema = z.nativeEnum(NotificationType)
 
 const BlobParamsSchema = z.object({
   blobId: BlobIDSchema,
@@ -224,7 +233,7 @@ const FindNotificationContextParamsSchema = FindParamsSchema.extend({
   account: z.union([AccountUuidSchema, z.array(AccountUuidSchema)]).optional(),
   notifications: z
     .object({
-      type: z.string().optional(),
+      type: NotificationTypeSchema.optional(),
       limit: z.number(),
       order: SortingOrderSchema,
       read: z.boolean().optional(),
@@ -243,7 +252,7 @@ const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
 
 const FindNotificationsParamsSchema = FindParamsSchema.extend({
   contextId: ContextIDSchema.optional(),
-  type: z.string().optional(),
+  type: NotificationTypeSchema.optional(),
   read: z.boolean().optional(),
   created: DateOrRecordSchema.optional(),
   account: z.union([AccountUuidSchema, z.array(AccountUuidSchema)]).optional(),
@@ -259,7 +268,7 @@ const FindLabelsParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
-  cardId: CardIDSchema.optional(),
+  cardId: CardIDSchema,
   account: z.union([AccountUuidSchema, z.array(AccountUuidSchema)]).optional()
 }).strict()
 
@@ -279,7 +288,7 @@ const CreateMessageEventSchema = BaseEventSchema.extend({
   cardId: CardIDSchema,
   cardType: CardTypeSchema,
 
-  messageId: MessageIDSchema.max(22).optional(),
+  messageId: brandedString<MessageID>(z.string().max(22)).optional(),
   messageType: MessageTypeSchema,
 
   content: MarkdownSchema,

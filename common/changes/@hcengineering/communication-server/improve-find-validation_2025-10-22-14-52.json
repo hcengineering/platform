@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-server",
+      "comment": "Improve validation of find methods params",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-server"
+}
