@@ -23,8 +23,9 @@ import type { CheckoutResult, CreateCheckoutParams } from './types'
 export class PolarClient {
   private readonly polar: Polar
 
-  constructor (accessToken: string) {
+  constructor (accessToken: string, useSandbox = false) {
     this.polar = new Polar({
+      server: useSandbox ? 'sandbox' : undefined,
       accessToken
     })
   }

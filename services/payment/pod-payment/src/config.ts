@@ -18,6 +18,7 @@ export interface Config {
   Secret: string
   AccountsUrl: string
   FrontUrl: string
+  UseSandbox?: boolean
 
   // Polar.sh configuration
   PolarAccessToken?: string
@@ -34,6 +35,7 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     FrontUrl: process.env.FRONT_URL,
+    UseSandbox: process.env.USE_SANDBOX === 'true',
     PolarAccessToken: process.env.POLAR_ACCESS_TOKEN,
     PolarWebhookSecret: process.env.POLAR_WEBHOOK_SECRET,
     PolarOrganizationId: process.env.POLAR_ORGANIZATION_ID,

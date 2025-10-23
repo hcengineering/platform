@@ -31,8 +31,14 @@ export class PolarProvider implements PaymentProvider {
   private readonly subscriptionPlans: Record<string, string[]>
   private readonly frontUrl: string
 
-  constructor (accessToken: string, webhookSecret: string, subscriptionPlans: string, frontUrl: string) {
-    this.client = new PolarClient(accessToken)
+  constructor (
+    accessToken: string,
+    webhookSecret: string,
+    subscriptionPlans: string,
+    frontUrl: string,
+    useSandbox = false
+  ) {
+    this.client = new PolarClient(accessToken, useSandbox)
     this.webhookSecret = webhookSecret
     // TODO: support branding
     this.frontUrl = frontUrl

@@ -37,16 +37,16 @@ export class PaymentProviderFactory {
    * Only one provider can be initialized per instance
    * Returns the cached provider if already initialized
    */
-  create (type: string, config: Record<string, any>): PaymentProvider | undefined {
+  create (type: string, config: Record<string, any>, useSandbox = false): PaymentProvider | undefined {
     switch (type) {
       case 'polar':
-        return this.createPolarProvider(config)
+        return this.createPolarProvider(config, useSandbox)
       default:
         return undefined
     }
   }
 
-  private createPolarProvider (config: Record<string, any>): PaymentProvider {
+  private createPolarProvider (config: Record<string, any>, useSandbox = false): PaymentProvider {
     if (config.accessToken === undefined) {
       throw new Error('Polar provider requires accessToken in config')
     }
@@ -57,6 +57,12 @@ export class PaymentProviderFactory {
       throw new Error('Polar provider requires subscriptionPlans in config')
     }
 
-    return new PolarProvider(config.accessToken, config.webhookSecret, config.subscriptionPlans, config.frontUrl)
+    return new PolarProvider(
+      config.accessToken,
+      config.webhookSecret,
+      config.subscriptionPlans,
+      config.frontUrl,
+      useSandbox
+    )
   }
 }
