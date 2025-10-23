@@ -123,6 +123,21 @@ services:
       - PORT=4900
       - SERVER_SECRET=secret
     restart: unless-stopped
+  payment:
+    image: hardcoreeng/payment
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 3040:3040
+    environment:
+      - SECRET=secret
+      - PAYMENT_PORT=3040
+      - ACCOUNTS_URL=http://huly.local:3000
+      - FRONT_URL=http://huly.local:8087
+      - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
+      - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET}
+      - POLAR_SUBSCRIPTION_PLANS=${POLAR_SUBSCRIPTION_PLANS}
+    restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
     extra_hosts:

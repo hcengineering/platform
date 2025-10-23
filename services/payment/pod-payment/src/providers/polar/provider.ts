@@ -66,7 +66,7 @@ export class PolarProvider implements PaymentProvider {
     if (productIds === undefined) {
       throw new Error(`Missing productIds for plan: ${planKey}`)
     }
-    const successUrl = `${this.frontUrl}/workbench/setting/setting/billing?payment=success&checkout_id={CHECKOUT_ID}`
+    const successUrl = `${this.frontUrl}/workbench/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_ID}`
     const response = await this.client.createCheckout(ctx, {
       productIds,
       successUrl,
