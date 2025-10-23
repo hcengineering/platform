@@ -29,10 +29,16 @@ import (
 	"time"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
+
+var tracer = otel.Tracer("storage.datalake")
 
 type uploadResult struct {
 	key   string
@@ -84,9 +90,15 @@ func getObjectKeyFromPath(s string) string {
 }
 
 // PutFile uploads file to the datalake
-func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string, options PutOptions) error {
+func (d *DatalakeStorage) PutFile(ctx context.Context, filename string, options PutOptions) error {
+	ctx, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	// #nosec
-	file, err := os.Open(fileName)
+	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -94,8 +106,8 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string, options 
 		_ = file.Close()
 	}()
 
-	var objectKey = getObjectKeyFromPath(fileName)
-	var logger = d.logger.With(zap.String("upload", d.workspace), zap.String("fileName", fileName))
+	var objectKey = getObjectKeyFromPath(filename)
+	var logger = d.logger.With(zap.String("upload", d.workspace), zap.String("fileName", filename))
 
 	logger.Debug("start")
 
@@ -104,16 +116,19 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string, options 
 
 	part, err := createFormFile(writer, "file", objectKey, getContentType(objectKey))
 	if err != nil {
+		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "failed to create form file")
 	}
 
 	_, err = io.Copy(part, file)
 	if err != nil {
+		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "failed to copy file data")
 	}
 
 	err = writer.Close()
 	if err != nil {
+		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "failed to close multipart writer")
 	}
 
@@ -133,32 +148,39 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string, options 
 	req.SetBody(body.Bytes())
 
 	if err := d.client.Do(req, res); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "upload failed", res)
 		return errors.Wrapf(err, "upload failed")
 	}
 
 	var result []uploadResult
 	if err := json.Unmarshal(res.Body(), &result); err != nil {
+		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "parse error")
 	}
 
 	for _, res := range result {
 		if res.error != "" {
+			tracing.RecordError(span, err)
 			return fmt.Errorf("upload error: %v %v", res.key, res.error)
 		}
 	}
-
-	logger.Debug("uploaded")
 
 	return nil
 }
 
 // DeleteFile deletes file from the datalake
-func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error {
-	var logger = d.logger.With(zap.String("delete", d.workspace), zap.String("fileName", fileName))
+func (d *DatalakeStorage) DeleteFile(ctx context.Context, filename string) error {
+	ctx, span := tracer.Start(ctx, "datalake.delete_file", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
+	var logger = d.logger.With(zap.String("delete", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 
-	var objectKey = getObjectKeyFromPath(fileName)
+	var objectKey = getObjectKeyFromPath(filename)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -171,22 +193,28 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	req.Header.Add("Authorization", "Bearer "+d.token)
 
 	if err := d.client.Do(req, res); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "delete failed", res)
 		return errors.Wrapf(err, "delete failed")
 	}
 
 	if err := okResponse(res); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", res)
 		return err
 	}
-
-	logger.Debug("deleted")
 
 	return nil
 }
 
 // PatchMeta patches metadata for the object
 func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Metadata) error {
+	ctx, span := tracer.Start(ctx, "datalake.patch_meta", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("patch meta", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 	defer logger.Debug("finished")
@@ -211,11 +239,13 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
@@ -225,6 +255,12 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 
 // GetMeta gets metadata related to the object
 func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metadata, error) {
+	ctx, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("get meta", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 
@@ -240,11 +276,13 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return nil, err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
@@ -257,6 +295,12 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 
 // GetFile gets file from the storage
 func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination string) error {
+	ctx, span := tracer.Start(ctx, "datalake.get_file", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("get", d.workspace), zap.String("fileName", filename), zap.String("destination", destination))
 	logger.Debug("start")
 
@@ -272,11 +316,13 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
@@ -284,6 +330,7 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	// #nosec
 	file, err := os.Create(destination)
 	if err != nil {
+		tracing.RecordError(span, err)
 		logger.Debug("can't create a file", zap.Error(err))
 		return err
 	}
@@ -291,12 +338,14 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 		_ = file.Close()
 	}()
 	if err = resp.BodyWriteTo(file); err != nil {
+		tracing.RecordError(span, err)
 		logger.Debug("can't write to file", zap.Error(err))
 		return err
 	}
 
 	stat, err := os.Stat(destination)
 	if err != nil {
+		tracing.RecordError(span, err)
 		logger.Error("can't stat the file", zap.Error(err))
 		return err
 	}
@@ -307,6 +356,12 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 
 // StatFile gets file stat from the storage
 func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobInfo, error) {
+	ctx, span := tracer.Start(ctx, "datalake.stat_file", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("head", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 
@@ -322,11 +377,13 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return nil, err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
@@ -342,6 +399,12 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 
 // SetParent updates blob parent reference
 func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string) error {
+	ctx, span := tracer.Start(ctx, "datalake.set_parent", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", getObjectKeyFromPath(filename)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("fileName", filename), zap.String("parent", parent))
 
 	logger.Debug("start")
@@ -366,6 +429,7 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	}
 
 	if err := json.NewEncoder(req.BodyWriter()).Encode(body); err != nil {
+		tracing.RecordError(span, err)
 		logger.Debug("can not encode body", zap.Error(err))
 		return err
 	}
@@ -374,11 +438,13 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
@@ -388,6 +454,12 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 
 // MultipartUploadStart creates a new multipart upload
 func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, contentType string) (string, error) {
+	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_start", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", objectName),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("objectName", objectName))
 	url := fmt.Sprintf("%v/upload/multipart/%v/%v", d.baseURL, d.workspace, objectName)
 
@@ -402,11 +474,13 @@ func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, 
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return "", err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return "", err
 	}
@@ -421,6 +495,13 @@ func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, 
 
 // MultipartUploadPart uploads a part of a multipart upload
 func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, uploadID string, partNumber int, data []byte) (*MultipartPart, error) {
+	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_part", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", objectName),
+		attribute.Int("size", len(data)),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.Int("partNumber", partNumber))
 	params := url.Values{}
 	params.Add("uploadId", uploadID)
@@ -440,11 +521,13 @@ func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, u
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return nil, err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
@@ -457,6 +540,12 @@ func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, u
 
 // MultipartUploadComplete completes a multipart upload
 func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectName, uploadID string, parts []MultipartPart) error {
+	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_complete", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", objectName),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.String("objectName", objectName))
 	params := url.Values{}
 	params.Add("uploadId", uploadID)
@@ -483,11 +572,13 @@ func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectNam
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
@@ -497,6 +588,12 @@ func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectNam
 
 // MultipartUploadCancel cancels a multipart upload
 func (d *DatalakeStorage) MultipartUploadCancel(ctx context.Context, objectName, uploadID string) error {
+	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_cancel", trace.WithAttributes(
+		attribute.String("workspace", d.workspace),
+		attribute.String("object_key", objectName),
+	))
+	defer span.End()
+
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID))
 	params := url.Values{}
 	params.Add("uploadId", uploadID)
@@ -512,11 +609,13 @@ func (d *DatalakeStorage) MultipartUploadCancel(ctx context.Context, objectName,
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
 	if err := okResponse(resp); err != nil {
+		tracing.RecordError(span, err)
 		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}

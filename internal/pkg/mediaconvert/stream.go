@@ -20,9 +20,12 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/hcengineering/stream/internal/pkg/sharedpipe"
 	"github.com/hcengineering/stream/internal/pkg/storage"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
 	"github.com/tus/tusd/v2/pkg/handler"
 	"go.uber.org/zap"
 )
@@ -46,6 +49,12 @@ var _ handler.LengthDeclarableUpload = (*Stream)(nil)
 
 // WriteChunk is called when client sends a chunk of raw data
 func (w *Stream) WriteChunk(ctx context.Context, _ int64, src io.Reader) (int64, error) {
+	ctx, span := tracer.Start(ctx, "WriteChunk", trace.WithAttributes(
+		attribute.String("workspace", w.info.MetaData["workspace"]),
+		attribute.String("upload_id", w.info.ID),
+	))
+	defer span.End()
+
 	w.logger.Debug("Write Chunk start", zap.Int64("offset", w.info.Offset))
 	data, err := io.ReadAll(src)
 	if err != nil {
@@ -93,10 +102,17 @@ func (w *Stream) GetReader(ctx context.Context) (io.ReadCloser, error) {
 
 // Terminate calls when upload has failed
 func (w *Stream) Terminate(ctx context.Context) error {
+	ctx, span := tracer.Start(ctx, "Terminate", trace.WithAttributes(
+		attribute.String("workspace", w.info.MetaData["workspace"]),
+		attribute.String("upload_id", w.info.ID),
+	))
+	defer span.End()
+
 	w.logger.Debug("terminate upload")
 
 	// Close the writer first to signal EOF to all readers
 	if err := w.writer.Close(); err != nil {
+		tracing.RecordError(span, err)
 		w.logger.Error("failed to close writer", zap.Error(err))
 		return err
 	}
@@ -133,10 +149,17 @@ func (w *Stream) ConcatUploads(ctx context.Context, partialUploads []handler.Upl
 
 // FinishUpload calls when upload finished without errors on the client side
 func (w *Stream) FinishUpload(ctx context.Context) error {
+	ctx, span := tracer.Start(ctx, "FinishUpload", trace.WithAttributes(
+		attribute.String("workspace", w.info.MetaData["workspace"]),
+		attribute.String("upload_id", w.info.ID),
+	))
+	defer span.End()
+
 	w.logger.Debug("finish upload")
 
 	// Close the writer first to signal EOF to all readers
 	if err := w.writer.Close(); err != nil {
+		tracing.RecordError(span, err)
 		w.logger.Error("failed to close writer", zap.Error(err))
 		return err
 	}
@@ -151,6 +174,7 @@ func (w *Stream) FinishUpload(ctx context.Context) error {
 			defer wg.Done()
 			if err := w.multipart.Complete(ctx); err != nil {
 				w.logger.Error("multipart upload complete failed", zap.Error(err))
+				tracing.RecordError(span, err)
 				completeErr = err
 				return
 			}

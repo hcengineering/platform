@@ -21,10 +21,14 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/mediaconvert"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
+
+var tracer = otel.Tracer("worker")
 
 // Worker is a queue processing worker
 type Worker struct {
@@ -109,7 +113,9 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 	}
 
 	transcoder := mediaconvert.NewTranscoder(ctx, w.cfg)
-	res, err := transcoder.Transcode(ctx, &task)
+	res, err := tracing.WithSpanResult(ctx, tracer, "transcode", func(spanCtx context.Context) (*mediaconvert.TaskResult, error) {
+		return transcoder.Transcode(spanCtx, &task)
+	})
 
 	if res != nil {
 		result := TranscodeResult{

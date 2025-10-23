@@ -24,10 +24,12 @@ import (
 	"time"
 
 	"github.com/hcengineering/stream/internal/pkg/config"
+	"github.com/hcengineering/stream/internal/pkg/executor"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/token"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -115,7 +117,9 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	}
 
 	logger.Debug("phase 4: prepare to transcode")
-	probe, err := ffprobe.ProbeURL(ctx, sourceFilePath)
+	probe, err := tracing.WithSpanResult(ctx, tracer, "ffprobe", func(spanCtx context.Context) (*ffprobe.ProbeData, error) {
+		return ffprobe.ProbeURL(spanCtx, sourceFilePath)
+	})
 	if err != nil {
 		logger.Error("can not get ffprobe", zap.Error(err), zap.String("filepath", sourceFilePath))
 		return nil, errors.Wrapf(err, "can not get ffprobe")
@@ -196,8 +200,10 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		cmds = append(cmds, cmd)
 	}
 
-	executor := NewCommandExecutor(ctx)
-	if execErr := executor.Execute(cmds); execErr != nil {
+	execErr := tracing.WithSpan(ctx, tracer, "ffmpeg", func(ctx context.Context) error {
+		return executor.ExecuteCommands(ctx, cmds)
+	})
+	if execErr != nil {
 		uploader.Cancel()
 		return nil, errors.Wrapf(execErr, "can not execute command")
 	}

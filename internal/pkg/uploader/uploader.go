@@ -28,9 +28,12 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"k8s.io/utils/inotify"
 )
+
+var tracer = otel.Tracer("uploader")
 
 // See at https://man7.org/linux/man-pages/man7/inotify.7.html
 const inotifyCloseWrite uint32 = 0x8 // IN_CLOSE_WRITE
@@ -93,7 +96,7 @@ func New(ctx context.Context, s storage.Storage, opts Options) Uploader {
 
 	res.logger.Sugar().Debugf("uploader config is %v", opts)
 
-	res.uploadCtx, res.uploadCancel = context.WithCancel(context.Background())
+	res.uploadCtx, res.uploadCancel = context.WithCancel(ctx)
 
 	err := os.MkdirAll(opts.Dir, os.ModePerm)
 	if err != nil {
@@ -105,15 +108,18 @@ func New(ctx context.Context, s storage.Storage, opts Options) Uploader {
 
 func (u *uploaderImpl) Stop() {
 	u.logger.Info("stopping upload")
-	u.stop(false)
+	u.stop(u.uploadCtx, false)
 }
 
 func (u *uploaderImpl) Cancel() {
 	u.logger.Info("canceling upload")
-	u.stop(true)
+	u.stop(u.uploadCtx, true)
 }
 
-func (u *uploaderImpl) scanFiles() {
+func (u *uploaderImpl) scanFiles(ctx context.Context) {
+	_, span := tracer.Start(ctx, "scanFiles")
+	defer span.End()
+
 	logger := u.logger.With(zap.String("dir", u.options.Dir))
 
 	logger.Info("scan files")
@@ -148,13 +154,16 @@ func (u *uploaderImpl) scanFiles() {
 	logger.Info("scan complete", zap.Int("count", count))
 }
 
-func (u *uploaderImpl) stop(rollback bool) {
+func (u *uploaderImpl) stop(ctx context.Context, rollback bool) {
+	ctx, span := tracer.Start(ctx, "stop")
+	defer span.End()
+
 	// Stop watching for new files
 	close(u.watcherStopCh)
 	<-u.watcherDoneCh
 
 	// Scan remaining files in the directory
-	u.scanFiles()
+	u.scanFiles(ctx)
 
 	// Close filesCh so no new files added
 	close(u.filesCh)
@@ -165,7 +174,7 @@ func (u *uploaderImpl) stop(rollback bool) {
 
 	// Perform rollback
 	if rollback {
-		u.uploadRollback()
+		u.uploadRollback(ctx)
 	}
 
 	u.uploadCancel()
@@ -188,7 +197,10 @@ func (u *uploaderImpl) stop(rollback bool) {
 	u.logger.Debug("stopped", zap.Bool("rollback", rollback))
 }
 
-func (u *uploaderImpl) uploadRollback() {
+func (u *uploaderImpl) uploadRollback(ctx context.Context) {
+	_, span := tracer.Start(ctx, "uploadRollback")
+	defer span.End()
+
 	u.logger.Debug("starting rollback...")
 
 	// Create a separate worker pool for rollback
@@ -226,7 +238,7 @@ func (u *uploaderImpl) Start() {
 
 	<-watcherReady
 
-	u.scanFiles()
+	u.scanFiles(u.uploadCtx)
 }
 
 func (u *uploaderImpl) startWorkers() {

@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sync"
 
@@ -24,8 +25,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/getsentry/sentry-go"
-	sentryhttp "github.com/getsentry/sentry-go/http"
 	"go.uber.org/zap"
 
 	"github.com/hcengineering/stream/internal/pkg/api/v1/recording"
@@ -33,6 +32,7 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/queue"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
@@ -53,16 +53,14 @@ func main() {
 	}
 	logger.Sugar().Debug("using config", zap.Any("config", cfg))
 
-	if cfg.SentryDsn != "" {
-		if err := sentry.Init(sentry.ClientOptions{
-			Dsn:  cfg.SentryDsn,
-			Tags: map[string]string{"application": "stream"},
-		}); err != nil {
-			logger.Sugar().Fatalf("sentry.Init: %s", err)
-		}
-		// ensure buffered events are sent before exit
-		defer sentry.Flush(2 * time.Second)
+	// Set up OpenTelemetry.
+	otelShutdown, err := setupOTelSDK(ctx, cfg)
+	if err != nil {
+		panic(err.Error())
 	}
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
 
 	var recordingHandler = recording.NewHandler(ctx, cfg)
 	var transcodingHandler = transcoding.NewHandler(ctx, cfg)
@@ -73,15 +71,11 @@ func main() {
 	mux.Handle("/recording", http.StripPrefix("/recording", recordingHandler))
 	mux.Handle("/transcoding", http.StripPrefix("/transcoding", transcodingHandler))
 
-	// wrap with Sentry HTTP handler if enabled
+	// Wrap handler with OpenTelemetry instrumentation
 	var handler http.Handler = mux
-	if cfg.SentryDsn != "" {
-		sentryHandler := sentryhttp.New(sentryhttp.Options{
-			Repanic:         true,
-			WaitForDelivery: true,
-			Timeout:         2 * time.Second,
-		})
-		handler = sentryHandler.Handle(mux)
+	if cfg.OtelEnabled && cfg.OtelTracesEnabled {
+		handler = otelhttp.NewHandler(handler, "http.server",
+			otelhttp.WithServerName(cfg.OtelServiceName))
 	}
 
 	server := &http.Server{

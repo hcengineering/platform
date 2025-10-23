@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package mediaconvert
+package executor
 
 import (
 	"bytes"
@@ -24,30 +24,18 @@ import (
 	"sync"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
-// CommandExecutor executes multiple commands in parallel
-type CommandExecutor interface {
-	Execute(commands []*exec.Cmd) error
-}
+var tracer = otel.Tracer("executor")
 
-type commandExecutor struct {
-	logger *zap.Logger
-}
-
-var _ CommandExecutor = (*commandExecutor)(nil)
-
-// NewCommandExecutor creates a new instance of command executor
-func NewCommandExecutor(ctx context.Context) CommandExecutor {
-	return &commandExecutor{
-		logger: log.FromContext(ctx),
-	}
-}
-
-// Execute executes multiple commands in parallel
-func (e *commandExecutor) Execute(commands []*exec.Cmd) error {
-	logger := e.logger
+// ExecuteCommands executes multiple commands in parallel
+func ExecuteCommands(ctx context.Context, commands []*exec.Cmd) error {
+	logger := log.FromContext(ctx)
 	errCh := make(chan error, len(commands))
 
 	var mu sync.Mutex
@@ -57,6 +45,11 @@ func (e *commandExecutor) Execute(commands []*exec.Cmd) error {
 
 		go func(cmd *exec.Cmd) {
 			defer wg.Done()
+
+			_, span := tracer.Start(ctx, "cmd", trace.WithAttributes(
+				attribute.String("command", cmd.String()),
+			))
+			defer span.End()
 
 			var stdoutBuf = &bytes.Buffer{}
 			var stderrBuf = &bytes.Buffer{}
@@ -71,6 +64,7 @@ func (e *commandExecutor) Execute(commands []*exec.Cmd) error {
 
 			logger.Info("run command", zap.String("cmd", cmd.String()))
 			if err := cmd.Run(); err != nil {
+				tracing.RecordError(span, err)
 				errCh <- err
 
 				// Lock so only on goroutine can write to stdout/stderr at the same time

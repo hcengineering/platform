@@ -25,7 +25,6 @@ import (
 
 // Config represents configuration for the huly-stream application.
 type Config struct {
-	SentryDsn                   string   `split_words:"true" default:"" desc:"sentry dsn value"`
 	LogLevel                    string   `split_words:"true" default:"debug" desc:"sets log level for the application"`
 	ServerSecret                string   `split_words:"true" default:"" desc:"server secret required to generate and verify tokens"`
 	PprofEnabled                bool     `split_words:"true" default:"true" desc:"starts profile server on localhost:6060 if true"`
@@ -40,6 +39,14 @@ type Config struct {
 
 	OutputDir string        `split_words:"true" default:"/tmp/transcoing/" desc:"path to the directory with transcoding result."`
 	Timeout   time.Duration `default:"5m" desc:"timeout for the upload"`
+
+	// OpenTelemetry configuration
+	OtelEnabled        bool   `split_words:"true" default:"true" desc:"enable OpenTelemetry"`
+	OtelServiceName    string `split_words:"true" default:"stream" desc:"service name for OpenTelemetry"`
+	OtelServiceVersion string `split_words:"true" default:"1.0.0" desc:"service version for OpenTelemetry"`
+	OtelTracesEnabled  bool   `split_words:"true" default:"true" desc:"enable OpenTelemetry traces"`
+	OtelMetricsEnabled bool   `split_words:"true" default:"true" desc:"enable OpenTelemetry metrics"`
+	OtelLogsEnabled    bool   `split_words:"true" default:"false" desc:"enable OpenTelemetry logs"`
 }
 
 // FromEnv creates new Config from env

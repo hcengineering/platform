@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package mediaconvert_test
+package executor_test
 
 import (
 	"context"
@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hcengineering/stream/internal/pkg/executor"
 	"github.com/hcengineering/stream/internal/pkg/log"
-	"github.com/hcengineering/stream/internal/pkg/mediaconvert"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,9 +55,8 @@ func TestCommandExecutor_Execute_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = log.WithFields(ctx)
-			executor := mediaconvert.NewCommandExecutor(ctx)
 
-			err := executor.Execute(tt.commands)
+			err := executor.ExecuteCommands(ctx, tt.commands)
 			assert.NoError(t, err)
 		})
 	}
@@ -107,9 +106,8 @@ func TestCommandExecutor_Execute_Error(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = log.WithFields(ctx)
-			executor := mediaconvert.NewCommandExecutor(ctx)
 
-			err := executor.Execute(tt.commands)
+			err := executor.ExecuteCommands(ctx, tt.commands)
 			if tt.expectedError {
 				assert.Error(t, err)
 			} else {
@@ -130,10 +128,9 @@ func TestCommandExecutor_Execute_Parallel(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = log.WithFields(ctx)
-	executor := mediaconvert.NewCommandExecutor(ctx)
 
 	start := time.Now()
-	err := executor.Execute(commands)
+	err := executor.ExecuteCommands(ctx, commands)
 	duration := time.Since(start)
 
 	assert.NoError(t, err)

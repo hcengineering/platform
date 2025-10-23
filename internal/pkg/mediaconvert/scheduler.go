@@ -26,14 +26,20 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hcengineering/stream/internal/pkg/config"
+	"github.com/hcengineering/stream/internal/pkg/executor"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/token"
+	"github.com/hcengineering/stream/internal/pkg/tracing"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
+	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
+
+var tracer = otel.Tracer("mediaconvert")
 
 // Task represents transcoding task
 type Task struct {
@@ -97,14 +103,19 @@ func (p *Scheduler) start() {
 	for range p.cfg.MaxParallelTranscodingCount {
 		go func() {
 			for task := range p.taskCh {
-				p.processTask(p.ctx, task)
+				err := tracing.WithSpan(p.ctx, tracer, "transcode", func(ctx context.Context) error {
+					return p.processTask(ctx, task)
+				})
+				if err != nil {
+					p.logger.Error("failed to process task", zap.Error(err))
+				}
 			}
 		}()
 	}
 }
 
 // TODO: add a factory pattern to process tasks by different media type
-func (p *Scheduler) processTask(ctx context.Context, task *Task) {
+func (p *Scheduler) processTask(ctx context.Context, task *Task) error {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
 	logger.Debug("start")
@@ -114,7 +125,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	var tokenString, err = token.NewToken(p.cfg.ServerSecret, task.Workspace, "stream")
 	if err != nil {
 		logger.Error("can not create token", zap.Error(err))
-		return
+		return errors.Wrapf(err, "can not create token")
 	}
 
 	logger.Debug("phase 2: preparing fs")
@@ -124,7 +135,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	err = os.MkdirAll(destinationFolder, os.ModePerm)
 	if err != nil {
 		logger.Error("can not create temporary folder", zap.Error(err))
-		return
+		return errors.Wrapf(err, "can not create temporary folder")
 	}
 
 	defer func() {
@@ -140,35 +151,37 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	if err != nil {
 		logger.Error("can not create storage by url", zap.Error(err), zap.String("url", p.cfg.EndpointURL.String()))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return err
 	}
 
 	stat, err := remoteStorage.StatFile(ctx, task.Source)
 	if err != nil {
 		logger.Error("can not stat a file", zap.Error(err), zap.String("filepath", task.Source))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return errors.Wrapf(err, "can not stat a file")
 	}
 
 	if !IsSupportedMediaType(stat.Type) {
 		logger.Info("unsupported media type", zap.String("type", stat.Type))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return fmt.Errorf("unsupported media type: %s", stat.Type)
 	}
 
 	if err = remoteStorage.GetFile(ctx, task.Source, sourceFilePath); err != nil {
 		logger.Error("can not download a file", zap.Error(err), zap.String("filepath", task.Source))
 		_ = os.RemoveAll(destinationFolder)
 		// TODO: reschedule
-		return
+		return errors.Wrapf(err, "can not download a file")
 	}
 
 	logger.Debug("phase 4: prepare to transcode")
-	probe, err := ffprobe.ProbeURL(ctx, sourceFilePath)
+	probe, err := tracing.WithSpanResult(ctx, tracer, "ffprobe", func(ctx context.Context) (*ffprobe.ProbeData, error) {
+		return ffprobe.ProbeURL(ctx, sourceFilePath)
+	})
 	if err != nil {
 		logger.Error("can not get probe for a file", zap.Error(err), zap.String("filepath", sourceFilePath))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return errors.Wrapf(err, "can not get ffprobe")
 	}
 
 	audioStream := probe.FirstAudioStream()
@@ -180,7 +193,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	if videoStream == nil {
 		logger.Error("no video stream found in the file", zap.String("filepath", sourceFilePath))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return fmt.Errorf("no video stream found")
 	}
 
 	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
@@ -221,7 +234,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	if err != nil {
 		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
 		_ = os.RemoveAll(destinationFolder)
-		return
+		return errors.Wrapf(err, "can not generate hls playlist")
 	}
 
 	go uploader.Start()
@@ -239,23 +252,19 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		if cmdErr != nil {
 			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
 			go uploader.Cancel()
-			return
+			return errors.Wrapf(cmdErr, "can not create a new command")
 		}
 		cmds = append(cmds, cmd)
-		if err = cmd.Start(); err != nil {
-			logger.Error("can not start a command", zap.Error(err), zap.Strings("args", args))
-			go uploader.Cancel()
-			return
-		}
 	}
 
 	logger.Debug("phase 7: wait for the result")
-	for _, cmd := range cmds {
-		if err = cmd.Wait(); err != nil {
-			logger.Error("can not wait for command end ", zap.Error(err))
-			go uploader.Cancel()
-			return
-		}
+	execErr := tracing.WithSpan(ctx, tracer, "ffmpeg", func(ctx context.Context) error {
+		return executor.ExecuteCommands(ctx, cmds)
+	})
+	if execErr != nil {
+		logger.Error("can not wait for command end ", zap.Error(execErr))
+		go uploader.Cancel()
+		return errors.Wrapf(execErr, "can not execute command")
 	}
 
 	logger.Debug("phase 8: schedule cleanup")
@@ -293,6 +302,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 			logger.Error("can not patch the source file", zap.Error(err))
 		}
 	}
+	return nil
 }
 
 // IsHLSSupportedVideoCodec checks whether the codec is supported by HLS
