@@ -45,4 +45,8 @@
   {showSeparator}
   {hideHeader}
   {hidePersonName}
-/>
+>
+  <svelte:fragment slot="content">
+    <slot name="content" />
+  </svelte:fragment>
+</PreviewTemplate>
