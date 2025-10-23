@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/storage-client
 
-This log was last generated on Tue, 21 Oct 2025 19:04:55 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Oct 2025 18:03:30 GMT and should not be manually modified.
+
+## 0.7.8
+Thu, 23 Oct 2025 18:03:30 GMT
+
+### Patches
+
+- use proper content type in multipart upload
 
 ## 0.7.7
 Tue, 21 Oct 2025 19:04:55 GMT

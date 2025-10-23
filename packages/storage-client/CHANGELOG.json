@@ -2,6 +2,18 @@
   "name": "@hcengineering/storage-client",
   "entries": [
     {
+      "version": "0.7.8",
+      "tag": "@hcengineering/storage-client_v0.7.8",
+      "date": "Thu, 23 Oct 2025 18:03:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "use proper content type in multipart upload"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.7",
       "tag": "@hcengineering/storage-client_v0.7.7",
       "date": "Tue, 21 Oct 2025 19:04:55 GMT",
