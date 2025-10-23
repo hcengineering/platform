@@ -23,6 +23,7 @@ import {
   type CreateCardExtension,
   DOMAIN_CARD,
   type FavoriteCard,
+  type FavoriteType,
   type MasterTag,
   type ParentInfo,
   type Role,
@@ -169,6 +170,11 @@ export class TRole extends TAttachedDoc implements Role {
 export class TFavoriteCard extends TPreference implements FavoriteCard {
   declare attachedTo: Ref<Card>
   application!: string
+}
+
+@Model(card.class.FavoriteType, preference.class.Preference)
+export class TFavoriteType extends TPreference implements FavoriteType {
+  declare attachedTo: Ref<MasterTag>
 }
 
 @Mixin(card.mixin.CreateCardExtension, card.class.MasterTag)
@@ -347,6 +353,7 @@ export function createModel (builder: Builder): void {
     TCardSection,
     TCardViewDefaults,
     TFavoriteCard,
+    TFavoriteType,
     TCreateCardExtension
   )
 
