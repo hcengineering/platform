@@ -23,7 +23,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -46,8 +45,6 @@ type StreamCoordinator struct {
 	conf          *config.Config
 	outputDir     string
 	uploadOptions uploader.Options
-
-	activeTranscoding int32
 
 	mainContext context.Context
 	logger      *zap.Logger
@@ -96,12 +93,6 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		done:   make(chan struct{}),
 	}
 
-	if atomic.AddInt32(&s.activeTranscoding, 1) > int32(s.conf.MaxParallelTranscodingCount) {
-		s.logger.Debug("run out of resources for scaling")
-		//		atomic.AddInt32(&s.activeTranscoding, -1)
-		// TODO do not transcode
-	}
-
 	width, err := strconv.Atoi(info.MetaData["width"])
 	if err != nil {
 		return nil, errors.Wrapf(err, "can not parse video width: %v", info.MetaData["width"])
@@ -117,15 +108,6 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		Height:      height,
 		Codec:       extractCodec(info.MetaData["contentType"]),
 		ContentType: extractContentType(info.MetaData["contentType"]),
-	}
-	profiles := FastTranscodingProfiles(meta)
-
-	var commandOptions = Options{
-		Input:     "pipe:0",
-		OutputDir: s.outputDir,
-		Threads:   s.conf.MaxThreadCount,
-		UploadID:  info.ID,
-		Profiles:  profiles,
 	}
 
 	if s.conf.EndpointURL != nil {
@@ -153,21 +135,12 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 			}
 			stream.multipart = multipart
 		}
-		// uploader for processed outputs
-		var contentUploader = uploader.New(s.mainContext, stg, opts)
-		stream.contentUploader = contentUploader
 	}
 
 	s.streams.Store(stream.info.ID, stream)
-	if err := stream.start(s.mainContext, &commandOptions); err != nil {
+	if err := stream.start(s.mainContext); err != nil {
 		return nil, err
 	}
-
-	go func() {
-		stream.commandGroup.Wait()
-		atomic.AddInt32(&s.activeTranscoding, -1)
-		close(stream.done)
-	}()
 
 	s.manageTimeout(stream)
 

@@ -17,31 +17,26 @@ package mediaconvert
 import (
 	"context"
 	"io"
-	"os/exec"
 	"sync"
 
 	"github.com/pkg/errors"
 
-	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/sharedpipe"
 	"github.com/hcengineering/stream/internal/pkg/storage"
-	"github.com/hcengineering/stream/internal/pkg/uploader"
 	"github.com/tus/tusd/v2/pkg/handler"
 	"go.uber.org/zap"
 )
 
 // Stream manages client's input and transcodes it based on the passed configuration
 type Stream struct {
-	contentUploader uploader.Uploader
-	logger          *zap.Logger
-	info            handler.FileInfo
-	writer          *sharedpipe.Writer
-	reader          *sharedpipe.Reader
-	storage         storage.Storage
-	multipart       *MultipartUpload
+	logger    *zap.Logger
+	info      handler.FileInfo
+	writer    *sharedpipe.Writer
+	reader    *sharedpipe.Reader
+	storage   storage.Storage
+	multipart *MultipartUpload
 
-	commandGroup sync.WaitGroup
-	done         chan struct{}
+	done chan struct{}
 }
 
 var _ handler.Upload = (*Stream)(nil)
@@ -108,16 +103,6 @@ func (w *Stream) Terminate(ctx context.Context) error {
 
 	var wg sync.WaitGroup
 
-	// cancel upload if in progress
-	if w.contentUploader != nil {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			w.commandGroup.Wait()
-			w.contentUploader.Cancel()
-		}()
-	}
-
 	// cancel multipart upload if in progress
 	if w.multipart != nil {
 		wg.Add(1)
@@ -130,6 +115,9 @@ func (w *Stream) Terminate(ctx context.Context) error {
 	}
 
 	wg.Wait()
+
+	// Signal that the stream is done
+	close(w.done)
 
 	return nil
 }
@@ -154,15 +142,7 @@ func (w *Stream) FinishUpload(ctx context.Context) error {
 	}
 
 	var wg sync.WaitGroup
-
-	if w.contentUploader != nil {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			w.commandGroup.Wait()
-			w.contentUploader.Stop()
-		}()
-	}
+	var completeErr error
 
 	// finalize raw multipart stream if supported
 	if w.multipart != nil {
@@ -171,30 +151,18 @@ func (w *Stream) FinishUpload(ctx context.Context) error {
 			defer wg.Done()
 			if err := w.multipart.Complete(ctx); err != nil {
 				w.logger.Error("multipart upload complete failed", zap.Error(err))
+				completeErr = err
 				return
-			}
-
-			if metaProvider, ok := w.storage.(storage.MetaProvider); ok {
-				metaErr := metaProvider.PatchMeta(
-					ctx,
-					w.info.ID,
-					&storage.Metadata{
-						"hls": map[string]any{
-							"source":    manifest.MasterPlaylistFileName(w.info.ID),
-							"thumbnail": manifest.ThumbnailFileName(w.info.ID),
-						},
-					},
-				)
-				if metaErr != nil {
-					w.logger.Error("can not patch the source file", zap.Error(metaErr))
-				}
 			}
 		}()
 	}
 
 	wg.Wait()
 
-	return nil
+	// Signal that the stream is done
+	close(w.done)
+
+	return completeErr
 }
 
 // AsConcatableUpload returns tusd handler.ConcatableUpload
@@ -203,43 +171,8 @@ func (s *StreamCoordinator) AsConcatableUpload(upload handler.Upload) handler.Co
 	return upload.(*Stream)
 }
 
-func (w *Stream) start(ctx context.Context, options *Options) error {
+func (w *Stream) start(ctx context.Context) error {
 	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
-	if err := manifest.GenerateHLSPlaylist(options.Profiles, options.OutputDir, options.UploadID); err != nil {
-		return err
-	}
-
-	var argsSlice = [][]string{
-		BuildThumbnailCommand(options),
-		BuildVideoCommand(options),
-	}
-
-	var cmds []*exec.Cmd
-	for idx, args := range argsSlice {
-		reader := w.reader
-		if idx > 0 {
-			reader = w.writer.Transpile()
-		}
-
-		cmd, cmdErr := newFfmpegCommand(ctx, reader, args)
-		if cmdErr != nil {
-			w.logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
-			return errors.Wrapf(cmdErr, "can not create a new command")
-		}
-		cmds = append(cmds, cmd)
-	}
-
-	w.commandGroup.Add(1)
-	go func() {
-		defer w.commandGroup.Done()
-		executor := NewCommandExecutor(ctx)
-		if execErr := executor.Execute(cmds); execErr != nil {
-			w.logger.Error("can not execute command", zap.Error(execErr))
-		}
-	}()
-
-	go w.contentUploader.Start()
-
 	return nil
 }
