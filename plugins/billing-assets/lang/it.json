@@ -5,6 +5,9 @@
     "DriveCount": "Conteggio file",
     "OfficeSessionsDuration": "Durata riunioni",
     "OfficeSessionsBandwidth": "Larghezza di banda riunioni",
-    "OfficeEgressDuration": "Durata registrazione"
+    "OfficeEgressDuration": "Durata registrazione",
+    "AI": "AI",
+    "TranscriptionTime": "Tempo di trascrizione",
+    "TotalTokens": "Totale token"
   }
 }

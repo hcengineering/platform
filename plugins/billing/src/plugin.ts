@@ -31,7 +31,10 @@ export const billingPlugin = plugin(billingId, {
     DriveCount: '' as IntlString,
     OfficeSessionsDuration: '' as IntlString,
     OfficeSessionsBandwidth: '' as IntlString,
-    OfficeEgressDuration: '' as IntlString
+    OfficeEgressDuration: '' as IntlString,
+    AI: '' as IntlString,
+    TotalTokens: '' as IntlString,
+    TranscriptionTime: '' as IntlString
   },
   icon: {
     Billing: '' as Asset

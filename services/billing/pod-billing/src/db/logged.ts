@@ -14,7 +14,16 @@
 //
 
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
-import { BillingDB, LiveKitEgressData, LiveKitSessionData, LiveKitUsageData } from '../types'
+import {
+  AiTokensData,
+  AiTokensUsage,
+  AiTranscriptData,
+  AiTranscriptUsage,
+  BillingDB,
+  LiveKitEgressData,
+  LiveKitSessionData,
+  LiveKitUsageData
+} from '../types'
 
 export class LoggedDB implements BillingDB {
   constructor (
@@ -45,5 +54,37 @@ export class LoggedDB implements BillingDB {
 
   async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
     await ctx.with('db.setLiveKitEgress', {}, () => this.db.setLiveKitEgress(this.ctx, data))
+  }
+
+  async pushAiTranscriptData (ctx: MeasureContext, data: AiTranscriptData[]): Promise<void> {
+    await ctx.with('db.pushAiTranscriptData', {}, () => this.db.pushAiTranscriptData(this.ctx, data))
+  }
+
+  async getAiTranscriptLastData (ctx: MeasureContext): Promise<AiTranscriptData | undefined> {
+    return await ctx.with('db.getAiTranscriptLastData', {}, () => this.db.getAiTranscriptLastData(this.ctx))
+  }
+
+  async getAiTranscriptStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start?: Date,
+    end?: Date
+  ): Promise<AiTranscriptUsage> {
+    return await ctx.with('db.getAiTranscriptStats', {}, () =>
+      this.db.getAiTranscriptStats(this.ctx, workspace, start, end)
+    )
+  }
+
+  async pushAiTokensData (ctx: MeasureContext, data: AiTokensData[]): Promise<void> {
+    await ctx.with('db.pushAiTokensData', {}, () => this.db.pushAiTokensData(ctx, data))
+  }
+
+  async getAiTokensStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start?: Date,
+    end?: Date
+  ): Promise<AiTokensUsage[]> {
+    return await ctx.with('db.getAiTokensStats', {}, () => this.db.getAiTokensStats(ctx, workspace, start, end))
   }
 }

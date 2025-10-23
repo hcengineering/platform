@@ -5,6 +5,9 @@
     "DriveCount": "Files count",
     "OfficeSessionsDuration": "Meetings time",
     "OfficeSessionsBandwidth": "Meetings bandwidth",
-    "OfficeEgressDuration": "Recording time"
+    "OfficeEgressDuration": "Recording time",
+    "AI": "AI",
+    "TranscriptionTime": "Transcription time",
+    "TotalTokens": "Total tokens"
   }
 }

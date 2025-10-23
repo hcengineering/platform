@@ -218,12 +218,12 @@ export class AIControl {
     return this.workspaces.get(workspace)
   }
 
-  async translate (req: TranslateRequest): Promise<TranslateResponse | undefined> {
+  async translate (workspace: WorkspaceUuid, req: TranslateRequest): Promise<TranslateResponse | undefined> {
     if (this.openai === undefined) {
       return undefined
     }
     const html = jsonToHTML(markupToJSON(req.text))
-    const result = await translateHtml(this.openai, html, req.lang)
+    const result = await translateHtml(this.ctx, workspace, this.openai, html, req.lang)
     const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {
       text,
@@ -302,7 +302,7 @@ export class AIControl {
       }
     }
 
-    const summary = await summarizeMessages(this.openai, messagesToSummarize, req.lang)
+    const summary = await summarizeMessages(this.ctx, workspace, this.openai, messagesToSummarize, req.lang)
     if (summary === undefined) return
 
     const summaryMarkup = jsonToMarkup(markdownToMarkup(summary))

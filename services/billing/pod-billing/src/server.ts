@@ -28,7 +28,10 @@ import {
   handleListLiveKitEgress,
   handleGetLiveKitStats,
   handleGetDatalakeStats,
-  handleGetStats
+  handleGetStats,
+  handlePushAiTranscriptData,
+  handleGetAiTranscriptLastData,
+  handlePushAiTokensData
 } from './billing'
 import { BillingDB } from './types'
 import { createDb } from './db/postgres'
@@ -139,6 +142,22 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats)
   )
   app.get('/api/v1/:workspace/stats', withToken, withOwner, wrapRequest(ctx, 'getStats', handleGetStats))
+
+  app.post(
+    '/api/v1/ai/transcript',
+    withToken,
+    withAdmin,
+    wrapRequest(ctx, 'pushAiTranscriptData', handlePushAiTranscriptData)
+  )
+
+  app.get(
+    '/api/v1/ai/transcript/last',
+    withToken,
+    withAdmin,
+    wrapRequest(ctx, 'getAiTranscriptLastData', handleGetAiTranscriptLastData)
+  )
+
+  app.post('/api/v1/ai/tokens', withToken, withAdmin, wrapRequest(ctx, 'pushAiTokensData', handlePushAiTokensData))
 
   app.use((_req, res) => {
     res.status(404).json({ message: 'Not Found' })

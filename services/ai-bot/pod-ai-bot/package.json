@@ -57,7 +57,9 @@
     "@hcengineering/account": "^0.7.0",
     "@hcengineering/account-client": "^0.7.6",
     "@hcengineering/ai-bot": "^0.7.0",
+    "@hcengineering/analytics-service": "^0.7.5",
     "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/billing-client": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/client": "^0.7.6",
     "@hcengineering/client-resources": "^0.7.6",
@@ -70,6 +72,7 @@
     "@hcengineering/openai": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/rank": "^0.7.5",
+    "@hcengineering/retry": "^0.7.5",
     "@hcengineering/server-ai-bot": "^0.7.0",
     "@hcengineering/server-client": "^0.7.7",
     "@hcengineering/server-core": "^0.7.7",
@@ -89,7 +92,6 @@
     "mongodb": "^6.16.0",
     "openai": "^4.56.0",
     "uuid": "^8.3.2",
-    "ws": "^8.18.2",
-    "@hcengineering/analytics-service": "^0.7.5"
+    "ws": "^8.18.2"
   }
 }

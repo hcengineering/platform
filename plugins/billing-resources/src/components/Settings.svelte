@@ -13,15 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getBillingClient } from '../utils'
-  import { Breadcrumb, Header, Loading, Scroller, formatDuration, themeStore } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    Header,
+    Loading,
+    Scroller,
+    formatDuration,
+    themeStore,
+    formatNumberCompact
+  } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import billingPlugin from '@hcengineering/billing'
   import filesize from 'filesize'
-  import StatsCard from './StatsCard.svelte'
-  import drivePlugin from '@hcengineering/drive'
-  import Category from './Category.svelte'
   import love from '@hcengineering/love'
+  import drivePlugin from '@hcengineering/drive'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import view from '@hcengineering/view'
+
+  import { getBillingClient } from '../utils'
+  import StatsCard from './StatsCard.svelte'
+  import Category from './Category.svelte'
   import ChartCard from './ChartCard.svelte'
 
   const billingClient = getBillingClient()
@@ -34,15 +45,20 @@
   let sessionsDurationByDay: { date: number, value: number }[] = []
   let sessionsBandwidthByDay: { date: number, value: number }[] = []
   let egressDurationByDay: { date: number, value: number }[] = []
+  let totalTranscriptDuration = 0
+  let totalTokensCount = 0
 
   async function loadBillingData (): Promise<void> {
     if (billingClient == null) return
     const billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
+    console.log(billingStats)
     totalDatalakeSize = billingStats.datalakeStats.size
     totalDatalakeCount = billingStats.datalakeStats.count
     totalSessionsDuration = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.minutes, 0) * 60000
     totalSessionsBandwidth = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.bandwidth, 0)
     totalEgressDuration = billingStats.liveKitStats.egress.reduce((sum, e) => sum + e.minutes, 0) * 60000
+    totalTranscriptDuration = billingStats.aiStats.transcript.totalDurationSeconds * 1000
+    totalTokensCount = billingStats.aiStats.tokens.reduce((sum, s) => sum + s.totalTokens, 0)
 
     sessionsDurationByDay = billingStats.liveKitStats.sessions.map((s) => {
       const date = new Date(Date.parse(s.day))
@@ -78,6 +94,15 @@
             <div class="row">
               <StatsCard label={billingPlugin.string.DriveSize} text={filesize(totalDatalakeSize, { spacer: ' ' })} />
               <StatsCard label={billingPlugin.string.DriveCount} text={totalDatalakeCount.toString()} />
+            </div>
+          </Category>
+          <Category icon={view.icon.AiStar} label={billingPlugin.string.AI}>
+            <div class="row">
+              <StatsCard
+                label={billingPlugin.string.TranscriptionTime}
+                text={formatDuration(totalTranscriptDuration, $themeStore.language)}
+              />
+              <StatsCard label={billingPlugin.string.TotalTokens} text={formatNumberCompact(totalTokensCount)} />
             </div>
           </Category>
           <Category icon={love.icon.Love} label={love.string.Office}>

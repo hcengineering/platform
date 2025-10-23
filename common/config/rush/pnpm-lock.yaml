@@ -5620,7 +5620,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-ai-bot@file:projects/pod-ai-bot.tgz':
-    resolution: {integrity: sha512-CsHd5qeCZ/5XtpcQqa2URPpeLy75yuTrevfC+NU/0LjnY2MPnmsBL8EU1vz5DLQ8iAaCgb/DsslkOkNvA7rEWw==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-mf/4Serk2cOwqTP9SyV3RmEU2xc2HE2v/yajftkqEmD8BC7M0W6ffcN4PfbRHjH6x7BQoORMD/D1F2aQC1/q2Q==, tarball: file:projects/pod-ai-bot.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-analytics-collector@file:projects/pod-analytics-collector.tgz':
@@ -5728,7 +5728,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-translate@file:projects/pod-translate.tgz':
-    resolution: {integrity: sha512-KTyPboJFndNGiYbVmyx4vn4t8VccbSP/MGvnkOM25zzoK13B2AwBftTis1j5Ye1dICrlForEg/RvG1YO6adiLw==, tarball: file:projects/pod-translate.tgz}
+    resolution: {integrity: sha512-OcQN4sz+ccccUoYkxPF+iRtwGIohm2F/9cfpVY+NDWDmWXxFlIEXtSCsBDhsp8ci6e0JCyVFTJb+MZY4fDWcKA==, tarball: file:projects/pod-translate.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-worker@file:projects/pod-worker.tgz':
@@ -27223,6 +27223,7 @@ snapshots:
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@hcengineering/rank': 0.7.5
+      '@hcengineering/retry': 0.7.5
       '@hcengineering/server-client': 0.7.7(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@hcengineering/server-core': 0.7.7
       '@hcengineering/server-storage': 0.7.8
