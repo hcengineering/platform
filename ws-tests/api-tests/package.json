@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.5",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/rpc": "^0.7.5",
     "@hcengineering/server-token": "^0.7.5",
@@ -51,7 +51,7 @@
     "ws": "^8.18.2",
     "snappyjs": "^0.7.0",
     "@hcengineering/api-client": "^0.7.5",
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/tracker": "^0.7.0",
     "@hcengineering/task": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",

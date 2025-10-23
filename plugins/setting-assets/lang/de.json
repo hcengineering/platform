@@ -204,6 +204,7 @@
     "DangerZone": "Gefahrenzone",
     "ApiAccess": "API-Zugriff",
     "ApiToken": "API-Token",
-    "GenerateApiToken": "API-Token generieren"
+    "GenerateApiToken": "API-Token generieren",
+    "IdentifierExists": "Bezeichner existiert bereits"
   }
 }

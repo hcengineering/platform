@@ -63,6 +63,7 @@ import {
   TTypePersonId,
   TTypeAccountUuid,
   TTypeNumber,
+  TTypeIdentifier,
   TTypeRank,
   TTypeRecord,
   TTypeRelatedDocument,
@@ -70,6 +71,7 @@ import {
   TTypeTimestamp,
   TVersion,
   TSequence,
+  TCustomSequence,
   TClassCollaborators,
   TCollaborator
 } from './core'
@@ -135,6 +137,7 @@ export function createModel (builder: Builder): void {
     TTypeFileSize,
     TTypeTimestamp,
     TTypeNumber,
+    TTypeIdentifier,
     TTypeBoolean,
     TTypeString,
     TTypeRank,
@@ -155,6 +158,7 @@ export function createModel (builder: Builder): void {
     TIndexConfiguration,
     TStatus,
     TSequence,
+    TCustomSequence,
     TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,

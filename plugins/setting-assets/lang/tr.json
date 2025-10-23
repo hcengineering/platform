@@ -204,6 +204,7 @@
     "DangerZone": "Tehlike bölgesi",
     "ApiAccess": "API erişimi",
     "ApiToken": "API token",
-    "GenerateApiToken": "API token oluştur"
+    "GenerateApiToken": "API token oluştur",
+    "IdentifierExists": "Tanımlayıcı zaten mevcut"
   }
 }

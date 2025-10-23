@@ -35,9 +35,9 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.7",
+    "@hcengineering/server-core": "^0.7.8",
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/text": "^0.7.5",
     "@hcengineering/text-markdown": "^0.7.5",
@@ -49,10 +49,10 @@
     "@hcengineering/drive": "^0.7.0",
     "fast-equals": "^5.2.2",
     "@hcengineering/storage": "^0.7.5",
-    "@hcengineering/communication-rest-client": "^0.7.5",
-    "@hcengineering/communication-sdk-types": "^0.7.5",
-    "@hcengineering/communication-shared": "^0.7.5",
-    "@hcengineering/communication-types": "^0.7.5",
+    "@hcengineering/communication-rest-client": "^0.7.7",
+    "@hcengineering/communication-sdk-types": "^0.7.7",
+    "@hcengineering/communication-shared": "^0.7.7",
+    "@hcengineering/communication-types": "^0.7.7",
     "@hcengineering/hulylake-client": "^0.7.6"
   }
 }
