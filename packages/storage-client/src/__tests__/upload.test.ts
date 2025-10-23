@@ -312,7 +312,10 @@ describe('uploadMultipart', () => {
     // Check initialization call
     expect(mockFetch).toHaveBeenNthCalledWith(1, 'https://example.com/upload', {
       method: 'POST',
-      headers: { Authorization: 'Bearer token' },
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'text/plain'
+      },
       signal: undefined
     })
 
@@ -382,7 +385,10 @@ describe('uploadMultipart', () => {
     const onProgress = jest.fn()
     const upload: MultipartUpload = {
       url: 'https://example.com/upload',
-      headers: { Authorization: 'Bearer token' },
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'text/plain'
+      },
       body: file
     }
 
@@ -443,7 +449,10 @@ describe('uploadMultipart', () => {
 
     const upload: MultipartUpload = {
       url: 'https://example.com/upload',
-      headers: { Authorization: 'Bearer token' },
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'text/plain'
+      },
       body: file
     }
 

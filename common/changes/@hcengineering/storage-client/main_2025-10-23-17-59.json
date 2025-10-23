@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/storage-client",
+      "comment": "use proper content type in multipart upload",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/storage-client"
+}

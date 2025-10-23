@@ -117,7 +117,7 @@ export async function uploadMultipart (upload: MultipartUpload, options?: FileSt
   let uploadId: string | undefined
 
   try {
-    const { uploadId } = await multipartUploadCreate(url, headers, signal)
+    const { uploadId } = await multipartUploadCreate(url, { ...headers, 'Content-Type': body.type }, signal)
 
     const parts: Array<{ partNumber: number, etag: string }> = []
     const totalParts = Math.ceil(body.size / CHUNK_SIZE)
