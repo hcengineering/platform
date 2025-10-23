@@ -1,6 +1,10 @@
 {
   "string": {
     "Billing": "Fakturace",
+    "Subscriptions": "Předplatné",
+    "AllPlans": "Všechny tarify",
+    "ActivePlan": "Aktivní tarif",
+    "ResourceUsage": "Využití zdrojů",
     "DriveSize": "Velikost souborů",
     "DriveCount": "Počet souborů",
     "OfficeSessionsDuration": "Doba schůzek",
@@ -8,6 +12,22 @@
     "OfficeEgressDuration": "Doba záznamu",
     "AI": "AI",
     "TranscriptionTime": "Doba přepisu",
-    "TotalTokens": "Celkem tokenů"
+    "TotalTokens": "Celkem tokenů",
+    "Tier": "Tarif",
+    "StorageLimit": "{limit}GB úložiště",
+    "TrafficLimit": "{limit}GB video/audio provozu",
+    "Common": "Common",
+    "CommonDescription": "Pro jednotlivce a týmy začínající s Huly.",
+    "Rare": "Rare",
+    "RareDescription": "Pro jednotlivé kreativce, freelancery a mikro-agentury.",
+    "Epic": "Epic",
+    "EpicDescription": "Pro profesionální kreativní společnosti a malé firmy.",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "Nejlepší pro velké týmy, které potřebují maximální možnosti.",
+    "UnlimitedUsers": "Neomezení uživatelé",
+    "UnlimitedObjects": "Neomezené Huly objekty",
+    "Upgrade": "Upgradovat",
+    "Monthly": "Měsíčně",
+    "SubscriptionEnds": "Do {date}"
   }
 }

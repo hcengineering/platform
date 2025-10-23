@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { loadMetadata } from '@hcengineering/platform'
-import billingPlugin from '@hcengineering/billing'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(billingPlugin.icon, {
-  Billing: `${icons}#billing`,
-  Subscriptions: `${icons}#subscriptions`
-})
+import { Doc } from '@hcengineering/core'
+import { IntlString } from '@hcengineering/platform'
+
+/** @public */
+export interface Tier extends Doc {
+  label: IntlString
+  description: IntlString
+  priceMonthly: number
+  storageLimitGB: number
+  trafficLimitGB: number
+
+  index: number
+  color?: string
+}

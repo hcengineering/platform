@@ -1,6 +1,10 @@
 {
   "string": {
     "Billing": "Биллинг",
+    "Subscriptions": "Подписки",
+    "AllPlans": "Все тарифы",
+    "ActivePlan": "Активный тариф",
+    "ResourceUsage": "Использование ресурсов",
     "DriveSize": "Размер файлов",
     "DriveCount": "Количество файлов",
     "OfficeSessionsDuration": "Время встреч",
@@ -8,6 +12,22 @@
     "OfficeEgressDuration": "Время записи",
     "AI": "AI",
     "TranscriptionTime": "Время транскрипции",
-    "TotalTokens": "Всего токенов"
+    "TotalTokens": "Всего токенов",
+    "Tier": "Тариф",
+    "StorageLimit": "{limit}ГБ хранилища",
+    "TrafficLimit": "{limit}ГБ видео/аудио трафика",
+    "Common": "Common",
+    "CommonDescription": "Для частных лиц и команд, начинающих работу с Huly.",
+    "Rare": "Rare",
+    "RareDescription": "Для индивидуальных творческих работников, фрилансеров и микро-агентств.",
+    "Epic": "Epic",
+    "EpicDescription": "Для профессиональных творческих компаний и малого бизнеса.",
+    "Legendary": "Legendary",
+    "LegendaryDescription": "Лучший вариант для больших команд, которым нужны максимальные возможности.",
+    "UnlimitedUsers": "Неограниченное количество пользователей",
+    "UnlimitedObjects": "Неограниченное количество объектов Huly",
+    "Upgrade": "Обновить",
+    "Monthly": "В месяц",
+    "SubscriptionEnds": "До {date}"
   }
 }

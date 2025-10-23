@@ -12,11 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { loadMetadata } from '@hcengineering/platform'
-import billingPlugin from '@hcengineering/billing'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(billingPlugin.icon, {
-  Billing: `${icons}#billing`,
-  Subscriptions: `${icons}#subscriptions`
+import billing, { billingId } from '@hcengineering/billing'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+
+export default mergeIds(billingId, billing, {
+  string: {
+    AllPlans: '' as IntlString,
+    ActivePlan: '' as IntlString,
+    ResourceUsage: '' as IntlString,
+    Subscriptions: '' as IntlString,
+    UnlimitedUsers: '' as IntlString,
+    UnlimitedObjects: '' as IntlString,
+    Upgrade: '' as IntlString,
+    Monthly: '' as IntlString,
+    SubscriptionEnds: '' as IntlString
+  }
 })
