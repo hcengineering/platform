@@ -106,6 +106,10 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     }
   }
 
+  if (provider == null) {
+    throw new Error('Payment provider is not configured. Please provide payment provider configuration.')
+  }
+
   // ============ Generic Payment Service Endpoints ============
   // These endpoints are provider-agnostic and work with any payment provider
 

@@ -131,7 +131,7 @@ services:
       - 3040:3040
     environment:
       - SECRET=secret
-      - PAYMENT_PORT=3040
+      - PORT=3040
       - ACCOUNTS_URL=http://huly.local:3000
       - FRONT_URL=http://huly.local:8087
       - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
