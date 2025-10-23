@@ -27,6 +27,12 @@ export interface PolarWebhookEvent {
   data: any
 }
 
+export interface CreateCheckoutMetadata {
+  workspaceUuid: string
+  subscriptionType: string
+  subscriptionPlan: string
+}
+
 /**
  * Internal types for checkout creation
  * Note: API uses 'products' parameter (array of product IDs)
@@ -35,6 +41,7 @@ export interface CreateCheckoutParams {
   productIds: string[]
   successUrl: string
   externalCustomerId: string
+  metadata: CreateCheckoutMetadata
   customerEmail?: string
   customerName?: string
   customerMetadata?: Record<string, string | number | boolean>

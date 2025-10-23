@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type Asset, type IntlString } from '@hcengineering/platform'
   import {
-    AnyComponent,
+    AnySvelteComponent,
     Breadcrumb,
     Component,
     Header,
@@ -30,8 +31,6 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
 
-  import { type IntlString } from '@hcengineering/platform'
-
   import ResourceUsage from './ResourceUsage.svelte'
   import Subscriptions from './Subscriptions.svelte'
 
@@ -39,9 +38,9 @@
 
   interface SettingGroup {
     key: string
-    icon: string
+    icon: Asset
     label: IntlString
-    component: AnyComponent
+    component: AnySvelteComponent
   }
 
   const groups: SettingGroup[] = [

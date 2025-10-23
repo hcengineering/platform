@@ -1018,52 +1018,39 @@ export async function upsertSubscription (
 
   // Check if subscription exists by provider + providerSubscriptionId (unique external ID)
   const existing = await db.subscription.findOne({ provider, providerSubscriptionId })
-
+  const updateData = {
+    workspaceUuid: params.workspaceUuid,
+    accountUuid: params.accountUuid,
+    provider: params.provider,
+    providerSubscriptionId: params.providerSubscriptionId,
+    providerCheckoutId: params.providerCheckoutId,
+    amount: params.amount,
+    type: params.type,
+    status: params.status,
+    plan: params.plan,
+    periodStart: params.periodStart,
+    periodEnd: params.periodEnd,
+    trialEnd: params.trialEnd,
+    canceledAt: params.canceledAt,
+    willCancelAt: params.willCancelAt,
+    providerData: params.providerData,
+    updatedOn: Date.now()
+  }
   if (existing !== null) {
     // Update existing subscription
     await db.subscription.update(
       { id: existing.id },
-      {
-        workspaceUuid: params.workspaceUuid,
-        accountUuid: params.accountUuid,
-        provider: params.provider,
-        providerSubscriptionId: params.providerSubscriptionId,
-        providerCheckoutId: params.providerCheckoutId,
-        type: params.type,
-        status: params.status,
-        plan: params.plan,
-        periodStart: params.periodStart,
-        periodEnd: params.periodEnd,
-        trialEnd: params.trialEnd,
-        canceledAt: params.canceledAt,
-        willCancelAt: params.willCancelAt,
-        providerData: params.providerData,
-        updatedOn: Date.now()
-      }
+      updateData
     )
-    ctx.info('Subscription updated', { id: existing.id, workspaceUuid, status: params.status, plan: params.plan })
+    ctx.info('Subscription updated', { id: existing.id, workspaceUuid, status: params.status, type: params.type, plan: params.plan })
   } else {
     // Create new subscription
     await db.subscription.insertOne({
-      id: params.id, // Use provided ID or let DB generate
-      workspaceUuid,
-      accountUuid: params.accountUuid,
-      provider: params.provider,
-      providerSubscriptionId: params.providerSubscriptionId,
-      providerCheckoutId: params.providerCheckoutId,
-      type: params.type,
-      status: params.status,
-      plan: params.plan,
-      periodStart: params.periodStart,
-      periodEnd: params.periodEnd,
-      trialEnd: params.trialEnd,
-      canceledAt: params.canceledAt,
-      willCancelAt: params.willCancelAt,
-      providerData: params.providerData,
-      createdOn: Date.now(),
-      updatedOn: Date.now()
+      ...updateData,
+      id: params.id,
+      createdOn: Date.now()
     })
-    ctx.info('Subscription created', { id: params.id, workspaceUuid, status: params.status, plan: params.plan })
+    ctx.info('Subscription created', { id: params.id, workspaceUuid, status: params.status, type: params.type, plan: params.plan })
   }
 }
 

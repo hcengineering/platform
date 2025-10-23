@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { MeasureContext } from '@hcengineering/core'
+import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import type { Express, Request, Response } from 'express'
 
 import type { PaymentProvider, SubscribeRequest, CreateSubscriptionResponse } from '../index'
@@ -62,7 +62,8 @@ export class PolarProvider implements PaymentProvider {
   async createSubscription (
     ctx: MeasureContext,
     request: SubscribeRequest,
-    workspaceUuid: string,
+    workspaceUuid: WorkspaceUuid,
+    workspaceUrl: string,
     accountUuid: string
   ): Promise<CreateSubscriptionResponse> {
     ctx.info('Creating Polar subscription', { type: request.type, plan: request.plan })
@@ -72,14 +73,14 @@ export class PolarProvider implements PaymentProvider {
     if (productIds === undefined) {
       throw new Error(`Missing productIds for plan: ${planKey}`)
     }
-    const successUrl = `${this.frontUrl}/workbench/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_ID}`
+    const successUrl = `${this.frontUrl}/workbench/${workspaceUrl}/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_ID}`
     const response = await this.client.createCheckout(ctx, {
       productIds,
       successUrl,
       externalCustomerId: accountUuid,
       customerEmail: request.customerEmail,
       customerName: request.customerName,
-      customerMetadata: {
+      metadata: {
         workspaceUuid,
         subscriptionType: request.type,
         subscriptionPlan: request.plan
@@ -110,7 +111,7 @@ export class PolarProvider implements PaymentProvider {
   registerWebhookEndpoints (app: Express, ctx: MeasureContext, accountsUrl: string, serviceToken: string): void {
     ctx.info('Registering Polar webhook endpoints')
 
-    // Register Polar-specific webhook endpoint
+    // Register Polar-specific webhook endpoint (body parsing handled by server middleware)
     app.post('/api/v1/webhooks/polar', (req: Request, res: Response) => {
       void handlePolarWebhook(ctx, accountsUrl, serviceToken, this.webhookSecret, req, res)
     })

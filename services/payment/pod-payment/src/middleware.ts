@@ -17,9 +17,11 @@ import type { NextFunction, Request, Response } from 'express'
 import { extractToken, getAccountClient } from '@hcengineering/server-client'
 import { AccountRole, systemAccountUuid } from '@hcengineering/core'
 import { Token } from '@hcengineering/server-token'
+import type { LoginInfo, LoginInfoRequest, WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 export interface RequestWithAuth extends Request {
   token?: Token
+  loginInfo?: LoginInfo | WorkspaceLoginInfo | LoginInfoRequest
 }
 
 export const withToken = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
@@ -44,6 +46,27 @@ export const withAdmin = (req: RequestWithAuth, res: Response, next: NextFunctio
   next()
 }
 
+export const withLoginInfo = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  void withLoginInfoAsync(req, res, next)
+}
+
+const withLoginInfoAsync = async (req: RequestWithAuth, res: Response, next: NextFunction): Promise<void> => {
+  if (req.token === undefined || req.token == null) {
+    res.status(401).json({ message: 'Token error' }).end()
+    return
+  }
+
+  const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
+  const loginInfo = await accountClient.getLoginInfoByToken()
+  if (loginInfo == null) {
+    res.status(403).json({ message: 'Missing auth info' }).end()
+    return
+  }
+
+  req.loginInfo = loginInfo
+  next()
+}
+
 export const withOwner = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   void withOwnerAsync(req, res, next)
 }
@@ -59,7 +82,7 @@ const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFun
   }
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
     const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
-    const loginInfo = await accountClient.getLoginInfoByToken()
+    const loginInfo = req.loginInfo ?? await accountClient.getLoginInfoByToken()
     if (loginInfo == null) {
       res.status(403).json({ message: 'Missing auth info' }).end()
       return

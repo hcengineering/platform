@@ -752,9 +752,9 @@
         "ACCOUNTS_URL": "http://huly.local:3000",
         "FRONT_URL": "http://huly.local:8087",
         "USE_SANDBOX": "true",
-        "POLAR_ACCESS_TOKEN": "polar_xxx",
-        "POLAR_WEBHOOK_SECRET": "whsec_xxx",
-        "POLAR_SUBSCRIPTION_PLANS": "common@tier:prod_1a,prod_1b;rare@tier:prod_2;epic@tier:prod_3;legendary@tier:prod_4"
+        // "POLAR_ACCESS_TOKEN": "polar_xxx",
+        // "POLAR_WEBHOOK_SECRET": "whsec_xxx",
+        // "POLAR_SUBSCRIPTION_PLANS": "common@tier:prod_1a,prod_1b;rare@tier:prod_2;epic@tier:prod_3;legendary@tier:prod_4"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

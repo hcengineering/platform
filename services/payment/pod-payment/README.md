@@ -82,6 +82,8 @@ To enable Polar.sh as the payment provider, set:
 
 **Format:** `{plan}@{type}:{productIds};...` where `productIds` are comma-separated uuids of products in your Polar.sh account.
 
+**Webhook** endpoint is registered at `/api/v1/webhooks/polar`.
+
 ### Multiple Providers
 
 To support additional providers (Stripe, Lemonsqueezy, etc.):

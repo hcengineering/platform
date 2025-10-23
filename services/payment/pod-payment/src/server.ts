@@ -20,9 +20,10 @@ import { MeasureContext, systemAccountUuid } from '@hcengineering/core'
 import morgan from 'morgan'
 import onHeaders from 'on-headers'
 import { generateToken } from '@hcengineering/server-token'
+import type { WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 import { Config } from './config'
-import { withAdmin, withOwner, withToken, type RequestWithAuth } from './middleware'
+import { withAdmin, withLoginInfo, withOwner, withToken, type RequestWithAuth } from './middleware'
 import { PaymentProviderFactory } from './factory'
 import type { PaymentProvider } from './providers'
 import { SubscribeRequest } from './providers'
@@ -66,7 +67,6 @@ const handleRequest = async (
 export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
   const app = express()
   app.use(cors())
-  app.use(express.json({ limit: '50mb' }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
   const requests = ctx.newChild('requests', {}, { logger: childLogger, span: false })
@@ -78,7 +78,18 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   app.use(morgan('short', { stream: new LogStream() }))
 
-  const serviceToken = generateToken(systemAccountUuid, undefined, { service: 'billing' })
+  // Apply JSON parsing conditionally - skip for webhook routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/v1/webhooks/')) {
+      // Webhooks need raw body for signature verification
+      express.raw({ type: 'application/json' })(req, res, next)
+    } else {
+      // JSON parsing for all other routes
+      express.json()(req, res, next)
+    }
+  })
+
+  const serviceToken = generateToken(systemAccountUuid, undefined, { service: 'payment' })
 
   // Initialize payment provider if configured
   let provider: PaymentProvider | undefined
@@ -92,8 +103,9 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       provider = PaymentProviderFactory.getInstance().create('polar', {
         accessToken: config.PolarAccessToken,
         webhookSecret: config.PolarWebhookSecret,
-        subscriptionPlans: config.PolarSubscriptionPlans
-      })
+        subscriptionPlans: config.PolarSubscriptionPlans,
+        frontUrl: config.FrontUrl
+      }, config.UseSandbox)
 
       if (provider !== undefined) {
         // Register provider-specific endpoints (e.g., webhooks)
@@ -121,6 +133,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   app.post(
     '/api/v1/subscriptions/:workspace/subscribe',
     withToken,
+    withLoginInfo,
     withOwner,
     (req: RequestWithAuth, res: Response) => {
       if (provider === undefined || serviceToken === undefined) {
@@ -135,6 +148,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           const workspaceUuid = req.token?.workspace
           const accountUuid = req.token?.account
           const request = req.body as SubscribeRequest
+          const loginInfo = req.loginInfo as WorkspaceLoginInfo
 
           if (accountUuid === undefined) {
             res.status(401).json({ error: 'Missing account in token' })
@@ -146,12 +160,17 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
+          if (loginInfo?.workspaceUrl === undefined) {
+            res.status(401).json({ error: 'Missing workspace url in login info' })
+            return
+          }
+
           if (request.type === undefined || request.plan === undefined) {
             res.status(400).json({ error: 'Missing required fields: type, plan' })
             return
           }
 
-          const subscription = await provider.createSubscription(ctx, request, workspaceUuid, accountUuid)
+          const subscription = await provider.createSubscription(ctx, request, workspaceUuid, loginInfo.workspaceUrl, accountUuid)
           res.status(200).json(subscription)
         },
         req,

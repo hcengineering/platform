@@ -14,7 +14,7 @@
 //
 
 import type { Express } from 'express'
-import type { MeasureContext } from '@hcengineering/core'
+import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { type SubscriptionType } from '@hcengineering/account-client'
 
 /**
@@ -66,7 +66,8 @@ export interface PaymentProvider {
   createSubscription: (
     ctx: MeasureContext,
     request: SubscribeRequest,
-    workspaceUuid: string,
+    workspaceUuid: WorkspaceUuid,
+    workspaceUrl: string,
     accountUuid: string
   ) => Promise<CreateSubscriptionResponse>
 

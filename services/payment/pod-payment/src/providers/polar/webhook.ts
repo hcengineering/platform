@@ -36,8 +36,17 @@ export async function handlePolarWebhook (
   res: Response
 ): Promise<void> {
   try {
+    // Body is a Buffer from express.raw() middleware
+    const rawBody = req.body as Buffer
+
+    if (!(rawBody instanceof Buffer) || rawBody.length === 0) {
+      ctx.error('Invalid webhook body')
+      res.status(400).json({ error: 'Invalid body' })
+      return
+    }
+
     // Validate webhook signature and parse event
-    const event = validateEvent(req.body, req.headers as Record<string, string>, webhookSecret)
+    const event = validateEvent(rawBody, req.headers as Record<string, string>, webhookSecret)
 
     // Route to appropriate handler based on event type
     switch (event.type) {
@@ -79,20 +88,29 @@ async function handleSubscriptionUpdated (
   event: any
 ): Promise<void> {
   const subscription = event.data ?? event
+  if (subscription == null) {
+    ctx.error('Missing subscription data', { event })
+    throw new Error('Missing subscription data')
+  }
+
   const metadata = subscription.metadata ?? {}
   const workspaceUuid = metadata.workspaceUuid as WorkspaceUuid | undefined
-  const accountUuid = metadata.accountUuid as AccountUuid | undefined
+  const accountUuid = subscription.customer?.externalId as AccountUuid | undefined
   const subscriptionType = metadata.subscriptionType as SubscriptionType | undefined
   const subscriptionPlan = metadata.subscriptionPlan as string | undefined
 
+  if (accountUuid === undefined) {
+    ctx.error('Missing customer.externalId in subscription', { subscription })
+    throw new Error('Missing customer.externalId in subscription')
+  }
+
   if (
     workspaceUuid === undefined ||
-    accountUuid === undefined ||
     subscriptionType === undefined ||
     subscriptionPlan === undefined
   ) {
     ctx.error('Missing required metadata in subscription', { metadata })
-    throw new Error('Missing workspaceUuid, accountUuid, subscriptionType or subscriptionPlan in subscription metadata')
+    throw new Error('Missing workspaceUuid, subscriptionType or subscriptionPlan in subscription metadata')
   }
 
   // With supporter subscriptions of type pay-what-you-want the actual plan should be
@@ -100,14 +118,15 @@ async function handleSubscriptionUpdated (
   // E.g. one can pay 1000$ using common supporter product which will correspond to 'common' plan
   // in metadata but should be treated like 'legendary' plan in actual subscription.
   // Conditions are hardcoded for now.
+  // TODO: take from model
   let actualPlan = subscriptionPlan
-  const amount = metadata.amount as number | undefined
+  const amount = subscription.amount as number | undefined
   if (amount !== undefined) {
-    if (amount > 1999 && amount < 9999) {
+    if (amount >= 1999 && amount < 9999) {
       actualPlan = 'rare'
-    } else if (amount > 9999 && amount < 39999) {
+    } else if (amount >= 9999 && amount < 39999) {
       actualPlan = 'epic'
-    } else if (amount > 39999) {
+    } else if (amount >= 39999) {
       actualPlan = 'legendary'
     }
   }
@@ -122,32 +141,32 @@ async function handleSubscriptionUpdated (
 
   // Handle optional periodEnd field - explicit null check
   let periodEnd: number | undefined
-  if (subscription.current_period_end != null) {
-    periodEnd = new Date(subscription.current_period_end).getTime()
+  if (subscription.currentPeriodEnd != null) {
+    periodEnd = new Date(subscription.currentPeriodEnd).getTime()
   }
 
   const subscriptionData: SubscriptionData = {
-    id: subscription.id, // Use Polar's subscription ID as our internal ID
+    id: `polar_${subscription.id}`, // Composite ID with provider prefix to avoid conflicts
     workspaceUuid,
     accountUuid,
     provider: 'polar',
     providerSubscriptionId: subscription.id,
-    providerCheckoutId: subscription.checkout_id,
+    providerCheckoutId: subscription.checkoutId,
     type: subscriptionType,
     status,
     plan: actualPlan,
     amount, // Amount paid in cents (e.g. 9999 for $99.99) - used for pay-what-you-want tracking
-    periodStart: new Date(subscription.current_period_start).getTime(),
+    periodStart: new Date(subscription.currentPeriodStart).getTime(),
     periodEnd,
-    trialEnd: subscription.trial_end !== undefined ? new Date(subscription.trial_end).getTime() : undefined,
-    canceledAt: subscription.canceled_at !== undefined ? new Date(subscription.canceled_at).getTime() : undefined,
+    trialEnd: subscription.trialEnd !== undefined ? new Date(subscription.trialEnd).getTime() : undefined,
+    canceledAt: subscription.canceledAt !== undefined ? new Date(subscription.canceledAt).getTime() : undefined,
     providerData: {
-      customerId: subscription.customer_id,
+      customerId: subscription.customerId,
       status: subscription.status,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      endedAt: subscription.ended_at,
-      cancelReason: subscription.customer_cancellation_reason,
-      cancelComment: subscription.customer_cancellation_comment
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      endedAt: subscription.endedAt,
+      cancelReason: subscription.customerCancellationReason,
+      cancelComment: subscription.customerCancellationComment
     }
   }
 

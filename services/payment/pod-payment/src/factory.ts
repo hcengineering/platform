@@ -56,6 +56,9 @@ export class PaymentProviderFactory {
     if (config.subscriptionPlans === undefined) {
       throw new Error('Polar provider requires subscriptionPlans in config')
     }
+    if (config.frontUrl === undefined) {
+      throw new Error('Polar provider requires frontUrl in config')
+    }
 
     return new PolarProvider(
       config.accessToken,

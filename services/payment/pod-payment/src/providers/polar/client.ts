@@ -41,7 +41,7 @@ export class PolarClient {
         externalCustomerId: params.externalCustomerId,
         customerEmail: params.customerEmail,
         customerName: params.customerName,
-        customerMetadata: params.customerMetadata
+        metadata: params.metadata
       })
 
       return {
