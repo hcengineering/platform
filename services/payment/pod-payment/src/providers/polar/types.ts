@@ -31,6 +31,7 @@ export interface CreateCheckoutMetadata {
   workspaceUuid: string
   subscriptionType: string
   subscriptionPlan: string
+  [key: string]: string | number | boolean
 }
 
 /**
