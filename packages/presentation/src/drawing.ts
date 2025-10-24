@@ -975,7 +975,7 @@ export function drawing (
     props.cmdAdded?.(cmd)
   }
 
-  function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
+  function drawShapePreview (endPoint: MouseScaledPoint, drawShape: (start: CanvasPoint, end: CanvasPoint) => void): void {
     if (draw.points.length === 0) {
       return
     }
@@ -988,10 +988,35 @@ export function drawing (
     draw.ctx.beginPath()
     draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
     draw.ctx.lineWidth = draw.penWidth
-    const width = end.x - start.x
-    const height = end.y - start.y
-    draw.ctx.strokeRect(start.x, start.y, width, height)
+    drawShape(start, end)
+    draw.ctx.stroke()
     draw.ctx.restore()
+  }
+
+  function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const width = end.x - start.x
+      const height = end.y - start.y
+      draw.ctx.strokeRect(start.x, start.y, width, height)
+    })
+  }
+
+  function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const centerX = (start.x + end.x) / 2
+      const centerY = (start.y + end.y) / 2
+      const radiusX = Math.abs(end.x - start.x) / 2
+      const radiusY = Math.abs(end.y - start.y) / 2
+      draw.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    })
+  }
+
+  function drawPreviewStraightLine (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      draw.ctx.lineCap = 'round'
+      draw.ctx.moveTo(start.x, start.y)
+      draw.ctx.lineTo(end.x, end.y)
+    })
   }
 
   function storeShapeCommand (
@@ -1025,50 +1050,8 @@ export function drawing (
     storeShapeCommand(endPoint, 'rectangle')
   }
 
-  function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
-    if (draw.points.length === 0) {
-      return
-    }
-
-    const start = draw.points[0]
-    const end = draw.mouseToCanvasPoint(endPoint)
-
-    draw.ctx.save()
-    draw.translateCtx()
-    draw.ctx.beginPath()
-    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
-    draw.ctx.lineWidth = draw.penWidth
-    const centerX = (start.x + end.x) / 2
-    const centerY = (start.y + end.y) / 2
-    const radiusX = Math.abs(end.x - start.x) / 2
-    const radiusY = Math.abs(end.y - start.y) / 2
-    draw.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
-    draw.ctx.stroke()
-    draw.ctx.restore()
-  }
-
   function storeEllipseCommand (endPoint: MouseScaledPoint): void {
     storeShapeCommand(endPoint, 'ellipse')
-  }
-
-  function drawPreviewStraightLine (endPoint: MouseScaledPoint): void {
-    if (draw.points.length === 0) {
-      return
-    }
-
-    const start = draw.points[0]
-    const end = draw.mouseToCanvasPoint(endPoint)
-
-    draw.ctx.save()
-    draw.translateCtx()
-    draw.ctx.beginPath()
-    draw.ctx.lineCap = 'round'
-    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
-    draw.ctx.lineWidth = draw.penWidth
-    draw.ctx.moveTo(start.x, start.y)
-    draw.ctx.lineTo(end.x, end.y)
-    draw.ctx.stroke()
-    draw.ctx.restore()
   }
 
   function storeStraightLineCommand (endPoint: MouseScaledPoint): void {
