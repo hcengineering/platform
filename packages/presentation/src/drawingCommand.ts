@@ -20,7 +20,7 @@ export type CommandUid = string & { readonly __brand: 'CommandUid' }
 
 export interface DrawingCmd {
   id: CommandUid
-  type: 'line' | 'text' | 'rectangle' | 'ellipse'
+  type: 'line' | 'text' | 'rectangle' | 'ellipse' | 'straight-line'
 }
 
 export interface DrawTextCmd extends DrawingCmd {
@@ -46,6 +46,13 @@ export interface DrawRectCmd extends DrawingCmd {
 }
 
 export interface DrawEllipseCmd extends DrawingCmd {
+  lineWidth: number
+  penColor: ColorMetaNameOrHex
+  start: CanvasPoint
+  end: CanvasPoint
+}
+
+export interface DrawStraightLineCmd extends DrawingCmd {
   lineWidth: number
   penColor: ColorMetaNameOrHex
   start: CanvasPoint

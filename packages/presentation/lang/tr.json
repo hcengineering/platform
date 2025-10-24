@@ -53,6 +53,7 @@
     "EraserTool": "Silgi",
     "PanTool": "Kaydırma",
     "TextTool": "Metin",
+    "LineTool": "Çizgi",
     "RectangleTool": "Dikdörtgen",
     "EllipseTool": "Elips",
     "PaletteManagementMenu": "Renk önayarlarını yönet"

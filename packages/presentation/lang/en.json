@@ -53,6 +53,7 @@
     "EraserTool": "Eraser",
     "PanTool": "Pan",
     "TextTool": "Text",
+    "LineTool": "Line",
     "RectangleTool": "Rectangle",
     "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Manage color presets"

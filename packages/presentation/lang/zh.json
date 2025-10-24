@@ -53,6 +53,7 @@
     "EraserTool": "橡皮擦",
     "PanTool": "移动",
     "TextTool": "文字",
+    "LineTool": "直线",
     "RectangleTool": "矩形",
     "EllipseTool": "椭圆",
     "PaletteManagementMenu": "管理颜色预设"

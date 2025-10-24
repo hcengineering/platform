@@ -53,6 +53,7 @@
     "EraserTool": "Gomma",
     "PanTool": "Sposta",
     "TextTool": "Testo",
+    "LineTool": "Linea",
     "RectangleTool": "Rettangolo",
     "EllipseTool": "Ellisse",
     "PaletteManagementMenu": "Gestisci i preset di colore"

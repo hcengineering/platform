@@ -32,6 +32,7 @@
   import IconText from './icons/Text.svelte'
   import IconRectangle from './icons/Rectangle.svelte'
   import IconEllipse from './icons/Ellipse.svelte'
+  import IconLine from './icons/Line.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
   import { ColorMetaName, ColorMetaNameOrHex } from '../drawingUtils'
@@ -50,6 +51,7 @@
     new ToolPresentation(presentation.string.EraserTool, IconEraser, 'erase'),
     new ToolPresentation(presentation.string.PanTool, IconMove, 'pan'),
     new ToolPresentation(presentation.string.TextTool, IconText, 'text'),
+    new ToolPresentation(presentation.string.LineTool, IconLine, 'shape-line'),
     new ToolPresentation(presentation.string.RectangleTool, IconRectangle, 'shape-rectangle'),
     new ToolPresentation(presentation.string.EllipseTool, IconEllipse, 'shape-ellipse')
   ]
@@ -260,15 +262,6 @@
       dispatch('redo')
     }}
   />
-  <Button
-    icon={IconDelete}
-    kind="icon"
-    showTooltip={{ label: presentation.string.ClearCanvas }}
-    noFocus
-    on:click={() => {
-      dispatch('clear')
-    }}
-  />
   <div class="divider buttons-divider" />
   <Button
     kind="icon"
@@ -281,6 +274,15 @@
       <div class="tool-indicator" />
     </div>
   </Button>
+  <Button
+    icon={IconDelete}
+    kind="icon"
+    showTooltip={{ label: presentation.string.ClearCanvas }}
+    noFocus
+    on:click={() => {
+      dispatch('clear')
+    }}
+  />
   <div class="divider buttons-divider" />
   {#if tool === 'pen' || tool === 'shape-rectangle' }
     <input

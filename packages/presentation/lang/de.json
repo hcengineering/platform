@@ -53,6 +53,7 @@
     "EraserTool": "Radiergummi",
     "PanTool": "Verschieben",
     "TextTool": "Text",
+    "LineTool": "Linie",
     "RectangleTool": "Rechteck",
     "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Farbpresets verwalten"

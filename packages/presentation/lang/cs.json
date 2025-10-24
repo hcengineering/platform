@@ -53,6 +53,7 @@
     "EraserTool": "Guma",
     "PanTool": "Posun",
     "TextTool": "Text",
+    "LineTool": "Čára",
     "RectangleTool": "Obdélník",
     "EllipseTool": "Elipsa",
     "PaletteManagementMenu": "Spravovat barevné předvolby"

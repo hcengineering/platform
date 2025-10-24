@@ -53,6 +53,7 @@
     "EraserTool": "Ластик",
     "PanTool": "Перемещение",
     "TextTool": "Текст",
+    "LineTool": "Линия",
     "RectangleTool": "Прямоугольник",
     "EllipseTool": "Эллипс",
     "PaletteManagementMenu": "Управление цветовыми пресетами"
