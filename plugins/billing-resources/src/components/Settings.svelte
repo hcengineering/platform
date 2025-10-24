@@ -27,7 +27,6 @@
   import filesize from 'filesize'
   import love from '@hcengineering/love'
   import drivePlugin from '@hcengineering/drive'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import view from '@hcengineering/view'
 
   import { getBillingClient } from '../utils'

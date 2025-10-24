@@ -146,8 +146,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       '@hcengineering/storage-client':
-        specifier: ^0.7.7
-        version: 0.7.7
+        specifier: ^0.7.8
+        version: 0.7.8
       '@hcengineering/text':
         specifier: ^0.7.5
         version: 0.7.5(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
@@ -3283,8 +3283,8 @@ packages:
   '@hcengineering/server@0.7.9':
     resolution: {integrity: sha512-FoEa2DHDeeQxMtWqW7wCDGc3m6/ii3TZE/8ycb3EvYELfI0qAYJPxLt++zTW8xohEP3E4SRhOO1gpDEHuLiN0Q==}
 
-  '@hcengineering/storage-client@0.7.7':
-    resolution: {integrity: sha512-hhWbXuUdjrJqdw6+iSs74YSo4UXWC74d6hQLwANX1KJzbvKWO2qhAIxLzEPq1yIBeCdecbFf1Pm/QeJMnlb4sw==}
+  '@hcengineering/storage-client@0.7.8':
+    resolution: {integrity: sha512-QP9DyL3CoAHpmujiQKSIRXft1+WZppBG+Ql99qjHaC0MI6uPMJFCXh7qOehPMq3dbSTPibQTyQ68moxM2SnrhA==}
 
   '@hcengineering/storage@0.7.5':
     resolution: {integrity: sha512-E7PiVruvqVhxUDqMEmsTOKu9knVeElyyU796wbRE5SEFOd9MY0p2lLr7vcwmbc0U/NPA+JD5NWHZwoTmdvBcgg==}
@@ -5782,7 +5782,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-0+L4G9vPNjuSO/+t7LruLLJ7JinzRjnxkC0HHYNyBq298TRqwAO1lUG2IMncF4SbhLrDhzEuwFcpUOnVlTXwGA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-x8ZTDkt30fxp/u72E3DMgh9xeAIMyGC2B8sHQxDFez6r+vzh41XlBxu1TOayAj5T7YJ9n9wkbnPTnUqd1ma6gQ==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -15962,7 +15962,7 @@ snapshots:
       '@hcengineering/server-token': 0.7.5
       utf-8-validate: 6.0.4
 
-  '@hcengineering/storage-client@0.7.7':
+  '@hcengineering/storage-client@0.7.8':
     dependencies:
       '@hcengineering/core': 0.7.10
 
@@ -29447,7 +29447,7 @@ snapshots:
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))
       '@hcengineering/query': 0.7.6
       '@hcengineering/retry': 0.7.5
-      '@hcengineering/storage-client': 0.7.7
+      '@hcengineering/storage-client': 0.7.8
       '@hcengineering/text': 0.7.5(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)
       '@testing-library/jest-dom': 6.6.3
       '@types/jest': 29.5.12
