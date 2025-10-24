@@ -62,6 +62,7 @@
     "@hcengineering/workbench-resources": "^0.7.0",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/chat": "^0.7.0",
-    "@hcengineering/integration-client": "^0.7.0"
+    "@hcengineering/integration-client": "^0.7.0",
+    "@hcengineering/rating": "^0.7.0"
   }
 }

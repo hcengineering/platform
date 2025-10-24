@@ -17,28 +17,36 @@ import core, { coreId, type Data, type PluginConfiguration, type Ref, type Tx, t
 
 import { Builder } from '@hcengineering/model'
 import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
+import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { attachmentId, createModel as attachmentModel } from '@hcengineering/model-attachment'
 import bitrix, { bitrixId, createModel as bitrixModel } from '@hcengineering/model-bitrix'
 import board, { boardId, createModel as boardModel } from '@hcengineering/model-board'
 import calendar, { calendarId, createModel as calendarModel } from '@hcengineering/model-calendar'
+import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/model-chunter'
 import contact, { contactId, createModel as contactModel } from '@hcengineering/model-contact'
 import { createModel as coreModel } from '@hcengineering/model-core'
+import { desktopDownloadsId, createModel as desktopDownloadsModel } from '@hcengineering/model-desktop-downloads'
+import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
+import { driveId, createModel as driveModel } from '@hcengineering/model-drive'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
 import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
+import { mediaId, createModel as mediaModel } from '@hcengineering/model-media'
 import notification, { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
 import { preferenceId, createModel as preferenceModel } from '@hcengineering/model-preference'
 import presentation, { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
+import rating, { ratingId, createModel as ratingModel } from '@hcengineering/model-rating'
+import { recorderId, createModel as recorderModel } from '@hcengineering/model-recorder'
 import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/model-recruit'
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
-import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
+import { serverAiBotId, createModel as serverAiBotModel } from '@hcengineering/model-server-ai-bot'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
-import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
+import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import {
   serverCollaborationId,
@@ -62,9 +70,7 @@ import { serverTelegramId, createModel as serverTelegramModel } from '@hcenginee
 import { serverTemplatesId, createModel as serverTemplatesModel } from '@hcengineering/model-server-templates'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
-import { serverAiBotId, createModel as serverAiBotModel } from '@hcengineering/model-server-ai-bot'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
-import { driveId, createModel as driveModel } from '@hcengineering/model-drive'
 import { supportId, createModel as supportModel } from '@hcengineering/model-support'
 import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
 import { taskId, createModel as taskModel } from '@hcengineering/model-task'
@@ -74,13 +80,8 @@ import { textEditorId, createModel as textEditorModel } from '@hcengineering/mod
 import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
-import { recorderId, createModel as recorderModel } from '@hcengineering/model-recorder'
-import { mediaId, createModel as mediaModel } from '@hcengineering/model-media'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
-import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
-import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
-import { desktopDownloadsId, createModel as desktopDownloadsModel } from '@hcengineering/model-desktop-downloads'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
@@ -88,41 +89,41 @@ import { serverDocumentId, createModel as serverDocumentModel } from '@hcenginee
 import github, { githubId, createModel as githubModel } from '@hcengineering/model-github'
 import { serverGithubId, createModel as serverGithubModel } from '@hcengineering/server-github-model'
 
-import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
+import { analyticsCollectorId, createModel as analyticsCollectorModel } from '@hcengineering/model-analytics-collector'
+import { exportId, createModel as exportModel } from '@hcengineering/model-export'
 import love, { loveId, createModel as loveModel } from '@hcengineering/model-love'
 import { printId, createModel as printModel } from '@hcengineering/model-print'
-import { exportId, createModel as exportModel } from '@hcengineering/model-export'
-import { analyticsCollectorId, createModel as analyticsCollectorModel } from '@hcengineering/model-analytics-collector'
 import { serverLoveId, createModel as serverLoveModel } from '@hcengineering/model-server-love'
 import { serverProcessId, createModel as serverProcessModel } from '@hcengineering/model-server-process'
+import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 
-import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
-import trainings, { trainingId, createModel as trainingModel } from '@hcengineering/model-training'
+import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
 import documents, { documentsId, createModel as documentsModel } from '@hcengineering/model-controlled-documents'
+import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
+import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
+import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
 import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
-import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
-import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
-import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
+import trainings, { trainingId, createModel as trainingModel } from '@hcengineering/model-training'
 
+import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
+import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
+import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
+import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
+import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
+import inbox, { inboxId, createModel as inboxModel } from '@hcengineering/model-inbox'
+import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
+import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
 import survey, { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
-import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
-import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
-import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
-import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
-import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
-import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
-import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
-import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -161,7 +162,8 @@ export default function buildModel (): Builder {
     contact.class.ChannelProvider,
     setting.class.IntegrationType,
     setting.class.WorkspaceSettingCategory,
-    setting.class.SettingsCategory
+    setting.class.SettingsCategory,
+    workbench.class.Widget
   ]
 
   const builders: BuilderConfig[] = [
@@ -508,6 +510,19 @@ export default function buildModel (): Builder {
         label: aiAssistant.string.ConfigLabel,
         description: aiAssistant.string.ConfigDescription,
         hidden: true,
+        enabled: false,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [
+      ratingModel,
+      ratingId,
+      {
+        label: rating.string.Rating,
+        description: rating.string.Rating,
+        icon: rating.icon.Rating,
+        hidden: false,
         enabled: false,
         beta: true,
         classFilter: defaultFilter

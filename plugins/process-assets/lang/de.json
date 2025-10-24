@@ -115,7 +115,9 @@
     "ExecutionInitiator": "Ausführungsinitiator",
     "ExecutionStarted": "Ausführung gestartet",
     "Filter": "Filter",
-    "FirstMatchValue": "Erster passender Wert"
+    "FirstMatchValue": "Erster passender Wert",
+    "ConfigLabel": "Prozesskonfiguration",
+    "ConfigDescription": "Definieren Sie Prozesse, um Workflows und Geschäftsprozesse zu automatisieren."
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

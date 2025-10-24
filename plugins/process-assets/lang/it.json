@@ -32,7 +32,7 @@
     "LowerCase": "Minuscolo",
     "Trim": "Taglia",
     "FirstValue": "Primo valore",
-    "LastValue": "Ultimo valore", 
+    "LastValue": "Ultimo valore",
     "Random": "Casuale",
     "AllProcesses": "Tutti i processi",
     "MyProcesses": "I miei processi",
@@ -120,7 +120,9 @@
     "ExecutionInitiator": "Iniziatore dell'esecuzione",
     "ExecutionStarted": "Esecuzione avviata",
     "Filter": "Filtro",
-    "FirstMatchValue": "Primo valore corrispondente"
+    "FirstMatchValue": "Primo valore corrispondente",
+    "ConfigLabel": "Configurazione dei processi",
+    "ConfigDescription": "Definisci i processi per automatizzare i flussi di lavoro e i processi aziendali."
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

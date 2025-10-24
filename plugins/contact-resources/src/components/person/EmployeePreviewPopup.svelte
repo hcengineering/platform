@@ -15,22 +15,25 @@
 <script lang="ts">
   import { Employee, Person } from '@hcengineering/contact'
   import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
-  import { ButtonIcon, navigate } from '@hcengineering/ui'
+  import { ComponentExtensions, createQuery, getClient, hasResource } from '@hcengineering/presentation'
+  import { ButtonIcon, Component, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
 
-  import ModernProfilePopup from './ModernProfilePopup.svelte'
-  import contact from '../../plugin'
-  import Avatar from '../Avatar.svelte'
-  import { employeeByIdStore } from '../../utils'
-  import { getPersonTimezone } from './utils'
+  import rating, { type PersonRating } from '@hcengineering/rating'
   import { EmployeePresenter, getPersonByPersonRefStore } from '../../index'
-  import TimePresenter from './TimePresenter.svelte'
+  import contact from '../../plugin'
+  import { employeeByIdStore } from '../../utils'
+  import Avatar from '../Avatar.svelte'
   import DeactivatedHeader from './DeactivatedHeader.svelte'
+  import ModernProfilePopup from './ModernProfilePopup.svelte'
+  import TimePresenter from './TimePresenter.svelte'
+  import { getPersonTimezone } from './utils'
 
   export let _id: Ref<Employee>
   export let disabled: boolean = false
+
+  const hasRating = hasResource(rating.component.RatingRing)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -43,6 +46,19 @@
   $: employee = $employeeByIdStore.get(_id) ?? $personByRefStore.get(_id)
   $: isEmployee = $employeeByIdStore.has(_id)
   $: void loadPersonTimezone(employee)
+
+  const levelQuery = createQuery()
+
+  let personRating: PersonRating | undefined
+
+  $: if (employee?.personUuid != null) {
+    levelQuery.query(rating.class.PersonRating, { accountId: employee?.personUuid as AccountUuid }, (res) => {
+      personRating = res[0]
+    })
+  } else {
+    personRating = undefined
+    levelQuery.unsubscribe()
+  }
 
   async function viewProfile (): Promise<void> {
     if (employee === undefined) return
@@ -94,6 +110,14 @@
         <div class="flex-col flex-gap-0-5 pl-1">
           <div class="status-container" />
           <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent />
+          {#if hasRating}
+            <div class="flex-row-center text-sm">
+              <Component
+                is={rating.component.RatingRing}
+                props={{ rating: personRating?.rating ?? 0, showValues: false }}
+              />
+            </div>
+          {/if}
           <span class="flex-presenter cursor-default">
             <TimePresenter {timezone} />
           </span>

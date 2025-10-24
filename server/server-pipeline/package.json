@@ -91,6 +91,7 @@
     "@hcengineering/server-guest": "^0.7.0",
     "@hcengineering/server-guest-resources": "^0.7.0",
     "@hcengineering/server-token": "^0.7.5",
+    "@hcengineering/server-rating": "^0.7.0",
     "@hcengineering/server-controlled-documents": "^0.7.0",
     "@hcengineering/server-controlled-documents-resources": "^0.7.0",
     "@hcengineering/server-training": "^0.7.0",

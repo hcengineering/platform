@@ -120,7 +120,9 @@
     "ExecutionInitiator": "执行发起者",
     "ExecutionStarted": "执行已启动",
     "Filter": "过滤",
-    "FirstMatchValue": "第一个匹配值"
+    "FirstMatchValue": "第一个匹配值",
+    "ConfigLabel": "流程配置",
+    "ConfigDescription": "定义流程以自动化工作流和业务流程。"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

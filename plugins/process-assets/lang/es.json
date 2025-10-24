@@ -120,7 +120,9 @@
     "ExecutionInitiator": "Iniciador de Ejecución",
     "ExecutionStarted": "Ejecución Iniciada",
     "Filter": "Filtro",
-    "FirstMatchValue": "Primer valor coincidente"
+    "FirstMatchValue": "Primer valor coincidente",
+    "ConfigLabel": "Configuración de procesos",
+    "ConfigDescription": "Defina procesos para automatizar flujos de trabajo y procesos comerciales."
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

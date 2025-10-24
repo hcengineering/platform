@@ -14,7 +14,6 @@
 //
 
 import { AccountUuid, Doc, MarkupBlobRef, Rank, Ref, TypedSpace } from '@hcengineering/core'
-import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
 /** @public */
@@ -44,9 +43,4 @@ export interface DocumentSnapshot extends Doc {
   title: string
   content: MarkupBlobRef
   parent: Ref<Document>
-}
-
-/** @public */
-export interface SavedDocument extends Preference {
-  attachedTo: Ref<Document>
 }

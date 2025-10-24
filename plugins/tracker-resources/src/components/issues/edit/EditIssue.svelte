@@ -233,6 +233,10 @@
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
+        extension={view.extensions.EditDocTitleExtension}
+        props={{ size: 'medium', kind: 'ghost', _id, _class, value: issue, readonly }}
+      />
+      <ComponentExtensions
         extension={tracker.extensions.EditIssueHeader}
         props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly, value: issue }}
       />

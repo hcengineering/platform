@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Permission } from '@hcengineering/core'
+import type { Class, Doc, Mixin, Permission, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui/src/types'
 import { Action } from '@hcengineering/view'
-import { Document, DocumentSnapshot, SavedDocument, Teamspace } from './types'
+import { Document, DocumentSnapshot, Teamspace } from './types'
 
 /**
  * @public
@@ -33,7 +33,6 @@ export const documentPlugin = plugin(documentId, {
   class: {
     Document: '' as Ref<Class<Document>>,
     DocumentSnapshot: '' as Ref<Class<DocumentSnapshot>>,
-    SavedDocument: '' as Ref<Class<SavedDocument>>,
     Teamspace: '' as Ref<Class<Teamspace>>
   },
   mixin: {
