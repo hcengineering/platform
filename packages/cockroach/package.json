@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-cockroach",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -38,9 +38,9 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:^0.7.7",
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.7",
-    "@hcengineering/communication-shared": "workspace:^0.7.7",
+    "@hcengineering/communication-types": "workspace:^0.7.8",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.8",
+    "@hcengineering/communication-shared": "workspace:^0.7.8",
     "postgres": "^3.4.7",
     "uuid": "^8.3.2"
   },
