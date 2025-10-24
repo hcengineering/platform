@@ -44,7 +44,10 @@ export class STT implements Stt {
 
   private transcriptionCount = 0
 
-  constructor (readonly room: Room) {
+  constructor (
+    readonly room: Room,
+    readonly workspace: string
+  ) {
     this.deepgram = createClient(config.DeepgramApiKey)
   }
 
@@ -154,6 +157,7 @@ export class STT implements Stt {
 
     return {
       ...options,
+      extra: `workspace:${this.workspace}`,
       encoding: 'linear16',
       channels: stream.numChannels,
       sample_rate: stream.sampleRate,

@@ -68,7 +68,8 @@ loadMetadata(view.icon, {
   MasterDetail: `${icons}#master-detail`,
   Tree: `${icons}#tree`,
   Document: `${icons}#document`,
-  Print: `${icons}#print`
+  Print: `${icons}#print`,
+  AiStar: `${icons}#ai-star`
 })
 loadMetadata(core.icon, {
   TypeString: `${icons}#string`,

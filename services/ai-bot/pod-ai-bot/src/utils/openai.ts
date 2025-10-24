@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountUuid, Ref } from '@hcengineering/core'
+import { AccountUuid, MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { countTokens } from '@hcengineering/openai'
 import { Tiktoken } from 'js-tiktoken'
 import OpenAI from 'openai'
@@ -24,8 +24,15 @@ import config from '../config'
 import { HistoryRecord } from '../types'
 import { WorkspaceClient } from '../workspace/workspaceClient'
 import { getTools } from './tools'
+import { pushTokensData } from '../billing'
 
-export async function translateHtml (client: OpenAI, html: string, lang: string): Promise<string | undefined> {
+export async function translateHtml (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
+  client: OpenAI,
+  html: string,
+  lang: string
+): Promise<string | undefined> {
   const response = await client.chat.completions.create({
     model: config.OpenAISummaryModel,
     messages: [
@@ -40,10 +47,25 @@ export async function translateHtml (client: OpenAI, html: string, lang: string)
     ]
   })
 
-  return response.choices[0].message.content ?? undefined
+  const responseText = response.choices[0].message.content ?? undefined
+
+  if (response.usage != null) {
+    void pushTokensData(ctx, [
+      {
+        workspace,
+        reason: 'manual-translate',
+        tokens: response.usage.total_tokens,
+        date: new Date(response.created * 1000).toISOString()
+      }
+    ])
+  }
+
+  return responseText
 }
 
 export async function summarizeMessages (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
   client: OpenAI,
   messages: PersonMessage[],
   lang: string
@@ -95,6 +117,17 @@ export async function summarizeMessages (
     ]
   })
 
+  if (response.usage != null) {
+    void pushTokensData(ctx, [
+      {
+        workspace,
+        reason: 'summarize',
+        tokens: response.usage.total_tokens,
+        date: new Date(response.created * 1000).toISOString()
+      }
+    ])
+  }
+
   let responseText = response.choices[0].message.content ?? undefined
   if (responseText === undefined) return
 
@@ -110,18 +143,21 @@ export async function summarizeMessages (
 }
 
 export async function createChatCompletion (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
   user?: string,
   history: OpenAI.ChatCompletionMessageParam[] = [],
-  skipCache = true
+  skipCache = true,
+  reason = 'chat'
 ): Promise<OpenAI.ChatCompletion | undefined> {
   const opt: OpenAI.RequestOptions = {}
   if (skipCache) {
     opt.headers = { 'cf-skip-cache': 'true' }
   }
   try {
-    return await client.chat.completions.create(
+    const response = await client.chat.completions.create(
       {
         messages: [...history, message],
         model: config.OpenAIModel,
@@ -130,6 +166,19 @@ export async function createChatCompletion (
       },
       opt
     )
+
+    if (response.usage != null) {
+      void pushTokensData(ctx, [
+        {
+          workspace,
+          reason,
+          tokens: response.usage.total_tokens,
+          date: new Date(response.created * 1000).toISOString()
+        }
+      ])
+    }
+
+    return response
   } catch (e) {
     console.error(e)
   }
@@ -143,7 +192,8 @@ export async function createChatCompletionWithTools (
   message: OpenAI.ChatCompletionMessageParam,
   user?: AccountUuid,
   history: OpenAI.ChatCompletionMessageParam[] = [],
-  skipCache = true
+  skipCache = true,
+  reason = 'chat'
 ): Promise<
   | {
     completion: string | undefined
@@ -152,6 +202,7 @@ export async function createChatCompletionWithTools (
   | undefined
   > {
   const opt: OpenAI.RequestOptions = {}
+  const date = new Date()
   if (skipCache) {
     opt.headers = { 'cf-skip-cache': 'true' }
   }
@@ -172,11 +223,24 @@ export async function createChatCompletionWithTools (
       },
       opt
     )
+
     const str = await res.finalContent()
-    const usage = (await res.totalUsage()).completion_tokens
+    const usage = await res.totalUsage()
+
+    if (usage != null) {
+      void pushTokensData(workspaceClient.ctx, [
+        {
+          workspace: workspaceClient.wsIds.uuid,
+          reason,
+          tokens: usage.total_tokens,
+          date: date.toISOString()
+        }
+      ])
+    }
+
     return {
       completion: str ?? undefined,
-      usage
+      usage: usage.completion_tokens
     }
   } catch (e) {
     console.error(e)
@@ -186,6 +250,8 @@ export async function createChatCompletionWithTools (
 }
 
 export async function requestSummary (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
   aiClient: OpenAI,
   encoding: Tiktoken,
   history: HistoryRecord[]
@@ -198,7 +264,7 @@ export async function requestSummary (
     role: 'user'
   }
 
-  const response = await createChatCompletion(aiClient, summaryPrompt, undefined, [
+  const response = await createChatCompletion(ctx, workspace, aiClient, summaryPrompt, undefined, [
     { role: 'system', content: 'Make a summary of messages history' }
   ])
 

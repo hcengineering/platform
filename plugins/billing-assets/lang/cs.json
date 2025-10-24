@@ -5,6 +5,9 @@
     "DriveCount": "Počet souborů",
     "OfficeSessionsDuration": "Doba schůzek",
     "OfficeSessionsBandwidth": "Šířka pásma schůzek",
-    "OfficeEgressDuration": "Doba záznamu"
+    "OfficeEgressDuration": "Doba záznamu",
+    "AI": "AI",
+    "TranscriptionTime": "Doba přepisu",
+    "TotalTokens": "Celkem tokenů"
   }
 }

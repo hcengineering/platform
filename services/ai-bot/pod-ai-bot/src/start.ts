@@ -27,6 +27,7 @@ import { registerLoaders } from './loaders'
 import { createServer, listen } from './server/server'
 import { getDbStorage } from './storage'
 import { getAccountUuid } from './utils/account'
+import { updateDeepgramBilling } from './billing'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -74,7 +75,25 @@ export const start = async (): Promise<void> => {
   const app = createServer(aiControl, ctx)
   const server = listen(app, config.Port)
 
+  let billingIntervalId: any | undefined
+  if (config.BillingUrl !== '') {
+    billingIntervalId = setInterval(
+      () => {
+        try {
+          void updateDeepgramBilling(ctx)
+        } catch {}
+      },
+      config.DeepgramPollIntervalMinutes * 60 * 1000
+    )
+    try {
+      void updateDeepgramBilling(ctx)
+    } catch {}
+  }
+
   const onClose = (): void => {
+    if (billingIntervalId !== undefined) {
+      clearInterval(billingIntervalId)
+    }
     void aiControl.close()
     storage.close()
     server.close(() => process.exit())

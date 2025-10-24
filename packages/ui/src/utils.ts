@@ -355,6 +355,14 @@ export async function formatDuration (duration: number, language: string): Promi
   return text
 }
 
+export function formatNumberCompact (num: number, maximumFractionDigits = 2): string {
+  const locale = new Intl.NumberFormat().resolvedOptions().locale
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits
+  }).format(num)
+}
+
 export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent, order?: number): void {
   rootBarExtensions.update((cur) => {
     if (cur.find((p) => p[1].component === component) === undefined) {

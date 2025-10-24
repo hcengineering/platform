@@ -304,7 +304,8 @@ const view = plugin(viewId, {
     MasterDetail: '' as Asset,
     Tree: '' as Asset,
     Document: '' as Asset,
-    Print: '' as Asset
+    Print: '' as Asset,
+    AiStar: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

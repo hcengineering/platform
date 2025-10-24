@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@deepgram/sdk':
-        specifier: ^3.12.1
-        version: 3.12.1
+        specifier: ^4.11.2
+        version: 4.11.2
       '@livekit/agents':
         specifier: ^0.7.4
         version: 0.7.4(@livekit/rtc-node@0.13.11)
@@ -70,8 +70,8 @@ packages:
     resolution: {integrity: sha512-8B1C/oTxTxyHlSFubAhNRgCbQ2SQ5wwvtlByn8sDYZvdDtdn/VE2yEPZ4BvUnrKWmsbTQY6/ooLV+9Ka2qmDSQ==}
     engines: {node: '>=18.0.0'}
 
-  '@deepgram/sdk@3.12.1':
-    resolution: {integrity: sha512-MNnCnlyxdf0IY4Dkt+YcgCb8sy14zAzJ5BCNMwzv20tSxweoj8mk6eM063zQTuHWc3x2giKvS9x6/IBtV9zJLg==}
+  '@deepgram/sdk@4.11.2':
+    resolution: {integrity: sha512-lKGxuXxlSixC8bB0BnzmIpbVjUSgYtz17cqvrgv0ZjmazgUPkuUj9egQPj6k+fbPX8wRzWEqlhrL/DXlXqeDXA==}
     engines: {node: '>=18.0.0'}
 
   '@esbuild/aix-ppc64@0.20.2':
@@ -1531,7 +1531,7 @@ snapshots:
     dependencies:
       dayjs: 1.11.13
 
-  '@deepgram/sdk@3.12.1':
+  '@deepgram/sdk@4.11.2':
     dependencies:
       '@deepgram/captions': 1.2.0
       '@types/node': 18.19.68

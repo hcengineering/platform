@@ -14,7 +14,7 @@
 //
 
 export function getMigrations (): [string, string][] {
-  return [migrationV1()]
+  return [migrationV1(), migrationV2()]
 }
 
 function migrationV1 (): [string, string] {
@@ -49,4 +49,31 @@ function migrationV1 (): [string, string] {
     CREATE INDEX IF NOT EXISTS idx_livekit_egress_room ON billing.livekit_egress (room);
   `
   return ['init_tables_01', sql]
+}
+
+function migrationV2 (): [string, string] {
+  const sql = `
+    CREATE TABLE IF NOT EXISTS billing.ai_transcript_usage (
+                                                         workspace UUID NOT NULL,
+                                                         day DATE NOT NULL,
+                                                         last_request_id STRING(255) NOT NULL,
+                                                         last_start_time TIMESTAMP NOT NULL,
+                                                         total_duration_seconds FLOAT NOT NULL,
+                                                         total_usd DECIMAL(12,6) NOT NULL,
+                                                         PRIMARY KEY (workspace, day)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_ai_transcript_usage_day ON billing.ai_transcript_usage (day);
+
+    CREATE TABLE IF NOT EXISTS billing.ai_tokens_usage (
+                                                             workspace UUID NOT NULL,
+                                                             day DATE NOT NULL,
+                                                             reason STRING(255) NOT NULL,
+                                                             total_tokens INT8 NOT NULL,
+                                                             PRIMARY KEY (workspace, day, reason)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_ai_tokens_usage_day ON billing.ai_transcript_usage (day);
+  `
+  return ['init_ai_usage_tables_02', sql]
 }

@@ -1,6 +1,8 @@
 import { concatLink, WorkspaceUuid } from '@hcengineering/core'
 import { BillingError, NetworkError } from './error'
 import {
+  AiTokensData,
+  AiTranscriptData,
   BillingStats,
   DatalakeStats,
   LiveKitEgressData,
@@ -81,6 +83,29 @@ export class BillingClient {
     const path = '/api/v1/livekit/egress'
     const url = new URL(concatLink(this.endpoint, path))
     const body = JSON.stringify(egress)
+    await fetchSafe(url, { method: 'POST', headers: { ...this.headers }, body })
+  }
+
+  async getAiTranscriptLastData (): Promise<AiTranscriptData | undefined> {
+    const path = '/api/v1/ai/transcript/last'
+    const url = new URL(concatLink(this.endpoint, path))
+    const response = await fetchSafe(url, { headers: { ...this.headers } })
+    return (await response.json()) as AiTranscriptData | undefined
+  }
+
+  async postAiTranscriptData (data: AiTranscriptData[]): Promise<void> {
+    const path = '/api/v1/ai/transcript'
+    const url = new URL(concatLink(this.endpoint, path))
+    const body = JSON.stringify(data)
+
+    await fetchSafe(url, { method: 'POST', headers: { ...this.headers }, body })
+  }
+
+  async postAiTokensData (data: AiTokensData[]): Promise<void> {
+    const path = '/api/v1/ai/tokens'
+    const url = new URL(concatLink(this.endpoint, path))
+    const body = JSON.stringify(data)
+
     await fetchSafe(url, { method: 'POST', headers: { ...this.headers }, body })
   }
 }
