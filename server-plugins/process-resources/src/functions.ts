@@ -430,7 +430,12 @@ export async function CreateToDo (
   }
 }
 
-async function getContent (control: ProcessControl, source: string, _id: Ref<Card>, _class: Ref<Class<Card>>): Promise<string> {
+async function getContent (
+  control: ProcessControl,
+  source: string,
+  _id: Ref<Card>,
+  _class: Ref<Class<Card>>
+): Promise<string> {
   const collabClient = control.collaboratorFactory()
   const data = source.split('-')
   const sourceId = data[0]
@@ -443,11 +448,14 @@ async function getContent (control: ProcessControl, source: string, _id: Ref<Car
     throw processError(process.error.ObjectNotFound, { _id: sourceId })
   }
   const markup = await collabClient.getMarkup(makeDocCollabId(sourceCard, sourceAttr))
-  const ref = await collabClient.createMarkup({
-    objectClass: _class,
-    objectId: _id,
-    objectAttr: 'content'
-  }, markup)
+  const ref = await collabClient.createMarkup(
+    {
+      objectClass: _class,
+      objectId: _id,
+      objectAttr: 'content'
+    },
+    markup
+  )
   return ref
 }
 
@@ -464,7 +472,8 @@ export async function CreateCard (
     }
   }
   const _id = generateId<Card>()
-  const newContent = content !== undefined ? await getContent(control, content, _id, _class as Ref<Class<Card>>) : undefined
+  const newContent =
+    content !== undefined ? await getContent(control, content, _id, _class as Ref<Class<Card>>) : undefined
   const data = {
     title,
     ...attrs

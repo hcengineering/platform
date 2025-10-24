@@ -19,13 +19,13 @@ import presentation, { createPulseClient } from '@hcengineering/presentation'
 
 export interface PresenceInfo {
   personId: Ref<Person>
-  objectId: Ref<Doc>
+  objectId: string
   objectClass: Ref<Class<Doc>>
 }
 
 export interface PresenceActionParams {
   personId: Ref<Employee>
-  objectId: Ref<Doc>
+  objectId: string
   objectClass: Ref<Class<Doc>>
   onPresence: (presence: Map<string, Ref<Person>>) => void
 }
@@ -83,7 +83,7 @@ export function presence (node: HTMLElement, params: PresenceActionParams): any 
 
 export async function subscribePresence (
   objectClass: Ref<Class<Doc>>,
-  objectId: Ref<Doc>,
+  objectId: string,
   callback: Callback<PresenceInfo | undefined>
 ): Promise<UnsubscribeCallback> {
   const client = await createPulseClient()

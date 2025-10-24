@@ -365,6 +365,14 @@ class MenuBarManager {
       ipcMain.closeWindow()
     })
 
+    this.onButtonClick('back-button', () => {
+      history.back()
+    })
+
+    this.onButtonClick('forward-button', () => {
+      history.forward()
+    })
+
     document.addEventListener('keydown', (e) => { this.handleKeyDown(ipcMain, e) })
     document.addEventListener('keyup', (e) => { this.handleKeyUp(e) })
 
