@@ -12,18 +12,10 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { LiteMessageViewer } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
-  import { type WithLookup } from '@hcengineering/core'
-  import { Message, MessageType, SocialID } from '@hcengineering/communication-types'
-  import { Person } from '@hcengineering/contact'
-  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
-  import { markdownToMarkup } from '@hcengineering/text-markdown'
-  import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { ActivityMessageViewer, isActivityMessage, AttachmentsPreview } from '@hcengineering/communication-resources'
-
-  import PreviewTemplate from './PreviewTemplate.svelte'
+  import { Message, SocialID } from '@hcengineering/communication-types'
+  import { ExtendedMessagePreview } from '@hcengineering/communication-resources'
+  import { isViewSettingEnabled, hideUserNamesSettingId, viewSettingsStore } from '../../settings'
 
   export let card: Card
   export let message: Message | undefined = undefined
@@ -34,44 +26,7 @@
   export let padding: string | undefined = undefined
   export let hideHeader: boolean = false
 
-  const tooltipLimit = 512
-
-  let person: WithLookup<Person> | undefined = undefined
-
-  function getTooltipLabel (message: Message | undefined): IntlString {
-    if (message == null) return getEmbeddedLabel('')
-    const text = markupToText(jsonToMarkup(markdownToMarkup(message.content)))
-    if (text.length > tooltipLimit) {
-      return getEmbeddedLabel(text.substring(0, tooltipLimit) + '...')
-    }
-    return getEmbeddedLabel(text)
-  }
+  const hidePersonName = isViewSettingEnabled($viewSettingsStore, hideUserNamesSettingId)
 </script>
 
-<PreviewTemplate
-  {kind}
-  {color}
-  bind:person
-  {padding}
-  {socialId}
-  {date}
-  fixHeight={message == null || message.type !== MessageType.Activity}
-  tooltipLabel={getTooltipLabel(message)}
-  {hideHeader}
->
-  <svelte:fragment slot="content">
-    {#if message}
-      {#if isActivityMessage(message)}
-        <ActivityMessageViewer {message} {card} author={person} />
-      {:else}
-        <LiteMessageViewer message={markdownToMarkup(message.content)} />
-      {/if}
-    {/if}
-  </svelte:fragment>
-
-  <svelte:fragment slot="after">
-    {#if message}
-      <AttachmentsPreview {message} />
-    {/if}
-  </svelte:fragment>
-</PreviewTemplate>
+<ExtendedMessagePreview {card} {message} {socialId} {date} {color} {kind} {padding} {hideHeader} {hidePersonName} />

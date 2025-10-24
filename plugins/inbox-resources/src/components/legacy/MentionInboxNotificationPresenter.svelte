@@ -18,7 +18,6 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Doc } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Person } from '@hcengineering/contact'
 
   import CommonInboxNotificationPresenter from './CommonInboxNotificationPresenter.svelte'
