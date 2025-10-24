@@ -357,7 +357,7 @@ export function drawing (
   draw.offset = props.offset ?? draw.offset
   let isOffsetAnimating = false
 
-  updateToolCursor()
+  updateToolCursor(false)
   updateCanvasTouchAction()
 
   interface LiveTextBox {
@@ -384,7 +384,7 @@ export function drawing (
   replayCommands(currentCommands)
 
   props.subscribeOnThemeChange(() => {
-    updateToolCursor()
+    updateToolCursor(false)
     replayCommands(currentCommands)
   })
 
@@ -477,14 +477,16 @@ export function drawing (
 
   canvas.ontouchcancel = canvas.ontouchend
 
+  const MiddleMouseButton = 1
+
   canvas.onpointerdown = (e) => {
     if (readonly) {
       return
     }
-    const MiddleMouseButton = 1
     if (e.button === MiddleMouseButton && props.enableMiddleMousePanning === true) {
       e.preventDefault()
       isMiddleMousePanning = true
+      updateToolCursor(true)
       canvas.setPointerCapture(e.pointerId)
       const forcePan = true
       drawStart(pointerToNodePoint(e), forcePan)
@@ -516,8 +518,9 @@ export function drawing (
     canvas.releasePointerCapture(e.pointerId)
     const forcePan = isMiddleMousePanning
     drawEnd(pointerToNodePoint(e), forcePan)
-    if (e.button === 1) {
+    if (e.button === MiddleMouseButton) {
       isMiddleMousePanning = false
+      updateToolCursor(false)
     }
   }
 
@@ -530,6 +533,7 @@ export function drawing (
     const forcePan = isMiddleMousePanning
     drawEnd(pointerToNodePoint(e), forcePan)
     isMiddleMousePanning = false
+    updateToolCursor(false)
   }
 
   canvas.onpointerenter = () => {
@@ -562,14 +566,16 @@ export function drawing (
   function drawContinue (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
 
-    if (!forcePan && draw.isDrawingTool()) {
+    if (draw.isDrawingTool() || forcePan) {
       const cursorSize = draw.cursorWidth()
 
       const canvasOffsetInParent = offsetInParent(node, canvas)
       const parentRelativeLocation = offsetPoint(scaledPoint, canvasOffsetInParent)
       toolCursor.style.left = `${parentRelativeLocation.x - cursorSize / 2}px`
       toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
+    }
 
+    if (!forcePan && draw.isDrawingTool()) {
       if (draw.on) {
         if (draw.tool === 'shape-rectangle') {
           requestAnimationFrame(() => {
@@ -609,7 +615,7 @@ export function drawing (
       prevPos = scaledPoint
     }
 
-    if (props.pointerMoved !== undefined && !forcePan) {
+    if (props.pointerMoved !== undefined) {
       props.pointerMoved(draw.mouseToCanvasPoint(scaledPoint))
     }
   }
@@ -988,7 +994,10 @@ export function drawing (
     draw.ctx.restore()
   }
 
-  function storeRectCommand (endPoint: MouseScaledPoint): void {
+  function storeShapeCommand (
+    endPoint: MouseScaledPoint,
+    type: 'rectangle' | 'ellipse' | 'straight-line'
+  ): void {
     if (draw.points.length === 0) {
       return
     }
@@ -996,12 +1005,13 @@ export function drawing (
     const start = draw.points[0]
     const end = draw.mouseToCanvasPoint(endPoint)
 
-    const minRectSize = 2
-    const nonDegenerateRect = Math.abs(end.x - start.x) > minRectSize || Math.abs(end.y - start.y) > 2
-    if (nonDegenerateRect) {
-      const cmd: DrawRectCmd = {
+    const minSize = 2
+
+    const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
+    if (nonDegenerate) {
+      const cmd: DrawRectCmd | DrawEllipseCmd | DrawStraightLineCmd = {
         id: makeCommandUid(),
-        type: 'rectangle',
+        type,
         lineWidth: draw.penWidth,
         penColor: draw.penColor,
         start,
@@ -1009,6 +1019,10 @@ export function drawing (
       }
       props.cmdAdded?.(cmd)
     }
+  }
+
+  function storeRectCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'rectangle')
   }
 
   function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
@@ -1034,24 +1048,7 @@ export function drawing (
   }
 
   function storeEllipseCommand (endPoint: MouseScaledPoint): void {
-    if (draw.points.length > 0) {
-      const start = draw.points[0]
-      const end = draw.mouseToCanvasPoint(endPoint)
-
-      const minSize = 2
-      const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
-      if (nonDegenerate) {
-        const cmd: DrawEllipseCmd = {
-          id: makeCommandUid(),
-          type: 'ellipse',
-          lineWidth: draw.penWidth,
-          penColor: draw.penColor,
-          start,
-          end
-        }
-        props.cmdAdded?.(cmd)
-      }
-    }
+    storeShapeCommand(endPoint, 'ellipse')
   }
 
   function drawPreviewStraightLine (endPoint: MouseScaledPoint): void {
@@ -1075,31 +1072,16 @@ export function drawing (
   }
 
   function storeStraightLineCommand (endPoint: MouseScaledPoint): void {
-    if (draw.points.length === 0) {
-      return
-    }
-    const start = draw.points[0]
-    const end = draw.mouseToCanvasPoint(endPoint)
-
-    const minSize = 2
-    const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
-    if (nonDegenerate) {
-      const cmd: DrawStraightLineCmd = {
-        id: makeCommandUid(),
-        type: 'straight-line',
-        lineWidth: draw.penWidth,
-        penColor: draw.penColor,
-        start,
-        end
-      }
-      props.cmdAdded?.(cmd)
-    }
+    storeShapeCommand(endPoint, 'straight-line')
   }
 
-  function updateToolCursor (): void {
+  function updateToolCursor (forcePanning: boolean): void {
     if (readonly) {
       toolCursor.style.visibility = 'hidden'
       canvas.style.cursor = props.defaultCursor ?? 'default'
+    } else if (forcePanning) {
+      canvas.style.cursor = 'grabbing'
+      toolCursor.style.visibility = 'hidden'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       toolCursor.style.visibility = 'visible'
@@ -1325,7 +1307,7 @@ export function drawing (
         props.toolChanged?.(draw.tool)
       }
       if (syncToolCursor) {
-        updateToolCursor()
+        updateToolCursor(false)
       }
       if (syncPersonCursor !== undefined) {
         updatePersonCursor(syncPersonCursor)

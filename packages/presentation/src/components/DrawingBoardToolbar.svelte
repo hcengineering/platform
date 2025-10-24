@@ -284,7 +284,7 @@
     }}
   />
   <div class="divider buttons-divider" />
-  {#if tool === 'pen' || tool === 'shape-rectangle' }
+  {#if tool !== 'erase' && tool !== 'pan' && tool !== 'text'}
     <input
       class="widthSelector"
       type="range"
