@@ -104,11 +104,7 @@ async function handleSubscriptionUpdated (
     throw new Error('Missing customer.externalId in subscription')
   }
 
-  if (
-    workspaceUuid === undefined ||
-    subscriptionType === undefined ||
-    subscriptionPlan === undefined
-  ) {
+  if (workspaceUuid === undefined || subscriptionType === undefined || subscriptionPlan === undefined) {
     ctx.error('Missing required metadata in subscription', { metadata })
     throw new Error('Missing workspaceUuid, subscriptionType or subscriptionPlan in subscription metadata')
   }

@@ -19,6 +19,7 @@ import { type Server } from 'http'
 import { MeasureContext, systemAccountUuid } from '@hcengineering/core'
 import morgan from 'morgan'
 import onHeaders from 'on-headers'
+import rateLimit from 'express-rate-limit'
 import { generateToken } from '@hcengineering/server-token'
 import type { WorkspaceLoginInfo } from '@hcengineering/account-client'
 
@@ -29,6 +30,13 @@ import type { PaymentProvider } from './providers'
 import { SubscribeRequest } from './providers'
 
 const KEEP_ALIVE_TIMEOUT = 5 // seconds
+
+const subscriptionRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: 'Too many subscription requests, please try again later',
+  standardHeaders: true
+})
 
 type AsyncRequestHandler = (ctx: MeasureContext, req: Request, res: Response) => Promise<void>
 
@@ -100,12 +108,16 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     config.PolarSubscriptionPlans !== undefined
   ) {
     try {
-      provider = PaymentProviderFactory.getInstance().create('polar', {
-        accessToken: config.PolarAccessToken,
-        webhookSecret: config.PolarWebhookSecret,
-        subscriptionPlans: config.PolarSubscriptionPlans,
-        frontUrl: config.FrontUrl
-      }, config.UseSandbox)
+      provider = PaymentProviderFactory.getInstance().create(
+        'polar',
+        {
+          accessToken: config.PolarAccessToken,
+          webhookSecret: config.PolarWebhookSecret,
+          subscriptionPlans: config.PolarSubscriptionPlans,
+          frontUrl: config.FrontUrl
+        },
+        config.UseSandbox
+      )
 
       if (provider !== undefined) {
         // Register provider-specific endpoints (e.g., webhooks)
@@ -132,6 +144,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
    */
   app.post(
     '/api/v1/subscriptions/:workspace/subscribe',
+    subscriptionRateLimiter,
     withToken,
     withLoginInfo,
     withOwner,
@@ -170,7 +183,13 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
-          const subscription = await provider.createSubscription(ctx, request, workspaceUuid, loginInfo.workspaceUrl, accountUuid)
+          const subscription = await provider.createSubscription(
+            ctx,
+            request,
+            workspaceUuid,
+            loginInfo.workspaceUrl,
+            accountUuid
+          )
           res.status(200).json(subscription)
         },
         req,

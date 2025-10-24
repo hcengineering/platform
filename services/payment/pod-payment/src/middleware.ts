@@ -82,7 +82,7 @@ const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFun
   }
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
     const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
-    const loginInfo = req.loginInfo ?? await accountClient.getLoginInfoByToken()
+    const loginInfo = req.loginInfo ?? (await accountClient.getLoginInfoByToken())
     if (loginInfo == null) {
       res.status(403).json({ message: 'Missing auth info' }).end()
       return
