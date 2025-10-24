@@ -49,7 +49,10 @@
   let previousObject: Doc = object
   let prevPresenceId: string | undefined = presenceId
 
-  $: if (object !== undefined && (object._id !== previousObject._id || object._class !== previousObject._class || presenceId !== prevPresenceId)) {
+  $: if (
+    object !== undefined &&
+    (object._id !== previousObject._id || object._class !== previousObject._class || presenceId !== prevPresenceId)
+  ) {
     void doDeletePresence(previousObject)
     previousObject = object
     prevPresenceId = presenceId

@@ -200,8 +200,14 @@
     </svelte:fragment>
 
     <svelte:fragment slot="presence">
-      <Component is={presence.component.Presence} props={{ object: doc, presenceId: doc.peerId ? `peer:${doc.peerId}` : doc._id }} />
-      <Component is={presence.component.PresenceAvatars} props={{ object: doc, size: 'x-small', limit: 5, presenceId: doc.peerId ? `peer:${doc.peerId}` : doc._id }} />
+      <Component
+        is={presence.component.Presence}
+        props={{ object: doc, presenceId: doc.peerId ? `peer:${doc.peerId}` : doc._id }}
+      />
+      <Component
+        is={presence.component.PresenceAvatars}
+        props={{ object: doc, size: 'x-small', limit: 5, presenceId: doc.peerId ? `peer:${doc.peerId}` : doc._id }}
+      />
     </svelte:fragment>
 
     <svelte:fragment slot="pre-utils">

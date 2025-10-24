@@ -41,7 +41,7 @@
   let typingInfo = new Map<string, TypingInfo>()
   let typingGroups: TypingGroup[] = []
 
-  $:objectId = peerId ? `peer${peerId}` : cardId
+  $: objectId = peerId ? `peer${peerId}` : cardId
 
   $: void updateTypingPersons(typingInfo)
 

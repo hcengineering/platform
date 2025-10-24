@@ -705,7 +705,7 @@
 </div>
 
 {#if message === undefined}
-  <TypingPresenter cardId={card._id} peerId={card.peerId}/>
+  <TypingPresenter cardId={card._id} peerId={card.peerId} />
 {/if}
 
 <style lang="scss">

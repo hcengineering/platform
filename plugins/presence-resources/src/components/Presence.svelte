@@ -23,5 +23,5 @@
 </script>
 
 {#key object._id}
-  <PresenceContext {object} {presenceId}/>
+  <PresenceContext {object} {presenceId} />
 {/key}

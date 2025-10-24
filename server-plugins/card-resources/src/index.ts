@@ -558,7 +558,12 @@ async function OnThreadCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl
   return res
 }
 
-async function createThreadCardPeers (direct: Direct, doc: Card, control: TriggerControl, peerId: string): Promise<Tx[]> {
+async function createThreadCardPeers (
+  direct: Direct,
+  doc: Card,
+  control: TriggerControl,
+  peerId: string
+): Promise<Tx[]> {
   const res: Tx[] = []
   const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
   const members = direct.members ?? []
@@ -662,7 +667,12 @@ function getDirectTitle (employees: Employee[], me: Ref<Person>): string {
   }
 }
 
-async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control: TriggerControl, peerId: string): Promise<Tx[]> {
+async function createDirectCardPeers (
+  doc: Card,
+  members: Ref<Person>[],
+  control: TriggerControl,
+  peerId: string
+): Promise<Tx[]> {
   const res: Tx[] = []
   const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
   if (members.length === 0) return []
