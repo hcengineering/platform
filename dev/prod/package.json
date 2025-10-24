@@ -289,6 +289,9 @@
     "@hcengineering/inbox": "^0.7.0",
     "@hcengineering/inbox-assets": "^0.7.0",
     "@hcengineering/inbox-resources": "^0.7.0",
+    "@hcengineering/rating": "^0.7.0",
+    "@hcengineering/rating-assets": "^0.7.0",
+    "@hcengineering/rating-resources": "^0.7.0",
     "readable-stream": "^4.7.0",
     "svelte": "^4.2.20"
   }

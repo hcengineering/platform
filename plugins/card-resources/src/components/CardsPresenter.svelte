@@ -31,7 +31,9 @@
 </script>
 
 {#if value}
-  {#each value as card}
-    <CardPresenter value={card} {noUnderline} {noSelect} {colorInherit} {inline} {showParent} {type} {icon} />
-  {/each}
+  <div class="flex-col-center">
+    {#each value as card}
+      <CardPresenter value={card} {noUnderline} {noSelect} {colorInherit} {inline} {showParent} {type} {icon} />
+    {/each}
+  </div>
 {/if}

@@ -35,10 +35,7 @@
 
   function getIconStyle (platformColor: any): string {
     return `
-      background: ${platformColor.color + '1a'};
-      border: 1px solid ${platformColor.color + '33'};
-      color: ${platformColor.color};
-      fill: ${platformColor.color};
+      box-shadow: 0 2px 3px 0 ${platformColor.color};
     `
   }
 </script>

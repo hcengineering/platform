@@ -27,16 +27,29 @@ import accountPlugin, {
   type AccountDB,
   type Workspace
 } from '@hcengineering/account'
+import {
+  getMongoAccountDB,
+  type Account as OldAccount,
+  type Workspace as OldWorkspace
+} from '@hcengineering/account-service'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
 import { setMetadata } from '@hcengineering/platform'
 import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  getDBClient,
+  shutdownPostgres
+} from '@hcengineering/postgres'
+import {
   backup,
+  backupDownload,
   backupFind,
   checkBackupIntegrity,
   compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
-  restore,
-  backupDownload
+  restore
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
@@ -51,19 +64,6 @@ import {
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
-import {
-  getMongoAccountDB,
-  type Account as OldAccount,
-  type Workspace as OldWorkspace
-} from '@hcengineering/account-service'
-import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
-import {
-  getDBClient,
-  createPostgreeDestroyAdapter,
-  createPostgresAdapter,
-  createPostgresTxAdapter,
-  shutdownPostgres
-} from '@hcengineering/postgres'
 
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
@@ -71,13 +71,14 @@ import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv }
 import { program, type Command } from 'commander'
 import { updateField } from './workspace'
 
+import { RatingCalculator, ratingEvents, type QueueRatingMessage } from '@hcengineering/pod-rating'
+
 import {
   AccountRole,
   isArchivingMode,
   isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
-  SocialId,
   SocialIdType,
   systemAccountEmail,
   systemAccountUuid,
@@ -85,12 +86,12 @@ import {
   type Data,
   type Doc,
   type PersonId,
+  type PersonUuid,
   type Ref,
   type Tx,
   type Version,
   type WorkspaceDataId,
-  type WorkspaceUuid,
-  type PersonUuid
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import {
@@ -129,14 +130,14 @@ import { performGmailAccountMigrations } from './gmail'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 import { createRestClient } from '@hcengineering/api-client'
+import { type CardID } from '@hcengineering/communication-types'
 import { sendTransactorEvent } from '@hcengineering/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
+import { migrateWorkspaceMessages } from './communication'
 import { restoreMarkupRefs } from './markup'
 import { restoreGithubIntegrations } from './restoreGithub'
-import { migrateWorkspaceMessages } from './communication'
-import { type CardID } from '@hcengineering/communication-types'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2897,6 +2898,41 @@ export function devTool (
         }
         db.close()
       }, dbUrl)
+    })
+
+  program
+    .command('calculate-ratings <workspace>')
+    .description('Perform a rating re-calculation')
+    .option('-q <queue>', 'Send to queue', false)
+    .option('-r, --region <region>', 'Region')
+    .action(async (workspace: string, cmd: { queue: boolean | undefined, region: string | undefined }) => {
+      await withAccountDatabase(async (db) => {
+        const { txes, dbUrl } = prepareTools()
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        if (cmd.queue === true) {
+          const queue = getPlatformQueue('tool', cmd.region ?? '')
+          const ratingQueue = queue.getProducer<QueueRatingMessage>(toolCtx, 'rating')
+
+          await ratingQueue.send(toolCtx, ws.uuid, [ratingEvents.reindex()])
+
+          await queue.shutdown()
+        } else {
+          const wsIds = {
+            uuid: ws.uuid,
+            dataId: ws.dataId,
+            url: ws.url
+          }
+          const calculator = await RatingCalculator.create(toolCtx, txes, wsIds, dbUrl, async () => '')
+
+          await calculator.recalculateAll(toolCtx)
+
+          await calculator.close()
+        }
+      })
     })
 
   extendProgram?.(program)

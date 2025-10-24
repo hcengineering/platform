@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Note",
+    "RatingWidgetEmpty": "Aucun document marqué d'une étoile pour le moment. Pour afficher des éléments ici, ajoutez une étoile à un document (cliquez sur la réaction étoile sur un document).",
+    "RatingWidget": "Widget de notation",
+    "Level": "Niveau",
+    "MonthOps": "{month} : {ops} opérations",
+    "MonthNoOps": "{month}, aucune opération",
+    "AddStar": "Ajouter une étoile",
+    "AddStarAria": "Ajouter une réaction étoile"
+  }
+}

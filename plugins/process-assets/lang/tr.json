@@ -117,7 +117,9 @@
     "ProcessFinished": "\"{process}\" süreci \"{state}\" durumunda tamamlandı",
     "NewProcessToDo": "Yeni süreç Eylem öğesi",
     "Filter": "Filtre",
-    "FirstMatchValue": "İlk eşleşen değer"
+    "FirstMatchValue": "İlk eşleşen değer",
+    "ConfigLabel": "Süreç yapılandırması",
+    "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın."
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

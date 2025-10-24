@@ -51,6 +51,8 @@ export { default as MessageInput } from './components/message/MessageInput.svelt
 export { default as ActivityMessageViewer } from './components/message/ActivityMessageViewer.svelte'
 export { default as AttachmentsPreview } from './components/AttachmentsPreview.svelte'
 export { default as MessagePreview } from './components/MessagePreview.svelte'
+export { default as ExtendedMessagePreview } from './components/preview/ExtendedMessagePreview.svelte'
+export { default as PreviewTemplate } from './components/preview/PreviewTemplate.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

@@ -64,6 +64,7 @@
     "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/achievement": "^0.7.0",
     "svelte": "^4.2.20",
-    "crypto-js": "^4.2.0"
+    "crypto-js": "^4.2.0",
+    "@hcengineering/rating": "^0.7.0"
   }
 }

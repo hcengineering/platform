@@ -36,16 +36,16 @@
       </span>
     </div>
   {/if}
-  {#if card.parent != null}
+  {#if card.parentInfo?.length > 0}
     {#if displaySpace && card.$lookup?.space !== undefined}
       <TagDivider />
     {/if}
-    {@const info = card.parentInfo?.find((it) => it._id === card.parent)}
+    {@const info = card.parent != null ? card.parentInfo?.find((it) => it._id === card.parent) : card.parentInfo?.[0]}
     {#if info}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
-        class="card-presenter"
+        class="card-presenter clickable"
         use:tooltip={{ label: getEmbeddedLabel(info.title), textAlign: 'left' }}
         on:click|stopPropagation|preventDefault={() => openCardInSidebar(info._id)}
       >
@@ -63,23 +63,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0 0.5rem;
     min-width: 2rem;
     max-width: 25rem;
     min-height: 1.5rem;
     max-height: 1.5rem;
     font-size: 0.75rem;
     font-weight: 500;
-    border-radius: var(--extra-small-BorderRadius);
     white-space: nowrap;
     gap: 0.25rem;
-    background-color: var(--global-ui-BackgroundColor);
-    border: var(--global-subtle-ui-BorderColor);
     color: var(--global-secondary-TextColor);
-    cursor: pointer;
 
-    &:hover {
-      background: var(--global-ui-active-BackgroundColor);
+    &.clickable {
+      cursor: pointer;
     }
   }
 </style>
