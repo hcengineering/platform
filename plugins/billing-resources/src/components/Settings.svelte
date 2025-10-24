@@ -51,7 +51,6 @@
   async function loadBillingData (): Promise<void> {
     if (billingClient == null) return
     const billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
-    console.log(billingStats)
     totalDatalakeSize = billingStats.datalakeStats.size
     totalDatalakeCount = billingStats.datalakeStats.count
     totalSessionsDuration = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.minutes, 0) * 60000
