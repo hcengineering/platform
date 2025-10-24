@@ -38,6 +38,18 @@
   import { ColorsList, DrawingBoardColoringSetup } from '../drawingColors'
   import { Analytics } from '@hcengineering/analytics'
 
+  class ToolPresentation {
+    constructor (readonly label: IntlString, readonly icon: IconEdit, readonly tool: DrawingTool) {
+    }
+  }
+
+  const tools: ToolPresentation[] = [
+    new ToolPresentation(presentation.string.PenTool, IconEdit, 'pen'),
+    new ToolPresentation(presentation.string.EraserTool, IconEraser, 'erase'),
+    new ToolPresentation(presentation.string.PanTool, IconMove, 'pan'),
+    new ToolPresentation(presentation.string.TextTool, IconText, 'text')
+  ]
+
   interface DrawingBoardToolbarEvents {
     undo: undefined
     redo: undefined
@@ -58,6 +70,21 @@
   }
 
   export let tool: DrawingTool = 'pen'
+
+  function evaluateToolPresentation (tool: DrawingTool): ToolPresentation {
+    const found = tools.find(t => t.tool === tool)
+    if (found == null) {
+      return tools[0]
+    }
+    return found
+  }
+
+  let toolPresentation: ToolPresentation = evaluateToolPresentation(tool)
+
+  $: {
+    toolPresentation = evaluateToolPresentation(tool)
+  }
+
   export let penColor: ColorMetaNameOrHex
   export let penWidth: number
   export let eraserWidth: number
@@ -150,6 +177,25 @@
     localStorage.setItem(storageKey.color, penColor)
   }
 
+  function showToolSelectionMenu (ev: MouseEvent): void {
+    const items: Array<Omit<SelectPopupValueType, 'id'> & { id: DrawingTool }> = []
+    for (const toolPresentation of tools) {
+      if (toolPresentation.tool === 'pan' && !showPanTool) {
+        continue
+      }
+      items.push({
+        id: toolPresentation.tool,
+        label: toolPresentation.label,
+        icon: toolPresentation.icon
+      })
+    }
+    showPopup(SelectPopup, { value: items }, eventToHTMLElement(ev), (id: DrawingTool | undefined) => {
+      if (id != null) {
+        tool = id
+      }
+    })
+  }
+
   onMount(() => {
     try {
       const savedColors = localStorage.getItem(storageKey.colors)
@@ -209,7 +255,6 @@
       dispatch('redo')
     }}
   />
-  <div class="divider buttons-divider" />
   <Button
     icon={IconDelete}
     kind="icon"
@@ -222,46 +267,11 @@
   />
   <div class="divider buttons-divider" />
   <Button
-    icon={IconEdit}
+    icon={toolPresentation.icon}
     kind="icon"
-    showTooltip={{ label: presentation.string.PenTool }}
+    showTooltip={{ label: toolPresentation.label }}
     noFocus
-    selected={tool === 'pen'}
-    on:click={() => {
-      tool = 'pen'
-    }}
-  />
-  <Button
-    icon={IconEraser}
-    kind="icon"
-    showTooltip={{ label: presentation.string.EraserTool }}
-    noFocus
-    selected={tool === 'erase'}
-    on:click={() => {
-      tool = 'erase'
-    }}
-  />
-  {#if showPanTool}
-    <Button
-      icon={IconMove}
-      kind="icon"
-      showTooltip={{ label: presentation.string.PanTool }}
-      noFocus
-      selected={tool === 'pan'}
-      on:click={() => {
-        tool = 'pan'
-      }}
-    />
-  {/if}
-  <Button
-    icon={IconText}
-    kind="icon"
-    showTooltip={{ label: presentation.string.TextTool }}
-    noFocus
-    selected={tool === 'text'}
-    on:click={() => {
-      tool = 'text'
-    }}
+    on:click={showToolSelectionMenu}
   />
   <div class="divider buttons-divider" />
   {#if tool === 'pen'}
