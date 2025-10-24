@@ -31,6 +31,7 @@
   import IconMove from './icons/Move.svelte'
   import IconText from './icons/Text.svelte'
   import IconRectangle from './icons/Rectangle.svelte'
+  import IconEllipse from './icons/Ellipse.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
   import { ColorMetaName, ColorMetaNameOrHex } from '../drawingUtils'
@@ -49,7 +50,8 @@
     new ToolPresentation(presentation.string.EraserTool, IconEraser, 'erase'),
     new ToolPresentation(presentation.string.PanTool, IconMove, 'pan'),
     new ToolPresentation(presentation.string.TextTool, IconText, 'text'),
-    new ToolPresentation(presentation.string.RectangleTool, IconRectangle, 'shape-rectangle')
+    new ToolPresentation(presentation.string.RectangleTool, IconRectangle, 'shape-rectangle'),
+    new ToolPresentation(presentation.string.EllipseTool, IconEllipse, 'shape-ellipse')
   ]
 
   interface DrawingBoardToolbarEvents {
@@ -59,6 +61,7 @@
   }
 
   const dispatch = createEventDispatcher<DrawingBoardToolbarEvents>()
+
   const maxColors = 8
   const minColors = 0
   const defaultColor: ColorMetaName = 'alpha'
@@ -263,7 +266,6 @@
     showTooltip={{ label: presentation.string.ClearCanvas }}
     noFocus
     on:click={() => {
-      tool = 'pen'
       dispatch('clear')
     }}
   />

@@ -54,6 +54,7 @@
     "PanTool": "移动",
     "TextTool": "文字",
     "RectangleTool": "矩形",
+    "EllipseTool": "椭圆",
     "PaletteManagementMenu": "管理颜色预设"
   },
   "status": {

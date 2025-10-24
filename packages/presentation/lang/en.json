@@ -54,6 +54,7 @@
     "PanTool": "Pan",
     "TextTool": "Text",
     "RectangleTool": "Rectangle",
+    "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Manage color presets"
   },
   "status": {

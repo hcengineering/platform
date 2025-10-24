@@ -54,6 +54,7 @@
     "PanTool": "Mover",
     "TextTool": "Texto",
     "RectangleTool": "Retângulo",
+    "EllipseTool": "Elipse",
     "PaletteManagementMenu": "Gerenciar predefinições de cor"
   },
   "status": {

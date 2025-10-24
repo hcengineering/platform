@@ -31,7 +31,7 @@ import {
   offsetCanvasPoint,
   type ColorMetaNameOrHex
 } from './drawingUtils'
-import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, type DrawRectCmd, makeCommandUid } from './drawingCommand'
+import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, type DrawRectCmd, type DrawEllipseCmd, makeCommandUid } from './drawingCommand'
 import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
@@ -71,7 +71,7 @@ export interface DrawingProps {
   toolChanged?: (tool: DrawingTool) => void
 }
 
-export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text' | 'shape-rectangle'
+export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text' | 'shape-rectangle' | 'shape-ellipse'
 
 const maxTextLength = 500
 
@@ -129,7 +129,7 @@ class DrawState {
   }
 
   isDrawingTool = (): boolean => {
-    return this.tool === 'pen' || this.tool === 'erase' || this.tool === 'shape-rectangle'
+    return this.tool === 'pen' || this.tool === 'erase' || this.tool === 'shape-rectangle' || this.tool === 'shape-ellipse'
   }
 
   translateCtx = (): void => {
@@ -167,6 +167,8 @@ class DrawState {
       this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
     } else if (cmd.type === 'rectangle') {
       this.drawRectCommand(cmd as DrawRectCmd, currentTheme)
+    } else if (cmd.type === 'ellipse') {
+      this.drawEllipseCommand(cmd as DrawEllipseCmd, currentTheme)
     } else {
       this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
@@ -217,6 +219,21 @@ class DrawState {
     const width = cmd.end.x - cmd.start.x
     const height = cmd.end.y - cmd.start.y
     this.ctx.strokeRect(cmd.start.x, cmd.start.y, width, height)
+    this.ctx.restore()
+  }
+
+  drawEllipseCommand = (cmd: DrawEllipseCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const centerX = (cmd.start.x + cmd.end.x) / 2
+    const centerY = (cmd.start.y + cmd.end.y) / 2
+    const radiusX = Math.abs(cmd.end.x - cmd.start.x) / 2
+    const radiusY = Math.abs(cmd.end.y - cmd.start.y) / 2
+    this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    this.ctx.stroke()
     this.ctx.restore()
   }
 
@@ -544,6 +561,11 @@ export function drawing (
             replayCommands(currentCommands)
             drawPreviewRectangle(scaledPoint)
           })
+        } else if (draw.tool === 'shape-ellipse') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewEllipse(scaledPoint)
+          })
         } else if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
           draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
           prevPos = scaledPoint
@@ -578,6 +600,8 @@ export function drawing (
       if (!forcePan && draw.isDrawingTool()) {
         if (draw.tool === 'shape-rectangle') {
           storeRectCommand(scaledPoint)
+        } else if (draw.tool === 'shape-ellipse') {
+          storeEllipseCommand(scaledPoint)
         } else {
           draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
           storeLineCommand()
@@ -908,22 +932,25 @@ export function drawing (
   }
 
   function storeLineCommand (): void {
-    if (draw.points.length > 0) {
-      const erasing = draw.tool === 'erase'
-      const cmd: DrawLineCmd = {
-        id: makeCommandUid(),
-        type: 'line',
-        lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
-        erasing,
-        penColor: draw.penColor,
-        points: draw.points
-      }
-      props.cmdAdded?.(cmd)
+    if (draw.points.length === 0) {
+      return
     }
+    const erasing = draw.tool === 'erase'
+    const cmd: DrawLineCmd = {
+      id: makeCommandUid(),
+      type: 'line',
+      lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
+      erasing,
+      penColor: draw.penColor,
+      points: draw.points
+    }
+    props.cmdAdded?.(cmd)
   }
 
   function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
-    if (draw.points.length === 0) return
+    if (draw.points.length === 0) {
+      return
+    }
 
     const start = draw.points[0]
     const end = draw.mouseToCanvasPoint(endPoint)
@@ -940,16 +967,61 @@ export function drawing (
   }
 
   function storeRectCommand (endPoint: MouseScaledPoint): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    const minRectSize = 2
+    const nonDegenerateRect = Math.abs(end.x - start.x) > minRectSize || Math.abs(end.y - start.y) > 2
+    if (nonDegenerateRect) {
+      const cmd: DrawRectCmd = {
+        id: makeCommandUid(),
+        type: 'rectangle',
+        lineWidth: draw.penWidth,
+        penColor: draw.penColor,
+        start,
+        end
+      }
+      props.cmdAdded?.(cmd)
+    }
+  }
+
+  function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    draw.ctx.save()
+    draw.translateCtx()
+    draw.ctx.beginPath()
+    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
+    draw.ctx.lineWidth = draw.penWidth
+    const centerX = (start.x + end.x) / 2
+    const centerY = (start.y + end.y) / 2
+    const radiusX = Math.abs(end.x - start.x) / 2
+    const radiusY = Math.abs(end.y - start.y) / 2
+    draw.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    draw.ctx.stroke()
+    draw.ctx.restore()
+  }
+
+  function storeEllipseCommand (endPoint: MouseScaledPoint): void {
     if (draw.points.length > 0) {
       const start = draw.points[0]
       const end = draw.mouseToCanvasPoint(endPoint)
 
-      const minRectSize = 2
-      const nonDegenerateRect = Math.abs(end.x - start.x) > minRectSize || Math.abs(end.y - start.y) > 2
-      if (nonDegenerateRect) {
-        const cmd: DrawRectCmd = {
+      const minSize = 2
+      const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
+      if (nonDegenerate) {
+        const cmd: DrawEllipseCmd = {
           id: makeCommandUid(),
-          type: 'rectangle',
+          type: 'ellipse',
           lineWidth: draw.penWidth,
           penColor: draw.penColor,
           start,

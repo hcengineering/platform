@@ -54,6 +54,7 @@
     "PanTool": "パン",
     "TextTool": "テキスト",
     "RectangleTool": "長方形",
+    "EllipseTool": "楕円",
     "PaletteManagementMenu": "カラープリセットを管理"
   },
   "status": {

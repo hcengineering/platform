@@ -54,6 +54,7 @@
     "PanTool": "Posun",
     "TextTool": "Text",
     "RectangleTool": "Obdélník",
+    "EllipseTool": "Elipsa",
     "PaletteManagementMenu": "Spravovat barevné předvolby"
   },
   "status": {

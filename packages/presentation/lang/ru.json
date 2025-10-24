@@ -54,6 +54,7 @@
     "PanTool": "Перемещение",
     "TextTool": "Текст",
     "RectangleTool": "Прямоугольник",
+    "EllipseTool": "Эллипс",
     "PaletteManagementMenu": "Управление цветовыми пресетами"
   },
   "status": {

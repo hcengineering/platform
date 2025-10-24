@@ -54,6 +54,7 @@
     "PanTool": "Kaydırma",
     "TextTool": "Metin",
     "RectangleTool": "Dikdörtgen",
+    "EllipseTool": "Elips",
     "PaletteManagementMenu": "Renk önayarlarını yönet"
   },
   "status": {

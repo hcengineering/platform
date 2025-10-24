@@ -54,6 +54,7 @@
     "PanTool": "Verschieben",
     "TextTool": "Text",
     "RectangleTool": "Rechteck",
+    "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Farbpresets verwalten"
   },
   "status": {
