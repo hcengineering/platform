@@ -31,7 +31,16 @@ import {
   offsetCanvasPoint,
   type ColorMetaNameOrHex
 } from './drawingUtils'
-import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, makeCommandUid } from './drawingCommand'
+import {
+  type DrawingCmd,
+  type CommandUid,
+  type DrawTextCmd,
+  type DrawLineCmd,
+  type DrawRectCmd,
+  type DrawEllipseCmd,
+  type DrawStraightLineCmd,
+  makeCommandUid
+} from './drawingCommand'
 import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
@@ -71,7 +80,7 @@ export interface DrawingProps {
   toolChanged?: (tool: DrawingTool) => void
 }
 
-export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
+export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text' | 'shape-rectangle' | 'shape-ellipse' | 'shape-line'
 
 const maxTextLength = 500
 
@@ -129,7 +138,13 @@ class DrawState {
   }
 
   isDrawingTool = (): boolean => {
-    return this.tool === 'pen' || this.tool === 'erase'
+    return (
+      this.tool === 'pen' ||
+      this.tool === 'erase' ||
+      this.tool === 'shape-rectangle' ||
+      this.tool === 'shape-ellipse' ||
+      this.tool === 'shape-line'
+    )
   }
 
   translateCtx = (): void => {
@@ -165,6 +180,12 @@ class DrawState {
   drawCommand = (cmd: DrawingCmd, currentTheme: ThemeVariantType): void => {
     if (cmd.type === 'text') {
       this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
+    } else if (cmd.type === 'rectangle') {
+      this.drawRectCommand(cmd as DrawRectCmd, currentTheme)
+    } else if (cmd.type === 'ellipse') {
+      this.drawEllipseCommand(cmd as DrawEllipseCmd, currentTheme)
+    } else if (cmd.type === 'straight-line') {
+      this.drawStraightLineCommand(cmd as DrawStraightLineCmd, currentTheme)
     } else {
       this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
@@ -203,6 +224,46 @@ class DrawState {
       this.ctx.fillText(line, p.x, p.y)
       p.y += cmd.fontSize
     }
+    this.ctx.restore()
+  }
+
+  drawRectCommand = (cmd: DrawRectCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const width = cmd.end.x - cmd.start.x
+    const height = cmd.end.y - cmd.start.y
+    this.ctx.strokeRect(cmd.start.x, cmd.start.y, width, height)
+    this.ctx.restore()
+  }
+
+  drawEllipseCommand = (cmd: DrawEllipseCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const centerX = (cmd.start.x + cmd.end.x) / 2
+    const centerY = (cmd.start.y + cmd.end.y) / 2
+    const radiusX = Math.abs(cmd.end.x - cmd.start.x) / 2
+    const radiusY = Math.abs(cmd.end.y - cmd.start.y) / 2
+    this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    this.ctx.stroke()
+    this.ctx.restore()
+  }
+
+  drawStraightLineCommand = (cmd: DrawStraightLineCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.lineCap = 'round'
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    this.ctx.moveTo(cmd.start.x, cmd.start.y)
+    this.ctx.lineTo(cmd.end.x, cmd.end.y)
+    this.ctx.stroke()
     this.ctx.restore()
   }
 
@@ -311,7 +372,7 @@ export function drawing (
   draw.offset = props.offset ?? draw.offset
   let isOffsetAnimating = false
 
-  updateToolCursor()
+  updateToolCursor(false)
   updateCanvasTouchAction()
 
   interface LiveTextBox {
@@ -338,7 +399,7 @@ export function drawing (
   replayCommands(currentCommands)
 
   props.subscribeOnThemeChange(() => {
-    updateToolCursor()
+    updateToolCursor(false)
     replayCommands(currentCommands)
   })
 
@@ -431,14 +492,16 @@ export function drawing (
 
   canvas.ontouchcancel = canvas.ontouchend
 
+  const MiddleMouseButton = 1
+
   canvas.onpointerdown = (e) => {
     if (readonly) {
       return
     }
-    const MiddleMouseButton = 1
     if (e.button === MiddleMouseButton && props.enableMiddleMousePanning === true) {
       e.preventDefault()
       isMiddleMousePanning = true
+      updateToolCursor(true)
       canvas.setPointerCapture(e.pointerId)
       const forcePan = true
       drawStart(pointerToNodePoint(e), forcePan)
@@ -470,8 +533,9 @@ export function drawing (
     canvas.releasePointerCapture(e.pointerId)
     const forcePan = isMiddleMousePanning
     drawEnd(pointerToNodePoint(e), forcePan)
-    if (e.button === 1) {
+    if (e.button === MiddleMouseButton) {
       isMiddleMousePanning = false
+      updateToolCursor(false)
     }
   }
 
@@ -484,6 +548,7 @@ export function drawing (
     const forcePan = isMiddleMousePanning
     drawEnd(pointerToNodePoint(e), forcePan)
     isMiddleMousePanning = false
+    updateToolCursor(false)
   }
 
   canvas.onpointerenter = () => {
@@ -516,16 +581,33 @@ export function drawing (
   function drawContinue (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
 
-    if (!forcePan && draw.isDrawingTool()) {
+    if (draw.isDrawingTool() || forcePan) {
       const cursorSize = draw.cursorWidth()
 
       const canvasOffsetInParent = offsetInParent(node, canvas)
       const parentRelativeLocation = offsetPoint(scaledPoint, canvasOffsetInParent)
       toolCursor.style.left = `${parentRelativeLocation.x - cursorSize / 2}px`
       toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
+    }
 
+    if (!forcePan && draw.isDrawingTool()) {
       if (draw.on) {
-        if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
+        if (draw.tool === 'shape-rectangle') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewRectangle(scaledPoint)
+          })
+        } else if (draw.tool === 'shape-ellipse') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewEllipse(scaledPoint)
+          })
+        } else if (draw.tool === 'shape-line') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewStraightLine(scaledPoint)
+          })
+        } else if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
           draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
           prevPos = scaledPoint
         }
@@ -548,7 +630,7 @@ export function drawing (
       prevPos = scaledPoint
     }
 
-    if (props.pointerMoved !== undefined && !forcePan) {
+    if (props.pointerMoved !== undefined) {
       props.pointerMoved(draw.mouseToCanvasPoint(scaledPoint))
     }
   }
@@ -557,8 +639,16 @@ export function drawing (
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (!forcePan && draw.isDrawingTool()) {
-        draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
-        storeLineCommand()
+        if (draw.tool === 'shape-rectangle') {
+          storeRectCommand(scaledPoint)
+        } else if (draw.tool === 'shape-ellipse') {
+          storeEllipseCommand(scaledPoint)
+        } else if (draw.tool === 'shape-line') {
+          storeStraightLineCommand(scaledPoint)
+        } else {
+          draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
+          storeLineCommand()
+        }
       } else if (draw.tool === 'pan' || forcePan) {
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
@@ -885,24 +975,111 @@ export function drawing (
   }
 
   function storeLineCommand (): void {
-    if (draw.points.length > 0) {
-      const erasing = draw.tool === 'erase'
-      const cmd: DrawLineCmd = {
+    if (draw.points.length === 0) {
+      return
+    }
+    const erasing = draw.tool === 'erase'
+    const cmd: DrawLineCmd = {
+      id: makeCommandUid(),
+      type: 'line',
+      lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
+      erasing,
+      penColor: draw.penColor,
+      points: draw.points
+    }
+    props.cmdAdded?.(cmd)
+  }
+
+  function drawShapePreview (
+    endPoint: MouseScaledPoint,
+    drawShape: (start: CanvasPoint, end: CanvasPoint) => void
+  ): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    draw.ctx.save()
+    draw.translateCtx()
+    draw.ctx.beginPath()
+    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
+    draw.ctx.lineWidth = draw.penWidth
+    drawShape(start, end)
+    draw.ctx.stroke()
+    draw.ctx.restore()
+  }
+
+  function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const width = end.x - start.x
+      const height = end.y - start.y
+      draw.ctx.strokeRect(start.x, start.y, width, height)
+    })
+  }
+
+  function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const centerX = (start.x + end.x) / 2
+      const centerY = (start.y + end.y) / 2
+      const radiusX = Math.abs(end.x - start.x) / 2
+      const radiusY = Math.abs(end.y - start.y) / 2
+      draw.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    })
+  }
+
+  function drawPreviewStraightLine (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      draw.ctx.lineCap = 'round'
+      draw.ctx.moveTo(start.x, start.y)
+      draw.ctx.lineTo(end.x, end.y)
+    })
+  }
+
+  function storeShapeCommand (endPoint: MouseScaledPoint, type: 'rectangle' | 'ellipse' | 'straight-line'): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    const minSize = 2
+
+    const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
+    if (nonDegenerate) {
+      const cmd: DrawRectCmd | DrawEllipseCmd | DrawStraightLineCmd = {
         id: makeCommandUid(),
-        type: 'line',
-        lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
-        erasing,
+        type,
+        lineWidth: draw.penWidth,
         penColor: draw.penColor,
-        points: draw.points
+        start,
+        end
       }
       props.cmdAdded?.(cmd)
     }
   }
 
-  function updateToolCursor (): void {
+  function storeRectCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'rectangle')
+  }
+
+  function storeEllipseCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'ellipse')
+  }
+
+  function storeStraightLineCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'straight-line')
+  }
+
+  function updateToolCursor (forcePanning: boolean): void {
     if (readonly) {
       toolCursor.style.visibility = 'hidden'
       canvas.style.cursor = props.defaultCursor ?? 'default'
+    } else if (forcePanning) {
+      canvas.style.cursor = 'grabbing'
+      toolCursor.style.visibility = 'hidden'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       toolCursor.style.visibility = 'visible'
@@ -1128,7 +1305,7 @@ export function drawing (
         props.toolChanged?.(draw.tool)
       }
       if (syncToolCursor) {
-        updateToolCursor()
+        updateToolCursor(false)
       }
       if (syncPersonCursor !== undefined) {
         updatePersonCursor(syncPersonCursor)
