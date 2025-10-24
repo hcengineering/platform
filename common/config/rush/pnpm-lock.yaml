@@ -5726,7 +5726,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-process@file:projects/pod-process.tgz':
-    resolution: {integrity: sha512-rv+aR+l8BTZl1iGYWJ/l5jnrN0YTRNBHkoevFlrTbzWkyko7r3v+xHz1LyvulD/1+GMIBSCPo6FRLq2zdt1n5w==, tarball: file:projects/pod-process.tgz}
+    resolution: {integrity: sha512-8Qkmi1F/Ja6m/j94cHkCdg99RefEDNoOzpiOxS33baQ1+mimI+3J93S/4xIWnamP2gyo5im+ITmlL7kQxagp8Q==, tarball: file:projects/pod-process.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-rating@file:projects/pod-rating.tgz':
@@ -6094,7 +6094,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-process@file:projects/server-process.tgz':
-    resolution: {integrity: sha512-2P53e6pYBkbWJecd+JBxHtJ+DFBTcA1BrIa463ArRb5N22m29gUvatvU4JrVf6CmHSoK/qmk32/pz0/4zf5neg==, tarball: file:projects/server-process.tgz}
+    resolution: {integrity: sha512-pJhuIqdzUYXp59T2fPHPeEuWio7Ohye5oZwgp8dmYunKv8lJO248R2NkILdvocBW6DJ2Cc+WhEz7R1Jhs8z3TA==, tarball: file:projects/server-process.tgz}
     version: 0.0.0
 
   '@rush-temp/server-rating@file:projects/server-rating.tgz':
@@ -28627,6 +28627,7 @@ snapshots:
       '@hcengineering/analytics': 0.7.5
       '@hcengineering/analytics-service': 0.7.5(encoding@0.1.13)
       '@hcengineering/api-client': 0.7.5(bufferutil@4.0.8)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(utf-8-validate@6.0.4)
+      '@hcengineering/collaborator-client': 0.7.5
       '@hcengineering/communication-sdk-types': 0.7.7
       '@hcengineering/communication-types': 0.7.7
       '@hcengineering/core': 0.7.10
@@ -32535,6 +32536,7 @@ snapshots:
 
   '@rush-temp/server-process@file:projects/server-process.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.25.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))':
     dependencies:
+      '@hcengineering/collaborator-client': 0.7.5
       '@hcengineering/core': 0.7.10
       '@hcengineering/platform': 0.7.5
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3)))(postcss@8.5.3)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.15.29)(typescript@5.9.3))

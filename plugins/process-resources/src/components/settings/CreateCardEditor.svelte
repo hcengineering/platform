@@ -59,7 +59,7 @@
   }
 
   function getKeys (_class: Ref<Class<MasterTag>>): AnyAttribute[] {
-    const ignoreKeys = ['_class', 'content', 'parent', 'attachments', 'todos']
+    const ignoreKeys = ['_class', 'parent', 'attachments', 'todos']
     const attributes = hierarchy.getAllAttributes(_class, core.class.Doc)
     const res: AnyAttribute[] = []
     for (const [key, attr] of attributes) {

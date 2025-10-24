@@ -28,6 +28,6 @@
   }
 </script>
 
-<span class="overflow-label" use:tooltip={tooltipParams}>
+<span class="overflow-label px-3" use:tooltip={tooltipParams}>
   {value ?? ''}
 </span>
