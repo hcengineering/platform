@@ -195,7 +195,7 @@ func (s *StreamCoordinator) AsConcatableUpload(upload handler.Upload) handler.Co
 	return upload.(*Stream)
 }
 
-func (w *Stream) start(ctx context.Context) error {
+func (w *Stream) start() error {
 	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
 	return nil

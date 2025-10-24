@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"sync"
 
@@ -59,7 +58,9 @@ func main() {
 		panic(err.Error())
 	}
 	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
+		if err := otelShutdown(context.Background()); err != nil {
+			logger.Error("failed to close queue consumer", zap.Error(err))
+		}
 	}()
 
 	var recordingHandler = recording.NewHandler(ctx, cfg)

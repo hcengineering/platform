@@ -63,9 +63,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24.1
+          go-version: 1.24.4
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: v1.64.7
+          version: v2.5.0
           args: --timeout 3m --verbose

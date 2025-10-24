@@ -91,7 +91,7 @@ func getObjectKeyFromPath(s string) string {
 
 // PutFile uploads file to the datalake
 func (d *DatalakeStorage) PutFile(ctx context.Context, filename string, options PutOptions) error {
-	ctx, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -120,14 +120,12 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, filename string, options 
 		return errors.Wrapf(err, "failed to create form file")
 	}
 
-	_, err = io.Copy(part, file)
-	if err != nil {
+	if _, err := io.Copy(part, file); err != nil {
 		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "failed to copy file data")
 	}
 
-	err = writer.Close()
-	if err != nil {
+	if err := writer.Close(); err != nil {
 		tracing.RecordError(span, err)
 		return errors.Wrapf(err, "failed to close multipart writer")
 	}
@@ -171,7 +169,7 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, filename string, options 
 
 // DeleteFile deletes file from the datalake
 func (d *DatalakeStorage) DeleteFile(ctx context.Context, filename string) error {
-	ctx, span := tracer.Start(ctx, "datalake.delete_file", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.delete_file", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -209,7 +207,7 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, filename string) error
 
 // PatchMeta patches metadata for the object
 func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Metadata) error {
-	ctx, span := tracer.Start(ctx, "datalake.patch_meta", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.patch_meta", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -255,7 +253,7 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 
 // GetMeta gets metadata related to the object
 func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metadata, error) {
-	ctx, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.put_file", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -295,7 +293,7 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 
 // GetFile gets file from the storage
 func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination string) error {
-	ctx, span := tracer.Start(ctx, "datalake.get_file", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.get_file", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -356,7 +354,7 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 
 // StatFile gets file stat from the storage
 func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobInfo, error) {
-	ctx, span := tracer.Start(ctx, "datalake.stat_file", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.stat_file", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -399,7 +397,7 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 
 // SetParent updates blob parent reference
 func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string) error {
-	ctx, span := tracer.Start(ctx, "datalake.set_parent", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.set_parent", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", getObjectKeyFromPath(filename)),
 	))
@@ -454,7 +452,7 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 
 // MultipartUploadStart creates a new multipart upload
 func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, contentType string) (string, error) {
-	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_start", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.multipart_upload_start", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", objectName),
 	))
@@ -495,7 +493,7 @@ func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, 
 
 // MultipartUploadPart uploads a part of a multipart upload
 func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, uploadID string, partNumber int, data []byte) (*MultipartPart, error) {
-	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_part", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.multipart_upload_part", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", objectName),
 		attribute.Int("size", len(data)),
@@ -540,7 +538,7 @@ func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, u
 
 // MultipartUploadComplete completes a multipart upload
 func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectName, uploadID string, parts []MultipartPart) error {
-	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_complete", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.multipart_upload_complete", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", objectName),
 	))
@@ -588,7 +586,7 @@ func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectNam
 
 // MultipartUploadCancel cancels a multipart upload
 func (d *DatalakeStorage) MultipartUploadCancel(ctx context.Context, objectName, uploadID string) error {
-	ctx, span := tracer.Start(ctx, "datalake.multipart_upload_cancel", trace.WithAttributes(
+	_, span := tracer.Start(ctx, "datalake.multipart_upload_cancel", trace.WithAttributes(
 		attribute.String("workspace", d.workspace),
 		attribute.String("object_key", objectName),
 	))

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+// Package executor provides command execution utilities.
 package executor
 
 import (

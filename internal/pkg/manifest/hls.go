@@ -43,7 +43,7 @@ func GenerateHLSPlaylist(profiles []profile.VideoProfile, outputPath, uploadID s
 		var bandwidth = profile.Bandwidth
 		var resolution = fmt.Sprintf("%vx%v", profile.Width, profile.Height)
 
-		_, err = file.WriteString(fmt.Sprintf("#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%v\n", bandwidth, resolution))
+		_, err = fmt.Fprintf(file, "#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%v\n", bandwidth, resolution)
 		if err != nil {
 			return err
 		}

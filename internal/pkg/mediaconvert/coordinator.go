@@ -138,7 +138,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 	}
 
 	s.streams.Store(stream.info.ID, stream)
-	if err := stream.start(s.mainContext); err != nil {
+	if err := stream.start(); err != nil {
 		return nil, err
 	}
 

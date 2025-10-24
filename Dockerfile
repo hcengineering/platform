@@ -11,13 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.24.4 AS builder
+FROM golang:1.24.4 AS base
+
+WORKDIR /app
+
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOBIN=/bin
+ENV PATH=$PATH:$GOBIN
 ARG BUILDARCH=amd64
 
 COPY . ./
+
+FROM base AS linter
+
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.5.0
+
+RUN golangci-lint run --verbose
+
+FROM base AS builder
 
 RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/stream ./cmd/stream
 
