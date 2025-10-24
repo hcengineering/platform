@@ -31,6 +31,9 @@ export interface CreatePeerEvent extends BaseEvent {
   kind: PeerKind
   value: string
   extra?: PeerExtra
+  options?: {
+    newValue?: boolean
+  }
   date?: Date
 }
 

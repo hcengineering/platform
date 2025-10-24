@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-server",
+      "comment": "Fix peer create",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-server"
+}

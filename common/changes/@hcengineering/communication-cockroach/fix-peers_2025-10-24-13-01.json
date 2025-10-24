@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-cockroach",
+      "comment": "Fix peer create",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-cockroach"
+}

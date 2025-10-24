@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-sdk-types",
+      "comment": "Fix peer create event",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-sdk-types"
+}

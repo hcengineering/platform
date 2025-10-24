@@ -457,6 +457,11 @@ const CreatePeerEventSchema = BaseEventSchema.extend({
   kind: z.string().nonempty(),
   value: z.string().nonempty(),
   extra: z.record(z.any()).optional(),
+  options: z
+    .object({
+      newValue: z.boolean().optional()
+    })
+    .optional(),
   date: DateSchema
 }).strict()
 

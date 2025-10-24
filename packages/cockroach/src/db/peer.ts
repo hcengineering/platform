@@ -35,7 +35,8 @@ export class PeersDb extends BaseDb {
     kind: PeerKind,
     value: string,
     extra: PeerExtra,
-    date: Date
+    date: Date,
+    options?: { newValue?: boolean }
   ): Promise<void> {
     const db: DbModel<Domain.Peer> = {
       workspace_id: workspaceId,
@@ -45,8 +46,22 @@ export class PeersDb extends BaseDb {
       extra,
       created: date
     }
-    const { sql, values } = this.getInsertSql(Domain.Peer, db, [])
-    await this.execute(sql, values, 'insert peer')
+
+    if (options?.newValue === true) {
+      const { sql, values } = this.getInsertSql(Domain.Peer, db, [], {
+        conflictColumns: ['workspace_id', 'kind', 'value'],
+        conflictAction: 'DO NOTHING'
+      })
+      const result = await this.execute(sql, values, 'insert peer')
+      const count = result?.count ?? 0
+
+      if (count === 0) {
+        throw Error('Peer value already exists')
+      }
+    } else {
+      const { sql, values } = this.getInsertSql(Domain.Peer, db, [])
+      await this.execute(sql, values, 'insert peer')
+    }
   }
 
   async removePeer (workspaceId: WorkspaceUuid, cardId: CardID, kind: PeerKind, value: string): Promise<void> {
