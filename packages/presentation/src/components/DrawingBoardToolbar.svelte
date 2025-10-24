@@ -42,8 +42,11 @@
   import { Analytics } from '@hcengineering/analytics'
 
   class ToolPresentation {
-    constructor (readonly label: IntlString, readonly icon: IconEdit, readonly tool: DrawingTool) {
-    }
+    constructor (
+      readonly label: IntlString,
+      readonly icon: IconEdit,
+      readonly tool: DrawingTool
+    ) {}
   }
 
   const tools: ToolPresentation[] = [
@@ -79,7 +82,7 @@
   export let tool: DrawingTool = 'pen'
 
   function evaluateToolPresentation (tool: DrawingTool): ToolPresentation {
-    const found = tools.find(t => t.tool === tool)
+    const found = tools.find((t) => t.tool === tool)
     if (found == null) {
       return tools[0]
     }
@@ -263,12 +266,7 @@
     }}
   />
   <div class="divider buttons-divider" />
-  <Button
-    kind="icon"
-    showTooltip={{ label: toolPresentation.label }}
-    noFocus
-    on:click={showToolSelectionMenu}
-  >
+  <Button kind="icon" showTooltip={{ label: toolPresentation.label }} noFocus on:click={showToolSelectionMenu}>
     <div class="tool-button-with-indicator" slot="content">
       <svelte:component this={toolPresentation.icon} size="small" />
       <div class="tool-indicator" />

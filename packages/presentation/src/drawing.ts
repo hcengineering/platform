@@ -31,7 +31,16 @@ import {
   offsetCanvasPoint,
   type ColorMetaNameOrHex
 } from './drawingUtils'
-import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, type DrawRectCmd, type DrawEllipseCmd, type DrawStraightLineCmd, makeCommandUid } from './drawingCommand'
+import {
+  type DrawingCmd,
+  type CommandUid,
+  type DrawTextCmd,
+  type DrawLineCmd,
+  type DrawRectCmd,
+  type DrawEllipseCmd,
+  type DrawStraightLineCmd,
+  makeCommandUid
+} from './drawingCommand'
 import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
@@ -129,7 +138,13 @@ class DrawState {
   }
 
   isDrawingTool = (): boolean => {
-    return this.tool === 'pen' || this.tool === 'erase' || this.tool === 'shape-rectangle' || this.tool === 'shape-ellipse' || this.tool === 'shape-line'
+    return (
+      this.tool === 'pen' ||
+      this.tool === 'erase' ||
+      this.tool === 'shape-rectangle' ||
+      this.tool === 'shape-ellipse' ||
+      this.tool === 'shape-line'
+    )
   }
 
   translateCtx = (): void => {
@@ -975,7 +990,10 @@ export function drawing (
     props.cmdAdded?.(cmd)
   }
 
-  function drawShapePreview (endPoint: MouseScaledPoint, drawShape: (start: CanvasPoint, end: CanvasPoint) => void): void {
+  function drawShapePreview (
+    endPoint: MouseScaledPoint,
+    drawShape: (start: CanvasPoint, end: CanvasPoint) => void
+  ): void {
     if (draw.points.length === 0) {
       return
     }
@@ -1019,10 +1037,7 @@ export function drawing (
     })
   }
 
-  function storeShapeCommand (
-    endPoint: MouseScaledPoint,
-    type: 'rectangle' | 'ellipse' | 'straight-line'
-  ): void {
+  function storeShapeCommand (endPoint: MouseScaledPoint, type: 'rectangle' | 'ellipse' | 'straight-line'): void {
     if (draw.points.length === 0) {
       return
     }
