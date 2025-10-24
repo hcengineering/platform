@@ -21,18 +21,19 @@
   import { updatePresence, deletePresence } from '../presence'
 
   export let object: Doc
+  export let presenceId: string | undefined = undefined
   export let presenceTtlSeconds: number = 5
   export let presenceUpdateSeconds: number = 2
 
   const personId = getCurrentEmployee()
 
   async function doUpdatePresence (): Promise<void> {
-    const presence = { personId, objectId: object._id, objectClass: object._class }
+    const presence = { personId, objectId: presenceId ?? object._id, objectClass: object._class }
     await updatePresence(presence, presenceTtlSeconds)
   }
 
-  async function doDeletePresence (object: Doc): Promise<void> {
-    const presence = { personId, objectId: object._id, objectClass: object._class }
+  async function doDeletePresence (object: Doc, presenceId?: string): Promise<void> {
+    const presence = { personId, objectId: presenceId ?? object._id, objectClass: object._class }
     await deletePresence(presence)
   }
 
@@ -41,15 +42,20 @@
     const interval = setInterval(doUpdatePresence, presenceUpdateSeconds * 1000)
     return () => {
       clearInterval(interval)
-      void doDeletePresence(object)
+      void doDeletePresence(object, presenceId)
     }
   })
 
   let previousObject: Doc = object
+  let prevPresenceId: string | undefined = presenceId
 
-  $: if (object !== undefined && (object._id !== previousObject._id || object._class !== previousObject._class)) {
+  $: if (
+    object !== undefined &&
+    (object._id !== previousObject._id || object._class !== previousObject._class || presenceId !== prevPresenceId)
+  ) {
     void doDeletePresence(previousObject)
     previousObject = object
+    prevPresenceId = presenceId
     void doUpdatePresence()
   }
 </script>

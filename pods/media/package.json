@@ -64,8 +64,8 @@
     "@hcengineering/server-token": "^0.7.5",
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.7",
-    "@hcengineering/communication-sdk-types": "^0.7.7",
+    "@hcengineering/communication-types": "^0.7.8",
+    "@hcengineering/communication-sdk-types": "^0.7.8",
     "dotenv": "~16.0.0",
     "kafkajs": "^2.2.4"
   }
