@@ -40,7 +40,6 @@ export async function createPulseClient (): Promise<HulypulseClient | undefined>
 
   promise = new Promise((resolve) => {
     HulypulseClient.connect(`${pulseUrl}?token=${token}`)
-      .catch(() => undefined)
       .then(resolve)
       .catch(() => {
         resolve(undefined)
