@@ -461,7 +461,7 @@
     if (message !== undefined) return
     if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
-        void setTyping(acc.primarySocialId, card._id)
+        void setTyping(acc.primarySocialId, card.peerId ? `peer:${card.peerId}` : card._id)
       })
     }
   }
@@ -705,7 +705,7 @@
 </div>
 
 {#if message === undefined}
-  <TypingPresenter cardId={card._id} />
+  <TypingPresenter cardId={card._id} peerId={card.peerId}/>
 {/if}
 
 <style lang="scss">

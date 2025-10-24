@@ -25,6 +25,7 @@
   import communication from '../plugin'
 
   export let cardId: CardID
+  export let peerId: string | undefined
 
   const maxTypingPersons = 3
   const acc = getCurrentAccount()
@@ -39,6 +40,8 @@
 
   let typingInfo = new Map<string, TypingInfo>()
   let typingGroups: TypingGroup[] = []
+
+  $:objectId = peerId ? `peer${peerId}` : cardId
 
   $: void updateTypingPersons(typingInfo)
 
@@ -91,7 +94,7 @@
   class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
   use:typing={{
     socialId: acc.primarySocialId,
-    objectId: cardId,
+    objectId,
     onTyping: handleTyping
   }}
 >

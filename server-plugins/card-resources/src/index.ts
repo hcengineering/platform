@@ -541,21 +541,24 @@ async function updateParentInfoName (
 async function OnThreadCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of ctx) {
-    if (tx.space === core.space.DerivedTx) continue
     const doc = TxProcessor.createDoc2Doc(tx)
+    if (doc.peerId != null) continue
     const parent = doc.parentInfo?.[0]
     if (parent == null) continue
     if (!control.hierarchy.isDerived(parent._class, communication.type.Direct)) continue
     const direct = (await control.findAll(control.ctx, parent._class, { _id: parent._id }, { limit: 1 }))[0] as Direct
     if (direct == null) continue
 
-    res.push(...(await createThreadCardPeers(direct, doc, control)))
+    const peerId = generateId()
+
+    res.push(control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { peerId }))
+    res.push(...(await createThreadCardPeers(direct, doc, control, peerId)))
   }
 
   return res
 }
 
-async function createThreadCardPeers (direct: Direct, doc: Card, control: TriggerControl): Promise<Tx[]> {
+async function createThreadCardPeers (direct: Direct, doc: Card, control: TriggerControl, peerId: string): Promise<Tx[]> {
   const res: Tx[] = []
   const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
   const members = direct.members ?? []
@@ -600,7 +603,8 @@ async function createThreadCardPeers (direct: Direct, doc: Card, control: Trigge
         _class,
         personSpace._id,
         {
-          ...doc
+          ...doc,
+          peerId
         },
         _id
       )
@@ -627,18 +631,20 @@ async function createThreadCardPeers (direct: Direct, doc: Card, control: Trigge
   }
 
   if (cardIds.size > 1) {
-    const group = generateId()
+    let newValue = true
     for (const [cardId, spaceId] of cardIds.entries()) {
       const event: CreatePeerEvent = {
         type: PeerEventType.CreatePeer,
         workspaceId: control.workspace.uuid, // TODO: person_workspace
         cardId,
         kind: 'card',
-        value: group,
+        value: peerId,
         extra: { space: spaceId },
-        date: new Date(doc.modifiedOn)
+        date: new Date(doc.modifiedOn),
+        options: { newValue }
       }
       await control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+      newValue = false
     }
   }
 
@@ -656,7 +662,7 @@ function getDirectTitle (employees: Employee[], me: Ref<Person>): string {
   }
 }
 
-async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control: TriggerControl): Promise<Tx[]> {
+async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control: TriggerControl, peerId: string): Promise<Tx[]> {
   const res: Tx[] = []
   const cardIds = new Map<Ref<Card>, Ref<Space>>([[doc._id, doc.space]])
   if (members.length === 0) return []
@@ -683,6 +689,7 @@ async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control
         personSpace._id,
         {
           ...doc,
+          peerId,
           title
         },
         _id
@@ -702,18 +709,20 @@ async function createDirectCardPeers (doc: Card, members: Ref<Person>[], control
   }
 
   if (cardIds.size > 1) {
-    const group = generateId()
+    let newValue = true
     for (const [cardId, spaceId] of cardIds.entries()) {
       const event: CreatePeerEvent = {
         type: PeerEventType.CreatePeer,
         workspaceId: control.workspace.uuid, // TODO: person_workspace
         cardId,
         kind: 'card',
-        value: group,
+        value: peerId,
         extra: { space: spaceId },
-        date: new Date(doc.modifiedOn)
+        date: new Date(doc.modifiedOn),
+        options: { newValue }
       }
       await control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+      newValue = false
     }
   }
 
@@ -724,11 +733,13 @@ async function OnDirectCreate (ctx: TxCreateDoc<Direct>[], control: TriggerContr
   const res: Tx[] = []
 
   for (const tx of ctx) {
-    if (tx.space === core.space.DerivedTx) continue
     const doc = TxProcessor.createDoc2Doc(tx)
+    if (doc.peerId != null) continue
     const members = doc.members ?? []
+    const peerId = generateId()
 
-    res.push(...(await createDirectCardPeers(doc, members, control)))
+    res.push(control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { peerId }))
+    res.push(...(await createDirectCardPeers(doc, members, control, peerId)))
   }
 
   return res

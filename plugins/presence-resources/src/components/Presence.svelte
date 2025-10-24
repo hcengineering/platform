@@ -19,8 +19,9 @@
   import PresenceContext from './PresenceContext.svelte'
 
   export let object: Doc
+  export let presenceId: string | undefined = undefined
 </script>
 
 {#key object._id}
-  <PresenceContext {object} />
+  <PresenceContext {object} {presenceId}/>
 {/key}

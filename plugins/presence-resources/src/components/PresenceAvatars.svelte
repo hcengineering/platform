@@ -25,6 +25,7 @@
   import { followee, toggleFollowee } from '../store'
 
   export let object: Doc
+  export let presenceId: string | undefined = undefined
   export let size: IconSize = 'small'
   export let limit: number = 4
 
@@ -55,7 +56,7 @@
 <div
   use:presence={{
     personId: me,
-    objectId: object._id,
+    objectId: presenceId ?? object._id,
     objectClass: object._class,
     onPresence
   }}

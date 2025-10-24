@@ -14,7 +14,7 @@
 import { type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
 import { type IntlString, getMetadata } from '@hcengineering/platform'
 import presentation, { createPulseClient } from '@hcengineering/presentation'
-import { type Doc, type Ref, type PersonId } from '@hcengineering/core'
+import { type PersonId } from '@hcengineering/core'
 
 const typingDelaySeconds = 2
 
@@ -24,13 +24,13 @@ function getWorkspace (): string {
 
 export interface TypingInfo {
   socialId: PersonId
-  objectId: Ref<Doc>
+  objectId: string
   status?: IntlString
 }
 
 export interface TypingActionParams {
   socialId: PersonId
-  objectId: Ref<Doc>
+  objectId: string
   onTyping: (presence: Map<string, TypingInfo>) => void
 }
 
@@ -84,7 +84,7 @@ export function typing (node: HTMLElement, params: TypingActionParams): any {
 }
 
 export async function subscribeTyping (
-  objectId: Ref<Doc>,
+  objectId: string,
   callback: Callback<TypingInfo | undefined>
 ): Promise<UnsubscribeCallback> {
   const client = await createPulseClient()
@@ -100,7 +100,7 @@ export async function subscribeTyping (
   return async () => false
 }
 
-export async function setTyping (socialId: PersonId, objectId: Ref<Doc>, status?: IntlString): Promise<void> {
+export async function setTyping (socialId: PersonId, objectId: string, status?: IntlString): Promise<void> {
   const client = await createPulseClient()
 
   if (client !== undefined) {

@@ -57,6 +57,8 @@ export interface Card extends Doc, IconProps {
   parent?: Ref<Card> | null
   rank: Rank
   readonly?: boolean
+
+  peerId?: string
 }
 
 export interface CardSpace extends Space {
