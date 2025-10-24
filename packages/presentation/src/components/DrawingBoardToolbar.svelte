@@ -356,7 +356,12 @@
     &.inside {
       left: 0.5rem;
       top: 0.5rem;
+      right: auto;
       bottom: unset;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      max-width: calc(100% - 1rem);
       background-color: var(--theme-popup-header);
       border-radius: var(--small-BorderRadius);
       border: 1px solid var(--theme-popup-divider);
