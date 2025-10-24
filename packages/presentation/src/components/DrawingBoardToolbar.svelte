@@ -26,7 +26,7 @@
     eventToHTMLElement,
     showPopup
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { ComponentType, createEventDispatcher, onMount } from 'svelte'
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
   import IconText from './icons/Text.svelte'
@@ -40,23 +40,22 @@
   import DrawingBoardColorSelectorIcon from './DrawingBoardColorSelectorIcon.svelte'
   import { ColorsList, DrawingBoardColoringSetup } from '../drawingColors'
   import { Analytics } from '@hcengineering/analytics'
+  import type { IntlString } from '@hcengineering/platform'
 
-  class ToolPresentation {
-    constructor (
-      readonly label: IntlString,
-      readonly icon: IconEdit,
-      readonly tool: DrawingTool
-    ) {}
+  interface ToolPresentation {
+    label: IntlString
+    icon: ComponentType
+    tool: DrawingTool
   }
 
   const tools: ToolPresentation[] = [
-    new ToolPresentation(presentation.string.PenTool, IconEdit, 'pen'),
-    new ToolPresentation(presentation.string.EraserTool, IconEraser, 'erase'),
-    new ToolPresentation(presentation.string.PanTool, IconMove, 'pan'),
-    new ToolPresentation(presentation.string.TextTool, IconText, 'text'),
-    new ToolPresentation(presentation.string.LineTool, IconLine, 'shape-line'),
-    new ToolPresentation(presentation.string.RectangleTool, IconRectangle, 'shape-rectangle'),
-    new ToolPresentation(presentation.string.EllipseTool, IconEllipse, 'shape-ellipse')
+    { label: presentation.string.PenTool, icon: IconEdit, tool: 'pen' },
+    { label: presentation.string.EraserTool, icon: IconEraser, tool: 'erase' },
+    { label: presentation.string.PanTool, icon: IconMove, tool: 'pan' },
+    { label: presentation.string.TextTool, icon: IconText, tool: 'text' },
+    { label: presentation.string.LineTool, icon: IconLine, tool: 'shape-line' },
+    { label: presentation.string.RectangleTool, icon: IconRectangle, tool: 'shape-rectangle' },
+    { label: presentation.string.EllipseTool, icon: IconEllipse, tool: 'shape-ellipse' }
   ]
 
   interface DrawingBoardToolbarEvents {
