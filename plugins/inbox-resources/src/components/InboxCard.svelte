@@ -133,6 +133,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  id={navItem.type === 'modern' ? navItem.context.id : navItem.context._id}
   class="inbox-card"
   class:selected
   style:height={`${calcHeight(navItem)}rem`}
@@ -168,6 +169,19 @@
           <LegacyNotifications {doc} notifications={navItem.notifications} {viewlets} on:click={onNotification} />
         {/if}
       </div>
+    </div>
+  {:else}
+    <div class="inbox-card__header">
+      Oops looks like this card is no longer available.
+      {#if account.role !== AccountRole.ReadOnlyGuest}
+        <div class="inbox-card__remove">
+          {#if isRemoving}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox kind="todo" size="medium" on:value={handleToggle} />
+          {/if}
+        </div>
+      {/if}
     </div>
   {/if}
 </div>

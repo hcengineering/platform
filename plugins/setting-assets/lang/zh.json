@@ -204,6 +204,7 @@
     "DangerZone": "危险区域",
     "ApiAccess": "API访问",
     "ApiToken": "API令牌",
-    "GenerateApiToken": "生成API令牌"
+    "GenerateApiToken": "生成API令牌",
+    "IdentifierExists": "标识符已存在"
   }
 }

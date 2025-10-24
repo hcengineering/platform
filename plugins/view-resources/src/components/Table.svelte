@@ -16,6 +16,7 @@
 <script lang="ts">
   import core, {
     AnyAttribute,
+    AssociationQuery,
     Class,
     Doc,
     DocumentQuery,
@@ -45,7 +46,7 @@
   import { createEventDispatcher } from 'svelte'
   import { showMenu } from '../actions'
   import view from '../plugin'
-  import { LoadingProps, buildConfigLookup, buildModel, restrictionStore } from '../utils'
+  import { LoadingProps, buildConfigAssociation, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
   import { getResultOptions, getResultQuery } from '../viewOptions'
   import { canEditSpace } from '../visibilityTester'
@@ -80,7 +81,11 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  let lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
+  let associations = buildConfigAssociation(config)
+
   $: lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
+  $: associations = buildConfigAssociation(config)
 
   let _sortKey = prefferedSorting
   let userSorting = false
@@ -130,6 +135,7 @@
     sortKey: string | string[],
     sortOrder: SortingOrder,
     lookup: Lookup<Doc>,
+    associations: AssociationQuery[] | undefined,
     limit: number,
     options: FindOptions<Doc> | undefined
   ) {
@@ -148,12 +154,12 @@
         objectsRecieved = true
         loading = 0
       },
-      { limit, ...options, sort: getSort(sortKey), lookup, total: false }
+      { limit, ...options, sort: getSort(sortKey), lookup, associations, total: false }
     )
       ? 1
       : 0
   })
-  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, resultOptions)
+  $: void update(_class, query, _sortKey, sortOrder, lookup, associations, limit, resultOptions)
 
   $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
     resultOptions = p
@@ -171,7 +177,7 @@
         gtotal = total
       }
     },
-    { limit: 1, ...resultOptions, sort: getSort(_sortKey), lookup, total: true }
+    { limit: 1, ...resultOptions, sort: getSort(_sortKey), lookup, associations, total: true }
   )
 
   const totalQueryQ = createQuery()

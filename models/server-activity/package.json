@@ -35,14 +35,14 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/card": "^0.7.0",
-    "@hcengineering/model": "^0.7.5",
+    "@hcengineering/model": "^0.7.6",
     "@hcengineering/model-activity": "^0.7.0",
     "@hcengineering/platform": "^0.7.5",
     "@hcengineering/server-activity": "^0.7.0",
     "@hcengineering/server-activity-resources": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.7",
+    "@hcengineering/server-core": "^0.7.8",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0"
   }

@@ -16,7 +16,7 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
-import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui/src/types'
+import { AnyComponent, PopupAlignment, PopupPosAlignment, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import {
   Action,
   ActionCategory,
@@ -24,6 +24,7 @@ import {
   Aggregation,
   AllValuesFunc,
   ArrayEditor,
+  AttrPresenter,
   AttributeEditor,
   AttributeFilter,
   AttributeFilterPresenter,
@@ -32,11 +33,13 @@ import {
   ClassSortFuncs,
   CollectionEditor,
   CollectionPresenter,
+  CustomObjectLinkProvider,
   FilterMode,
   FilteredView,
   Groupping,
   IgnoreActions,
   InlineAttributEditor,
+  LinkIdProvider,
   LinkPresenter,
   LinkProvider,
   ListHeaderExtra,
@@ -52,19 +55,16 @@ import {
   ObjectTitle,
   ObjectTooltip,
   ObjectValidator,
-  ReferenceObjectProvider,
-  AttrPresenter,
+  OpenDocumentFunction,
   PreviewPresenter,
+  ReferenceObjectProvider,
   SpaceHeader,
   SpaceName,
   SpacePresenter,
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference,
-  LinkIdProvider,
-  CustomObjectLinkProvider,
-  OpenDocumentFunction
+  ViewletPreference
 } from './types'
 
 export * from './types'
@@ -313,6 +313,9 @@ const view = plugin(viewId, {
     Navigation: '' as Ref<ActionCategory>,
     Editor: '' as Ref<ActionCategory>,
     MarkdownFormatting: '' as Ref<ActionCategory>
+  },
+  extensions: {
+    EditDocTitleExtension: '' as ComponentExtensionId
   },
   filter: {
     FilterArrayAll: '' as Ref<FilterMode>,

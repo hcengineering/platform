@@ -120,7 +120,9 @@
     "ExecutionInitiator": "Initiateur d'exécution",
     "ExecutionStarted": "Exécution démarrée",
     "Filter": "Filtrer",
-    "FirstMatchValue": "Première valeur correspondante"
+    "FirstMatchValue": "Première valeur correspondante",
+    "ConfigLabel": "Configuration des processus",
+    "ConfigDescription": "Définissez des processus pour automatiser les flux de travail et les processus métier."
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

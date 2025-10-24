@@ -21,6 +21,7 @@
   import {
     ActionContext,
     AttributesBar,
+    ComponentExtensions,
     KeyedAttribute,
     createQuery,
     getClient,
@@ -268,6 +269,10 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
+      <ComponentExtensions
+        extension={view.extensions.EditDocTitleExtension}
+        props={{ size: 'medium', kind: 'ghost', _id, _class, value: object, readonly }}
+      />
       {#if !readonly}
         <Button
           icon={IconMoreH}

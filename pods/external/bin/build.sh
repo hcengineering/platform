@@ -22,19 +22,15 @@ find services.d/ -type f -name "*.service" ! -name "-*" | sort | while read -r f
 
     if [ ! -z $target_repo ] && [ ! -z $source ]; then
         target=$registry/$target_repo:$tag
-        cache_file="$temp_dir/$(echo "$source" | sed 's/[/:.]/_/g')"
 
-        # Check if already processed
-        if [ -f "$cache_file" ]; then
-            echo "Skipping (cached): $source -> $target"
+        # Check if target image already exists locally
+        if docker image inspect "$target" > /dev/null 2>&1; then
+            echo "Exists (skipping): $target"
             continue
         fi
 
         docker pull --quiet $source > /dev/null
         docker tag $source $target
-
-        # Mark as processed
-        echo "$source -> $target" > "$cache_file"
 
         echo "Pull&Tag: $source -> $target"
     fi

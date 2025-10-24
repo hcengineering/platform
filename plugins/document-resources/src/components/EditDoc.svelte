@@ -22,7 +22,13 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { IconWithEmoji, copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    ComponentExtensions,
+    IconWithEmoji,
+    copyTextToClipboard,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
@@ -52,7 +58,7 @@
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
-  import { starDocument, unlockContent, unstarDocument } from '..'
+  import { unlockContent } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -107,17 +113,6 @@
     void notificationClient.then((client) => client.readDoc(_id))
     clearTimeout(copyTimeout)
   })
-
-  const starredQuery = createQuery()
-  let isStarred = false
-  $: starredQuery.query(
-    document.class.SavedDocument,
-    { attachedTo: _id },
-    (res) => {
-      isStarred = res.length !== 0
-    },
-    { limit: 1 }
-  )
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     if (doc === undefined) {
@@ -221,18 +216,6 @@
   ]
   let selectedAside: string | boolean = false
 
-  $: starAction = isStarred
-    ? {
-        icon: document.icon.Starred,
-        label: document.string.Unstar,
-        action: () => doc !== undefined && unstarDocument(doc)
-      }
-    : {
-        icon: document.icon.Star,
-        label: document.string.Star,
-        action: () => doc !== undefined && starDocument(doc)
-      }
-
   $: actions = [
     {
       icon: view.icon.CopyId,
@@ -249,8 +232,7 @@
           }, 2000)
         }
       }
-    },
-    starAction
+    }
   ]
 
   let editor: DocumentEditor
@@ -323,6 +305,12 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
+      {#if doc}
+        <ComponentExtensions
+          extension={view.extensions.EditDocTitleExtension}
+          props={{ size: 'medium', kind: 'ghost', _id: doc._id, _class: doc._class, value: doc, readonly }}
+        />
+      {/if}
       {#if !$restrictionStore.disableActions}
         <Button
           id="btn-doc-title-open-more"

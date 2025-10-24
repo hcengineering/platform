@@ -99,6 +99,10 @@ export interface FavoriteCard extends Preference {
   application: string
 }
 
+export interface FavoriteType extends Preference {
+  attachedTo: Ref<MasterTag>
+}
+
 export interface CreateCardExtension extends MasterTag {
   component?: AnyComponent
   canCreate?: CanCreateCardResource
@@ -128,7 +132,8 @@ const cardPlugin = plugin(cardId, {
     CardSpace: '' as Ref<Class<CardSpace>>,
     Role: '' as Ref<Class<Role>>,
     CardSection: '' as Ref<Class<CardSection>>,
-    FavoriteCard: '' as Ref<Class<FavoriteCard>>
+    FavoriteCard: '' as Ref<Class<FavoriteCard>>,
+    FavoriteType: '' as Ref<Class<FavoriteType>>
   },
   mixin: {
     CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,
@@ -172,7 +177,8 @@ const cardPlugin = plugin(cardId, {
     GetIndividualPublicLink: '' as IntlString,
     AddTag: '' as IntlString,
     Feed: '' as IntlString,
-    AllCards: '' as IntlString
+    AllCards: '' as IntlString,
+    Favorites: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,

@@ -15,6 +15,7 @@ import { type Resources } from '@hcengineering/platform'
 import MasterTags from './components/MasterTags.svelte'
 import CreateTag from './components/CreateTag.svelte'
 import CardPresenter from './components/CardPresenter.svelte'
+import CardsPresenter from './components/CardsPresenter.svelte'
 import EditCard from './components/EditCard.svelte'
 import Main from './components/Main.svelte'
 import {
@@ -108,6 +109,7 @@ export default async (): Promise<Resources> => ({
     EditView,
     CardEditor,
     CardRefPresenter,
+    CardsPresenter,
     ChangeType,
     CreateCardButton,
     CardArrayEditor,

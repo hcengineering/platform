@@ -119,7 +119,9 @@
     "ExecutionInitiator": "実行の発起人",
     "ExecutionStarted": "実行が開始されました",
     "Filter": "フィルター",
-    "FirstMatchValue": "最初の一致する値"
+    "FirstMatchValue": "最初の一致する値",
+    "ConfigLabel": "プロセス構成",
+    "ConfigDescription": "ワークフローやビジネスプロセスを自動化するためのプロセスを定義します。"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

@@ -120,7 +120,9 @@
     "ExecutionInitiator": "Execution initiator",
     "ExecutionStarted": "Execution started",
     "Filter": "Filter",
-    "FirstMatchValue": "First match value"
+    "FirstMatchValue": "First match value",
+    "ConfigLabel": "Process configuration",
+    "ConfigDescription": "Define processes to automate workflows and business processes."
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

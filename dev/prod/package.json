@@ -97,7 +97,7 @@
     "@hcengineering/controlled-documents": "^0.7.0",
     "@hcengineering/controlled-documents-assets": "^0.7.0",
     "@hcengineering/controlled-documents-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.8",
+    "@hcengineering/core": "^0.7.10",
     "@hcengineering/desktop-preferences": "^0.7.0",
     "@hcengineering/desktop-preferences-assets": "^0.7.0",
     "@hcengineering/desktop-preferences-resources": "^0.7.0",
@@ -289,6 +289,9 @@
     "@hcengineering/inbox": "^0.7.0",
     "@hcengineering/inbox-assets": "^0.7.0",
     "@hcengineering/inbox-resources": "^0.7.0",
+    "@hcengineering/rating": "^0.7.0",
+    "@hcengineering/rating-assets": "^0.7.0",
+    "@hcengineering/rating-resources": "^0.7.0",
     "readable-stream": "^4.7.0",
     "svelte": "^4.2.20"
   }

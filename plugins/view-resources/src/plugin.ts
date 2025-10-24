@@ -33,7 +33,8 @@ export default mergeIds(viewId, view, {
     SpaceTypeSelector: '' as AnyComponent,
     MasterDetailBrowser: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
-    NumberPresenter: '' as AnyComponent
+    NumberPresenter: '' as AnyComponent,
+    IdPresenter: '' as AnyComponent
   },
   string: {
     Contains: '' as IntlString,

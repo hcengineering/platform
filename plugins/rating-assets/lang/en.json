@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Rating",
+    "RatingWidget": "Rating widget",
+    "RatingWidgetEmpty": "No starred documents yet. To see items here, add a star to a document (click the star reaction on any document).",
+    "Level": "Level",
+    "MonthOps": "{month}: {ops} ops",
+    "MonthNoOps": "{month}, No ops",
+    "AddStar": "Add star",
+    "AddStarAria": "Add star reaction"
+  }
+}

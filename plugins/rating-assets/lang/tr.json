@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Puan",
+    "RatingWidgetEmpty": "Henüz yıldızlı belge yok. Burada öğeleri görmek için bir belgeye yıldız ekleyin (herhangi bir belgedeki yıldız tepkisine tıklayın).",
+    "RatingWidget": "Puan aracı",
+    "Level": "Seviye",
+    "MonthOps": "{month}: {ops} işlem",
+    "MonthNoOps": "{month}, işlem yok",
+    "AddStar": "Yıldız ekle",
+    "AddStarAria": "Yıldız tepkisi ekle"
+  }
+}
